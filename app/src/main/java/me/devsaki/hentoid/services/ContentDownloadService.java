@@ -253,7 +253,8 @@ public class ContentDownloadService extends IntentService {
      */
     private void watchProgress(Content content) {
         boolean isDone;
-        int pagesOK, pagesKO;
+        int pagesOK;
+        int pagesKO;
         List<ImageFile> images = content.getImageFiles();
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
@@ -597,7 +598,7 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    public void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
+    private void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
         ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description);
         if (contentId > 0) db.insertErrorRecord(record);
     }

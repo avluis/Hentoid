@@ -3,6 +3,7 @@ package me.devsaki.hentoid.dirpicker.model;
 import androidx.annotation.NonNull;
 
 import java.io.File;
+import java.util.Objects;
 
 /**
  * Created by avluis on 06/12/2016.
@@ -13,6 +14,17 @@ public class FileBuilder extends File {
 
     public FileBuilder(String path) {
         super(path);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof FileBuilder)) {
+            return false;
+        }
+
+        FileBuilder fileBuilder = (FileBuilder) o;
+
+        return this == o || Objects.equals(fileBuilder.getName(), name);
     }
 
     @NonNull

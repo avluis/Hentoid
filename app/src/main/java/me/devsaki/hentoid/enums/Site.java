@@ -88,7 +88,7 @@ public enum Site {
         return description;
     }
 
-    public String getUniqueKeyword() {
+    private String getUniqueKeyword() {
         return uniqueKeyword;
     }
 

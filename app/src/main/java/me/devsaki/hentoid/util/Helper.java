@@ -210,7 +210,7 @@ public final class Helper {
         return buildListAsString(list, "");
     }
 
-    public static String buildListAsString(List<?> list, String valueDelimiter) {
+    private static String buildListAsString(List<?> list, String valueDelimiter) {
 
         StringBuilder str = new StringBuilder();
         if (list != null) {

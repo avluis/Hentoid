@@ -2,7 +2,6 @@ package me.devsaki.hentoid.enums;
 
 import javax.annotation.Nullable;
 
-import io.objectbox.annotation.Entity;
 import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
 

@@ -78,19 +78,19 @@ public class HentaiCafeParser extends BaseParser {
                                     JSONArray array = getJSONArrayFromString(js.toString());
                                     if (array != null) {
                                         for (int j = 0; j < array.length(); j++) {
-                                            try {
-                                                result.add(array.getJSONObject(j).getString("url"));
-                                            } catch (JSONException e) {
-                                                Timber.e(e, "Error while reading from array");
-                                            }
+                                            result.add(array.getJSONObject(j).getString("url"));
                                         }
                                     } else {
                                         Timber.e("Error while parsing pages");
                                     }
                                 }
                             }
-                        } catch (IOException e) {
-                            Timber.e(e, "JSOUP Error");
+                        } catch (JSONException | IOException e) {
+                            if (e instanceof JSONException) {
+                                Timber.e(e, "Error while reading from array");
+                            } else {
+                                Timber.e(e, "JSOUP Error");
+                            }
                         }
                     }
                     progressPlus();

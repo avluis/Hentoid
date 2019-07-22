@@ -17,7 +17,7 @@ import retrofit2.http.Url;
 
 public class MikanServer {
 
-    private final static String MIKAN_BASE_URL = "https://api.initiate.host/v1/";
+    private static final String MIKAN_BASE_URL = "https://api.initiate.host/v1/";
 
     public static final Api API = new Retrofit.Builder()
             .baseUrl(MIKAN_BASE_URL)

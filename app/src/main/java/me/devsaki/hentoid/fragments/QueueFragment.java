@@ -194,7 +194,7 @@ public class QueueFragment extends BaseFragment {
         queueStatus.setText(MessageFormat.format(requireActivity().getString(R.string.queue_dl), bookTitle));
     }
 
-    public void update() {
+    private void update() {
         update(-1);
     }
 
@@ -203,7 +203,7 @@ public class QueueFragment extends BaseFragment {
      *
      * @param eventType Event type that triggered the update, if any (See types described in DownloadEvent); -1 if none
      */
-    public void update(int eventType) {
+    private void update(int eventType) {
         int bookDiff = (eventType == DownloadEvent.EV_CANCEL) ? 1 : 0; // Cancel event means a book will be removed very soon from the queue
         isEmpty = (0 == mAdapter.getCount() - bookDiff);
         isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));

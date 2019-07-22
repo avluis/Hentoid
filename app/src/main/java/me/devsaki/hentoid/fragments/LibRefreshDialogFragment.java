@@ -24,11 +24,6 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 public class LibRefreshDialogFragment extends DialogFragment {
 
-    private CheckBox renameChk;
-    private CheckBox cleanAbsentChk;
-    private CheckBox cleanNoImagesChk;
-    private CheckBox cleanUnreadableChk;
-
     public static void invoke(FragmentManager fragmentManager) {
         LibRefreshDialogFragment fragment = new LibRefreshDialogFragment();
         fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
@@ -45,10 +40,10 @@ public class LibRefreshDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        renameChk = requireViewById(view, R.id.refresh_options_rename);
-        cleanAbsentChk = requireViewById(view, R.id.refresh_options_remove_1);
-        cleanNoImagesChk = requireViewById(view, R.id.refresh_options_remove_2);
-        cleanUnreadableChk = requireViewById(view, R.id.refresh_options_remove_3);
+        CheckBox renameChk = requireViewById(view, R.id.refresh_options_rename);
+        CheckBox cleanAbsentChk = requireViewById(view, R.id.refresh_options_remove_1);
+        CheckBox cleanNoImagesChk = requireViewById(view, R.id.refresh_options_remove_2);
+        CheckBox cleanUnreadableChk = requireViewById(view, R.id.refresh_options_remove_3);
 
         View okBtn = requireViewById(view, R.id.refresh_ok);
         okBtn.setOnClickListener(v -> launchRefreshImport(renameChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked(), cleanUnreadableChk.isChecked()));

@@ -12,7 +12,7 @@ import retrofit2.http.POST;
 
 public class EHentaiServer {
 
-    private final static String API_URL = "http://e-hentai.org/";
+    private static final String API_URL = "http://e-hentai.org/";
 
     public static final Api API = new Retrofit.Builder()
             .baseUrl(API_URL)

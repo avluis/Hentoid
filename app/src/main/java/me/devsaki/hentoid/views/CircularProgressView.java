@@ -15,7 +15,8 @@ import me.devsaki.hentoid.R;
 
 public class CircularProgressView extends View {
     private final float strokeWidth;
-    private Paint totalPaint, progressPaint;
+    private Paint totalPaint;
+    private Paint progressPaint;
     private float progress = 360;
     private float total = 360;
     private TextView textView;

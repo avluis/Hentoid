@@ -104,8 +104,9 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     public void loadFromContent(long contentId) {
         if (contentId > 0) {
             ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
-            Content content = db.selectContentById(contentId);
-            if (content != null) processContent(content);
+            Content loadedContent = db.selectContentById(contentId);
+            if (loadedContent != null)
+                processContent(loadedContent);
         }
     }
 

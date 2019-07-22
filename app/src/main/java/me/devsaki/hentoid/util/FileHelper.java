@@ -423,10 +423,9 @@ public class FileHelper {
         // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
         int truncLength = Preferences.getFolderTruncationNbChars();
         int titleLength = result.length() - siteFolder.length();
-        if (truncLength > 0) {
-            if (titleLength + suffix.length() > truncLength)
-                result = result.substring(0, siteFolder.length() + truncLength - suffix.length() - 1);
-        }
+        if ((truncLength > 0) && ((titleLength + suffix.length()) > truncLength))
+            result = result.substring(0, siteFolder.length() + truncLength - suffix.length() - 1);
+
         result += suffix;
 
         return result;
@@ -622,11 +621,11 @@ public class FileHelper {
      * @return Extension of the given filename
      */
     public static String getExtension(String fileName) {
-        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
+        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.getDefault()) : "";
     }
 
     public static String getFileNameWithoutExtension(String fileName) {
-        return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf(".")) : fileName;
+        return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
     public static void archiveContent(final Context context, Content content) {

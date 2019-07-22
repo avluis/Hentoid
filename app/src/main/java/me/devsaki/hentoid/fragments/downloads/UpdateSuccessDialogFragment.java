@@ -85,11 +85,11 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
         Timber.w(t, "Error fetching GitHub latest release data");
     }
 
-    void addDescContent(String text) {
+    private void addDescContent(String text) {
         releaseDescriptionAdapter.addItem(new GitHubReleaseDescription(text, GitHubReleaseDescription.Type.DESCRIPTION));
     }
 
-    void addListContent(String text) {
+    private void addListContent(String text) {
         releaseDescriptionAdapter.addItem(new GitHubReleaseDescription(text, GitHubReleaseDescription.Type.LIST_ITEM));
     }
 }

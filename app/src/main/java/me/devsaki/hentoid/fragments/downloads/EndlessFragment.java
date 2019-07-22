@@ -16,7 +16,7 @@ import timber.log.Timber;
 public class EndlessFragment extends DownloadsFragment {
 
     // True if the user is currently loading a page; false if not
-    boolean isPageLoading = false;
+    private boolean isPageLoading = false;
 
 
     @Override

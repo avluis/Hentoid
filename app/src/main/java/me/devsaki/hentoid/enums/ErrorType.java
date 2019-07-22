@@ -1,9 +1,6 @@
 package me.devsaki.hentoid.enums;
 
-import javax.annotation.Nullable;
-
 import io.objectbox.converter.PropertyConverter;
-import timber.log.Timber;
 
 public enum ErrorType {
 
@@ -30,7 +27,7 @@ public enum ErrorType {
         return UNDEFINED;
     }
 
-    public int getCode() {
+    private int getCode() {
         return code;
     }
 

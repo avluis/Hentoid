@@ -13,7 +13,7 @@ public class ImportEvent {
     public static final int EV_COMPLETE = 1;    // Import complete
 
     public final int eventType;                 // Event type (see constants EV_XXX above)
-    public final Content content;               // Corresponding book (for EV_PROGRESS)
+    private final Content content;               // Corresponding book (for EV_PROGRESS)
     public final int booksOK;                   // Number of pages that have been downloaded successfully for current book
     public final int booksKO;                   // Number of pages that have been downloaded with errors for current book
     public final int booksTotal;                // Number of pages to download for current book

@@ -10,7 +10,7 @@ import me.devsaki.hentoid.database.domains.Content;
 
 public class EHentaiGalleriesMetadata {
     @Expose
-    public List<EHentaiGalleryMetadata> gmetadata;
+    private List<EHentaiGalleryMetadata> gmetadata;
 
     public Content toContent(@Nonnull String url) {
         return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).toContent(url) : new Content();
