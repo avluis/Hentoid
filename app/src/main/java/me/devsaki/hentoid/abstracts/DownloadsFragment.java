@@ -82,8 +82,8 @@ import static com.annimon.stream.Collectors.toCollection;
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
  * <p>
  * todo issue: After requesting for permission, the app is reset using {@link #resetApp()} instead
- *  of implementing {@link #onRequestPermissionsResult} to receive permission
- *  request result
+ * of implementing {@link #onRequestPermissionsResult} to receive permission
+ * request result
  */
 public abstract class DownloadsFragment extends BaseFragment implements PagedResultListener<Content>,
         ItemSelectListener {
@@ -94,8 +94,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     private static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
 
-    public static final  int MODE_LIBRARY = 0;
-    public static final  int MODE_MIKAN = 1;
+    public static final int MODE_LIBRARY = 0;
+    public static final int MODE_MIKAN = 1;
 
 
     // Save state constants
@@ -325,11 +325,9 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
     private void openBook(Content content) {
         // The list order might change when viewing books when certain sort orders are activated
-        int contentSortOrder = Preferences.getContentSortOrder();
-        plannedRefresh = (Preferences.Constant.ORDER_CONTENT_LAST_READ == contentSortOrder
-                || Preferences.Constant.ORDER_CONTENT_LEAST_READ == contentSortOrder
-                || Preferences.Constant.ORDER_CONTENT_MOST_READ == contentSortOrder);
-
+        // "unread" status might also change
+        // => plan a refresh next time DownloadsFragment is called
+        plannedRefresh = true;
         Bundle bundle = new Bundle();
         searchManager.saveToBundle(bundle);
         int pageOffset = 0;
