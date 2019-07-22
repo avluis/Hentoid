@@ -322,7 +322,7 @@ public class ZoomableRecyclerView extends RecyclerView {
 
             switch (action) {
                 case MotionEvent.ACTION_DOWN: {
-                    motionActionDown(ev);
+                    motionActionDownLocal(ev);
                 }
                 break;
                 case MotionEvent.ACTION_POINTER_DOWN: {
@@ -330,10 +330,10 @@ public class ZoomableRecyclerView extends RecyclerView {
                 }
                 break;
                 case MotionEvent.ACTION_MOVE: {
-                    return motionActionMove(ev);
+                    return motionActionMoveLocal(ev);
                 }
                 case MotionEvent.ACTION_UP: {
-                    motionActionUp(ev);
+                    motionActionUpLocal(ev);
                     break;
                 }
                 case MotionEvent.ACTION_CANCEL: {
@@ -346,7 +346,7 @@ public class ZoomableRecyclerView extends RecyclerView {
             return super.onTouchEvent(ev);
         }
 
-        private void motionActionDown(MotionEvent ev) {
+        private void motionActionDownLocal(MotionEvent ev) {
             scrollPointerId = ev.getPointerId(0);
             downX = Math.round(ev.getX() + 0.5f);
             downY = Math.round(ev.getY() + 0.5f);
@@ -358,7 +358,7 @@ public class ZoomableRecyclerView extends RecyclerView {
             downY = Math.round(ev.getY(actionIndex) + 0.5f);
         }
 
-        private boolean motionActionMove(MotionEvent ev) {
+        private boolean motionActionMoveLocal(MotionEvent ev) {
             if (isDoubleTapping && isQuickScaling) {
                 return true;
             }
@@ -404,7 +404,7 @@ public class ZoomableRecyclerView extends RecyclerView {
             return super.onTouchEvent(ev);
         }
 
-        private void motionActionUp(MotionEvent ev) {
+        private void motionActionUpLocal(MotionEvent ev) {
             if (isDoubleTapping && !isQuickScaling) {
                 listener.onDoubleTapConfirmed(ev);
             }
