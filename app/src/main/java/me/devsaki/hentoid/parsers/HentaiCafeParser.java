@@ -27,80 +27,73 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 public class HentaiCafeParser extends BaseParser {
 
     @Override
-    protected List<String> parseImages(Content content) throws IOException {
+    protected List<String> parseImages(Content content) throws Exception {
         List<String> result = new ArrayList<>();
+        String pageUrl = content.getGalleryUrl();
+        int pages = 0;
 
-        Document doc = getOnlineDocument(content.getGalleryUrl());
-        if (doc != null) {
-            Elements links = doc.select("a.x-btn");
+        Document doc = getOnlineDocument(pageUrl);
+        if (null == doc) throw new Exception("Document unreachable : " + pageUrl);
 
-            Elements contents;
-            Element js;
-            int pages = 0;
+        Timber.d("Parsing: %s", pageUrl);
+        Elements links = doc.select("a.x-btn");
+        if (links.isEmpty()) throw new Exception("No links found @ " + pageUrl);
 
-            if (links != null) {
-                if (links.size() > 1) {
-                    Timber.d("Multiple chapters found!");
+        if (links.size() > 1) Timber.d("Multiple chapters found!");
+        progressStart(links.size());
+
+        for (Element link : links) {
+            String url = link.attr("href");
+            // Reconstitute the reader URL piece by piece if needed
+            // NB : some pages require it (e.g. 2606)
+            if (url.equals("#") && doc != null) {
+                // Get the canonical link
+                Elements canonicalLink = doc.select("head [rel=canonical]");
+                if (canonicalLink != null) {
+                    // Remove artist name
+                    String artist = content.getAuthor().replace(" ", "-").toLowerCase() + "-";
+                    String canonicalUrl = canonicalLink.get(0).attr("href").replace(artist, "");
+                    // Get the last part
+                    String[] parts = canonicalUrl.split("/");
+                    String canonicalName = parts[parts.length - 1].replace("-", "_");
+                    url = content.getReaderUrl().replace("$1", canonicalName); // $1 has to be replaced by the textual unique site ID without the author name
                 }
-
-                progressStart(links.size());
-
-                for (int i = 0; i < links.size(); i++) {
-
-                    String url = links.get(i).attr("href");
-                    if (url.equals("#") && doc != null) { // Some pages are like this (e.g. 2606) -> reconstitute the reader URL manually
-                        // Get the canonical link
-                        Elements canonicalLink = doc.select("head [rel=canonical]");
-                        if (canonicalLink != null) {
-                            // Remove artist name
-                            String artist = content.getAuthor().replace(" ","-").toLowerCase()+"-";
-                            String canonicalUrl = canonicalLink.get(0).attr("href").replace(artist,"");
-                            // Get the last part
-                            String[] parts = canonicalUrl.split("/");
-                            String canonicalName = parts[parts.length - 1].replace("-","_");
-                            url = content.getReaderUrl().replace("$1", canonicalName); // $1 has to be replaced by the textual unique site ID without the author name
-                        }
-                    }
-
-                    if (URLUtil.isValidUrl(url)) {
-                        Timber.d("Chapter Links: %s", url);
-                        try {
-                            doc = getOnlineDocument(url);
-                            if (doc != null) {
-                                contents = doc.select("article#content");
-                                js = contents.select("script").last();
-
-                                if (!contents.isEmpty()) {
-                                    pages += Integer.parseInt(
-                                            doc.select("div.text").first().text().replace(" ⤵", ""));
-                                    Timber.d("Pages: %s", pages);
-
-                                    JSONArray array = getJSONArrayFromString(js.toString());
-                                    if (array != null) {
-                                        for (int j = 0; j < array.length(); j++) {
-                                            result.add(array.getJSONObject(j).getString("url"));
-                                        }
-                                    } else {
-                                        Timber.e("Error while parsing pages");
-                                    }
-                                }
-                            }
-                        } catch (JSONException | IOException e) {
-                            if (e instanceof JSONException) {
-                                Timber.e(e, "Error while reading from array");
-                            } else {
-                                Timber.e(e, "JSOUP Error");
-                            }
-                        }
-                    }
-                    progressPlus();
-                }
-                Timber.d("Total Pages: %s", pages);
-                content.setQtyPages(pages);
-
-                progressComplete();
             }
+
+            if (URLUtil.isValidUrl(url)) {
+                Timber.d("Chapter Links: %s", url);
+                try {
+                    doc = getOnlineDocument(url);
+                    if (doc != null) {
+                        Elements scripts = doc.select("article#content").select("script");
+                        for (Element script : scripts) {
+                            String scriptStr = script.toString();
+                            if (scriptStr.contains("\"created\"")) { // That's the one
+                                JSONArray array = getJSONArrayFromString(scriptStr);
+                                if (array != null) {
+                                    for (int i = 0; i < array.length(); i++)
+                                        result.add(array.getJSONObject(i).getString("url"));
+                                    pages += array.length();
+                                } else {
+                                    Timber.e("Error while parsing pages");
+                                }
+                                break;
+                            }
+                        }
+                    }
+                } catch (JSONException e) {
+                    Timber.e(e, "Error while reading from array");
+                } catch (IOException e) {
+                    Timber.e(e, "JSOUP Error");
+                }
+            }
+            progressPlus();
         }
+
+        Timber.d("Total Pages: %s", pages);
+        content.setQtyPages(pages);
+
+        progressComplete();
 
         return result;
     }
