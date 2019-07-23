@@ -18,9 +18,9 @@ public abstract class BaseParser implements ImageListParser {
     public List<ImageFile> parseImageList(Content content) throws Exception {
         String readerUrl = content.getReaderUrl();
 
-        if (!URLUtil.isValidUrl(readerUrl)) {
-            throw new Exception("Invalid gallery URL : " + readerUrl);
-        }
+        if (!URLUtil.isValidUrl(readerUrl))
+            throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
+
         Timber.d("Gallery URL: %s", readerUrl);
 
         List<String> imgUrls = parseImages(content);
