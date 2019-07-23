@@ -9,7 +9,7 @@
         android:id="@+id/changelogReleaseLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?colorSurface"
+        android:background="?android:colorBackground"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintTop_toTopOf="parent">
@@ -32,7 +32,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp"
             android:text="@string/changelog"
-            android:textColor="?colorOnSurface"
+            android:textColor="?colorOnBackground"
             android:textSize="@dimen/text_subtitle_1"
             android:textStyle="bold" />
 
