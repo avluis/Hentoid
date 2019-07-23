@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 
@@ -138,7 +139,11 @@ public class PrefsActivity extends BaseActivity {
         private boolean onCheckUpdatePrefClick() {
             if (!UpdateDownloadService.isRunning()) {
                 Intent intent = UpdateCheckService.makeIntent(requireContext(), true);
-                requireContext().startService(intent);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    requireContext().startForegroundService(intent);
+                } else {
+                    requireContext().startService(intent);
+                }
             }
             return true;
         }

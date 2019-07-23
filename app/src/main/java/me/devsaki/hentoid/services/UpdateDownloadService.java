@@ -57,7 +57,10 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
     public void onCreate() {
         running = true;
         downloadManager = new ThinDownloadManager();
+
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
+        notificationManager.startForeground(new UpdateProgressNotification(INDETERMINATE));
+
         progressHandler = new Handler();
         Timber.w("Service created");
     }
@@ -65,6 +68,7 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
     @Override
     public void onDestroy() {
         running = false;
+        notificationManager.cancel();
         downloadManager.release();
         Timber.w("Service destroyed");
     }
@@ -84,8 +88,6 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
 
     private void downloadUpdate(Uri updateUri) {
         Timber.w("Starting download");
-
-        notificationManager.startForeground(new UpdateProgressNotification(INDETERMINATE));
 
         File apkFile = new File(getExternalCacheDir(), "hentoid.apk");
         Uri destinationUri = Uri.fromFile(apkFile);

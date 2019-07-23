@@ -1,17 +1,19 @@
 package me.devsaki.hentoid.fragments.about;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,8 +124,12 @@ public class ChangelogFragment extends Fragment {
     private void onDownloadClick(View v) {
         // Equivalent to "check for updates" preferences menu
         if (!UpdateDownloadService.isRunning()) {
-            Intent intent = UpdateCheckService.makeIntent(v.getContext(), true);
-            v.getContext().startService(intent);
+            Intent intent = UpdateCheckService.makeIntent(requireContext(), true);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                requireContext().startForegroundService(intent);
+            } else {
+                requireContext().startService(intent);
+            }
         }
     }
 

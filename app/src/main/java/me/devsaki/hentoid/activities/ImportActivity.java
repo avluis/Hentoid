@@ -647,7 +647,11 @@ public class ImportActivity extends BaseActivity {
         builder.setRefreshCleanUnreadable(isCleanUnreadable);
         intent.putExtras(builder.getBundle());
 
-        startService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
     }
 
     private void cleanUpDB() {

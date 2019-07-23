@@ -18,6 +18,7 @@ public class DownloadNotificationChannel {
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(ID, name, importance);
             channel.setSound(null, null);
+            channel.setVibrationPattern(null);
 
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
 

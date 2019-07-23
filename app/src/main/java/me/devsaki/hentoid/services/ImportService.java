@@ -71,6 +71,7 @@ public class ImportService extends IntentService {
         running = true;
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
         notificationManager.cancel();
+        notificationManager.startForeground(new ImportStartNotification());
 
         Timber.w("Service created");
     }
@@ -78,6 +79,7 @@ public class ImportService extends IntentService {
     @Override
     public void onDestroy() {
         running = false;
+        notificationManager.cancel();
         Timber.w("Service destroyed");
 
         super.onDestroy();
@@ -91,8 +93,6 @@ public class ImportService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        notificationManager.startForeground(new ImportStartNotification());
-
         // True if the user has asked for a cleanup when calling import from Preferences
         boolean doRename = false;
         boolean doCleanAbsent = false;

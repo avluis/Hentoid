@@ -58,11 +58,14 @@ public class UpdateCheckService extends Service {
     @Override
     public void onCreate() {
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
+        notificationManager.startForeground(new UpdateCheckNotification());
+
         Timber.w("Service created");
     }
 
     @Override
     public void onDestroy() {
+        notificationManager.cancel();
         if (disposable != null) disposable.dispose();
         Timber.w("Service destroyed");
     }
@@ -83,8 +86,6 @@ public class UpdateCheckService extends Service {
     }
 
     private void checkForUpdates() {
-        notificationManager.startForeground(new UpdateCheckNotification());
-
         disposable = UpdateServer.API.getUpdateInfo()
                 .retry(3)
                 .observeOn(mainThread())

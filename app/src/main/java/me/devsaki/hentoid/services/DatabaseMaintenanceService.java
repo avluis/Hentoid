@@ -32,7 +32,9 @@ public class DatabaseMaintenanceService extends IntentService {
     public void onCreate() {
         super.onCreate();
 
-        notificationManager = new ServiceNotificationManager(this, 0);
+        notificationManager = new ServiceNotificationManager(this, 1);
+        notificationManager.startForeground(new MaintenanceNotification("Performing maintenance"));
+
         Timber.i("Service created");
     }
 
@@ -52,7 +54,6 @@ public class DatabaseMaintenanceService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        notificationManager.startForeground(new MaintenanceNotification("Performing maintenance"));
         DatabaseMaintenance.performDatabaseHousekeeping(this);
     }
 }

@@ -50,7 +50,9 @@ public class DatabaseMigrationService extends IntentService {
     public void onCreate() {
         super.onCreate();
 
-        notificationManager = new ServiceNotificationManager(this, 0);
+        notificationManager = new ServiceNotificationManager(this, 1);
+        notificationManager.startForeground(new MaintenanceNotification("Performing database migration"));
+
         Timber.w("Service created");
     }
 
@@ -70,7 +72,6 @@ public class DatabaseMigrationService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        notificationManager.startForeground(new MaintenanceNotification("Performing database migration"));
         cleanUpDB();
         migrate();
     }
