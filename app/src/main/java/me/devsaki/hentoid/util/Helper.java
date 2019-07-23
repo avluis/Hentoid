@@ -180,7 +180,7 @@ public final class Helper {
     public enum TYPE {JS, CSS, HTML, PLAIN}
 
     public static String capitalizeString(String s) {
-        if (s == null || s.length() == 0) return s;
+        if (s == null || s.isEmpty()) return s;
         else if (s.length() == 1) return s.toUpperCase();
         else return s.substring(0, 1).toUpperCase() + s.toLowerCase().substring(1);
     }
