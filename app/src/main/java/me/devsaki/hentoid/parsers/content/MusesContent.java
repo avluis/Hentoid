@@ -85,7 +85,12 @@ public class MusesContent implements ContentParser {
                     AttributeType type = AttributeType.SERIE;
                     if (publishersWithAuthors.contains(publisher)) type = AttributeType.ARTIST;
                     ParseHelper.parseAttribute(attributes, type, breadcrumbs.get(2), false, Site.MUSES);
-                    bookTitle = breadcrumbs.get(2).text() + " - " + bookTitle;
+                    // Add series to book title if it isn't there already
+                    if (AttributeType.SERIE == type) {
+                        String series = breadcrumbs.get(2).text();
+                        if (!bookTitle.toLowerCase().startsWith(series.toLowerCase()))
+                            bookTitle = series + " - " + bookTitle;
+                    }
 
                     if (breadcrumbs.size() > 4) {
                         // All that comes after element 2 contributes to the book title
