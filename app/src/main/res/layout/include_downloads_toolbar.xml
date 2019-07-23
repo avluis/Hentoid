@@ -2,15 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="?colorPrimary"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?colorPrimary"
+    android:elevation="@dimen/toolbar_layout_elevation"
+    android:gravity="center"
     android:minHeight="?android:attr/actionBarSize"
+    android:orientation="horizontal"
     android:theme="@style/Theme.MaterialComponents.CompactMenu"
     app:contentInsetEnd="0dp"
-    app:contentInsetStart="0dp"
-    android:gravity="center"
-    android:orientation="horizontal">
+    app:contentInsetStart="0dp">
 
     <ImageButton
         android:id="@+id/btnPrevious"
@@ -26,8 +27,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:textIsSelectable="false"
-        tools:listitem="@layout/item_pagecarousel"
-        />
+        tools:listitem="@layout/item_pagecarousel" />
 
     <ImageButton
         android:id="@+id/btnNext"
