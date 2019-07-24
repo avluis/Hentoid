@@ -13,6 +13,7 @@ public class UpdateCheckNotification implements Notification {
     @Override
     public android.app.Notification onCreateNotification(Context context) {
         return new NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
+                .setDefaults(0)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setVibrate(null)
