@@ -9,14 +9,22 @@ import java.util.Objects;
 
 public class ImportNotificationChannel {
 
-    static final String ID = "import";
+    static final String ID_OLD = "import";
+    static final String ID = "import2";
 
     public static void init(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String name = "Library imports";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(ID, name, importance);
+            channel.setSound(null, null);
+            channel.setVibrationPattern(null);
+
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+
+            // Mandatory; it is not possible to change the sound of an existing channel after its initial creation
+            notificationManager.deleteNotificationChannel(ID_OLD);
+
             Objects.requireNonNull(notificationManager).createNotificationChannel(channel);
         }
     }
