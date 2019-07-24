@@ -278,7 +278,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             boolean matchFound = false;
             for (File f : files) {
                 // Image and file name match => store absolute path
-                if (images.get(i).getName().equals(FileHelper.getFileNameWithoutExtension(f.getName()))) {
+                if (FileHelper.getFileNameWithoutExtension(images.get(i).getName()).equals(FileHelper.getFileNameWithoutExtension(f.getName()))) {
                     matchFound = true;
                     images.get(i).setAbsolutePath(f.getAbsolutePath());
                     break;
