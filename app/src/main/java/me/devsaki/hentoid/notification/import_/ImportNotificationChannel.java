@@ -9,7 +9,7 @@ import java.util.Objects;
 
 public class ImportNotificationChannel {
 
-    static final String ID_OLD = "import";
+    private static final String ID_OLD = "import";
     static final String ID = "import2";
 
     public static void init(Context context) {
