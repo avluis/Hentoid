@@ -14,6 +14,9 @@ public class UpdateCheckNotification implements Notification {
     public android.app.Notification onCreateNotification(Context context) {
         return new NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setVibrate(null)
+                .setSound(null)
                 .setContentTitle("Checking for updates")
                 .setContentText("Please wait")
                 .setProgress(0, 0, true)
