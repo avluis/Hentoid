@@ -10,6 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/drawer_image_height"
         android:background="@drawable/nav_header_bg"
+        android:clickable="true"
+        android:focusable="true"
         android:padding="@dimen/drawer_header_icon_padding">
 
         <ImageView
