@@ -194,12 +194,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         });
         recyclerView.setLongTapListener(ev -> false);
 
-        OnZoneTapListener onZoneTapListener = new OnZoneTapListener(recyclerView)
+        OnZoneTapListener onHorizontalZoneTapListener = new OnZoneTapListener(recyclerView)
                 .setOnLeftZoneTapListener(this::onLeftTap)
                 .setOnRightZoneTapListener(this::onRightTap)
                 .setOnMiddleZoneTapListener(this::onMiddleTap);
-        recyclerView.setTapListener(onZoneTapListener);     // For paper roll mode (vertical)
-        adapter.setItemTouchListener(onZoneTapListener);    // For independent images mode (horizontal)
+
+        OnZoneTapListener onVerticalZoneTapListener = new OnZoneTapListener(recyclerView)
+                .setOnMiddleZoneTapListener(this::onMiddleTap);
+
+        recyclerView.setTapListener(onVerticalZoneTapListener);       // For paper roll mode (vertical)
+        adapter.setItemTouchListener(onHorizontalZoneTapListener);    // For independent images mode (horizontal)
 
         adapter.setRecyclerView(recyclerView);
 
