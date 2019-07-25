@@ -29,11 +29,13 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
@@ -148,8 +150,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         if (imgs != null) sortAndSetImages(imgs, isShuffled);
     }
 
-    private void sortAndSetImages(@Nonnull List<ImageFile> imgs, boolean shuffle)
-    {
+    private void sortAndSetImages(@Nonnull List<ImageFile> imgs, boolean shuffle) {
         if (shuffle) {
             Collections.shuffle(imgs);
         } else {
@@ -245,10 +246,16 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         theContent.setLast(currentContentIndex == contentIds.size() - 1);
 
         // Load new content
-        File[] pictures = FileHelper.getPictureFilesFromContent(theContent);
-        if (pictures != null && pictures.length > 0 && theContent.getImageFiles() != null) {
-            List<ImageFile> imageFiles = new ArrayList<>(theContent.getImageFiles());
-            matchFilesToImageList(pictures, imageFiles);
+        File[] pictureFiles = FileHelper.getPictureFilesFromContent(theContent);
+        if (pictureFiles != null && pictureFiles.length > 0) {
+            List<ImageFile> imageFiles;
+            if (null == theContent.getImageFiles() || theContent.getImageFiles().isEmpty()) {
+                imageFiles = new ArrayList<>();
+                saveFilesToImageList(pictureFiles, imageFiles, theContent);
+            } else {
+                imageFiles = new ArrayList<>(theContent.getImageFiles());
+                matchFilesToImageList(pictureFiles, imageFiles);
+            }
             setImages(imageFiles);
 
             if (Preferences.isViewerResumeLastLeft()) {
@@ -272,7 +279,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         }
     }
 
-    private static void matchFilesToImageList(File[] files, List<ImageFile> images) {
+    private static void matchFilesToImageList(File[] files, @Nonnull List<ImageFile> images) {
         int i = 0;
         while (i < images.size()) {
             boolean matchFound = false;
@@ -289,6 +296,21 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
                 images.remove(i);
             } else i++;
         }
+    }
+
+    private static void saveFilesToImageList(File[] files, @Nonnull List<ImageFile> images, @Nonnull Content content) {
+        int order = 0;
+        // Sort files by name alpha
+        List<File> fileList = Stream.of(files).sortBy(File::getName).collect(toList());
+        for (File f : fileList) {
+            order++;
+            ImageFile img = new ImageFile();
+            String name = FileHelper.getFileNameWithoutExtension(f.getName());
+            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setAbsolutePath(f.getAbsolutePath());
+            images.add(img);
+        }
+        content.addImageFiles(images);
+        ObjectBoxDB.getInstance(HentoidApp.getAppContext()).insertContent(content);
     }
 
     @WorkerThread
