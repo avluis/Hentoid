@@ -391,6 +391,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         maxPosition = images.size() - 1;
         seekBar.setMax(maxPosition);
+        updatePageDisplay();
     }
 
     /**
