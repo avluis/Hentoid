@@ -127,7 +127,7 @@ public class ImageGalleryFragment extends Fragment {
                 filterFavourites = false;
                 galleryImagesAdapter.setFilter(filterFavourites);
                 galleryImagesAdapter.filterItems();
-                galleryImagesAdapter.smoothScrollToPosition(0);
+                if (galleryImagesAdapter.getItemCount() > 0) galleryImagesAdapter.smoothScrollToPosition(0);
             } else {
                 galleryImagesAdapter.notifyDataSetChanged(); // Because no easy way to spot which item has changed when the view is filtered
             }
@@ -146,7 +146,7 @@ public class ImageGalleryFragment extends Fragment {
         favouritesFilterMenu.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
         galleryImagesAdapter.setFilter(filterFavourites);
         galleryImagesAdapter.filterItems();
-        galleryImagesAdapter.smoothScrollToPosition(0);
+        if (galleryImagesAdapter.getItemCount() > 0) galleryImagesAdapter.smoothScrollToPosition(0);
     }
 
     @Override
