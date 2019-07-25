@@ -43,16 +43,6 @@
             android:summary="@string/pref_folder_trunc_summary"
             android:title="@string/pref_folder_trunc_title" />
         <ListPreference
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:defaultValue="@string/pref_read_content_default"
-            android:entries="@array/pref_read_content_entries"
-            android:entryValues="@array/pref_read_content_entry_values"
-            android:icon="@null"
-            android:key="pref_read_content_lists"
-            android:summary="@string/pref_read_content_summary"
-            android:title="@string/pref_read_content_title" />
-        <ListPreference
             android:defaultValue="@string/pref_attributes_list_order_default"
             android:entries="@array/pref_attribute_list_order_entries"
             android:entryValues="@array/pref_attribute_list_order_values"
@@ -118,7 +108,14 @@
             android:title="@string/pref_check_updates_title" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_misc_category">
-
+        <ListPreference
+            android:defaultValue="@string/pref_dark_mode_default"
+            android:entries="@array/pref_dark_mode_entries"
+            android:entryValues="@array/pref_dark_mode_values"
+            android:icon="@null"
+            android:key="pref_dark_mode"
+            android:summary="@string/pref_dark_mode_summary"
+            android:title="@string/pref_dark_mode_title" />
         <CheckBoxPreference
             android:defaultValue="@string/pref_hide_recent_default"
             android:icon="@null"
@@ -133,13 +130,6 @@
             android:summaryOff="@string/pref_analytics_tracking_summary_off"
             android:summaryOn="@string/pref_analytics_tracking_summary_on"
             android:title="@string/pref_analytics_tracking_title" />
-        <CheckBoxPreference
-            android:defaultValue="@string/pref_use_sfw_default"
-            android:icon="@null"
-            android:key="pref_use_sfw"
-            android:summaryOff="@string/pref_use_sfw_summary_off"
-            android:summaryOn="@string/pref_use_sfw_summary_on"
-            android:title="@string/pref_use_sfw_title" />
     </PreferenceCategory>
     <PreferenceScreen
         android:key="advancedSettings"

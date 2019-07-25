@@ -4,6 +4,8 @@ import com.google.gson.annotations.Expose;
 
 /**
  * General builder for URLs
+ *
+ * @deprecated Replaced by {@link me.devsaki.hentoid.services.ImportService} methods; class is kept for retrocompatibilty
  */
 @Deprecated
 public class URLBuilder {
@@ -14,10 +16,10 @@ public class URLBuilder {
     private String description;
 
     public String getId() {
-        int idxStart = url.lastIndexOf("/");
+        int idxStart = url.lastIndexOf('/');
         String id = url.substring(idxStart);
         String category = url.replace(id, "");
-        category = category.substring(category.lastIndexOf("/"));
+        category = category.substring(category.lastIndexOf('/'));
 
         return category + id;
     }

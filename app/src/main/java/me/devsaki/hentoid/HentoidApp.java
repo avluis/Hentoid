@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 
+import androidx.appcompat.app.AppCompatDelegate;
+
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -17,6 +19,7 @@ import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
+import me.devsaki.hentoid.notification.maintenance.MaintenanceNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.DatabaseMaintenanceService;
 import me.devsaki.hentoid.services.UpdateCheckService;
@@ -33,7 +36,8 @@ import timber.log.Timber;
 public class HentoidApp extends Application {
 
     private static boolean beginImport;
-    @SuppressLint("StaticFieldLeak") // A context leak happening at app level isn't _really_ a leak, right ? ;-)
+    @SuppressLint("StaticFieldLeak")
+    // A context leak happening at app level isn't _really_ a leak, right ? ;-)
     private static Context instance;
 
     public static Context getAppContext() {
@@ -106,7 +110,13 @@ public class HentoidApp extends Application {
         // Init notifications
         UpdateNotificationChannel.init(this);
         DownloadNotificationChannel.init(this);
-        startService(UpdateCheckService.makeIntent(this, false));
+        MaintenanceNotificationChannel.init(this);
+        Intent intent = UpdateCheckService.makeIntent(this, false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
 
         // Clears all previous notifications
         NotificationManager manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -115,11 +125,17 @@ public class HentoidApp extends Application {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             ShortcutHelper.buildShortcuts(this);
         }
+
+        // Set Night mode
+        int darkMode = Preferences.getDarkMode();
+        AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(darkMode));
+        FirebaseAnalytics.getInstance(this).setUserProperty("night_mode", Integer.toString(darkMode));
     }
 
     /**
      * Clean up and upgrade database
      */
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private void performDatabaseHousekeeping() {
         HentoidDB oldDB = HentoidDB.getInstance(this);
 
@@ -128,6 +144,23 @@ public class HentoidApp extends Application {
 
         // Launch a service that will perform non-structural DB housekeeping tasks
         Intent intent = DatabaseMaintenanceService.makeIntent(this);
-        startService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
+    }
+
+    public static int darkModeFromPrefs(int prefsMode) {
+        switch (prefsMode) {
+            case Preferences.Constant.DARK_MODE_ON:
+                return AppCompatDelegate.MODE_NIGHT_YES;
+            case Preferences.Constant.DARK_MODE_OFF:
+                return AppCompatDelegate.MODE_NIGHT_NO;
+            case Preferences.Constant.DARK_MODE_BATTERY:
+                return AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY;
+            default:
+                return AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+        }
     }
 }

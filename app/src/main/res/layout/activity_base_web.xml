@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.websites.BaseWebActivity">
+    tools:context=".activities.sources.BaseWebActivity">
 
-    <android.support.v4.widget.SwipeRefreshLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -14,63 +14,58 @@
             android:id="@+id/wbMain"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </android.support.v4.widget.SwipeRefreshLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAction"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/download_fab_margin"
         android:onClick="onActionFabClick"
-        app:backgroundTint="@color/primary"
+        android:src="@drawable/ic_action_download"
+        android:visibility="gone"
+        app:backgroundTint="?attr/colorPrimary"
         app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
-        android:src="@drawable/ic_action_download"
-        tools:ignore="RelativeOverlap"
-        android:visibility="gone"
-        />
+        app:tint="?attr/colorOnPrimary"
+        tools:ignore="RelativeOverlap" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabRefreshStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/fabHome"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="@dimen/refresh_fab_margin_bottom"
-        android:layout_marginEnd="@dimen/refresh_fab_margin_right"
-        android:layout_marginLeft="@dimen/refresh_fab_margin_left"
-        android:layout_marginRight="@dimen/refresh_fab_margin_right"
         android:layout_marginStart="@dimen/refresh_fab_margin_left"
         android:layout_marginTop="@dimen/refresh_fab_margin_top"
+        android:layout_marginEnd="@dimen/refresh_fab_margin_right"
+        android:layout_marginBottom="@dimen/refresh_fab_margin_bottom"
         android:onClick="onRefreshStopFabClick"
-        app:backgroundTint="@color/primary"
+        android:src="@drawable/ic_action_refresh"
+        app:backgroundTint="?attr/colorPrimary"
         app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"
         app:rippleColor="@color/ripple"
-        android:src="@drawable/ic_action_refresh" />
+        app:tint="?attr/colorOnPrimary" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabHome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="@dimen/home_fab_margin_bottom"
-        android:layout_marginEnd="@dimen/home_fab_margin_right"
-        android:layout_marginLeft="@dimen/home_fab_margin_left"
-        android:layout_marginRight="@dimen/home_fab_margin_right"
+        android:layout_alignParentBottom="true"
         android:layout_marginStart="@dimen/home_fab_margin_left"
         android:layout_marginTop="@dimen/home_fab_margin_top"
+        android:layout_marginEnd="@dimen/home_fab_margin_right"
+        android:layout_marginBottom="@dimen/home_fab_margin_bottom"
         android:onClick="onHomeFabClick"
-        app:backgroundTint="@color/primary"
+        android:src="@drawable/ic_action_sd_storage"
+        app:backgroundTint="?attr/colorPrimary"
         app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"
         app:rippleColor="@color/ripple"
-        android:src="@drawable/ic_action_sd_storage" />
+        app:tint="?attr/colorOnPrimary" />
 
 </RelativeLayout>

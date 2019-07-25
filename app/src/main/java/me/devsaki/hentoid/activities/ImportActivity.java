@@ -13,17 +13,18 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.DocumentsContract;
-import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -248,7 +249,7 @@ public class ImportActivity extends BaseActivity {
         if (FileHelper.isOnExtSdCard(dir) && !FileHelper.isWritable(dir)) {
             Timber.d("Inaccessible: moving back to default directory.");
             downloadDir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
-                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+                    File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator);
         }
         if (useDefaultFolder) {
             prevRootDir = currentRootDir;
@@ -301,7 +302,7 @@ public class ImportActivity extends BaseActivity {
         if (event.isLongClick()) {
             Timber.d("Resetting directory back to default.");
             currentRootDir = new File(Environment.getExternalStorageDirectory() +
-                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+                    File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator);
             dirChooserFragment.dismiss();
             pickDownloadDirectory(currentRootDir);
         } else {
@@ -388,7 +389,7 @@ public class ImportActivity extends BaseActivity {
         } else {
             if (writeableDirs.size() == 1) {
                 // If we get exactly one write-able path returned, attempt to make use of it
-                String sdDir = writeableDirs.get(0) + "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/";
+                String sdDir = writeableDirs.get(0) + File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator;
                 if (!FileHelper.isOnExtSdCard(writeableDirs.get(0)) && FileHelper.checkAndSetRootFolder(sdDir)) { // TODO - dirChooserFragment can't actually browse SD card : to fix later ?
                     Timber.d("Got access to SD Card.");
                     currentRootDir = new File(sdDir);
@@ -402,7 +403,7 @@ public class ImportActivity extends BaseActivity {
                         PackageManager manager = this.getPackageManager();
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
-                        if (handlers != null && handlers.size() > 0) {
+                        if (handlers != null && !handlers.isEmpty()) {
                             Timber.d("Device should be able to handle the SAF request");
                             ToastUtil.toast("Attempting SAF");
                             requestWritePermission();
@@ -481,7 +482,7 @@ public class ImportActivity extends BaseActivity {
             getContentResolver().releasePersistableUriPermission(p.getUri(),
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         }
-        if (getContentResolver().getPersistedUriPermissions().size() == 0) {
+        if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
             Timber.d("Permissions revoked successfully.");
         } else {
             Timber.d("Permissions failed to be revoked.");
@@ -491,6 +492,9 @@ public class ImportActivity extends BaseActivity {
 
     /*
         Return from SAF system dialog
+
+        NB : Right now, this method _assumes_ the selected folder is on the first SD card
+        => Even if SAF actually selects internal phone memory or another SD card / an external USB storage device, it won't be processed properly
      */
     @RequiresApi(api = KITKAT)
     @Override
@@ -503,6 +507,8 @@ public class ImportActivity extends BaseActivity {
             Uri treeUri = data.getData();
             if (treeUri != null && treeUri.getPath() != null) {
                 // Persist selected folder URI in shared preferences
+                // NB : calling saveUri populates the preference used by FileHelper.isSAF, which indicates the library storage is on an SD card / an external USB storage device
+                // => this should be managed if SAF dialog is used to select folders on the internal phone memory
                 FileHelper.saveUri(treeUri);
 
                 // Persist access permissions
@@ -564,7 +570,7 @@ public class ImportActivity extends BaseActivity {
     private boolean hasBooks() {
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(FileHelper.getSiteDownloadDir(this, s));
+            downloadDirs.add(FileHelper.getOrCreateSiteDownloadDir(this, s));
         }
 
         for (File downloadDir : downloadDirs) {
@@ -641,7 +647,11 @@ public class ImportActivity extends BaseActivity {
         builder.setRefreshCleanUnreadable(isCleanUnreadable);
         intent.putExtras(builder.getBundle());
 
-        startService(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent);
+        } else {
+            startService(intent);
+        }
     }
 
     private void cleanUpDB() {

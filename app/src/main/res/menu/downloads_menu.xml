@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.DownloadsActivity"
+    tools:ignore="AlwaysShowAction">
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_menu_search"
+        android:title="@string/menu_search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="collapseActionView|always" />
+    <item
+        android:id="@+id/action_favourites"
+        android:icon="@drawable/ic_fav_empty"
+        android:title="@string/menu_fav"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_order"
+        android:icon="@drawable/ic_menu_sort_az"
+        android:title="@string/menu_order"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/action_order_AZ"
+                android:icon="@drawable/ic_menu_sort_az"
+                android:title="@string/menu_order_AZ" />
+            <item
+                android:id="@+id/action_order_ZA"
+                android:icon="@drawable/ic_menu_sort_za"
+                android:title="@string/menu_order_ZA" />
+            <item
+                android:id="@+id/action_order_123"
+                android:icon="@drawable/ic_menu_sort_123"
+                android:title="@string/menu_order_123" />
+            <item
+                android:id="@+id/action_order_321"
+                android:icon="@drawable/ic_menu_sort_321"
+                android:title="@string/menu_order_321" />
+            <item
+                android:id="@+id/action_order_least_read"
+                android:icon="@drawable/ic_menu_sort_unread"
+                android:title="@string/menu_order_unread" />
+            <item
+                android:id="@+id/action_order_most_read"
+                android:icon="@drawable/ic_menu_sort_read"
+                android:title="@string/menu_order_read" />
+            <item
+                android:id="@+id/action_order_last_read"
+                android:icon="@drawable/ic_menu_sort_last_read"
+                android:title="@string/menu_order_last_read" />
+            <item
+                android:id="@+id/action_order_random"
+                android:icon="@drawable/ic_menu_sort_random"
+                android:title="@string/menu_order_random" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_about_mikan"
+        android:icon="@drawable/ic_menu_about"
+        android:title="@string/menu_search"
+        app:showAsAction="always"
+        android:visible="false"
+        />
+</menu>

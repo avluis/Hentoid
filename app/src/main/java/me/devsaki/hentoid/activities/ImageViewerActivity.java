@@ -1,25 +1,25 @@
 package me.devsaki.hentoid.activities;
 
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 
-import java.util.List;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
+
+import java.security.AccessControlException;
 
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
 
 public class ImageViewerActivity extends AppCompatActivity {
-
-    private ImageViewerViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,28 +29,27 @@ public class ImageViewerActivity extends AppCompatActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         Intent intent = getIntent();
-        if (intent != null && intent.getExtras() != null) {
-            ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
-            List<String> uris = parser.getUrisStr();
+        if (null == intent || null == intent.getExtras())
+            throw new IllegalArgumentException("Required init arguments not found");
 
-            if (null == uris) {
-                throw new RuntimeException("Initialization failed");
-            }
+        ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
+        long contentId = parser.getContentId();
+        if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
 
-            viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
-            viewModel.setImages(uris);
-            viewModel.setContentId(parser.getContentId());
+        ImageViewerViewModel viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
+        Bundle searchParams = parser.getSearchParams();
+        if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
+        else viewModel.loadFromContent(contentId);
+
+        if (!PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
+            ToastUtil.toast("Storage permission denied - cannot open the viewer");
+            throw new AccessControlException("Storage permission denied - cannot open the viewer");
         }
-
-        PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION);
 
         // Allows an full recolor of the status bar with the custom color defined in the activity's theme
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
         }
 
         if (null == savedInstanceState) {
@@ -60,11 +59,4 @@ public class ImageViewerActivity extends AppCompatActivity {
                     .commit();
         }
     }
-
-    @Override
-    public void onBackPressed() {
-        viewModel.saveCurrentPosition();
-        super.onBackPressed();
-    }
-
 }

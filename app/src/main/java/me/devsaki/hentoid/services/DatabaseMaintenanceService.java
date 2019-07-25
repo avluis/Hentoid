@@ -4,9 +4,12 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import me.devsaki.hentoid.database.DatabaseMaintenance;
+import me.devsaki.hentoid.notification.maintenance.MaintenanceNotification;
+import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
 /**
@@ -14,7 +17,8 @@ import timber.log.Timber;
  */
 public class DatabaseMaintenanceService extends IntentService {
 
-    private static boolean running;
+    private ServiceNotificationManager notificationManager;
+
 
     public DatabaseMaintenanceService() {
         super(DatabaseMaintenanceService.class.getName());
@@ -24,20 +28,19 @@ public class DatabaseMaintenanceService extends IntentService {
         return new Intent(context, DatabaseMaintenanceService.class);
     }
 
-    public static boolean isRunning() {
-        return running;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
-        running = true;
+
+        notificationManager = new ServiceNotificationManager(this, 1);
+        notificationManager.startForeground(new MaintenanceNotification("Performing maintenance"));
+
         Timber.i("Service created");
     }
 
     @Override
     public void onDestroy() {
-        running = false;
+        notificationManager.cancel();
         Timber.i("Service destroyed");
 
         super.onDestroy();

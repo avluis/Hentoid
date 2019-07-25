@@ -66,14 +66,14 @@
     <string name="pref_check_updates_default" translatable="false">true</string>
     <!-- Misc -->
     <string name="pref_misc_category">Misc</string>
+    <string name="pref_dark_mode_title">Dark mode</string>
+    <string name="pref_dark_mode_summary">Set the display theme</string>
+    <string name="pref_dark_mode_default" translatable="false">0</string>
+
     <string name="pref_analytics_tracking_title">Google Analytics</string>
     <string name="pref_analytics_tracking_summary_off">Analytics Tracking is currently enabled.\nThanks for helping us improve Hentoid!</string>
     <string name="pref_analytics_tracking_summary_on">Tap to enable Analytics Tracking.\nHelp us improve the app by tracking crashes &amp; exceptions.</string>
     <string name="pref_analytics_tracking_default" translatable="false">false</string>
-    <string name="pref_use_sfw_title">Use safe-for-work/wife/gf source</string>
-    <string name="pref_use_sfw_summary_off">Going full hentai</string>
-    <string name="pref_use_sfw_summary_on">A non-hentai source is available</string>
-    <string name="pref_use_sfw_default" translatable="false">false</string>
     <!-- Advanced -->
     <string name="advanced">Advanced settings</string>
 </resources>

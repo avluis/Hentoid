@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,22 +25,21 @@ import timber.log.Timber;
  */
 public class AttributeCache {
 
-    private final static int EXPIRY_FILE_VERSION = 1;
-    private final static int COLLECTION_FILE_VERSION = 1;
+    private static final int EXPIRY_FILE_VERSION = 1;
+    private static final int COLLECTION_FILE_VERSION = 1;
 
     private static File cacheDir;
     private static Map<String, Date> collectionExpiry;
     private static Map<String, List<Attribute>> collection;
 
-    private static void init()
-    {
+    private static void init() {
         collectionExpiry = new HashMap<>();
         collection = new HashMap<>();
 
         cacheDir = HentoidApp.getAppContext().getExternalCacheDir();
 
         // Load expiry dates from cache
-        Uri destinationUri = Uri.parse(cacheDir + "/expiries.cache");
+        Uri destinationUri = Uri.parse(cacheDir + File.separator + "expiries.cache");
         File file = new File(String.valueOf(destinationUri));
         try {
             if (file.exists()) {
@@ -52,15 +52,14 @@ public class AttributeCache {
         }
     }
 
-    public static List<Attribute> getFromCache(String key)
-    {
+    public static List<Attribute> getFromCache(String key) {
         if (null == collectionExpiry) init();
 
         if (collectionExpiry.containsKey(key) && collectionExpiry.get(key).after(new Date())) // Cache is not expired
         {
             if (!collection.containsKey(key)) {
                 // Load master data from cache
-                Uri destinationUri = Uri.parse(cacheDir + "/" + key + ".cache");
+                Uri destinationUri = Uri.parse(cacheDir + File.separator + key + ".cache");
                 File file = new File(String.valueOf(destinationUri));
                 try {
                     if (file.exists()) {
@@ -73,8 +72,8 @@ public class AttributeCache {
                 }
             }
             return collection.get(key);
-        }
-        else return null;
+        } else
+            return Collections.emptyList();
     }
 
     public static void setCache(String key, List<Attribute> value, Date expiryDateUTC) {
@@ -93,7 +92,7 @@ public class AttributeCache {
             collection.put(key, new ArrayList<>(value));
 
             // Put expiry dates in cache
-            Uri destinationUri = Uri.parse(cacheDir + "/expiries.cache");
+            Uri destinationUri = Uri.parse(cacheDir + File.separator + "expiries.cache");
             File file = new File(String.valueOf(destinationUri));
             try {
                 if ((!file.exists() || file.delete()) && file.createNewFile())
@@ -106,7 +105,7 @@ public class AttributeCache {
             }
 
             // Put master data in cache
-            destinationUri = Uri.parse(cacheDir + "/" + key + ".cache");
+            destinationUri = Uri.parse(cacheDir + File.separator + key + ".cache");
             file = new File(String.valueOf(destinationUri));
             try {
                 if ((!file.exists() || file.delete()) && file.createNewFile())
@@ -120,20 +119,17 @@ public class AttributeCache {
         }
     }
 
-    private static void saveExpiriesToStream(DataOutputStream output) throws IOException
-    {
+    private static void saveExpiriesToStream(DataOutputStream output) throws IOException {
         output.writeInt(EXPIRY_FILE_VERSION);
         output.writeInt(collectionExpiry.size());
 
-        for (String key : collectionExpiry.keySet())
-        {
+        for (String key : collectionExpiry.keySet()) {
             output.writeUTF(key);
             output.writeLong(collectionExpiry.get(key).getTime());
         }
     }
 
-    private static void loadExpiriesFromStream(DataInputStream input) throws IOException
-    {
+    private static void loadExpiriesFromStream(DataInputStream input) throws IOException {
         input.readInt(); // File version
         int collectionSize = input.readInt();
 
@@ -141,8 +137,7 @@ public class AttributeCache {
 
         String key;
         Date value;
-        for (int i=0; i<collectionSize; i++)
-        {
+        for (int i = 0; i < collectionSize; i++) {
             key = input.readUTF();
             value = new Date();
             value.setTime(input.readLong());
@@ -150,21 +145,18 @@ public class AttributeCache {
         }
     }
 
-    private static void saveCacheToStream(String key, DataOutputStream output) throws IOException
-    {
+    private static void saveCacheToStream(String key, DataOutputStream output) throws IOException {
         List<Attribute> cacheCollection = collection.get(key);
 
         output.writeInt(COLLECTION_FILE_VERSION);
         output.writeInt(collection.size());
 
-        for (Attribute a : cacheCollection)
-        {
+        for (Attribute a : cacheCollection) {
             a.saveToStream(output);
         }
     }
 
-    private static void loadCacheFromStream(String key, DataInputStream input) throws IOException
-    {
+    private static void loadCacheFromStream(String key, DataInputStream input) throws IOException {
         List<Attribute> attrs = new ArrayList<>();
 
         input.readInt(); // File version

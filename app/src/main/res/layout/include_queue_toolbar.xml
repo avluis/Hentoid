@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?colorPrimary"
     android:minHeight="?android:attr/actionBarSize"
-    android:theme="@style/Base.Theme.AppCompat.CompactMenu"
+    android:theme="@style/Theme.MaterialComponents.CompactMenu"
     app:contentInsetEnd="0dp"
     app:contentInsetStart="0dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/queue_nav"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="start"
         android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/btnPause"
-            android:layout_width="?android:attr/actionBarSize"
-            android:layout_height="?android:attr/actionBarSize"
-            android:background="@drawable/btn_content_selector"
-            android:scaleType="fitXY"
-            android:src="@drawable/ic_action_pause"
-            tools:ignore="ContentDescription" />
 
         <ImageButton
             android:id="@+id/btnStart"
@@ -33,57 +24,71 @@
             android:background="@drawable/btn_content_selector"
             android:scaleType="fitXY"
             android:src="@drawable/ic_action_play"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription" />
 
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/queue_nav2"
+        <ImageButton
+            android:id="@+id/btnPause"
+            android:layout_width="?android:attr/actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
+            android:background="@drawable/btn_content_selector"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_action_pause"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+        <me.devsaki.hentoid.views.CircularProgressView
+            android:id="@+id/queueDownloadPreparationProgressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="?android:attr/actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:clickable="false"
+            android:focusable="false"
+            android:visibility="gone"
+            />
+
+        <TextView
+            android:id="@+id/queueStatus"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="start">
+            android:layout_height="0dp"
+            android:layout_marginStart="?android:attr/actionBarSize"
+            android:layout_marginTop="4dp"
+            android:ellipsize="middle"
+            android:scrollHorizontally="false"
+            android:singleLine="true"
+            tools:text="@string/app_intro"
+            android:textSize="@dimen/text_body_1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/queueStatus"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:ellipsize="middle"
-                android:scrollHorizontally="false"
-                android:singleLine="true"
-                android:text="@string/app_intro"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/text_body_1"
-                android:layout_marginTop="4dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                />
+        <TextView
+            android:id="@+id/queueInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="?android:attr/actionBarSize"
+            android:layout_marginBottom="6dp"
+            tools:text="@string/app_intro"
+            android:textSize="@dimen/text_body_1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-            <TextView
-                android:id="@+id/queueInfo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/app_intro"
-                android:textColor="@android:color/white"
-                android:textSize="@dimen/text_body_1"
-                android:layout_marginBottom="6dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                />
+        <ImageButton
+            android:id="@+id/btnStats"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/btn_content_selector"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_error"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:ignore="ContentDescription" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <ImageButton
-                android:id="@+id/btnStats"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:background="@drawable/btn_content_selector"
-                android:scaleType="fitXY"
-                android:src="@drawable/ic_error"
-                tools:ignore="ContentDescription"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginBottom="6dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:visibility="gone"
-                 />
-        </android.support.constraint.ConstraintLayout>
-    </LinearLayout>
-
-</android.support.v7.widget.Toolbar>
+</androidx.appcompat.widget.Toolbar>

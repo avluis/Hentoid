@@ -32,18 +32,6 @@
         <item>10</item>
     </string-array>
 
-
-    <string-array name="pref_read_content_entries">
-        <item>Hentoid image viewer</item>
-        <item>Phone default image viewer</item>
-        <item>Perfect Viewer</item>
-    </string-array>
-    <string-array name="pref_read_content_entry_values">
-        <item>2</item>
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-
     <string-array name="pref_folder_naming_content_entries">
         <item>ID</item>
         <item>Title - ID</item>
@@ -90,5 +78,18 @@
     <string-array name="pref_attribute_list_order_values">
         <item>0</item>
         <item>1</item>
+    </string-array>
+
+    <string-array name="pref_dark_mode_entries">
+        <item>Off</item>
+        <item>On</item>
+        <item>On when battery low</item>
+        <item>Device settings (Android Q)</item>
+    </string-array>
+    <string-array name="pref_dark_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
     </string-array>
 </resources>

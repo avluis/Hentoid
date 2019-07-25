@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.ImageViewerActivity"
+    tools:ignore="AlwaysShowAction">
+    <item
+        android:id="@+id/gallery_menu_action_favourites"
+        android:icon="@drawable/ic_fav_empty"
+        android:title="@string/menu_fav"
+        app:showAsAction="always" />
+</menu>

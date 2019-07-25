@@ -22,7 +22,7 @@
         <activity
             android:name=".activities.SplashActivity"
             android:noHistory="true"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/AppTheme.NoActionBar.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -32,41 +32,45 @@
         <activity
             android:name=".activities.IntroActivity"
             android:label="@string/app_intro"
-            android:theme="@style/AppTheme.TaupeBackground" />
+            android:theme="@style/AppTheme" />
         <activity
-            android:name=".activities.websites.HitomiActivity"
+            android:name=".activities.sources.HitomiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.NhentaiActivity"
+            android:name=".activities.sources.NhentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.TsuminoActivity"
+            android:name=".activities.sources.TsuminoActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.ASMHentaiActivity"
+            android:name=".activities.sources.ASMHentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.HentaiCafeActivity"
+            android:name=".activities.sources.HentaiCafeActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.PururinActivity"
+            android:name=".activities.sources.PururinActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.PandaActivity"
+            android:name=".activities.sources.EHentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.EHentaiActivity"
+            android:name=".activities.sources.FakkuActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.FakkuActivity"
+            android:name=".activities.sources.NexusActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/BrowserTheme" />
+        <activity
+            android:name=".activities.sources.MusesActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
@@ -74,7 +78,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Downloads">
+            android:theme="@style/AppTheme.NoActionBar.Overlay">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -84,7 +88,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_mikan"
             android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/AppTheme.Mikan"
+            android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.app.searchable"
@@ -98,7 +102,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_queue"
             android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/AppTheme.TaupeBackground"
+            android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -109,7 +113,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/PrefsThemeDark"
+            android:theme="@style/PrefsTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -128,7 +132,7 @@
         <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
-            android:theme="@style/AppTheme.Search"
+            android:theme="@style/AppTheme.NoActionBar"
             tools:ignore="UnusedAttribute">
         </activity>
         <activity
@@ -140,12 +144,12 @@
             android:noHistory="true"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.TaupeBackgroundNoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.PinPreferenceActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.Search" />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.IntentActivity"
             android:theme="@style/BrowserTheme">
@@ -236,17 +240,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://mangapanda.com/" -->
-                <data
-                    android:host="www.mangapanda.com"
-                    android:pathPrefix="/"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
                 <data
                     android:host="e-hentai.org"
@@ -258,10 +251,29 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
                 <data
                     android:host="fakku.net"
                     android:pathPrefix="/hentai/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="hentainexus.com"
+                    android:pathPrefix="/view/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="8muses.com"
+                    android:pathPrefix="/comics/album/"
                     android:scheme="https" />
             </intent-filter>
         </activity>
@@ -269,7 +281,7 @@
         <activity
             android:name=".activities.ImageViewerActivity"
             android:label="Image Viewer"
-            android:theme="@style/AppTheme.NoActionBar.viewer">
+            android:theme="@style/AppTheme.NoActionBar.Monochrome">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.DownloadsActivity" />
@@ -293,7 +305,7 @@
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider.FileProvider"
             android:exported="false"
             android:grantUriPermissions="true">

@@ -1,4 +1,4 @@
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -19,7 +19,11 @@
 
     </LinearLayout>
 
-    <!-- The navigation drawer -->
-    <include layout="@layout/include_drawer_list" />
+    <fragment
+        android:id="@+id/fragment_navigation_drawer"
+        android:name="me.devsaki.hentoid.fragments.downloads.NavigationDrawerFragment"
+        android:layout_width="@dimen/drawer_layout_width"
+        android:layout_height="match_parent"
+        android:layout_gravity="start" />
 
-</android.support.v4.widget.DrawerLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

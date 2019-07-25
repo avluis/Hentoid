@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.dirpicker.events;
 
 import java.io.File;
+import java.util.Objects;
 
 /**
  * Created by avluis on 06/11/2016.
@@ -15,17 +16,13 @@ public class UpdateDirTreeEvent {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof UpdateDirTreeEvent)) {
             return false;
         }
 
         UpdateDirTreeEvent event = (UpdateDirTreeEvent) o;
 
-        return rootDir != null ? rootDir.equals(event.rootDir) : event.rootDir == null;
+        return this == o || Objects.equals(event.rootDir, rootDir);
     }
 
     @Override

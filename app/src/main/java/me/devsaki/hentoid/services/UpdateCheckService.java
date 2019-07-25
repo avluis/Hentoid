@@ -4,11 +4,14 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
 
 import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.model.UpdateInfoJson;
 import me.devsaki.hentoid.notification.update.UpdateAvailableNotification;
 import me.devsaki.hentoid.notification.update.UpdateCheckNotification;
@@ -55,11 +58,14 @@ public class UpdateCheckService extends Service {
     @Override
     public void onCreate() {
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
+        notificationManager.startForeground(new UpdateCheckNotification());
+
         Timber.w("Service created");
     }
 
     @Override
     public void onDestroy() {
+        notificationManager.cancel();
         if (disposable != null) disposable.dispose();
         Timber.w("Service destroyed");
     }
@@ -80,8 +86,6 @@ public class UpdateCheckService extends Service {
     }
 
     private void checkForUpdates() {
-        notificationManager.startForeground(new UpdateCheckNotification());
-
         disposable = UpdateServer.API.getUpdateInfo()
                 .retry(3)
                 .observeOn(mainThread())
@@ -94,6 +98,7 @@ public class UpdateCheckService extends Service {
             stopForeground(true);
 
             String updateUrl = updateInfoJson.getUpdateUrl();
+            EventBus.getDefault().postSticky(new UpdateEvent(true));
             notificationManager.notify(new UpdateAvailableNotification(updateUrl));
         } else {
             if (shouldShowToast) {

@@ -1,10 +1,10 @@
 package me.devsaki.hentoid.fragments.pin;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +12,7 @@ import android.widget.Switch;
 
 import me.devsaki.hentoid.R;
 
-import static android.support.v4.view.ViewCompat.requireViewById;
+import static androidx.core.view.ViewCompat.requireViewById;
 
 public final class ActivatedPinPreferenceFragment extends Fragment
         implements DeactivatePinDialogFragment.Parent, ResetPinDialogFragment.Parent {

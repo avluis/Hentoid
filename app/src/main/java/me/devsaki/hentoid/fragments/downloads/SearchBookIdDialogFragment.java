@@ -2,11 +2,11 @@ package me.devsaki.hentoid.fragments.downloads;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,7 +39,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
         SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
         fragment.setArguments(args);
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.DownloadsDialog);
+        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
         fragment.show(fragmentManager, null);
     }
 
@@ -62,13 +62,16 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
             // Not possible for Pururin, e-hentai
             List<Site> sites = new ArrayList<>();
-            if (!foundSitesList.contains(Site.HITOMI.getCode())) sites.add(Site.HITOMI);
-            if (!foundSitesList.contains(Site.NHENTAI.getCode())) sites.add(Site.NHENTAI);
-            if (!foundSitesList.contains(Site.ASMHENTAI.getCode())) sites.add(Site.ASMHENTAI);
-            if (!foundSitesList.contains(Site.ASMHENTAI_COMICS.getCode()))
-                sites.add(Site.ASMHENTAI_COMICS);
-            if (!foundSitesList.contains(Site.HENTAICAFE.getCode())) sites.add(Site.HENTAICAFE);
-            if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
+            if (foundSitesList != null) {
+                if (!foundSitesList.contains(Site.HITOMI.getCode())) sites.add(Site.HITOMI);
+                if (!foundSitesList.contains(Site.NHENTAI.getCode())) sites.add(Site.NHENTAI);
+                if (!foundSitesList.contains(Site.ASMHENTAI.getCode())) sites.add(Site.ASMHENTAI);
+                if (!foundSitesList.contains(Site.ASMHENTAI_COMICS.getCode()))
+                    sites.add(Site.ASMHENTAI_COMICS);
+                if (!foundSitesList.contains(Site.HENTAICAFE.getCode())) sites.add(Site.HENTAICAFE);
+                if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
+                if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
+            }
 
             SiteAdapter siteAdapter = new SiteAdapter();
             siteAdapter.setOnClickListener(this::onItemSelected);
@@ -93,6 +96,8 @@ public class SearchBookIdDialogFragment extends DialogFragment {
                 return site.getUrl() + "/?p=" + id;
             case TSUMINO:
                 return site.getUrl() + "/Book/Info/" + id + "/";
+            case NEXUS:
+                return site.getUrl() + "/view/" + id;
             default:
                 return site.getUrl();
         }

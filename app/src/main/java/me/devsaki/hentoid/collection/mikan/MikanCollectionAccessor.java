@@ -18,6 +18,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import io.reactivex.disposables.CompositeDisposable;
+import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.LibraryMatcher;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -25,9 +27,9 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.retrofit.MikanServer;
+import me.devsaki.hentoid.retrofit.sources.MikanServer;
 import me.devsaki.hentoid.util.AttributeCache;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
@@ -41,7 +43,7 @@ import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 public class MikanCollectionAccessor implements CollectionAccessor {
 
     private final LibraryMatcher libraryMatcher;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // == CONSTRUCTOR
 
@@ -110,7 +112,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
     // === ACCESSORS
 
     @Override
-    public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+    public void getRecentBooksPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         boolean showMostRecentFirst = Preferences.Constant.ORDER_CONTENT_LAST_UL_DATE_FIRST == orderStyle;
 
         if (isSiteUnsupported(site)) {
@@ -124,22 +126,31 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
         compositeDisposable.add(MikanServer.API.getRecent(getMikanCodeForSite(site), params)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed(null, "Recent books failed to load - " + throwable.getMessage())));
+                .subscribe(result -> onContentSuccess(result, listener),
+                           throwable -> listener.onPagedResultFailed(null, "Recent books failed to load - " + throwable.getMessage())));
     }
 
     @Override
-    public void getPages(Content content, ContentListener listener) {
+    public void getRecentBookIdsPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
+    }
+
+    @Override
+    public void getPages(Content content, PagedResultListener<Content> listener) {
         if (isSiteUnsupported(content.getSite())) {
             throw new UnsupportedOperationException("Site " + content.getSite().getDescription() + " not supported yet by Mikan search");
         }
 
         compositeDisposable.add(MikanServer.API.getPages(getMikanCodeForSite(content.getSite()), content.getUniqueSiteId())
                 .observeOn(mainThread())
-                .subscribe((result) -> onPagesSuccess(result, content, listener), (throwable) -> listener.onContentFailed(content, "Pages failed to load - " + throwable.getMessage())));
+                .subscribe(
+                        result -> onPagesSuccess(result, content, listener),
+                        throwable -> listener.onPagedResultFailed(content, "Pages failed to load - " + throwable.getMessage()))
+        );
     }
 
     @Override
-    public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+    public void searchBooksPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         // NB : Mikan does not support booksPerPage and orderStyle params
         List<Long> sites = Helper.extractAttributeIdsByType(metadata, AttributeType.SOURCE);
 
@@ -160,42 +171,55 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         params.put("page", page + "");
 
         List<Long> attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.ARTIST);
-        if (attributes.size() > 0) params.put("artist", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("artist", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CIRCLE);
-        if (attributes.size() > 0) params.put("group", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("group", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CHARACTER);
-        if (attributes.size() > 0) params.put("character", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("character", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.TAG);
-        if (attributes.size() > 0) params.put("tag", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("tag", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.LANGUAGE);
-        if (attributes.size() > 0) params.put("language", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("language", Helper.buildListAsString(attributes));
 
 
         compositeDisposable.add(MikanServer.API.search(getMikanCodeForSite(site) + suffix, params)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed(null, "Search failed to load - " + throwable.getMessage())));
+                .subscribe(
+                        result -> onContentSuccess(result, listener),
+                        throwable -> listener.onPagedResultFailed(null, "Search failed to load - " + throwable.getMessage()))
+        );
     }
 
     @Override
-    public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
-        // Just counting is not possible with Mikan interface => call to searchBooks anyway
-        searchBooks(query, metadata, 1, 1, 1, favouritesOnly, listener);
+    public void searchBookIdsPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
-    public void searchBooksUniversal(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
-        // Mikan does not allow "universal" search => call to searchBooks with empty metadata
-        searchBooks(query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly, listener);
+    public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, PagedResultListener<Content> listener) {
+        // Just counting is not possible with Mikan interface => call to searchBooksPaged anyway
+        searchBooksPaged(query, metadata, 1, 1, 1, favouritesOnly, listener);
     }
 
     @Override
-    public void countBooksUniversal(String query, boolean favouritesOnly, ContentListener listener) {
-        // Just counting is not possible with Mikan interface => call to searchBooks anyway
-        searchBooks(query, Collections.emptyList(), 1, 1, 1, favouritesOnly, listener);
+    public void searchBooksUniversalPaged(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
+        // Mikan does not allow "universal" search => call to searchBooksPaged with empty metadata
+        searchBooksPaged(query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly, listener);
+    }
+
+    @Override
+    public void searchBookIdsUniversalPaged(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
+    }
+
+    @Override
+    public void countBooksUniversal(String query, boolean favouritesOnly, PagedResultListener<Content> listener) {
+        // Just counting is not possible with Mikan interface => call to searchBooksPaged anyway
+        searchBooksPaged(query, Collections.emptyList(), 1, 1, 1, favouritesOnly, listener);
     }
 
     private void getAttributeMasterData(AttributeType type, String filter, int sortOrder, ResultListener<List<Attribute>> listener) {
@@ -204,13 +228,12 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         List<Attribute> attributes = AttributeCache.getFromCache(type.name());
 
         // If not cached (or cache expired), get it from network
-        if (null == attributes) {
+        if (attributes.isEmpty()) {
             String endpoint = getEndpointPath(type);
             compositeDisposable.add(MikanServer.API.getMasterData(endpoint)
                     .observeOn(mainThread())
-                    .subscribe((result) -> {
-                        onMasterDataSuccess(result, type.name(), filter, sortOrder, listener); // TODO handle caching in computing thread
-                    }, (throwable) -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage())));
+                    .subscribe(result -> onMasterDataSuccess(result, type.name(), filter, sortOrder, listener), // TODO handle caching in computing thread
+                               throwable -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage())));
         } else {
             List<Attribute> result = filter(attributes, filter);
             listener.onResultReady(result, result.size());
@@ -224,8 +247,8 @@ public class MikanCollectionAccessor implements CollectionAccessor {
     }
 
     @Override
-    public void getPagedAttributeMasterData(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+    public void getAttributeMasterDataPaged(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
@@ -240,22 +263,22 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, ResultListener<List<Attribute>> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
-    public void getPagedAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+    public void getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
     public void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
     public void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
@@ -266,28 +289,28 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
     // === CALLBACKS
 
-    private void onContentSuccess(MikanContentResponse response, ContentListener listener) {
+    private void onContentSuccess(MikanContentResponse response, PagedResultListener<Content> listener) {
         if (null == response) {
-            listener.onContentFailed(null, "Content failed to load - Empty response");
+            listener.onPagedResultFailed(null, "Content failed to load - Empty response");
             return;
         }
 
         int maxItems = response.maxpage * response.result.size(); // Roughly : number of pages * number of books per page
-        listener.onContentReady(response.toContentList(libraryMatcher), maxItems, maxItems);
+        listener.onPagedResultReady(response.toContentList(libraryMatcher), maxItems, maxItems);
     }
 
-    private void onPagesSuccess(MikanContentResponse response, Content content, ContentListener listener) {
+    private void onPagesSuccess(MikanContentResponse response, Content content, PagedResultListener<Content> listener) {
         if (null == response) {
-            listener.onContentFailed(content, "Pages failed to load - Empty response");
+            listener.onPagedResultFailed(content, "Pages failed to load - Empty response");
             return;
         }
 
         if (null == content)
-            listener.onContentFailed(null, "Pages failed to load - Unexpected empty content");
+            listener.onPagedResultFailed(null, "Pages failed to load - Unexpected empty content");
         else {
             List<Content> list = Arrays.asList(content);
             content.addImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
-            listener.onContentReady(list, 1, 1);
+            listener.onPagedResultReady(list, 1, 1);
         }
     }
 

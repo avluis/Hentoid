@@ -5,29 +5,31 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.Fragment;
+import androidx.annotation.Nullable;
+import com.google.android.material.snackbar.Snackbar;
+
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro2;
-
-import java.security.InvalidParameterException;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.fragments.BaseSlide;
+import me.devsaki.hentoid.fragments.intro.BaseSlide;
 import me.devsaki.hentoid.fragments.intro.DoneIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ImportIntroFragment;
 import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment;
+import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment;
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
-import static android.support.design.widget.Snackbar.LENGTH_INDEFINITE;
-import static android.support.design.widget.Snackbar.LENGTH_LONG;
-import static android.support.design.widget.Snackbar.LENGTH_SHORT;
+import static com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE;
+import static com.google.android.material.snackbar.Snackbar.LENGTH_LONG;
+import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
+import static me.devsaki.hentoid.HentoidApp.darkModeFromPrefs;
 import static me.devsaki.hentoid.util.ConstsImport.RESULT_KEY;
 
 /**
@@ -49,6 +51,7 @@ public class IntroActivity extends AppIntro2 {
         }
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_04));
         addSlide(new ImportIntroFragment());
+        addSlide(new ThemeIntroFragment());
         addSlide(new DoneIntroFragment());
 
         setTitle(R.string.app_name);
@@ -84,6 +87,12 @@ public class IntroActivity extends AppIntro2 {
             startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
         }
         HentoidApp.setBeginImport(true);
+    }
+
+    public void setThemePrefs(int pref) {
+        Preferences.setDarkMode(pref);
+        AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(Preferences.getDarkMode()));
+        getPager().goToNextSlide();
     }
 
     @Override

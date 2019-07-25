@@ -1,15 +1,16 @@
 package me.devsaki.hentoid.notification.import_;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.notification.Notification;
 
 public class ImportCompleteNotification implements Notification {
 
-    private final int booksOK, booksKO;
+    private final int booksOK;
+    private final int booksKO;
 
     public ImportCompleteNotification(int booksOK, int booksKO)
     {

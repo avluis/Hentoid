@@ -4,10 +4,11 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
+
+import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -21,18 +22,21 @@ import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.notification.maintenance.MaintenanceNotification;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.LogUtil;
+import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
 /**
- * Service responsible for migrating the oldHentoidDB to the ObjectBoxDB
+ * Service responsible for migrating the old HentoidDB to ObjectBoxDB
  *
  * @see UpdateCheckService
  */
 public class DatabaseMigrationService extends IntentService {
 
-    private static boolean running;
+    private ServiceNotificationManager notificationManager;
+
 
     public DatabaseMigrationService() {
         super(DatabaseMigrationService.class.getName());
@@ -42,21 +46,19 @@ public class DatabaseMigrationService extends IntentService {
         return new Intent(context, DatabaseMigrationService.class);
     }
 
-    public static boolean isRunning() {
-        return running;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
 
-        running = true;
+        notificationManager = new ServiceNotificationManager(this, 1);
+        notificationManager.startForeground(new MaintenanceNotification("Performing database migration"));
+
         Timber.w("Service created");
     }
 
     @Override
     public void onDestroy() {
-        running = false;
+        notificationManager.cancel();
         Timber.w("Service destroyed");
 
         super.onDestroy();
@@ -99,6 +101,7 @@ public class DatabaseMigrationService extends IntentService {
     /**
      * Migrate HentoidDB books to ObjectBoxDB
      */
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private void migrate() {
         int booksOK = 0;
         int booksKO = 0;

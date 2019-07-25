@@ -1,9 +1,9 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import android.widget.Toast;
 
 import java.lang.annotation.Retention;

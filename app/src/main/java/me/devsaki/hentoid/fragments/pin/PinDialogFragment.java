@@ -1,14 +1,12 @@
 package me.devsaki.hentoid.fragments.pin;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
-import android.support.v4.app.DialogFragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.fragment.app.DialogFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +16,11 @@ import java.security.InvalidParameterException;
 
 import me.devsaki.hentoid.R;
 
-import static android.support.v4.view.ViewCompat.requireViewById;
+import static androidx.core.view.ViewCompat.requireViewById;
 
 public abstract class PinDialogFragment extends DialogFragment {
 
-    abstract protected void onPinAccept(String pin);
+    protected abstract void onPinAccept(String pin);
 
     private final StringBuilder pinValue = new StringBuilder(4);
 

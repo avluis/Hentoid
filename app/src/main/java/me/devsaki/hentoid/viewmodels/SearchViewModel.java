@@ -1,12 +1,13 @@
 package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
-import android.arch.lifecycle.AndroidViewModel;
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.util.SparseIntArray;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +18,8 @@ import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.model.State;
 import me.devsaki.hentoid.util.Preferences;
 
 import static java.util.Objects.requireNonNull;
@@ -32,13 +32,6 @@ public class SearchViewModel extends AndroidViewModel {
     private final MutableLiveData<AttributeSearchResult> proposedAttributes = new MutableLiveData<>();
     private final MutableLiveData<ContentSearchResult> selectedContent = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
-
-    /**
-     * should only be used as a means to communicate with the view without keeping a reference to
-     * it, or knowing about it's lifecycle. {@link LiveData#getValue()} is rarely used due to its
-     * cumbersome nulllability.
-     */
-    private final MutableLiveData<State> stateLiveData = new MutableLiveData<>();
 
     /**
      * @see #setMode(int)
@@ -70,20 +63,20 @@ public class SearchViewModel extends AndroidViewModel {
         }
     }
 
-    private ContentListener contentResultListener = new ContentListener() {
+    private PagedResultListener<Content> contentResultListener = new PagedResultListener<Content>() {
         @Override
-        public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
+        public void onPagedResultReady(List<Content> results, long totalSelected, long total) {
             ContentSearchResult result = new ContentSearchResult();
-            result.totalSelected = totalSelectedContent;
+            result.totalSelected = totalSelected;
             selectedContent.postValue(result);
         }
 
         @Override
-        public void onContentFailed(Content content, String message) {
-            ContentSearchResult result = new ContentSearchResult();
-            result.success = false;
-            result.message = message;
-            selectedContent.postValue(result);
+        public void onPagedResultFailed(Content result, String message) {
+            ContentSearchResult res = new ContentSearchResult();
+            res.success = false;
+            res.message = message;
+            selectedContent.postValue(res);
         }
     };
 
@@ -143,17 +136,6 @@ public class SearchViewModel extends AndroidViewModel {
         return selectedContent;
     }
 
-    /**
-     * Used by the view to observe changes to this ViewModel's state. It is safe to subscribe to
-     * this observable before it is given an initial value.
-     *
-     * @return LiveData holding the current state
-     */
-    @NonNull
-    public MutableLiveData<State> getStateLiveData() {
-        return stateLiveData;
-    }
-
     // === VERB METHODS
 
     public void onCategoryChanged(List<AttributeType> category) {
@@ -163,9 +145,9 @@ public class SearchViewModel extends AndroidViewModel {
     public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
         if (collectionAccessor.supportsAttributesPaging()) {
             if (collectionAccessor.supportsAvailabilityFilter())
-                collectionAccessor.getPagedAttributeMasterData(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
+                collectionAccessor.getAttributeMasterDataPaged(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
             else
-                collectionAccessor.getPagedAttributeMasterData(category, query, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
+                collectionAccessor.getAttributeMasterDataPaged(category, query, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
         } else {
             if (collectionAccessor.supportsAvailabilityFilter())
                 collectionAccessor.getAttributeMasterData(category, query, selectedAttributes.getValue(), false, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));

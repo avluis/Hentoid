@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="2dp"
+    app:cardElevation="2dp"
+    android:theme="@style/DownloadCard">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
+        android:background="@color/card_surface"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:padding="8dp">
 
         <ProgressBar
             android:id="@+id/pbDownload"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:indeterminate="true"
-            android:theme="@style/AppTheme" />
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:indeterminate="true" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -31,36 +34,35 @@
                 android:id="@+id/ivSource"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:background="@color/accent"
-                android:scaleType="fitXY"
+                android:background="?colorSecondary"
+                android:tint="?colorSurface"
                 android:padding="1dp"
+                android:adjustViewBounds="true"
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_menu_fakku" />
 
             <TextView
-                    android:id="@+id/tvTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:textSize="@dimen/text_subtitle_1"
-                    android:textColor="@color/accent"
-                    android:textStyle="bold"
-                    tools:text="The Best Thing Ever Made" />
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:textColor="?colorSecondary"
+                android:textSize="@dimen/text_subtitle_1"
+                android:textStyle="bold"
+                tools:text="The Best Thing Ever Made" />
 
         </LinearLayout>
 
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
-            android:layout_marginBottom="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginLeft="1dp"
-            android:layout_marginRight="10dp"
             android:layout_marginStart="1dp"
             android:layout_marginTop="5dp"
-            android:background="@android:color/holo_red_light" />
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="5dp"
+            android:background="?colorPrimary" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -72,8 +74,8 @@
                 android:id="@+id/ivCover"
                 android:layout_width="100dp"
                 android:layout_height="match_parent"
-                android:scaleType="centerInside"
                 android:padding="1dp"
+                android:scaleType="centerInside"
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_placeholder" />
 
@@ -89,7 +91,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/black"
+                    android:textColor="?colorOnSurface"
                     tools:text="Best Series Ever" />
 
                 <TextView
@@ -98,32 +100,28 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/black"
+                    android:textColor="?colorOnSurface"
                     tools:text="Best Author Ever" />
 
                 <View
                     android:layout_width="fill_parent"
                     android:layout_height="1dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginLeft="1dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginStart="1dp"
                     android:layout_marginTop="5dp"
-                    android:background="@android:color/holo_red_light" />
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="?colorPrimary" />
 
                 <TextView
                     android:id="@+id/tvTags"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal|start"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginLeft="1dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginStart="1dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="5dp"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/card_tags"
                     tools:text="Best Set of TAGs Ever\nToo Awesome to pass up" />
             </LinearLayout>
         </LinearLayout>
@@ -132,13 +130,11 @@
             android:layout_width="fill_parent"
             android:layout_height="1dp"
             android:layout_margin="10dp"
-            android:background="@android:color/holo_red_light" />
+            android:background="?colorPrimary" />
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:layout_height="40dp">
 
             <ImageView
                 android:id="@+id/queueTopBtn"
@@ -146,7 +142,11 @@
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_doublearrowup" />
+                tools:src="@drawable/ic_doublearrowup"
+                android:tint="?colorPrimaryVariant"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
 
             <ImageView
                 android:id="@+id/queueUpBtn"
@@ -154,7 +154,12 @@
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_arrow_up" />
+                tools:src="@drawable/ic_arrow_up"
+                android:tint="?colorPrimaryVariant"
+                app:layout_constraintLeft_toRightOf="@id/queueTopBtn"
+                app:layout_constraintRight_toLeftOf="@id/queueDownBtn"
+                app:layout_constraintTop_toTopOf="parent"
+                />
 
             <ImageView
                 android:id="@+id/queueDownBtn"
@@ -162,18 +167,25 @@
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_arrow_down" />
+                tools:src="@drawable/ic_arrow_down"
+                android:tint="?colorPrimaryVariant"
+                app:layout_constraintLeft_toRightOf="@id/queueUpBtn"
+                app:layout_constraintRight_toLeftOf="@id/btnCancel"
+                app:layout_constraintTop_toTopOf="parent"
+                />
 
-            <Button
+            <TextView
                 android:id="@+id/btnCancel"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="80dp"
                 android:layout_height="40dp"
                 android:text="@string/cancel"
-                android:textColor="@android:color/black"
+                android:gravity="center"
+                android:textSize="@dimen/text_body_1"
+                android:textColor="?colorPrimaryVariant"
                 android:textStyle="bold"
-                tools:ignore="ButtonOrder"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 />
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
-</android.support.v7.widget.CardView>
+</androidx.cardview.widget.CardView>

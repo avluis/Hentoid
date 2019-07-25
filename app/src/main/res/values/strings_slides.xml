@@ -21,6 +21,11 @@
     <string name="slide_05_library_default">Default\nSave to internal device storage</string>
     <string name="slide_05_library_custom">Custom\nSave to a custom storage location</string>
     <!-- Slide 06 -->
-    <string name="slide_06_header">All set up!</string>
-    <string name="slide_06_text">We are set!\nEnjoy the app.</string>
+    <string name="slide_06_header">Theme</string>
+    <string name="slide_06_text">Choose a display theme.</string>
+    <string name="slide_06_light">Light</string>
+    <string name="slide_06_dark">Dark</string>
+    <!-- Last slide -->
+    <string name="slide_end_header">All set up!</string>
+    <string name="slide_end_text">We are set!\nEnjoy the app.</string>
 </resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">@color/very_dark_red</color>
+    <color name="primary_variant">@color/super_dark_red</color>
+    <color name="on_primary">@color/white_opacity_87</color>
+    <color name="secondary">@color/accent_red</color>
+    <color name="secondary_variant">@color/light_red</color>
+    <color name="on_secondary">@color/white_opacity_87</color>
+    <color name="surface">@color/dark_gray</color>
+    <color name="on_surface">@color/white_opacity_87</color>
+    <color name="window_background">@color/taupe</color>
+    <color name="on_background">@color/white_opacity_87</color>
+    <color name="ripple">@color/medium_gray</color>
+
+    <!-- Content cards -->
+    <color name="card_surface">@color/taupe_elevated_1</color>
+    <color name="card_selected">@color/taupe_elevated_2</color>
+    <color name="card_pressed">@color/taupe_elevated_3</color>
+    <color name="card_tags">@color/white_opacity_66</color>
+</resources>

@@ -3,16 +3,23 @@ package me.devsaki.hentoid.fragments;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
-import android.arch.lifecycle.ViewModelProviders;
+
+import androidx.lifecycle.ViewModelProviders;
+
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.BottomSheetDialogFragment;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
+
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.SearchView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,12 +52,12 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
 
 /**
  * TODO: look into recyclerview.extensions.ListAdapter for a RecyclerView.Adapter that can issue
- * appropriate notify commands based on list diff
+ *  appropriate notify commands based on list diff
  */
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     /**
-     * Strings submitted to this will be debounced to {@link #searchMasterData(String)} after the given
+     * Strings submitted to this will be debounced to {@link #searchMasterData} after the given
      * delay.
      *
      * @see Debouncer
@@ -85,7 +92,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
 
     // ======== CONSTANTS
-    private final static int ATTRS_PER_PAGE = 40;
+    private static final int ATTRS_PER_PAGE = 40;
 
 
     public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types) {
@@ -101,7 +108,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         Bundle bundle = getArguments();
@@ -112,7 +119,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             currentPage = 1;
 
             if (-1 == mode || selectedAttributeTypes.isEmpty()) {
-                throw new RuntimeException("Initialization failed");
+                throw new IllegalArgumentException("Initialization failed");
             }
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
@@ -168,7 +175,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchMasterDataDebouncer.clear();
-                } else /*if (!s.isEmpty())*/ {
+                } else {
                     searchMasterDataDebouncer.submit(s);
                 }
 
@@ -260,7 +267,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         // Set retry button if Mikan mode on
         if (MODE_MIKAN == mode) {
             bar.setAction("RETRY", v -> viewModel.onCategoryFilterChanged(tagSearchView.getQuery().toString(), currentPage, ATTRS_PER_PAGE));
-            bar.setDuration(Snackbar.LENGTH_LONG);
+            bar.setDuration(BaseTransientBottomBar.LENGTH_LONG);
         }
         bar.show();
 
@@ -289,11 +296,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      */
     private static SearchableInfo getSearchableInfo(Activity activity) {
         final SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
-        if (searchManager == null) throw new RuntimeException();
+        if (searchManager == null) throw new IllegalArgumentException();
         return searchManager.getSearchableInfo(activity.getComponentName());
     }
 
-    protected boolean isLastPage() {
+    private boolean isLastPage() {
         return (currentPage * ATTRS_PER_PAGE >= mTotalSelectedCount);
     }
 

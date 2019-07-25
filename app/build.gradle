@@ -8,20 +8,18 @@ if (file('signing.gradle').exists()) {
 }
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
-        minSdkVersion 15
-        // Hold updating targetSdkVersion until implementing an image viewer
-        // or Perfect Viewer implements Content URI
+        minSdkVersion 19
         //noinspection ExpiringTargetSdkVersion
-        targetSdkVersion 23
-        versionCode 108
-        versionName '1.7.6'
+        targetSdkVersion 28
+        versionCode 110 // is updated automatically by BitRise; only used when building locally
+        versionName '1.8.4'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
@@ -66,26 +64,29 @@ dependencies {
     implementation project(':fakkuLib')
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     // Firebase
-    implementation 'com.google.firebase:firebase-core:16.0.6'
+    implementation 'com.google.firebase:firebase-core:17.0.0'
 
     // Crashlytics
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
 
     // Stetho core
 //    implementation 'com.facebook.stetho:stetho:1.5.0'
     // Support libraries
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation 'com.android.support:exifinterface:27.1.1'
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:cardview-v7:27.1.1'
-    implementation 'com.android.support:design:27.1.1'
-    implementation 'com.android.support:preference-v7:27.1.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation 'com.google.android.gms:play-services-safetynet:16.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.exifinterface:exifinterface:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    //implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.1.0-alpha08'
+    implementation 'androidx.preference:preference:1.0.0'
+    implementation 'androidx.media:media:1.0.1'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
+    implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
 
     // <-- this one to fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
 
@@ -95,7 +96,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.8.0'
 
     // Intro screens or slides: github.com/apl-devs/AppIntro
-    implementation 'com.github.apl-devs:appintro:v4.2.3'
+    implementation 'com.github.paolorotolo:appintro:v5.1.0'
 
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     implementation 'com.google.code.gson:gson:2.8.5'
@@ -110,9 +111,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 
     // For downloading images : github.com/google/volley
-    implementation 'com.android.volley:volley:1.1.1'
-
-    // <-- if this evolves, please examine RequestQueueManager.getRequestQueue for evolutions
+    implementation 'com.android.volley:volley:1.1.1' // <-- if this evolves, please examine RequestQueueManager.getRequestQueue for evolutions
 
     // EventBus: github.com/greenrobot/EventBus
     implementation 'org.greenrobot:eventbus:3.1.1'
@@ -132,9 +131,7 @@ dependencies {
 */
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
-    implementation 'com.google.android:flexbox:1.0.0'
-
-    // <- dont upgrade that until the entire app switches to AndroidX
+    implementation 'com.google.android:flexbox:1.1.0'
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'
@@ -153,8 +150,8 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
 
     // For ViewModel to work
-    implementation "android.arch.lifecycle:extensions:1.1.1"
-    implementation "android.arch.lifecycle:viewmodel:1.1.1"
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.0.0'
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
@@ -165,6 +162,11 @@ dependencies {
 
     // https://github.com/davemorrissey/subsampling-scale-image-view
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
+    //implementation 'com.github.hereisderek:subsampling-scale-image-view:v3.10.2' // Compatible with AndroidX; crashes at resetScaleAndCenter
+
+    // https://github.com/davideas/FlexibleAdapter
+    implementation 'eu.davidea:flexible-adapter:5.1.0'
+    implementation 'eu.davidea:flexible-adapter-ui:1.0.0'
 }
 
 sonarqube {

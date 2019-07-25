@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.HttpHelper;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 
@@ -31,14 +32,16 @@ public class EHentaiParser extends BaseParser {
         // 1- Detect the number of pages of the gallery
         Element e;
         List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>("cookie", "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
+        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, true);
         if (doc != null) {
             Elements elements = doc.select("table.ptt a");
-            if (null == elements || 0 == elements.size()) return result;
+            if (null == elements || elements.isEmpty()) return result;
 
             int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
             int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
+
+            progressStart(nbGalleryPages + content.getQtyPages());
 
             // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
             List<String> pageUrls = new ArrayList<>();
@@ -49,6 +52,7 @@ public class EHentaiParser extends BaseParser {
                 for (int i = 1; i < nbGalleryPages; i++) {
                     doc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, true);
                     if (doc != null) fetchPageUrls(doc, pageUrls);
+                    progressPlus();
                 }
             }
 
@@ -57,13 +61,15 @@ public class EHentaiParser extends BaseParser {
                 doc = getOnlineDocument(s, headers, true);
                 if (doc != null) {
                     elements = doc.select("img#img");
-                    if (elements != null && elements.size() > 0) {
+                    if (elements != null && !elements.isEmpty()) {
                         e = elements.first();
                         result.add(e.attr("src"));
                     }
                 }
+                progressPlus();
             }
         }
+        progressComplete();
 
         return result;
     }
@@ -76,4 +82,5 @@ public class EHentaiParser extends BaseParser {
             pageUrls.add(e.attr("href"));
         }
     }
+
 }

@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginEnd="8dp"
-    android:layout_marginRight="8dp"
     android:ellipsize="end"
     android:gravity="start|center_vertical"
     android:maxLines="2"
-    android:textColor="@android:color/holo_red_dark"
+    android:textColor="?colorSecondary"
     android:textSize="@dimen/text_subtitle_1"
     android:textStyle="bold"
     tools:text="This is a rather long title, just because we need it to be." />

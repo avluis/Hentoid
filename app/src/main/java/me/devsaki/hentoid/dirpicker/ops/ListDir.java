@@ -21,7 +21,7 @@ import timber.log.Timber;
 class ListDir {
 
     private final DirTree dirTree;
-    protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     ListDir(DirTree dirTree) {
         this.dirTree = dirTree;

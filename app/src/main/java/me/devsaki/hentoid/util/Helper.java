@@ -14,15 +14,17 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.webkit.WebResourceResponse;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
+import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -49,8 +53,6 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 /**
  * Created by avluis on 06/05/2016.
  * Utility class
- * <p/>
- * TODO: Add additional image viewers.
  */
 public final class Helper {
 
@@ -143,7 +145,7 @@ public final class Helper {
         String pathPrefix = site.getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + filename;
         try {
-            File asset = new File(context.getExternalCacheDir() + "/" + file);
+            File asset = new File(context.getExternalCacheDir() + File.separator + file);
             FileInputStream stream = new FileInputStream(asset);
             return Helper.getUtf8EncodedWebResourceResponse(stream, type);
         } catch (IOException e) {
@@ -178,21 +180,21 @@ public final class Helper {
     public enum TYPE {JS, CSS, HTML, PLAIN}
 
     public static String capitalizeString(String s) {
-        if (s == null || s.length() == 0) return s;
+        if (s == null || s.isEmpty()) return s;
         else if (s.length() == 1) return s.toUpperCase();
         else return s.substring(0, 1).toUpperCase() + s.toLowerCase().substring(1);
     }
 
     /**
-     * Transforms the given string to format with a given length
+     * Transforms the given int to format with a given length
      * - If the given length is shorter than the actual length of the string, it will be truncated
-     * - If the given length is longer than the actual length of the string, it will be right/left-padded with a given character
+     * - If the given length is longer than the actual length of the string, it will be left-padded with the character 0
      *
      * @param value  String to transform
      * @param length Target length of the final string
      * @return Reprocessed string of given length, according to rules documented in the method description
      */
-    public static String compensateStringLength(int value, int length) {
+    public static String formatIntAsStr(int value, int length) {
         String result = String.valueOf(value);
 
         if (result.length() > length) {
@@ -208,7 +210,7 @@ public final class Helper {
         return buildListAsString(list, "");
     }
 
-    public static String buildListAsString(List<?> list, String valueDelimiter) {
+    private static String buildListAsString(List<?> list, String valueDelimiter) {
 
         StringBuilder str = new StringBuilder();
         if (list != null) {
@@ -235,40 +237,6 @@ public final class Helper {
                 if (a.getType().equals(type)) result.add(a.getId());
             }
         }
-
-        return result;
-    }
-
-    public static Uri buildSearchUri(List<Attribute> attributes) {
-        AttributeMap metadataMap = new AttributeMap();
-        metadataMap.addAll(attributes);
-
-        Uri.Builder searchUri = new Uri.Builder()
-                .scheme("search")
-                .authority("hentoid");
-
-        for (AttributeType attrType : metadataMap.keySet()) {
-            List<Attribute> attrs = metadataMap.get(attrType);
-            for (Attribute attr : attrs)
-                searchUri.appendQueryParameter(attrType.name(), attr.getId() + ";" + attr.getName());
-        }
-        return searchUri.build();
-    }
-
-    public static List<Attribute> parseSearchUri(Uri uri) {
-        List<Attribute> result = new ArrayList<>();
-
-        if (uri != null)
-            for (String typeStr : uri.getQueryParameterNames()) {
-                AttributeType type = AttributeType.searchByName(typeStr);
-                if (type != null)
-                    for (String attrStr : uri.getQueryParameters(typeStr)) {
-                        String[] attrParams = attrStr.split(";");
-                        if (2 == attrParams.length) {
-                            result.add(new Attribute(type, attrParams[1]).setId(Long.parseLong(attrParams[0])));
-                        }
-                    }
-            }
 
         return result;
     }
@@ -329,5 +297,27 @@ public final class Helper {
             Timber.e(e, "Activity not found to open %s", url);
             ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
+    }
+
+    public static float coerceIn(float value, float min, float max) {
+        if (value < min) return min;
+        else if (value > max) return max;
+        else return value;
+    }
+
+    public static List<InputStream> duplicateInputStream(@Nonnull InputStream stream, int numberDuplicates) throws IOException {
+        List<InputStream> result = new ArrayList<>();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = stream.read(buffer)) > -1) baos.write(buffer, 0, len);
+        baos.flush();
+
+        for (int i = 0; i < numberDuplicates; i++)
+            result.add(new ByteArrayInputStream(baos.toByteArray()));
+
+        return result;
     }
 }

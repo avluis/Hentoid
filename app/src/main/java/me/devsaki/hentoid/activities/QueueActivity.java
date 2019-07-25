@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.activities;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import android.view.MenuItem;
 
 import me.devsaki.hentoid.R;
@@ -19,10 +19,7 @@ public class QueueActivity extends BaseActivity implements BackInterface {
     private BaseFragment baseFragment;
     private Fragment fragment;
 
-    private QueueFragment buildFragment() {
-        return QueueFragment.newInstance();
-    }
-
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -37,7 +34,7 @@ public class QueueActivity extends BaseActivity implements BackInterface {
         fragment = manager.findFragmentById(R.id.content_frame);
 
         if (fragment == null) {
-            fragment = buildFragment();
+            fragment = new QueueFragment();
 
             manager.beginTransaction()
                     .add(R.id.content_frame, fragment, getFragmentTag())
@@ -62,14 +59,11 @@ public class QueueActivity extends BaseActivity implements BackInterface {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            // Respond to the action bar's Up/Home button
-            case android.R.id.home:
-                super.onBackPressed();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            super.onBackPressed();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

@@ -4,9 +4,10 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.support.annotation.CheckResult;
-import android.support.annotation.Nullable;
 import android.util.Log;
+
+import androidx.annotation.CheckResult;
+import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -70,6 +71,7 @@ public class ImportService extends IntentService {
         running = true;
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
         notificationManager.cancel();
+        notificationManager.startForeground(new ImportStartNotification());
 
         Timber.w("Service created");
     }
@@ -77,6 +79,7 @@ public class ImportService extends IntentService {
     @Override
     public void onDestroy() {
         running = false;
+        notificationManager.cancel();
         Timber.w("Service destroyed");
 
         super.onDestroy();
@@ -136,7 +139,6 @@ public class ImportService extends IntentService {
         Content content = null;
         List<String> log = new ArrayList<>();
 
-        notificationManager.startForeground(new ImportStartNotification());
         File rootFolder = new File(Preferences.getRootFolderName());
 
         // 1st pass : count subfolders of every site folder
@@ -181,8 +183,8 @@ public class ImportService extends IntentService {
                     if (rename) {
                         String canonicalBookDir = FileHelper.formatDirPath(content);
 
-                        String[] currentPathParts = folder.getAbsolutePath().split("/");
-                        String currentBookDir = "/" + currentPathParts[currentPathParts.length - 2] + "/" + currentPathParts[currentPathParts.length - 1];
+                        String[] currentPathParts = folder.getAbsolutePath().split(File.separator);
+                        String currentBookDir = File.separator + currentPathParts[currentPathParts.length - 2] + File.separator + currentPathParts[currentPathParts.length - 1];
 
                         if (!canonicalBookDir.equals(currentBookDir)) {
                             String settingDir = Preferences.getRootFolderName();
@@ -198,6 +200,7 @@ public class ImportService extends IntentService {
                             }
                         }
                     }
+                    // TODO : Populate images when data is loaded from old JSONs (DoujinBuilder object)
                     ObjectBoxDB.getInstance(this).insertContent(content);
                     trace(Log.INFO, log, "Import book OK : %s", folder.getAbsolutePath());
                 } else { // JSON not found
@@ -273,13 +276,13 @@ public class ImportService extends IntentService {
         return null;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private static List<Attribute> from(List<URLBuilder> urlBuilders, Site site) {
         List<Attribute> attributes = null;
         if (urlBuilders == null) {
             return null;
         }
-        if (urlBuilders.size() > 0) {
+        if (!urlBuilders.isEmpty()) {
             attributes = new ArrayList<>();
             for (URLBuilder urlBuilder : urlBuilders) {
                 Attribute attribute = from(urlBuilder, AttributeType.TAG, site);
@@ -292,7 +295,7 @@ public class ImportService extends IntentService {
         return attributes;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private static Attribute from(URLBuilder urlBuilder, AttributeType type, Site site) {
         if (urlBuilder == null) {
             return null;
@@ -310,7 +313,7 @@ public class ImportService extends IntentService {
     }
 
     @CheckResult
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private static Content importJsonLegacy(File json) throws JSONParseException {
         try {
             DoujinBuilder doujinBuilder =
@@ -351,7 +354,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
 
-            JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
+            JsonHelper.createJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
 
             return contentV2;
         } catch (Exception e) {
@@ -374,7 +377,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
 
-            JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
+            JsonHelper.createJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
 
             return contentV2;
         } catch (Exception e) {

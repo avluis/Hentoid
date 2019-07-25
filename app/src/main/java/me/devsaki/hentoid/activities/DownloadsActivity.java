@@ -3,19 +3,20 @@ package me.devsaki.hentoid.activities;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.widget.Toolbar;
 import android.view.WindowManager;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
-import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.downloads.EndlessFragment;
 import me.devsaki.hentoid.fragments.downloads.PagerFragment;
 import me.devsaki.hentoid.util.Helper;
@@ -26,7 +27,9 @@ import timber.log.Timber;
  * Created by avluis on 08/26/2016.
  * DownloadsActivity: In charge of hosting EndlessFragment & PagerFragment
  */
-public class DownloadsActivity extends DrawerActivity implements BackInterface {
+public class DownloadsActivity extends BaseActivity implements BackInterface {
+
+    private DrawerLayout drawerLayout;
 
     private BaseFragment baseFragment;
 
@@ -71,9 +74,21 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
 
+        drawerLayout = findViewById(R.id.drawer_layout);
+
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        initializeNavigationDrawer(toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_drawer);
+        toolbar.setNavigationOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+
+        // When the user runs the app for the first time, we want to land them with the
+        // navigation drawer open. But just the first time.
+        if (!Preferences.isFirstRunProcessComplete()) {
+            // first run of the app starts with the nav drawer open
+            drawerLayout.openDrawer(GravityCompat.START);
+            Preferences.setIsFirstRunProcessComplete(true);
+        }
+
         setTitle("");
     }
 
@@ -95,7 +110,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
         if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawers();
             return;
@@ -109,7 +123,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     @Override
     public void setTitle(CharSequence subtitle) {
-        String title = getToolbarTitle() + " " + subtitle;
+        String title = getString(R.string.title_activity_downloads) + " " + subtitle;
         super.setTitle(title);
         toolbar.setTitle(title);
     }
@@ -125,7 +139,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         super.onResume();
 
         updateSelectedFragment();
-        updateDrawerPosition();
     }
 
     private void updateSelectedFragment() {
@@ -133,10 +146,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         Fragment fragment = manager.findFragmentById(R.id.content_frame);
 
         if (fragment != null) {
-            /*
-            Fragment selectedFragment = buildFragment();
-            String selectedFragmentTag = selectedFragment.getClass().getSimpleName();
-            */
             String selectedFragmentTag = getFragment().getSimpleName();
 
             if (!selectedFragmentTag.equals(fragment.getTag())) {
@@ -167,12 +176,11 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     }
 
     @Override
-    protected String getToolbarTitle() {
-        return getString(R.string.title_activity_downloads);
-    }
-
-    @Override
     public void addBackInterface(BaseFragment fragment) {
         this.baseFragment = fragment;
+    }
+
+    public void onNavigationDrawerItemClicked() {
+        drawerLayout.closeDrawer(GravityCompat.START);
     }
 }

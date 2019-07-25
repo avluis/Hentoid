@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.widget;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.PagerSnapHelper;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import static java.lang.Math.abs;
 
@@ -15,31 +15,46 @@ public final class PageSnapWidget {
 
     private final RecyclerView recyclerView;
 
-    private int flingFactor;
+    private float flingSensitivity;
+
+    private boolean isEnabled;
+
 
     public PageSnapWidget(@NonNull RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
+        setPageSnapEnabled(true);
     }
 
-    public PageSnapWidget setPageSnapEnabled(boolean pageSnapEnabled) {
+    public void setPageSnapEnabled(boolean pageSnapEnabled) {
         if (pageSnapEnabled) {
             snapHelper.attachToRecyclerView(recyclerView);
+            isEnabled = true;
         } else {
             snapHelper.attachToRecyclerView(null);
+            isEnabled = false;
         }
-        return this;
     }
 
-    public PageSnapWidget setFlingFactor(int flingFactor) {
-        this.flingFactor = flingFactor;
-        return this;
+    public boolean isPageSnapEnabled()  { return isEnabled; }
+
+    /**
+     * Sets the sensitivity of a fling.
+     *
+     * @param sensitivity floating point sensitivity where 0 means never fling and 1 means always
+     *                    fling. Values beyond this range will have undefined behavior.
+     */
+    public void setFlingSensitivity(float sensitivity) {
+        flingSensitivity = sensitivity;
     }
 
     private final class SnapHelper extends PagerSnapHelper {
         @Override
         public boolean onFling(int velocityX, int velocityY) {
-            int thresholdVelocity = recyclerView.getMinFlingVelocity() * flingFactor;
-            if (abs(velocityX) >= thresholdVelocity) {
+            int min = recyclerView.getMinFlingVelocity();
+            int max = recyclerView.getMaxFlingVelocity();
+            int threshold = (int) ((max * (1.0 - flingSensitivity)) + (min * flingSensitivity));
+
+            if (abs(velocityX) > threshold) {
                 return false;
             }
             return super.onFling(velocityX, velocityY);

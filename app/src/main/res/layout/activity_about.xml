@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:context=".activities.AboutActivity">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp">
@@ -19,7 +19,8 @@
             android:src="@drawable/ic_hentoid"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"
+             />
 
         <ImageView
             android:id="@+id/githubIcon"
@@ -36,7 +37,6 @@
             android:id="@+id/tv_github"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
             android:layout_marginStart="5dp"
             android:text="@string/about_github"
             android:textSize="@dimen/about_ic_icons_textSize"
@@ -60,7 +60,6 @@
             android:id="@+id/tv_discord"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
             android:layout_marginStart="5dp"
             android:text="@string/about_discord"
             android:textSize="@dimen/about_ic_icons_textSize"
@@ -82,13 +81,25 @@
             android:id="@+id/tv_reddit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
             android:layout_marginStart="5dp"
             android:text="@string/about_reddit"
             android:textSize="@dimen/about_ic_icons_textSize"
             app:layout_constraintBottom_toBottomOf="@id/redditIcon"
             app:layout_constraintStart_toEndOf="@id/redditIcon"
             app:layout_constraintTop_toTopOf="@id/redditIcon" />
+
+        <TextView
+            android:id="@+id/about_changelog_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="@dimen/about_textSize"
+            android:textColor="?attr/colorSecondary"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+            app:layout_constraintTop_toBottomOf="@id/redditIcon"
+            android:text="@string/view_changelog"
+            />
 
         <TextView
             android:id="@+id/tv_version_name"
@@ -98,7 +109,7 @@
             android:textSize="@dimen/about_textSize"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/iv_app_logo"
-            tools:text="Hentoid X.X.X" />
+            tools:text="Hentoid X.X.X (bbb)" />
 
         <TextView
             android:id="@+id/aboutText1"
@@ -155,19 +166,23 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/personalDataStatement2" />
 
-        <Button
-            android:id="@+id/btn_about_licenses"
+        <TextView
+            android:id="@+id/about_licenses_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:layout_marginTop="16dp"
-            android:text="@string/about_licenses"
+            android:layout_marginBottom="16dp"
             android:textSize="@dimen/about_textSize"
+            android:textColor="?attr/colorSecondary"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/personalDataStatement3" />
+            app:layout_constraintTop_toBottomOf="@id/personalDataStatement3"
+            android:text="@string/about_licenses" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

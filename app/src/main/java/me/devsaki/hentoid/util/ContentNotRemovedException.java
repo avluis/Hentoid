@@ -4,7 +4,7 @@ import me.devsaki.hentoid.database.domains.Content;
 
 public class ContentNotRemovedException extends Exception {
 
-    private Content content;
+    private final Content content;
 
     public ContentNotRemovedException(Content content, String message)
     {

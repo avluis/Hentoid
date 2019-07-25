@@ -4,16 +4,17 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -51,9 +52,9 @@ public class DirChooserFragment extends DialogFragment {
 
     private RecyclerView recyclerView;
     private TextView textView;
-    private FloatingActionButton fabCreateDir,
-            fabRequestSD;
-    private Button selectDirBtn;
+    private FloatingActionButton fabCreateDir;
+    private FloatingActionButton fabRequestSD;
+    private View selectDirBtn;
     private File currentRootDir;
     private DirListBuilder dirListBuilder;
 
@@ -91,7 +92,7 @@ public class DirChooserFragment extends DialogFragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putSerializable(CURRENT_ROOT_DIR, currentRootDir);
         super.onSaveInstanceState(outState);
     }
@@ -121,9 +122,9 @@ public class DirChooserFragment extends DialogFragment {
         fabCreateDir.setOnClickListener(this::onClick);
         selectDirBtn.setOnClickListener(this::onClick);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && FileHelper.isSDPresent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && FileHelper.isSdPresent) {
             fabRequestSD.setOnClickListener(this::onClick);
-            fabRequestSD.setVisibility(View.VISIBLE);
+            fabRequestSD.show();
         }
     }
 
@@ -147,7 +148,7 @@ public class DirChooserFragment extends DialogFragment {
     @Subscribe
     public void onMakeDirEvent(OnMakeDirEvent event) {
         try {
-            MakeDir.TryMakeDir(event.root, event.dirName);
+            MakeDir.tryMakeDir(event.root, event.dirName);
         } catch (DirExistsException dee) {
             ToastUtil.toast(R.string.folder_already_exists);
         } catch (PermissionDeniedException dee) {
@@ -185,12 +186,12 @@ public class DirChooserFragment extends DialogFragment {
     }
 
     @Override
-    public void onCancel(DialogInterface dialog) {
+    public void onCancel(@NonNull DialogInterface dialog) {
         EventBus.getDefault().post(new OnDirCancelEvent());
         super.onCancel(dialog);
     }
 
-    public void onClick(View v) {
+    private void onClick(View v) {
         if (v.equals(textView)) {
             onTextViewClicked(false);
         } else if (v.equals(fabCreateDir)) {
@@ -202,7 +203,7 @@ public class DirChooserFragment extends DialogFragment {
         }
     }
 
-    public boolean onLongClick(View v) {
+    private boolean onLongClick(View v) {
         if (v.equals(textView)) {
             onTextViewClicked(true);
             return true;

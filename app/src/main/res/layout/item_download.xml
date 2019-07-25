@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,7 +9,8 @@
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
     app:cardCornerRadius="2dp"
-    app:cardElevation="@dimen/cardview_default_elevation">
+    app:cardElevation="2dp"
+    style="@style/DownloadCard">
 
     <RelativeLayout
         android:id="@+id/item"
@@ -21,44 +22,37 @@
             android:id="@+id/row_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="5dp"
+            android:paddingStart="8dp"
             android:paddingEnd="1dp"
-            android:paddingLeft="8dp"
-            android:paddingRight="1dp"
-            android:paddingStart="8dp">
+            android:paddingBottom="5dp">
 
             <include
                 android:id="@+id/tvTitle"
+                layout="@layout/include_item_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                android:layout_toLeftOf="@id/iconNew"
-                android:layout_toStartOf="@id/iconNew"
+                android:layout_alignParentTop="true"
                 android:layout_marginBottom="5dp"
-                layout="@layout/include_item_title"
-                />
+                android:layout_toStartOf="@id/iconNew" />
 
             <ImageView
                 android:id="@+id/iconNew"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:adjustViewBounds="true"
-                android:tint="@color/accent"
                 android:padding="8dp"
                 android:src="@drawable/ic_new"
-                tools:ignore="ContentDescription"
-                />
+                android:tint="?colorSecondary"
+                tools:ignore="ContentDescription" />
 
             <include
+                layout="@layout/include_item_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/tvTitle"
-                layout="@layout/include_item_details" />
+                android:layout_below="@id/tvTitle" />
 
         </RelativeLayout>
 
@@ -66,19 +60,16 @@
             android:id="@+id/ivSite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/row_details"
-            android:layout_alignLeft="@+id/row_details"
             android:layout_alignStart="@+id/row_details"
+            android:layout_alignBottom="@+id/row_details"
             android:adjustViewBounds="true"
             android:clickable="true"
             android:focusable="true"
-            android:paddingBottom="5dp"
-            android:paddingEnd="8dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="8dp"
             android:paddingStart="5dp"
             android:paddingTop="8dp"
-            tools:background="@color/primary"
+            android:paddingEnd="8dp"
+            android:paddingBottom="5dp"
+            tools:background="?colorPrimary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_hitomi" />
 
@@ -87,50 +78,45 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/row_details"
-            android:layout_toLeftOf="@id/ivFavourite"
             android:layout_toStartOf="@id/ivFavourite"
             android:adjustViewBounds="true"
-            android:background="@color/accent"
+            android:background="?colorSecondary"
+            android:tint="@color/card_surface"
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
             android:src="@drawable/ic_item_error_outline"
-            tools:ignore="ContentDescription"
-            />
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/ivFavourite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/row_details"
             android:layout_alignEnd="@+id/row_details"
-            android:layout_alignRight="@+id/row_details"
+            android:layout_alignBottom="@+id/row_details"
             android:adjustViewBounds="true"
             android:background="@color/transparent"
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
             android:src="@drawable/ic_fav_empty"
-            android:tint="@color/accent"
-            tools:ignore="ContentDescription"
-            />
+            android:tint="?colorSecondary"
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/ivDownload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/row_details"
             android:layout_alignEnd="@+id/row_details"
-            android:layout_alignRight="@+id/row_details"
+            android:layout_alignBottom="@+id/row_details"
             android:adjustViewBounds="true"
             android:background="@color/transparent"
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
             android:src="@drawable/ic_action_download"
-            android:tint="@color/accent"
-            tools:ignore="ContentDescription"
-            />
+            android:tint="?colorSecondary"
+            tools:ignore="ContentDescription" />
     </RelativeLayout>
 
     <LinearLayout
@@ -141,29 +127,25 @@
         android:baselineAligned="false"
         android:minHeight="?android:listPreferredItemHeightSmall"
         android:orientation="horizontal"
-        android:paddingBottom="5dp"
-        android:paddingEnd="1dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="1dp"
         android:paddingStart="10dp"
+        android:paddingEnd="1dp"
+        android:paddingBottom="5dp"
         android:visibility="gone">
 
         <ImageView
             android:id="@+id/ivCover2"
             android:layout_width="35dp"
             android:layout_height="53dp"
-            android:layout_marginEnd="5dp"
-            android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
+            android:layout_marginEnd="5dp"
             android:adjustViewBounds="true"
             android:padding="1dp"
             android:scaleType="fitCenter"
-            tools:ignore="ContentDescription"
-            />
+            tools:ignore="ContentDescription" />
 
         <include
             android:id="@+id/tvTitle2"
             layout="@layout/include_item_title" />
 
     </LinearLayout>
-</android.support.v7.widget.CardView>
+</androidx.cardview.widget.CardView>

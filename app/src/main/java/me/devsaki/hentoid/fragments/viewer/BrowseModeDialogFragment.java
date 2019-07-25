@@ -1,10 +1,10 @@
 package me.devsaki.hentoid.fragments.viewer;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +12,12 @@ import android.view.ViewGroup;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
 
-import static android.support.v4.view.ViewCompat.requireViewById;
+import static androidx.core.view.ViewCompat.requireViewById;
 
 public class BrowseModeDialogFragment extends DialogFragment {
 
     public static void invoke(Fragment parent) {
         BrowseModeDialogFragment fragment = new BrowseModeDialogFragment();
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.ViewerBrowseModeDialog);
         fragment.setCancelable(false);
         fragment.show(parent.getChildFragmentManager(), null);
     }

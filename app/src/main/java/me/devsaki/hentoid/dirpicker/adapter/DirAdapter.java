@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.dirpicker.adapter;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +30,7 @@ public class DirAdapter extends RecyclerView.Adapter<DirAdapter.DirAdapterViewHo
     @Override
     public DirAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View root = LayoutInflater.from(
-                parent.getContext()).inflate(R.layout.item_picker, parent, false);
+                parent.getContext()).inflate(R.layout.item_text, parent, false);
         return new DirAdapterViewHolder(root);
     }
 
@@ -51,7 +51,7 @@ public class DirAdapter extends RecyclerView.Adapter<DirAdapter.DirAdapterViewHo
         DirAdapterViewHolder(View root) {
             super(root);
 
-            textView = root.findViewById(R.id.picker_item_name);
+            textView = root.findViewById(R.id.drawer_item_txt);
             textView.setOnClickListener(this::onClick);
         }
 

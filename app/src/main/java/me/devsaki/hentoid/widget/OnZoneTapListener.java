@@ -1,16 +1,19 @@
 package me.devsaki.hentoid.widget;
 
 import android.content.Context;
-import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+
+import androidx.core.view.GestureDetectorCompat;
 
 import me.devsaki.hentoid.R;
 
 public class OnZoneTapListener implements View.OnTouchListener {
 
-    /** This view's dimensions are used to determine which zone a tap belongs to */
+    /**
+     * This view's dimensions are used to determine which zone a tap belongs to
+     */
     private final View view;
 
     private final GestureDetectorCompat gestureDetector;
@@ -45,34 +48,26 @@ public class OnZoneTapListener implements View.OnTouchListener {
         return this;
     }
 
+    public boolean onSingleTapConfirmedAction(MotionEvent e) {
+        if (e.getX() < pagerTapZoneWidth) {
+            onLeftZoneTapListener.run();
+        } else if (e.getX() > view.getWidth() - pagerTapZoneWidth) {
+            onRightZoneTapListener.run();
+        } else {
+            onMiddleZoneTapListener.run();
+        }
+        return true;
+    }
+
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         return gestureDetector.onTouchEvent(event);
     }
 
-    private final class OnGestureListener extends GestureDetector.SimpleOnGestureListener {
+    private final class OnGestureListener extends GestureDetector.SimpleOnGestureListener { // TODO remove if it proves useless
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
-            if (e.getX() < pagerTapZoneWidth) {
-                onLeftZoneTapListener.run();
-            } else if (e.getX() > view.getWidth() - pagerTapZoneWidth) {
-                onRightZoneTapListener.run();
-            } else {
-                onMiddleZoneTapListener.run();
-            }
-            return true;
+            return onSingleTapConfirmedAction(e);
         }
-
-//        @Override
-//        public boolean onSingleTapUp(MotionEvent e) {
-//            if (e.getX() < pagerTapZoneWidth) {
-//                onLeftZoneTapListener.run();
-//            } else if (e.getX() > view.getWidth() - pagerTapZoneWidth) {
-//                onRightZoneTapListener.run();
-//            } else {
-//                onMiddleZoneTapListener.run();
-//            }
-//            return true;
-//        }
     }
 }

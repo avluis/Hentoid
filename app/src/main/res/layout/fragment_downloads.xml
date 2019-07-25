@@ -1,4 +1,4 @@
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,7 +10,7 @@
         style="@style/TextButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/darkGray"
+        android:background="@color/dark_gray"
         android:text="@string/title_activity_search"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
@@ -21,7 +21,7 @@
         android:id="@+id/filter_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/darkGray"
+        android:background="@color/dark_gray"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,10 +32,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
             android:textColor="@color/white"
             tools:text="@string/downloads_filter_book_count" />
 
@@ -45,19 +43,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
             android:text="@string/downloads_filter_clear" />
 
     </RelativeLayout>
 
-    <android.support.constraint.Barrier
+    <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier_top"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:barrierDirection="bottom"
         app:constraint_referenced_ids="advanced_search,filter_bar" />
 
-    <android.support.v4.widget.SwipeRefreshLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -70,16 +67,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
                 android:paddingStart="@dimen/default_cardview_margin"
-                android:paddingLeft="@dimen/default_cardview_margin"
                 android:paddingTop="@dimen/default_cardview_margin"
                 android:paddingEnd="@dimen/default_cardview_margin"
-                android:paddingRight="@dimen/default_cardview_margin"
                 tools:listitem="@layout/item_download" />
 
             <LinearLayout
@@ -96,10 +91,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/new_content"
-                    android:textColor="@color/white" />
+                    android:textColor="?colorOnPrimary" />
             </LinearLayout>
         </FrameLayout>
-    </android.support.v4.widget.SwipeRefreshLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <TextView
         android:id="@+id/empty"
@@ -109,7 +104,6 @@
         android:gravity="center"
         android:text="@string/downloads_empty_library"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/white"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -127,7 +121,6 @@
         android:scaleY="1.5"
         android:text="@string/downloads_loading"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/white"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -143,4 +136,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

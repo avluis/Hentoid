@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,11 +7,11 @@
     android:orientation="vertical"
     tools:context=".activities.SearchActivity">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/search_toolbar"
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary"
+        android:background="?attr/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -23,35 +22,33 @@
         android:id="@+id/startCaption"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:background="@color/primary"
+        android:background="?attr/colorPrimary"
         android:gravity="center"
         android:text="@string/search_select_a_filter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_toolbar" />
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_tags"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textIsSelectable="false"
+        android:background="?attr/colorPrimary"
         android:orientation="horizontal"
-        android:background="@color/primary"
-        android:paddingLeft="8dp"
         android:paddingStart="8dp"
-        android:paddingBottom="8dp"
-        android:paddingRight="8dp"
         android:paddingEnd="8dp"
+        android:paddingBottom="8dp"
+        android:textIsSelectable="false"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/startCaption"
-        android:visibility="gone">
-        
+        app:layout_constraintTop_toBottomOf="@id/startCaption">
+
         <!-- programmatically added selected metadata here -->
 
-    </android.support.v7.widget.RecyclerView>
+    </androidx.recyclerview.widget.RecyclerView>
 
-    <android.support.constraint.Guideline
+    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guidelineMiddle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -61,12 +58,10 @@
     <TextView
         android:id="@+id/textCategoryAny"
         style="@style/SearchCategoryButton"
-        android:text="@string/category_any"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginRight="4dp"
+        android:text="@string/category_any"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_tags" />
@@ -74,12 +69,10 @@
     <TextView
         android:id="@+id/textCategoryTag"
         style="@style/SearchCategoryButton"
-        android:text="@string/category_tag"
         android:layout_marginStart="4dp"
-        android:layout_marginLeft="4dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:text="@string/category_tag"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
         app:layout_constraintTop_toBottomOf="@id/search_tags" />
@@ -87,12 +80,10 @@
     <TextView
         android:id="@+id/textCategoryCharacter"
         style="@style/SearchCategoryButton"
-        android:text="@string/category_character"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginRight="4dp"
+        android:text="@string/category_character"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textCategoryAny" />
@@ -100,12 +91,10 @@
     <TextView
         android:id="@+id/textCategoryArtist"
         style="@style/SearchCategoryButton"
-        android:text="@string/category_artist"
         android:layout_marginStart="4dp"
-        android:layout_marginLeft="4dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:text="@string/category_artist"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
         app:layout_constraintTop_toBottomOf="@id/textCategoryTag" />
@@ -113,12 +102,10 @@
     <TextView
         android:id="@+id/textCategorySeries"
         style="@style/SearchCategoryButton"
-        android:text="@string/category_series"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginRight="4dp"
+        android:text="@string/category_series"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textCategoryCharacter" />
@@ -126,12 +113,10 @@
     <TextView
         android:id="@+id/textCategoryLanguage"
         style="@style/SearchCategoryButton"
-        android:text="@string/category_language"
         android:layout_marginStart="4dp"
-        android:layout_marginLeft="4dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:text="@string/category_language"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
         app:layout_constraintTop_toBottomOf="@id/textCategoryArtist" />
@@ -139,12 +124,10 @@
     <TextView
         android:id="@+id/textCategorySource"
         style="@style/SearchCategoryButton"
-        android:text="@string/category_source"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
-        android:layout_marginRight="4dp"
+        android:text="@string/category_source"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textCategorySeries" />
@@ -155,18 +138,14 @@
         android:layout_height="48dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/bg_fab_extended"
-        android:drawableLeft="@drawable/ic_search"
         android:drawableStart="@drawable/ic_search"
         android:drawablePadding="12dp"
         android:gravity="center"
         android:paddingStart="12dp"
         android:paddingEnd="20dp"
         android:text="@string/search_button"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:paddingLeft="12dp"
-        android:paddingRight="20dp"
-        android:visibility="gone"
-        />
-</android.support.constraint.ConstraintLayout>
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

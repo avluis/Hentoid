@@ -1,14 +1,14 @@
 package me.devsaki.hentoid.activities;
 
 import android.app.Activity;
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.widget.TextView;
@@ -61,7 +61,7 @@ public class SearchActivity extends BaseActivity {
         super.onSaveInstanceState(outState);
 
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
-        builder.setUri(Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue()));
+        builder.setUri(SearchActivityBundle.Builder.buildSearchUri(viewModel.getSelectedAttributesData().getValue()));
         outState.putAll(builder.getBundle());
     }
 
@@ -71,7 +71,7 @@ public class SearchActivity extends BaseActivity {
 
         Uri searchUri = new SearchActivityBundle.Parser(savedInstanceState).getUri();
         if (searchUri != null) {
-            List<Attribute> preSelectedAttributes = Helper.parseSearchUri(searchUri);
+            List<Attribute> preSelectedAttributes = SearchActivityBundle.Parser.parseSearchUri(searchUri);
             if (preSelectedAttributes != null)
                 viewModel.setSelectedAttributes(preSelectedAttributes);
         }
@@ -88,7 +88,7 @@ public class SearchActivity extends BaseActivity {
             SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(intent.getExtras());
             mode = parser.getMode();
             Uri searchUri = parser.getUri();
-            if (searchUri != null) preSelectedAttributes = Helper.parseSearchUri(searchUri);
+            if (searchUri != null) preSelectedAttributes = SearchActivityBundle.Parser.parseSearchUri(searchUri);
         }
 
         setContentView(R.layout.activity_search);
@@ -200,7 +200,7 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void validateForm() {
-        Uri searchUri = Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue());
+        Uri searchUri = SearchActivityBundle.Builder.buildSearchUri(viewModel.getSelectedAttributesData().getValue());
         Timber.d("URI :%s", searchUri);
 
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder().setUri(searchUri);

@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.HttpHelper;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
@@ -47,7 +49,9 @@ public class TsuminoParser extends BaseParser {
 
             Elements contents = doc.select("#image-container");
             if (null != contents) {
-                String dataUrl, dataOpt, dataObj;
+                String dataUrl;
+                String dataOpt;
+                String dataObj;
 
                 dataUrl = contents.attr("data-url");
                 dataOpt = contents.attr("data-opt");
@@ -75,22 +79,22 @@ public class TsuminoParser extends BaseParser {
 
         HttpURLConnection http = null;
         try {
-            http = (HttpURLConnection) ((new URL(url).openConnection()));
+            http = (HttpURLConnection) (new URL(url).openConnection());
             http.setDoOutput(true);
             http.setRequestProperty("Content-Type", "application/json");
             http.setRequestProperty("Accept", "application/json");
-            http.setRequestProperty("Cookie", cookie);
+            http.setRequestProperty(HttpHelper.HEADER_COOKIE_KEY, cookie);
             http.setRequestMethod("POST");
             http.connect();
 
-            try (OutputStream stream = http.getOutputStream(); BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, "UTF-8"))) {
+            try (OutputStream stream = http.getOutputStream(); BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8))) {
                 writer.write(dataJson);
             }
 
             StringBuilder builder = new StringBuilder();
             String line;
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    http.getInputStream(), "UTF-8"))) {
+                    http.getInputStream(), StandardCharsets.UTF_8))) {
                 while ((line = br.readLine()) != null) builder.append(line);
             }
             return builder.toString();

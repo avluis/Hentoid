@@ -1,0 +1,11 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_item_txt"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:colorBackground"
+    android:gravity="center_vertical"
+    android:textColor="?colorOnBackground"
+    android:padding="8dp"
+    android:textSize="16sp"
+    tools:text="@string/app_name" />

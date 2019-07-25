@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:width="24dp"
     android:height="24dp"
-    android:viewportHeight="1024"
     android:viewportWidth="1024"
+    android:viewportHeight="1024"
     tools:ignore="UnusedResources">
 
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#DEFFFFFF"
         android:pathData="M207,138c209.667,0,419.333,0,629,0c0.278,1.94,0.8,3.881,0.801,5.822
         c0.042,72.489,0.037,144.979,0.024,217.47c0,1.755-0.159,3.509-0.268,5.758c-64.804,0-129.029,0-193.235,0c0,15.275,0,30.02,0,45.34
         c80.033,0,159.745,0,239.364,0c0,25.494,0,50.405,0,75.848c-80.059,0-159.772,0-239.312,0c0,16.443,0,32.351,0,48.679

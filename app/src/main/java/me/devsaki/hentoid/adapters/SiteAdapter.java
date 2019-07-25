@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.adapters;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +26,7 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterVie
     @NonNull
     @Override
     public SiteAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_picker, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_text_sites, parent, false);
         return new SiteAdapterViewHolder(view);
     }
 
@@ -56,7 +56,7 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterVie
 
         private SiteAdapterViewHolder(View itemView) {
             super(itemView);
-            textView = itemView.findViewById(R.id.picker_item_name);
+            textView = itemView.findViewById(R.id.drawer_item_txt);
         }
 
         void bindTo(Site site) {

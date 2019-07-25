@@ -4,12 +4,16 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.WorkerThread;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
+import android.os.Bundle;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import androidx.documentfile.provider.DocumentFile;
 
 import org.apache.commons.io.FileUtils;
 
@@ -20,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -28,9 +33,6 @@ import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
-import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -51,7 +53,7 @@ import static android.os.Environment.getExternalStorageState;
  */
 public class FileHelper {
     // Note that many devices will report true (there are no guarantees of this being 'external')
-    public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
+    public static final boolean isSdPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
     private static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
@@ -224,6 +226,10 @@ public class FileHelper {
         return FileUtil.getOutputStream(target);
     }
 
+    static OutputStream getOutputStream(@NonNull final DocumentFile target) throws IOException {
+        return FileUtil.getOutputStream(target);
+    }
+
     static InputStream getInputStream(@NonNull final File target) throws IOException {
         return FileUtil.getInputStream(target);
     }
@@ -270,10 +276,9 @@ public class FileHelper {
      *
      * @param directory directory to clean
      * @return true if directory has been successfully cleaned
-     * @throws IOException              in case cleaning is unsuccessful
-     * @throws IllegalArgumentException if {@code directory} does not exist or is not a directory
+     * @throws IOException in case cleaning is unsuccessful
      */
-    private static boolean tryCleanDirectory(@NonNull File directory) throws IOException, SecurityException {
+    private static boolean tryCleanDirectory(@NonNull File directory) throws IOException {
         File[] files = directory.listFiles();
         if (files == null) throw new IOException("Failed to list content of " + directory);
 
@@ -351,9 +356,7 @@ public class FileHelper {
     public static void removeContent(Content content) {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (content.getStorageFolder().length() > 0) {
-            String settingDir = Preferences.getRootFolderName();
-            File dir = new File(settingDir, content.getStorageFolder());
-
+            File dir = getContentDownloadDir(content);
             if (deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
                 Timber.i("Directory %s removed.", dir);
             } else {
@@ -390,6 +393,11 @@ public class FileHelper {
         return file;
     }
 
+    public static File getContentDownloadDir(Content content) {
+        String rootFolderName = Preferences.getRootFolderName();
+        return new File(rootFolderName, content.getStorageFolder());
+    }
+
     /**
      * Format the download directory path of the given content according to current user preferences
      *
@@ -402,37 +410,49 @@ public class FileHelper {
         int folderNamingPreference = Preferences.getFolderNameFormat();
 
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
-            result = result + content.getAuthor().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
+            result += content.getAuthor().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
-            result = result + content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
+            result += content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
-        result = result + "[" + content.getUniqueSiteId() + "]";
+
+        // Unique content ID
+        String suffix = "[" + formatBookId(content) + "]";
 
         // Truncate folder dir to something manageable for Windows
         // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
         int truncLength = Preferences.getFolderTruncationNbChars();
-        if (truncLength > 0) {
-            if (result.length() - siteFolder.length() > truncLength)
-                result = result.substring(0, siteFolder.length() + truncLength - 1);
-        }
+        int titleLength = result.length() - siteFolder.length();
+        if ((truncLength > 0) && ((titleLength + suffix.length()) > truncLength))
+            result = result.substring(0, siteFolder.length() + truncLength - suffix.length() - 1);
+
+        result += suffix;
 
         return result;
+    }
+
+    @SuppressWarnings("squid:S2676") // Math.abs is used for formatting purposes only
+    private static String formatBookId(Content content) {
+        String id = content.getUniqueSiteId();
+        // For certain sources (8muses, fakku), unique IDs are strings that may be very long
+        // => shorten them by using their hashCode
+        if (id.length() > 10) id = Helper.formatIntAsStr(Math.abs(id.hashCode()), 10);
+        return id;
     }
 
     public static File getDefaultDir(Context context, String dir) {
         File file;
         try {
-            file = new File(getExternalStorageDirectory() + "/"
-                    + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+            file = new File(getExternalStorageDirectory() + File.separator
+                    + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator + dir);
         } catch (Exception e) {
             file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
+            file = new File(file, File.separator + Consts.DEFAULT_LOCAL_DIRECTORY);
         }
 
         if (!file.exists() && !FileUtil.makeDir(file)) {
             file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+            file = new File(file, File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator + dir);
             if (!file.exists()) {
                 FileUtil.makeDir(file);
             }
@@ -441,7 +461,7 @@ public class FileHelper {
         return file;
     }
 
-    public static File getSiteDownloadDir(Context context, Site site) {
+    public static File getOrCreateSiteDownloadDir(Context context, Site site) {
         File file;
         String settingDir = Preferences.getRootFolderName();
         String folderDir = site.getFolder();
@@ -498,19 +518,12 @@ public class FileHelper {
         // NB : ideal would be to get the content-type of the resource behind coverUrl, but that's too time-consuming
         if (extension.isEmpty() || extension.contains("/")) extension = "jpg";
 
-        File f = new File(Preferences.getRootFolderName(), content.getStorageFolder() + "/thumb." + extension);
+        File f = new File(Preferences.getRootFolderName(), content.getStorageFolder() + File.separator + "thumb." + extension);
         return f.exists() ? f.getAbsolutePath() : coverUrl;
     }
 
-    /**
-     * Open the given content using the viewer defined in user preferences
-     *
-     * @param context Context
-     * @param content Content to be opened
-     */
-    public static void openContent(final Context context, Content content) {
-        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
-
+    @Nullable
+    public static File[] getPictureFilesFromContent(Content content) {
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());
 
@@ -518,13 +531,10 @@ public class FileHelper {
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Exiting method.");
             ToastUtil.toast(R.string.sd_access_error);
-            return;
+            return null;
         }
 
-        ToastUtil.toast("Opening: " + content.getTitle());
-
-        File imageFile = null;
-        File[] files = dir.listFiles(
+        return dir.listFiles(
                 file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
                         (
                                 file.getName().toLowerCase().endsWith("jpg")
@@ -534,45 +544,39 @@ public class FileHelper {
                         )
                 )
         );
-        if (files != null && files.length > 0) {
-            Arrays.sort(files);
-            imageFile = files[0];
-        }
-        if (imageFile == null) {
-            String message = context.getString(R.string.image_file_not_found)
-                    .replace("@dir", dir.getAbsolutePath());
-            ToastUtil.toast(context, message);
-        } else {
-            int readContentPreference = Preferences.getContentReadAction();
-            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER) {
-                openFile(context, imageFile);
-            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
-                openPerfectViewer(context, imageFile);
-            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER) {
-                openHentoidViewer(context, content, files);
-            }
-        }
-
-        // TODO - properly dispose this Completable (for best practices' sake, even though it hasn't triggered any leak so far)
-        Completable.fromRunnable(() -> updateContentReads(context, content.getId(), dir))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
     }
 
-    private static void updateContentReads(Context context, long contentId, File dir) {
+    /**
+     * Open the given content using the viewer defined in user preferences
+     *
+     * @param context Context
+     * @param content Content to be opened
+     */
+    public static void openContent(final Context context, Content content) {
+        openContent(context, content, null);
+    }
+
+    public static void openContent(final Context context, Content content, Bundle searchParams) {
+        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
+        ToastUtil.toast("Opening: " + content.getTitle());
+
+        openHentoidViewer(context, content, searchParams);
+    }
+
+    @Nullable
+    public static Content updateContentReads(@Nonnull Context context, long contentId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
         if (content != null) {
             content.increaseReads().setLastReadDate(new Date().getTime());
             db.updateContentReads(content);
 
-            try {
-                JsonHelper.saveJson(content.preJSONExport(), dir);
-            } catch (IOException e) {
-                Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
-            }
+            if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
+            else FileHelper.createJson(content);
+
+            return content;
         }
+        return null;
     }
 
     /**
@@ -582,11 +586,9 @@ public class FileHelper {
      * @param aFile   File to be opened
      */
     public static void openFile(Context context, File aFile) {
-        Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
-        String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
-        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-        myIntent.setDataAndType(Uri.fromFile(file), mimeType);
+        Intent myIntent = new Intent(Intent.ACTION_VIEW, FileProvider.getUriForFile(context, AUTHORITY, file));
+        myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         try {
             context.startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
@@ -596,40 +598,15 @@ public class FileHelper {
     }
 
     /**
-     * Open PerfectViewer telling it to display the given image
-     *
-     * @param context    Context
-     * @param firstImage Image to be displayed
-     */
-    private static void openPerfectViewer(Context context, File firstImage) {
-        try {
-            Intent intent = context
-                    .getPackageManager()
-                    .getLaunchIntentForPackage("com.rookiestudio.perfectviewer");
-            if (intent != null) {
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
-                context.startActivity(intent);
-            }
-        } catch (Exception e) {
-            ToastUtil.toast(context, R.string.error_open_perfect_viewer);
-        }
-    }
-
-    /**
      * Open built-in image viewer telling it to display the images of the given Content
      *
-     * @param context    Context
-     * @param content    Content to be displayed
-     * @param imageFiles Image files to be shown
+     * @param context Context
+     * @param content Content to be displayed
      */
-    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, @NonNull File[] imageFiles) {
-        List<String> imagesLocations = new ArrayList<>();
-        for (File f : imageFiles) imagesLocations.add(f.getAbsolutePath());
-
+    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
-        builder.setUrisStr(imagesLocations);
+        if (searchParams != null) builder.setSearchParams(searchParams);
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);
         viewer.putExtras(builder.getBundle());
@@ -644,15 +621,18 @@ public class FileHelper {
      * @return Extension of the given filename
      */
     public static String getExtension(String fileName) {
-        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
+        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.getDefault()) : "";
+    }
+
+    public static String getFileNameWithoutExtension(String fileName) {
+        return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
     public static void archiveContent(final Context context, Content content) {
         Timber.d("Building file list for: %s", content.getTitle());
         // Build list of files
 
-        String settingDir = Preferences.getRootFolderName();
-        File dir = new File(settingDir, content.getStorageFolder());
+        File dir = getContentDownloadDir(content);
 
         File[] files = dir.listFiles();
         if (files != null && files.length > 0) {
@@ -757,6 +737,27 @@ public class FileHelper {
         return false;
     }
 
+    public static void updateJson(@Nonnull Context context, @Nonnull Content content) {
+        DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
+        if (null == file)
+            throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
+
+        try {
+            JsonHelper.updateJson(content.preJSONExport(), file);
+        } catch (IOException e) {
+            Timber.e(e, "Error while writing to %s", content.getJsonUri());
+        }
+    }
+
+    public static void createJson(@Nonnull Content content) {
+        File dir = FileHelper.getContentDownloadDir(content);
+        try {
+            JsonHelper.createJson(content.preJSONExport(), dir);
+        } catch (IOException e) {
+            Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+        }
+    }
+
     private static class AsyncUnzip extends ZipUtil.ZipTask {
         final Context context; // TODO - omg leak !
         final File dest;
@@ -773,7 +774,8 @@ public class FileHelper {
             // Hentoid is FileProvider ready!!
             sendIntent.putExtra(Intent.EXTRA_STREAM,
                     FileProvider.getUriForFile(context, AUTHORITY, dest));
-            sendIntent.setType(MimeTypes.getMimeType(dest));
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(dest.getName()));
+            sendIntent.setType(mimeType);
 
             context.startActivity(sendIntent);
         }
@@ -789,4 +791,8 @@ public class FileHelper {
         }
     }
 
+    @Nullable
+    public static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
+        return FileUtil.getDocumentFile(file, isDirectory);
+    }
 }

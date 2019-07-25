@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingTop="8dp"
     android:paddingStart="16dp"
+    android:paddingTop="8dp"
     android:paddingEnd="16dp"
     android:theme="@style/BottomSheetDialogTheme"
     tools:context=".activities.SearchActivity">
@@ -25,7 +25,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_intro"
-            android:textColor="@color/white"
             android:textSize="24sp" />
 
         <ImageView
@@ -36,7 +35,6 @@
             android:minHeight="110dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_action_pause"
-            android:tint="@color/white"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -45,7 +43,6 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical|center_horizontal"
             android:text="@string/app_intro"
-            android:textColor="@color/white"
             android:textSize="18sp" />
 
     </LinearLayout>
@@ -55,10 +52,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textIsSelectable="false"
-        app:maxHeight="200dp"
-        />
+        app:maxHeight="200dp" />
 
-    <android.support.v7.widget.SearchView
+    <androidx.appcompat.widget.SearchView
         android:id="@+id/tag_filter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

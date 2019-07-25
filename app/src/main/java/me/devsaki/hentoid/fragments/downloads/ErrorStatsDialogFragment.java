@@ -1,11 +1,11 @@
 package me.devsaki.hentoid.fragments.downloads;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +50,7 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         args.putLong(ID, id);
         fragment.setArguments(args);
 
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.DownloadsDialog);
+        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
         fragment.show(fragmentManager, null);
     }
 
@@ -121,12 +121,12 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         } else if (event.eventType == DownloadEvent.EV_CANCEL) {
             details.setText("Download cancelled");
             previousNbErrors = 0;
-        } else if (event.eventType == DownloadEvent.EV_PROGRESS) {
-            if (event.pagesKO > previousNbErrors && event.content != null) {
-                currentId = event.content.getId();
-                previousNbErrors = event.pagesKO;
-                updateStats(currentId);
-            }
+        } else if ((event.eventType == DownloadEvent.EV_PROGRESS)
+                    && (event.pagesKO > previousNbErrors)
+                    && (event.content != null)) {
+            currentId = event.content.getId();
+            previousNbErrors = event.pagesKO;
+            updateStats(currentId);
         }
     }
 

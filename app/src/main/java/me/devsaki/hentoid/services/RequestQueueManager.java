@@ -29,7 +29,7 @@ import timber.log.Timber;
  */
 public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListener<T> {
     private static RequestQueueManager mInstance;           // Instance of the singleton
-    private static Boolean allowParallelDownloads = null;       // True if current instance has anti-parallel mode on
+    private static Boolean allowParallelDownloads = null;   // True if current instance can download from the same IP with multiple simultaneous connexions
     private static final int TIMEOUT_MS = 15000;
 
     private RequestQueue mRequestQueue;                     // Volley download request queue
@@ -68,10 +68,6 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         if (activityManager == null) return 0;
         return activityManager.getMemoryClass();
-    }
-
-    public static synchronized <T> RequestQueueManager<T> getInstance() {
-        return getInstance(null, true);
     }
 
     @SuppressWarnings("unchecked")

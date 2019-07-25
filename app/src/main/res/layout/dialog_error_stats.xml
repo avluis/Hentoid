@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:text="@string/err_stats_title"
-        android:textColor="@color/accent"
         android:textSize="@dimen/text_header_6"
         android:textStyle="bold" />
 
@@ -21,7 +20,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/err_stats_title"
-        android:textColor="@android:color/black"
         android:textSize="@dimen/text_body_1" />
 
     <TextView
@@ -32,7 +30,7 @@
         android:clickable="true"
         android:focusable="true"
         android:text="@string/redownload_view_log"
-        android:textColor="@color/darkGray"
+        android:textColor="?attr/colorSecondary"
         android:textSize="@dimen/text_button" />
 
     <TextView
@@ -44,7 +42,7 @@
         android:clickable="true"
         android:focusable="true"
         android:text="@android:string/ok"
-        android:textColor="@color/accent"
+        android:textColor="?attr/colorPrimary"
         android:textSize="@dimen/text_button" />
 
 </LinearLayout>

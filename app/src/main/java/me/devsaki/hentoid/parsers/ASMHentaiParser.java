@@ -18,7 +18,7 @@ public class ASMHentaiParser extends BaseParser {
 
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (doc != null) {
-            String imgUrl = "http:" +
+            String imgUrl = "https:" +
                     doc.select("div.full_gallery")
                             .select("a")
                             .select("img")
