@@ -557,6 +557,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
         filterClearButton.setOnClickListener(v -> {
             setQuery("");
+            mainSearchView.setQuery("", false);
             searchManager.clearSelectedSearchTags();
             filterBar.setVisibility(View.GONE);
             searchLibrary();
