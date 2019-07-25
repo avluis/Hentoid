@@ -137,6 +137,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
+        viewModel.setStartingIndex(imageIndex); // Memorize the current page
         viewModel.onSaveState(outState);
     }
 
