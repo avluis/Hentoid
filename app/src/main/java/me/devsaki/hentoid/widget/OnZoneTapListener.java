@@ -49,12 +49,12 @@ public class OnZoneTapListener implements View.OnTouchListener {
     }
 
     public boolean onSingleTapConfirmedAction(MotionEvent e) {
-        if (e.getX() < pagerTapZoneWidth) {
+        if (e.getX() < pagerTapZoneWidth && onLeftZoneTapListener != null) {
             onLeftZoneTapListener.run();
-        } else if (e.getX() > view.getWidth() - pagerTapZoneWidth) {
+        } else if (e.getX() > view.getWidth() - pagerTapZoneWidth && onRightZoneTapListener != null) {
             onRightZoneTapListener.run();
         } else {
-            onMiddleZoneTapListener.run();
+            if (onMiddleZoneTapListener != null) onMiddleZoneTapListener.run();
         }
         return true;
     }

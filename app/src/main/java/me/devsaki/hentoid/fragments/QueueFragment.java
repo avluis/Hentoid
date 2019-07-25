@@ -129,6 +129,7 @@ public class QueueFragment extends BaseFragment {
                 break;
             case DownloadEvent.EV_COMPLETE:
                 mAdapter.removeFromQueue(event.content);
+                dlPreparationProgressBar.setVisibility(View.GONE);
                 if (0 == mAdapter.getCount()) btnStats.setVisibility(View.GONE);
                 update(event.eventType);
                 break;

@@ -597,6 +597,11 @@ public class FileHelper {
         }
     }
 
+    public static String getFileProviderAuthority()
+    {
+        return AUTHORITY;
+    }
+
     /**
      * Open built-in image viewer telling it to display the images of the given Content
      *
