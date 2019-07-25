@@ -107,20 +107,22 @@ public class HentoidApp extends Application {
         // DB housekeeping
         performDatabaseHousekeeping();
 
-        // Init notifications
+        // Init notification channels
         UpdateNotificationChannel.init(this);
         DownloadNotificationChannel.init(this);
         MaintenanceNotificationChannel.init(this);
+
+        // Clears all previous notifications
+        NotificationManager manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager != null) manager.cancelAll();
+
+        // Run app update checks
         Intent intent = UpdateCheckService.makeIntent(this, false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
         } else {
             startService(intent);
         }
-
-        // Clears all previous notifications
-        NotificationManager manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (manager != null) manager.cancelAll();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             ShortcutHelper.buildShortcuts(this);

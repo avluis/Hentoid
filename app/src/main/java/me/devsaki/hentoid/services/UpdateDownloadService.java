@@ -25,7 +25,6 @@ import static me.devsaki.hentoid.notification.update.UpdateProgressNotification.
 
 /**
  * Service responsible for downloading an update APK.
- * Does not support targetSdkVersion > 23 due to exposure of "file:" URI
  *
  * @see UpdateCheckService
  */
@@ -68,7 +67,6 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
     @Override
     public void onDestroy() {
         running = false;
-        notificationManager.cancel();
         downloadManager.release();
         Timber.w("Service destroyed");
     }

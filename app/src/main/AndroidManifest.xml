@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Required to run keep-alive service when targeting API 28 or higher -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!-- Required to install update packages when targeting API 25 or higher -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <application
         android:name=".HentoidApp"
