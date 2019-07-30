@@ -53,7 +53,7 @@ public class NhentaiContent implements ContentParser {
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
         if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(theUrl.replace("/g", "").replace("1/", ""));
+        result.setUrl(theUrl.replace("/g", "").replaceFirst("/1/$", "/"));
         result.setCoverImageUrl(coverUrl);
         result.setTitle(title);
 
