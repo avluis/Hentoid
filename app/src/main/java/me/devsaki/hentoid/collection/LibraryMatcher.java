@@ -12,7 +12,7 @@ import timber.log.Timber;
 
 public class LibraryMatcher {
 
-    private Context context;
+    private final Context context;
 
 
     public LibraryMatcher(Context context) { this.context = context; }

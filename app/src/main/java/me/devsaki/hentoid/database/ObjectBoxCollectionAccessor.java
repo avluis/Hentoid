@@ -24,7 +24,7 @@ import me.devsaki.hentoid.util.Helper;
 public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
     private final ObjectBoxDB db;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private static final int MODE_SEARCH_CONTENT_MODULAR = 0;
     private static final int MODE_COUNT_CONTENT_MODULAR = 1;
@@ -48,7 +48,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     }
 
     static class AttributeQueryResult {
-        List<Attribute> pagedAttributes = new ArrayList<>();
+        final List<Attribute> pagedAttributes = new ArrayList<>();
         long totalSelectedAttributes;
 
         public void addAll(List<Attribute> list) {

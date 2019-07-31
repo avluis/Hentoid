@@ -36,7 +36,7 @@ import me.devsaki.hentoid.util.LogUtil;
  */
 public class ErrorStatsDialogFragment extends DialogFragment {
 
-    private static String ID = "ID";
+    private static final String ID = "ID";
 
     private TextView details;
     private int previousNbErrors;

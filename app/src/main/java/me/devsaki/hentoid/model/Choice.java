@@ -13,19 +13,19 @@ public class Choice {
     /**
      * the string that is displayed to the user
      */
-    private String label;
+    private final String label;
 
     /**
      * may be interpreted by the view as a view that is not clickable or may have a different
      * appearance.
      */
-    private boolean isEnabled;
+    private final boolean isEnabled;
 
     /**
      * may be interpreted by the view as a view that is not clickable or may have a different
      * appearance.
      */
-    private boolean isSelected;
+    private final boolean isSelected;
 
     public Choice(String label, boolean isEnabled, boolean isSelected) {
         this.label = label;

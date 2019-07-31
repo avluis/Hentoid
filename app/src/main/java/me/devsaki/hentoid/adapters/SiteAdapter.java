@@ -17,7 +17,7 @@ import me.devsaki.hentoid.util.Helper;
 public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterViewHolder> {
 
     private View.OnClickListener onClickListener = null;
-    private List<Site> dataset = new ArrayList<>();
+    private final List<Site> dataset = new ArrayList<>();
 
     public void setOnClickListener(View.OnClickListener listener) {
         this.onClickListener = listener;

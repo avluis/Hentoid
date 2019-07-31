@@ -46,9 +46,9 @@ public class ZoomableRecyclerView extends RecyclerView {
     private int lastVisibleItemPosition = 0;
     private float currentScale = DEFAULT_RATE;
 
-    private GestureListener listener = new GestureListener();
+    private final GestureListener listener = new GestureListener();
     private DoubleConsumer scaleListener = null;
-    private Detector detector = new Detector(getContext(), listener);
+    private final Detector detector = new Detector(getContext(), listener);
 
     private OnZoneTapListener tapListener;
     private LongTapListener longTapListener;

@@ -60,7 +60,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ZoomableFrame zoomFrame;
 
     private ImageViewerViewModel viewModel;
-    private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
+    private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private int imageIndex = -1;

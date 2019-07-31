@@ -27,8 +27,8 @@ import me.devsaki.hentoid.enums.Site;
  */
 public class SearchBookIdDialogFragment extends DialogFragment {
 
-    private static String ID = "ID";
-    private static String FOUND_SITES = "FOUND_SITES";
+    private static final String ID = "ID";
+    private static final String FOUND_SITES = "FOUND_SITES";
 
     private String bookId;
 

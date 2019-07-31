@@ -18,9 +18,9 @@ public class MikanContentResponse implements Serializable {
     @Expose
     public int maxpage;
     @Expose
-    public List<String> pages = new ArrayList<>();
+    public final List<String> pages = new ArrayList<>();
     @Expose
-    public List<MikanContent> result = new ArrayList<>();
+    public final List<MikanContent> result = new ArrayList<>();
 
 
     public List<Content> toContentList(LibraryMatcher matcher)

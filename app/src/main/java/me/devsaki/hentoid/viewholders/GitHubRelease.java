@@ -94,7 +94,7 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
     public class ReleaseViewHolder extends FlexibleViewHolder {
 
         private final TextView title;
-        private FlexibleAdapter<IFlexible> releaseDescriptionAdapter;
+        private final FlexibleAdapter<IFlexible> releaseDescriptionAdapter;
 
         ReleaseViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
