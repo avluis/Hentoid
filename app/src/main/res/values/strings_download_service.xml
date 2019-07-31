@@ -4,6 +4,7 @@
         <item quantity="one">Download completed</item>
         <item quantity="other">%d downloads completed</item>
     </plurals>
+    <string name="download_complete">Download complete</string>
     <string name="download_cancelled">Download cancelled</string>
     <string name="download_skipped">Download skipped</string>
     <string name="download_paused">Download paused</string>

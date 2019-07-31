@@ -49,7 +49,7 @@ public class IntroActivity extends AppIntro2 {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addSlide(new PermissionIntroFragment());
         }
-        addSlide(BaseSlide.newInstance(R.layout.intro_slide_04));
+        addSlide(BaseSlide.newInstance(R.layout.intro_slide_03));
         addSlide(new ImportIntroFragment());
         addSlide(new ThemeIntroFragment());
         addSlide(new DoneIntroFragment());

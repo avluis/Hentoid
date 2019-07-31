@@ -25,25 +25,26 @@ class ZipUtil {
 
     private static final int BUFFER = 32 * 1024;
 
-    private static void add(final File file, final ZipOutputStream stream, final byte[] data) {
-        Timber.d("Adding: %s", file);
-        try (FileInputStream fi = new FileInputStream(file); BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)) {
-
-            ZipEntry zipEntry = new ZipEntry(file.getName());
-            stream.putNextEntry(zipEntry);
-            int count;
-
-            while ((count = origin.read(data, 0, BUFFER)) != -1) {
-                stream.write(data, 0, count);
-            }
-        } catch (FileNotFoundException e) {
-            Timber.e(e, "File Not Found: %s", file);
-        } catch (IOException e) {
-            Timber.e(e, "IO Exception: %s", file);
-        }
-    }
-
     abstract static class ZipTask extends AsyncTask<Object, Void, Boolean> {
+
+        private static void add(final File file, final ZipOutputStream stream, final byte[] data) {
+            Timber.d("Adding: %s", file);
+            try (FileInputStream fi = new FileInputStream(file); BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)) {
+
+                ZipEntry zipEntry = new ZipEntry(file.getName());
+                stream.putNextEntry(zipEntry);
+                int count;
+
+                while ((count = origin.read(data, 0, BUFFER)) != -1) {
+                    stream.write(data, 0, count);
+                }
+            } catch (FileNotFoundException e) {
+                Timber.e(e, "File Not Found: %s", file);
+            } catch (IOException e) {
+                Timber.e(e, "IO Exception: %s", file);
+            }
+        }
+
         @Override
         protected Boolean doInBackground(Object... params) {
             File[] files = (File[]) params[0];

@@ -9,7 +9,7 @@ public class EHentaiGalleryQuery {
     @Expose
     public String method = "gdata";
     @Expose
-    public List<List<String>> gidlist;
+    public final List<List<String>> gidlist;
     @Expose
     public String namespace = "1";
 

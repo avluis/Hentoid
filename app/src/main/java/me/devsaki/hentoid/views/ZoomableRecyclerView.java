@@ -46,9 +46,9 @@ public class ZoomableRecyclerView extends RecyclerView {
     private int lastVisibleItemPosition = 0;
     private float currentScale = DEFAULT_RATE;
 
-    private GestureListener listener = new GestureListener();
+    private final GestureListener listener = new GestureListener();
     private DoubleConsumer scaleListener = null;
-    private Detector detector = new Detector(getContext(), listener);
+    private final Detector detector = new Detector(getContext(), listener);
 
     private OnZoneTapListener tapListener;
     private LongTapListener longTapListener;
@@ -223,15 +223,6 @@ public class ZoomableRecyclerView extends RecyclerView {
         return true;
     }
 
-    private void zoomScrollBy(int dx, int dy) {
-        if (dx != 0) {
-            setX(getPositionX(getX() + dx));
-        }
-        if (dy != 0) {
-            setY(getPositionY(getY() + dy));
-        }
-    }
-
     private void setScaleRate(float rate) {
         setScaleX(rate);
         setScaleY(rate);
@@ -321,24 +312,19 @@ public class ZoomableRecyclerView extends RecyclerView {
             int actionIndex = ev.getActionIndex();
 
             switch (action) {
-                case MotionEvent.ACTION_DOWN: {
+                case MotionEvent.ACTION_DOWN:
                     motionActionDownLocal(ev);
-                }
                 break;
-                case MotionEvent.ACTION_POINTER_DOWN: {
+                case MotionEvent.ACTION_POINTER_DOWN:
                     motionActionPointerDown(ev, actionIndex);
-                }
                 break;
-                case MotionEvent.ACTION_MOVE: {
+                case MotionEvent.ACTION_MOVE:
                     return motionActionMoveLocal(ev);
-                }
-                case MotionEvent.ACTION_UP: {
+                case MotionEvent.ACTION_UP:
                     motionActionUpLocal(ev);
                     break;
-                }
-                case MotionEvent.ACTION_CANCEL: {
+                case MotionEvent.ACTION_CANCEL:
                     motionActionCancel();
-                }
                 break;
                 default:
                     // Nothing to process as default
@@ -417,6 +403,15 @@ public class ZoomableRecyclerView extends RecyclerView {
             isZoomDragging = false;
             isDoubleTapping = false;
             isQuickScaling = false;
+        }
+
+        private void zoomScrollBy(int dx, int dy) {
+            if (dx != 0) {
+                setX(getPositionX(getX() + dx));
+            }
+            if (dy != 0) {
+                setY(getPositionY(getY() + dy));
+            }
         }
     }
 }

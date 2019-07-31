@@ -11,7 +11,7 @@ public class MikanAttributeResponse {
     @Expose
     public String request;
     @Expose
-    public List<MikanAttribute> result = new ArrayList<>();
+    public final List<MikanAttribute> result = new ArrayList<>();
 
     public List<Attribute> toAttributeList()
     {

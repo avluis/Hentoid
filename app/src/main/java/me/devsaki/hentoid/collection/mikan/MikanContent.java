@@ -24,15 +24,15 @@ public class MikanContent implements Serializable {
     @Expose
     public String image;
     @Expose
-    public List<MikanAttribute> artist = new ArrayList<>();
+    public final List<MikanAttribute> artist = new ArrayList<>();
     @Expose
-    public List<MikanAttribute> group = new ArrayList<>();
+    public final List<MikanAttribute> group = new ArrayList<>();
     @Expose
-    public List<MikanAttribute> series = new ArrayList<>();
+    public final List<MikanAttribute> series = new ArrayList<>();
     @Expose
-    public List<MikanAttribute> characters = new ArrayList<>();
+    public final List<MikanAttribute> characters = new ArrayList<>();
     @Expose
-    public List<MikanAttribute> tags = new ArrayList<>();
+    public final List<MikanAttribute> tags = new ArrayList<>();
     @Expose
     public MikanAttribute type;
     @Expose

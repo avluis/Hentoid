@@ -17,7 +17,7 @@ public class ViewZoomGestureListener extends GestureDetector {
         scaledTouchSlopslop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
-    private Handler handler = new Handler();
+    private final Handler handler = new Handler();
     private final int scaledTouchSlopslop;
     private final int longTapTime = ViewConfiguration.getLongPressTimeout();
     private final int doubleTapTime = ViewConfiguration.getDoubleTapTimeout();
@@ -26,7 +26,7 @@ public class ViewZoomGestureListener extends GestureDetector {
     private float downY = 0f;
     private long lastUp = 0L;
     private MotionEvent lastDownEvent;
-    protected Listener listener;
+    protected final Listener listener;
 
     /**
      * Runnable to execute when a long tap is confirmed.
@@ -42,22 +42,18 @@ public class ViewZoomGestureListener extends GestureDetector {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         switch (ev.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN: {
+            case MotionEvent.ACTION_DOWN:
                 motionActionDown(ev);
-            }
             break;
-            case MotionEvent.ACTION_MOVE: {
+            case MotionEvent.ACTION_MOVE:
                 motionActionMove(ev);
-            }
             break;
-            case MotionEvent.ACTION_UP: {
+            case MotionEvent.ACTION_UP:
                 motionActionUp(ev);
-            }
             break;
             case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_POINTER_DOWN: {
+            case MotionEvent.ACTION_POINTER_DOWN:
                 motionActionCancelandPointerDown();
-            }
             break;
             default:
                 // Nothing specific to do for other events

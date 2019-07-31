@@ -68,7 +68,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
     // Technical
     private ContentSearchManager searchManager = null;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
     public ImageViewerViewModel(@NonNull Application application) {

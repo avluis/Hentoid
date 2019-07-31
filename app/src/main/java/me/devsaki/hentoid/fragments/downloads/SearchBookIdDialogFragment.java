@@ -27,8 +27,8 @@ import me.devsaki.hentoid.enums.Site;
  */
 public class SearchBookIdDialogFragment extends DialogFragment {
 
-    private static String ID = "ID";
-    private static String FOUND_SITES = "FOUND_SITES";
+    private static final String ID = "ID";
+    private static final String FOUND_SITES = "FOUND_SITES";
 
     private String bookId;
 
@@ -87,9 +87,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             case HITOMI:
                 return site.getUrl() + "/galleries/" + id + ".html";
             case NHENTAI:
-                return site.getUrl() + "/g/" + id + "/";
             case ASMHENTAI:
-                return site.getUrl() + "/g/" + id + "/";
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/g/" + id + "/";
             case HENTAICAFE:
