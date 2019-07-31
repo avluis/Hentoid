@@ -472,11 +472,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         currentContent = content;
     }
 
-    private void hideActionFab() {
-        fabAction.hide();
-        fabActionEnabled = false;
-    }
-
     public void onResultReady(Content results, long totalContent) {
         processContent(results);
     }
@@ -486,31 +481,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
     /**
-     * Indicates if the given URL is forbidden by the current content filters
-     *
-     * @param url URL to be examinated
-     * @return True if URL is forbidden according to current filters; false if not
-     */
-    private boolean isUrlForbidden(String url) {
-        for (String s : universalBlockedContent) {
-            if (url.contains(s)) return true;
-        }
-        if (localBlockedContent != null)
-            for (String s : localBlockedContent) {
-                if (url.contains(s)) return true;
-            }
-
-        return false;
-    }
-
-
-    /**
      * Analyze loaded HTML to display download button
      * Override blocked content with empty content
      */
     class CustomWebViewClient extends WebViewClient {
 
-        private final Jspoon jspoon = Jspoon.create();
         protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
         protected final ResultListener<Content> listener;
@@ -527,6 +502,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             this.listener = listener;
 
             Class c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
+            final Jspoon jspoon = Jspoon.create();
             htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
             if (filteredUrl.length() > 0) filteredUrlPattern = Pattern.compile(filteredUrl);
@@ -538,6 +514,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             compositeDisposable.clear();
         }
 
+        private void hideActionFab() {
+            fabAction.hide();
+            fabActionEnabled = false;
+        }
+
         void restrictTo(String s) {
             restrictedDomainName = s;
         }
@@ -547,6 +528,24 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
             Matcher matcher = filteredUrlPattern.matcher(url);
             return matcher.find();
+        }
+
+        /**
+         * Indicates if the given URL is forbidden by the current content filters
+         *
+         * @param url URL to be examinated
+         * @return True if URL is forbidden according to current filters; false if not
+         */
+        private boolean isUrlForbidden(String url) {
+            for (String s : universalBlockedContent) {
+                if (url.contains(s)) return true;
+            }
+            if (localBlockedContent != null)
+                for (String s : localBlockedContent) {
+                    if (url.contains(s)) return true;
+                }
+
+            return false;
         }
 
         @Override

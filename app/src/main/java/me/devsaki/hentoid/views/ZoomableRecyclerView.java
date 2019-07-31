@@ -223,15 +223,6 @@ public class ZoomableRecyclerView extends RecyclerView {
         return true;
     }
 
-    private void zoomScrollBy(int dx, int dy) {
-        if (dx != 0) {
-            setX(getPositionX(getX() + dx));
-        }
-        if (dy != 0) {
-            setY(getPositionY(getY() + dy));
-        }
-    }
-
     private void setScaleRate(float rate) {
         setScaleX(rate);
         setScaleY(rate);
@@ -412,6 +403,15 @@ public class ZoomableRecyclerView extends RecyclerView {
             isZoomDragging = false;
             isDoubleTapping = false;
             isQuickScaling = false;
+        }
+
+        private void zoomScrollBy(int dx, int dy) {
+            if (dx != 0) {
+                setX(getPositionX(getX() + dx));
+            }
+            if (dy != 0) {
+                setY(getPositionY(getY() + dy));
+            }
         }
     }
 }
