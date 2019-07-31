@@ -49,7 +49,7 @@ public final class ActivatedPinPreferenceFragment extends Fragment
 
     @Override
     public void onPinResetSuccess() {
-        Snackbar.make(offSwitch, R.string.pin_reset, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(offSwitch, R.string.pin_reset_success, Snackbar.LENGTH_SHORT).show();
     }
 
     private void onOffClick() {

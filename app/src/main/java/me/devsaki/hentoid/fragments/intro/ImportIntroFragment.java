@@ -29,7 +29,7 @@ public class ImportIntroFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.intro_slide_05, container, false);
+        View view = inflater.inflate(R.layout.intro_slide_04, container, false);
 
         TextView customTv = view.findViewById(R.id.tv_library_custom);
         customTv.setOnClickListener(v -> parentActivity.onCustomStorageSelected());

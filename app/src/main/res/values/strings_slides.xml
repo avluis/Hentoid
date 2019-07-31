@@ -6,25 +6,19 @@
     <!-- Slide 02 -->
     <string name="slide_02_header">Permissions</string>
     <string name="slide_02_text">Got Marshmallows?\nWe need to ask you for permission to device storage.</string>
-    <!-- Slide 02 Alt -->
-    <string name="slide_02_alt_header">What to expect?</string>
-    <string name="slide_02_alt_text">Hentoid supports:\nNhentai, Hitomi, Tsumino, Hentai Cafe, ASM Hentai (manga &amp; comics) and Pururin\n&amp; archived content from\nFAKKU and Pururin.</string>
     <!-- Slide 03 -->
-    <string name="slide_03_header">Storage Folder</string>
-    <string name="slide_03_text">Hentoid requires a dedicated folder for storing your media.</string>
+    <string name="slide_03_header">Importing</string>
+    <string name="slide_03_text">Do you have an existing library?\nMake sure to set that as your storage folder.</string>
     <!-- Slide 04 -->
-    <string name="slide_04_header">Importing</string>
-    <string name="slide_04_text">Do you have an existing library?\nMake sure to set that as your storage folder.</string>
+    <string name="slide_04_header">Library</string>
+    <string name="slide_04_text">Hentoid requires a dedicated folder for storing your media.</string>
+    <string name="slide_04_library_default">Default\nSave to internal device storage</string>
+    <string name="slide_04_library_custom">Custom\nSave to a custom storage location</string>
     <!-- Slide 05 -->
-    <string name="slide_05_header">Library</string>
-    <string name="slide_05_text">Choose a storage location for your downloads.</string>
-    <string name="slide_05_library_default">Default\nSave to internal device storage</string>
-    <string name="slide_05_library_custom">Custom\nSave to a custom storage location</string>
-    <!-- Slide 06 -->
-    <string name="slide_06_header">Theme</string>
-    <string name="slide_06_text">Choose a display theme.</string>
-    <string name="slide_06_light">Light</string>
-    <string name="slide_06_dark">Dark</string>
+    <string name="slide_05_header">Theme</string>
+    <string name="slide_05_text">Choose a display theme.</string>
+    <string name="slide_05_light">Light</string>
+    <string name="slide_05_dark">Dark</string>
     <!-- Last slide -->
     <string name="slide_end_header">All set up!</string>
     <string name="slide_end_text">We are set!\nEnjoy the app.</string>

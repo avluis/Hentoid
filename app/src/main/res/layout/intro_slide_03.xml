@@ -46,7 +46,7 @@
             android:layout_gravity="center"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
-            android:src="@drawable/ic_intro_android_folder"
+            android:src="@drawable/ic_intro_open_book"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 
