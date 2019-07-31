@@ -87,9 +87,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             case HITOMI:
                 return site.getUrl() + "/galleries/" + id + ".html";
             case NHENTAI:
-                return site.getUrl() + "/g/" + id + "/";
             case ASMHENTAI:
-                return site.getUrl() + "/g/" + id + "/";
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/g/" + id + "/";
             case HENTAICAFE:

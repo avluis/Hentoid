@@ -42,22 +42,18 @@ public class ViewZoomGestureListener extends GestureDetector {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         switch (ev.getActionMasked()) {
-            case MotionEvent.ACTION_DOWN: {
+            case MotionEvent.ACTION_DOWN:
                 motionActionDown(ev);
-            }
             break;
-            case MotionEvent.ACTION_MOVE: {
+            case MotionEvent.ACTION_MOVE:
                 motionActionMove(ev);
-            }
             break;
-            case MotionEvent.ACTION_UP: {
+            case MotionEvent.ACTION_UP:
                 motionActionUp(ev);
-            }
             break;
             case MotionEvent.ACTION_CANCEL:
-            case MotionEvent.ACTION_POINTER_DOWN: {
+            case MotionEvent.ACTION_POINTER_DOWN:
                 motionActionCancelandPointerDown();
-            }
             break;
             default:
                 // Nothing specific to do for other events

@@ -321,24 +321,19 @@ public class ZoomableRecyclerView extends RecyclerView {
             int actionIndex = ev.getActionIndex();
 
             switch (action) {
-                case MotionEvent.ACTION_DOWN: {
+                case MotionEvent.ACTION_DOWN:
                     motionActionDownLocal(ev);
-                }
                 break;
-                case MotionEvent.ACTION_POINTER_DOWN: {
+                case MotionEvent.ACTION_POINTER_DOWN:
                     motionActionPointerDown(ev, actionIndex);
-                }
                 break;
-                case MotionEvent.ACTION_MOVE: {
+                case MotionEvent.ACTION_MOVE:
                     return motionActionMoveLocal(ev);
-                }
-                case MotionEvent.ACTION_UP: {
+                case MotionEvent.ACTION_UP:
                     motionActionUpLocal(ev);
                     break;
-                }
-                case MotionEvent.ACTION_CANCEL: {
+                case MotionEvent.ACTION_CANCEL:
                     motionActionCancel();
-                }
                 break;
                 default:
                     // Nothing to process as default
