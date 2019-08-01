@@ -16,7 +16,7 @@
         android:drawablePadding="@dimen/drawer_item_drawable_padding_start"
         android:gravity="center_vertical"
         android:paddingStart="@dimen/drawer_item_padding_start"
-        tools:drawableLeft="@drawable/ic_menu_about"
+        tools:drawableStart="@drawable/ic_menu_about"
         tools:ignore="RtlSymmetry"
         tools:text="About" />
 
