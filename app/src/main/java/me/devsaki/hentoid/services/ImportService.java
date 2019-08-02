@@ -7,6 +7,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.CheckResult;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
@@ -56,7 +57,7 @@ public class ImportService extends IntentService {
         super(ImportService.class.getName());
     }
 
-    public static Intent makeIntent(Context context) {
+    public static Intent makeIntent(@NonNull Context context) {
         return new Intent(context, ImportService.class);
     }
 

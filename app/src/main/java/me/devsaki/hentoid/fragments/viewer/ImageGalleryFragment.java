@@ -85,7 +85,7 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull final Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.gallery_menu, menu);
         favouritesFilterMenu = menu.findItem(R.id.gallery_menu_action_favourites);
         updateFavouriteDisplay();

@@ -54,7 +54,7 @@ public class CarouselDecorator {
     private class CarouselOnScrollListener extends RecyclerView.OnScrollListener {
 
         @Override
-        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
             if (newState != RecyclerView.SCROLL_STATE_IDLE) return;
 
             int position = layoutManager.findFirstVisibleItemPosition();

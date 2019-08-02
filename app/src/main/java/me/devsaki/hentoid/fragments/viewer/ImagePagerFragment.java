@@ -587,7 +587,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         else zoomFrame.disable();
 
         llm.setOrientation(getOrientation());
-        pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL != Preferences.getViewerOrientation());
+        pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation());
     }
 
     /**
