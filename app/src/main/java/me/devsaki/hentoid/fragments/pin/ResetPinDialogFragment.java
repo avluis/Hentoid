@@ -20,7 +20,7 @@ public final class ResetPinDialogFragment extends PinDialogFragment {
     private Parent parent;
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parent = (Parent) getParentFragment();
     }

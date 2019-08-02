@@ -41,7 +41,7 @@ public final class NavigationDrawerFragment extends Fragment {
     private FlexibleAdapter<DrawerItemFlex> drawerAdapter;
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parentActivity = (DownloadsActivity) context;
     }
