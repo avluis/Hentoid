@@ -144,7 +144,7 @@
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_doublearrowup"
                 android:tint="?colorPrimaryVariant"
-                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 />
 
@@ -156,8 +156,8 @@
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_arrow_up"
                 android:tint="?colorPrimaryVariant"
-                app:layout_constraintLeft_toRightOf="@id/queueTopBtn"
-                app:layout_constraintRight_toLeftOf="@id/queueDownBtn"
+                app:layout_constraintStart_toEndOf="@id/queueTopBtn"
+                app:layout_constraintEnd_toStartOf="@id/queueDownBtn"
                 app:layout_constraintTop_toTopOf="parent"
                 />
 
@@ -169,8 +169,8 @@
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_arrow_down"
                 android:tint="?colorPrimaryVariant"
-                app:layout_constraintLeft_toRightOf="@id/queueUpBtn"
-                app:layout_constraintRight_toLeftOf="@id/btnCancel"
+                app:layout_constraintStart_toEndOf="@id/queueUpBtn"
+                app:layout_constraintEnd_toStartOf="@id/btnCancel"
                 app:layout_constraintTop_toTopOf="parent"
                 />
 
@@ -183,7 +183,7 @@
                 android:textSize="@dimen/text_body_1"
                 android:textColor="?colorPrimaryVariant"
                 android:textStyle="bold"
-                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 />
         </androidx.constraintlayout.widget.ConstraintLayout>

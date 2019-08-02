@@ -20,7 +20,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_arrow_back"
         android:tint="?colorOnPrimary"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
@@ -36,8 +36,8 @@
         android:textAlignment="center"
         android:textSize="@dimen/text_subtitle_2"
         android:textColor="?colorOnPrimary"
-        app:layout_constraintLeft_toRightOf="@id/viewer_back_btn"
-        app:layout_constraintRight_toLeftOf="@id/viewer_settings_btn"
+        app:layout_constraintStart_toEndOf="@id/viewer_back_btn"
+        app:layout_constraintEnd_toStartOf="@id/viewer_settings_btn"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Title\nby Artist" />
 
@@ -52,7 +52,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_settings"
         android:tint="?colorOnPrimary"
-        app:layout_constraintRight_toLeftOf="@id/viewer_more_btn"
+        app:layout_constraintEnd_toStartOf="@id/viewer_more_btn"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
@@ -67,7 +67,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_action_more_vertical"
         android:tint="?colorOnPrimary"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
@@ -80,7 +80,7 @@
         android:background="?colorPrimaryVariant"
         android:padding="8dp"
         android:visibility="visible"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/viewer_more_btn">
 
         <ImageButton
@@ -94,7 +94,7 @@
             android:scaleType="fitCenter"
             android:src="@drawable/ic_menu_sort_random"
             android:tint="?colorOnPrimary"
-            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription" />
 
@@ -111,7 +111,7 @@
             android:textSize="@dimen/text_subtitle_2"
             android:textColor="?colorOnPrimary"
             app:layout_constraintBottom_toBottomOf="@id/viewer_shuffle_btn"
-            app:layout_constraintLeft_toRightOf="@id/viewer_shuffle_btn"
+            app:layout_constraintStart_toEndOf="@id/viewer_shuffle_btn"
             app:layout_constraintTop_toTopOf="@id/viewer_shuffle_btn" />
 
         <ImageButton
@@ -125,7 +125,7 @@
             android:scaleType="fitCenter"
             android:src="@drawable/ic_fav_empty"
             android:tint="?colorOnPrimary"
-            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/viewer_shuffle_btn"
             tools:ignore="ContentDescription" />
 
@@ -142,7 +142,7 @@
             android:textSize="@dimen/text_subtitle_2"
             android:textColor="?colorOnPrimary"
             app:layout_constraintBottom_toBottomOf="@id/viewer_favourite_btn"
-            app:layout_constraintLeft_toRightOf="@id/viewer_favourite_btn"
+            app:layout_constraintStart_toEndOf="@id/viewer_favourite_btn"
             app:layout_constraintTop_toTopOf="@id/viewer_favourite_btn" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -154,8 +154,8 @@
         android:layout_height="0dp"
         android:background="?colorPrimaryVariant"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_currentpage_text" />
 
     <ImageButton
@@ -169,7 +169,7 @@
         android:src="@drawable/ic_action_previous_item"
         android:tint="?colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:ignore="ContentDescription" />
 
@@ -184,7 +184,7 @@
         android:textSize="@dimen/text_body_1"
         android:textColor="?colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/viewer_prev_book_btn"
+        app:layout_constraintStart_toEndOf="@id/viewer_prev_book_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:text="28" />
 
@@ -197,8 +197,8 @@
         android:progressBackgroundTint="?colorOnPrimary"
         android:progressTint="?colorSecondary"
         android:colorControlActivated="?colorSecondary"
-        app:layout_constraintLeft_toRightOf="@id/viewer_currentpage_text"
-        app:layout_constraintRight_toLeftOf="@id/viewer_maxpage_text" />
+        app:layout_constraintStart_toEndOf="@id/viewer_currentpage_text"
+        app:layout_constraintEnd_toStartOf="@id/viewer_maxpage_text" />
 
     <TextView
         android:id="@+id/viewer_maxpage_text"
@@ -211,7 +211,7 @@
         android:textSize="@dimen/text_body_1"
         android:textColor="?colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/viewer_gallery_btn"
+        app:layout_constraintEnd_toStartOf="@id/viewer_gallery_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:text="255" />
 
@@ -226,7 +226,7 @@
         android:src="@drawable/ic_action_gallery"
         android:tint="?colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/viewer_favourites_btn"
+        app:layout_constraintEnd_toStartOf="@id/viewer_favourites_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:ignore="ContentDescription" />
 
@@ -241,7 +241,7 @@
         android:src="@drawable/ic_fav_full"
         android:tint="@color/secondary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/viewer_next_book_btn"
+        app:layout_constraintEnd_toStartOf="@id/viewer_next_book_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:ignore="ContentDescription" />
 
@@ -256,7 +256,7 @@
         android:src="@drawable/ic_action_next_item"
         android:tint="?colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:ignore="ContentDescription" />
 
@@ -268,8 +268,8 @@
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/viewer_image_preview2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_image_preview2"
         tools:ignore="ContentDescription" />
 
     <ImageView
@@ -278,8 +278,8 @@
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintLeft_toRightOf="@id/viewer_image_preview1"
-        app:layout_constraintRight_toLeftOf="@id/viewer_image_preview3"
+        app:layout_constraintStart_toEndOf="@id/viewer_image_preview1"
+        app:layout_constraintEnd_toStartOf="@id/viewer_image_preview3"
         tools:ignore="ContentDescription" />
 
     <ImageView
@@ -288,8 +288,8 @@
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintLeft_toRightOf="@id/viewer_image_preview2"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toEndOf="@id/viewer_image_preview2"
+        app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="ContentDescription" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

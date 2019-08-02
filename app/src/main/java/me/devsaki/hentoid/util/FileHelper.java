@@ -155,7 +155,7 @@ public class FileHelper {
     private static boolean isDirectoryWritable(@NonNull final File file) {
         File testFile = new File(file, "test.txt");
 
-        boolean hasPermission = false;
+        boolean hasPermission;
 
         try {
             hasPermission = FileUtil.makeFile(testFile);
