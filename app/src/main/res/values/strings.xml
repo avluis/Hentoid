@@ -119,9 +119,6 @@
     </plurals>
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
-    <string name="search_bookid_action_search">Search</string>
-    <string name="downloads_suggest_image_viewer_title">External viewer support dropped</string>
-    <string name="downloads_suggest_image_viewer">You can change this at any time in the app preferences</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
@@ -136,9 +133,6 @@
     <string name="update_check_no_update">Update Check: No new updates.</string>
     <!-- Image Viewer -->
     <string name="no_images">Could not load the book : No image found</string>
-    <string name="select_the_action">How will we open this?\nYou can configure the default action in preferences.</string>
-    <string name="open_default_image_viewer">Default image viewer</string>
-    <string name="open_perfect_viewer">Perfect Viewer</string>
     <string name="image_file_not_found">File not found in @dir</string>
     <!-- App Lock -->
     <string name="app_lock_pin">Enter PIN</string>
