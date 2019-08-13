@@ -20,8 +20,6 @@
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
             android:indeterminate="true" />
 
         <LinearLayout
@@ -55,14 +53,7 @@
 
         </LinearLayout>
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:layout_marginStart="1dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="5dp"
-            android:background="?colorPrimary" />
+        <View style="@style/Divider"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -103,34 +94,20 @@
                     android:textColor="?colorOnSurface"
                     tools:text="Best Author Ever" />
 
-                <View
-                    android:layout_width="fill_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginStart="1dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="5dp"
-                    android:background="?colorPrimary" />
+                <View style="@style/Divider"/>
 
                 <TextView
                     android:id="@+id/tvTags"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal|start"
-                    android:layout_marginStart="1dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="5dp"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@color/card_tags"
                     tools:text="Best Set of TAGs Ever\nToo Awesome to pass up" />
             </LinearLayout>
         </LinearLayout>
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:layout_margin="10dp"
-            android:background="?colorPrimary" />
+        <View style="@style/Divider"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
