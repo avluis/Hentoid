@@ -14,6 +14,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 public final class GoToPageDialogFragment extends DialogFragment {
 
     private Parent parent;
@@ -41,15 +43,15 @@ public final class GoToPageDialogFragment extends DialogFragment {
                 parent.goToPage(Integer.parseInt(input.getText().toString()));
         };
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog materialDialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(input)
                 .setPositiveButton(android.R.string.ok, positive)
                 .setNegativeButton(android.R.string.cancel, null)
                 .create();
 
-        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        materialDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 
-        return dialog;
+        return materialDialog;
     }
 
     public interface Parent {

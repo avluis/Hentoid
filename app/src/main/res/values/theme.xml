@@ -14,7 +14,7 @@
         <item name="android:windowBackground">@color/window_background</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/on_background</item>
-        <item name="alertDialogTheme">@style/Dialog</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog</item>
         <item name="dialogTheme">@style/Dialog</item>
         <item name="actionBarTheme">@style/ActionBar</item>
     </style>
@@ -64,7 +64,7 @@
         <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
         <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
         <item name="android:textColorHint">@color/light_gray</item>
-        <item name="alertDialogTheme">@style/Dialog</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog</item>
     </style>
 
     <style name="Dialog" parent="Theme.MaterialComponents.Dialog.Alert">

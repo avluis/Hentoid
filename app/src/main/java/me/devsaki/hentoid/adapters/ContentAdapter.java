@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SortedList;
@@ -20,7 +19,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.crashlytics.android.Crashlytics;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -464,7 +463,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             }
 
             String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
             builder.setTitle(R.string.redownload_dialog_title)
                     .setMessage(message)
                     .setPositiveButton(android.R.string.yes,
@@ -475,7 +474,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     .setNegativeButton(android.R.string.no, null)
                     .setNeutralButton(R.string.redownload_view_log,
                             (dialog, which) -> showErrorLog(item))
-                    .create().show();
+                    .show();
         }
     }
 
@@ -545,7 +544,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void askDeleteItem(final Content item) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> deleteItem(item))
@@ -558,7 +557,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void askDeleteItems(final List<Content> items) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         builder.setMessage(R.string.ask_delete_multiple)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
