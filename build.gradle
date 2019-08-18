@@ -9,10 +9,10 @@ buildscript {
         maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.4.2'
         classpath 'com.google.gms:google-services:4.0.0'
-        classpath 'io.fabric.tools:gradle:1.25.4'
-        classpath "io.objectbox:objectbox-gradle-plugin:2.3.1"
+        classpath 'io.fabric.tools:gradle:1.31.0'
+        classpath 'io.objectbox:objectbox-gradle-plugin:2.3.4'
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7"
 
         // NOTE: Do not place your application dependencies here; they belong
