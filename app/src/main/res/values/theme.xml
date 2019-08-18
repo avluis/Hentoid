@@ -9,12 +9,12 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/on_secondary</item>
-        <item name="colorSurface">@color/surface</item>
+        <item name="colorSurface">@color/window_background</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:windowBackground">@color/window_background</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/on_background</item>
-        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog</item>
+        <item name="materialAlertDialogTheme">@style/MaterialDialogTheme</item>
         <item name="dialogTheme">@style/Dialog</item>
         <item name="actionBarTheme">@style/ActionBar</item>
     </style>
@@ -67,8 +67,12 @@
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog</item>
     </style>
 
+    <style name="MaterialDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">?colorSecondary</item>
+    </style>
+
     <style name="Dialog" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="colorPrimary">@color/on_background</item> <!-- For some obscure reason, primary is used for buttons over background -->
+        <item name="colorPrimary">@color/secondary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSurface">@color/surface</item>
