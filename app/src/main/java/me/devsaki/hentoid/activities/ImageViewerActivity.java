@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProviders;
 import java.security.AccessControlException;
 
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.PermissionUtil;
@@ -20,6 +21,10 @@ import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
 
 public class ImageViewerActivity extends AppCompatActivity {
+
+    private ImageViewerViewModel viewModel;
+    private Bundle searchParams = null;
+    private long contentId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,13 +38,12 @@ public class ImageViewerActivity extends AppCompatActivity {
             throw new IllegalArgumentException("Required init arguments not found");
 
         ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
-        long contentId = parser.getContentId();
+        contentId = parser.getContentId();
         if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
 
-        ImageViewerViewModel viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
-        Bundle searchParams = parser.getSearchParams();
-        if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
-        else viewModel.loadFromContent(contentId);
+        searchParams = parser.getSearchParams();
+        viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
+        viewModel.getContent().observe(this, this::onContentChanged);
 
         if (!PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             ToastUtil.toast("Storage permission denied - cannot open the viewer");
@@ -57,6 +61,13 @@ public class ImageViewerActivity extends AppCompatActivity {
                     .beginTransaction()
                     .add(android.R.id.content, new ImagePagerFragment())
                     .commit();
+        }
+    }
+
+    private void onContentChanged(Content content) {
+        if (null == content) { // No book has been loaded yet (1st run with this instance)
+            if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
+            else viewModel.loadFromContent(contentId);
         }
     }
 }

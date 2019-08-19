@@ -26,6 +26,8 @@ import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
@@ -409,6 +411,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param content Loaded book
      */
     private void onContentChanged(Content content) {
+        if (null == content) return;
         updateBookInfo(content);
         updateBookNavigation(content);
     }
@@ -466,7 +469,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      *
      * @param content Current book
      */
-    private void updateBookNavigation(Content content) {
+    private void updateBookNavigation(@Nonnull Content content) {
         if (content.isFirst()) prevBookButton.setVisibility(View.INVISIBLE);
         else prevBookButton.setVisibility(View.VISIBLE);
         if (content.isLast()) nextBookButton.setVisibility(View.INVISIBLE);
@@ -513,7 +516,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      *
      * @param content Current content whose information to display
      */
-    private void updateBookInfo(Content content) {
+    private void updateBookInfo(@Nonnull Content content) {
         String title = content.getTitle();
         if (!content.getAuthor().isEmpty()) title += "\nby " + content.getAuthor();
         bookInfoText.setText(title);

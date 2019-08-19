@@ -71,8 +71,10 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
-    public ImageViewerViewModel(@NonNull Application application) {
+    public ImageViewerViewModel(@NonNull Application application)
+    {
         super(application);
+        content.setValue(null);
     }
 
     @NonNull
