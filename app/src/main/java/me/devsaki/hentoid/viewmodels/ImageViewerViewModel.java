@@ -74,7 +74,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     public ImageViewerViewModel(@NonNull Application application)
     {
         super(application);
-        content.setValue(null);
+        content.setValue(null); // Default content; tells everyone nothing has been loaded yet
     }
 
     @NonNull
