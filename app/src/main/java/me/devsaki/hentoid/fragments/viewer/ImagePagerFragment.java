@@ -443,7 +443,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
             // Resets zoom if we're using horizontal (independent pages) mode
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
-                adapter.resetPosition(position);
+                adapter.resetScaleAtPosition(position);
 
             seekBar.setProgress(position);
             updatePageDisplay();

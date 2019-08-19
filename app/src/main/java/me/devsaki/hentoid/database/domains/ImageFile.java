@@ -42,6 +42,8 @@ public class ImageFile {
     private int displayOrder;
     @Transient
     private String absolutePath;
+    @Transient
+    private String mimeType; // TODO : make it persistent ?
 
 
     public ImageFile() {
@@ -130,5 +132,13 @@ public class ImageFile {
 
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
+    }
+
+    public String getMimeType() {
+        return (null == mimeType) ? "" : mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
     }
 }

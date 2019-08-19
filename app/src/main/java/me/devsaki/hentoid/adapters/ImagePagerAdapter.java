@@ -67,7 +67,10 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
     @Override
     public int getItemViewType(int position) {
-        if ("gif".equalsIgnoreCase(FileHelper.getExtension(images.get(position).getAbsolutePath()))) {
+        ImageFile img = images.get(position);
+
+        if ("gif".equalsIgnoreCase(FileHelper.getExtension(img.getAbsolutePath()))
+                || img.getMimeType().contains("gif")) {
             return TYPE_GIF;
         }
         return TYPE_OTHER;
@@ -91,10 +94,9 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder viewHolder, int pos) {
-        viewHolder.setImageUri(images.get(pos).getAbsolutePath());
+        viewHolder.setImage(images.get(pos));
 
         int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
-
         ViewGroup.LayoutParams layoutParams = viewHolder.imgView.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = layoutStyle;
@@ -106,17 +108,18 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
         return (position >= 0 && position < images.size()) ? images.get(position) : null;
     }
 
-    public void resetPosition(int position) {
+    public void resetScaleAtPosition(int position) {
         if (recyclerView != null) {
             ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
             if (holder != null) holder.resetScale();
         }
     }
 
-    final class ImageViewHolder extends RecyclerView.ViewHolder {
+    final class ImageViewHolder extends RecyclerView.ViewHolder implements SubsamplingScaleImageView.OnImageEventListener {
 
         private final int imgType;
         private final View imgView;
+        private ImageFile img;
 
         private ImageViewHolder(@NonNull View itemView, int imageType) {
             super(itemView);
@@ -129,8 +132,11 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
             }
         }
 
-        void setImageUri(String uri) {
+        void setImage(ImageFile img) {
+            this.img = img;
+            String uri = img.getAbsolutePath();
             Timber.i(">>>>IMG %s %s", imgType, uri);
+
             if (TYPE_GIF == imgType) {
                 ImageView view = (ImageView) imgView;
                 Glide.with(imgView.getContext().getApplicationContext())
@@ -142,6 +148,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
                 SubsamplingScaleImageView ssView = (SubsamplingScaleImageView) imgView;
                 ssView.recycle();
                 ssView.setMinimumScaleType(getScaleType());
+                ssView.setOnImageEventListener(this);
                 ssView.setImage(ImageSource.uri(uri));
             }
         }
@@ -160,6 +167,39 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
                 if (ssView.isImageLoaded() && ssView.isReady() && ssView.isLaidOut())
                     ssView.resetScaleAndCenter();
             }
+        }
+
+        @Override
+        public void onReady() {
+            // Nothing special
+        }
+
+        @Override
+        public void onImageLoaded() {
+            // Nothing special
+        }
+
+        @Override
+        public void onPreviewLoadError(Exception e) {
+            // Nothing special
+        }
+
+        @Override
+        public void onImageLoadError(Exception e) {
+            // Mark image as GIF
+            img.setMimeType("image/gif");
+            // Reload to fall back to Glide
+            notifyItemChanged(getLayoutPosition());
+        }
+
+        @Override
+        public void onTileLoadError(Exception e) {
+            // Nothing special
+        }
+
+        @Override
+        public void onPreviewReleased() {
+            // Nothing special
         }
     }
 }
