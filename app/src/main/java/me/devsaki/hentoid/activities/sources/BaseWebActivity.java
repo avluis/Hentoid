@@ -615,8 +615,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 for (String key : headers.keySet())
                     headersList.add(new Pair<>(key, headers.get(key)));
 
-            String cookie = CookieManager.getInstance().getCookie(urlStr);
-            if (cookie != null) headersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
+            // Dropped on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
+            // https://issuetracker.google.com/issues/36989494
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH) {
+                String cookie = CookieManager.getInstance().getCookie(urlStr);
+                if (cookie != null)
+                    headersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
+            }
 
             try {
                 Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
