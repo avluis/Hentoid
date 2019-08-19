@@ -35,6 +35,8 @@ public class ImageGalleryFragment extends Fragment {
     private ImageViewerViewModel viewModel;
     private MenuItem favouritesFilterMenu;
 
+    private int startIndex = 0;
+
     private Boolean filterFavourites = false;
 
 
@@ -67,8 +69,8 @@ public class ImageGalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel.getImages()
-                .observe(this, this::onImagesChanged);
+        viewModel.getStartingIndex().observe(this, this::onStartingIndexChanged);
+        viewModel.getImages().observe(this, this::onImagesChanged);
     }
 
     @Override
@@ -105,7 +107,15 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private void onImagesChanged(List<ImageFile> images) {
-        for (ImageFile img : images) galleryImagesAdapter.addItem(new ImageFileFlex(img));
+        for (ImageFile img : images) {
+            ImageFileFlex holder = new ImageFileFlex(img);
+            if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
+            galleryImagesAdapter.addItem(holder);
+        }
+    }
+
+    private void onStartingIndexChanged(Integer startingIndex) {
+        startIndex = startingIndex;
     }
 
     private boolean onItemClick(View view, int position) {
@@ -127,7 +137,8 @@ public class ImageGalleryFragment extends Fragment {
                 filterFavourites = false;
                 galleryImagesAdapter.setFilter(filterFavourites);
                 galleryImagesAdapter.filterItems();
-                if (galleryImagesAdapter.getItemCount() > 0) galleryImagesAdapter.smoothScrollToPosition(0);
+                if (galleryImagesAdapter.getItemCount() > 0)
+                    galleryImagesAdapter.smoothScrollToPosition(0);
             } else {
                 galleryImagesAdapter.notifyDataSetChanged(); // Because no easy way to spot which item has changed when the view is filtered
             }
@@ -146,7 +157,10 @@ public class ImageGalleryFragment extends Fragment {
         favouritesFilterMenu.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
         galleryImagesAdapter.setFilter(filterFavourites);
         galleryImagesAdapter.filterItems();
-        if (galleryImagesAdapter.getItemCount() > 0) galleryImagesAdapter.smoothScrollToPosition(0);
+        if (galleryImagesAdapter.getItemCount() > startIndex)
+            galleryImagesAdapter.smoothScrollToPosition(startIndex);
+        else if (galleryImagesAdapter.getItemCount() > 0)
+            galleryImagesAdapter.smoothScrollToPosition(0);
     }
 
     @Override
