@@ -87,7 +87,7 @@ public class IntentActivity extends BaseActivity {
             case PURURIN:
                 return toParse.replace("/gallery", "") + "/";
             case EHENTAI:
-                return toParse;
+                return toParse.replace("g/","");
             case FAKKU2:
                 return toParse.replace("/hentai", "");
             case NEXUS:
