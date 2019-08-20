@@ -269,8 +269,8 @@ public class ObjectBoxDB {
     }
 
     @Nullable
-    public Content selectContentByUrl(String url) {
-        return store.boxFor(Content.class).query().equal(Content_.url, url).build().findFirst();
+    public Content selectContentBySourceAndUrl(Site site, String url) {
+        return store.boxFor(Content.class).query().equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
     }
 
     @Nullable
