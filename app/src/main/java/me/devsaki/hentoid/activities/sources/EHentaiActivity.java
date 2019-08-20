@@ -56,9 +56,14 @@ public class EHentaiActivity extends BaseWebActivity {
             compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            metadata -> listener.onResultReady(metadata.toContent(urlStr), 1),
+                            metadata ->
+                            {
+                                isHtmlLoaded = true;
+                                listener.onResultReady(metadata.toContent(urlStr), 1);
+                            },
                             throwable -> {
                                 Timber.e(throwable, "Error parsing content.");
+                                isHtmlLoaded = true;
                                 listener.onResultFailed("");
                             })
             );

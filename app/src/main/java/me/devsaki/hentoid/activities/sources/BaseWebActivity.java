@@ -494,7 +494,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         private String restrictedDomainName = "";
         private boolean isPageLoading = false;
-        private boolean isHtmlLoaded = false;
+        boolean isHtmlLoaded = false;
 
 
         @SuppressWarnings("unchecked")
@@ -574,6 +574,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         @Override
         public void onPageFinished(WebView view, String url) {
             isPageLoading = false;
+            isHtmlLoaded = false; // Reset for the next page
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_refresh);
         }
 
@@ -584,10 +585,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (!isPageLoading) {
-                    isHtmlLoaded = false;
-                    if (isPageFiltered(url)) return parseResponse(url, null);
-                }
+                if (!isPageLoading && isPageFiltered(url)) return parseResponse(url, null);
                 return super.shouldInterceptRequest(view, url);
             }
         }
@@ -600,10 +598,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (!isPageLoading) {
-                    isHtmlLoaded = false;
-                    if (isPageFiltered(url)) return parseResponse(url, request.getRequestHeaders());
-                }
+                if (!isPageLoading && isPageFiltered(url))
+                    return parseResponse(url, request.getRequestHeaders());
                 return super.shouldInterceptRequest(view, request);
             }
         }
