@@ -238,9 +238,10 @@ class FileUtil {
      * Create a file.
      *
      * @param file The file to be created.
+     * @param forceWrite Force writing operation even if an existing file is found (useful for I/O tests)
      * @return true if creation was successful.
      */
-    static boolean makeFile(@NonNull final File file) {
+    static boolean makeFile(@NonNull final File file, boolean forceWrite) {
         if (file.exists()) {
             // nothing to create.
             return !file.isDirectory();
@@ -255,15 +256,21 @@ class FileUtil {
 
         // Try with Storage Access Framework.
         if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile document = getOrCreateDocumentFile(file.getParentFile(), true);
+            DocumentFile folder = getOrCreateDocumentFile(file.getParentFile(), true);
             // getOrCreateDocumentFile implicitly creates the directory.
             try {
-                if (document != null) {
-                    //MimeTypes.getMimeType(file)
-                    String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(file.getName()));
-                    if (null == mimeType) mimeType = "application/octet-stream";
+                if (folder != null) {
+                    DocumentFile existingFile = folder.findFile(file.getName());
+                    if (null == existingFile || forceWrite) {
+                        // If file exists (force write), delete it
+                        if (existingFile != null && !existingFile.delete()) return false;
 
-                    return document.createFile(mimeType, file.getName()) != null;
+                        // Creating a new file
+                        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(file.getName()));
+                        if (null == mimeType) mimeType = "application/octet-stream";
+
+                        return folder.createFile(mimeType, file.getName()) != null;
+                    } else return true; // File already exists
                 }
             } catch (Exception e) {
                 return false;
