@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.os.IBinder;
 import android.util.SparseIntArray;
 import android.webkit.MimeTypeMap;
 
@@ -84,6 +85,9 @@ public class ContentDownloadService extends IntentService {
         super(ContentDownloadService.class.getName());
     }
 
+
+    // Only called once when processing multiple downloads; will be only called
+    // if the entire queue is paused (=service destroyed), then resumed (service re-created)
     @Override
     public void onCreate() {
         super.onCreate();
@@ -112,9 +116,31 @@ public class ContentDownloadService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Timber.d("New intent processed");
+        notificationManager.startForeground(new DownloadProgressNotification("Starting download", 0, 0));
 
         Content content = downloadFirstInQueue();
         if (content != null) watchProgress(content);
+    }
+
+    // The following 3 overrides are there to attempt fixing https://stackoverflow.com/questions/55894636/android-9-pie-context-startforegroundservice-did-not-then-call-service-star
+
+    @androidx.annotation.Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        stopForeground(true); // <- remove notification
+        return null;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        if (notificationManager != null)
+            notificationManager.startForeground(new DownloadProgressNotification("Starting download", 0, 0)); // <- show notification again
+        return true;
+    }
+
+    @Override
+    public void onRebind(Intent intent) {
+        stopForeground(true); // <- remove notification
     }
 
     /**
