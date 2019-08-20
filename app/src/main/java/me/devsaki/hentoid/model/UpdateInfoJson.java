@@ -10,19 +10,18 @@ public class UpdateInfoJson {
     @SerializedName("versionCode")
     private int versionCode;
 
-    public String getUpdateUrl() {
-        return updateUrl;
+    @SerializedName("updateURL.debug")
+    private String updateUrlDebug;
+
+    @SerializedName("versionCode.debug")
+    private int versionCodeDebug;
+
+
+    public String getUpdateUrl(boolean isDebug) {
+        return isDebug ? updateUrlDebug : updateUrl;
     }
 
-    public void setUpdateUrl(String updateUrl) {
-        this.updateUrl = updateUrl;
-    }
-
-    public int getVersionCode() {
-        return versionCode;
-    }
-
-    public void setVersionCode(int versionCode) {
-        this.versionCode = versionCode;
+    public int getVersionCode(boolean isDebug) {
+        return isDebug ? versionCodeDebug : versionCode;
     }
 }

@@ -18,13 +18,12 @@ android {
         minSdkVersion 19
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 28
-        versionCode 110 // is updated automatically by BitRise; only used when building locally
+        versionCode 130 // is updated automatically by BitRise; only used when building locally
         versionName '1.8.5'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
 
-        buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/"'
         buildConfigField "String", "FK_TOKEN", fkToken
         buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
 
@@ -36,11 +35,15 @@ android {
             applicationIdSuffix ".debug"
             versionNameSuffix "-DEBUG"
 
+            buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/dev/app/"'
+
             proguardFile 'proguard-rules-debug.pro'
         }
         release {
             debuggable false
             minifyEnabled true
+
+            buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/"'
 
             proguardFile 'proguard-rules-release.pro'
             testProguardFile 'proguard-rules-test.pro'
