@@ -53,7 +53,8 @@ public class NhentaiContent implements ContentParser {
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
 
         if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
-        if (theUrl.endsWith("favorite")) return result.setStatus(StatusContent.IGNORED);
+        if (null == thumbs || thumbs.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.endsWith("favorite")) return result.setStatus(StatusContent.IGNORED); // Fav button
 
         result.setUrl(theUrl.replace("/g", "").replaceFirst("/1/$", "/"));
         result.setCoverImageUrl(coverUrl);
