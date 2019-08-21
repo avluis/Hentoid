@@ -296,7 +296,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         String defaultUserAgent = webView.getSettings().getUserAgentString();
         if (defaultUserAgent.contains(chromeString)) {
             int chromeIndex = defaultUserAgent.indexOf(chromeString);
-            int dotIndex = defaultUserAgent.indexOf(".", chromeIndex);
+            int dotIndex = defaultUserAgent.indexOf('.', chromeIndex);
             String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
             return Integer.parseInt(version);
         } else return -1;
@@ -574,6 +574,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
          *   - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
          *     https://issuetracker.google.com/issues/36989494
          *   - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes issues on nHentai)
+         *     https://bugs.chromium.org/p/chromium/issues/detail?id=780491
          *
          * @return true if HTML content can be served by a single OkHttp request,
          * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
