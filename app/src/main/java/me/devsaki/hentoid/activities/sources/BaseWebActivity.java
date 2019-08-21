@@ -113,6 +113,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private boolean fabActionEnabled;
 
     private CustomWebViewClient webClient;
+    private int chromeVersion;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -275,6 +276,9 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         webClient = getWebClient();
         webView.setWebViewClient(webClient);
 
+        Timber.i("Using agent %s", webView.getSettings().getUserAgentString());
+        chromeVersion = getChromeVersion();
+
         WebSettings webSettings = webView.getSettings();
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
@@ -285,6 +289,17 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
+    }
+
+    private int getChromeVersion() {
+        String chromeString = "Chrome/";
+        String defaultUserAgent = webView.getSettings().getUserAgentString();
+        if (defaultUserAgent.contains(chromeString)) {
+            int chromeIndex = defaultUserAgent.indexOf(chromeString);
+            int dotIndex = defaultUserAgent.indexOf(".", chromeIndex);
+            String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
+            return Integer.parseInt(version);
+        } else return -1;
     }
 
     private void initSwipeLayout() {
@@ -554,6 +569,21 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             return false;
         }
 
+        /**
+         * Determines if the browser can use one single OkHttp request to serve HTML pages
+         *   - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
+         *     https://issuetracker.google.com/issues/36989494
+         *   - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes issues on nHentai)
+         *
+         * @return true if HTML content can be served by a single OkHttp request,
+         * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
+         */
+        private boolean useSingleOkHttpRequest() {
+            return (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
+                    && (chromeVersion < 58 || chromeVersion > 71)
+            );
+        }
+
         @Override
         @Deprecated
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -617,9 +647,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 for (String key : headers.keySet())
                     headersList.add(new Pair<>(key, headers.get(key)));
 
-            // Dropped on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
-            // https://issuetracker.google.com/issues/36989494
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH) {
+            if (useSingleOkHttpRequest()) {
                 String cookie = CookieManager.getInstance().getCookie(urlStr);
                 if (cookie != null)
                     headersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
@@ -629,16 +657,25 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
                 if (null == response.body()) throw new IOException("Empty body");
 
-                // Response body bytestream needs to be duplicated
-                // because Jsoup closes it, which makes it unavailable for the WebView to use
-                List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
+                InputStream parserStream;
+                WebResourceResponse result;
+                if (useSingleOkHttpRequest()) {
+                    // Response body bytestream needs to be duplicated
+                    // because Jsoup closes it, which makes it unavailable for the WebView to use
+                    List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
+                    parserStream = is.get(0);
+                    result = HttpHelper.okHttpResponseToWebResourceResponse(response, is.get(1));
+                } else {
+                    parserStream = response.body().byteStream();
+                    result = null; // Default webview behaviour
+                }
 
                 compositeDisposable.add(
-                        Single.fromCallable(() -> htmlAdapter.fromInputStream(is.get(0), new URL(urlStr)).toContent(urlStr))
+                        Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
                                 .subscribeOn(Schedulers.computation())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
-                                        result -> processContent(result, headersList),
+                                        content -> processContent(content, headersList),
                                         throwable -> {
                                             Timber.e(throwable, "Error parsing content.");
                                             isHtmlLoaded = true;
@@ -646,7 +683,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                                         })
                 );
 
-                return HttpHelper.okHttpResponseToWebResourceResponse(response, is.get(1));
+                return result;
             } catch (MalformedURLException e) {
                 Timber.e(e, "Malformed URL : %s", urlStr);
             } catch (IOException e) {
