@@ -96,7 +96,7 @@ public class MusesContent implements ContentParser {
                         // All that comes after element 2 contributes to the book title
                         boolean first = true;
                         StringBuilder bookTitleBuilder = new StringBuilder();
-                        for (int i = 3; i < breadcrumbs.size() - 1; i++) {
+                        for (int i = 3; i < breadcrumbs.size(); i++) {
                             if (first) first = false;
                             else bookTitleBuilder.append(" - ");
                             bookTitleBuilder.append(breadcrumbs.get(i).text());
