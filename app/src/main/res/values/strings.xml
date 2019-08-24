@@ -194,6 +194,7 @@
     <string name="pref_viewer_image_display">Image display mode</string>
     <string name="pref_viewer_browse_mode">Browse mode</string>
     <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
+    <string name="pref_viewer_invert_volume">Invert volume buttons</string>
     <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
     <string name="gallery_menu_favourite">Toggle favourite filter</string>
 

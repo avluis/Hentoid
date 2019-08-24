@@ -240,6 +240,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isViewerInvertVolumeRocker() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, Default.PREF_VIEWER_INVERT_VOLUME_ROCKER);
+    }
+
+    public static void setViewerInvertVolumeRocker(boolean invertVolumeRocker) {
+        sharedPreferences.edit()
+                .putBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, invertVolumeRocker)
+                .apply();
+    }
+
     public static boolean isOpenBookInGalleryMode() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_OPEN_GALLERY, Default.PREF_VIEWER_OPEN_GALLERY);
     }
@@ -300,6 +310,7 @@ public final class Preferences {
         public static final String PREF_VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling";
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
+        public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
         public static final String DARK_MODE = "pref_dark_mode";
     }
@@ -325,6 +336,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
+        static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
         static final int PREF_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_OFF;
     }
 

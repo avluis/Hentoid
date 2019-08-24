@@ -60,6 +60,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
     private ZoomableFrame zoomFrame;
+    private VolumeGestureListener volumeGestureListener;
 
     private ImageViewerViewModel viewModel;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
@@ -176,10 +177,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         zoomFrame = requireViewById(rootView, R.id.image_viewer_zoom_frame);
 
-        VolumeGestureListener volumeGestureListener = new VolumeGestureListener()
+        volumeGestureListener = new VolumeGestureListener()
                 .setOnVolumeDownListener(this::previousPage)
                 .setOnVolumeUpListener(this::nextPage)
-                .setOnBackListener(this::onBackClick);
+                .setOnBackListener(this::onBackClick)
+                .setButtonsInverted(Preferences.isViewerInvertVolumeRocker());
 
         recyclerView = requireViewById(rootView, R.id.image_viewer_zoom_recycler);
         recyclerView.setAdapter(adapter);
@@ -547,6 +549,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             case Preferences.Key.PREF_VIEWER_DISPLAY_PAGENUM:
                 onUpdatePageNumDisplay();
                 break;
+            case Preferences.Key.PREF_VIEWER_INVERT_VOLUME_ROCKER:
+                onUpdateInvertVolumeRocker();
+                break;
             default:
                 // Other changes aren't handled here
         }
@@ -562,6 +567,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onUpdateSwipeToFling() {
         int flingFactor = Preferences.isViewerSwipeToFling() ? 75 : 0;
         pageSnapWidget.setFlingSensitivity(flingFactor / 100f);
+    }
+
+    private void onUpdateInvertVolumeRocker() {
+        volumeGestureListener.setButtonsInverted(Preferences.isViewerInvertVolumeRocker());
     }
 
     private void onUpdateImageDisplay() {

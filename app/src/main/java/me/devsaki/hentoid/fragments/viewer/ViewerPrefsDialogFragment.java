@@ -60,6 +60,10 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
         theSwitch.setChecked(Preferences.isViewerSwipeToFling());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerSwipeToFling(isChecked));
 
+        theSwitch = requireViewById(view, R.id.viewer_prefs_invert_volume_action);
+        theSwitch.setChecked(Preferences.isViewerInvertVolumeRocker());
+        theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerInvertVolumeRocker(isChecked));
+
         RadioGroup theRadio = requireViewById(view, R.id.viewer_prefs_display_mode_group);
         switch (Preferences.getViewerResizeMode()) {
             case (Preferences.Constant.PREF_VIEWER_DISPLAY_FIT):

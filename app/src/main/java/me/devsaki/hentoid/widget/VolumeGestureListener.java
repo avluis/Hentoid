@@ -11,13 +11,17 @@ public final class VolumeGestureListener implements View.OnKeyListener {
 
     private Runnable onBackListener;
 
+
     private int cooldown = 1000;
 
     private int turboCooldown = 500;
 
     private boolean isTurboEnabled = true;
 
+    private boolean isButtonsInverted = false;
+
     private long nextNotifyTime;
+
 
     public VolumeGestureListener setOnVolumeDownListener(Runnable onVolumeDownListener) {
         this.onVolumeDownListener = onVolumeDownListener;
@@ -49,14 +53,29 @@ public final class VolumeGestureListener implements View.OnKeyListener {
         return this;
     }
 
+    public VolumeGestureListener setButtonsInverted(boolean isInverted) {
+        isButtonsInverted = isInverted;
+        return this;
+    }
+
+    private boolean isVolumeKey(int keyCode, int targetKeyCode) {
+        if (isButtonsInverted) {
+            if (targetKeyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
+                return (keyCode == KeyEvent.KEYCODE_VOLUME_UP);
+            else if (targetKeyCode == KeyEvent.KEYCODE_VOLUME_UP)
+                return (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN);
+        }
+        return (keyCode == targetKeyCode);
+    }
+
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
         if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
 
         Runnable listener;
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+        if (isVolumeKey(keyCode, KeyEvent.KEYCODE_VOLUME_DOWN)) {
             listener = onVolumeDownListener;
-        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+        } else if (isVolumeKey(keyCode, KeyEvent.KEYCODE_VOLUME_UP)) {
             listener = onVolumeUpListener;
         } else if (keyCode == KeyEvent.KEYCODE_BACK) {
             listener = onBackListener;
