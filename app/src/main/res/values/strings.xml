@@ -5,6 +5,8 @@
     <string name="yes">Yes</string> <!-- because Android default "OK" value for "yes" key is nonsense -->
     <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
     <string name="try_it">Try it</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
     <!-- Activities -->
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
@@ -79,7 +81,6 @@
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
-    <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it from Google Play.</string>
     <string name="error_open">Error opening image : no image viewer found.</string>
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
@@ -118,9 +119,6 @@
     </plurals>
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
-    <string name="search_bookid_action_search">Search</string>
-    <string name="downloads_suggest_image_viewer_title">External viewer support dropped</string>
-    <string name="downloads_suggest_image_viewer">You can change this at any time in the app preferences</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
@@ -135,20 +133,19 @@
     <string name="update_check_no_update">Update Check: No new updates.</string>
     <!-- Image Viewer -->
     <string name="no_images">Could not load the book : No image found</string>
-    <string name="select_the_action">How will we open this?\nYou can configure the default action in preferences.</string>
-    <string name="open_default_image_viewer">Default image viewer</string>
-    <string name="open_perfect_viewer">Perfect Viewer</string>
     <string name="image_file_not_found">File not found in @dir</string>
     <!-- App Lock -->
     <string name="app_lock_pin">Enter PIN</string>
     <string name="app_lock_pin_prefs">App Lock PIN</string>
     <string name="app_lock_enable">App Lock Enabled</string>
     <string name="app_lock_disabled">App Lock Disabled</string>
-    <string name="pin_reset">Pin has been reset</string>
+    <string name="pin_reset">Reset PIN</string>
+    <string name="pin_reset_success">Pin has been reset</string>
     <string name="pin_ok">PIN OK!</string>
     <string name="pin_current">Enter Current PIN</string>
     <string name="pin_new">Enter New PIN</string>
     <string name="pin_new_confirm">Confirm New PIN</string>
+    <string name="pin_explanation">App Lock prevents unauthorized use of this app by requiring a 4-digit PIN when launched</string>
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
     <string name="about2">In regards to Tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>

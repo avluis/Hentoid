@@ -36,7 +36,7 @@ import me.devsaki.hentoid.util.LogUtil;
  */
 public class ErrorStatsDialogFragment extends DialogFragment {
 
-    private static String ID = "ID";
+    private static final String ID = "ID";
 
     private TextView details;
     private int previousNbErrors;
@@ -116,10 +116,10 @@ public class ErrorStatsDialogFragment extends DialogFragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
         if (event.eventType == DownloadEvent.EV_COMPLETE) {
-            details.setText("Download complete");
+            details.setText(R.string.download_complete);
             previousNbErrors = 0;
         } else if (event.eventType == DownloadEvent.EV_CANCEL) {
-            details.setText("Download cancelled");
+            details.setText(R.string.download_cancelled);
             previousNbErrors = 0;
         } else if ((event.eventType == DownloadEvent.EV_PROGRESS)
                     && (event.pagesKO > previousNbErrors)

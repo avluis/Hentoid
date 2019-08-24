@@ -1,9 +1,12 @@
 package me.devsaki.hentoid.activities.sources;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.os.Build;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Map;
 
@@ -33,6 +36,9 @@ public class EHentaiActivity extends BaseWebActivity {
         CustomWebViewClient client = new EHentaiWebClient(GALLERY_FILTER, this);
         CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "sl=dm_2");
         client.restrictTo(DOMAIN_FILTER);
+        // E-h serves images through hosts that use http connections, which is detected as "mixed content" by the app
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         return client;
     }
 
@@ -50,9 +56,14 @@ public class EHentaiActivity extends BaseWebActivity {
             compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            metadata -> listener.onResultReady(metadata.toContent(urlStr), 1),
+                            metadata ->
+                            {
+                                isHtmlLoaded = true;
+                                listener.onResultReady(metadata.toContent(urlStr), 1);
+                            },
                             throwable -> {
                                 Timber.e(throwable, "Error parsing content.");
+                                isHtmlLoaded = true;
                                 listener.onResultFailed("");
                             })
             );

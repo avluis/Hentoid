@@ -17,7 +17,7 @@ public final class ActivatePinDialogFragment extends PinDialogFragment {
     private String proposedPin;
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parent = (Parent) getParentFragment();
     }
@@ -46,7 +46,7 @@ public final class ActivatePinDialogFragment extends PinDialogFragment {
     }
 
     @Override
-    public void onCancel(DialogInterface dialog) {
+    public void onCancel(@NonNull DialogInterface dialog) {
         parent.onPinActivateCancel();
     }
 

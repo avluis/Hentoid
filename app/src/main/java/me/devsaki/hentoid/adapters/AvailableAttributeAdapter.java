@@ -17,7 +17,7 @@ public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeVie
 
     private static final int VISIBLE_THRESHOLD = 5;
 
-    private List<Attribute> dataset = new ArrayList<>();
+    private final List<Attribute> dataset = new ArrayList<>();
     private Runnable onScrollToEndListener = null;
     private View.OnClickListener onClickListener = null;
 

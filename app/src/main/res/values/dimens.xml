@@ -30,8 +30,6 @@
     <dimen name="toolbar_layout_elevation">6dp</dimen>
 
     <!-- browser -->
-    <dimen name="activity_base_web_padding">6dp</dimen>
-
     <dimen name="download_fab_margin">8dp</dimen>
 
     <dimen name="refresh_fab_margin_bottom">0dp</dimen>

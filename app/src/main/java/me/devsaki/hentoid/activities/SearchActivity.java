@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.activities;
 
 import android.app.Activity;
+
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
@@ -57,7 +59,7 @@ public class SearchActivity extends BaseActivity {
 
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
@@ -66,7 +68,7 @@ public class SearchActivity extends BaseActivity {
     }
 
     @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
         Uri searchUri = new SearchActivityBundle.Parser(savedInstanceState).getUri();

@@ -155,10 +155,10 @@ public class FileHelper {
     private static boolean isDirectoryWritable(@NonNull final File file) {
         File testFile = new File(file, "test.txt");
 
-        boolean hasPermission = false;
+        boolean hasPermission;
 
         try {
-            hasPermission = FileUtil.makeFile(testFile);
+            hasPermission = FileUtil.makeFile(testFile, true);
             if (hasPermission)
                 try (OutputStream output = FileHelper.getOutputStream(testFile)) {
                     output.write("test".getBytes());
@@ -318,7 +318,7 @@ public class FileHelper {
             }
         }
         // Re-create nomedia file to confirm write permissions
-        hasPermission = FileUtil.makeFile(nomedia);
+        hasPermission = FileUtil.makeFile(nomedia, true);
 
         if (!hasPermission) {
             if (notify) {
@@ -345,7 +345,7 @@ public class FileHelper {
         String settingDir = Preferences.getRootFolderName();
         File noMedia = new File(settingDir, ".nomedia");
 
-        if (FileUtil.makeFile(noMedia)) {
+        if (FileUtil.makeFile(noMedia, false)) {
             ToastUtil.toast(R.string.nomedia_file_created);
         } else {
             Timber.d(".nomedia file already exists.");

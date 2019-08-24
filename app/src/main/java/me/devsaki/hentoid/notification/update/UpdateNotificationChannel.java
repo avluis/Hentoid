@@ -5,6 +5,8 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+
 import java.util.Objects;
 
 public class UpdateNotificationChannel {
@@ -13,7 +15,7 @@ public class UpdateNotificationChannel {
     private static final String ID_OLD2 = "update2";
     static final String ID = "update3";
 
-    public static void init(Context context) {
+    public static void init(@NonNull Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String name = "Updates";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
@@ -24,10 +26,10 @@ public class UpdateNotificationChannel {
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
 
             // Mandatory; it is not possible to change the sound of an existing channel after its initial creation
+            Objects.requireNonNull(notificationManager, "notificationManager must not be null");
             notificationManager.deleteNotificationChannel(ID_OLD);
             notificationManager.deleteNotificationChannel(ID_OLD2);
-
-            Objects.requireNonNull(notificationManager).createNotificationChannel(channel);
+            notificationManager.createNotificationChannel(channel);
         }
     }
 }

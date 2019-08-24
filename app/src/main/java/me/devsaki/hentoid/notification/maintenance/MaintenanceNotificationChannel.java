@@ -23,9 +23,9 @@ public class MaintenanceNotificationChannel {
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
 
             // Mandatory; it is not possible to change the sound of an existing channel after its initial creation
+            Objects.requireNonNull(notificationManager, "notificationManager must not be null");
             notificationManager.deleteNotificationChannel(ID_OLD);
-
-            Objects.requireNonNull(notificationManager).createNotificationChannel(channel);
+            notificationManager.createNotificationChannel(channel);
         }
     }
 }

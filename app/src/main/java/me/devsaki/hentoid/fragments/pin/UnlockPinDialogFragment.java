@@ -15,7 +15,7 @@ public final class UnlockPinDialogFragment extends PinDialogFragment {
     private Parent parent;
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parent = (Parent) context;
     }
@@ -37,7 +37,7 @@ public final class UnlockPinDialogFragment extends PinDialogFragment {
     }
 
     @Override
-    public void onCancel(DialogInterface dialog) {
+    public void onCancel(@NonNull DialogInterface dialog) {
         super.onCancel(dialog);
         parent.onPinCancel();
     }

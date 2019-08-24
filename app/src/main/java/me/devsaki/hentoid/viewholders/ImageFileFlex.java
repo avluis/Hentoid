@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.viewholders;
 
+import android.graphics.Typeface;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -22,6 +23,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileViewHolder> implements IFilterable<Boolean> {
 
     private final ImageFile item;
+    private boolean isCurrent;
     private static final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     public ImageFileFlex(ImageFile item) {
@@ -30,6 +32,10 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
 
     public ImageFile getItem() {
         return item;
+    }
+
+    public void setCurrent(boolean current) {
+        this.isCurrent = current;
     }
 
 
@@ -59,7 +65,7 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
 
     @Override
     public void bindViewHolder(FlexibleAdapter<IFlexible> adapter, ImageFileViewHolder holder, int position, List<Object> payloads) {
-        holder.setContent(item);
+        holder.setContent(item, isCurrent);
     }
 
     @Override
@@ -86,9 +92,12 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
             favouriteBtn.setOnClickListener(v -> onFavouriteClicked());
         }
 
-        void setContent(ImageFile item) {
+        void setContent(ImageFile item, boolean isCurrentPage) {
             imageFile = item;
-            pageNumberTxt.setText(String.format("Page %s", item.getOrder()));
+            String currentBegin = isCurrentPage ? ">" : "";
+            String currentEnd = isCurrentPage ? "<" : "";
+            pageNumberTxt.setText(String.format("%sPage %s%s", currentBegin, item.getOrder(), currentEnd));
+            if (isCurrentPage) pageNumberTxt.setTypeface(null, Typeface.BOLD);
             updateFavourite(item.isFavourite());
             Glide.with(image.getContext().getApplicationContext())
                     .load(item.getAbsolutePath())

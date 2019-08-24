@@ -38,12 +38,12 @@ public class ZoomableFrame extends FrameLayout {
     /**
      * Scale detector, either with pinch or quick scale.
      */
-    private ScaleGestureDetector scaleDetector = new ScaleGestureDetector(getContext(), new ScaleListener());
+    private final ScaleGestureDetector scaleDetector = new ScaleGestureDetector(getContext(), new ScaleListener());
 
     /**
      * Fling detector.
      */
-    private GestureDetector flingDetector = new GestureDetector(getContext(), new FlingListener());
+    private final GestureDetector flingDetector = new GestureDetector(getContext(), new FlingListener());
 
     /**
      * Recycler view added in this frame.

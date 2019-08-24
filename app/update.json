@@ -1,4 +1,6 @@
 {
   "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.8.5/hentoid185129.apk",
-  "versionCode": "129"
+  "versionCode": "129",
+  "updateURL.debug": "https://cdn.discordapp.com/attachments/418817277383671808/597183217996529664/hentoid181114.apk",
+  "versionCode.debug": "114"
 }

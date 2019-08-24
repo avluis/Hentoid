@@ -26,6 +26,8 @@ import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
@@ -60,7 +62,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ZoomableFrame zoomFrame;
 
     private ImageViewerViewModel viewModel;
-    private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
+    private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private int imageIndex = -1;
@@ -409,6 +411,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param content Loaded book
      */
     private void onContentChanged(Content content) {
+        if (null == content) return;
         updateBookInfo(content);
         updateBookNavigation(content);
     }
@@ -440,7 +443,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
             // Resets zoom if we're using horizontal (independent pages) mode
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
-                adapter.resetPosition(position);
+                adapter.resetScaleAtPosition(position);
 
             seekBar.setProgress(position);
             updatePageDisplay();
@@ -466,7 +469,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      *
      * @param content Current book
      */
-    private void updateBookNavigation(Content content) {
+    private void updateBookNavigation(@Nonnull Content content) {
         if (content.isFirst()) prevBookButton.setVisibility(View.INVISIBLE);
         else prevBookButton.setVisibility(View.VISIBLE);
         if (content.isLast()) nextBookButton.setVisibility(View.INVISIBLE);
@@ -513,7 +516,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      *
      * @param content Current content whose information to display
      */
-    private void updateBookInfo(Content content) {
+    private void updateBookInfo(@Nonnull Content content) {
         String title = content.getTitle();
         if (!content.getAuthor().isEmpty()) title += "\nby " + content.getAuthor();
         bookInfoText.setText(title);
@@ -587,7 +590,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         else zoomFrame.disable();
 
         llm.setOrientation(getOrientation());
-        pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL != Preferences.getViewerOrientation());
+        pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation());
     }
 
     /**

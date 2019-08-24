@@ -30,7 +30,7 @@
         android:gravity="center"
         android:paddingStart="64dp"
         android:paddingEnd="64dp"
-        android:text="@string/slide_03_text"
+        android:text="@string/slide_05_text"
         android:textSize="16sp" />
 
     <LinearLayout
@@ -41,30 +41,28 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tv_library_default"
+            android:id="@+id/intro_6_light"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
-            android:drawableLeft="@drawable/ic_action_sd_storage"
             android:drawablePadding="8dp"
-            android:drawableStart="@drawable/ic_action_sd_storage"
+            android:drawableStart="@drawable/ic_light"
             android:focusable="true"
-            android:padding="20dp"
-            android:text="@string/slide_05_library_default" />
+            android:padding="30dp"
+            android:text="@string/slide_05_light" />
 
         <TextView
-            android:id="@+id/tv_library_custom"
+            android:id="@+id/intro_6_dark"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
-            android:drawableLeft="@drawable/ic_action_sd_storage"
             android:drawablePadding="8dp"
-            android:drawableStart="@drawable/ic_action_sd_storage"
+            android:drawableStart="@drawable/ic_dark"
             android:focusable="true"
             android:gravity="center_vertical"
-            android:padding="20dp"
-            android:text="@string/slide_05_library_custom" />
+            android:padding="30dp"
+            android:text="@string/slide_05_dark" />
     </LinearLayout>
 </LinearLayout>

@@ -20,8 +20,6 @@
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
             android:indeterminate="true" />
 
         <LinearLayout
@@ -55,14 +53,7 @@
 
         </LinearLayout>
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:layout_marginStart="1dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="5dp"
-            android:background="?colorPrimary" />
+        <View style="@style/Divider"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -103,34 +94,20 @@
                     android:textColor="?colorOnSurface"
                     tools:text="Best Author Ever" />
 
-                <View
-                    android:layout_width="fill_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginStart="1dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="5dp"
-                    android:background="?colorPrimary" />
+                <View style="@style/Divider"/>
 
                 <TextView
                     android:id="@+id/tvTags"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal|start"
-                    android:layout_marginStart="1dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="5dp"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@color/card_tags"
                     tools:text="Best Set of TAGs Ever\nToo Awesome to pass up" />
             </LinearLayout>
         </LinearLayout>
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:layout_margin="10dp"
-            android:background="?colorPrimary" />
+        <View style="@style/Divider"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -144,7 +121,7 @@
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_doublearrowup"
                 android:tint="?colorPrimaryVariant"
-                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 />
 
@@ -156,8 +133,8 @@
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_arrow_up"
                 android:tint="?colorPrimaryVariant"
-                app:layout_constraintLeft_toRightOf="@id/queueTopBtn"
-                app:layout_constraintRight_toLeftOf="@id/queueDownBtn"
+                app:layout_constraintStart_toEndOf="@id/queueTopBtn"
+                app:layout_constraintEnd_toStartOf="@id/queueDownBtn"
                 app:layout_constraintTop_toTopOf="parent"
                 />
 
@@ -169,8 +146,8 @@
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_arrow_down"
                 android:tint="?colorPrimaryVariant"
-                app:layout_constraintLeft_toRightOf="@id/queueUpBtn"
-                app:layout_constraintRight_toLeftOf="@id/btnCancel"
+                app:layout_constraintStart_toEndOf="@id/queueUpBtn"
+                app:layout_constraintEnd_toStartOf="@id/btnCancel"
                 app:layout_constraintTop_toTopOf="parent"
                 />
 
@@ -183,7 +160,7 @@
                 android:textSize="@dimen/text_body_1"
                 android:textColor="?colorPrimaryVariant"
                 android:textStyle="bold"
-                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 />
         </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,8 +4,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import androidx.annotation.Nullable;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -92,10 +93,10 @@ public class UpdateCheckService extends Service {
     }
 
     private void onCheckSuccess(UpdateInfoJson updateInfoJson) {
-        if (BuildConfig.VERSION_CODE < updateInfoJson.getVersionCode()) {
+        if (BuildConfig.VERSION_CODE < updateInfoJson.getVersionCode(BuildConfig.DEBUG)) {
             stopForeground(true);
 
-            String updateUrl = updateInfoJson.getUpdateUrl();
+            String updateUrl = updateInfoJson.getUpdateUrl(BuildConfig.DEBUG);
             EventBus.getDefault().postSticky(new UpdateEvent(true));
             notificationManager.notify(new UpdateAvailableNotification(updateUrl));
         } else {

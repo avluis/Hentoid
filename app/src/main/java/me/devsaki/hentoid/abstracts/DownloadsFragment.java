@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -578,10 +579,10 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         }
 
         // If none of the above, user is asking to leave => use double-tap
-        if (MODE_MIKAN == mode || backButtonPressed + 2000 > System.currentTimeMillis()) {
+        if (MODE_MIKAN == mode || backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
             return true;
         } else {
-            backButtonPressed = System.currentTimeMillis();
+            backButtonPressed = SystemClock.elapsedRealtime();
             ToastUtil.toast(mContext, R.string.press_back_again);
 
             if (llm != null) {

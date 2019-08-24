@@ -13,7 +13,7 @@
         android:checked="false"
         android:paddingStart="72dp"
         android:paddingEnd="16dp"
-        android:text="Off"
+        android:text="@string/off"
         android:textSize="@dimen/text_body_1"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -38,7 +38,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:text="App Lock prevents unauthorized use of this app by requiring a 4-digit PIN when launched"
+        android:text="@string/pin_explanation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/image_info"
         app:layout_constraintTop_toBottomOf="@id/switch_on" />

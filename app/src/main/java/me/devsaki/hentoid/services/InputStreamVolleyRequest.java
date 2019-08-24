@@ -62,6 +62,7 @@ class InputStreamVolleyRequest extends Request<Object> {
     public Map<String, String> getHeaders() {
         Map<String, String> params = new HashMap<>();
         params.put("User-Agent", useHentoidAgent ? Consts.USER_AGENT : Consts.USER_AGENT_NEUTRAL);
+        params.put("Accept","*/*"); // Required to pass through cloudflare filtering on some sites
         params.putAll(headers);
         return params;
     }

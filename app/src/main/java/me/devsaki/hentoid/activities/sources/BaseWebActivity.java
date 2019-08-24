@@ -48,6 +48,7 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
@@ -83,9 +84,9 @@ import timber.log.Timber;
  * The source itself should contain every method it needs to function.
  * <p>
  * todo issue:
- *  {@link #checkPermissions()} causes the app to reset unexpectedly. If permission is integral to
- *  this activity's function, it is recommended to request for this permission and show rationale if
- *  permission request is denied
+ * {@link #checkPermissions()} causes the app to reset unexpectedly. If permission is integral to
+ * this activity's function, it is recommended to request for this permission and show rationale if
+ * permission request is denied
  */
 public abstract class BaseWebActivity extends BaseActivity implements ResultListener<Content> {
 
@@ -112,6 +113,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private boolean fabActionEnabled;
 
     private CustomWebViewClient webClient;
+    private int chromeVersion;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -266,8 +268,16 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             webView.getSettings().setLoadWithOverviewMode(true);
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+
+
         webClient = getWebClient();
         webView.setWebViewClient(webClient);
+
+        Timber.i("Using agent %s", webView.getSettings().getUserAgentString());
+        chromeVersion = getChromeVersion();
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setBuiltInZoomControls(true);
@@ -279,6 +289,17 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
+    }
+
+    private int getChromeVersion() {
+        String chromeString = "Chrome/";
+        String defaultUserAgent = webView.getSettings().getUserAgentString();
+        if (defaultUserAgent.contains(chromeString)) {
+            int chromeIndex = defaultUserAgent.indexOf(chromeString);
+            int dotIndex = defaultUserAgent.indexOf('.', chromeIndex);
+            String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
+            return Integer.parseInt(version);
+        } else return -1;
     }
 
     private void initSwipeLayout() {
@@ -338,7 +359,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         if (MODE_DL == fabActionMode) processDownload();
         else if (MODE_QUEUE == fabActionMode) goToQueue();
         else if (MODE_READ == fabActionMode && currentContent != null) {
-            currentContent = db.selectContentByUrl(currentContent.getUrl());
+            currentContent = db.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
             if (currentContent != null) {
                 if (StatusContent.DOWNLOADED == currentContent.getStatus()
                         || StatusContent.ERROR == currentContent.getStatus()
@@ -442,8 +463,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             return;
         }
 
-        Timber.i("Content URL : %s", content.getUrl());
-        Content contentDB = db.selectContentByUrl(content.getUrl());
+        Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
+        Content contentDB = db.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
 
         boolean isInCollection = (contentDB != null && (
                 contentDB.getStatus().equals(StatusContent.DOWNLOADED)
@@ -472,11 +493,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         currentContent = content;
     }
 
-    private void hideActionFab() {
-        fabAction.hide();
-        fabActionEnabled = false;
-    }
-
     public void onResultReady(Content results, long totalContent) {
         processContent(results);
     }
@@ -486,31 +502,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
     /**
-     * Indicates if the given URL is forbidden by the current content filters
-     *
-     * @param url URL to be examinated
-     * @return True if URL is forbidden according to current filters; false if not
-     */
-    private boolean isUrlForbidden(String url) {
-        for (String s : universalBlockedContent) {
-            if (url.contains(s)) return true;
-        }
-        if (localBlockedContent != null)
-            for (String s : localBlockedContent) {
-                if (url.contains(s)) return true;
-            }
-
-        return false;
-    }
-
-
-    /**
      * Analyze loaded HTML to display download button
      * Override blocked content with empty content
      */
     class CustomWebViewClient extends WebViewClient {
 
-        private final Jspoon jspoon = Jspoon.create();
         protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
         protected final ResultListener<Content> listener;
@@ -519,7 +515,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         private String restrictedDomainName = "";
         private boolean isPageLoading = false;
-        private boolean isHtmlLoaded = false;
+        boolean isHtmlLoaded = false;
 
 
         @SuppressWarnings("unchecked")
@@ -527,6 +523,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             this.listener = listener;
 
             Class c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
+            final Jspoon jspoon = Jspoon.create();
             htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
             if (filteredUrl.length() > 0) filteredUrlPattern = Pattern.compile(filteredUrl);
@@ -538,6 +535,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             compositeDisposable.clear();
         }
 
+        private void hideActionFab() {
+            fabAction.hide();
+            fabActionEnabled = false;
+        }
+
         void restrictTo(String s) {
             restrictedDomainName = s;
         }
@@ -547,6 +549,40 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
             Matcher matcher = filteredUrlPattern.matcher(url);
             return matcher.find();
+        }
+
+        /**
+         * Indicates if the given URL is forbidden by the current content filters
+         *
+         * @param url URL to be examinated
+         * @return True if URL is forbidden according to current filters; false if not
+         */
+        private boolean isUrlForbidden(String url) {
+            for (String s : universalBlockedContent) {
+                if (url.contains(s)) return true;
+            }
+            if (localBlockedContent != null)
+                for (String s : localBlockedContent) {
+                    if (url.contains(s)) return true;
+                }
+
+            return false;
+        }
+
+        /**
+         * Determines if the browser can use one single OkHttp request to serve HTML pages
+         *   - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
+         *     https://issuetracker.google.com/issues/36989494
+         *   - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes issues on nHentai)
+         *     https://bugs.chromium.org/p/chromium/issues/detail?id=780491
+         *
+         * @return true if HTML content can be served by a single OkHttp request,
+         * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
+         */
+        private boolean useSingleOkHttpRequest() {
+            return (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
+                    && (chromeVersion < 58 || chromeVersion > 71)
+            );
         }
 
         @Override
@@ -575,6 +611,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         @Override
         public void onPageFinished(WebView view, String url) {
             isPageLoading = false;
+            isHtmlLoaded = false; // Reset for the next page
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_refresh);
         }
 
@@ -585,10 +622,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (!isPageLoading) {
-                    isHtmlLoaded = false;
-                    if (isPageFiltered(url)) return parseResponse(url, null);
-                }
+                if (!isPageLoading && isPageFiltered(url)) return parseResponse(url, null);
                 return super.shouldInterceptRequest(view, url);
             }
         }
@@ -601,10 +635,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (!isPageLoading) {
-                    isHtmlLoaded = false;
-                    if (isPageFiltered(url)) return parseResponse(url, request.getRequestHeaders());
-                }
+                if (!isPageLoading && isPageFiltered(url))
+                    return parseResponse(url, request.getRequestHeaders());
                 return super.shouldInterceptRequest(view, request);
             }
         }
@@ -616,23 +648,35 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 for (String key : headers.keySet())
                     headersList.add(new Pair<>(key, headers.get(key)));
 
-            String cookie = CookieManager.getInstance().getCookie(urlStr);
-            if (cookie != null) headersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
+            if (useSingleOkHttpRequest()) {
+                String cookie = CookieManager.getInstance().getCookie(urlStr);
+                if (cookie != null)
+                    headersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
+            }
 
             try {
                 Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
                 if (null == response.body()) throw new IOException("Empty body");
 
-                // Response body bytestream needs to be duplicated
-                // because Jsoup closes it, which makes it unavailable for the WebView to use
-                List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
+                InputStream parserStream;
+                WebResourceResponse result;
+                if (useSingleOkHttpRequest()) {
+                    // Response body bytestream needs to be duplicated
+                    // because Jsoup closes it, which makes it unavailable for the WebView to use
+                    List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
+                    parserStream = is.get(0);
+                    result = HttpHelper.okHttpResponseToWebResourceResponse(response, is.get(1));
+                } else {
+                    parserStream = response.body().byteStream();
+                    result = null; // Default webview behaviour
+                }
 
                 compositeDisposable.add(
-                        Single.fromCallable(() -> htmlAdapter.fromInputStream(is.get(0), new URL(urlStr)).toContent(urlStr))
+                        Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
                                 .subscribeOn(Schedulers.computation())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
-                                        result -> processContent(result, headersList),
+                                        content -> processContent(content, headersList),
                                         throwable -> {
                                             Timber.e(throwable, "Error parsing content.");
                                             isHtmlLoaded = true;
@@ -640,7 +684,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                                         })
                 );
 
-                return HttpHelper.okHttpResponseToWebResourceResponse(response, is.get(1));
+                return result;
             } catch (MalformedURLException e) {
                 Timber.e(e, "Malformed URL : %s", urlStr);
             } catch (IOException e) {
@@ -656,7 +700,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
             for (Pair<String, String> p : headersList)
-                if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY)) params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
+                if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
+                    params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
 
             content.setDownloadParams(JsonHelper.serializeToJson(params));
             isHtmlLoaded = true;

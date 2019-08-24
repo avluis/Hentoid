@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers;
 
+import android.util.Pair;
 import android.webkit.URLUtil;
 
 import org.json.JSONArray;
@@ -16,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.HttpHelper;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
@@ -32,7 +34,10 @@ public class HentaiCafeParser extends BaseParser {
         String pageUrl = content.getGalleryUrl();
         int pages = 0;
 
-        Document doc = getOnlineDocument(pageUrl);
+        // hCafe needs the PHPSESSID cookie set to succeed the redirection to the book page (see issue #370)
+        List<Pair<String, String>> headers = new ArrayList<>();
+        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "PHPSESSID="+content.getTitle().hashCode()));
+        Document doc = getOnlineDocument(pageUrl, headers, true);
         if (null == doc) throw new Exception("Document unreachable : " + pageUrl);
 
         Timber.d("Parsing: %s", pageUrl);

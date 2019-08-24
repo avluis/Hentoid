@@ -29,7 +29,7 @@ public class ThemeIntroFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.intro_slide_06, container, false);
+        View view = inflater.inflate(R.layout.intro_slide_05, container, false);
 
         View lightBtn = view.findViewById(R.id.intro_6_light);
         lightBtn.setOnClickListener(v -> parentActivity.setThemePrefs(Preferences.Constant.DARK_MODE_OFF));

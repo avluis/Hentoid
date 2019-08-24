@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+
 import androidx.annotation.Nullable;
 
 import me.devsaki.hentoid.abstracts.BaseActivity;
@@ -77,15 +78,22 @@ public class IntentActivity extends BaseActivity {
                 return toParse.replace("/g", "");
             case TSUMINO:
                 return toParse.replace("/Book/Info", "");
-            case ASMHENTAI_COMICS:
-                return toParse.replace("/g", "") + "/"; // '/' required
             case ASMHENTAI:
+            case ASMHENTAI_COMICS:
                 return toParse.replace("/g", "") + "/"; // '/' required
             case HENTAICAFE:
                 String path = data.toString();
                 return path.contains("/?p=") ? path.replace(Site.HENTAICAFE.getUrl(), "") : toParse;
             case PURURIN:
                 return toParse.replace("/gallery", "") + "/";
+            case EHENTAI:
+                return toParse.replace("g/","");
+            case FAKKU2:
+                return toParse.replace("/hentai", "");
+            case NEXUS:
+                return toParse.replace("/view", "");
+            case MUSES:
+                return toParse;
             default:
                 return null;
         }
