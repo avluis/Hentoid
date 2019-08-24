@@ -36,8 +36,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.fakku.FakkuDecode;
 import me.devsaki.fakku.PageInfo;
 import me.devsaki.fakku.PointTranslation;
@@ -80,6 +85,7 @@ public class ContentDownloadService extends IntentService {
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
 
     private RequestQueueManager<Object> requestQueueManager = null;
+    protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
@@ -108,6 +114,7 @@ public class ContentDownloadService extends IntentService {
     @Override
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
+        compositeDisposable.clear();
 
         Timber.d("Download service destroyed");
         super.onDestroy();
@@ -428,14 +435,17 @@ public class ContentDownloadService extends IntentService {
      * @return Volley request and its handler
      */
     private Request<Object> buildDownloadRequest(
-            ImageFile img,
-            File dir,
+            @Nonnull ImageFile img,
+            @Nonnull File dir,
             boolean canKnowHentoidAgent,
             boolean hasImageProcessing) {
 
+        String backupUrl = "";
+
         Map<String, String> headers = new HashMap<>();
         String downloadParamsStr = img.getDownloadParams();
-        if (downloadParamsStr != null && !downloadParamsStr.isEmpty()) {
+        if (downloadParamsStr != null && downloadParamsStr.length() > 2) // Avoid empty and "{}"
+        {
             Type type = new TypeToken<Map<String, String>>() {
             }.getType();
             Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
@@ -444,7 +454,10 @@ public class ContentDownloadService extends IntentService {
                 headers.put(HttpHelper.HEADER_COOKIE_KEY, downloadParams.get(HttpHelper.HEADER_COOKIE_KEY));
             if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
                 headers.put(HttpHelper.HEADER_REFERER_KEY, downloadParams.get(HttpHelper.HEADER_REFERER_KEY));
+            if (downloadParams.containsKey("backupUrl"))
+                backupUrl = downloadParams.get("backupUrl");
         }
+        final String backupUrlFinal = (null == backupUrl) ? "" : backupUrl;
 
         return new InputStreamVolleyRequest(
                 Request.Method.GET,
@@ -452,10 +465,10 @@ public class ContentDownloadService extends IntentService {
                 headers,
                 canKnowHentoidAgent,
                 result -> onRequestSuccess(result, img, dir, hasImageProcessing),
-                error -> onRequestError(error, img));
+                error -> onRequestError(error, img, dir, backupUrlFinal));
     }
 
-    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, ImageFile img, File dir, boolean hasImageProcessing) {
+    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, @Nonnull ImageFile img, @Nonnull File dir, boolean hasImageProcessing) {
         try {
             if (result != null) {
                 processAndSaveImage(img, dir, result.getValue().get("Content-Type"), result.getKey(), hasImageProcessing);
@@ -475,9 +488,29 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    private void onRequestError(VolleyError error, ImageFile img) {
+    private void onRequestError(VolleyError error, @Nonnull ImageFile img, @Nonnull File dir, @Nonnull String backupUrl) {
+        // Try with the backup URL, if it exists
+        if (!backupUrl.isEmpty()) {
+            Timber.i("Using backup URL %s", backupUrl);
+            Site site = img.content.getTarget().getSite();
+            ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
+
+            // per Volley behaviour, this method is called on the UI thread
+            // -> need to create a new thread to do a network call
+            compositeDisposable.add(
+                    Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder()))
+                            .subscribeOn(Schedulers.computation())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    imageFile -> processBackupImage(imageFile, img, dir, site),
+                                    throwable -> Timber.e(throwable, "Error processing backup image."))
+            );
+            return;
+        }
+
+        // If no backup, then process the error
         String statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode + "" : "N/A";
-        String message = error.getMessage();
+        String message = error.getMessage() + (img.isBackup() ? " (from backup URL)" : "");
         String cause = "";
 
         if (error instanceof TimeoutError) {
@@ -498,6 +531,16 @@ public class ContentDownloadService extends IntentService {
 
         updateImageStatus(img, false);
         logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
+    }
+
+    private void processBackupImage(ImageFile backupImage, @Nonnull ImageFile originalImage, @Nonnull File dir, Site site) {
+        if (backupImage != null) {
+            Timber.i("Backup URL contains image @ %s; queuing", backupImage.getUrl());
+            originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
+            originalImage.setBackup(true); // Indicates the image is from a backup (for display in error logs)
+            db.insertImageFile(originalImage);
+            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
+        } else Timber.w("Failed to parse backup URL");
     }
 
     private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException {

@@ -56,7 +56,7 @@ public class ContentParserFactory {
         return (null == content) ? new DummyParser() : getImageListParser(content.getSite());
     }
 
-    private ImageListParser getImageListParser(Site site) {
+    public ImageListParser getImageListParser(Site site) {
         switch (site) {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:

@@ -33,15 +33,24 @@ public class ImageFile {
     private StatusContent status;
     public ToOne<Content> content;
 
-    // Temporary during SAVED state only; no need to expose them for JSON persistence
+
+    // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
     @Expose(serialize = false, deserialize = false)
     private String downloadParams;
 
+
     // Runtime attributes; no need to expose them nor to persist them
+
+    // Display order of the image in the image viewer
     @Transient
     private int displayOrder;
+    // Absolute storage path of the image
     @Transient
     private String absolutePath;
+    // Has the image been read from a backup URL ?
+    @Transient
+    private boolean isBackup = false;
+    // Inferred MIME-type of the image
     @Transient
     private String mimeType; // TODO : make it persistent ?
 
@@ -132,6 +141,14 @@ public class ImageFile {
 
     public void setDisplayOrder(int displayOrder) {
         this.displayOrder = displayOrder;
+    }
+
+    public boolean isBackup() {
+        return isBackup;
+    }
+
+    public void setBackup(boolean backup) {
+        isBackup = backup;
     }
 
     public String getMimeType() {

@@ -11,4 +11,9 @@ public class DummyParser implements ImageListParser {
     public List<ImageFile> parseImageList(Content content) {
         return Collections.emptyList();
     }
+
+    @Override
+    public ImageFile parseBackupUrl(String url, int order) {
+        return null;
+    }
 }
