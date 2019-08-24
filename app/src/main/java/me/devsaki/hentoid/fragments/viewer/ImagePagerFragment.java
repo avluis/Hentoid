@@ -108,7 +108,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         initControlsOverlay(view);
 
         onBrowseModeChange();
-        onUpdateFlingFactor();
+        onUpdateSwipeToFling();
         onUpdatePageNumDisplay();
 
         return view;
@@ -541,8 +541,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY:
                 onUpdateImageDisplay();
                 break;
-            case Preferences.Key.PREF_VIEWER_FLING_FACTOR:
-                onUpdateFlingFactor();
+            case Preferences.Key.PREF_VIEWER_SWIPE_TO_FLING:
+                onUpdateSwipeToFling();
                 break;
             case Preferences.Key.PREF_VIEWER_DISPLAY_PAGENUM:
                 onUpdatePageNumDisplay();
@@ -559,8 +559,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    private void onUpdateFlingFactor() {
-        pageSnapWidget.setFlingSensitivity(Preferences.getViewerFlingFactor() / 100f);
+    private void onUpdateSwipeToFling() {
+        int flingFactor = Preferences.isViewerSwipeToFling() ? 75 : 0;
+        pageSnapWidget.setFlingSensitivity(flingFactor / 100f);
     }
 
     private void onUpdateImageDisplay() {

@@ -35,6 +35,15 @@ public final class Preferences {
         }
     }
 
+    public static void performHousekeeping() {
+        // Fling factor -> Swipe to fling (v1.9.0)
+        if (sharedPreferences.contains(Key.PREF_VIEWER_FLING_FACTOR)) {
+            int flingFactor = Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_FLING_FACTOR, "0") + "");
+            sharedPreferences.edit().putBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, flingFactor > 0).apply();
+            sharedPreferences.edit().remove(Key.PREF_VIEWER_FLING_FACTOR).apply();
+        }
+    }
+
     public static void registerPrefsChangedListener(SharedPreferences.OnSharedPreferenceChangeListener listener) {
         sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
     }
@@ -78,12 +87,12 @@ public final class Preferences {
     }
 
     public static int getAttributesSortOrder() {
-        return Integer.parseInt(sharedPreferences.getString(Key.PREF_ORDER_ATTRIBUTE_LISTS, Default.PREF_ORDER_ATTRIBUTES_DEFAULT + ""));
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_ORDER_ATTRIBUTE_LISTS, Default.PREF_ORDER_ATTRIBUTES_DEFAULT + "") + "");
     }
 
     public static int getContentPageQuantity() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_QUANTITY_PER_PAGE_LISTS,
-                Default.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+                Default.PREF_QUANTITY_PER_PAGE_DEFAULT + "") + "");
     }
 
     public static String getAppLockPin() {
@@ -117,7 +126,7 @@ public final class Preferences {
     static int getFolderNameFormat() {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.PREF_FOLDER_NAMING_CONTENT_LISTS,
-                        Default.PREF_FOLDER_NAMING_CONTENT_DEFAULT + ""));
+                        Default.PREF_FOLDER_NAMING_CONTENT_DEFAULT + "") + "");
     }
 
     public static String getRootFolderName() {
@@ -134,7 +143,7 @@ public final class Preferences {
         return Integer.parseInt(
                 sharedPreferences.getString(
                         Key.PREF_WEBVIEW_INITIAL_ZOOM_LISTS,
-                        Default.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT + ""));
+                        Default.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT + "") + "");
     }
 
     public static boolean getWebViewOverview() {
@@ -145,12 +154,12 @@ public final class Preferences {
 
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS,
-                Default.PREF_DL_THREADS_QUANTITY_DEFAULT + ""));
+                Default.PREF_DL_THREADS_QUANTITY_DEFAULT + "") + "");
     }
 
     static int getFolderTruncationNbChars() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_FOLDER_TRUNCATION_LISTS,
-                Default.PREF_FOLDER_TRUNCATION_DEFAULT + ""));
+                Default.PREF_FOLDER_TRUNCATION_DEFAULT + "") + "");
     }
 
     public static boolean isViewerResumeLastLeft() {
@@ -174,7 +183,7 @@ public final class Preferences {
     }
 
     public static int getViewerResizeMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)));
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)) + "");
     }
 
     public static void setViewerResizeMode(int resizeMode) {
@@ -184,7 +193,7 @@ public final class Preferences {
     }
 
     public static int getViewerBrowseMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_BROWSE_MODE, Integer.toString(Default.PREF_VIEWER_BROWSE_MODE)));
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_BROWSE_MODE, Integer.toString(Default.PREF_VIEWER_BROWSE_MODE)) + "");
     }
 
     public static int getViewerDirection() {
@@ -198,16 +207,6 @@ public final class Preferences {
     public static void setViewerBrowseMode(int browseMode) {
         sharedPreferences.edit()
                 .putString(Key.PREF_VIEWER_BROWSE_MODE, Integer.toString(browseMode))
-                .apply();
-    }
-
-    public static int getViewerFlingFactor() {
-        return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_FLING_FACTOR, Integer.toString(Default.PREF_VIEWER_FLING_FACTOR)));
-    }
-
-    public static void setViewerFlingFactor(int flingFactor) {
-        sharedPreferences.edit()
-                .putString(Key.PREF_VIEWER_FLING_FACTOR, Integer.toString(flingFactor))
                 .apply();
     }
 
@@ -231,6 +230,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isViewerSwipeToFling() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, Default.PREF_VIEWER_SWIPE_TO_FLING);
+    }
+
+    public static void setViewerSwipeToFling(boolean swipeToFling) {
+        sharedPreferences.edit()
+                .putBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, swipeToFling)
+                .apply();
+    }
+
     public static boolean isOpenBookInGalleryMode() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_OPEN_GALLERY, Default.PREF_VIEWER_OPEN_GALLERY);
     }
@@ -242,7 +251,7 @@ public final class Preferences {
     }
 
     public static int getLastKnownAppVersionCode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.LAST_KNOWN_APP_VERSION_CODE, "0"));
+        return Integer.parseInt(sharedPreferences.getString(Key.LAST_KNOWN_APP_VERSION_CODE, "0") + "");
     }
 
     public static void setLastKnownAppVersionCode(int versionCode) {
@@ -252,7 +261,7 @@ public final class Preferences {
     }
 
     public static int getDarkMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DARK_MODE, Integer.toString(Default.PREF_VIEWER_DARK_MODE)));
+        return Integer.parseInt(sharedPreferences.getString(Key.DARK_MODE, Integer.toString(Default.PREF_DARK_MODE)) + "");
     }
 
     public static void setDarkMode(int darkMode) {
@@ -286,8 +295,9 @@ public final class Preferences {
         public static final String PREF_VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
         public static final String PREF_VIEWER_IMAGE_DISPLAY = "pref_viewer_image_display";
         public static final String PREF_VIEWER_BROWSE_MODE = "pref_viewer_browse_mode";
-        public static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
+        static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
+        public static final String PREF_VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling";
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
@@ -314,8 +324,8 @@ public final class Preferences {
         static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
-        static final int PREF_VIEWER_FLING_FACTOR = 0;
-        static final int PREF_VIEWER_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_OFF;
+        static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
+        static final int PREF_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_OFF;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -350,6 +360,6 @@ public final class Preferences {
         public static final int DARK_MODE_OFF = 0;
         public static final int DARK_MODE_ON = 1;
         public static final int DARK_MODE_BATTERY = 2;
-        public static final int DARK_MODE_DEVICE = 3;
+        static final int DARK_MODE_DEVICE = 3;
     }
 }

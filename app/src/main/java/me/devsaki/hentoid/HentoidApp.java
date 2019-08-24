@@ -107,6 +107,9 @@ public class HentoidApp extends Application {
         // DB housekeeping
         performDatabaseHousekeeping();
 
+        // Preferences housekeeping
+        performPrefsHousekeeping();
+
         // Init notification channels
         UpdateNotificationChannel.init(this);
         DownloadNotificationChannel.init(this);
@@ -151,6 +154,10 @@ public class HentoidApp extends Application {
         } else {
             startService(intent);
         }
+    }
+
+    private void performPrefsHousekeeping() {
+        Preferences.performHousekeeping();
     }
 
     public static int darkModeFromPrefs(int prefsMode) {
