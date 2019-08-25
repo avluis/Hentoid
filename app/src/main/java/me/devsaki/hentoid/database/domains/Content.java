@@ -19,6 +19,7 @@ import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
+import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
@@ -184,6 +185,11 @@ public class Content implements Serializable {
                 return paths[paths.length - 1];
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
+            case DOUJINS:
+                // ID is the last numeric part of the URL
+                // e.g. lewd-title-ch-1-3-42116 -> 42116 is the ID
+                int lastIndex = url.lastIndexOf('-');
+                return url.substring(lastIndex + 1);
             default:
                 return "";
         }
@@ -244,6 +250,8 @@ public class Content implements Serializable {
                 return NexusActivity.class;
             case MUSES:
                 return MusesActivity.class;
+            case DOUJINS:
+                return DoujinsActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -298,10 +306,11 @@ public class Content implements Serializable {
             case NEXUS:
                 galleryConst = "/view";
                 break;
-            case MUSES:
             case FAKKU:
             case HENTAICAFE:
             case PANDA:
+            case MUSES:
+            case DOUJINS:
             default:
                 galleryConst = "";
         }
@@ -322,6 +331,7 @@ public class Content implements Serializable {
             case EHENTAI:               // Won't work anyway because of the temporary key
             case NHENTAI:
             case PANDA:
+            case DOUJINS:
                 return getGalleryUrl();
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
@@ -344,8 +354,8 @@ public class Content implements Serializable {
         if (attrMap.containsKey(AttributeType.ARTIST) && !attrMap.get(AttributeType.ARTIST).isEmpty())
             authorStr = attrMap.get(AttributeType.ARTIST).get(0).getName();
         if ((null == authorStr || authorStr.equals(""))
-             && attrMap.containsKey(AttributeType.CIRCLE)
-             && !attrMap.get(AttributeType.CIRCLE).isEmpty()) // Try and get Circle
+                && attrMap.containsKey(AttributeType.CIRCLE)
+                && !attrMap.get(AttributeType.CIRCLE).isEmpty()) // Try and get Circle
             authorStr = attrMap.get(AttributeType.CIRCLE).get(0).getName();
 
         if (null == authorStr) authorStr = "";
