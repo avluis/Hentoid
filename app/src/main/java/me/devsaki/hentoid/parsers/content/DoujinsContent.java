@@ -58,7 +58,7 @@ public class DoujinsContent implements ContentParser {
         // Deduplicate tags
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.DOUJINS);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.DOUJINS); // TODO deduplicate tags
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.DOUJINS);
         result.addAttributes(attributes);
 
         return result;
