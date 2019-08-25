@@ -384,6 +384,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         fabActionMode = mode;
         setFabIcon(fabAction, resId);
         fabActionEnabled = true;
+Timber.i(">> FAB SHOW");
         fabAction.show();
     }
 
@@ -536,6 +537,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         private void hideActionFab() {
+Timber.i(">> FAB HIDE");
             fabAction.hide();
             fabActionEnabled = false;
         }
@@ -605,6 +607,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             fabRefreshOrStop.show();
             fabHome.show();
             isPageLoading = true;
+Timber.i(">> onPageStarted %s", url);
             if (!isHtmlLoaded) hideActionFab();
         }
 
@@ -613,6 +616,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             isPageLoading = false;
             isHtmlLoaded = false; // Reset for the next page
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_refresh);
+Timber.i(">> onPageFinished %s", url);
         }
 
         @Override
@@ -642,6 +646,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
+Timber.i(">> parseResponse %s", urlStr);
             List<Pair<String, String>> headersList = new ArrayList<>();
 
             if (headers != null)
@@ -694,8 +699,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList) {
+Timber.i(">> processContent 1");
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
+Timber.i(">> processContent 2");
 
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
