@@ -290,7 +290,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:host="doujins.com"
-                    android:pathPattern="/[A-Za-z0-9\-]+/[A-Za-z0-9\-]+-[0-9]+"
+                    android:pathPattern="..*/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>
