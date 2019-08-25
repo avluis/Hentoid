@@ -83,6 +83,8 @@ public class PrefsActivity extends BaseActivity {
             if ("advancedSettings".equals(rootKey)) {
                 findPreference(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)
                         .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+            } else if ("downloadRetries".equals(rootKey)) {
+                // nothing here
             } else {
                 findPreference(Preferences.Key.PREF_HIDE_RECENT)
                         .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());

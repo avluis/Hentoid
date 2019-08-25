@@ -133,7 +133,7 @@
     </PreferenceCategory>
     <PreferenceScreen
         android:key="advancedSettings"
-        android:title="@string/advanced">
+        android:title="@string/advanced_screen_title">
         <ListPreference
             android:defaultValue="@string/pref_dl_threads_quantity_default"
             android:entries="@array/pref_dl_threads_quantity_entries"
@@ -147,6 +147,34 @@
             android:key="pref_refresh_bookshelf"
             android:summary="@string/pref_refresh_library_summary"
             android:title="@string/pref_refresh_library_title" />
+
+    </PreferenceScreen>
+    <PreferenceScreen
+        android:key="downloadRetries"
+        android:title="@string/download_retries_screen_title">
+        <CheckBoxPreference
+            android:defaultValue="@string/pref_dl_retries_active_default"
+            android:icon="@null"
+            android:key="pref_dl_retries_active"
+            android:summaryOff="@string/pref_dl_retries_off"
+            android:summaryOn="@string/pref_dl_retries_on"
+            android:title="@string/download_retries_active_title" />
+        <ListPreference
+            android:defaultValue="@string/pref_dl_retries_number_default"
+            android:entries="@array/pref_dl_retries_number_entries"
+            android:entryValues="@array/pref_dl_retries_number_entries"
+            android:icon="@null"
+            android:key="pref_dl_retries_number"
+            android:summary="@string/pref_dl_retries_number_summary"
+            android:title="@string/pref_dl_retries_number_title" />
+        <ListPreference
+            android:defaultValue="@string/pref_dl_retries_mem_limit_default"
+            android:entries="@array/pref_dl_retries_mem_limit_entries"
+            android:entryValues="@array/pref_dl_retries_mem_limit_values"
+            android:icon="@null"
+            android:key="pref_dl_retries_mem_limit"
+            android:summary="@string/pref_dl_retries_mem_limit_summary"
+            android:title="@string/pref_dl_retries_mem_limit_title" />
 
     </PreferenceScreen>
 </PreferenceScreen>

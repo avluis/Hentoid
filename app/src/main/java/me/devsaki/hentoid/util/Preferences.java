@@ -280,6 +280,18 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isDlRetriesActive() {
+        return sharedPreferences.getBoolean(Key.PREF_DL_RETRIES_ACTIVE, Default.PREF_DL_RETRIES_ACTIVE);
+    }
+
+    public static int getDlRetriesNumber() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_RETRIES_NUMBER, Integer.toString(Default.PREF_DL_RETRIES_NUMBER)) + "");
+    }
+
+    public static int getDlRetriesMemLimit() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_RETRIES_MEM_LIMIT, Integer.toString(Default.PREF_DL_RETRIES_MEM_LIMIT)) + "");
+    }
+
     public static final class Key {
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_HIDE_RECENT = "pref_hide_recent";
@@ -313,6 +325,9 @@ public final class Preferences {
         public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
         public static final String DARK_MODE = "pref_dark_mode";
+        static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
+        static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
+        static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -338,6 +353,9 @@ public final class Preferences {
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
         static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
         static final int PREF_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_OFF;
+        static final boolean PREF_DL_RETRIES_ACTIVE = false;
+        static final int PREF_DL_RETRIES_NUMBER = 3;
+        static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

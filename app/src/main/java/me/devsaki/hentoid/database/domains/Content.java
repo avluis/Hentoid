@@ -106,6 +106,8 @@ public class Content implements Serializable {
     private boolean isLast;
     @Transient
     private boolean selected = false;
+    @Transient
+    private int numberDownloadRetries = 0;
 
     // Attributes kept for retro-compatibility with contentV2.json Hentoid files
     @Transient
@@ -596,6 +598,15 @@ public class Content implements Serializable {
     public void setJsonUri(String jsonUri) {
         this.jsonUri = jsonUri;
     }
+
+    public int getNumberDownloadRetries() {
+        return numberDownloadRetries;
+    }
+
+    public void increaseNumberDownloadRetries() {
+        this.numberDownloadRetries++;
+    }
+
 
 
     @Override

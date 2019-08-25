@@ -29,6 +29,7 @@ import me.devsaki.hentoid.fragments.downloads.ErrorStatsDialogFragment;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
 
@@ -109,7 +110,7 @@ public class QueueFragment extends BaseFragment {
 
         switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
-                updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal);
+                updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal, event.getNumberRetries());
                 break;
             case DownloadEvent.EV_UNPAUSE:
                 ContentQueueManager.getInstance().unpauseQueue();
@@ -161,11 +162,12 @@ public class QueueFragment extends BaseFragment {
     /**
      * Update main progress bar and bottom progress panel for current (1st in queue) book
      *
-     * @param pagesOK    Number of pages successfully downloaded for current (1st in queue) book
-     * @param pagesKO    Number of pages whose download has failed for current (1st in queue) book
-     * @param totalPages Total pages of current (1st in queue) book
+     * @param pagesOK       Number of pages successfully downloaded for current (1st in queue) book
+     * @param pagesKO       Number of pages whose download has failed for current (1st in queue) book
+     * @param totalPages    Total pages of current (1st in queue) book
+     * @param numberRetries Current number of download auto-retries for current (1st in queue) book
      */
-    private void updateProgress(int pagesOK, int pagesKO, int totalPages) {
+    private void updateProgress(int pagesOK, int pagesKO, int totalPages, int numberRetries) {
         if (!ContentQueueManager.getInstance().isQueuePaused() && mAdapter != null && mAdapter.getCount() > 0) {
             Content content = mAdapter.getItem(0);
 
@@ -179,6 +181,7 @@ public class QueueFragment extends BaseFragment {
                 StringBuilder message = new StringBuilder();
                 String processedPagesFmt = Helper.formatIntAsStr(pagesOK, String.valueOf(totalPages).length());
                 message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
+                if (numberRetries > 0) message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
 
                 queueInfo.setText(message.toString());
                 isPreparingDownload = false;

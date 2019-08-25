@@ -23,14 +23,15 @@ import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.security.InvalidParameterException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -259,7 +260,7 @@ public class ContentDownloadService extends IntentService {
         // Reset ERROR status of images to count them as "to be downloaded" (in DB and in memory)
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.ERROR)) {
-                img.setStatus(StatusContent.SAVED);
+                img.setStatus(StatusContent.SAVED); // SAVED = "to be downloaded"
                 db.updateImageFileStatusAndParams(img);
             }
         }
@@ -332,7 +333,8 @@ public class ContentDownloadService extends IntentService {
 
         if (!downloadCanceled && !downloadSkipped) {
             List<ImageFile> images = content.getImageFiles();
-            int nbImages = (null == images) ? 0 : images.size();
+            if (null == images) images = Collections.emptyList();
+            int nbImages = images.size();
 
             boolean hasError = false;
             // Less pages than initially detected - More than 10% difference in number of pages
@@ -340,6 +342,30 @@ public class ContentDownloadService extends IntentService {
                 String errorMsg = String.format("The number of images found (%s) does not match the book's number of pages (%s)", nbImages, content.getQtyPages());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
                 hasError = true;
+            }
+
+            File dir = FileHelper.getContentDownloadDir(content);
+            double freeSpaceRatio = dir.getFreeSpace() * 100.0 / dir.getTotalSpace();
+
+            // Auto-retry when error pages are remaining and conditions are met
+            // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
+            if (pagesKO > 0 && Preferences.isDlRetriesActive()
+                    && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
+                    && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
+            ) {
+                Timber.i("Auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries(), content.getTitle(), freeSpaceRatio);
+                logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
+                content.increaseNumberDownloadRetries();
+
+                // Re-queue all failed images
+                for (ImageFile img : images)
+                    if (img.getStatus().equals(StatusContent.ERROR)) {
+                        Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
+                        img.setStatus(StatusContent.SAVED);
+                        db.insertImageFile(img);
+                        requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
+                    }
+                return;
             }
 
             // Mark content as downloaded
@@ -351,7 +377,6 @@ public class ContentDownloadService extends IntentService {
             db.insertContent(content);
 
             // Save JSON file
-            File dir = FileHelper.createContentDownloadDir(this, content);
             if (dir.exists()) {
                 try {
                     File jsonFile = JsonHelper.createJson(content.preJSONExport(), dir);
