@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -193,12 +194,42 @@ public class ContentDownloadService extends IntentService {
         db.deleteErrorRecords(content.getId());
 
         boolean hasError = false;
-        // Check if images are already known
+        int nbErrors = 0;
+        // == PREPARATION PHASE ==
+        // Parse images from the site (using image list parser)
+        //   - Case 1 : If no image is present => parse all images
+        //   - Case 2 : If all images are in ERROR state => re-parse all images
+        //   - Case 3 : If some images are in ERROR state and the site has backup URLs
+        //     => re-parse images with ERROR state using their order as reference
         List<ImageFile> images = content.getImageFiles();
-        if (null == images || images.isEmpty()) {
+        if (null == images)
+            images = new ArrayList<>();
+        else
+            images = new ArrayList<>(images); // Safe copy of the original list
+
+        for (ImageFile img : images) if (img.getStatus().equals(StatusContent.ERROR)) nbErrors++;
+
+        if (images.isEmpty()
+                || nbErrors == images.size()
+                || (nbErrors > 0 && content.getSite().hasBackupURLs())
+        ) {
             try {
-                images = fetchImageURLs(content);
-                content.addImageFiles(images);
+                List<ImageFile> newImages = fetchImageURLs(content);
+                // Cases 1 and 2 : Replace existing images with the parsed images
+                if (images.isEmpty() || nbErrors == images.size()) images = newImages;
+                // Case 3 : Replace images in ERROR state with the parsed images at the same position
+                if (nbErrors > 0 && content.getSite().hasBackupURLs()) {
+                    for (int i = 0; i < images.size(); i++) {
+                        ImageFile oldImage = images.get(i);
+                        if (oldImage.getStatus().equals(StatusContent.ERROR)) {
+                            for (ImageFile newImg : newImages)
+                                if (newImg.getOrder().equals(oldImage.getOrder()))
+                                    images.set(i, newImg);
+                        }
+                    }
+                }
+
+                content.setImageFiles(images);
                 db.insertContent(content);
             } catch (UnsupportedOperationException u) {
                 Timber.w(u, "A captcha has been found while parsing %s. Aborting download.", content.getTitle());
@@ -208,6 +239,14 @@ public class ContentDownloadService extends IntentService {
                 Timber.w(e, "An exception has occurred while parsing %s. Aborting download.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", e.getMessage());
                 hasError = true;
+            }
+        } else if (nbErrors > 0) {
+            // Other cases : Reset ERROR status of images to mark them as "to be downloaded" (in DB and in memory)
+            for (ImageFile img : images) {
+                if (img.getStatus().equals(StatusContent.ERROR)) {
+                    img.setStatus(StatusContent.SAVED); // SAVED = "to be downloaded"
+                    db.updateImageFileStatusAndParams(img);
+                }
             }
         }
 
@@ -220,15 +259,16 @@ public class ContentDownloadService extends IntentService {
             return null;
         }
 
-        // Could have been canceled while preparing the download
+        // In case the download has been canceled while in preparation phase
         if (downloadCanceled || downloadSkipped) return null;
 
+        // Create destination folder for images to be downloaded
         File dir = FileHelper.createContentDownloadDir(this, content);
+        // Folder creation failed
         if (!dir.exists()) {
             String title = content.getTitle();
             String absolutePath = dir.getAbsolutePath();
 
-            // Log everywhere
             String message = String.format("Directory could not be created: %s.", absolutePath);
             Timber.w(message);
             logErrorRecord(content.getId(), ErrorType.IO, content.getUrl(), "Destination folder", message);
@@ -246,25 +286,16 @@ public class ContentDownloadService extends IntentService {
             return null;
         }
 
+        // Folder creation succeeds -> memorize its path
         String fileRoot = Preferences.getRootFolderName();
         content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
         content.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(content);
 
-
-        // Tracking Event (Download Added)
         HentoidApp.trackDownloadEvent("Added");
-
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
 
-        // Reset ERROR status of images to count them as "to be downloaded" (in DB and in memory)
-        for (ImageFile img : images) {
-            if (img.getStatus().equals(StatusContent.ERROR)) {
-                img.setStatus(StatusContent.SAVED); // SAVED = "to be downloaded"
-                db.updateImageFileStatusAndParams(img);
-            }
-        }
-
+        // == DOWNLOAD PHASE ==
         // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
         Site site = content.getSite();
@@ -528,7 +559,13 @@ public class ContentDownloadService extends IntentService {
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
                                     imageFile -> processBackupImage(imageFile, img, dir, site),
-                                    throwable -> Timber.e(throwable, "Error processing backup image."))
+                                    throwable ->
+                                    {
+                                        updateImageStatus(img, false);
+                                        logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
+                                        Timber.e(throwable, "Error processing backup image.");
+                                    }
+                            )
             );
             return;
         }
@@ -670,19 +707,19 @@ public class ContentDownloadService extends IntentService {
         switch (event.eventType) {
             case DownloadEvent.EV_PAUSE:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                requestQueueManager.cancelQueue();
+                if (requestQueueManager != null) requestQueueManager.cancelQueue();
                 ContentQueueManager.getInstance().pauseQueue();
                 notificationManager.cancel();
                 break;
             case DownloadEvent.EV_CANCEL:
-                requestQueueManager.cancelQueue();
+                if (requestQueueManager != null) requestQueueManager.cancelQueue();
                 downloadCanceled = true;
                 // Tracking Event (Download Canceled)
                 HentoidApp.trackDownloadEvent("Cancelled");
                 break;
             case DownloadEvent.EV_SKIP:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                requestQueueManager.cancelQueue();
+                if (requestQueueManager != null) requestQueueManager.cancelQueue();
                 downloadSkipped = true;
                 // Tracking Event (Download Skipped)
                 HentoidApp.trackDownloadEvent("Skipped");

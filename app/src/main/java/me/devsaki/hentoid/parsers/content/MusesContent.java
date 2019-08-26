@@ -123,7 +123,7 @@ public class MusesContent implements ContentParser {
                 index++;
             }
         }
-        result.addImageFiles(images);
+        result.setImageFiles(images);
 
         // Tags are not shown on the album page, but on the picture page (!)
         try {

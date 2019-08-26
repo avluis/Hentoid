@@ -462,7 +462,7 @@ public class Content implements Serializable {
         return imageFiles;
     }
 
-    public Content addImageFiles(List<ImageFile> imageFiles) {
+    public Content setImageFiles(List<ImageFile> imageFiles) {
         if (imageFiles != null) {
             this.imageFiles.clear();
             this.imageFiles.addAll(imageFiles);

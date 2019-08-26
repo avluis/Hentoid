@@ -52,7 +52,7 @@ public class DoujinsContent implements ContentParser {
             List<ImageFile> imgs = new ArrayList<>();
             for (Element e : images)
                 imgs.add(new ImageFile(index++, e.attr("data-file"), StatusContent.SAVED));
-            result.addImageFiles(imgs);
+            result.setImageFiles(imgs);
         }
 
         // Deduplicate tags

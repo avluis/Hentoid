@@ -309,7 +309,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
             listener.onPagedResultFailed(null, "Pages failed to load - Unexpected empty content");
         else {
             List<Content> list = Arrays.asList(content);
-            content.addImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
+            content.setImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
             listener.onPagedResultReady(list, 1, 1);
         }
     }

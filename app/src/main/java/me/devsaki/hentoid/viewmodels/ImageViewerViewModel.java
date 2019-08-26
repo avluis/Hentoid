@@ -311,7 +311,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setAbsolutePath(f.getAbsolutePath());
             images.add(img);
         }
-        content.addImageFiles(images);
+        content.setImageFiles(images);
         ObjectBoxDB.getInstance(HentoidApp.getAppContext()).insertContent(content);
     }
 
