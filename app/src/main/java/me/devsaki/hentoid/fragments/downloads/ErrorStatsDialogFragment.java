@@ -141,7 +141,7 @@ public class ErrorStatsDialogFragment extends DialogFragment {
             errorLogInfo.fileName = "error_log" + content.getId();
             errorLogInfo.noDataMessage = "No error detected.";
 
-            log.add("Error log for " + content.getTitle() + " : " + errorLog.size() + " errors");
+            log.add("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
             for (ErrorRecord e : errorLog) log.add(e.toString());
 
             File logFile = LogUtil.writeLog(requireContext(), log, errorLogInfo);
