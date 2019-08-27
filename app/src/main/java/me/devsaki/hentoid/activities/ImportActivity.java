@@ -270,6 +270,8 @@ public class ImportActivity extends BaseActivity {
             intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         } else {
             intent = new Intent(Intent.ACTION_OPEN_DOCUMENT); // TODO test
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
