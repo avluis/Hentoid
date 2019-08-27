@@ -20,6 +20,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.exception.LimitReachedException;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 
@@ -28,7 +29,7 @@ public class EHentaiParser implements ImageListParser {
     private final ParseProgress progress = new ParseProgress();
 
 
-    public List<ImageFile> parseImageList(Content content) throws IOException {
+    public List<ImageFile> parseImageList(Content content) throws Exception {
         List<ImageFile> result = new ArrayList<>();
         boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
         Map<String, String> downloadParams = new HashMap<>();
@@ -77,8 +78,10 @@ public class EHentaiParser implements ImageListParser {
                 doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
                 if (doc != null) {
                     // Displayed image
-                    String imageUrl = getDisplayedImageUrl(doc);
+                    String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
                     if (!imageUrl.isEmpty()) {
+                        // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
+                        if (imageUrl.contains("/509.gif")) throw new LimitReachedException("Bandwidth limit reached");
                         img = ParseHelper.urlToImageFile(imageUrl, order++);
                         result.add(img);
 
@@ -119,7 +122,9 @@ public class EHentaiParser implements ImageListParser {
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         Document doc = getOnlineDocument(url, headers, Site.EHENTAI.canKnowHentoidAgent());
         if (doc != null) {
-            String imageUrl = getDisplayedImageUrl(doc);
+            String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
+            // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
+            if (imageUrl.contains("/509.gif")) throw new LimitReachedException("Bandwidth limit reached");
             if (!imageUrl.isEmpty()) return ParseHelper.urlToImageFile(imageUrl, order);
         }
         return null;

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.exception;
 
 import me.devsaki.hentoid.database.domains.Content;
 

@@ -68,6 +68,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
@@ -231,9 +232,13 @@ public class ContentDownloadService extends IntentService {
 
                 content.setImageFiles(images);
                 db.insertContent(content);
-            } catch (UnsupportedOperationException u) {
-                Timber.w(u, "A captcha has been found while parsing %s. Aborting download.", content.getTitle());
-                logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), "Image list", u.getMessage());
+            } catch (UnsupportedOperationException uoe) {
+                Timber.w(uoe, "A captcha has been found while parsing %s. Aborting download.", content.getTitle());
+                logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), "Image list", uoe.getMessage());
+                hasError = true;
+            } catch (LimitReachedException lre) {
+                Timber.w(lre, "The bandwidth limit has been reached while parsing %s. Aborting download.", content.getTitle());
+                logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Image list", lre.getMessage());
                 hasError = true;
             } catch (Exception e) {
                 Timber.w(e, "An exception has occurred while parsing %s. Aborting download.", content.getTitle());

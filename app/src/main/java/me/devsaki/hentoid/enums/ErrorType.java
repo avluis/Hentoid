@@ -9,6 +9,7 @@ public enum ErrorType {
     IO(2, "I/O"),
     CAPTCHA(3, "Captcha"),
     IMG_PROCESSING(4, "Image processing"),
+    SITE_LIMIT(5, "Downloads/bandwidth limit reached"),
     UNDEFINED(99, "Undefined");
 
     private final int code;
