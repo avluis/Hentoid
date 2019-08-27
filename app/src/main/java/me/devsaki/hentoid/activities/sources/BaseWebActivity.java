@@ -384,7 +384,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         fabActionMode = mode;
         setFabIcon(fabAction, resId);
         fabActionEnabled = true;
-Timber.i(">> FAB SHOW");
+// Timber.i(">> FAB SHOW");
         fabAction.show();
     }
 
@@ -537,7 +537,7 @@ Timber.i(">> FAB SHOW");
         }
 
         private void hideActionFab() {
-Timber.i(">> FAB HIDE");
+// Timber.i(">> FAB HIDE");
             fabAction.hide();
             fabActionEnabled = false;
         }
@@ -614,7 +614,7 @@ Timber.i(">> FAB HIDE");
             fabRefreshOrStop.show();
             fabHome.show();
             isPageLoading = true;
-Timber.i(">> onPageStarted %s", url);
+// Timber.i(">> onPageStarted %s", url);
             if (!isHtmlLoaded) hideActionFab();
         }
 
@@ -623,7 +623,7 @@ Timber.i(">> onPageStarted %s", url);
             isPageLoading = false;
             isHtmlLoaded = false; // Reset for the next page
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_refresh);
-Timber.i(">> onPageFinished %s", url);
+// Timber.i(">> onPageFinished %s", url);
         }
 
         @Override
@@ -655,15 +655,15 @@ Timber.i(">> onPageFinished %s", url);
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                Timber.i(">> SIR 1 %s %s", isPageLoading, url);
+// Timber.i(">> SIR 1 %s %s", isPageLoading, url);
                 if (/*!isPageLoading &&*/ isPageFiltered(url)) return parseResponse(url, headers);
-                Timber.i(">> SIR 2 %s %s", isPageLoading, url);
+// Timber.i(">> SIR 2 %s %s", isPageLoading, url);
                 return null;
             }
         }
 
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
-Timber.i(">> parseResponse %s", urlStr);
+// Timber.i(">> parseResponse %s", urlStr);
             List<Pair<String, String>> headersList = new ArrayList<>();
 
             if (headers != null)
@@ -716,10 +716,10 @@ Timber.i(">> parseResponse %s", urlStr);
         }
 
         private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList) {
-Timber.i(">> processContent 1");
+// Timber.i(">> processContent 1");
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
-Timber.i(">> processContent 2");
+// Timber.i(">> processContent 2");
 
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
