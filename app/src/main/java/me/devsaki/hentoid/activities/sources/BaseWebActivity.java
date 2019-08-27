@@ -601,6 +601,13 @@ Timber.i(">> FAB HIDE");
             return hostStr != null && !hostStr.contains(restrictedDomainName);
         }
 
+        /**
+        * Important note
+        *
+        * Based on observation, for a given URL, onPageStarted seems to be called
+        *  - Before {@link this.shouldInterceptRequest} when the page is not cached (1st call)
+        *  - After {@link this.shouldInterceptRequest} when the page is cached (Nth call; N>1)
+        */
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_clear);
@@ -623,12 +630,12 @@ Timber.i(">> onPageFinished %s", url);
         @Deprecated
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else {
-                if (!isPageLoading && isPageFiltered(url)) return parseResponse(url, null);
-                return super.shouldInterceptRequest(view, url);
+            // Prevents processing the page twice on Lollipop and above
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                WebResourceResponse result = shouldInterceptRequestInternal(view, url, null);
+                if (result != null) return result;
             }
+            return super.shouldInterceptRequest(view, url);
         }
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -636,12 +643,22 @@ Timber.i(">> onPageFinished %s", url);
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
+            WebResourceResponse result = shouldInterceptRequestInternal(view, url, request.getRequestHeaders());
+            if (result != null) return result;
+            else return super.shouldInterceptRequest(view, request);
+        }
+
+        @Nullable
+        private WebResourceResponse shouldInterceptRequestInternal(@NonNull WebView view,
+                                                                   @NonNull String url,
+                                                                   @Nullable Map<String, String> headers) {
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (!isPageLoading && isPageFiltered(url))
-                    return parseResponse(url, request.getRequestHeaders());
-                return super.shouldInterceptRequest(view, request);
+                Timber.i(">> SIR 1 %s %s", isPageLoading, url);
+                if (/*!isPageLoading &&*/ isPageFiltered(url)) return parseResponse(url, headers);
+                Timber.i(">> SIR 2 %s %s", isPageLoading, url);
+                return null;
             }
         }
 
