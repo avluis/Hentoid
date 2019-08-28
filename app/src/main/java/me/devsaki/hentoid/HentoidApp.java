@@ -62,6 +62,7 @@ public class HentoidApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
         Fabric.with(this, new Crashlytics());
 
         // Fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
@@ -89,6 +90,7 @@ public class HentoidApp extends Application {
         // Prefs
         instance = this.getApplicationContext();
         Preferences.init(this);
+        Preferences.performHousekeeping();
 
         // Firebase
         boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
@@ -106,9 +108,6 @@ public class HentoidApp extends Application {
 
         // DB housekeeping
         performDatabaseHousekeeping();
-
-        // Preferences housekeeping
-        performPrefsHousekeeping();
 
         // Init notification channels
         UpdateNotificationChannel.init(this);
@@ -154,10 +153,6 @@ public class HentoidApp extends Application {
         } else {
             startService(intent);
         }
-    }
-
-    private void performPrefsHousekeeping() {
-        Preferences.performHousekeeping();
     }
 
     public static int darkModeFromPrefs(int prefsMode) {
