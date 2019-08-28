@@ -136,6 +136,7 @@ public class IntroActivity extends AppIntro2 {
             } else {
                 // If result passes validation, then we move to next slide
                 getPager().goToNextSlide();
+                setButtonState(nextButton, false);
             }
         } else {
             switch (result) {

@@ -31,10 +31,10 @@ public class ThemeIntroFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.intro_slide_05, container, false);
 
-        View lightBtn = view.findViewById(R.id.intro_6_light);
+        View lightBtn = view.findViewById(R.id.intro_5_light);
         lightBtn.setOnClickListener(v -> parentActivity.setThemePrefs(Preferences.Constant.DARK_MODE_OFF));
 
-        View darkBtn = view.findViewById(R.id.intro_6_dark);
+        View darkBtn = view.findViewById(R.id.intro_5_dark);
         darkBtn.setOnClickListener(v -> parentActivity.setThemePrefs(Preferences.Constant.DARK_MODE_ON));
 
         return view;
