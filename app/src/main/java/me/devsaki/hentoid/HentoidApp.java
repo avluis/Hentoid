@@ -91,8 +91,8 @@ public class HentoidApp extends Application {
         Preferences.init(this);
 
         // Firebase
-        boolean isAnalyticsDisabled = Preferences.isAnalyticsDisabled();
-        FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!isAnalyticsDisabled);
+        boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
+        FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
         // Stetho
 /*

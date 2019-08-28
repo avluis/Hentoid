@@ -62,8 +62,8 @@ public final class Preferences {
                 .apply();
     }
 
-    public static boolean isAnalyticsDisabled() {
-        return sharedPreferences.getBoolean(Key.PREF_ANALYTICS_TRACKING, false);
+    public static boolean isAnalyticsEnabled() {
+        return sharedPreferences.getBoolean(Key.PREF_ANALYTICS_TRACKING, true);
     }
 
     public static boolean isFirstRun() {
