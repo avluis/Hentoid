@@ -86,7 +86,7 @@ public class PrefsActivity extends BaseActivity {
             } else if ("downloadRetries".equals(rootKey)) {
                 // nothing here
             } else {
-                findPreference(Preferences.Key.PREF_HIDE_RECENT)
+                findPreference(Preferences.Key.PREF_APP_PREVIEW)
                         .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
                 findPreference(Preferences.Key.PREF_ANALYTICS_TRACKING)

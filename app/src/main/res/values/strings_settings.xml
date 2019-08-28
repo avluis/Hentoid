@@ -2,10 +2,6 @@
 <resources>
     <!-- Downloads List -->
     <string name="pref_downloads_category">Downloads List</string>
-    <string name="pref_hide_recent_title">Hide From Recent Apps</string>
-    <string name="pref_hide_recent_summary_off">App preview in Recent Apps enabled.</string>
-    <string name="pref_hide_recent_summary_on">Disable if you need to take a screen shot.\nApp preview in Recent Apps disabled.</string>
-    <string name="pref_hide_recent_default" translatable="false">true</string>
     <string name="pref_endless_scroll_title">Endless Scroll</string>
     <string name="pref_endless_scroll_summary_off">Enable endless scrolling in download list.\nDisables paging.</string>
     <string name="pref_endless_scroll_summary_on">Scroll away to your heart\'s content.</string>
@@ -59,6 +55,10 @@
     <string name="pref_dark_mode_title">Dark mode</string>
     <string name="pref_dark_mode_summary">Set the display theme</string>
     <string name="pref_dark_mode_default" translatable="false">0</string>
+    <string name="pref_app_preview_title">App preview on Recent Apps</string>
+    <string name="pref_app_preview_summary_off">App preview in Recent Apps disabled.\nEnable if you need to take a screen shot.</string>
+    <string name="pref_app_preview_summary_on">App preview in Recent Apps enabled.</string>
+    <string name="pref_app_preview_default" translatable="false">false</string>
     <string name="pref_analytics_tracking_title">Google Analytics</string>
     <string name="pref_analytics_tracking_summary_off">Analytics Tracking is currently disabled.\nEnabling it will help us improve the app by tracking crashes &amp; exceptions.</string>
     <string name="pref_analytics_tracking_summary_on">Analytics Tracking is currently enabled.\nThanks for helping us improve Hentoid!</string>

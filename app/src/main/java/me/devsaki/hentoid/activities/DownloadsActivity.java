@@ -70,7 +70,7 @@ public class DownloadsActivity extends BaseActivity implements BackInterface {
                     .commit();
         }
 
-        if (Preferences.getRecentVisibility()) {
+        if (!Preferences.getRecentVisibility()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
 

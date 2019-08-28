@@ -117,12 +117,12 @@
             android:summary="@string/pref_dark_mode_summary"
             android:title="@string/pref_dark_mode_title" />
         <CheckBoxPreference
-            android:defaultValue="@string/pref_hide_recent_default"
+            android:defaultValue="@string/pref_app_preview_default"
             android:icon="@null"
-            android:key="pref_hide_recent"
-            android:summaryOff="@string/pref_hide_recent_summary_off"
-            android:summaryOn="@string/pref_hide_recent_summary_on"
-            android:title="@string/pref_hide_recent_title" />
+            android:key="pref_app_preview"
+            android:summaryOff="@string/pref_app_preview_summary_off"
+            android:summaryOn="@string/pref_app_preview_summary_on"
+            android:title="@string/pref_app_preview_title" />
         <CheckBoxPreference
             android:defaultValue="@string/pref_analytics_tracking_default"
             android:icon="@null"
