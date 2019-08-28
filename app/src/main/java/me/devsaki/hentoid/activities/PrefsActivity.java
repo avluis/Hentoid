@@ -89,7 +89,7 @@ public class PrefsActivity extends BaseActivity {
                 findPreference(Preferences.Key.PREF_APP_PREVIEW)
                         .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-                findPreference(Preferences.Key.PREF_ANALYTICS_TRACKING)
+                findPreference(Preferences.Key.PREF_ANALYTICS_PREFERENCE)
                         .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
                 findPreference(Preferences.Key.PREF_APP_LOCK)
