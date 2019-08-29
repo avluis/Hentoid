@@ -68,6 +68,7 @@ import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
@@ -332,7 +333,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         if (this instanceof PagerFragment)
             pageOffset = (searchManager.getCurrentPage() - 1) * Preferences.getContentPageQuantity();
         bundle.putInt("contentIndex", pageOffset + mAdapter.getContentPosition(content) + 1);
-        FileHelper.openContent(requireContext(), content, bundle);
+        ContentHelper.openContent(requireContext(), content, bundle);
     }
 
     /**

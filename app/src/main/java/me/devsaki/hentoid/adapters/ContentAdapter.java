@@ -50,11 +50,12 @@ import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import timber.log.Timber;
 
 /**
@@ -191,7 +192,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             holder.miniLayout.setVisibility(View.VISIBLE);
 
             Glide.with(context.getApplicationContext())
-                    .load(FileHelper.getThumb(content))
+                    .load(ContentHelper.getThumb(content))
                     .apply(glideRequestOptions)
                     .into(holder.ivCover2);
         } else {
@@ -199,7 +200,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             holder.miniLayout.setVisibility(View.GONE);
 
             Glide.with(context.getApplicationContext())
-                    .load(FileHelper.getThumb(content))
+                    .load(ContentHelper.getThumb(content))
                     .apply(glideRequestOptions)
                     .into(holder.ivCover);
         }
@@ -308,7 +309,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     clearSelections();
                     itemSelectListener.onItemClear(0);
                 }
-                Helper.viewContent(context, content);
+                ContentHelper.viewContent(context, content);
             });
         } else {
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
@@ -535,7 +536,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     private void archiveContent(final Content item) {
         ToastUtil.toast(R.string.packaging_content);
-        FileHelper.archiveContent(context, item);
+        ContentHelper.archiveContent(context, item);
     }
 
     private void askDeleteItem(final Content item) {
@@ -579,8 +580,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 db.insertContent(content);
 
                 // Persist in it JSON
-                if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
-                else FileHelper.createJson(content);
+                if (!content.getJsonUri().isEmpty()) ContentHelper.updateJson(context, content);
+                else ContentHelper.createJson(content);
             }
             return content;
         }
@@ -758,7 +759,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         Content theContent = db.selectContentById(content.getId());
 
         if (theContent != null) {
-            FileHelper.removeContent(content);
+            ContentHelper.removeContent(content);
             db.deleteContent(content);
             Timber.d("Removed item: %s from db and file system.", content.getTitle());
             return content;

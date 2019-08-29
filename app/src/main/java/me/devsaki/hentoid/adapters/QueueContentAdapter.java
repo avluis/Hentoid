@@ -32,7 +32,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 
 /**
@@ -123,7 +123,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param content Content to display
      */
     private void attachCover(ViewHolder holder, Content content) {
-        String coverFile = FileHelper.getThumb(content);
+        String coverFile = ContentHelper.getThumb(content);
         Glide.with(context.getApplicationContext()).clear(holder.ivCover);
 
         RequestOptions myOptions = new RequestOptions()
@@ -233,7 +233,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             holder.ivSource.setImageResource(img);
-            holder.ivSource.setOnClickListener(v -> Helper.viewContent(context, content));
+            holder.ivSource.setOnClickListener(v -> ContentHelper.viewContent(context, content));
         } else {
             holder.ivSource.setImageResource(R.drawable.ic_stat_hentoid);
         }
@@ -451,7 +451,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             db.deleteQueue(content);
             db.deleteContent(content);
             // Remove the content from the disk
-            FileHelper.removeContent(content);
+            ContentHelper.removeContent(content);
         }
     }
 

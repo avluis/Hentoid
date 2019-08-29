@@ -14,14 +14,15 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.webkit.WebResourceResponse;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,11 +41,6 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.activities.UnlockActivity;
-import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
@@ -52,23 +48,9 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 
 /**
  * Created by avluis on 06/05/2016.
- * Utility class
+ * Generic utility class
  */
 public final class Helper {
-
-    public static void viewContent(final Context context, Content content) {
-        viewContent(context, content, false);
-    }
-
-    public static void viewContent(final Context context, Content content, boolean wrapPin) {
-        Intent intent = new Intent(context, content.getWebActivityClass());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-        builder.setUrl(content.getGalleryUrl());
-        intent.putExtras(builder.getBundle());
-        if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
-        context.startActivity(intent);
-    }
 
     public static void viewQueue(final Context context) {
         Intent intent = new Intent(context, QueueActivity.class);
@@ -223,22 +205,6 @@ public final class Helper {
         }
 
         return str.toString();
-    }
-
-    public static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType type) {
-        return extractAttributeIdsByType(attrs, new AttributeType[]{type});
-    }
-
-    private static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType[] types) {
-        List<Long> result = new ArrayList<>();
-
-        for (Attribute a : attrs) {
-            for (AttributeType type : types) {
-                if (a.getType().equals(type)) result.add(a.getId());
-            }
-        }
-
-        return result;
     }
 
     public static String decode64(String encodedString) {

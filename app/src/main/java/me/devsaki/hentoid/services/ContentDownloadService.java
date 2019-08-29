@@ -64,6 +64,7 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.ImageListParser;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -268,7 +269,7 @@ public class ContentDownloadService extends IntentService {
         if (downloadCanceled || downloadSkipped) return null;
 
         // Create destination folder for images to be downloaded
-        File dir = FileHelper.createContentDownloadDir(this, content);
+        File dir = ContentHelper.createContentDownloadDir(this, content);
         // Folder creation failed
         if (!dir.exists()) {
             String title = content.getTitle();
@@ -380,7 +381,7 @@ public class ContentDownloadService extends IntentService {
                 hasError = true;
             }
 
-            File dir = FileHelper.getContentDownloadDir(content);
+            File dir = ContentHelper.getContentDownloadDir(content);
             double freeSpaceRatio = dir.getFreeSpace() * 100.0 / dir.getTotalSpace();
 
             // Auto-retry when error pages are remaining and conditions are met

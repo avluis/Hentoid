@@ -38,6 +38,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -71,8 +72,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
-    public ImageViewerViewModel(@NonNull Application application)
-    {
+    public ImageViewerViewModel(@NonNull Application application) {
         super(application);
         content.setValue(null); // Default content; tells everyone nothing has been loaded yet
     }
@@ -224,8 +224,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
             // Persist in it JSON
             Content content = img.content.getTarget();
-            if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
-            else FileHelper.createJson(content);
+            if (!content.getJsonUri().isEmpty()) ContentHelper.updateJson(context, content);
+            else ContentHelper.createJson(content);
 
             return img;
         } else
@@ -248,7 +248,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         theContent.setLast(currentContentIndex == contentIds.size() - 1);
 
         // Load new content
-        File[] pictureFiles = FileHelper.getPictureFilesFromContent(theContent);
+        File[] pictureFiles = ContentHelper.getPictureFilesFromContent(theContent);
         if (pictureFiles != null && pictureFiles.length > 0) {
             List<ImageFile> imageFiles;
             if (null == theContent.getImageFiles() || theContent.getImageFiles().isEmpty()) {
@@ -319,7 +319,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     @Nullable
     private static Content postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
         cacheJson(context, content);
-        return FileHelper.updateContentReads(context, content.getId());
+        return ContentHelper.updateContentReads(context, content.getId());
     }
 
     // Cache JSON URI in the database to speed up favouriting
@@ -327,7 +327,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     @WorkerThread
     private static void cacheJson(@Nonnull Context context, @Nonnull Content content) {
         if (content.getJsonUri().isEmpty() && Build.VERSION.SDK_INT >= LOLLIPOP) {
-            File bookFolder = FileHelper.getContentDownloadDir(content);
+            File bookFolder = ContentHelper.getContentDownloadDir(content);
             DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
             if (file != null) {
                 // Cache the URI of the JSON to the database
