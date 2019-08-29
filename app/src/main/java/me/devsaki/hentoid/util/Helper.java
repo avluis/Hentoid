@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -26,22 +25,15 @@ import androidx.core.graphics.drawable.DrawableCompat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.IntroActivity;
-import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
@@ -51,21 +43,6 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
  * Generic utility class
  */
 public final class Helper {
-
-    public static void viewQueue(final Context context) {
-        Intent intent = new Intent(context, QueueActivity.class);
-        context.startActivity(intent);
-    }
-
-    // We have asked for permissions, but still denied.
-    public static void reset(Context context, Activity activity) {
-        ToastUtil.toast(R.string.reset);
-        Preferences.setIsFirstRun(true);
-        Intent intent = new Intent(activity, IntroActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        context.startActivity(intent);
-        activity.finish();
-    }
 
     public static void doRestart(@NonNull Context context) {
         try {
@@ -119,20 +96,6 @@ public final class Helper {
         canvas.drawBitmap(bitmap, 0, 0, p);
 
         return b;
-    }
-
-    public static WebResourceResponse getWebResourceResponseFromAsset(Site site, String filename,
-                                                                      TYPE type) {
-        Context context = HentoidApp.getAppContext();
-        String pathPrefix = site.getDescription().toLowerCase(Locale.US) + "/";
-        String file = pathPrefix + filename;
-        try {
-            File asset = new File(context.getExternalCacheDir() + File.separator + file);
-            FileInputStream stream = new FileInputStream(asset);
-            return Helper.getUtf8EncodedWebResourceResponse(stream, type);
-        } catch (IOException e) {
-            return null;
-        }
     }
 
     private static WebResourceResponse getUtf8EncodedWebResourceResponse(InputStream open,

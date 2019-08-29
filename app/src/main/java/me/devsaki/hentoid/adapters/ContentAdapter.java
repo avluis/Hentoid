@@ -36,6 +36,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -377,7 +378,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
                     holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
-                    holder.ivDownload.setOnClickListener(v -> Helper.viewQueue(context));
+                    holder.ivDownload.setOnClickListener(v -> viewQueue(context));
                 }
                 // "In library" icon
                 else if (status == StatusContent.DOWNLOADED || status == StatusContent.MIGRATED || status == StatusContent.ERROR) {
@@ -396,7 +397,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         ContentHolder holder = getHolderByContent(content);
         if (holder != null) {
             holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
-            holder.ivDownload.setOnClickListener(w -> Helper.viewQueue(context));
+            holder.ivDownload.setOnClickListener(w -> viewQueue(context));
             collectionAccessor.getPages(content, this);
         }
     }
@@ -902,6 +903,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             return new ContentAdapter(this);
         }
     }
+
+    private static void viewQueue(final Context context) {
+        Intent intent = new Intent(context, QueueActivity.class);
+        context.startActivity(intent);
+    }
+
 
     public void dispose() {
         compositeDisposable.clear();

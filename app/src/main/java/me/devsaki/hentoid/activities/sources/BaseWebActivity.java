@@ -224,7 +224,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
     private void reset() {
-        Helper.reset(HentoidApp.getAppContext(), this);
+        HentoidApp.reset(this);
     }
 
     @SuppressLint("SetJavaScriptEnabled")

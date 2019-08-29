@@ -408,7 +408,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
      * Reset the app (to get write permissions)
      */
     private void resetApp() {
-        Helper.reset(HentoidApp.getAppContext(), requireActivity());
+        HentoidApp.reset(requireActivity());
     }
 
     @Override

@@ -29,6 +29,7 @@ import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.FileHelper.deleteQuietly;
@@ -322,5 +323,23 @@ public final class ContentHelper {
         // => shorten them by using their hashCode
         if (id.length() > 10) id = Helper.formatIntAsStr(Math.abs(id.hashCode()), 10);
         return id;
+    }
+
+    public static File getOrCreateSiteDownloadDir(Context context, Site site) {
+        File file;
+        String settingDir = Preferences.getRootFolderName();
+        String folderDir = site.getFolder();
+        if (settingDir.isEmpty()) {
+            return getDefaultDir(context, folderDir);
+        }
+        file = new File(settingDir, folderDir);
+        if (!file.exists() && !FileUtil.makeDir(file)) {
+            file = new File(settingDir + folderDir);
+            if (!file.exists()) {
+                FileUtil.makeDir(file);
+            }
+        }
+
+        return file;
     }
 }

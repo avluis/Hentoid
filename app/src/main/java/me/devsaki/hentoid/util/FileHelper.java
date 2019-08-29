@@ -31,7 +31,6 @@ import javax.annotation.Nonnull;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
 import static android.os.Environment.MEDIA_MOUNTED;
@@ -355,24 +354,6 @@ public class FileHelper {
         if (!file.exists() && !FileUtil.makeDir(file)) {
             file = context.getDir("", Context.MODE_PRIVATE);
             file = new File(file, File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator + dir);
-            if (!file.exists()) {
-                FileUtil.makeDir(file);
-            }
-        }
-
-        return file;
-    }
-
-    public static File getOrCreateSiteDownloadDir(Context context, Site site) {
-        File file;
-        String settingDir = Preferences.getRootFolderName();
-        String folderDir = site.getFolder();
-        if (settingDir.isEmpty()) {
-            return getDefaultDir(context, folderDir);
-        }
-        file = new File(settingDir, folderDir);
-        if (!file.exists() && !FileUtil.makeDir(file)) {
-            file = new File(settingDir + folderDir);
             if (!file.exists()) {
                 FileUtil.makeDir(file);
             }
