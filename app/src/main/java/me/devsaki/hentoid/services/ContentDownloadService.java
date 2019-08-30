@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.util.SparseIntArray;
 import android.webkit.MimeTypeMap;
 
+import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.android.volley.AuthFailureError;
@@ -533,7 +534,7 @@ public class ContentDownloadService extends IntentService {
     private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, @Nonnull ImageFile img, @Nonnull File dir, boolean hasImageProcessing) {
         try {
             if (result != null) {
-                processAndSaveImage(img, dir, result.getValue().get("Content-Type"), result.getKey(), hasImageProcessing);
+                processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey(), hasImageProcessing);
                 updateImageStatus(img, true);
             } else {
                 updateImageStatus(img, false);
@@ -654,7 +655,7 @@ public class ContentDownloadService extends IntentService {
      *
      * @param img           ImageFile that is being processed
      * @param dir           Destination folder
-     * @param contentType   Content type of the image
+     * @param contentType   Content type of the image (because some sources don't serve images with extensions)
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
@@ -672,21 +673,35 @@ public class ContentDownloadService extends IntentService {
             else throw new InvalidParameterException("No processing parameters found");
         }
 
-        saveImage(img.getName(), dir, contentType, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
+        String fileExt = null;
+        // Determine the extension of the file
+        //  - Case 1: Content served from an URL without any extension, but with a content-type in the HTTP headers of the response
+        //  - Case 2: Content served from an URL with an extension, but with no content-type at all
+        if (null != contentType) {
+            contentType = HttpHelper.cleanContentType(contentType).first;
+            fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
+        }
+        // Content-type has not been useful to determine the extension
+        if (null == fileExt || fileExt.isEmpty()) {
+            fileExt = FileHelper.getExtension(img.getUrl());
+            // Cleans potential URL arguments
+            if (fileExt.contains("?")) fileExt = fileExt.substring(0, fileExt.indexOf('?'));
+        }
+        if (fileExt.isEmpty()) fileExt = "jpg"; // If all else fails, use jpg as default
+
+        saveImage(dir, img.getName() + "." + fileExt, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
     }
 
     /**
      * Create the given file in the given destination folder, and write binary data to it
      *
-     * @param fileName      Name of the file to write
      * @param dir           Destination folder
-     * @param contentType   Content type of the image
+     * @param fileName      Name of the file to write (with the extension)
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private static void saveImage(String fileName, File dir, String contentType, byte[] binaryContent) throws IOException {
-        String ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
-        File file = new File(dir, fileName + "." + ext);
+    private static void saveImage(@NonNull File dir, @NonNull String fileName, byte[] binaryContent) throws IOException {
+        File file = new File(dir, fileName);
         FileHelper.saveBinaryInFile(file, binaryContent);
     }
 
