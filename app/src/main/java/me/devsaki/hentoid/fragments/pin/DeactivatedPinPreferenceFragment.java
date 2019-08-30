@@ -3,6 +3,8 @@ package me.devsaki.hentoid.fragments.pin;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.fragment.app.Fragment;
 import androidx.core.view.ViewCompat;
@@ -28,7 +30,7 @@ public final class DeactivatedPinPreferenceFragment extends Fragment implements 
 
     @Override
     public void onPinActivateSuccess() {
-        Snackbar.make(onSwitch, R.string.app_lock_enable, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(onSwitch, R.string.app_lock_enable, BaseTransientBottomBar.LENGTH_SHORT).show();
 
         requireFragmentManager()
                 .beginTransaction()

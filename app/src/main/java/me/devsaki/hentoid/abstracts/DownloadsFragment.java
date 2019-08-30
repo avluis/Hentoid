@@ -79,6 +79,7 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toCollection;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 /**
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
@@ -983,7 +984,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             }
 
             Resources res = getResources();
-            String textRes = res.getQuantityString(R.plurals.downloads_filter_book_count_plural, (int)totalSelectedContent, (int)totalSelectedContent);
+            String textRes = res.getQuantityString(R.plurals.downloads_filter_book_count_plural, (int) totalSelectedContent, (int) totalSelectedContent);
 
             filterBookCount.setText(textRes);
             filterBar.setVisibility(View.VISIBLE);
@@ -1021,7 +1022,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         Timber.w(message);
         isLoading = false;
 
-        Snackbar.make(mListView, message, Snackbar.LENGTH_LONG)
+        Snackbar.make(mListView, message, LENGTH_LONG)
                 .setAction("RETRY", v -> searchLibrary())
                 .show();
         toggleUI(SHOW_BLANK);

@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
@@ -149,7 +150,7 @@ public class ErrorStatsDialogFragment extends DialogFragment {
 
                 File logFile = LogUtil.writeLog(requireContext(), log, errorLogInfo);
                 if (logFile != null) {
-                    Snackbar snackbar = Snackbar.make(rootView, R.string.cleanup_done, Snackbar.LENGTH_LONG);
+                    Snackbar snackbar = Snackbar.make(rootView, R.string.cleanup_done, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.setAction("READ LOG", v -> FileHelper.openFile(requireContext(), logFile));
                     snackbar.show();
                 }

@@ -10,6 +10,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
@@ -68,7 +69,7 @@ public class PrefsActivity extends BaseActivity {
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onImportEventComplete(ImportEvent event) {
         if (ImportEvent.EV_COMPLETE == event.eventType && event.logFile != null) {
-            Snackbar snackbar = Snackbar.make(this.findViewById(android.R.id.content), R.string.cleanup_done, Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(this.findViewById(android.R.id.content), R.string.cleanup_done, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.setAction("READ LOG", v -> FileHelper.openFile(this, event.logFile));
             snackbar.show();
         }

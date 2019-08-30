@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -499,7 +500,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         ContentQueueManager.getInstance().resumeQueue(context);
 
         //ToastUtil.toast(context, R.string.add_to_queue);
-        Snackbar snackbar = Snackbar.make(libraryView, R.string.add_to_queue, Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(libraryView, R.string.add_to_queue, BaseTransientBottomBar.LENGTH_LONG);
         snackbar.setAction("VIEW QUEUE", v -> viewQueue());
         snackbar.show();
     }
@@ -520,7 +521,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         File logFile = LogUtil.writeLog(context, log, errorLogInfo);
         if (logFile != null) {
-            Snackbar snackbar = Snackbar.make(libraryView, R.string.cleanup_done, Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(libraryView, R.string.cleanup_done, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.setAction("READ LOG", v -> FileHelper.openFile(context, logFile));
             snackbar.show();
         }
@@ -775,7 +776,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         Timber.e(t);
         if (t instanceof ContentNotRemovedException) {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
-            Snackbar snackbar = Snackbar.make(libraryView, "Content removal failed", Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(libraryView, "Content removal failed", BaseTransientBottomBar.LENGTH_LONG);
             if (e.getContent() != null) {
                 // Unflag the item
                 e.getContent().setIsBeingDeleted(true);
@@ -823,7 +824,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @Override
     public void onPagedResultFailed(Content content, String message) {
         Timber.w(message);
-        Snackbar snackbar = Snackbar.make(libraryView, message, Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(libraryView, message, BaseTransientBottomBar.LENGTH_LONG);
 
         if (content != null) {
             ContentHolder holder = getHolderByContent(content);
