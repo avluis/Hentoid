@@ -32,6 +32,10 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 class FileUtil {
 
 
+    private FileUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Method ensures file creation from stream.
      *

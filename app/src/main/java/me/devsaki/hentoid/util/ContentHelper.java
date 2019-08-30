@@ -46,6 +46,10 @@ public final class ContentHelper {
     private static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
 
+    private ContentHelper() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static void viewContent(final Context context, Content content) {
         viewContent(context, content, false);
     }

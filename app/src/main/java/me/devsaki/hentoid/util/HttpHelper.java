@@ -28,6 +28,10 @@ public class HttpHelper {
     public static final String HEADER_REFERER_KEY = "referer";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
 
+    private HttpHelper() {
+        throw new IllegalStateException("Utility class");
+    }
+
     @Nullable
     public static Document getOnlineDocument(String url) throws IOException {
         return getOnlineDocument(url, null, true);

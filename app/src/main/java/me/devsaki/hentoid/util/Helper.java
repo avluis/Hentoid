@@ -44,6 +44,10 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
  */
 public final class Helper {
 
+    private Helper() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static void doRestart(@NonNull Context context) {
         try {
             PackageManager pm = context.getPackageManager();

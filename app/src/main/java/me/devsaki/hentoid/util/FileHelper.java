@@ -42,6 +42,11 @@ import static android.os.Environment.getExternalStorageState;
  * Generic file-related utility class
  */
 public class FileHelper {
+
+    private FileHelper() {
+        throw new IllegalStateException("Utility class");
+    }
+
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static final boolean isSdPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
