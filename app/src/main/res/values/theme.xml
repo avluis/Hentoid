@@ -73,6 +73,7 @@
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:colorBackground">@color/window_background</item>
         <item name="android:textColor">@color/on_primary</item>
         <item name="android:textColorPrimary">@color/on_primary</item>
         <item name="android:textColorSecondary">@color/on_secondary</item>
