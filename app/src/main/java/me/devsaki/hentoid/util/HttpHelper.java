@@ -94,7 +94,7 @@ public class HttpHelper {
      *      - The charset, if it has been transmitted, as its second value (may be null)
      */
     public static Pair<String, String> cleanContentType(@NonNull String rawContentType) {
-        if (rawContentType.indexOf("charset=") > 0) {
+        if (rawContentType.contains("charset=")) {
             final String[] contentTypeAndEncoding = rawContentType.replace("; ", ";").split(";");
             final String contentType = contentTypeAndEncoding[0];
             final String charset = contentTypeAndEncoding[1].split("=")[1];
