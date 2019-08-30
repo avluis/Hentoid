@@ -71,7 +71,7 @@
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSurface">@color/surface</item>
-        <item name="colorOnSurface">@color/on_primary</item>
+        <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:windowBackground">@color/window_background</item>
         <item name="android:textColor">@color/on_primary</item>
         <item name="android:textColorPrimary">@color/on_primary</item>
