@@ -378,7 +378,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
                     holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
-                    holder.ivDownload.setOnClickListener(v -> viewQueue(context));
+                    holder.ivDownload.setOnClickListener(v -> viewQueue());
                 }
                 // "In library" icon
                 else if (status == StatusContent.DOWNLOADED || status == StatusContent.MIGRATED || status == StatusContent.ERROR) {
@@ -397,7 +397,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         ContentHolder holder = getHolderByContent(content);
         if (holder != null) {
             holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
-            holder.ivDownload.setOnClickListener(w -> viewQueue(context));
+            holder.ivDownload.setOnClickListener(w -> viewQueue());
             collectionAccessor.getPages(content, this);
         }
     }
@@ -498,7 +498,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         ContentQueueManager.getInstance().resumeQueue(context);
 
-        ToastUtil.toast(context, R.string.add_to_queue);
+        //ToastUtil.toast(context, R.string.add_to_queue);
+        Snackbar snackbar = Snackbar.make(libraryView, R.string.add_to_queue, Snackbar.LENGTH_LONG);
+        snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+        snackbar.show();
     }
 
     private void showErrorLog(final Content content) {
@@ -904,7 +907,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
     }
 
-    private static void viewQueue(final Context context) {
+    private void viewQueue() {
         Intent intent = new Intent(context, QueueActivity.class);
         context.startActivity(intent);
     }
