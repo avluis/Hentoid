@@ -26,7 +26,7 @@
         android:overScrollMode="never"
         android:scrollbars="vertical"
         android:textIsSelectable="false"
-        android:background="?android:colorBackground"
+        android:background="@color/window_background"
         tools:listitem="@layout/item_text_sites"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"

@@ -3,7 +3,7 @@
     android:id="@+id/drawer_item_txt"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?android:colorBackground"
+    android:background="@color/window_background"
     android:gravity="center_vertical"
     android:textColor="?colorOnBackground"
     android:padding="8dp"

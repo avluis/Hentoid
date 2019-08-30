@@ -9,7 +9,7 @@
         android:id="@+id/changelogReleaseLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:colorBackground"
+        android:background="@color/window_background"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintTop_toTopOf="parent">
