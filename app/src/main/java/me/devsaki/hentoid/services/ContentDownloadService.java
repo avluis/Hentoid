@@ -683,11 +683,15 @@ public class ContentDownloadService extends IntentService {
         }
         // Content-type has not been useful to determine the extension
         if (null == fileExt || fileExt.isEmpty()) {
+            Timber.d("Using url to determine file extension (content-type was %s) for %s", contentType, img.getUrl());
             fileExt = FileHelper.getExtension(img.getUrl());
             // Cleans potential URL arguments
             if (fileExt.contains("?")) fileExt = fileExt.substring(0, fileExt.indexOf('?'));
         }
-        if (fileExt.isEmpty()) fileExt = "jpg"; // If all else fails, use jpg as default
+        if (fileExt.isEmpty()) {
+            Timber.d("Using default extension for %s", img.getUrl());
+            fileExt = "jpg"; // If all else fails, use jpg as default
+        }
 
         saveImage(dir, img.getName() + "." + fileExt, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
     }
