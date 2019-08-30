@@ -1,19 +1,20 @@
 package me.devsaki.hentoid.activities;
 
 import android.app.Activity;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static java.lang.String.format;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 
@@ -90,7 +92,8 @@ public class SearchActivity extends BaseActivity {
             SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(intent.getExtras());
             mode = parser.getMode();
             Uri searchUri = parser.getUri();
-            if (searchUri != null) preSelectedAttributes = SearchActivityBundle.Parser.parseSearchUri(searchUri);
+            if (searchUri != null)
+                preSelectedAttributes = SearchActivityBundle.Parser.parseSearchUri(searchUri);
         }
 
         setContentView(R.layout.activity_search);
@@ -197,7 +200,7 @@ public class SearchActivity extends BaseActivity {
             searchButton.setVisibility(View.VISIBLE);
         } else {
             searchButton.setVisibility(View.GONE);
-            Snackbar.make(startCaption, result.message, Snackbar.LENGTH_LONG);
+            Snackbar.make(startCaption, result.message, LENGTH_LONG);
         }
     }
 

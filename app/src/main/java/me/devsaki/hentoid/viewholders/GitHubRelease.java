@@ -84,7 +84,7 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
 
         holder.clearContent();
         // Parse content and add lines to the description
-        for (String s : description.split("\\r\\n")) {
+        for (String s : description.split("\\r\\n")) { // TODO - refactor this code with its copy in UpdateSuccessDialogFragment
             s = s.trim();
             if (s.startsWith("-")) holder.addListContent(s);
             else holder.addDescContent(s);
@@ -103,7 +103,6 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
             releaseDescriptionAdapter = new FlexibleAdapter<>(null);
             RecyclerView releasedDescription = view.findViewById(R.id.changelogReleaseDescription);
             releasedDescription.setAdapter(releaseDescriptionAdapter);
-            releasedDescription.setLayoutManager(new LinearLayoutManager(view.getContext()));
         }
 
         public void setTitle(String title) {

@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -36,6 +37,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -50,11 +52,12 @@ import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import timber.log.Timber;
 
 /**
@@ -191,7 +194,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             holder.miniLayout.setVisibility(View.VISIBLE);
 
             Glide.with(context.getApplicationContext())
-                    .load(FileHelper.getThumb(content))
+                    .load(ContentHelper.getThumb(content))
                     .apply(glideRequestOptions)
                     .into(holder.ivCover2);
         } else {
@@ -199,7 +202,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             holder.miniLayout.setVisibility(View.GONE);
 
             Glide.with(context.getApplicationContext())
-                    .load(FileHelper.getThumb(content))
+                    .load(ContentHelper.getThumb(content))
                     .apply(glideRequestOptions)
                     .into(holder.ivCover);
         }
@@ -308,7 +311,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     clearSelections();
                     itemSelectListener.onItemClear(0);
                 }
-                Helper.viewContent(context, content);
+                ContentHelper.viewContent(context, content);
             });
         } else {
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
@@ -376,7 +379,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
                     holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
-                    holder.ivDownload.setOnClickListener(v -> Helper.viewQueue(context));
+                    holder.ivDownload.setOnClickListener(v -> viewQueue());
                 }
                 // "In library" icon
                 else if (status == StatusContent.DOWNLOADED || status == StatusContent.MIGRATED || status == StatusContent.ERROR) {
@@ -395,7 +398,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         ContentHolder holder = getHolderByContent(content);
         if (holder != null) {
             holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
-            holder.ivDownload.setOnClickListener(w -> Helper.viewQueue(context));
+            holder.ivDownload.setOnClickListener(w -> viewQueue());
             collectionAccessor.getPages(content, this);
         }
     }
@@ -496,7 +499,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         ContentQueueManager.getInstance().resumeQueue(context);
 
-        ToastUtil.toast(context, R.string.add_to_queue);
+        //ToastUtil.toast(context, R.string.add_to_queue);
+        Snackbar snackbar = Snackbar.make(libraryView, R.string.add_to_queue, BaseTransientBottomBar.LENGTH_LONG);
+        snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+        snackbar.show();
     }
 
     private void showErrorLog(final Content content) {
@@ -515,7 +521,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         File logFile = LogUtil.writeLog(context, log, errorLogInfo);
         if (logFile != null) {
-            Snackbar snackbar = Snackbar.make(libraryView, R.string.cleanup_done, Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(libraryView, R.string.cleanup_done, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.setAction("READ LOG", v -> FileHelper.openFile(context, logFile));
             snackbar.show();
         }
@@ -535,7 +541,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     private void archiveContent(final Content item) {
         ToastUtil.toast(R.string.packaging_content);
-        FileHelper.archiveContent(context, item);
+        ContentHelper.archiveContent(context, item);
     }
 
     private void askDeleteItem(final Content item) {
@@ -579,8 +585,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 db.insertContent(content);
 
                 // Persist in it JSON
-                if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
-                else FileHelper.createJson(content);
+                if (!content.getJsonUri().isEmpty()) ContentHelper.updateJson(context, content);
+                else ContentHelper.createJson(content);
             }
             return content;
         }
@@ -758,7 +764,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         Content theContent = db.selectContentById(content.getId());
 
         if (theContent != null) {
-            FileHelper.removeContent(content);
+            ContentHelper.removeContent(content);
             db.deleteContent(content);
             Timber.d("Removed item: %s from db and file system.", content.getTitle());
             return content;
@@ -770,7 +776,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         Timber.e(t);
         if (t instanceof ContentNotRemovedException) {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
-            Snackbar snackbar = Snackbar.make(libraryView, "Content removal failed", Snackbar.LENGTH_LONG);
+            Snackbar snackbar = Snackbar.make(libraryView, "Content removal failed", BaseTransientBottomBar.LENGTH_LONG);
             if (e.getContent() != null) {
                 // Unflag the item
                 e.getContent().setIsBeingDeleted(true);
@@ -818,7 +824,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @Override
     public void onPagedResultFailed(Content content, String message) {
         Timber.w(message);
-        Snackbar snackbar = Snackbar.make(libraryView, message, Snackbar.LENGTH_LONG);
+        Snackbar snackbar = Snackbar.make(libraryView, message, BaseTransientBottomBar.LENGTH_LONG);
 
         if (content != null) {
             ContentHolder holder = getHolderByContent(content);
@@ -901,6 +907,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             return new ContentAdapter(this);
         }
     }
+
+    private void viewQueue() {
+        Intent intent = new Intent(context, QueueActivity.class);
+        context.startActivity(intent);
+    }
+
 
     public void dispose() {
         compositeDisposable.clear();

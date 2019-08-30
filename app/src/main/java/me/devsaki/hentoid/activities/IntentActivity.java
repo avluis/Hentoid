@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ContentHelper;
 import timber.log.Timber;
 
 import static android.content.Intent.ACTION_SEND;
@@ -63,7 +63,7 @@ public class IntentActivity extends BaseActivity {
         Content content = new Content();
         content.setSite(site);
         content.setUrl(parsedPath);
-        Helper.viewContent(this, content, true);
+        ContentHelper.viewContent(this, content, true);
     }
 
     @Nullable

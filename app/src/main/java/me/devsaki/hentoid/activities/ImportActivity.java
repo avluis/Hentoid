@@ -37,6 +37,7 @@ import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
@@ -387,7 +388,7 @@ public class ImportActivity extends BaseActivity {
     private boolean hasBooks() {
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(FileHelper.getOrCreateSiteDownloadDir(this, s));
+            downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDir(this, s));
         }
 
         for (File downloadDir : downloadDirs) {

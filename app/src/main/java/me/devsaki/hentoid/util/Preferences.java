@@ -42,6 +42,18 @@ public final class Preferences {
             sharedPreferences.edit().putBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, flingFactor > 0).apply();
             sharedPreferences.edit().remove(Key.PREF_VIEWER_FLING_FACTOR).apply();
         }
+
+        if (sharedPreferences.contains(Key.PREF_ANALYTICS_TRACKING)) {
+            boolean analyticsTracking = sharedPreferences.getBoolean(Key.PREF_ANALYTICS_TRACKING, false);
+            sharedPreferences.edit().putBoolean(Key.PREF_ANALYTICS_PREFERENCE, !analyticsTracking).apply();
+            sharedPreferences.edit().remove(Key.PREF_ANALYTICS_TRACKING).apply();
+        }
+
+        if (sharedPreferences.contains(Key.PREF_HIDE_RECENT)) {
+            boolean hideRecent = sharedPreferences.getBoolean(Key.PREF_HIDE_RECENT, !BuildConfig.DEBUG);
+            sharedPreferences.edit().putBoolean(Key.PREF_APP_PREVIEW, !hideRecent).apply();
+            sharedPreferences.edit().remove(Key.PREF_HIDE_RECENT).apply();
+        }
     }
 
     public static void registerPrefsChangedListener(SharedPreferences.OnSharedPreferenceChangeListener listener) {
@@ -62,8 +74,8 @@ public final class Preferences {
                 .apply();
     }
 
-    public static boolean isAnalyticsDisabled() {
-        return sharedPreferences.getBoolean(Key.PREF_ANALYTICS_TRACKING, false);
+    public static boolean isAnalyticsEnabled() {
+        return sharedPreferences.getBoolean(Key.PREF_ANALYTICS_PREFERENCE, true);
     }
 
     public static boolean isFirstRun() {
@@ -110,7 +122,7 @@ public final class Preferences {
     }
 
     public static boolean getRecentVisibility() {
-        return sharedPreferences.getBoolean(Key.PREF_HIDE_RECENT, Default.PREF_HIDE_RECENT_DEFAULT);
+        return sharedPreferences.getBoolean(Key.PREF_APP_PREVIEW, BuildConfig.DEBUG);
     }
 
     static String getSdStorageUri() {
@@ -293,12 +305,14 @@ public final class Preferences {
     }
 
     public static final class Key {
+        public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
+        static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         public static final String PREF_APP_LOCK = "pref_app_lock";
-        public static final String PREF_HIDE_RECENT = "pref_hide_recent";
+        public static final String PREF_APP_PREVIEW = "pref_app_preview";
+        static final String PREF_HIDE_RECENT = "pref_hide_recent";
         public static final String PREF_ADD_NO_MEDIA_FILE = "pref_add_no_media_file";
         public static final String PREF_CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         public static final String PREF_REFRESH_LIBRARY = "pref_refresh_bookshelf";
-        public static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         static final String PREF_WELCOME_DONE = "pref_welcome_done";
         static final String PREFS_VERSION_KEY = "prefs_version";
         static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
@@ -338,7 +352,6 @@ public final class Preferences {
         static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
-        static final boolean PREF_HIDE_RECENT_DEFAULT = (!BuildConfig.DEBUG); // Debug apps always visible to facilitate video capture
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;

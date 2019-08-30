@@ -22,7 +22,7 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.IntroActivity;
 
-import static com.google.android.material.snackbar.Snackbar.LENGTH_LONG;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
 

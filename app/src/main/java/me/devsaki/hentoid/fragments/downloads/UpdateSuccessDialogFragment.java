@@ -1,16 +1,16 @@
 package me.devsaki.hentoid.fragments.downloads;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.items.IFlexible;
@@ -38,7 +38,7 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     public static void invoke(FragmentManager fragmentManager) {
         UpdateSuccessDialogFragment fragment = new UpdateSuccessDialogFragment();
         fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
-        fragment.show(fragmentManager, null);
+        fragment.show(fragmentManager, "usdf");
     }
 
     @Nullable
@@ -51,11 +51,15 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
         releaseDescriptionAdapter = new FlexibleAdapter<>(null);
         RecyclerView releaseDescription = requireViewById(rootView, R.id.changelogReleaseDescription);
         releaseDescription.setAdapter(releaseDescriptionAdapter);
-        releaseDescription.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
-
-        getReleases();
 
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        getReleases();
     }
 
     @Override
@@ -74,7 +78,7 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     private void onCheckSuccess(GitHubRelease.Struct latestReleaseInfo) {
         releaseName.setText(latestReleaseInfo.name);
         // Parse content and add lines to the description
-        for (String s : latestReleaseInfo.body.split("\\r\\n")) {
+        for (String s : latestReleaseInfo.body.split("\\r\\n")) { // TODO - refactor this code with its copy in GitHubRelease
             s = s.trim();
             if (s.startsWith("-")) addListContent(s);
             else addDescContent(s);

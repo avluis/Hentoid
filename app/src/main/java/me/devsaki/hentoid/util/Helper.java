@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -14,75 +13,39 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.webkit.WebResourceResponse;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.IntroActivity;
-import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.activities.UnlockActivity;
-import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
 /**
  * Created by avluis on 06/05/2016.
- * Utility class
+ * Generic utility class
  */
 public final class Helper {
 
-    public static void viewContent(final Context context, Content content) {
-        viewContent(context, content, false);
-    }
-
-    public static void viewContent(final Context context, Content content, boolean wrapPin) {
-        Intent intent = new Intent(context, content.getWebActivityClass());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-        builder.setUrl(content.getGalleryUrl());
-        intent.putExtras(builder.getBundle());
-        if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
-        context.startActivity(intent);
-    }
-
-    public static void viewQueue(final Context context) {
-        Intent intent = new Intent(context, QueueActivity.class);
-        context.startActivity(intent);
-    }
-
-    // We have asked for permissions, but still denied.
-    public static void reset(Context context, Activity activity) {
-        ToastUtil.toast(R.string.reset);
-        Preferences.setIsFirstRun(true);
-        Intent intent = new Intent(activity, IntroActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        context.startActivity(intent);
-        activity.finish();
+    private Helper() {
+        throw new IllegalStateException("Utility class");
     }
 
     public static void doRestart(@NonNull Context context) {
@@ -137,20 +100,6 @@ public final class Helper {
         canvas.drawBitmap(bitmap, 0, 0, p);
 
         return b;
-    }
-
-    public static WebResourceResponse getWebResourceResponseFromAsset(Site site, String filename,
-                                                                      TYPE type) {
-        Context context = HentoidApp.getAppContext();
-        String pathPrefix = site.getDescription().toLowerCase(Locale.US) + "/";
-        String file = pathPrefix + filename;
-        try {
-            File asset = new File(context.getExternalCacheDir() + File.separator + file);
-            FileInputStream stream = new FileInputStream(asset);
-            return Helper.getUtf8EncodedWebResourceResponse(stream, type);
-        } catch (IOException e) {
-            return null;
-        }
     }
 
     private static WebResourceResponse getUtf8EncodedWebResourceResponse(InputStream open,
@@ -223,22 +172,6 @@ public final class Helper {
         }
 
         return str.toString();
-    }
-
-    public static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType type) {
-        return extractAttributeIdsByType(attrs, new AttributeType[]{type});
-    }
-
-    private static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType[] types) {
-        List<Long> result = new ArrayList<>();
-
-        for (Attribute a : attrs) {
-            for (AttributeType type : types) {
-                if (a.getType().equals(type)) result.add(a.getId());
-            }
-        }
-
-        return result;
     }
 
     public static String decode64(String encodedString) {

@@ -85,7 +85,6 @@ public class ChangelogFragment extends Fragment {
         RecyclerView recyclerView = requireViewById(rootView, R.id.changelogList);
         recyclerView.setAdapter(changelogAdapter);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
     private void getReleases() {

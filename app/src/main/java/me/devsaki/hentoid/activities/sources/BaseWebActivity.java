@@ -65,7 +65,7 @@ import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -224,7 +224,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
     private void reset() {
-        Helper.reset(HentoidApp.getAppContext(), this);
+        HentoidApp.reset(this);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -364,7 +364,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 if (StatusContent.DOWNLOADED == currentContent.getStatus()
                         || StatusContent.ERROR == currentContent.getStatus()
                         || StatusContent.MIGRATED == currentContent.getStatus()) {
-                    FileHelper.openContent(this, currentContent);
+                    ContentHelper.openContent(this, currentContent);
                 } else {
                     fabAction.hide();
                 }
@@ -573,10 +573,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         /**
          * Determines if the browser can use one single OkHttp request to serve HTML pages
-         *   - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
-         *     https://issuetracker.google.com/issues/36989494
-         *   - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes issues on nHentai)
-         *     https://bugs.chromium.org/p/chromium/issues/detail?id=780491
+         * - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
+         * https://issuetracker.google.com/issues/36989494
+         * - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes issues on nHentai)
+         * https://bugs.chromium.org/p/chromium/issues/detail?id=780491
          *
          * @return true if HTML content can be served by a single OkHttp request,
          * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
@@ -602,12 +602,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         /**
-        * Important note
-        *
-        * Based on observation, for a given URL, onPageStarted seems to be called
-        *  - Before {@link this.shouldInterceptRequest} when the page is not cached (1st call)
-        *  - After {@link this.shouldInterceptRequest} when the page is cached (Nth call; N>1)
-        */
+         * Important note
+         * <p>
+         * Based on observation, for a given URL, onPageStarted seems to be called
+         * - Before {@link this.shouldInterceptRequest} when the page is not cached (1st call)
+         * - After {@link this.shouldInterceptRequest} when the page is cached (Nth call; N>1)
+         */
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_clear);

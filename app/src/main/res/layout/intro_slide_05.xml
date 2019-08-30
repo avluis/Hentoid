@@ -41,7 +41,7 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/intro_6_light"
+            android:id="@+id/intro_5_light"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
@@ -53,7 +53,7 @@
             android:text="@string/slide_05_light" />
 
         <TextView
-            android:id="@+id/intro_6_dark"
+            android:id="@+id/intro_5_dark"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"

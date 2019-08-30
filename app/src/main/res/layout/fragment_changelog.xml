@@ -6,25 +6,6 @@
     android:background="?android:colorBackground"
     tools:context=".activities.AboutActivity">
 
-    <TextView
-        android:id="@+id/changelogDownloadLatestText"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="?attr/colorSecondary"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center_vertical"
-        android:padding="16dp"
-        android:textAllCaps="true"
-        android:textSize="@dimen/text_subtitle_1"
-        android:textStyle="bold"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription"
-        tools:text="Get the latest version (x.xx.x)" />
-
     <ImageView
         android:id="@+id/changelogDownloadLatestButton"
         android:layout_width="48dp"
@@ -41,11 +22,31 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
+    <TextView
+        android:id="@+id/changelogDownloadLatestText"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="?attr/colorSecondary"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:textAllCaps="true"
+        android:textSize="@dimen/text_subtitle_1"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription"
+        tools:text="Get the latest version (x.xx.x)" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/changelogList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/changelogDownloadLatestText"
         tools:listitem="@layout/item_changelog" />

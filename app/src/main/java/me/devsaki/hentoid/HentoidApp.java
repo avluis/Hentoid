@@ -1,6 +1,7 @@
 package me.devsaki.hentoid;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Application;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -16,6 +17,7 @@ import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import io.fabric.sdk.android.Fabric;
+import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
@@ -26,6 +28,7 @@ import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
+import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 /**
@@ -62,6 +65,7 @@ public class HentoidApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
         Fabric.with(this, new Crashlytics());
 
         // Fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
@@ -89,10 +93,11 @@ public class HentoidApp extends Application {
         // Prefs
         instance = this.getApplicationContext();
         Preferences.init(this);
+        Preferences.performHousekeeping();
 
         // Firebase
-        boolean isAnalyticsDisabled = Preferences.isAnalyticsDisabled();
-        FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!isAnalyticsDisabled);
+        boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
+        FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
         // Stetho
 /*
@@ -106,9 +111,6 @@ public class HentoidApp extends Application {
 
         // DB housekeeping
         performDatabaseHousekeeping();
-
-        // Preferences housekeeping
-        performPrefsHousekeeping();
 
         // Init notification channels
         UpdateNotificationChannel.init(this);
@@ -137,6 +139,16 @@ public class HentoidApp extends Application {
         FirebaseAnalytics.getInstance(this).setUserProperty("night_mode", Integer.toString(darkMode));
     }
 
+    // We have asked for permissions, but still denied.
+    public static void reset(Activity activity) {
+        ToastUtil.toast(R.string.reset);
+        Preferences.setIsFirstRun(true);
+        Intent intent = new Intent(activity, IntroActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        instance.startActivity(intent);
+        activity.finish();
+    }
+
     /**
      * Clean up and upgrade database
      */
@@ -154,10 +166,6 @@ public class HentoidApp extends Application {
         } else {
             startService(intent);
         }
-    }
-
-    private void performPrefsHousekeeping() {
-        Preferences.performHousekeeping();
     }
 
     public static int darkModeFromPrefs(int prefsMode) {

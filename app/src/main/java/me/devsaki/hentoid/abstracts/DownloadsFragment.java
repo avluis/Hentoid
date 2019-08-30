@@ -68,6 +68,7 @@ import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
@@ -78,6 +79,7 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toCollection;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 /**
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
@@ -272,14 +274,17 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     public void onResume() {
         super.onResume();
 
-        // Display the "update success" dialog when an update is detected
-        if (Preferences.getLastKnownAppVersionCode() > 0 &&
-                Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
-            UpdateSuccessDialogFragment.invoke(requireFragmentManager());
-            Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
-        }
-
         defaultLoad();
+
+        // Display the "update success" dialog when an update is detected on a release version
+        if (!BuildConfig.DEBUG) {
+            if (0 == Preferences.getLastKnownAppVersionCode()) { // Don't show that during first run
+                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+            } else if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
+                UpdateSuccessDialogFragment.invoke(requireFragmentManager());
+                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+            }
+        }
     }
 
     /**
@@ -332,7 +337,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         if (this instanceof PagerFragment)
             pageOffset = (searchManager.getCurrentPage() - 1) * Preferences.getContentPageQuantity();
         bundle.putInt("contentIndex", pageOffset + mAdapter.getContentPosition(content) + 1);
-        FileHelper.openContent(requireContext(), content, bundle);
+        ContentHelper.openContent(requireContext(), content, bundle);
     }
 
     /**
@@ -407,7 +412,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
      * Reset the app (to get write permissions)
      */
     private void resetApp() {
-        Helper.reset(HentoidApp.getAppContext(), requireActivity());
+        HentoidApp.reset(requireActivity());
     }
 
     @Override
@@ -982,7 +987,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             }
 
             Resources res = getResources();
-            String textRes = res.getQuantityString(R.plurals.downloads_filter_book_count_plural, (int)totalSelectedContent, (int)totalSelectedContent);
+            String textRes = res.getQuantityString(R.plurals.downloads_filter_book_count_plural, (int) totalSelectedContent, (int) totalSelectedContent);
 
             filterBookCount.setText(textRes);
             filterBar.setVisibility(View.VISIBLE);
@@ -1020,7 +1025,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         Timber.w(message);
         isLoading = false;
 
-        Snackbar.make(mListView, message, Snackbar.LENGTH_LONG)
+        Snackbar.make(mListView, message, LENGTH_LONG)
                 .setAction("RETRY", v -> searchLibrary())
                 .show();
         toggleUI(SHOW_BLANK);

@@ -67,12 +67,13 @@
     </style>
 
     <style name="Dialog" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="colorPrimary">@color/on_background</item> <!-- For some oscure reason, primary is used for buttons over background -->
+        <item name="colorPrimary">@color/on_background</item> <!-- For some obscure reason, primary is used for buttons over background -->
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSurface">@color/surface</item>
-        <item name="colorOnSurface">@color/on_primary</item>
+        <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:colorBackground">@color/window_background</item>
         <item name="android:textColor">@color/on_primary</item>
         <item name="android:textColorPrimary">@color/on_primary</item>
         <item name="android:textColorSecondary">@color/on_secondary</item>

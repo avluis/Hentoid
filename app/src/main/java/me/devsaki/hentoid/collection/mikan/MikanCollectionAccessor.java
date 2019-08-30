@@ -31,6 +31,7 @@ import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.retrofit.sources.MikanServer;
 import me.devsaki.hentoid.util.AttributeCache;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.util.Preferences;
@@ -127,7 +128,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         compositeDisposable.add(MikanServer.API.getRecent(getMikanCodeForSite(site), params)
                 .observeOn(mainThread())
                 .subscribe(result -> onContentSuccess(result, listener),
-                           throwable -> listener.onPagedResultFailed(null, "Recent books failed to load - " + throwable.getMessage())));
+                        throwable -> listener.onPagedResultFailed(null, "Recent books failed to load - " + throwable.getMessage())));
     }
 
     @Override
@@ -152,7 +153,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
     @Override
     public void searchBooksPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         // NB : Mikan does not support booksPerPage and orderStyle params
-        List<Long> sites = Helper.extractAttributeIdsByType(metadata, AttributeType.SOURCE);
+        List<Long> sites = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.SOURCE);
 
         if (sites.size() > 1) {
             throw new UnsupportedOperationException("Searching through multiple sites not supported yet by Mikan search");
@@ -170,19 +171,19 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         Map<String, String> params = new HashMap<>();
         params.put("page", page + "");
 
-        List<Long> attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.ARTIST);
+        List<Long> attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.ARTIST);
         if (!attributes.isEmpty()) params.put("artist", Helper.buildListAsString(attributes));
 
-        attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CIRCLE);
+        attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.CIRCLE);
         if (!attributes.isEmpty()) params.put("group", Helper.buildListAsString(attributes));
 
-        attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CHARACTER);
+        attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.CHARACTER);
         if (!attributes.isEmpty()) params.put("character", Helper.buildListAsString(attributes));
 
-        attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.TAG);
+        attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.TAG);
         if (!attributes.isEmpty()) params.put("tag", Helper.buildListAsString(attributes));
 
-        attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.LANGUAGE);
+        attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.LANGUAGE);
         if (!attributes.isEmpty()) params.put("language", Helper.buildListAsString(attributes));
 
 
@@ -233,7 +234,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
             compositeDisposable.add(MikanServer.API.getMasterData(endpoint)
                     .observeOn(mainThread())
                     .subscribe(result -> onMasterDataSuccess(result, type.name(), filter, sortOrder, listener), // TODO handle caching in computing thread
-                               throwable -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage())));
+                            throwable -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage())));
         } else {
             List<Attribute> result = filter(attributes, filter);
             listener.onResultReady(result, result.size());
