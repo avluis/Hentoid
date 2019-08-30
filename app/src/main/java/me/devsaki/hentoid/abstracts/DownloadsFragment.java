@@ -274,14 +274,17 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     public void onResume() {
         super.onResume();
 
-        // Display the "update success" dialog when an update is detected
-        if (Preferences.getLastKnownAppVersionCode() > 0 &&
-                Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
-            UpdateSuccessDialogFragment.invoke(requireFragmentManager());
-            Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
-        }
-
         defaultLoad();
+
+        // Display the "update success" dialog when an update is detected on a release version
+        if (!BuildConfig.DEBUG) {
+            if (0 == Preferences.getLastKnownAppVersionCode()) { // Don't show that during first run
+                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+            } else if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
+                UpdateSuccessDialogFragment.invoke(requireFragmentManager());
+                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+            }
+        }
     }
 
     /**
