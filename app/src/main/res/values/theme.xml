@@ -11,6 +11,7 @@
         <item name="colorOnSecondary">@color/on_secondary</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
+        <item name="android:windowBackground">@color/window_background</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/on_background</item>
         <item name="alertDialogTheme">@style/Dialog</item>
