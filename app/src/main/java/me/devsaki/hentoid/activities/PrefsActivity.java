@@ -22,7 +22,7 @@ import javax.annotation.Nonnull;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.fragments.LibRefreshDialogFragment;
+import me.devsaki.hentoid.fragments.import_.LibRefreshDialogFragment;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.services.UpdateDownloadService;

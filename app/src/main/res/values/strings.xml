@@ -7,6 +7,7 @@
     <string name="try_it">Try it</string>
     <string name="on">On</string>
     <string name="off">Off</string>
+
     <!-- Activities -->
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
@@ -15,6 +16,7 @@
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
+
     <!-- Menu -->
     <string name="menu_tags">Tags</string>
     <string name="menu_search">Search</string>
@@ -35,6 +37,7 @@
     <string name="menu_about_mikan">About Mikan</string>
     <string name="search_hint">Search title</string>
     <string name="send_to">Share with:</string>
+
     <!-- Queue -->
     <string name="cancel">Cancel</string>
     <string name="pause">Pause</string>
@@ -46,11 +49,13 @@
     <string name="queue_preparing">Preparing download</string>
     <string name="queue_dl">Downloading {0}</string>
     <string name="err_stats_title">Error stats</string>
+
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series"><![CDATA[<b>Series:</b> @series@]]></string>
     <string name="work_artist"><![CDATA[<b>Artist:</b> @artist@]]></string>
     <string name="work_tags" translatable="false"><![CDATA[<b>@tag@</b>]]></string>
+
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
     <string name="refresh_caption">Automatically refresh the whole library by rescanning disk data.</string>
@@ -61,6 +66,7 @@
     <string name="refresh_options_remove_2">No image has been downloaded</string>
     <string name="refresh_options_remove_3">JSON file is unreadable (not recommended)</string>
     <string name="refresh_options_remove_or">or</string>
+
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
     <string name="permission_granted">Permission set, restarting library import.</string>
@@ -77,16 +83,25 @@
     <string name="adding_to_db">Adding files to database…</string>
     <string name="kitkat_rationale">Unable to modify contents of the SD Card. This is caused by the external storage policy by Google in Android 4.4.\nTo bypass this limitation, you can try using one of the \'sd fix\' tools available in the Google Play Store (Root Required).</string>
     <string name="no_sd_support">Your device is not currently supported.\nPlease join our Discord Server if you wish to help us add support for your device.</string>
+
+    <!-- Import / Kitkat folder dialog -->
+    <string name="kitkat_dialog_title">Choose Hentoid folder</string>
+    <string name="kitkat_dialog_default">Default (@defaultDir)</string>
+    <string name="kitkat_dialog_public">This is a public folder - your downloads will stay there even after uninstalling the app</string>
+    <string name="kitkat_dialog_private">WARNING : This is a private folder - your downloads will be deleted after uninstalling the app !</string>
+
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
     <string name="error_open">Error opening image : no image viewer found.</string>
+
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
     <string name="redownload_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
     <string name="redownload_view_log">View detailed error log</string>
     <string name="redownload_log_saved">Log saved</string>
+
     <!-- Downloads fragment -->
     <string name="ask_delete">Are you sure you wish to delete this?</string>
     <string name="ask_delete_multiple">Are you sure you wish to delete the selected items?</string>
@@ -122,6 +137,7 @@
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
+
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>
@@ -131,9 +147,11 @@
     <string name="error_network_summary">Network error, please try again later.</string>
     <string name="error_file">Cannot find update file on server.</string>
     <string name="update_check_no_update">Update Check: No new updates.</string>
+
     <!-- Image Viewer -->
     <string name="no_images">Could not load the book : No image found</string>
     <string name="image_file_not_found">File not found in @dir</string>
+
     <!-- App Lock -->
     <string name="app_lock_pin">Enter PIN</string>
     <string name="app_lock_pin_prefs">App Lock PIN</string>
@@ -146,6 +164,7 @@
     <string name="pin_new">Enter New PIN</string>
     <string name="pin_new_confirm">Confirm New PIN</string>
     <string name="pin_explanation">App Lock prevents unauthorized use of this app by requiring a 4-digit PIN when launched</string>
+
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
     <string name="about2">In regards to Tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
@@ -156,6 +175,7 @@
     <string name="about_discord" translatable="false"><u>Discord</u></string>
     <string name="about_reddit" translatable="false"><u>Reddit</u></string>
     <string name="about_licenses">Display Licenses</string>
+
     <!-- Web viewer -->
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
 

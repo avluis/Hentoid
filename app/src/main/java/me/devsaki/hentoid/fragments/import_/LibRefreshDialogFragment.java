@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.import_;
 
 import android.content.Intent;
 import android.os.Bundle;

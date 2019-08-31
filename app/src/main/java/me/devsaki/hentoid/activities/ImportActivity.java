@@ -33,6 +33,7 @@ import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.fragments.import_.KitkatDownloadFragment;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.Consts;
@@ -238,7 +239,6 @@ public class ImportActivity extends BaseActivity {
             prevRootDir = currentRootDir;
             initImport();
         } else {
-            //requestSAF();
             newSAFIntent();
         }
     }
@@ -266,20 +266,18 @@ public class ImportActivity extends BaseActivity {
 
     // TODO open SAF dialog on existing Hentoid folder is known
     private void newSAFIntent() {
-        Intent intent;
+        // Run SAF directory picker for Lollipop and above
         if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        } else {
-            intent = new Intent(Intent.ACTION_OPEN_DOCUMENT); // TODO test
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.setType("*/*");
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
+            }
+            // http://stackoverflow.com/a/31334967/1615876
+            intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+            startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
+        } else { // Kitkat : display the specific dialog for kitkat
+            KitkatDownloadFragment.invoke(getSupportFragmentManager()); // TODO - how to get the output from that fragment ?
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
-        }
-        // http://stackoverflow.com/a/31334967/1615876
-        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-        startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
     }
 
     private void revokePermission() {
@@ -294,7 +292,6 @@ public class ImportActivity extends BaseActivity {
         }
     }
 
-
     /*
         Return from SAF picker
 
@@ -302,7 +299,7 @@ public class ImportActivity extends BaseActivity {
         => Even if SAF actually selects internal phone memory or another SD card / an external USB storage device, it won't be processed properly
      */
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) { // TODO - refactor these with the post-processing of the kitkat dialog
         super.onActivityResult(requestCode, resultCode, data);
 
         // Return from the SAF picker
