@@ -104,6 +104,7 @@ public class HentaiCafeParser extends BaseParser {
     }
 
     private static JSONArray getJSONArrayFromString(String s) {
+        @SuppressWarnings("RegExpRedundantEscape")
         Pattern pattern = Pattern.compile(".*\\[\\{ *(.*) *\\}\\].*");
         Matcher matcher = pattern.matcher(s);
 
