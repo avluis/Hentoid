@@ -33,9 +33,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
-import static android.os.Environment.MEDIA_MOUNTED;
 import static android.os.Environment.getExternalStorageDirectory;
-import static android.os.Environment.getExternalStorageState;
 
 /**
  * Created by avluis on 08/05/2016.
@@ -46,9 +44,6 @@ public class FileHelper {
     private FileHelper() {
         throw new IllegalStateException("Utility class");
     }
-
-    // Note that many devices will report true (there are no guarantees of this being 'external')
-    public static final boolean isSdPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
@@ -421,7 +416,7 @@ public class FileHelper {
      * @return Extension of the given filename
      */
     public static String getExtension(String fileName) {
-        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.getDefault()) : "";
+        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.US) : "";
     }
 
     public static String getFileNameWithoutExtension(String fileName) {
