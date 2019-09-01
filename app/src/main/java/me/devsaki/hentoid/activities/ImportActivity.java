@@ -33,7 +33,7 @@ import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.fragments.import_.KitkatDownloadFragment;
+import me.devsaki.hentoid.fragments.import_.KitkatRootFolderFragment;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.Consts;
@@ -43,7 +43,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -52,7 +51,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
  */
-public class ImportActivity extends BaseActivity {
+public class ImportActivity extends BaseActivity implements KitkatRootFolderFragment.Parent {
 
     // Instance state keys
     private static final String CURRENT_DIR = "currentDir";
@@ -264,6 +263,18 @@ public class ImportActivity extends BaseActivity {
         importFolder(getExistingHentoidDirFrom(currentRootDir));
     }
 
+    private void revokePermission() {
+        for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
+            getContentResolver().releasePersistableUriPermission(p.getUri(),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
+        if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
+            Timber.d("Permissions revoked successfully.");
+        } else {
+            Timber.d("Permissions failed to be revoked.");
+        }
+    }
+
     // TODO open SAF dialog on existing Hentoid folder is known
     private void newSAFIntent() {
         // Run SAF directory picker for Lollipop and above
@@ -276,20 +287,12 @@ public class ImportActivity extends BaseActivity {
             intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
             startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
         } else { // Kitkat : display the specific dialog for kitkat
-            KitkatDownloadFragment.invoke(getSupportFragmentManager()); // TODO - how to get the output from that fragment ?
+            KitkatRootFolderFragment.invoke(getSupportFragmentManager()); // TODO - how to get the output from that fragment ?
         }
     }
 
-    private void revokePermission() {
-        for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
-            getContentResolver().releasePersistableUriPermission(p.getUri(),
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        }
-        if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
-            Timber.d("Permissions revoked successfully.");
-        } else {
-            Timber.d("Permissions failed to be revoked.");
-        }
+    public void onSelectKitKatRootFolder(File targetFolder) {
+
     }
 
     /*

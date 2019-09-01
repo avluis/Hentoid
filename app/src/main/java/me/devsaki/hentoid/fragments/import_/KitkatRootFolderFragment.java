@@ -26,14 +26,15 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
-import static android.os.Environment.DIRECTORY_DOWNLOADS;
 import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 08/2019
  * Hentoid folder dialog for kitkat (replaces the SAF directory picker that only exists for Lollipop+)
  */
-public class KitkatDownloadFragment extends DialogFragment {
+public class KitkatRootFolderFragment extends DialogFragment {
+
+    private Parent parent;
 
     private EditText subfolderEdit;
     private RadioGroup radioGroup;
@@ -43,10 +44,8 @@ public class KitkatDownloadFragment extends DialogFragment {
     private View privateImg;
     private View privateTxt;
 
-    private int displayMode = -1;
-
     public static void invoke(FragmentManager fragmentManager) {
-        KitkatDownloadFragment fragment = new KitkatDownloadFragment();
+        KitkatRootFolderFragment fragment = new KitkatRootFolderFragment();
         fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
         fragment.show(fragmentManager, null);
     }
@@ -54,7 +53,13 @@ public class KitkatDownloadFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_kitkat_download_folder, container, false);
+        try {
+            parent = (Parent) getActivity();
+        } catch (ClassCastException e) {
+            Timber.d("Activity doesn't implement the Parent interface");
+        }
+
+        return inflater.inflate(R.layout.dialog_kitkat_root_folder, container, false);
     }
 
     @Override
@@ -65,8 +70,8 @@ public class KitkatDownloadFragment extends DialogFragment {
         String currentRoot = "";
         String root;
 
-        radioGroup = requireViewById(view, R.id.radioGroup);
-        radioGroup.setOnCheckedChangeListener(this::onChangeRoot);
+        radioGroup = requireViewById(view, R.id.kitkat_root_folder_radioGroup);
+        radioGroup.setOnCheckedChangeListener((v, w) -> updateDisplayText());
 
         RadioButton defaultRootBtn = requireViewById(view, R.id.kitkat_btn_default_root);
         String label = defaultRootBtn.getText().toString();
@@ -96,20 +101,16 @@ public class KitkatDownloadFragment extends DialogFragment {
             }
         }
 
-        publicTxt = requireViewById(view, R.id.kitkat_dl_folder_public_txt);
-        privateImg = requireViewById(view, R.id.kitkat_dl_folder_private_img);
-        privateTxt = requireViewById(view, R.id.kitkat_dl_folder_private_txt);
+        publicTxt = requireViewById(view, R.id.kitkat_root_folder_public_txt);
+        privateImg = requireViewById(view, R.id.kitkat_root_folder_private_img);
+        privateTxt = requireViewById(view, R.id.kitkat_root_folder_private_txt);
 
-        subfolderEdit = requireViewById(view, R.id.kitkat_dl_folder_subfolder);
-        if (!currentRoot.isEmpty()) subfolderEdit.setText(currentFolder.replace(currentRoot,""));
+        subfolderEdit = requireViewById(view, R.id.kitkat_root_folder_subfolder);
+        if (!currentRoot.isEmpty()) subfolderEdit.setText(currentFolder.replace(currentRoot, ""));
 
-        View okBtn = requireViewById(view, R.id.kitkat_dl_folder_ok);
+        View okBtn = requireViewById(view, R.id.kitkat_root_folder_ok);
         okBtn.setOnClickListener(v -> onOkClick(view));
 
-        updateDisplayText();
-    }
-
-    private void onChangeRoot(RadioGroup group, int checkedId) {
         updateDisplayText();
     }
 
@@ -130,16 +131,15 @@ public class KitkatDownloadFragment extends DialogFragment {
         if (radioGroup.getCheckedRadioButtonId() == R.id.kitkat_btn_default_root)
             targetFolder = Environment.getExternalStorageDirectory();
         else {
-            for (int i=0; i < extFoldersList.size(); i++) {
-                if (radioGroup.getCheckedRadioButtonId() == radioGroup.getChildAt(i+1).getId()) {
+            for (int i = 0; i < extFoldersList.size(); i++) {
+                if (radioGroup.getCheckedRadioButtonId() == radioGroup.getChildAt(i + 1).getId()) {
                     targetFolder = new File(extFoldersList.get(i));
                     break;
                 }
             }
         }
 
-        if (null == targetFolder)
-        {
+        if (null == targetFolder) {
             Timber.e("Unknown ID : %s", radioGroup.getCheckedRadioButtonId());
             return;
         }
@@ -157,5 +157,12 @@ public class KitkatDownloadFragment extends DialogFragment {
         } else message = "Target folder not created";
 
         Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
+
+        parent.onSelectKitKatRootFolder(targetFolder);
+        dismiss();
+    }
+
+    public interface Parent {
+        void onSelectKitKatRootFolder(File targetFolder);
     }
 }
