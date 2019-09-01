@@ -14,8 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +83,6 @@ public class KitkatRootFolderFragment extends DialogFragment {
             defaultRootBtn.setChecked(true);
         }
 
-        int i = 1;
         String rootStr;
         // Add detected private external roots
         for (File f : requireContext().getExternalFilesDirs(null)) {
@@ -118,7 +115,7 @@ public class KitkatRootFolderFragment extends DialogFragment {
         }
 
         View okBtn = requireViewById(view, R.id.kitkat_root_folder_ok);
-        okBtn.setOnClickListener(v -> onOkClick(view));
+        okBtn.setOnClickListener(v -> onOkClick());
 
         updateDisplayText();
     }
@@ -144,7 +141,7 @@ public class KitkatRootFolderFragment extends DialogFragment {
         return label.replace("$freePc", Long.toString(Math.round(mem.getFreeUsageRatio100())));
     }
 
-    private void onOkClick(View view) {
+    private void onOkClick() {
         File targetFolder = null;
         if (radioGroup.getCheckedRadioButtonId() == R.id.kitkat_btn_default_root)
             targetFolder = Environment.getExternalStorageDirectory();
@@ -164,17 +161,6 @@ public class KitkatRootFolderFragment extends DialogFragment {
 
         targetFolder = new File(targetFolder, subfolderEdit.getText().toString());
         Timber.i("Target : %s", targetFolder.getAbsolutePath());
-
-        String message;
-        if (FileHelper.createDirectory(targetFolder)) {
-            Timber.i("Target folder created");
-            if (FileHelper.isWritable(targetFolder)) {
-                Timber.i("Target folder writable");
-                message = "Success";
-            } else message = "Target folder created but not writable";
-        } else message = "Target folder not created";
-
-        Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
 
         callbackActivity.onSelectKitKatRootFolder(targetFolder);
         dismiss();

@@ -18,6 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -73,14 +75,14 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
     private boolean isCleanNoImages = false;            // True if user has asked for the cleanup of folders with no images
     private boolean isCleanUnreadable = false;          // True if user has asked for the cleanup of folders with unreadable JSONs
 
-
-    private ProgressDialog progressDialog;
+    private View contentView;
+    private ProgressDialog progressDialog; // TODO - to replace because it's deprecated
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        View contentView = new View(this, null, R.style.ImportTheme);
+        contentView = new View(this, null, R.style.ImportTheme);
         setContentView(contentView);
 
         Intent intent = getIntent();
@@ -287,12 +289,29 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
             intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
             startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
         } else { // Kitkat : display the specific dialog for kitkat
-            KitkatRootFolderFragment.invoke(getSupportFragmentManager()); // TODO - how to get the output from that fragment ?
+            KitkatRootFolderFragment.invoke(getSupportFragmentManager());
         }
     }
 
     public void onSelectKitKatRootFolder(File targetFolder) {
+        String message;
+        boolean success = false;
 
+        // Add the Hentoid folder at the end of the path, if not present
+        targetFolder = addHentoidFolder(targetFolder);
+
+        if (FileHelper.createDirectory(targetFolder)) {
+            Timber.i("Target folder created");
+            if (FileHelper.isWritable(targetFolder)) {
+                message = getResources().getString(R.string.kitkat_dialog_return_0);
+                success = true;
+            } else message = getResources().getString(R.string.kitkat_dialog_return_1);
+        } else message = getResources().getString(R.string.kitkat_dialog_return_2);
+
+        message = message.replace("$1", targetFolder.getAbsolutePath());
+        Snackbar.make(contentView, message, Snackbar.LENGTH_LONG).show();
+
+        if (success) importFolder(targetFolder);
     }
 
     /*
@@ -318,7 +337,8 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
                 getContentResolver().takePersistableUriPermission(treeUri,
                         Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-                String folderPath = null;
+//                String folderPath = null;
+                File selectedFolder = null;
                 // Is the selected folder on a removable media ?
                 String[] removableMediaFolderRoots = FileHelper.getExtSdCardPaths();
                 for (String s : removableMediaFolderRoots) {
@@ -329,40 +349,39 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
                         // Persist selected folder URI in shared preferences
                         // NB : calling saveUri populates the preference used by FileHelper.isSAF, which indicates the library storage is on an SD card / an external USB storage device
                         FileHelper.saveUri(treeUri);
-                        folderPath = s + File.separatorChar + folderName;
+                        selectedFolder = new File(s + File.separatorChar + folderName);
                         break;
                     }
                 }
 
                 // Try with phone memory
-                if (null == folderPath) {
+                if (null == selectedFolder) {
                     FileHelper.clearUri();
-                    File localFolder = new File(Environment.getExternalStorageDirectory(), folderName);
-                    folderPath = localFolder.getAbsolutePath();
+                    selectedFolder = new File(Environment.getExternalStorageDirectory(), folderName);
                 }
 
-                // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
-                if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)) {
-                    // Look for a Hentoid folder inside the selected folder
-                    if (!folderPath.endsWith(File.separator)) folderPath += File.separator;
-                    File folder = new File(folderPath);
-                    File targetFolder = getExistingHentoidDirFrom(folder);
+                selectedFolder = addHentoidFolder(selectedFolder);
 
-                    // If not, create one
-                    if (targetFolder.getAbsolutePath().equals(folder.getAbsolutePath()))
-                        targetFolder = new File(targetFolder, Consts.DEFAULT_LOCAL_DIRECTORY);
-                    folderPath = targetFolder.getAbsolutePath();
-                }
-
-                if (!folderPath.endsWith(File.separator)) folderPath += File.separator;
-                File folder = new File(folderPath);
-
-                Timber.i("Directory %s created successfully ? : %s", folderPath, FileHelper.createDirectory(folder));
-                importFolder(folder);
+                Timber.i("Directory %s created successfully ? : %s", selectedFolder.getAbsolutePath(), FileHelper.createDirectory(selectedFolder));
+                importFolder(selectedFolder);
             }
         }
     }
 
+    private File addHentoidFolder(final File baseFolder)
+    {
+        String folderName = baseFolder.getName();
+        // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
+        if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)) {
+            File targetFolder = getExistingHentoidDirFrom(baseFolder);
+
+            // If not, create one
+            if (targetFolder.getAbsolutePath().equals(baseFolder.getAbsolutePath()))
+                return new File(targetFolder, Consts.DEFAULT_LOCAL_DIRECTORY);
+            else return targetFolder;
+        }
+        return baseFolder;
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEventProgress(ImportEvent event) {
