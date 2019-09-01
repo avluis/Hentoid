@@ -95,7 +95,7 @@ public class ContentDownloadService extends IntentService {
     private RequestQueueManager<Object> requestQueueManager = null;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    // Temporarily used for logging purposes (see issue #349)
+    // TODO remove when issue #349 fixed
     private long creationTicks;
 
 
@@ -122,6 +122,10 @@ public class ContentDownloadService extends IntentService {
         db = ObjectBoxDB.getInstance(this);
 
         Timber.d("Download service created");
+
+        // TODO remove when issue #349 fixed
+        double lifespan = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
+        Crashlytics.log("Download service creation time (s) : " + String.format(Locale.US, "%.2f", lifespan));
     }
 
     @Override
@@ -131,8 +135,10 @@ public class ContentDownloadService extends IntentService {
 
         Timber.d("Download service destroyed");
 
+        // TODO remove when issue #349 fixed
         double lifespan = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
         Crashlytics.log("Download service lifespan (s) : " + String.format(Locale.US, "%.2f", lifespan));
+
         super.onDestroy();
     }
 
