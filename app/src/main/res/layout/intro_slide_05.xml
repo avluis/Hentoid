@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:layout_weight="10"
     android:orientation="vertical"
-    android:background="?android:colorBackground"
     tools:context=".activities.IntroActivity">
 
     <TextView
