@@ -733,7 +733,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         // Logging -- TODO remove when "no content found" issue is resolved
         StringBuilder sb = new StringBuilder();
         for (Content c : contents) sb.append(c.getId()).append(",");
-        Crashlytics.log("deleteItems " + sb.toString());
 
         for (Content c : contents) {
             // Flag it to make it unselectable
