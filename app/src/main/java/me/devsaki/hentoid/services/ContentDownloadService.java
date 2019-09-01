@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.SparseIntArray;
 import android.webkit.MimeTypeMap;
 
@@ -21,6 +22,7 @@ import com.android.volley.Request;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -37,6 +39,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -92,6 +95,10 @@ public class ContentDownloadService extends IntentService {
     private RequestQueueManager<Object> requestQueueManager = null;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
+    // Temporarily used for logging purposes (see issue #349)
+    private long creationTicks;
+
+
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
     }
@@ -101,6 +108,7 @@ public class ContentDownloadService extends IntentService {
     // if the entire queue is paused (=service destroyed), then resumed (service re-created)
     @Override
     public void onCreate() {
+        creationTicks = SystemClock.elapsedRealtime();
         super.onCreate();
         notificationManager = new ServiceNotificationManager(this, 1);
         notificationManager.cancel();
@@ -122,6 +130,9 @@ public class ContentDownloadService extends IntentService {
         compositeDisposable.clear();
 
         Timber.d("Download service destroyed");
+
+        double lifespan = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
+        Crashlytics.log("Download service lifespan (s) : " + String.format(Locale.US, "%.2f", lifespan));
         super.onDestroy();
     }
 
