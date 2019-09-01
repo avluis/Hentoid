@@ -125,7 +125,7 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_APP_PREVIEW, BuildConfig.DEBUG);
     }
 
-    static String getSdStorageUri() {
+    public static String getSdStorageUri() {
         return sharedPreferences.getString(Key.PREF_SD_STORAGE_URI, "");
     }
 
