@@ -86,7 +86,7 @@
 
     <!-- Import / Kitkat folder dialog -->
     <string name="kitkat_dialog_title">Choose Hentoid folder</string>
-    <string name="kitkat_dialog_default">Default (@defaultDir)</string>
+    <string name="kitkat_dialog_dir">$dir $default\n[$freeUsage MB free ($freePc%)]</string>
     <string name="kitkat_dialog_public">This is a public folder - your downloads will stay there even after uninstalling the app</string>
     <string name="kitkat_dialog_private">WARNING : This is a private folder - your downloads will be deleted after uninstalling the app !</string>
 

@@ -19,9 +19,9 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
@@ -34,15 +34,20 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 public class KitkatRootFolderFragment extends DialogFragment {
 
-    private Parent parent;
+    // Parent activity to use for callback
+    private Parent callbackActivity;
 
+    // List of detected external private folders
+    private final List<String> extFoldersList = new ArrayList<>();
+
+    // UI elements
     private EditText subfolderEdit;
     private RadioGroup radioGroup;
-    private final List<String> extFoldersList = new ArrayList<>();
 
     private View publicTxt;
     private View privateImg;
     private View privateTxt;
+
 
     public static void invoke(FragmentManager fragmentManager) {
         KitkatRootFolderFragment fragment = new KitkatRootFolderFragment();
@@ -54,9 +59,9 @@ public class KitkatRootFolderFragment extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         try {
-            parent = (Parent) getActivity();
+            callbackActivity = (Parent) getActivity();
         } catch (ClassCastException e) {
-            Timber.d("Activity doesn't implement the Parent interface");
+            Timber.e(e, "Calling Activity doesn't implement the Parent interface");
         }
 
         return inflater.inflate(R.layout.dialog_kitkat_root_folder, container, false);
@@ -68,33 +73,31 @@ public class KitkatRootFolderFragment extends DialogFragment {
 
         String currentFolder = Preferences.getRootFolderName();
         String currentRoot = "";
-        String root;
 
         radioGroup = requireViewById(view, R.id.kitkat_root_folder_radioGroup);
         radioGroup.setOnCheckedChangeListener((v, w) -> updateDisplayText());
 
         RadioButton defaultRootBtn = requireViewById(view, R.id.kitkat_btn_default_root);
-        String label = defaultRootBtn.getText().toString();
-        root = Environment.getExternalStorageDirectory().getAbsolutePath();
-        label = label.replace("@defaultDir", root);
-        defaultRootBtn.setText(label);
-        if (currentFolder.startsWith(root)) {
-            currentRoot = root;
+        File root = Environment.getExternalStorageDirectory();
+        defaultRootBtn.setText(formatDirLabel(root, true));
+        if (currentFolder.startsWith(root.getAbsolutePath())) {
+            currentRoot = root.getAbsolutePath();
             defaultRootBtn.setChecked(true);
         }
 
         int i = 1;
-        // Adds detected private external roots
+        String rootStr;
+        // Add detected private external roots
         for (File f : requireContext().getExternalFilesDirs(null)) {
-            root = f.getAbsolutePath();
+            rootStr = f.getAbsolutePath();
             // Only add if the root is different than Hentoid's default
             // (no point in suggesting a private root in the same volume as the default)
-            if (!root.startsWith(Environment.getExternalStorageDirectory().getAbsolutePath())) {
-                extFoldersList.add(root);
+            if (!rootStr.startsWith(Environment.getExternalStorageDirectory().getAbsolutePath())) {
+                extFoldersList.add(rootStr);
                 RadioButton btn = new RadioButton(requireContext());
-                btn.setText(String.format(Locale.US, "External private folder #%d(%s)", i++, root));
-                if (currentFolder.startsWith(root)) {
-                    currentRoot = root;
+                btn.setText(formatDirLabel(f, false));
+                if (currentFolder.startsWith(rootStr)) {
+                    currentRoot = rootStr;
                     btn.setChecked(true);
                 }
                 radioGroup.addView(btn);
@@ -105,8 +108,14 @@ public class KitkatRootFolderFragment extends DialogFragment {
         privateImg = requireViewById(view, R.id.kitkat_root_folder_private_img);
         privateTxt = requireViewById(view, R.id.kitkat_root_folder_private_txt);
 
+        // Fill subfolder edit
         subfolderEdit = requireViewById(view, R.id.kitkat_root_folder_subfolder);
-        if (!currentRoot.isEmpty()) subfolderEdit.setText(currentFolder.replace(currentRoot, ""));
+        if (!currentRoot.isEmpty()) {
+            currentFolder = currentFolder.replace(currentRoot, ""); // Remove selected root
+            currentFolder = currentFolder.replace(Consts.DEFAULT_LOCAL_DIRECTORY, "").replace(Consts.DEFAULT_LOCAL_DIRECTORY_OLD, ""); // Remove Hentoid folder name
+            if (currentFolder.equals("/")) currentFolder = "";
+            subfolderEdit.setText(currentFolder);
+        }
 
         View okBtn = requireViewById(view, R.id.kitkat_root_folder_ok);
         okBtn.setOnClickListener(v -> onOkClick(view));
@@ -124,6 +133,15 @@ public class KitkatRootFolderFragment extends DialogFragment {
             privateImg.setVisibility(View.VISIBLE);
             privateTxt.setVisibility(View.VISIBLE);
         }
+    }
+
+    private String formatDirLabel(@NonNull File f, boolean isDefault) {
+        FileHelper.MemoryUsageFigures mem = new FileHelper.MemoryUsageFigures(f);
+        String label = requireContext().getResources().getString(R.string.kitkat_dialog_dir);
+        label = label.replace("$dir", f.getAbsolutePath());
+        label = label.replace("$default", isDefault ? "(Default)" : "");
+        label = label.replace("$freeUsage", mem.formatFreeUsageMb());
+        return label.replace("$freePc", Long.toString(Math.round(mem.getFreeUsageRatio100())));
     }
 
     private void onOkClick(View view) {
@@ -158,7 +176,7 @@ public class KitkatRootFolderFragment extends DialogFragment {
 
         Snackbar.make(view, message, Snackbar.LENGTH_LONG).show();
 
-        parent.onSelectKitKatRootFolder(targetFolder);
+        callbackActivity.onSelectKitKatRootFolder(targetFolder);
         dismiss();
     }
 

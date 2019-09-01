@@ -47,6 +47,11 @@ public class FileHelper {
 
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
+
+    public static String getFileProviderAuthority() {
+        return AUTHORITY;
+    }
+
     public static void saveUri(Uri uri) {
         Timber.d("Saving Uri: %s", uri);
         Preferences.setSdStorageUri(uri.toString());
@@ -405,10 +410,6 @@ public class FileHelper {
         }
     }
 
-    public static String getFileProviderAuthority() {
-        return AUTHORITY;
-    }
-
     /**
      * Returns the extension of the given filename
      *
@@ -528,5 +529,24 @@ public class FileHelper {
     @Nullable
     public static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
         return FileUtil.getDocumentFile(file, isDirectory);
+    }
+
+    public static class MemoryUsageFigures {
+        private final long freeMemBytes;
+        private final long totalMemBytes;
+
+
+        public MemoryUsageFigures(File f) {
+            this.freeMemBytes = f.getFreeSpace();
+            this.totalMemBytes = f.getTotalSpace();
+        }
+
+        public double getFreeUsageRatio100() {
+            return freeMemBytes * 100.0 / totalMemBytes;
+        }
+
+        public String formatFreeUsageMb() {
+            return Math.round(freeMemBytes / 1e6) + "/" + Math.round(totalMemBytes / 1e6);
+        }
     }
 }

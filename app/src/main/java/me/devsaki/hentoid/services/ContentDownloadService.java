@@ -383,7 +383,7 @@ public class ContentDownloadService extends IntentService {
             }
 
             File dir = ContentHelper.getContentDownloadDir(content);
-            double freeSpaceRatio = dir.getFreeSpace() * 100.0 / dir.getTotalSpace();
+            double freeSpaceRatio = new FileHelper.MemoryUsageFigures(dir).getFreeUsageRatio100();
 
             // Auto-retry when error pages are remaining and conditions are met
             // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
