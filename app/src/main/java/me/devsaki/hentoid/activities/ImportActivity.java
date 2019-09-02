@@ -19,8 +19,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.documentfile.provider.DocumentFile;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
 import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
@@ -259,71 +257,6 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
-    }
-
-    @Override
-    protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-    }
-
-
-    @Subscribe
-    public void onDirCancel(OnDirCancelEvent event) {
-        onBackPressed();
-    }
-
-    @Subscribe
-    public void onDirChosen(OnDirChosenEvent event) {
-        File chosenDir = event.getDir();
-        prevRootDir = currentRootDir;
-
-        if (!currentRootDir.equals(chosenDir)) {
-            restartOnExit = true;
-            currentRootDir = chosenDir;
-        }
-        dirChooserFragment.dismiss();
-        initImport();
-    }
-
-    @Subscribe
-    public void onOpFailed(OpFailedEvent event) {
-        dirChooserFragment.dismiss();
-        prepImport(null);
-    }
-
-    @Subscribe
-    public void onManualInput(OnTextViewClickedEvent event) {
-        if (event.isLongClick()) {
-            Timber.d("Resetting directory back to default.");
-            currentRootDir = new File(Environment.getExternalStorageDirectory() +
-                    File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator);
-            dirChooserFragment.dismiss();
-            pickDownloadDirectory(currentRootDir);
-        } else {
-            final EditText text = new EditText(this);
-            int paddingPx = Helper.dpToPixel(this, 16);
-            text.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-            text.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
-            text.setText(currentRootDir.toString());
-
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.dir_path)
-                    .setMessage(R.string.dir_path_inst)
-                    .setView(text)
-                    .setPositiveButton(android.R.string.ok,
-                            (dialog, which) -> {
-                                Editable value = text.getText();
-                                processManualInput(value);
-                            })
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .show();
-        }
-    }
-
     private void initImport() {
         Timber.d("Clearing SAF");
         FileHelper.clearUri();
@@ -334,144 +267,6 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
         importFolder(getExistingHentoidDirFrom(currentRootDir));
     }
 
-    private void processManualInput(@NonNull Editable value) {
-        String path = String.valueOf(value);
-        if (!("").equals(path)) {
-            File file = new File(path);
-            if (file.exists() && file.isDirectory() && file.canWrite()) {
-                Timber.d("Got a valid directory!");
-                currentRootDir = file;
-                dirChooserFragment.dismiss();
-                pickDownloadDirectory(currentRootDir);
-            } else {
-                dirChooserFragment.dismiss();
-                prepImport(null);
-            }
-        }
-        Timber.d(path);
-    }
-
-    @Subscribe
-    public void onSAFRequest(OnSAFRequestEvent event) {
-        String[] externalDirs = FileHelper.getExtSdCardPaths();
-        List<File> writeableDirs = new ArrayList<>();
-        if (externalDirs.length > 0) {
-            Timber.d("External Directory(ies): %s", Arrays.toString(externalDirs));
-            for (String externalDir : externalDirs) {
-                File file = new File(externalDir);
-                Timber.d("Is %s write-able? %s", externalDir, FileHelper.isWritable(file));
-                if (FileHelper.isWritable(file)) {
-                    writeableDirs.add(file);
-                }
-            }
-        }
-        resolveDirs(externalDirs, writeableDirs);
-    }
-
-    private void resolveDirs(String[] externalDirs, List<File> writeableDirs) {
-        if (writeableDirs.isEmpty()) {
-            Timber.d("Received no write-able external directories.");
-            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-                if (externalDirs.length > 0) {
-                    ToastUtil.toast("Attempting SAF");
-                    requestWritePermission();
-                } else {
-                    noSDSupport();
-                }
-            } else {
-                noSDSupport();
-            }
-        } else {
-            if (writeableDirs.size() == 1) {
-                // If we get exactly one write-able path returned, attempt to make use of it
-                String sdDir = writeableDirs.get(0) + File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator;
-                if (!FileHelper.isOnExtSdCard(writeableDirs.get(0)) && FileHelper.checkAndSetRootFolder(sdDir)) { // TODO - dirChooserFragment can't actually browse SD card : to fix later ?
-                    Timber.d("Got access to SD Card.");
-                    currentRootDir = new File(sdDir);
-                    dirChooserFragment.dismiss();
-                    pickDownloadDirectory(currentRootDir);
-                } else {
-                    if (Build.VERSION.SDK_INT == KITKAT) {
-                        Timber.d("Unable to write to SD Card.");
-                        showKitkatRationale();
-                    } else if (Build.VERSION.SDK_INT >= LOLLIPOP) { // Browse the SD card using the device's SAF dialog
-                        PackageManager manager = this.getPackageManager();
-                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                        List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
-                        if (handlers != null && !handlers.isEmpty()) {
-                            Timber.d("Device should be able to handle the SAF request");
-                            ToastUtil.toast("Attempting SAF");
-                            requestWritePermission();
-                        } else {
-                            Timber.d("No apps can handle the requested intent.");
-                        }
-                    } else {
-                        noSDSupport();
-                    }
-                }
-            } else {
-                Timber.d("We got a fancy device here.");
-                Timber.d("Available storage locations: %s", writeableDirs);
-                noSDSupport();
-            }
-        }
-    }
-
-    private void showKitkatRationale() {
-        new AlertDialog.Builder(this)
-                .setMessage(R.string.kitkat_rationale)
-                .setTitle("Error!")
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
-    }
-
-    private void noSDSupport() {
-        Timber.d("No write-able directories :(");
-        ToastUtil.toast(R.string.no_sd_support);
-    }
-
-    private void attachInstructionsImage(@NotNull ImageView instructionsImage) {
-        // A list of known devices can be used here to present instructions relevant to that device
-        instructionsImage.setImageDrawable(ContextCompat.getDrawable(this,
-                R.drawable.bg_sd_instructions));
-    }
-
-    @RequiresApi(api = LOLLIPOP)
-    private void requestWritePermission() {
-        runOnUiThread(() -> {
-            ImageView instructionsImage = new ImageView(this);
-            attachInstructionsImage(instructionsImage);
-
-            AlertDialog.Builder builder =
-                    new AlertDialog.Builder(this)
-                            .setTitle("Requesting Write Permissions")
-                            .setView(instructionsImage)
-                            .setPositiveButton(android.R.string.ok,
-                                    (dialogInterface, i) -> {
-                                        dialogInterface.dismiss();
-                                        newSAFIntent();
-                                    });
-            final AlertDialog dialog = builder.create();
-            instructionsImage.setOnClickListener(v -> {
-                dialog.dismiss();
-                newSAFIntent();
-            });
-            dialog.show();
-        });
-    }
-
-    @RequiresApi(api = LOLLIPOP)
-    private void newSAFIntent() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
-        }
-        // http://stackoverflow.com/a/31334967/1615876
-        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-        startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
-    }
-
-    @RequiresApi(api = KITKAT)
     private void revokePermission() {
         for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
             getContentResolver().releasePersistableUriPermission(p.getUri(),
@@ -647,7 +442,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
         if (hasBooks()) {
             if (isRefresh)
                 runImport(); // Do not ask if the user wants to import if he has asked for a refresh
-            else new MaterialAlertDialogBuilder(this)
+            else new AlertDialog.Builder(this)
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setCancelable(false)
                     .setTitle(R.string.app_name)
