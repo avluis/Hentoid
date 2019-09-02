@@ -5,6 +5,8 @@ import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Point;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.HapticFeedbackConstants;
@@ -14,6 +16,7 @@ import android.view.ViewPropertyAnimator;
 import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.Nullable;
+import androidx.core.util.Consumer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -49,9 +52,26 @@ public class ZoomableRecyclerView extends RecyclerView {
     private final GestureListener listener = new GestureListener();
     private DoubleConsumer scaleListener = null;
     private final Detector detector = new Detector(getContext(), listener);
+    private Consumer<Point> getMaxDimensionsListener = null;
 
     private OnZoneTapListener tapListener;
     private LongTapListener longTapListener;
+
+    // Hack to access these values outside of a View
+    private Point maxBitmapDimensions = null;
+
+    @Override
+    public void onDraw(Canvas c) {
+        super.onDraw(c);
+        if (null == maxBitmapDimensions && getMaxDimensionsListener != null) {
+            maxBitmapDimensions = new Point(c.getMaximumBitmapWidth(), c.getMaximumBitmapHeight());
+            getMaxDimensionsListener.accept(maxBitmapDimensions);
+        }
+    }
+
+    public void setOnGetMaxDimensionsListener(Consumer<Point> getMaxDimensionsListener) {
+        this.getMaxDimensionsListener = getMaxDimensionsListener;
+    }
 
 
     public ZoomableRecyclerView(Context context) {
@@ -190,11 +210,15 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     private boolean canMoveHorizontally() {
-        return (getLayoutManager().canScrollVertically() || (getLayoutManager().canScrollHorizontally() && (atFirstPosition || atLastPosition)));
+        if (getLayoutManager() != null)
+            return (getLayoutManager().canScrollVertically() || (getLayoutManager().canScrollHorizontally() && (atFirstPosition || atLastPosition)));
+        else return false;
     }
 
     private boolean canMoveVertically() {
-        return (getLayoutManager().canScrollHorizontally() || (getLayoutManager().canScrollVertically() && (atFirstPosition || atLastPosition)));
+        if (getLayoutManager() != null)
+            return (getLayoutManager().canScrollHorizontally() || (getLayoutManager().canScrollVertically() && (atFirstPosition || atLastPosition)));
+        else return false;
     }
 
     boolean zoomFling(int velocityX, int velocityY) {
@@ -314,10 +338,10 @@ public class ZoomableRecyclerView extends RecyclerView {
             switch (action) {
                 case MotionEvent.ACTION_DOWN:
                     motionActionDownLocal(ev);
-                break;
+                    break;
                 case MotionEvent.ACTION_POINTER_DOWN:
                     motionActionPointerDown(ev, actionIndex);
-                break;
+                    break;
                 case MotionEvent.ACTION_MOVE:
                     return motionActionMoveLocal(ev);
                 case MotionEvent.ACTION_UP:
@@ -325,7 +349,7 @@ public class ZoomableRecyclerView extends RecyclerView {
                     break;
                 case MotionEvent.ACTION_CANCEL:
                     motionActionCancel();
-                break;
+                    break;
                 default:
                     // Nothing to process as default
             }
@@ -338,7 +362,7 @@ public class ZoomableRecyclerView extends RecyclerView {
             downY = Math.round(ev.getY() + 0.5f);
         }
 
-        private void motionActionPointerDown(MotionEvent ev, int actionIndex){
+        private void motionActionPointerDown(MotionEvent ev, int actionIndex) {
             scrollPointerId = ev.getPointerId(actionIndex);
             downX = Math.round(ev.getX(actionIndex) + 0.5f);
             downY = Math.round(ev.getY(actionIndex) + 0.5f);

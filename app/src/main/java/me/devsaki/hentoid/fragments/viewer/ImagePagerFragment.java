@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -188,6 +189,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.setHasFixedSize(true);
         recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
         recyclerView.setOnKeyListener(volumeGestureListener);
+        recyclerView.setOnGetMaxDimensionsListener(this::onGetMaxDimensions);
         recyclerView.requestFocus();
         recyclerView.setOnScaleListener(scale -> {
             if (pageSnapWidget != null && Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()) {
@@ -812,5 +814,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // (just don't ask me why...)
         View v = getView();
         if (v != null) v.setSystemUiVisibility(uiOptions);
+    }
+
+    private void onGetMaxDimensions(Point maxDimensions) {
+        adapter.setMaxDimensions(maxDimensions.x, maxDimensions.y);
     }
 }
