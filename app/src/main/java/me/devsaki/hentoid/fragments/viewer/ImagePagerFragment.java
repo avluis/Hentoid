@@ -40,7 +40,6 @@ import me.devsaki.hentoid.views.ZoomableFrame;
 import me.devsaki.hentoid.views.ZoomableRecyclerView;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.PageSnapWidget;
-import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.devsaki.hentoid.widget.VolumeGestureListener;
 
@@ -58,7 +57,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
 
     private ImagePagerAdapter adapter;
-    private PrefetchLinearLayoutManager llm;
+    private LinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
     private ZoomableFrame zoomFrame;
     private VolumeGestureListener volumeGestureListener;
@@ -214,9 +213,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         adapter.setRecyclerView(recyclerView);
 
-        llm = new PrefetchLinearLayoutManager(getContext());
-        llm.setItemPrefetchEnabled(true);
-        llm.setPreloadItemCount(2);
+        llm = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(llm);
 
         pageSnapWidget = new PageSnapWidget(recyclerView);
