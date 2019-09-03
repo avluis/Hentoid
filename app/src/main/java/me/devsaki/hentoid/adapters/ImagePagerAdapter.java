@@ -11,8 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.davemorrissey.labs.subscaleview.ImageSource;
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +22,8 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageLoaderThreadExecutor;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.views.ssiv.CustomSubsamplingScaleImageView;
+import me.devsaki.hentoid.views.ssiv.ImageSource;
 import timber.log.Timber;
 
 
@@ -39,6 +39,10 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     private RecyclerView recyclerView;
 
     private List<ImageFile> images = new ArrayList<>();
+
+    // To preload images before they appear on screen with SubsamplingScaleImageView
+    private int maxBitmapWidth = -1;
+    private int maxBitmapHeight = -1;
 
 
     @Override
@@ -85,7 +89,8 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
         if (TYPE_GIF == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_glide, viewGroup, false);
         } else if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
-            view = inflater.inflate(R.layout.item_viewer_image_subsampling_muted, viewGroup, false);
+            view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
+            ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
         } else {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
         }
@@ -93,14 +98,20 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ImageViewHolder viewHolder, int pos) {
-        viewHolder.setImage(images.get(pos));
+    public void onBindViewHolder(@NonNull ImageViewHolder viewHolder, int pos) { // TODO make all that method less ugly
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()
+                && TYPE_OTHER == viewHolder.imgType) {
+            CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) viewHolder.imgView;
+            ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
+        }
 
         int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
         ViewGroup.LayoutParams layoutParams = viewHolder.imgView.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = layoutStyle;
         viewHolder.imgView.setLayoutParams(layoutParams);
+
+        viewHolder.setImage(images.get(pos));
     }
 
     @Nullable
@@ -115,7 +126,12 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
         }
     }
 
-    final class ImageViewHolder extends RecyclerView.ViewHolder implements SubsamplingScaleImageView.OnImageEventListener {
+    public void setMaxDimensions(int maxWidth, int maxHeight) {
+        maxBitmapWidth = maxWidth;
+        maxBitmapHeight = maxHeight;
+    }
+
+    final class ImageViewHolder extends RecyclerView.ViewHolder implements CustomSubsamplingScaleImageView.OnImageEventListener {
 
         private final int imgType;
         private final View imgView;
@@ -127,7 +143,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
             imgView = itemView;
 
             if (TYPE_OTHER == imgType) {
-                ((SubsamplingScaleImageView) imgView).setExecutor(executor);
+                ((CustomSubsamplingScaleImageView) imgView).setExecutor(executor);
                 imgView.setOnTouchListener(itemTouchListener);
             }
         }
@@ -145,25 +161,26 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
                         .into(view);
 
             } else {
-                SubsamplingScaleImageView ssView = (SubsamplingScaleImageView) imgView;
+                CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
                 ssView.recycle();
                 ssView.setMinimumScaleType(getScaleType());
                 ssView.setOnImageEventListener(this);
+                if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
                 ssView.setImage(ImageSource.uri(uri));
             }
         }
 
         private int getScaleType() {
             if (Preferences.Constant.PREF_VIEWER_DISPLAY_FILL == Preferences.getViewerResizeMode()) {
-                return SubsamplingScaleImageView.SCALE_TYPE_START;
+                return CustomSubsamplingScaleImageView.SCALE_TYPE_START;
             } else {
-                return SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE;
+                return CustomSubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE;
             }
         }
 
         void resetScale() {
             if (TYPE_GIF != imgType) {
-                SubsamplingScaleImageView ssView = (SubsamplingScaleImageView) imgView;
+                CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
                 if (ssView.isImageLoaded() && ssView.isReady() && ssView.isLaidOut())
                     ssView.resetScaleAndCenter();
             }

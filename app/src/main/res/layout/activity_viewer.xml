@@ -21,7 +21,7 @@
             android:layout_height="match_parent"
             android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_viewer_image_subsampling_muted" />
+            tools:listitem="@layout/item_viewer_image_subsampling" />
 
     </me.devsaki.hentoid.views.ZoomableFrame>
 
