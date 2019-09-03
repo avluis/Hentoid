@@ -328,9 +328,10 @@ public class CustomSubsamplingScaleImageView extends View {
     // A global preference for bitmap format, available to decoder classes that respect it
     private static Bitmap.Config preferredBitmapConfig;
 
-
+    // Switch to ignore all touch events (used in vertical mode when the container view is the one handling touch events)
     private boolean ignoreTouchEvents = false;
 
+    // Dimensions used to preload the image before the view actually appears on screen / gets its display dimensions
     private Point preloadDimensions = null;
 
 
