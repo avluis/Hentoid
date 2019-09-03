@@ -60,7 +60,7 @@ public class Content implements Serializable {
     @Expose
     private long uploadDate;
     @Expose
-    private long downloadDate;
+    private long downloadDate = 0;
     @Expose
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
@@ -439,7 +439,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    long getDownloadDate() {
+    public long getDownloadDate() {
         return downloadDate;
     }
 

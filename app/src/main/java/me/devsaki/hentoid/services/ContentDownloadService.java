@@ -424,7 +424,7 @@ public class ContentDownloadService extends IntentService {
             }
 
             // Mark content as downloaded
-            content.setDownloadDate(new Date().getTime());
+            if (0 == content.getDownloadDate()) content.setDownloadDate(new Date().getTime());
             content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
             // Clear download params from content
             if (0 == pagesKO && !hasError) content.setDownloadParams("");

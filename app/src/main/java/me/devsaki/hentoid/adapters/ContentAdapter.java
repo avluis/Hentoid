@@ -485,7 +485,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             for (ImageFile im : item.getImageFiles())
                 db.updateImageFileStatusAndParams(im.setStatus(StatusContent.SAVED));
 
-        item.setDownloadDate(new Date().getTime());
         item.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(item);
 
