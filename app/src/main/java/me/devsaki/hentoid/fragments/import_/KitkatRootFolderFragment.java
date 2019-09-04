@@ -143,7 +143,7 @@ public class KitkatRootFolderFragment extends DialogFragment {
     private String formatDirLabel(@NonNull File f, boolean isDefault) {
         FileHelper.MemoryUsageFigures mem = new FileHelper.MemoryUsageFigures(f);
         String label = requireContext().getResources().getString(R.string.kitkat_dialog_dir);
-        label = label.replace("$dir", f.getAbsolutePath()+"/");
+        label = label.replace("$dir", f.getAbsolutePath() + "/");
         label = label.replace("$default", isDefault ? "(Default)" : "");
         label = label.replace("$freeUsage", mem.formatFreeUsageMb());
         return label.replace("$freePc", Long.toString(Math.round(mem.getFreeUsageRatio100())));
@@ -154,16 +154,15 @@ public class KitkatRootFolderFragment extends DialogFragment {
         String subfolder = "";
 
         // Default root
-        if (radioGroup.getCheckedRadioButtonId() == R.id.kitkat_btn_default_root)
+        if (radioGroup.getCheckedRadioButtonId() == R.id.kitkat_btn_default_root) {
             targetFolder = Environment.getExternalStorageDirectory();
-        else { // Private external root
+            subfolder = subfolderEdit.getText().toString().trim();
+            // Remove spaces added around /'s by dumb phone keyboards
+            subfolder = subfolder.replace(" /", "/").replace("/ ", "/");
+        } else { // Private external root
             for (int i = 0; i < extFoldersList.size(); i++) {
                 if (radioGroup.getCheckedRadioButtonId() == radioGroup.getChildAt(i + 1).getId()) {
                     targetFolder = new File(extFoldersList.get(i));
-
-                    subfolder = subfolderEdit.getText().toString().trim();
-                    // Remove spaces added around /'s by dumb phone keyboards
-                    subfolder = subfolder.replace(" /","/").replace("/ ","/");
                     break;
                 }
             }
