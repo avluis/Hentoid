@@ -88,7 +88,7 @@
     <string name="kitkat_dialog_title">Choose Hentoid folder</string>
     <string name="kitkat_dialog_dir">$dir $default\n[$freeUsage MB free ($freePc%)]</string>
     <string name="kitkat_dialog_public">This is a public folder - your downloads will stay there even after uninstalling the app</string>
-    <string name="kitkat_dialog_private">WARNING : This is a private folder - your downloads will be deleted after uninstalling the app !</string>
+    <string name="kitkat_dialog_private">WARNING : This is a private folder - your downloads will be deleted after uninstalling the app !\nYou'll need to use ADB to download them to your computer.</string>
     <string name="kitkat_dialog_return_0">Folder $s created successfuly</string>
     <string name="kitkat_dialog_return_1">Folder $s created but not writable</string>
     <string name="kitkat_dialog_return_2">Folder $s could not be created</string>
