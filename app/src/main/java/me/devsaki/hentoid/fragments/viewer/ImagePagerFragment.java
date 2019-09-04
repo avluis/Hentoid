@@ -69,7 +69,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private int imageIndex = -1;
-    private int maxPosition;
+    private int maxPosition; // For navigation
+    private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
 
 
@@ -467,7 +468,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
 
         String pageNum = img.getOrder() + "";
-        String maxPage = maxPosition + 1 + "";
+        String maxPage = maxPageNumber + "";
 
         pageCurrentNumber.setText(pageNum);
         pageMaxNumber.setText(maxPage);
@@ -484,6 +485,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         else prevBookButton.setVisibility(View.VISIBLE);
         if (content.isLast()) nextBookButton.setVisibility(View.INVISIBLE);
         else nextBookButton.setVisibility(View.VISIBLE);
+
+        maxPageNumber = content.getQtyPages();
     }
 
     /**

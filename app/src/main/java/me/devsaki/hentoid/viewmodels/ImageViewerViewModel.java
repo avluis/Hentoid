@@ -246,6 +246,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         currentContentIndex = contentIds.indexOf(theContent.getId());
         theContent.setFirst(0 == currentContentIndex);
         theContent.setLast(currentContentIndex == contentIds.size() - 1);
+        content.setValue(theContent);
 
         // Load new content
         File[] pictureFiles = ContentHelper.getPictureFilesFromContent(theContent);
@@ -272,7 +273,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
-                                    content::setValue,
+                                    v -> {
+                                    },
                                     Timber::e
                             )
             );
