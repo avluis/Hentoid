@@ -380,8 +380,8 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
                 } else message = getResources().getString(R.string.kitkat_dialog_return_1);
             } else message = getResources().getString(R.string.kitkat_dialog_return_2);
 
-            message = message.replace("$1", folder.getAbsolutePath());
-            ToastUtil.toast(this, message, Toast.LENGTH_LONG);
+            message = message.replace("$s", folder.getAbsolutePath());
+            ToastUtil.toast(HentoidApp.getAppContext(), message, Toast.LENGTH_LONG);
         } else success = true;
 
         if (success) importFolder(folder);
