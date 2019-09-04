@@ -13,13 +13,13 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.DocumentsContract;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -46,6 +46,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -369,17 +370,19 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
         // Add the Hentoid folder at the end of the path, if not present
         File folder = addHentoidFolder(targetFolder);
 
-        // Try and create directory; test if writable
-        if (FileHelper.createDirectory(folder)) {
-            Timber.i("Target folder created");
-            if (FileHelper.isWritable(folder)) {
-                message = getResources().getString(R.string.kitkat_dialog_return_0);
-                success = true;
-            } else message = getResources().getString(R.string.kitkat_dialog_return_1);
-        } else message = getResources().getString(R.string.kitkat_dialog_return_2);
+        if (!folder.exists()) {
+            // Try and create directory; test if writable
+            if (FileHelper.createDirectory(folder)) {
+                Timber.i("Target folder created");
+                if (FileHelper.isWritable(folder)) {
+                    message = getResources().getString(R.string.kitkat_dialog_return_0);
+                    success = true;
+                } else message = getResources().getString(R.string.kitkat_dialog_return_1);
+            } else message = getResources().getString(R.string.kitkat_dialog_return_2);
 
-        message = message.replace("$1", folder.getAbsolutePath());
-        Snackbar.make(contentView, message, Snackbar.LENGTH_LONG).show();
+            message = message.replace("$1", folder.getAbsolutePath());
+            ToastUtil.toast(this, message, Toast.LENGTH_LONG);
+        } else success = true;
 
         if (success) importFolder(folder);
     }
