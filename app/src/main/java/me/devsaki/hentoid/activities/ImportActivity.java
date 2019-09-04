@@ -79,14 +79,14 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
     private boolean isCleanNoImages = false;            // True if user has asked for the cleanup of folders with no images
     private boolean isCleanUnreadable = false;          // True if user has asked for the cleanup of folders with unreadable JSONs
 
-    private View contentView;
     private ProgressDialog progressDialog; // TODO - to replace because it's deprecated
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        contentView = new View(this, null, R.style.ImportTheme);
+        View contentView = new View(this, null, R.style.ImportTheme);
         setContentView(contentView);
 
         Intent intent = getIntent();
