@@ -160,7 +160,11 @@ public class KitkatRootFolderFragment extends DialogFragment {
             return;
         }
 
-        targetFolder = new File(targetFolder, subfolderEdit.getText().toString());
+        String subfolder = subfolderEdit.getText().toString().trim();
+        // Remove spaces added around /'s by dumb phone keyboards
+        subfolder = subfolder.replace(" /","/").replace("/ ","/");
+
+        targetFolder = new File(targetFolder, subfolder);
         Timber.i("Target : %s", targetFolder.getAbsolutePath());
 
         callbackActivity.onSelectKitKatRootFolder(targetFolder);
