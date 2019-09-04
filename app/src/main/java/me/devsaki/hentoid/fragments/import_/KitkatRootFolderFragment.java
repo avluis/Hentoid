@@ -69,6 +69,11 @@ public class KitkatRootFolderFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        publicTxt = requireViewById(view, R.id.kitkat_root_folder_public_txt);
+        privateImg = requireViewById(view, R.id.kitkat_root_folder_private_img);
+        privateTxt = requireViewById(view, R.id.kitkat_root_folder_private_txt);
+
+
         String currentFolder = Preferences.getRootFolderName();
         String currentRoot = "";
 
@@ -100,10 +105,6 @@ public class KitkatRootFolderFragment extends DialogFragment {
                 radioGroup.addView(btn);
             }
         }
-
-        publicTxt = requireViewById(view, R.id.kitkat_root_folder_public_txt);
-        privateImg = requireViewById(view, R.id.kitkat_root_folder_private_img);
-        privateTxt = requireViewById(view, R.id.kitkat_root_folder_private_txt);
 
         // Fill subfolder edit
         subfolderEdit = requireViewById(view, R.id.kitkat_root_folder_subfolder);
