@@ -136,7 +136,7 @@ public class KitkatRootFolderFragment extends DialogFragment {
     private String formatDirLabel(@NonNull File f, boolean isDefault) {
         FileHelper.MemoryUsageFigures mem = new FileHelper.MemoryUsageFigures(f);
         String label = requireContext().getResources().getString(R.string.kitkat_dialog_dir);
-        label = label.replace("$dir", f.getAbsolutePath());
+        label = label.replace("$dir", f.getAbsolutePath()+"/");
         label = label.replace("$default", isDefault ? "(Default)" : "");
         label = label.replace("$freeUsage", mem.formatFreeUsageMb());
         return label.replace("$freePc", Long.toString(Math.round(mem.getFreeUsageRatio100())));
