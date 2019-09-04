@@ -45,6 +45,7 @@ public class KitkatRootFolderFragment extends DialogFragment {
     private View publicTxt;
     private View privateImg;
     private View privateTxt;
+    private View subfolderTxt;
 
 
     public static void invoke(FragmentManager fragmentManager) {
@@ -72,6 +73,8 @@ public class KitkatRootFolderFragment extends DialogFragment {
         publicTxt = requireViewById(view, R.id.kitkat_root_folder_public_txt);
         privateImg = requireViewById(view, R.id.kitkat_root_folder_private_img);
         privateTxt = requireViewById(view, R.id.kitkat_root_folder_private_txt);
+        subfolderTxt = requireViewById(view, R.id.kitkat_root_folder_subfolder_txt);
+        subfolderEdit = requireViewById(view, R.id.kitkat_root_folder_subfolder);
 
 
         String currentFolder = Preferences.getRootFolderName();
@@ -107,7 +110,6 @@ public class KitkatRootFolderFragment extends DialogFragment {
         }
 
         // Fill subfolder edit
-        subfolderEdit = requireViewById(view, R.id.kitkat_root_folder_subfolder);
         if (!currentRoot.isEmpty()) {
             currentFolder = currentFolder.replace(currentRoot, ""); // Remove selected root
             currentFolder = currentFolder.replace(Consts.DEFAULT_LOCAL_DIRECTORY, "").replace(Consts.DEFAULT_LOCAL_DIRECTORY_OLD, ""); // Remove Hentoid folder name
@@ -122,14 +124,19 @@ public class KitkatRootFolderFragment extends DialogFragment {
     }
 
     private void updateDisplayText() {
+        // Default root
         if (radioGroup.getCheckedRadioButtonId() == R.id.kitkat_btn_default_root) {
             privateImg.setVisibility(View.INVISIBLE);
             privateTxt.setVisibility(View.INVISIBLE);
             publicTxt.setVisibility(View.VISIBLE);
-        } else {
+            subfolderTxt.setVisibility(View.VISIBLE);
+            subfolderEdit.setVisibility(View.VISIBLE);
+        } else { // Private external root
             publicTxt.setVisibility(View.GONE);
             privateImg.setVisibility(View.VISIBLE);
             privateTxt.setVisibility(View.VISIBLE);
+            subfolderTxt.setVisibility(View.GONE);
+            subfolderEdit.setVisibility(View.GONE);
         }
     }
 
@@ -144,12 +151,19 @@ public class KitkatRootFolderFragment extends DialogFragment {
 
     private void onOkClick() {
         File targetFolder = null;
+        String subfolder = "";
+
+        // Default root
         if (radioGroup.getCheckedRadioButtonId() == R.id.kitkat_btn_default_root)
             targetFolder = Environment.getExternalStorageDirectory();
-        else {
+        else { // Private external root
             for (int i = 0; i < extFoldersList.size(); i++) {
                 if (radioGroup.getCheckedRadioButtonId() == radioGroup.getChildAt(i + 1).getId()) {
                     targetFolder = new File(extFoldersList.get(i));
+
+                    subfolder = subfolderEdit.getText().toString().trim();
+                    // Remove spaces added around /'s by dumb phone keyboards
+                    subfolder = subfolder.replace(" /","/").replace("/ ","/");
                     break;
                 }
             }
@@ -159,10 +173,6 @@ public class KitkatRootFolderFragment extends DialogFragment {
             Timber.e("Unknown ID : %s", radioGroup.getCheckedRadioButtonId());
             return;
         }
-
-        String subfolder = subfolderEdit.getText().toString().trim();
-        // Remove spaces added around /'s by dumb phone keyboards
-        subfolder = subfolder.replace(" /","/").replace("/ ","/");
 
         targetFolder = new File(targetFolder, subfolder);
         Timber.i("Target : %s", targetFolder.getAbsolutePath());
