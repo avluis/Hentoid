@@ -43,6 +43,7 @@ import me.devsaki.hentoid.widget.PageSnapWidget;
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.devsaki.hentoid.widget.VolumeGestureListener;
+import timber.log.Timber;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -459,7 +460,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Update the display of page position controls (text and bar)
      */
     private void updatePageDisplay() {
-        String pageNum = imageIndex + 1 + "";
+        ImageFile img = adapter.getImageAt(imageIndex);
+        if (null == img) {
+            Timber.w("No image at position %s", imageIndex);
+            return;
+        }
+
+        String pageNum = img.getOrder() + "";
         String maxPage = maxPosition + 1 + "";
 
         pageCurrentNumber.setText(pageNum);
