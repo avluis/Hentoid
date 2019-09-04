@@ -113,7 +113,12 @@ public class KitkatRootFolderFragment extends DialogFragment {
         if (!currentRoot.isEmpty()) {
             currentFolder = currentFolder.replace(currentRoot, ""); // Remove selected root
             currentFolder = currentFolder.replace(Consts.DEFAULT_LOCAL_DIRECTORY, "").replace(Consts.DEFAULT_LOCAL_DIRECTORY_OLD, ""); // Remove Hentoid folder name
-            if (currentFolder.equals("/")) currentFolder = "";
+
+            // Remove begin and end /'s
+            if (currentFolder.startsWith("/")) currentFolder = currentFolder.substring(1);
+            if (currentFolder.endsWith("/"))
+                currentFolder = currentFolder.substring(0, currentFolder.length() - 1);
+
             subfolderEdit.setText(currentFolder);
         }
 
