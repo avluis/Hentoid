@@ -964,8 +964,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             if (activity != null) { // Has to be crash-proof; sometimes there's no activity there...
                 String title;
                 if (mTotalSelectedCount == mTotalCount)
-                    title = "(" + mTotalCount + ")";
-                else title = "(" + mTotalSelectedCount + "/" + mTotalCount + ")";
+                    title = mTotalCount + " items";
+                else title = mTotalSelectedCount + "/" + mTotalCount + " items";
                 activity.setTitle(title);
             }
         }
