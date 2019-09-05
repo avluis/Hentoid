@@ -49,6 +49,7 @@
             android:layout_marginStart="1dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="5dp"
+            android:textStyle="bold"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="@color/card_tags"
             tools:text="tag1, tag2, tag3, etc." />
