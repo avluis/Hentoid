@@ -161,11 +161,10 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             }
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
-        holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@", series)));
+        holder.tvSeries.setText(templateSeries.replace("@series@", series));
 
         if (seriesAttributes == null) {
-            holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@",
-                    context.getResources().getString(R.string.work_untitled))));
+            holder.tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
     }
@@ -193,11 +192,10 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 artists.append(attribute.getName());
             }
         }
-        holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artists)));
+        holder.tvArtist.setText(templateArtist.replace("@artist@", artists));
 
         if (attributes.isEmpty()) {
-            holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
-                    context.getResources().getString(R.string.work_untitled))));
+            holder.tvArtist.setText(templateArtist.replace("@artist@", context.getResources().getString(R.string.work_untitled)));
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
     }
@@ -209,21 +207,20 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param content Content to display
      */
     private void attachTags(ViewHolder holder, Content content) {
-        String templateTags = context.getString(R.string.work_tags);
         StringBuilder tags = new StringBuilder();
         List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
                 if (attribute.getName() != null) {
-                    tags.append(templateTags.replace("@tag@", attribute.getName()));
+                    tags.append(attribute.getName());
                     if (i != tagsAttributes.size() - 1) {
                         tags.append(", ");
                     }
                 }
             }
         }
-        holder.tvTags.setText(Helper.fromHtml(tags.toString()));
+        holder.tvTags.setText(tags.toString());
     }
 
     /**
@@ -273,7 +270,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void updateProgress(@NonNull ProgressBar pb, @NonNull Content content, boolean isFirst, boolean isPausedEvent) {
         boolean isQueueReady = ContentQueueManager.getInstance().isQueueActive() && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
         content.computePercent();
-        if ( (isFirst && isQueueReady) || content.getPercent() > 0) {
+        if ((isFirst && isQueueReady) || content.getPercent() > 0) {
             pb.setVisibility(View.VISIBLE);
             if (content.getPercent() > 0) {
                 pb.setIndeterminate(false);

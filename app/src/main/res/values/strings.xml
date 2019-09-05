@@ -52,9 +52,8 @@
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
-    <string name="work_series"><![CDATA[<b>Series:</b> @series@]]></string>
-    <string name="work_artist"><![CDATA[<b>Artist:</b> @artist@]]></string>
-    <string name="work_tags" translatable="false"><![CDATA[<b>@tag@</b>]]></string>
+    <string name="work_series">Series: @series@</string>
+    <string name="work_artist">Artist: @artist@</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>

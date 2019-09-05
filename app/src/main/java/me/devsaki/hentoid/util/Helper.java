@@ -13,10 +13,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.text.Html;
-import android.text.Spanned;
 import android.util.DisplayMetrics;
-import android.webkit.WebResourceResponse;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -101,32 +98,6 @@ public final class Helper {
 
         return b;
     }
-
-    private static WebResourceResponse getUtf8EncodedWebResourceResponse(InputStream open,
-                                                                         TYPE type) {
-        switch (type) {
-            case JS:
-                return new WebResourceResponse("text/js", "UTF-8", open);
-            case CSS:
-                return new WebResourceResponse("text/css", "UTF-8", open);
-            case HTML:
-                return new WebResourceResponse("text/html", "UTF-8", open);
-            case PLAIN:
-            default:
-                return new WebResourceResponse("text/plain", "UTF-8", open);
-        }
-    }
-
-    public static Spanned fromHtml(String source) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY, null, null);
-        } else {
-            //noinspection deprecation
-            return Html.fromHtml(source);
-        }
-    }
-
-    public enum TYPE {JS, CSS, HTML, PLAIN}
 
     public static String capitalizeString(String s) {
         if (s == null || s.isEmpty()) return s;

@@ -2,6 +2,7 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,7 +27,6 @@ import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -53,7 +53,6 @@ import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -146,9 +145,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @NonNull
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        long clicks = SystemClock.elapsedRealtime();
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_download, parent, false);
-        return new ContentHolder(view);
+        ContentHolder holder = new ContentHolder(view);
+        Timber.i(">CreateViewHolder %ss", (SystemClock.elapsedRealtime() - clicks) / 1000.0);
+        return holder;
     }
 
     @Override
@@ -161,6 +163,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
      */
     @Override
     public void onBindViewHolder(@NonNull ContentHolder holder, final int pos) {
+        long clicks = SystemClock.elapsedRealtime();
         Content content = mSortedList.get(pos);
 
         updateLayoutVisibility(holder, content, pos);
@@ -170,6 +173,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         attachTags(holder, content);
         attachButtons(holder, content);
         attachOnClickListeners(holder, content, pos);
+        Timber.i(">BindViewHolder[%s] %ss", pos, (SystemClock.elapsedRealtime() - clicks) / 1000.0);
     }
 
     @Override
@@ -244,11 +248,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             }
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
-        holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@", seriesBuilder.toString())));
+        holder.tvSeries.setText(templateSeries.replace("@series@", seriesBuilder.toString()));
 
         if (seriesAttributes == null) {
-            holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@",
-                    context.getResources().getString(R.string.work_untitled))));
+            holder.tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
     }
@@ -273,31 +276,29 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             }
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
-        holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artistsBuilder.toString())));
+        holder.tvArtist.setText(templateArtist.replace("@artist@", artistsBuilder.toString()));
 
         if (attributes.isEmpty()) {
-            holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
-                    context.getResources().getString(R.string.work_untitled))));
+            holder.tvArtist.setText(templateArtist.replace("@artist@", context.getResources().getString(R.string.work_untitled)));
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
     }
 
     private void attachTags(ContentHolder holder, Content content) {
-        String templateTags = context.getResources().getString(R.string.work_tags);
         StringBuilder tagsBuilder = new StringBuilder();
         List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
                 if (attribute.getName() != null) {
-                    tagsBuilder.append(templateTags.replace("@tag@", attribute.getName()));
+                    tagsBuilder.append(attribute.getName());
                     if (i != tagsAttributes.size() - 1) {
                         tagsBuilder.append(", ");
                     }
                 }
             }
         }
-        holder.tvTags.setText(Helper.fromHtml(tagsBuilder.toString()));
+        holder.tvTags.setText(tagsBuilder.toString());
     }
 
     private void attachButtons(ContentHolder holder, final Content content) {
