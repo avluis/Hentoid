@@ -2,6 +2,7 @@ package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.Nullable;
 
+import com.annimon.stream.Stream;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -481,6 +482,14 @@ public class Content implements Serializable {
 
     public void setPercent(double percent) {
         this.percent = percent;
+    }
+
+    public void computePercent()
+    {
+        if (imageFiles != null && 0 == percent) {
+            long progress = Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.ERROR).count();
+            percent = progress * 100.0 / qtyPages;
+        }
     }
 
     public Site getSite() {

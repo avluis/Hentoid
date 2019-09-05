@@ -117,6 +117,7 @@ public class QueueFragment extends BaseFragment {
                 ObjectBoxDB db = ObjectBoxDB.getInstance(requireActivity());
                 db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
                 ContentQueueManager.getInstance().resumeQueue(requireActivity());
+                refreshFirstBook(false);
                 update(event.eventType);
                 break;
             case DownloadEvent.EV_SKIP:
@@ -136,6 +137,7 @@ public class QueueFragment extends BaseFragment {
                 break;
             default: // EV_PAUSE, EV_CANCEL events
                 dlPreparationProgressBar.setVisibility(View.GONE);
+                refreshFirstBook(true);
                 update(event.eventType);
         }
     }
@@ -175,7 +177,7 @@ public class QueueFragment extends BaseFragment {
             if (content != null && pagesKO + pagesOK > 0) {
                 // Update book progress bar
                 content.setPercent((pagesOK + pagesKO) * 100.0 / totalPages);
-                mAdapter.updateProgress(0, content);
+                mAdapter.updateProgress(0, false);
 
                 // Update information bar
                 StringBuilder message = new StringBuilder();
@@ -186,6 +188,13 @@ public class QueueFragment extends BaseFragment {
                 queueInfo.setText(message.toString());
                 isPreparingDownload = false;
             }
+        }
+    }
+
+    private void refreshFirstBook(boolean isPausedEvent) {
+        if (mAdapter != null && mAdapter.getCount() > 0) {
+            // Update book progress bar
+            mAdapter.updateProgress(0, isPausedEvent);
         }
     }
 

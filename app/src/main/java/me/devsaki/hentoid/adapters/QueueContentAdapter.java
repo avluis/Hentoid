@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
+import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -30,8 +32,8 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 
@@ -62,6 +64,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             LayoutInflater inflater = LayoutInflater.from(context);
             v = inflater.inflate(R.layout.item_queue, parent, false);
 
+            holder.progressBar = v.findViewById(R.id.pbDownload);
             holder.tvTitle = v.findViewById(R.id.tvTitle);
             holder.ivCover = v.findViewById(R.id.ivCover);
             holder.tvSeries = v.findViewById(R.id.tvSeries);
@@ -80,7 +83,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         if (content != null) {
             populateLayout(holder, content);
             attachButtons(v, content, (0 == pos), (getCount() - 1 == pos), getCount());
-            updateProgress(v, content);
+            updateProgress(holder.progressBar, content, 0 == pos, false);
         }
         // Return the completed view to render on screen
         return v;
@@ -267,35 +270,38 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         btnCancel.setOnClickListener(v -> cancel(content));
     }
 
-    /**
-     * Update progress bar according to progress and status of designated Content
-     *
-     * @param view    Progress bar to use
-     * @param content Content whose progress is to be displayed
-     */
-    private void updateProgress(View view, Content content) {
-        ProgressBar pb = view.findViewById(R.id.pbDownload);
-
-        if (content.getStatus() != StatusContent.PAUSED) {
+    private void updateProgress(@NonNull ProgressBar pb, @NonNull Content content, boolean isFirst, boolean isPausedEvent) {
+        boolean isQueueReady = ContentQueueManager.getInstance().isQueueActive() && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
+        content.computePercent();
+        if ( (isFirst && isQueueReady) || content.getPercent() > 0) {
             pb.setVisibility(View.VISIBLE);
             if (content.getPercent() > 0) {
                 pb.setIndeterminate(false);
                 pb.setProgress((int) content.getPercent());
+
+                int color;
+                if (isFirst && isQueueReady)
+                    color = ContextCompat.getColor(context, R.color.secondary);
+                else color = ContextCompat.getColor(context, R.color.medium_gray);
+                pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
             } else {
                 pb.setIndeterminate(true);
             }
         } else {
-            pb.setVisibility(View.INVISIBLE);
+            pb.setVisibility(View.GONE);
         }
     }
 
-    public void updateProgress(int index, Content content) {
+    public void updateProgress(int index, boolean isPausedevent) {
         if (null == container) return;
 
         View view = container.getChildAt(index - container.getFirstVisiblePosition());
         if (view == null) return;
 
-        updateProgress(view, content);
+        Content content = getItem(index);
+        if (null == content) return;
+
+        updateProgress(view.findViewById(R.id.pbDownload), content, 0 == index, isPausedevent);
     }
 
     private void swap(int firstPosition, int secondPosition) {
@@ -465,6 +471,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     // View lookup cache
     private static class ViewHolder {
+        ProgressBar progressBar;
         TextView tvTitle;
         ImageView ivCover;
         TextView tvSeries;
