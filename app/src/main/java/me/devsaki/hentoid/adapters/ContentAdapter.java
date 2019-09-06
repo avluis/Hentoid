@@ -198,7 +198,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
             //Update buttons
             holder.ivError.setVisibility(View.GONE);
-            holder.ivFavourite.setVisibility(View.GONE);
             holder.ivNew.setVisibility(View.GONE);
 
             Glide.with(context.getApplicationContext())
@@ -214,7 +213,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 StatusContent status = content.getStatus();
                 holder.ivError.setVisibility((status == StatusContent.ERROR) ? View.VISIBLE : View.GONE);
             }
-            holder.ivFavourite.setVisibility(View.VISIBLE);
             holder.ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
 
             Glide.with(context.getApplicationContext())
