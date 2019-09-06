@@ -21,7 +21,7 @@ class ContentHolder extends RecyclerView.ViewHolder {
     final View miniLayout;
     final TextView tvTitle;
     final TextView tvTitle2;
-    final View ivNew;
+    final ImageView ivNew;
     final ImageView ivCover;
     final ImageView ivCover2;
     final TextView tvSeries;
