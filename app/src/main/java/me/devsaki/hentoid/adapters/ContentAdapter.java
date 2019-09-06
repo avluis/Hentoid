@@ -196,6 +196,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             holder.fullLayout.setVisibility(View.GONE);
             holder.miniLayout.setVisibility(View.VISIBLE);
 
+            //Update buttons
+            holder.ivError.setVisibility(View.GONE);
+            holder.ivFavourite.setVisibility(View.GONE);
+            holder.ivNew.setVisibility(View.GONE);
+
             Glide.with(context.getApplicationContext())
                     .load(ContentHelper.getThumb(content))
                     .apply(glideRequestOptions)
@@ -203,6 +208,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         } else {
             holder.fullLayout.setVisibility(View.VISIBLE);
             holder.miniLayout.setVisibility(View.GONE);
+
+            //Update buttons
+            if (content.getStatus() != null) {
+                StatusContent status = content.getStatus();
+                holder.ivError.setVisibility((status == StatusContent.ERROR) ? View.VISIBLE : View.GONE);
+            }
+            holder.ivFavourite.setVisibility(View.VISIBLE);
+            holder.ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
 
             Glide.with(context.getApplicationContext())
                     .load(ContentHelper.getThumb(content))
@@ -212,7 +225,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         if (content.isBeingDeleted()) {
             BlinkAnimation animation = new BlinkAnimation(500, 250);
-            holder.fullLayout.startAnimation(animation);
+            holder.baseLayout.startAnimation(animation);
         }
     }
 
@@ -228,8 +241,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         if (holder.itemView.isSelected()) {
             holder.tvTitle2.setText(title);
         }
-
-        holder.ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
     }
 
     private void attachSeries(ContentHolder holder, Content content) {
@@ -317,47 +328,46 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
         }
 
-        // Set source color
-        if (content.getStatus() != null) {
-            StatusContent status = content.getStatus();
-            holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, R.color.primary));
-            holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
-            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == displayMode) ? View.VISIBLE : View.GONE);
+        //Set exclusive icons
+        holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
+        holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == displayMode) ? View.VISIBLE : View.GONE);
 
-            if (DownloadsFragment.MODE_LIBRARY == displayMode) {
-                // Favourite toggle
-                if (content.isFavourite()) {
-                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
-                } else {
-                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+        //Set buttons
+        if (DownloadsFragment.MODE_LIBRARY == displayMode) {
+            // Favourite toggle
+            if (content.isFavourite()) {
+                holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+            } else {
+                holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+            }
+            holder.ivFavourite.setOnClickListener(v -> {
+                if (getSelectedItemsCount() > 0) {
+                    clearSelections();
+                    itemSelectListener.onItemClear(0);
                 }
-                holder.ivFavourite.setOnClickListener(v -> {
-                    if (getSelectedItemsCount() > 0) {
-                        clearSelections();
-                        itemSelectListener.onItemClear(0);
-                    }
 
-                    compositeDisposable.add(
-                            Single.fromCallable(() -> toggleFavourite(context, content.getId()))
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(
-                                            result -> {
-                                                content.setFavourite(result.isFavourite());
-                                                if (result.isFavourite()) {
-                                                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
-                                                } else {
-                                                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                                                }
-                                            },
-                                            Timber::e
-                                    )
-                    );
-                });
+                compositeDisposable.add(
+                        Single.fromCallable(() -> toggleFavourite(context, content.getId()))
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                        result -> {
+                                            content.setFavourite(result.isFavourite());
+                                            if (result.isFavourite()) {
+                                                holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                                            } else {
+                                                holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                                            }
+                                        },
+                                        Timber::e
+                                )
+                );
+            });
 
-                // Error icon
+            // Error icon
+            if (content.getStatus() != null) {
+                StatusContent status = content.getStatus();
                 if (status == StatusContent.ERROR) {
-                    holder.ivError.setVisibility(View.VISIBLE);
                     holder.ivError.setOnClickListener(v -> {
                         if (getSelectedItemsCount() > 0) {
                             clearSelections();
@@ -365,11 +375,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                         }
                         downloadAgain(content);
                     });
-                } else {
-                    holder.ivError.setVisibility(View.GONE);
                 }
-            } else { // Mikan mode
-
+            }
+        } else { // Mikan mode
+            if (content.getStatus() != null) {
+                StatusContent status = content.getStatus();
                 // "Available online" icon
                 if (status == StatusContent.ONLINE) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
@@ -387,9 +397,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     holder.ivDownload.setOnClickListener(v -> openBookAction.accept(content));
                 }
             }
-
-        } else {
-            holder.ivSite.setVisibility(View.GONE);
         }
     }
 

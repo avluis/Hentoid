@@ -137,6 +137,10 @@
     </plurals>
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
+    <string name="book_title">"This is a rather long title, just because we need it to be."</string>
+    <string name="book_artist">"Artist: Name"</string>
+    <string name="book_series">"Series: Name"</string>
+    <string name="book_tags">""tag1, tag2, tag3, etc.</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
