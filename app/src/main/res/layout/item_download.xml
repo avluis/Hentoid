@@ -31,18 +31,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/divider1" />
 
-    <ImageView
+    <view
         android:id="@+id/iconNew"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
-        android:layout_marginTop="8dp"
-        android:adjustViewBounds="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_new"
-        android:tint="?colorSecondary"
+        android:layout_width="4dp"
+        android:layout_height="0dp"
+        android:background="?colorSecondary"
+        app:layout_constraintBottom_toTopOf="@id/divider2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription"
+        app:layout_constraintTop_toBottomOf="@id/divider1"
         tools:visibility="visible" />
 
     <ImageView
@@ -99,17 +95,16 @@
 
     <ImageView
         android:id="@+id/ivError"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:adjustViewBounds="true"
-        android:background="?colorSecondary"
+        android:background="@drawable/bg_error_icon"
         android:clickable="true"
         android:focusable="true"
-        android:padding="8dp"
+        android:padding="4dp"
         android:src="@drawable/ic_item_error_outline"
-        android:tint="@color/card_surface"
         app:layout_constraintBottom_toBottomOf="@id/divider2"
         app:layout_constraintEnd_toStartOf="@id/ivSite"
         app:layout_constraintTop_toBottomOf="@+id/bookDetails"
