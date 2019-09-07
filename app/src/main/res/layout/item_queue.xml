@@ -1,139 +1,111 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.MaterialComponents.CardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:theme="@style/DownloadCard"
-    app:cardCornerRadius="2dp"
-    app:cardElevation="2dp">
+    android:layout_marginBottom="@dimen/default_cardview_margin"
+    app:cardCornerRadius="4dp"
+    app:cardElevation="6dp">
 
-
-    <View
-        android:id="@+id/divider1"
-        style="@style/Divider"
-        android:layout_width="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-    <ProgressBar
-        android:id="@+id/pbDownload"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:indeterminate="true"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider1"
-        tools:visibility="visible" />
+        android:layout_height="wrap_content">
 
-    <include
-        android:id="@+id/bookDetails"
-        layout="@layout/include_item_details"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/pbDownload" />
+        <ProgressBar
+            android:id="@+id/pbDownload"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
+
+        <include
+            android:id="@+id/bookDetails"
+            layout="@layout/include_item_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pbDownload" />
 
 
-    <ImageView
-        android:id="@+id/queueTopBtn"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toTopOf="@+id/divider2"
-        app:layout_constraintEnd_toStartOf="@+id/queueUpBtn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bookDetails"
-        app:layout_constraintVertical_bias="0.0"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_doublearrowup" />
+        <ImageView
+            android:id="@+id/queueTopBtn"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:adjustViewBounds="true"
+            android:tint="?colorSecondary"
+            app:layout_constraintEnd_toStartOf="@+id/queueUpBtn"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_doublearrowup" />
 
-    <ImageView
-        android:id="@+id/queueUpBtn"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toTopOf="@+id/divider2"
-        app:layout_constraintEnd_toStartOf="@+id/queueDownBtn"
-        app:layout_constraintStart_toEndOf="@id/queueTopBtn"
-        app:layout_constraintTop_toBottomOf="@+id/bookDetails"
-        app:layout_constraintVertical_bias="0.0"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_arrow_up" />
+        <ImageView
+            android:id="@+id/queueUpBtn"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:adjustViewBounds="true"
+            android:tint="?colorSecondary"
+            app:layout_constraintEnd_toStartOf="@+id/queueDownBtn"
+            app:layout_constraintStart_toEndOf="@id/queueTopBtn"
+            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_arrow_up" />
 
-    <ImageView
-        android:id="@+id/queueDownBtn"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toTopOf="@+id/divider2"
-        app:layout_constraintEnd_toStartOf="@+id/btnCancel"
-        app:layout_constraintStart_toEndOf="@id/queueUpBtn"
-        app:layout_constraintTop_toBottomOf="@+id/bookDetails"
-        app:layout_constraintVertical_bias="0.0"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_arrow_down" />
+        <ImageView
+            android:id="@+id/queueDownBtn"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:adjustViewBounds="true"
+            android:tint="?colorSecondary"
+            app:layout_constraintEnd_toStartOf="@+id/btnCancel"
+            app:layout_constraintStart_toEndOf="@id/queueUpBtn"
+            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_arrow_down" />
 
-    <TextView
-        android:id="@+id/btnCancel"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/bg_round_edges"
-        android:gravity="center"
-        android:text="@string/cancel"
-        android:textColor="?android:windowBackground"
-        android:textSize="@dimen/text_body_1"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/divider2"
-        app:layout_constraintEnd_toStartOf="@+id/ivSite"
-        app:layout_constraintStart_toEndOf="@id/queueDownBtn"
-        app:layout_constraintTop_toBottomOf="@+id/bookDetails"
-        app:layout_constraintVertical_bias="0.0" />
+        <TextView
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="center"
+            android:text="@string/cancel"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_body_1"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/ivSite"
+            app:layout_constraintStart_toEndOf="@id/queueDownBtn"
+            app:layout_constraintTop_toBottomOf="@+id/bookDetails" />
 
-    <ImageView
-        android:id="@+id/ivSite"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:clickable="true"
-        android:focusable="true"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="@id/divider2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bookDetails"
-        app:layout_constraintVertical_bias="0.0"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_menu_nhentai" />
+        <ImageView
+            android:id="@+id/ivSite"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="16dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:tint="?colorSecondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_menu_nhentai" />
 
-    <View
-        android:id="@+id/divider2"
-        style="@style/Divider"
-        android:layout_width="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

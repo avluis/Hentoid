@@ -1,172 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
-    style="@style/DownloadCard"
+    style="@style/Widget.MaterialComponents.CardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
     android:clickable="true"
     android:focusable="true"
-    app:cardCornerRadius="2dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="4dp"
+    app:cardElevation="6dp">
 
-    <View
-        android:id="@+id/divider1"
-        style="@style/Divider"
-        android:layout_width="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-
-    <include
-        android:id="@+id/bookDetails"
-        layout="@layout/include_item_details"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        style="@style/Widget.MaterialComponents.CardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider1" />
-
-    <ImageView
-        android:id="@+id/iconNew"
-        android:layout_width="4dp"
-        android:layout_height="0dp"
-        android:background="?colorSecondary"
-        app:layout_constraintBottom_toTopOf="@id/divider2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider1"
-        tools:ignore="ContentDescription" />
-
-    <ImageView
-        android:id="@+id/ivDownload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_action_download"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="@id/divider2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/bookDetails"
-        tools:ignore="ContentDescription" />
-
-    <ImageView
-        android:id="@+id/ivFavourite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_fav_empty"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="@id/divider2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bookDetails"
-        tools:ignore="ContentDescription" />
-
-    <ImageView
-        android:id="@+id/ivSite"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:clickable="true"
-        android:focusable="true"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="@id/divider2"
-        app:layout_constraintEnd_toStartOf="@id/ivFavourite"
-        app:layout_constraintTop_toBottomOf="@+id/bookDetails"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_menu_nhentai" />
-
-    <ImageView
-        android:id="@+id/ivError"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/bg_round_edges"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="4dp"
-        android:src="@drawable/ic_item_error_outline"
-        android:tint="?android:windowBackground"
-        app:layout_constraintBottom_toBottomOf="@id/divider2"
-        app:layout_constraintEnd_toStartOf="@id/ivSite"
-        app:layout_constraintTop_toBottomOf="@+id/bookDetails"
-        tools:ignore="ContentDescription" />
-
-    <View
-        android:id="@+id/divider2"
-        style="@style/Divider"
-        android:layout_width="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:layout_marginBottom="@dimen/default_cardview_margin">
 
 
-    <ImageView
-        android:id="@+id/ivCover2"
-        android:layout_width="75dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="@id/divider2"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider1"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_placeholder" />
+        <include
+            android:id="@+id/bookDetails"
+            layout="@layout/include_item_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <include
-        android:id="@+id/tvTitle2"
-        layout="@layout/include_item_title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toBottomOf="@id/ivCover2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/ivCover2"
-        app:layout_constraintTop_toTopOf="@id/ivCover2" />
+        <ImageView
+            android:id="@+id/iconNew"
+            android:layout_width="4dp"
+            android:layout_height="0dp"
+            android:background="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
 
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/maximized_item_download"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:constraint_referenced_ids="ivSite,bookDetails,ivFavourite"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible" />
+        <ImageView
+            android:id="@+id/ivDownload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:adjustViewBounds="true"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_action_download"
+            android:tint="?colorSecondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bookDetails"
+            tools:ignore="ContentDescription" />
 
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/minimized_item_download"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:minHeight="?android:listPreferredItemHeightSmall"
-        app:constraint_referenced_ids="tvTitle2,ivCover2"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="gone" />
+        <ImageView
+            android:id="@+id/ivFavourite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:adjustViewBounds="true"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_fav_empty"
+            android:tint="?colorSecondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            tools:ignore="ContentDescription" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageView
+            android:id="@+id/ivSite"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:tint="?colorSecondary"
+            app:layout_constraintEnd_toStartOf="@id/ivFavourite"
+            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_menu_nhentai" />
+
+        <ImageView
+            android:id="@+id/ivError"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:adjustViewBounds="true"
+            android:background="@drawable/bg_round_edges"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_item_error_outline"
+            android:tint="?android:windowBackground"
+            app:layout_constraintEnd_toStartOf="@id/ivSite"
+            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/ivCover2"
+            android:layout_width="75dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_placeholder" />
+
+        <include
+            android:id="@+id/tvTitle2"
+            layout="@layout/include_item_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="@id/ivCover2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivCover2"
+            app:layout_constraintTop_toTopOf="@id/ivCover2" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/maximized_item_download"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="ivSite,bookDetails,ivFavourite"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/minimized_item_download"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:minHeight="?android:listPreferredItemHeightSmall"
+            app:constraint_referenced_ids="tvTitle2,ivCover2"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="gone" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</androidx.cardview.widget.CardView>
