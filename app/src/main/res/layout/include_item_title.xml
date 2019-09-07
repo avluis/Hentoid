@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:ellipsize="middle"
     android:maxLines="4"
-    android:textAppearance="?android:attr/textAppearanceSmall"
+    android:textSize="@dimen/text_subtitle_1"
     android:textColor="?colorSecondary"
     android:textStyle="bold"
     tools:text="@string/book_title" />

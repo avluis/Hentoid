@@ -35,10 +35,6 @@
         <item name="colorSurface">@color/dark_gray</item>
     </style>
 
-    <style name="DownloadCard" parent="AppTheme">
-        <item name="colorSurface">@color/card_surface</item>
-    </style>
-
     <style name="AppTheme.NoActionBar.Monochrome">
         <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryVariant">@color/black_opacity_50</item>

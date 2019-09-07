@@ -35,7 +35,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by neko on 11/05/2015.

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
-    style="@style/Widget.MaterialComponents.CardView"
+    app:cardBackgroundColor="@color/card_surface"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
@@ -13,7 +13,6 @@
     app:cardElevation="6dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        style="@style/Widget.MaterialComponents.CardView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/default_cardview_margin">
@@ -95,7 +94,7 @@
             android:focusable="true"
             android:padding="4dp"
             android:src="@drawable/ic_item_error_outline"
-            android:tint="?android:windowBackground"
+            android:tint="@color/card_surface"
             app:layout_constraintEnd_toStartOf="@id/ivSite"
             app:layout_constraintTop_toBottomOf="@+id/bookDetails"
             tools:ignore="ContentDescription" />
