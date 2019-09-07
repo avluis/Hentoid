@@ -21,7 +21,7 @@ class ContentHolder extends RecyclerView.ViewHolder {
     final View miniLayout;
     final TextView tvTitle;
     final TextView tvTitle2;
-    final ImageView ivNew;
+    final View ivNew;
     final ImageView ivCover;
     final ImageView ivCover2;
     final TextView tvSeries;
@@ -38,7 +38,7 @@ class ContentHolder extends RecyclerView.ViewHolder {
         fullLayout = itemView.findViewById(R.id.maximized_item_download);
         miniLayout = itemView.findViewById(R.id.minimized_item_download);
         tvTitle = itemView.findViewById(R.id.tvTitle);
-        ivNew = itemView.findViewById(R.id.iconNew);
+        ivNew = itemView.findViewById(R.id.lineNew);
         tvTitle2 = itemView.findViewById(R.id.tvTitle2);
         ivCover = itemView.findViewById(R.id.ivCover);
         ivCover2 = itemView.findViewById(R.id.ivCover2);

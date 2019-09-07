@@ -19,8 +19,8 @@
 
         <include layout="@layout/include_item_details" />
 
-        <ImageView
-            android:id="@+id/iconNew"
+        <View
+            android:id="@+id/lineNew"
             android:layout_width="4dp"
             android:layout_height="0dp"
             android:background="?colorSecondary"
