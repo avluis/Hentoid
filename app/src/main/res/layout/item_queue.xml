@@ -1,10 +1,10 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:cardBackgroundColor="@color/card_surface"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
+    app:cardBackgroundColor="@color/card_surface"
     app:cardCornerRadius="4dp"
     app:cardElevation="6dp">
 
@@ -18,7 +18,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:indeterminate="true"
             android:visibility="gone"
@@ -27,16 +26,7 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:visibility="visible" />
 
-        <include
-            android:id="@+id/bookDetails"
-            layout="@layout/include_item_details"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/pbDownload" />
-
+        <include layout="@layout/include_item_details" />
 
         <ImageView
             android:id="@+id/queueTopBtn"
@@ -48,7 +38,7 @@
             android:tint="?colorSecondary"
             app:layout_constraintEnd_toStartOf="@+id/queueUpBtn"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            app:layout_constraintTop_toBottomOf="@+id/barrier"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_doublearrowup" />
 
@@ -61,7 +51,7 @@
             android:tint="?colorSecondary"
             app:layout_constraintEnd_toStartOf="@+id/queueDownBtn"
             app:layout_constraintStart_toEndOf="@id/queueTopBtn"
-            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            app:layout_constraintTop_toBottomOf="@+id/barrier"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_arrow_up" />
 
@@ -74,7 +64,7 @@
             android:tint="?colorSecondary"
             app:layout_constraintEnd_toStartOf="@+id/btnCancel"
             app:layout_constraintStart_toEndOf="@id/queueUpBtn"
-            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            app:layout_constraintTop_toBottomOf="@+id/barrier"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_arrow_down" />
 
@@ -90,7 +80,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/ivSite"
             app:layout_constraintStart_toEndOf="@id/queueDownBtn"
-            app:layout_constraintTop_toBottomOf="@+id/bookDetails" />
+            app:layout_constraintTop_toBottomOf="@+id/barrier" />
 
         <ImageView
             android:id="@+id/ivSite"
@@ -102,7 +92,7 @@
             android:focusable="true"
             android:tint="?colorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            app:layout_constraintTop_toBottomOf="@+id/barrier"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_nhentai" />
 

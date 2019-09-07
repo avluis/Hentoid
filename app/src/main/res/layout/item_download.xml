@@ -3,29 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
-    app:cardBackgroundColor="@color/card_surface"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
     android:clickable="true"
     android:focusable="true"
+    app:cardBackgroundColor="@color/card_surface"
     app:cardCornerRadius="4dp"
     app:cardElevation="6dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/default_cardview_margin">
+        android:layout_height="wrap_content">
 
 
-        <include
-            android:id="@+id/bookDetails"
-            layout="@layout/include_item_details"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <include layout="@layout/include_item_details" />
 
         <ImageView
             android:id="@+id/iconNew"
@@ -41,6 +33,7 @@
             android:id="@+id/ivDownload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:adjustViewBounds="true"
             android:background="@color/transparent"
@@ -50,13 +43,14 @@
             android:src="@drawable/ic_action_download"
             android:tint="?colorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/bookDetails"
+            app:layout_constraintTop_toBottomOf="@+id/tvTags"
             tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/ivFavourite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:adjustViewBounds="true"
             android:background="@color/transparent"
@@ -66,20 +60,21 @@
             android:src="@drawable/ic_fav_empty"
             android:tint="?colorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            app:layout_constraintTop_toBottomOf="@+id/tvTags"
             tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/ivSite"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:adjustViewBounds="true"
             android:clickable="true"
             android:focusable="true"
             android:tint="?colorSecondary"
             app:layout_constraintEnd_toStartOf="@id/ivFavourite"
-            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            app:layout_constraintTop_toBottomOf="@+id/tvTags"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_nhentai" />
 
@@ -87,6 +82,7 @@
             android:id="@+id/ivError"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:adjustViewBounds="true"
             android:background="@drawable/bg_round_edges"
@@ -96,7 +92,7 @@
             android:src="@drawable/ic_item_error_outline"
             android:tint="@color/card_surface"
             app:layout_constraintEnd_toStartOf="@id/ivSite"
-            app:layout_constraintTop_toBottomOf="@+id/bookDetails"
+            app:layout_constraintTop_toBottomOf="@+id/tvTags"
             tools:ignore="ContentDescription" />
 
         <ImageView
@@ -127,7 +123,7 @@
             android:id="@+id/maximized_item_download"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:constraint_referenced_ids="ivSite,bookDetails,ivFavourite"
+            app:constraint_referenced_ids="ivSite,ivFavourite,ivCover,tvTitle,tvSeries,tvArtist,divider,tvTags"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -137,8 +133,7 @@
         <androidx.constraintlayout.widget.Group
             android:id="@+id/minimized_item_download"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:minHeight="?android:listPreferredItemHeightSmall"
+            android:layout_height="wrap_content"
             app:constraint_referenced_ids="tvTitle2,ivCover2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

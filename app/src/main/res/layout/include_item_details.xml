@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
     tools:showIn="@layout/item_download">
 
     <ImageView
@@ -12,7 +13,7 @@
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pbDownload"
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_placeholder" />
 
@@ -23,11 +24,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toTopOf="@id/tvSeries"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivCover"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintTop_toBottomOf="@+id/pbDownload" />
 
     <TextView
         android:id="@+id/tvSeries"
@@ -38,7 +37,6 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@color/card_tags"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/tvArtist"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivCover"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
@@ -55,7 +53,6 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@color/card_tags"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivCover"
         app:layout_constraintTop_toBottomOf="@id/tvSeries"
@@ -67,7 +64,6 @@
         android:layout_width="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toTopOf="@id/tvTags"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivCover"
         app:layout_constraintTop_toBottomOf="@id/tvArtist" />
@@ -88,4 +84,11 @@
         app:layout_constraintTop_toBottomOf="@id/divider"
         tools:text="@string/book_tags" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="ivCover,tvTags" />
+
+</merge>
