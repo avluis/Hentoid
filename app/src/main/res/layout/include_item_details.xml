@@ -13,7 +13,8 @@
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pbDownload"
+        app:layout_constraintTop_toBottomOf="@id/pbDownload"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_placeholder" />
 
