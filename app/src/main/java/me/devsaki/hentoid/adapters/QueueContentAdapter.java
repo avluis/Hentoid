@@ -70,7 +70,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             holder.tvSeries = v.findViewById(R.id.tvSeries);
             holder.tvArtist = v.findViewById(R.id.tvArtist);
             holder.tvTags = v.findViewById(R.id.tvTags);
-            holder.ivSource = v.findViewById(R.id.ivSource);
+            holder.ivSource = v.findViewById(R.id.ivSite);
 
             v.setTag(holder);
         } else {

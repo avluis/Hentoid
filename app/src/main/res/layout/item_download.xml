@@ -39,7 +39,7 @@
         app:layout_constraintBottom_toTopOf="@id/divider2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/divider1"
-        tools:visibility="visible" />
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/ivDownload"
@@ -100,7 +100,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:adjustViewBounds="true"
-        android:background="@drawable/bg_error_icon"
+        android:background="@drawable/bg_round_edges"
         android:clickable="true"
         android:focusable="true"
         android:padding="4dp"
