@@ -15,7 +15,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/maximized_item_download"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:minHeight="200dp">
 
         <!-- Dummy UI element to be able to attach to the top in library mode -->
         <View
@@ -118,12 +119,12 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/minimized_item_download"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
         android:visibility="gone">
 
         <ImageView
             android:id="@+id/ivCover2"
-            android:layout_width="75dp"
+            android:layout_width="125dp"
             android:layout_height="wrap_content"
             android:adjustViewBounds="true"
             android:scaleType="fitCenter"

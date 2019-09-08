@@ -46,7 +46,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:textColor="@color/white"
+        android:textColor="@color/white_opacity_87"
         android:textSize="@dimen/text_subtitle_1"
         app:layout_constraintBottom_toBottomOf="@id/advanced_search"
         app:layout_constraintStart_toStartOf="parent"
