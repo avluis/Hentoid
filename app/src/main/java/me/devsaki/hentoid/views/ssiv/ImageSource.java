@@ -87,10 +87,6 @@ public final class ImageSource {
      */
     @NonNull
     public static ImageSource asset(@NonNull String assetName) {
-        //noinspection ConstantConditions
-        if (assetName == null) {
-            throw new NullPointerException("Asset name must not be null");
-        }
         return uri(ASSET_SCHEME + assetName);
     }
 
@@ -103,10 +99,6 @@ public final class ImageSource {
      */
     @NonNull
     public static ImageSource uri(@NonNull String uri) {
-        //noinspection ConstantConditions
-        if (uri == null) {
-            throw new NullPointerException("Uri must not be null");
-        }
         if (!uri.contains("://")) {
             if (uri.startsWith("/")) {
                 uri = uri.substring(1);
@@ -124,10 +116,6 @@ public final class ImageSource {
      */
     @NonNull
     public static ImageSource uri(@NonNull Uri uri) {
-        //noinspection ConstantConditions
-        if (uri == null) {
-            throw new NullPointerException("Uri must not be null");
-        }
         return new ImageSource(uri);
     }
 
@@ -139,10 +127,6 @@ public final class ImageSource {
      */
     @NonNull
     public static ImageSource bitmap(@NonNull Bitmap bitmap) {
-        //noinspection ConstantConditions
-        if (bitmap == null) {
-            throw new NullPointerException("Bitmap must not be null");
-        }
         return new ImageSource(bitmap, false);
     }
 
@@ -156,10 +140,6 @@ public final class ImageSource {
      */
     @NonNull
     public static ImageSource cachedBitmap(@NonNull Bitmap bitmap) {
-        //noinspection ConstantConditions
-        if (bitmap == null) {
-            throw new NullPointerException("Bitmap must not be null");
-        }
         return new ImageSource(bitmap, true);
     }
 

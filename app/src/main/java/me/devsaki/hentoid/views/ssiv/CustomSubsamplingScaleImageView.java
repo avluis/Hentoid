@@ -477,11 +477,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param state         State to be restored. Nullable.
      */
     public final void setImage(@NonNull ImageSource imageSource, ImageSource previewSource, ImageViewState state) {
-        //noinspection ConstantConditions
-        if (imageSource == null) {
-            throw new NullPointerException("imageSource must not be null");
-        }
-
         reset(true);
         if (state != null) {
             restoreState(state);
@@ -641,6 +636,8 @@ public class CustomSubsamplingScaleImageView extends View {
                         isZooming = true;
                         quickScaleLastDistance = -1F;
                         quickScaleSCenter = viewToSourceCoord(vCenterStart);
+                        if (null == quickScaleSCenter) throw new IllegalStateException("vTranslate is null; aborting");
+
                         quickScaleVStart = new PointF(e.getX(), e.getY());
                         quickScaleVLastPoint = new PointF(quickScaleSCenter.x, quickScaleSCenter.y);
                         quickScaleMoved = false;
@@ -648,7 +645,10 @@ public class CustomSubsamplingScaleImageView extends View {
                         return false;
                     } else {
                         // Start double tap zoom animation.
-                        doubleTapZoom(viewToSourceCoord(new PointF(e.getX(), e.getY())), new PointF(e.getX(), e.getY()));
+                        PointF sCenter = viewToSourceCoord(new PointF(e.getX(), e.getY()));
+                        if (null == sCenter) throw new IllegalStateException("vTranslate is null; aborting");
+
+                        doubleTapZoom(sCenter, new PointF(e.getX(), e.getY()));
                         return true;
                     }
                 }
@@ -2469,10 +2469,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param regionDecoderClass The {@link ImageRegionDecoder} implementation to use.
      */
     public final void setRegionDecoderClass(@NonNull Class<? extends ImageRegionDecoder> regionDecoderClass) {
-        //noinspection ConstantConditions
-        if (regionDecoderClass == null) {
-            throw new IllegalArgumentException("Decoder class cannot be set to null");
-        }
         this.regionDecoderFactory = new CompatDecoderFactory<>(regionDecoderClass);
     }
 
@@ -2484,10 +2480,6 @@ public class CustomSubsamplingScaleImageView extends View {
      *                             instances.
      */
     public final void setRegionDecoderFactory(@NonNull DecoderFactory<? extends ImageRegionDecoder> regionDecoderFactory) {
-        //noinspection ConstantConditions
-        if (regionDecoderFactory == null) {
-            throw new IllegalArgumentException("Decoder factory cannot be set to null");
-        }
         this.regionDecoderFactory = regionDecoderFactory;
     }
 
@@ -2499,10 +2491,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param bitmapDecoderClass The {@link ImageDecoder} implementation to use.
      */
     public final void setBitmapDecoderClass(@NonNull Class<? extends ImageDecoder> bitmapDecoderClass) {
-        //noinspection ConstantConditions
-        if (bitmapDecoderClass == null) {
-            throw new IllegalArgumentException("Decoder class cannot be set to null");
-        }
         this.bitmapDecoderFactory = new CompatDecoderFactory<>(bitmapDecoderClass);
     }
 
@@ -2513,10 +2501,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param bitmapDecoderFactory The {@link DecoderFactory} implementation that produces {@link ImageDecoder} instances.
      */
     public final void setBitmapDecoderFactory(@NonNull DecoderFactory<? extends ImageDecoder> bitmapDecoderFactory) {
-        //noinspection ConstantConditions
-        if (bitmapDecoderFactory == null) {
-            throw new IllegalArgumentException("Decoder factory cannot be set to null");
-        }
         this.bitmapDecoderFactory = bitmapDecoderFactory;
     }
 
@@ -2957,10 +2941,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param executor an {@link Executor} for image loading.
      */
     public void setExecutor(@NonNull Executor executor) {
-        //noinspection ConstantConditions
-        if (executor == null) {
-            throw new NullPointerException("Executor must not be null");
-        }
         this.executor = executor;
     }
 
