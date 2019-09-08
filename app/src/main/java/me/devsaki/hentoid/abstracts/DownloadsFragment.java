@@ -706,6 +706,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
                     clearQuery();
+                    searchResultsClear.setVisibility(View.GONE);
                 }
 
                 return true;
