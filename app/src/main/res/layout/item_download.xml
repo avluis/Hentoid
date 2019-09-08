@@ -13,6 +13,7 @@
     app:cardElevation="6dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/maximized_item_download"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -112,6 +113,14 @@
             app:layout_constraintVertical_bias="1.0"
             tools:ignore="ContentDescription" />
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/minimized_item_download"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
         <ImageView
             android:id="@+id/ivCover2"
             android:layout_width="75dp"
@@ -136,29 +145,6 @@
             app:layout_constraintStart_toEndOf="@id/ivCover2"
             app:layout_constraintTop_toTopOf="@id/ivCover2" />
 
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/maximized_item_download"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:constraint_referenced_ids="ivSite,ivFavourite,ivCover,tvTitle,tvSeries,tvArtist,divider,tvTags"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="visible" />
-
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/minimized_item_download"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:constraint_referenced_ids="tvTitle2,ivCover2"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="gone" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
 </androidx.cardview.widget.CardView>
