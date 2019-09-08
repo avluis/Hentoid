@@ -700,9 +700,9 @@ public class CustomSubsamplingScaleImageView extends View {
                 width = sWidth();
                 height = sHeight();
             } else if (resizeHeight) {
-                height = (int) ((((double) sHeight() / (double) sWidth()) * width));
+                height = (int) (((double) sHeight() / (double) sWidth()) * width);
             } else if (resizeWidth) {
-                width = (int) ((((double) sWidth() / (double) sHeight()) * height));
+                width = (int) (((double) sWidth() / (double) sHeight()) * height);
             }
         }
         width = Math.max(width, getSuggestedMinimumWidth());
@@ -1149,10 +1149,10 @@ public class CustomSubsamplingScaleImageView extends View {
                                 canvas.drawRect(tile.vRect, debugLinePaint);
                             }
                         } else if (tile.loading && debug) {
-                            canvas.drawText("LOADING", (float)tile.vRect.left + px(5), (float)tile.vRect.top + px(35), debugTextPaint);
+                            canvas.drawText("LOADING", (float) tile.vRect.left + px(5), (float) tile.vRect.top + px(35), debugTextPaint);
                         }
                         if (tile.visible && debug) {
-                            canvas.drawText("ISS " + tile.sampleSize + " RECT " + tile.sRect.top + "," + tile.sRect.left + "," + tile.sRect.bottom + "," + tile.sRect.right, (float)tile.vRect.left + px(5), (float)tile.vRect.top + px(15), debugTextPaint);
+                            canvas.drawText("ISS " + tile.sampleSize + " RECT " + tile.sRect.top + "," + tile.sRect.left + "," + tile.sRect.bottom + "," + tile.sRect.right, (float) tile.vRect.left + px(5), (float) tile.vRect.top + px(15), debugTextPaint);
                         }
                     }
                 }
@@ -1928,14 +1928,12 @@ public class CustomSubsamplingScaleImageView extends View {
             try {
                 String[] columns = {MediaStore.Images.Media.ORIENTATION};
                 cursor = context.getContentResolver().query(Uri.parse(sourceUri), columns, null, null, null);
-                if (cursor != null) {
-                    if (cursor.moveToFirst()) {
-                        int orientation = cursor.getInt(0);
-                        if (VALID_ORIENTATIONS.contains(orientation) && orientation != ORIENTATION_USE_EXIF) {
-                            exifOrientation = orientation;
-                        } else {
-                            Timber.w(TAG, "Unsupported orientation: %s", orientation);
-                        }
+                if (cursor != null && cursor.moveToFirst()) {
+                    int orientation = cursor.getInt(0);
+                    if (VALID_ORIENTATIONS.contains(orientation) && orientation != ORIENTATION_USE_EXIF) {
+                        exifOrientation = orientation;
+                    } else {
+                        Timber.w(TAG, "Unsupported orientation: %s", orientation);
                     }
                 }
             } catch (Exception e) {
@@ -2725,7 +2723,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * next draw. This is triggered at the same time as {@link OnImageEventListener#onReady()} but
      * allows a subclass to receive this event without using a listener.
      */
-    @SuppressWarnings("EmptyMethod")
+    @SuppressWarnings({"EmptyMethod", "squid:S1186"})
     protected void onReady() {
 
     }
@@ -2743,7 +2741,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Called once when the full size image or its base layer tiles have been loaded.
      */
-    @SuppressWarnings("EmptyMethod")
+    @SuppressWarnings({"EmptyMethod", "squid:S1186"})
     protected void onImageLoaded() {
 
     }
@@ -3253,7 +3251,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * these events are triggered if the activity is paused, the image is swapped, or in other cases
      * where the view's internal state gets wiped or draw events stop.
      */
-    @SuppressWarnings({"EmptyMethod","squid:S1186"})
+    @SuppressWarnings({"EmptyMethod", "squid:S1186"})
     public interface OnAnimationEventListener {
 
         /**
@@ -3276,7 +3274,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Default implementation of {@link OnAnimationEventListener} for extension. This does nothing in any method.
      */
-    @SuppressWarnings({"EmptyMethod","squid:S1186"})
+    @SuppressWarnings({"EmptyMethod", "squid:S1186"})
     public static class DefaultOnAnimationEventListener implements OnAnimationEventListener {
 
         @Override
@@ -3296,7 +3294,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * An event listener, allowing subclasses and activities to be notified of significant events.
      */
-    @SuppressWarnings({"EmptyMethod","squid:S1186"})
+    @SuppressWarnings({"EmptyMethod", "squid:S1186"})
     public interface OnImageEventListener {
 
         /**
@@ -3355,7 +3353,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Default implementation of {@link OnImageEventListener} for extension. This does nothing in any method.
      */
-    @SuppressWarnings({"EmptyMethod","squid:S1186"})
+    @SuppressWarnings({"EmptyMethod", "squid:S1186"})
     public static class DefaultOnImageEventListener implements OnImageEventListener {
 
         @Override
@@ -3390,7 +3388,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * this listener will be called on the UI thread and may be called very frequently - your
      * implementation should return quickly.
      */
-    @SuppressWarnings({"EmptyMethod","squid:S1186"})
+    @SuppressWarnings({"EmptyMethod", "squid:S1186"})
     public interface OnStateChangedListener {
 
         /**
@@ -3415,7 +3413,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Default implementation of {@link OnStateChangedListener}. This does nothing in any method.
      */
-    @SuppressWarnings({"EmptyMethod","squid:S1186"})
+    @SuppressWarnings({"EmptyMethod", "squid:S1186"})
     public static class DefaultOnStateChangedListener implements OnStateChangedListener {
 
         @Override
