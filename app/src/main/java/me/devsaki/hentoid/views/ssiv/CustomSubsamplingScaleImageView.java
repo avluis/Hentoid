@@ -3253,7 +3253,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * these events are triggered if the activity is paused, the image is swapped, or in other cases
      * where the view's internal state gets wiped or draw events stop.
      */
-    @SuppressWarnings("EmptyMethod")
+    @SuppressWarnings({"EmptyMethod","squid:S1186"})
     public interface OnAnimationEventListener {
 
         /**
@@ -3276,6 +3276,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Default implementation of {@link OnAnimationEventListener} for extension. This does nothing in any method.
      */
+    @SuppressWarnings({"EmptyMethod","squid:S1186"})
     public static class DefaultOnAnimationEventListener implements OnAnimationEventListener {
 
         @Override
@@ -3295,7 +3296,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * An event listener, allowing subclasses and activities to be notified of significant events.
      */
-    @SuppressWarnings("EmptyMethod")
+    @SuppressWarnings({"EmptyMethod","squid:S1186"})
     public interface OnImageEventListener {
 
         /**
@@ -3354,6 +3355,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Default implementation of {@link OnImageEventListener} for extension. This does nothing in any method.
      */
+    @SuppressWarnings({"EmptyMethod","squid:S1186"})
     public static class DefaultOnImageEventListener implements OnImageEventListener {
 
         @Override
@@ -3388,7 +3390,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * this listener will be called on the UI thread and may be called very frequently - your
      * implementation should return quickly.
      */
-    @SuppressWarnings("EmptyMethod")
+    @SuppressWarnings({"EmptyMethod","squid:S1186"})
     public interface OnStateChangedListener {
 
         /**
@@ -3413,6 +3415,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Default implementation of {@link OnStateChangedListener}. This does nothing in any method.
      */
+    @SuppressWarnings({"EmptyMethod","squid:S1186"})
     public static class DefaultOnStateChangedListener implements OnStateChangedListener {
 
         @Override
