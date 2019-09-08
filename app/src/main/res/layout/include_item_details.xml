@@ -6,6 +6,10 @@
     android:layout_height="match_parent"
     tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
     tools:showIn="@layout/item_download">
+    <!-- This is the basic book card layout that is used in both item_download and item_queue
+         you can use tools:showIn="@layout/item_download" and tools:showIn="@layout/item_queue"
+         to have a reference in AS editor to their parent, but keep in mind that the actual way
+         they are being displayed is show in their parent only and not here-->
 
     <ImageView
         android:id="@+id/ivCover"

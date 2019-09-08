@@ -15,8 +15,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/maximized_item_download"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="200dp">
+        android:layout_height="wrap_content">
 
         <!-- Dummy UI element to be able to attach to the top in library mode -->
         <View
