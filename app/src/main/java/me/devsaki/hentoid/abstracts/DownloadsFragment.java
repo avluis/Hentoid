@@ -109,7 +109,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     // ======== UI ELEMENTS
 
     // Top tooltip appearing when a download has been completed
-    private LinearLayout newContentToolTip;
+    private TextView newContentToolTip;
     // "Search" button on top menu
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
@@ -118,8 +118,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     private MenuItem orderMenu;
     // Action view associated with search menu button
     private SearchView mainSearchView;
-    // Search pane that shows up on top when using search function
-    private View advancedSearchPane;
+    // TextView used as advanced search button
+    private TextView advancedSearchButton;
     // Layout containing the list of books
     private SwipeRefreshLayout refreshLayout;
     // List containing all books
@@ -132,8 +132,10 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     private TextView emptyText;
     // Bottom toolbar with page numbers
     protected LinearLayout pagerToolbar;
-    // Bar with CLEAR button that appears whenever a search filter is active
-    private ViewGroup filterBar;
+    // Bar with group that has the advancedSearchButton and its background View
+    private View advancedSearchBar;
+    // View with both the search result TextView and the CLEAR button that appears whenever a search filter is active
+    private View searchResultsClear;
     // Book count text on the filter bar
     private TextView filterBookCount;
     // CLEAR button on the filter bar
@@ -506,12 +508,13 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         newContentToolTip = rootView.findViewById(R.id.tooltip);
         refreshLayout = rootView.findViewById(R.id.swipe_container);
 
-        filterBar = rootView.findViewById(R.id.filter_bar);
+        advancedSearchBar = rootView.findViewById(R.id.advanced_search_base);
+        advancedSearchButton = rootView.findViewById(R.id.advanced_search);
+        advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
+
+        searchResultsClear = rootView.findViewById(R.id.search_results_control);
         filterBookCount = rootView.findViewById(R.id.filter_book_count);
         filterClearButton = rootView.findViewById(R.id.filter_clear);
-
-        advancedSearchPane = rootView.findViewById(R.id.advanced_search);
-        advancedSearchPane.setOnClickListener(v -> onAdvancedSearchClick());
     }
 
     protected void attachScrollListener() {
@@ -565,7 +568,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             setQuery("");
             mainSearchView.setQuery("", false);
             searchManager.clearSelectedSearchTags();
-            filterBar.setVisibility(View.GONE);
+            searchResultsClear.setVisibility(View.GONE);
             searchLibrary();
         });
 
@@ -651,7 +654,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                setSearchPaneVisibility(true);
+                advancedSearchBar.setVisibility(View.VISIBLE);
+                invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
                 if (!searchManager.getQuery().isEmpty())
@@ -667,7 +671,10 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                setSearchPaneVisibility(false);
+                if (!isSearchQueryActive()) {
+                    advancedSearchBar.setVisibility(View.GONE);
+                }
+                invalidateNextQueryTextChange = true;
                 return true;
             }
         });
@@ -709,7 +716,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         orderMenu.setIcon(getIconFromSortOrder(Preferences.getContentSortOrder()));
     }
 
-    private void onAdvancedSearchClick() {
+    private void onAdvancedSearchButtonClick() {
         Intent search = new Intent(this.getContext(), SearchActivity.class);
 
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
@@ -770,16 +777,6 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         searchLibrary();
 
         return true;
-    }
-
-    /**
-     * Toggles the visibility of the search pane
-     *
-     * @param visible True if search pane has to become visible; false if not
-     */
-    private void setSearchPaneVisibility(boolean visible) {
-        advancedSearchPane.setVisibility(visible ? View.VISIBLE : View.GONE);
-        invalidateNextQueryTextChange = true;
     }
 
     /**
@@ -884,7 +881,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     /**
      * Indicates whether a search query is active (using universal search or advanced search) or not
      *
-     * @return True if a search query is is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
+     * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
     private boolean isSearchQueryActive() {
         return (!searchManager.getQuery().isEmpty() || !searchManager.getTags().isEmpty());
@@ -990,10 +987,11 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             String textRes = res.getQuantityString(R.plurals.downloads_filter_book_count_plural, (int) totalSelectedContent, (int) totalSelectedContent);
 
             filterBookCount.setText(textRes);
-            filterBar.setVisibility(View.VISIBLE);
+            advancedSearchBar.setVisibility(View.VISIBLE);
+            searchResultsClear.setVisibility(View.VISIBLE);
             if (totalSelectedContent > 0 && searchMenu != null) searchMenu.collapseActionView();
         } else {
-            filterBar.setVisibility(View.GONE);
+            advancedSearchBar.setVisibility(View.GONE);
         }
 
         // User searches a book ID
