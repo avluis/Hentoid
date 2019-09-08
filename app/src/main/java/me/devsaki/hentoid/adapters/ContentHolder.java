@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.adapters;
 
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,11 +16,12 @@ import me.devsaki.hentoid.R;
  */
 class ContentHolder extends RecyclerView.ViewHolder {
 
+    final View baseLayout;
     final View fullLayout;
     final View miniLayout;
     final TextView tvTitle;
     final TextView tvTitle2;
-    final ImageView ivNew;
+    final View ivNew;
     final ImageView ivCover;
     final ImageView ivCover2;
     final TextView tvSeries;
@@ -32,11 +34,11 @@ class ContentHolder extends RecyclerView.ViewHolder {
 
     ContentHolder(final View itemView) {
         super(itemView);
-
-        fullLayout = itemView.findViewById(R.id.item);
-        miniLayout = itemView.findViewById(R.id.item_minimal);
+        baseLayout = itemView.findViewById(R.id.item);
+        fullLayout = itemView.findViewById(R.id.maximized_item_download);
+        miniLayout = itemView.findViewById(R.id.minimized_item_download);
         tvTitle = itemView.findViewById(R.id.tvTitle);
-        ivNew = itemView.findViewById(R.id.iconNew);
+        ivNew = itemView.findViewById(R.id.lineNew);
         tvTitle2 = itemView.findViewById(R.id.tvTitle2);
         ivCover = itemView.findViewById(R.id.ivCover);
         ivCover2 = itemView.findViewById(R.id.ivCover2);

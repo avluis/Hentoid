@@ -35,7 +35,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by neko on 11/05/2015.
@@ -70,7 +69,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             holder.tvSeries = v.findViewById(R.id.tvSeries);
             holder.tvArtist = v.findViewById(R.id.tvArtist);
             holder.tvTags = v.findViewById(R.id.tvTags);
-            holder.ivSource = v.findViewById(R.id.ivSource);
+            holder.ivSource = v.findViewById(R.id.ivSite);
 
             v.setTag(holder);
         } else {
