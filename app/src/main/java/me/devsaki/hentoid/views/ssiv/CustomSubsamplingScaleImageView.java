@@ -606,8 +606,8 @@ public class CustomSubsamplingScaleImageView extends View {
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
                 if (panEnabled && readySent && vTranslate != null && e1 != null && e2 != null && (Math.abs(e1.getX() - e2.getX()) > 50 || Math.abs(e1.getY() - e2.getY()) > 50) && (Math.abs(velocityX) > 500 || Math.abs(velocityY) > 500) && !isZooming) {
                     PointF vTranslateEnd = new PointF(vTranslate.x + (velocityX * 0.25f), vTranslate.y + (velocityY * 0.25f));
-                    float sCenterXEnd = ((getWidthInternal() / 2) - vTranslateEnd.x) / scale;
-                    float sCenterYEnd = ((getHeightInternal() / 2) - vTranslateEnd.y) / scale;
+                    float sCenterXEnd = ((getWidthInternal() / 2f) - vTranslateEnd.x) / scale;
+                    float sCenterYEnd = ((getHeightInternal() / 2f) - vTranslateEnd.y) / scale;
                     new AnimationBuilder(new PointF(sCenterXEnd, sCenterYEnd)).withEasing(EASE_OUT_QUAD).withPanLimited(false).withOrigin(ORIGIN_FLING).start();
                     return true;
                 }
@@ -845,12 +845,12 @@ public class CustomSubsamplingScaleImageView extends View {
                                 }
                             } else if (sRequestedCenter != null) {
                                 // With a center specified from code, zoom around that point.
-                                vTranslate.x = (getWidthInternal() / 2) - (scale * sRequestedCenter.x);
-                                vTranslate.y = (getHeightInternal() / 2) - (scale * sRequestedCenter.y);
+                                vTranslate.x = (getWidthInternal() / 2f) - (scale * sRequestedCenter.x);
+                                vTranslate.y = (getHeightInternal() / 2f) - (scale * sRequestedCenter.y);
                             } else {
                                 // With no requested center, scale around the image center.
-                                vTranslate.x = (getWidthInternal() / 2) - (scale * (sWidth() / 2));
-                                vTranslate.y = (getHeightInternal() / 2) - (scale * (sHeight() / 2));
+                                vTranslate.x = (getWidthInternal() / 2f) - (scale * (sWidth() / 2f));
+                                vTranslate.y = (getHeightInternal() / 2f) - (scale * (sHeight() / 2f));
                             }
 
                             fitToBounds(true);
@@ -896,12 +896,12 @@ public class CustomSubsamplingScaleImageView extends View {
                                 }
                             } else if (sRequestedCenter != null) {
                                 // With a center specified from code, zoom around that point.
-                                vTranslate.x = (getWidthInternal() / 2) - (scale * sRequestedCenter.x);
-                                vTranslate.y = (getHeightInternal() / 2) - (scale * sRequestedCenter.y);
+                                vTranslate.x = (getWidthInternal() / 2f) - (scale * sRequestedCenter.x);
+                                vTranslate.y = (getHeightInternal() / 2f) - (scale * sRequestedCenter.y);
                             } else {
                                 // With no requested center, scale around the image center.
-                                vTranslate.x = (getWidthInternal() / 2) - (scale * (sWidth() / 2));
-                                vTranslate.y = (getHeightInternal() / 2) - (scale * (sHeight() / 2));
+                                vTranslate.x = (getWidthInternal() / 2f) - (scale * (sWidth() / 2f));
+                                vTranslate.y = (getHeightInternal() / 2f) - (scale * (sHeight() / 2f));
                             }
                         }
 
@@ -1439,8 +1439,8 @@ public class CustomSubsamplingScaleImageView extends View {
             if (vTranslate == null) {
                 vTranslate = new PointF();
             }
-            vTranslate.x = (getWidthInternal() / 2) - (scale * sPendingCenter.x);
-            vTranslate.y = (getHeightInternal() / 2) - (scale * sPendingCenter.y);
+            vTranslate.x = (getWidthInternal() / 2f) - (scale * sPendingCenter.x);
+            vTranslate.y = (getHeightInternal() / 2f) - (scale * sPendingCenter.y);
             sPendingCenter = null;
             pendingScale = null;
             fitToBounds(true);
@@ -1510,8 +1510,8 @@ public class CustomSubsamplingScaleImageView extends View {
         float scaleHeight = scale * sHeight();
 
         if (panLimit == PAN_LIMIT_CENTER && isReady()) {
-            vTranslate.x = Math.max(vTranslate.x, getWidthInternal() / 2 - scaleWidth);
-            vTranslate.y = Math.max(vTranslate.y, getHeightInternal() / 2 - scaleHeight);
+            vTranslate.x = Math.max(vTranslate.x, getWidthInternal() / 2f - scaleWidth);
+            vTranslate.y = Math.max(vTranslate.y, getHeightInternal() / 2f - scaleHeight);
         } else if (center) {
             vTranslate.x = Math.max(vTranslate.x, getWidthInternal() - scaleWidth);
             vTranslate.y = Math.max(vTranslate.y, getHeightInternal() - scaleHeight);
@@ -2525,10 +2525,10 @@ public class CustomSubsamplingScaleImageView extends View {
         float scaleHeight = scale * sHeight();
 
         if (panLimit == PAN_LIMIT_CENTER) {
-            vTarget.top = Math.max(0, -(vTranslate.y - (getHeightInternal() / 2)));
-            vTarget.left = Math.max(0, -(vTranslate.x - (getWidthInternal() / 2)));
-            vTarget.bottom = Math.max(0, vTranslate.y - ((getHeightInternal() / 2) - scaleHeight));
-            vTarget.right = Math.max(0, vTranslate.x - ((getWidthInternal() / 2) - scaleWidth));
+            vTarget.top = Math.max(0, -(vTranslate.y - (getHeightInternal() / 2f)));
+            vTarget.left = Math.max(0, -(vTranslate.x - (getWidthInternal() / 2f)));
+            vTarget.bottom = Math.max(0, vTranslate.y - ((getHeightInternal() / 2f) - scaleHeight));
+            vTarget.right = Math.max(0, vTranslate.x - ((getWidthInternal() / 2f) - scaleWidth));
         } else if (panLimit == PAN_LIMIT_OUTSIDE) {
             vTarget.top = Math.max(0, -(vTranslate.y - getHeightInternal()));
             vTarget.left = Math.max(0, -(vTranslate.x - getWidthInternal()));
@@ -2796,8 +2796,7 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     @Nullable
     public final ImageViewState getState() {
-        if (vTranslate != null && sWidth > 0 && sHeight > 0) {
-            //noinspection ConstantConditions
+        if (vTranslate != null && sWidth > 0 && sHeight > 0 && getCenter() != null) {
             return new ImageViewState(getScale(), getCenter(), getOrientation());
         }
         return null;
@@ -2857,8 +2856,8 @@ public class CustomSubsamplingScaleImageView extends View {
     public final void setPanEnabled(boolean panEnabled) {
         this.panEnabled = panEnabled;
         if (!panEnabled && vTranslate != null) {
-            vTranslate.x = (getWidthInternal() / 2) - (scale * (sWidth() / 2));
-            vTranslate.y = (getHeightInternal() / 2) - (scale * (sHeight() / 2));
+            vTranslate.x = (getWidthInternal() / 2f) - (scale * (sWidth() / 2f));
+            vTranslate.y = (getHeightInternal() / 2f) - (scale * (sHeight() / 2f));
             if (isReady()) {
                 refreshRequiredTiles(true);
                 invalidate();
