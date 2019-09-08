@@ -105,7 +105,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="4dp"
-            android:src="@drawable/ic_item_error_outline"
+            android:src="@drawable/ic_exclamation"
             android:tint="@color/card_surface"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/ivSite"
