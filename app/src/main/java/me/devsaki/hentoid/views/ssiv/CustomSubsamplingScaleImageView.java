@@ -636,7 +636,8 @@ public class CustomSubsamplingScaleImageView extends View {
                         isZooming = true;
                         quickScaleLastDistance = -1F;
                         quickScaleSCenter = viewToSourceCoord(vCenterStart);
-                        if (null == quickScaleSCenter) throw new IllegalStateException("vTranslate is null; aborting");
+                        if (null == quickScaleSCenter)
+                            throw new IllegalStateException("vTranslate is null; aborting");
 
                         quickScaleVStart = new PointF(e.getX(), e.getY());
                         quickScaleVLastPoint = new PointF(quickScaleSCenter.x, quickScaleSCenter.y);
@@ -646,7 +647,8 @@ public class CustomSubsamplingScaleImageView extends View {
                     } else {
                         // Start double tap zoom animation.
                         PointF sCenter = viewToSourceCoord(new PointF(e.getX(), e.getY()));
-                        if (null == sCenter) throw new IllegalStateException("vTranslate is null; aborting");
+                        if (null == sCenter)
+                            throw new IllegalStateException("vTranslate is null; aborting");
 
                         doubleTapZoom(sCenter, new PointF(e.getX(), e.getY()));
                         return true;
@@ -1196,21 +1198,24 @@ public class CustomSubsamplingScaleImageView extends View {
             canvas.drawText("Scale: " + String.format(Locale.ENGLISH, "%.2f", scale) + " (" + String.format(Locale.ENGLISH, "%.2f", minScale()) + " - " + String.format(Locale.ENGLISH, "%.2f", maxScale) + ")", px(5), px(15), debugTextPaint);
             canvas.drawText("Translate: " + String.format(Locale.ENGLISH, "%.2f", vTranslate.x) + ":" + String.format(Locale.ENGLISH, "%.2f", vTranslate.y), px(5), px(30), debugTextPaint);
             PointF center = getCenter();
-            //noinspection ConstantConditions
-            canvas.drawText("Source center: " + String.format(Locale.ENGLISH, "%.2f", center.x) + ":" + String.format(Locale.ENGLISH, "%.2f", center.y), px(5), px(45), debugTextPaint);
+            if (null != center)
+                canvas.drawText("Source center: " + String.format(Locale.ENGLISH, "%.2f", center.x) + ":" + String.format(Locale.ENGLISH, "%.2f", center.y), px(5), px(45), debugTextPaint);
             if (anim != null) {
                 PointF vCenterStart = sourceToViewCoord(anim.sCenterStart);
                 PointF vCenterEndRequested = sourceToViewCoord(anim.sCenterEndRequested);
                 PointF vCenterEnd = sourceToViewCoord(anim.sCenterEnd);
-                //noinspection ConstantConditions
-                canvas.drawCircle(vCenterStart.x, vCenterStart.y, px(10), debugLinePaint);
-                debugLinePaint.setColor(Color.RED);
-                //noinspection ConstantConditions
-                canvas.drawCircle(vCenterEndRequested.x, vCenterEndRequested.y, px(20), debugLinePaint);
-                debugLinePaint.setColor(Color.BLUE);
-                //noinspection ConstantConditions
-                canvas.drawCircle(vCenterEnd.x, vCenterEnd.y, px(25), debugLinePaint);
-                debugLinePaint.setColor(Color.CYAN);
+                if (vCenterStart != null) {
+                    canvas.drawCircle(vCenterStart.x, vCenterStart.y, px(10), debugLinePaint);
+                    debugLinePaint.setColor(Color.RED);
+                }
+                if (vCenterEndRequested != null) {
+                    canvas.drawCircle(vCenterEndRequested.x, vCenterEndRequested.y, px(20), debugLinePaint);
+                    debugLinePaint.setColor(Color.BLUE);
+                }
+                if (vCenterEnd != null) {
+                    canvas.drawCircle(vCenterEnd.x, vCenterEnd.y, px(25), debugLinePaint);
+                    debugLinePaint.setColor(Color.CYAN);
+                }
                 canvas.drawCircle(getWidthInternal() / 2, getHeightInternal() / 2, px(30), debugLinePaint);
             }
             if (vCenterStart != null) {
