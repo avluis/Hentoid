@@ -1019,8 +1019,8 @@ public class CustomSubsamplingScaleImageView extends View {
                 sCenter.y = sRequestedCenter.y;
             } else {
                 // With no requested center, scale around the image center.
-                sCenter.x = sWidth() / 2;
-                sCenter.y = sHeight() / 2;
+                sCenter.x = sWidth() / 2f;
+                sCenter.y = sHeight() / 2f;
             }
         }
         float doubleTapZoomScale = Math.min(maxScale, CustomSubsamplingScaleImageView.this.doubleTapZoomScale);
@@ -1149,10 +1149,10 @@ public class CustomSubsamplingScaleImageView extends View {
                                 canvas.drawRect(tile.vRect, debugLinePaint);
                             }
                         } else if (tile.loading && debug) {
-                            canvas.drawText("LOADING", tile.vRect.left + px(5), tile.vRect.top + px(35), debugTextPaint);
+                            canvas.drawText("LOADING", (float)tile.vRect.left + px(5), (float)tile.vRect.top + px(35), debugTextPaint);
                         }
                         if (tile.visible && debug) {
-                            canvas.drawText("ISS " + tile.sampleSize + " RECT " + tile.sRect.top + "," + tile.sRect.left + "," + tile.sRect.bottom + "," + tile.sRect.right, tile.vRect.left + px(5), tile.vRect.top + px(15), debugTextPaint);
+                            canvas.drawText("ISS " + tile.sampleSize + " RECT " + tile.sRect.top + "," + tile.sRect.left + "," + tile.sRect.bottom + "," + tile.sRect.right, (float)tile.vRect.left + px(5), (float)tile.vRect.top + px(15), debugTextPaint);
                         }
                     }
                 }
@@ -1216,7 +1216,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     canvas.drawCircle(vCenterEnd.x, vCenterEnd.y, px(25), debugLinePaint);
                     debugLinePaint.setColor(Color.CYAN);
                 }
-                canvas.drawCircle(getWidthInternal() / 2, getHeightInternal() / 2, px(30), debugLinePaint);
+                canvas.drawCircle(getWidthInternal() / 2f, getHeightInternal() / 2f, px(30), debugLinePaint);
             }
             if (vCenterStart != null) {
                 debugLinePaint.setColor(Color.RED);
@@ -1564,7 +1564,7 @@ public class CustomSubsamplingScaleImageView extends View {
         scale = satTemp.scale;
         vTranslate.set(satTemp.vTranslate);
         if (init && minimumScaleType != SCALE_TYPE_START) {
-            vTranslate.set(vTranslateForSCenter(sWidth() / 2, sHeight() / 2, scale));
+            vTranslate.set(vTranslateForSCenter(sWidth() / 2f, sHeight() / 2f, scale));
         }
     }
 
@@ -2701,7 +2701,7 @@ public class CustomSubsamplingScaleImageView extends View {
         this.anim = null;
         this.pendingScale = limitedScale(0);
         if (isReady()) {
-            this.sPendingCenter = new PointF(sWidth() / 2, sHeight() / 2);
+            this.sPendingCenter = new PointF(sWidth() / 2f, sHeight() / 2f);
         } else {
             this.sPendingCenter = new PointF(0, 0);
         }
@@ -2796,8 +2796,9 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     @Nullable
     public final ImageViewState getState() {
-        if (vTranslate != null && sWidth > 0 && sHeight > 0 && getCenter() != null) {
-            return new ImageViewState(getScale(), getCenter(), getOrientation());
+        PointF center = getCenter();
+        if (vTranslate != null && sWidth > 0 && sHeight > 0 && center != null) {
+            return new ImageViewState(getScale(), center, getOrientation());
         }
         return null;
     }
