@@ -118,8 +118,6 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     private MenuItem orderMenu;
     // Action view associated with search menu button
     private SearchView mainSearchView;
-    // TextView used as advanced search button
-    private TextView advancedSearchButton;
     // Layout containing the list of books
     private SwipeRefreshLayout refreshLayout;
     // List containing all books
@@ -509,7 +507,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         refreshLayout = rootView.findViewById(R.id.swipe_container);
 
         advancedSearchBar = rootView.findViewById(R.id.advanced_search_base);
-        advancedSearchButton = rootView.findViewById(R.id.advanced_search);
+        // TextView used as advanced search button
+        TextView advancedSearchButton = rootView.findViewById(R.id.advanced_search);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
         searchResultsClear = rootView.findViewById(R.id.search_results_control);
