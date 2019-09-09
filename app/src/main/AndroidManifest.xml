@@ -224,7 +224,7 @@
                 <!-- Accepts URIs that begin with "https://hentai.cafe/" -->
                 <data
                     android:host="hentai.cafe"
-                    android:pathPrefix="/"
+                    android:pathPrefix="/hc.fyi/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
