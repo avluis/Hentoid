@@ -1,8 +1,9 @@
 package me.devsaki.hentoid.viewholders;
 
-import androidx.annotation.IntDef;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.IntDef;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

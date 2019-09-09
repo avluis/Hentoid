@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util.notification;
 
 import android.app.Service;
+
 import androidx.annotation.NonNull;
 
 public class ServiceNotificationManager extends NotificationManager {

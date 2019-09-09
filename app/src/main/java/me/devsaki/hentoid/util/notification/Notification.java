@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util.notification;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 /**

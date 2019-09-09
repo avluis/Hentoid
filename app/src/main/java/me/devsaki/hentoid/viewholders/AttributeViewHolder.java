@@ -1,8 +1,9 @@
 package me.devsaki.hentoid.viewholders;
 
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;

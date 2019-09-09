@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+
 import androidx.annotation.Nullable;
 
 import com.thin.downloadmanager.DownloadRequest;
@@ -14,8 +15,8 @@ import com.thin.downloadmanager.ThinDownloadManager;
 
 import java.io.File;
 
-import me.devsaki.hentoid.notification.update.UpdateInstallNotification;
 import me.devsaki.hentoid.notification.update.UpdateFailedNotification;
+import me.devsaki.hentoid.notification.update.UpdateInstallNotification;
 import me.devsaki.hentoid.notification.update.UpdateProgressNotification;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;

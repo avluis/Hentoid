@@ -1,8 +1,9 @@
 package me.devsaki.hentoid.activities.sources;
 
+import android.webkit.WebResourceResponse;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.webkit.WebResourceResponse;
 
 import java.util.Map;
 

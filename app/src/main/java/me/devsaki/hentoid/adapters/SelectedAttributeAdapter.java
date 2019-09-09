@@ -1,11 +1,12 @@
 package me.devsaki.hentoid.adapters;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.ListAdapter;
-import androidx.recyclerview.widget.DiffUtil;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;

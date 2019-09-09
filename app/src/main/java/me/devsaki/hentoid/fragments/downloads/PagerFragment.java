@@ -1,8 +1,9 @@
 package me.devsaki.hentoid.fragments.downloads;
 
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
