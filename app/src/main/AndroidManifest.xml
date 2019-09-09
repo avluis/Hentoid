@@ -195,7 +195,7 @@
                 <!-- Accepts URIs that begin with "http://www.tsumino.com/Book/Info" -->
                 <data
                     android:host="www.tsumino.com"
-                    android:pathPrefix="/Book/Info"
+                    android:pathPrefix="/entry/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -228,7 +228,7 @@
                 <!-- Accepts URIs that begin with "https://hentai.cafe/" -->
                 <data
                     android:host="hentai.cafe"
-                    android:pathPrefix="/"
+                    android:pathPrefix="/hc.fyi/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>

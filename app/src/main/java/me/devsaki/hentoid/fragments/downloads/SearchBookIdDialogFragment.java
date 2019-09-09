@@ -92,9 +92,9 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/g/" + id + "/";
             case HENTAICAFE:
-                return site.getUrl() + "/?p=" + id;
+                return site.getUrl() + "/hc.fyi/" + id;
             case TSUMINO:
-                return site.getUrl() + "/Book/Info/" + id + "/";
+                return site.getUrl() + "/entry/" + id;
             case NEXUS:
                 return site.getUrl() + "/view/" + id;
             default:

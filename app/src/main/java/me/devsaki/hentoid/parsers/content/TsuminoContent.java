@@ -46,8 +46,9 @@ public class TsuminoContent implements ContentParser {
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
         if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(theUrl.replace("/Read/View", ""));
-        result.setCoverImageUrl(TSUMINO.getUrl() + coverUrl);
+        result.setUrl(theUrl.replace("/Read/Index", ""));
+        if (!coverUrl.startsWith("http")) coverUrl = TSUMINO.getUrl() + coverUrl;
+        result.setCoverImageUrl(coverUrl);
         result.setTitle(title);
         result.setQtyPages((pages.length() > 0) ? Integer.parseInt(pages) : 0);
 
