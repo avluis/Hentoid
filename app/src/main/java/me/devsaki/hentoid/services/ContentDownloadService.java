@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.SparseIntArray;
 import android.webkit.MimeTypeMap;
 
@@ -20,6 +21,7 @@ import com.android.volley.Request;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -34,6 +36,7 @@ import java.security.InvalidParameterException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -81,6 +84,10 @@ public class ContentDownloadService extends IntentService {
 
     private RequestQueueManager<Object> requestQueueManager = null;
 
+    // TODO remove when issue #349 fixed
+    private long creationTicks;
+
+
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
     }
@@ -90,6 +97,7 @@ public class ContentDownloadService extends IntentService {
     // if the entire queue is paused (=service destroyed), then resumed (service re-created)
     @Override
     public void onCreate() {
+        creationTicks = SystemClock.elapsedRealtime();
         super.onCreate();
         notificationManager = new ServiceNotificationManager(this, 1);
         notificationManager.cancel();
@@ -103,6 +111,10 @@ public class ContentDownloadService extends IntentService {
         db = ObjectBoxDB.getInstance(this);
 
         Timber.d("Download service created");
+
+        // TODO remove when issue #349 fixed
+        double lifespan = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
+        Crashlytics.log("Download service creation time (s) : " + String.format(Locale.US, "%.2f", lifespan));
     }
 
     @Override
@@ -110,6 +122,11 @@ public class ContentDownloadService extends IntentService {
         EventBus.getDefault().unregister(this);
 
         Timber.d("Download service destroyed");
+
+        // TODO remove when issue #349 fixed
+        double lifespan = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
+        Crashlytics.log("Download service lifespan (s) : " + String.format(Locale.US, "%.2f", lifespan));
+
         super.onDestroy();
     }
 
