@@ -191,7 +191,7 @@
                 <!-- Accepts URIs that begin with "http://www.tsumino.com/Book/Info" -->
                 <data
                     android:host="www.tsumino.com"
-                    android:pathPrefix="/Book/Info"
+                    android:pathPrefix="/entry/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>

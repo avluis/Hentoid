@@ -93,7 +93,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             case HENTAICAFE:
                 return site.getUrl() + "/hc.fyi/" + id;
             case TSUMINO:
-                return site.getUrl() + "/Book/Info/" + id + "/";
+                return site.getUrl() + "/entry/" + id;
             case NEXUS:
                 return site.getUrl() + "/view/" + id;
             default:
