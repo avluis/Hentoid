@@ -70,32 +70,24 @@
         android:paddingTop="8dp"
         android:paddingStart="16dp"
         android:text="@string/kitkat_dialog_private"
-        app:layout_constraintLeft_toRightOf="@id/kitkat_root_folder_private_img"
+        app:layout_constraintStart_toEndOf="@id/kitkat_root_folder_private_img"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/kitkat_root_folder_radioGroup"
         android:visibility="invisible"
         tools:ignore="RtlSymmetry" />
 
-    <TextView
-        android:id="@+id/kitkat_root_folder_subfolder_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:text="@string/kitkat_dialog_subfolder"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/kitkat_root_folder_private_txt" />
-
     <EditText
         android:id="@+id/kitkat_root_folder_subfolder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:ems="12"
+        android:ems="18"
         android:inputType="textUri"
         android:text=""
-        app:layout_constraintStart_toEndOf="@id/kitkat_root_folder_subfolder_txt"
-        app:layout_constraintTop_toTopOf="@id/kitkat_root_folder_subfolder_txt"
-        app:layout_constraintBottom_toBottomOf="@id/kitkat_root_folder_subfolder_txt"
-        />
+        android:hint="@string/kitkat_dialog_subfolder"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/kitkat_root_folder_private_txt"
+        android:importantForAutofill="no"
+        tools:ignore="LabelFor" />
 
     <TextView
         android:id="@+id/kitkat_root_folder_ok"

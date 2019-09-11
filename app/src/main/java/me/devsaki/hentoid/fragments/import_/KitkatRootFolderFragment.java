@@ -45,7 +45,6 @@ public class KitkatRootFolderFragment extends DialogFragment {
     private View publicTxt;
     private View privateImg;
     private View privateTxt;
-    private View subfolderTxt;
 
 
     public static void invoke(FragmentManager fragmentManager) {
@@ -73,7 +72,6 @@ public class KitkatRootFolderFragment extends DialogFragment {
         publicTxt = requireViewById(view, R.id.kitkat_root_folder_public_txt);
         privateImg = requireViewById(view, R.id.kitkat_root_folder_private_img);
         privateTxt = requireViewById(view, R.id.kitkat_root_folder_private_txt);
-        subfolderTxt = requireViewById(view, R.id.kitkat_root_folder_subfolder_txt);
         subfolderEdit = requireViewById(view, R.id.kitkat_root_folder_subfolder);
 
 
@@ -134,13 +132,11 @@ public class KitkatRootFolderFragment extends DialogFragment {
             privateImg.setVisibility(View.INVISIBLE);
             privateTxt.setVisibility(View.INVISIBLE);
             publicTxt.setVisibility(View.VISIBLE);
-            subfolderTxt.setVisibility(View.VISIBLE);
             subfolderEdit.setVisibility(View.VISIBLE);
         } else { // Private external root
             publicTxt.setVisibility(View.GONE);
             privateImg.setVisibility(View.VISIBLE);
             privateTxt.setVisibility(View.VISIBLE);
-            subfolderTxt.setVisibility(View.GONE);
             subfolderEdit.setVisibility(View.GONE);
         }
     }
