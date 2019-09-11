@@ -73,6 +73,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
@@ -258,6 +259,13 @@ public class ContentDownloadService extends IntentService {
             } catch (LimitReachedException lre) {
                 Timber.w(lre, "The bandwidth limit has been reached while parsing %s. Aborting download.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Image list", lre.getMessage());
+                hasError = true;
+            } catch (InterruptedException ie) {
+                Timber.i(ie, "Preparation of %s interrupted", content.getTitle());
+                // not an error
+            } catch (EmptyResultException ere) {
+                Timber.w(ere, "No images have been found while parsing %s. Aborting download.", content.getTitle());
+                logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", "No images have been found");
                 hasError = true;
             } catch (Exception e) {
                 Timber.w(e, "An exception has occurred while parsing %s. Aborting download.", content.getTitle());
@@ -500,8 +508,7 @@ public class ContentDownloadService extends IntentService {
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
 
-        if (imgs.isEmpty())
-            throw new Exception("An empty image list has been found while parsing " + content.getGalleryUrl());
+        if (imgs.isEmpty()) throw new EmptyResultException();
 
         for (ImageFile img : imgs) img.setStatus(StatusContent.SAVED);
         return imgs;

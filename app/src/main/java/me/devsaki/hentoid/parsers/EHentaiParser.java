@@ -2,6 +2,8 @@ package me.devsaki.hentoid.parsers;
 
 import android.util.Pair;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -17,9 +19,11 @@ import javax.annotation.Nullable;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 
@@ -27,8 +31,12 @@ public class EHentaiParser implements ImageListParser {
 
     private final ParseProgress progress = new ParseProgress();
 
+    private boolean processHalted = false;
+
 
     public List<ImageFile> parseImageList(Content content) throws Exception {
+        EventBus.getDefault().register(this);
+
         List<ImageFile> result = new ArrayList<>();
         boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
         Map<String, String> downloadParams = new HashMap<>();
@@ -62,7 +70,7 @@ public class EHentaiParser implements ImageListParser {
             fetchPageUrls(doc, pageUrls);
 
             if (nbGalleryPages > 1) {
-                for (int i = 1; i < nbGalleryPages; i++) {
+                for (int i = 1; i < nbGalleryPages && !processHalted; i++) {
                     doc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent);
                     if (doc != null) fetchPageUrls(doc, pageUrls);
                     progress.progressPlus();
@@ -74,13 +82,15 @@ public class EHentaiParser implements ImageListParser {
             //    - grab the alternate URL of the "Click here if the image fails loading" link
             ImageFile img;
             for (String pageUrl : pageUrls) {
+                if (processHalted) break;
                 doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
                 if (doc != null) {
                     // Displayed image
                     String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
                     if (!imageUrl.isEmpty()) {
                         // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
-                        if (imageUrl.contains("/509.gif")) throw new LimitReachedException("Bandwidth limit reached");
+                        if (imageUrl.contains("/509.gif"))
+                            throw new LimitReachedException("Bandwidth limit reached");
                         img = ParseHelper.urlToImageFile(imageUrl, order++);
                         result.add(img);
 
@@ -112,6 +122,10 @@ public class EHentaiParser implements ImageListParser {
         }
         progress.progressComplete();
 
+        // If the process has been halted manually, the result is incomplete and should not be returned as is
+        if (processHalted) throw new InterruptedException();
+
+        EventBus.getDefault().unregister(this);
         return result;
     }
 
@@ -123,7 +137,8 @@ public class EHentaiParser implements ImageListParser {
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
-            if (imageUrl.contains("/509.gif")) throw new LimitReachedException("Bandwidth limit reached");
+            if (imageUrl.contains("/509.gif"))
+                throw new LimitReachedException("Bandwidth limit reached");
             if (!imageUrl.isEmpty()) return ParseHelper.urlToImageFile(imageUrl, order);
         }
         return null;
@@ -146,4 +161,21 @@ public class EHentaiParser implements ImageListParser {
         return "";
     }
 
+    /**
+     * Download event handler called by the event bus
+     *
+     * @param event Download event
+     */
+    @Subscribe
+    public void onDownloadEvent(DownloadEvent event) {
+        switch (event.eventType) {
+            case DownloadEvent.EV_PAUSE:
+            case DownloadEvent.EV_CANCEL:
+            case DownloadEvent.EV_SKIP:
+                processHalted = true;
+                break;
+            default:
+                // Other events aren't handled here
+        }
+    }
 }
