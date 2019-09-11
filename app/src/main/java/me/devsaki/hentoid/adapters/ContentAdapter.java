@@ -733,10 +733,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void deleteItems(final List<Content> contents) {
-        // Logging -- TODO remove when "no content found" issue is resolved
-        StringBuilder sb = new StringBuilder();
-        for (Content c : contents) sb.append(c.getId()).append(",");
-
         for (Content c : contents) {
             // Flag it to make it unselectable
             c.setIsBeingDeleted(true);
