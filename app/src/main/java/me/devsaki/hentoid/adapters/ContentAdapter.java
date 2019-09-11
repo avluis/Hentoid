@@ -33,6 +33,7 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.activities.QueueActivity;
@@ -757,17 +758,22 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private Content deleteContent(final Content content) throws ContentNotRemovedException {
-        // Check if given content still exists in DB
-        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        Content theContent = db.selectContentById(content.getId());
+        try {
+            // Check if given content still exists in DB
+            ObjectBoxDB db = ObjectBoxDB.getInstance(HentoidApp.getAppContext());
+            Content theContent = db.selectContentById(content.getId());
 
-        if (theContent != null) {
-            ContentHelper.removeContent(content);
-            db.deleteContent(content);
-            Timber.d("Removed item: %s from db and file system.", content.getTitle());
-            return content;
+            if (theContent != null) {
+                ContentHelper.removeContent(content);
+                db.deleteContent(content);
+                Timber.d("Removed item: %s from db and file system.", content.getTitle());
+                return content;
+            }
+            throw new ContentNotRemovedException(content, "ContentId " + content.getId() + " does not refer to a valid content");
+        } catch (Exception e) {
+            Timber.e(e, "Error when trying to delete %s", content.getId());
+            throw new ContentNotRemovedException(content, "Error when trying to delete " + content.getId() + " : " + e.getMessage());
         }
-        throw new ContentNotRemovedException(content, "ContentId " + content.getId() + " does not refer to a valid content");
     }
 
     private void onContentRemoveFail(Throwable t) {
