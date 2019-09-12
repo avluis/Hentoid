@@ -9,7 +9,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 public class DummyParser implements ImageListParser {
     @Override
     public List<ImageFile> parseImageList(Content content) {
-        return Collections.emptyList();
+        return content.getImageFiles();
     }
 
     @Override
