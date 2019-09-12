@@ -244,6 +244,12 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
     private void processContent(Content theContent) {
         currentContentIndex = contentIds.indexOf(theContent.getId());
+
+        if (-1 == currentContentIndex) {
+            Timber.w("Content index %s not found in results", theContent.getId());
+            currentContentIndex = 0;
+        }
+
         theContent.setFirst(0 == currentContentIndex);
         theContent.setLast(currentContentIndex == contentIds.size() - 1);
         content.setValue(theContent);
