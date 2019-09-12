@@ -17,7 +17,7 @@ public abstract class Consts {
     public static final String JSON_FILE_NAME = "content.json";
     public static final String JSON_FILE_NAME_V2 = "contentV2.json";
 
-    public static final String USER_AGENT_NEUTRAL = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
+    public static final String USER_AGENT_NEUTRAL = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36";
 
     public static final String USER_AGENT = USER_AGENT_NEUTRAL + " Hentoid/v" + BuildConfig.VERSION_NAME;
 
