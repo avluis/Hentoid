@@ -464,7 +464,7 @@ public class Content implements Serializable {
     }
 
     public Content setImageFiles(List<ImageFile> imageFiles) {
-        if (imageFiles != null) {
+        if (imageFiles != null && !imageFiles.equals(this.imageFiles)) {
             this.imageFiles.clear();
             this.imageFiles.addAll(imageFiles);
         }
