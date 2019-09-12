@@ -115,6 +115,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/minimized_item_download"
+        android:background="@drawable/row_item_selector"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:visibility="gone">
