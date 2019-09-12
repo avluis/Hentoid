@@ -101,10 +101,6 @@ public class ContentDownloadService extends IntentService {
     private long creationTicks;
 
 
-    // TODO remove when issue #349 fixed
-    private long creationTicks;
-
-
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
     }
