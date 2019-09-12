@@ -149,7 +149,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_download, parent, false);
         ContentHolder holder = new ContentHolder(view);
-        Timber.i(">CreateViewHolder %ss", (SystemClock.elapsedRealtime() - clicks) / 1000.0);
+//        Timber.i(">CreateViewHolder %ss", (SystemClock.elapsedRealtime() - clicks) / 1000.0);
         return holder;
     }
 
@@ -173,7 +173,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         attachTags(holder, content);
         attachButtons(holder, content);
         attachOnClickListeners(holder, content, pos);
-        Timber.i(">BindViewHolder[%s] %ss", pos, (SystemClock.elapsedRealtime() - clicks) / 1000.0);
+//        Timber.i(">BindViewHolder[%s] %ss", pos, (SystemClock.elapsedRealtime() - clicks) / 1000.0);
     }
 
     @Override
