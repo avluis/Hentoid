@@ -8,12 +8,13 @@
     android:layout_marginBottom="@dimen/default_cardview_margin"
     android:clickable="true"
     android:focusable="true"
-    app:cardBackgroundColor="@color/card_surface"
+    app:cardBackgroundColor="@android:color/transparent"
     app:cardCornerRadius="4dp"
     app:cardElevation="6dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/maximized_item_download"
+        android:background="@drawable/row_item_selector"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
