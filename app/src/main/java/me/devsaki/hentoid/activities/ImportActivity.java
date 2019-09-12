@@ -6,34 +6,27 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.UriPermission;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.DocumentsContract;
-import android.text.Editable;
-import android.text.InputType;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.documentfile.provider.DocumentFile;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -41,18 +34,14 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
-import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
-import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
-import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
-import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
-import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
-import me.devsaki.hentoid.dirpicker.ui.DirChooserFragment;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.fragments.import_.KitkatRootFolderFragment;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
@@ -60,14 +49,15 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
+import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
 
 /**
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
  */
-public class ImportActivity extends BaseActivity {
+public class ImportActivity extends BaseActivity implements KitkatRootFolderFragment.Parent {
 
     // Instance state keys
     private static final String CURRENT_DIR = "currentDir";
@@ -80,7 +70,6 @@ public class ImportActivity extends BaseActivity {
 
     private File currentRootDir;
     private File prevRootDir;
-    private DirChooserFragment dirChooserFragment;      // Dialog to pick the target directory
     private boolean restartOnExit = false;              // True if app has to be restarted when exiting the activity
     private boolean calledByPrefs = false;              // True if activity has been called by PrefsActivity
     private boolean useDefaultFolder = false;           // True if activity has been called by IntroActivity and user has selected default storage
@@ -90,8 +79,8 @@ public class ImportActivity extends BaseActivity {
     private boolean isCleanNoImages = false;            // True if user has asked for the cleanup of folders with no images
     private boolean isCleanUnreadable = false;          // True if user has asked for the cleanup of folders with unreadable JSONs
 
+    private ProgressDialog progressDialog; // TODO - to replace because it's deprecated
 
-    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +120,17 @@ public class ImportActivity extends BaseActivity {
         EventBus.getDefault().register(this);
 
         prepImport(savedInstanceState);
+    }
+
+    @Override
+    public void onBackPressed() {
+        exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 
     private void prepImport(Bundle savedState) {
@@ -244,239 +244,30 @@ public class ImportActivity extends BaseActivity {
     }
 
     // Present Directory Picker
-    private void pickDownloadDirectory(File dir) {
-        File downloadDir = dir;
+    private void pickDownloadDirectory(@NonNull final File dir) {
         if (FileHelper.isOnExtSdCard(dir) && !FileHelper.isWritable(dir)) {
             Timber.d("Inaccessible: moving back to default directory.");
-            downloadDir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
+            currentRootDir = new File(Environment.getExternalStorageDirectory() +
                     File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator);
         }
         if (useDefaultFolder) {
             prevRootDir = currentRootDir;
             initImport();
         } else {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            dirChooserFragment = DirChooserFragment.newInstance(downloadDir);
-            dirChooserFragment.show(transaction, "DirectoryChooserFragment");
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
-    }
-
-    @Override
-    protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-    }
-
-
-    @Subscribe
-    public void onDirCancel(OnDirCancelEvent event) {
-        onBackPressed();
-    }
-
-    @Subscribe
-    public void onDirChosen(OnDirChosenEvent event) {
-        File chosenDir = event.getDir();
-        prevRootDir = currentRootDir;
-
-        if (!currentRootDir.equals(chosenDir)) {
-            restartOnExit = true;
-            currentRootDir = chosenDir;
-        }
-        dirChooserFragment.dismiss();
-        initImport();
-    }
-
-    @Subscribe
-    public void onOpFailed(OpFailedEvent event) {
-        dirChooserFragment.dismiss();
-        prepImport(null);
-    }
-
-    @Subscribe
-    public void onManualInput(OnTextViewClickedEvent event) {
-        if (event.isLongClick()) {
-            Timber.d("Resetting directory back to default.");
-            currentRootDir = new File(Environment.getExternalStorageDirectory() +
-                    File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator);
-            dirChooserFragment.dismiss();
-            pickDownloadDirectory(currentRootDir);
-        } else {
-            final EditText text = new EditText(this);
-            int paddingPx = Helper.dpToPixel(this, 16);
-            text.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-            text.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
-            text.setText(currentRootDir.toString());
-
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.dir_path)
-                    .setMessage(R.string.dir_path_inst)
-                    .setView(text)
-                    .setPositiveButton(android.R.string.ok,
-                            (dialog, which) -> {
-                                Editable value = text.getText();
-                                processManualInput(value);
-                            })
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .show();
+            openFolderPicker();
         }
     }
 
     private void initImport() {
         Timber.d("Clearing SAF");
         FileHelper.clearUri();
-
-        if (Build.VERSION.SDK_INT >= KITKAT) {
-            revokePermission();
-        }
+        revokePermission();
 
         Timber.d("Storage Path: %s", currentRootDir);
 
         importFolder(getExistingHentoidDirFrom(currentRootDir));
     }
 
-    private void processManualInput(@NonNull Editable value) {
-        String path = String.valueOf(value);
-        if (!("").equals(path)) {
-            File file = new File(path);
-            if (file.exists() && file.isDirectory() && file.canWrite()) {
-                Timber.d("Got a valid directory!");
-                currentRootDir = file;
-                dirChooserFragment.dismiss();
-                pickDownloadDirectory(currentRootDir);
-            } else {
-                dirChooserFragment.dismiss();
-                prepImport(null);
-            }
-        }
-        Timber.d(path);
-    }
-
-    @Subscribe
-    public void onSAFRequest(OnSAFRequestEvent event) {
-        String[] externalDirs = FileHelper.getExtSdCardPaths();
-        List<File> writeableDirs = new ArrayList<>();
-        if (externalDirs.length > 0) {
-            Timber.d("External Directory(ies): %s", Arrays.toString(externalDirs));
-            for (String externalDir : externalDirs) {
-                File file = new File(externalDir);
-                Timber.d("Is %s write-able? %s", externalDir, FileHelper.isWritable(file));
-                if (FileHelper.isWritable(file)) {
-                    writeableDirs.add(file);
-                }
-            }
-        }
-        resolveDirs(externalDirs, writeableDirs);
-    }
-
-    private void resolveDirs(String[] externalDirs, List<File> writeableDirs) {
-        if (writeableDirs.isEmpty()) {
-            Timber.d("Received no write-able external directories.");
-            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-                if (externalDirs.length > 0) {
-                    ToastUtil.toast("Attempting SAF");
-                    requestWritePermission();
-                } else {
-                    noSDSupport();
-                }
-            } else {
-                noSDSupport();
-            }
-        } else {
-            if (writeableDirs.size() == 1) {
-                // If we get exactly one write-able path returned, attempt to make use of it
-                String sdDir = writeableDirs.get(0) + File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator;
-                if (!FileHelper.isOnExtSdCard(writeableDirs.get(0)) && FileHelper.checkAndSetRootFolder(sdDir)) { // TODO - dirChooserFragment can't actually browse SD card : to fix later ?
-                    Timber.d("Got access to SD Card.");
-                    currentRootDir = new File(sdDir);
-                    dirChooserFragment.dismiss();
-                    pickDownloadDirectory(currentRootDir);
-                } else {
-                    if (Build.VERSION.SDK_INT == KITKAT) {
-                        Timber.d("Unable to write to SD Card.");
-                        showKitkatRationale();
-                    } else if (Build.VERSION.SDK_INT >= LOLLIPOP) { // Browse the SD card using the device's SAF dialog
-                        PackageManager manager = this.getPackageManager();
-                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                        List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
-                        if (handlers != null && !handlers.isEmpty()) {
-                            Timber.d("Device should be able to handle the SAF request");
-                            ToastUtil.toast("Attempting SAF");
-                            requestWritePermission();
-                        } else {
-                            Timber.d("No apps can handle the requested intent.");
-                        }
-                    } else {
-                        noSDSupport();
-                    }
-                }
-            } else {
-                Timber.d("We got a fancy device here.");
-                Timber.d("Available storage locations: %s", writeableDirs);
-                noSDSupport();
-            }
-        }
-    }
-
-    private void showKitkatRationale() {
-        new AlertDialog.Builder(this)
-                .setMessage(R.string.kitkat_rationale)
-                .setTitle("Error!")
-                .setPositiveButton(android.R.string.ok, null)
-                .show();
-    }
-
-    private void noSDSupport() {
-        Timber.d("No write-able directories :(");
-        ToastUtil.toast(R.string.no_sd_support);
-    }
-
-    private void attachInstructionsImage(@NotNull ImageView instructionsImage) {
-        // A list of known devices can be used here to present instructions relevant to that device
-        instructionsImage.setImageDrawable(ContextCompat.getDrawable(this,
-                R.drawable.bg_sd_instructions));
-    }
-
-    @RequiresApi(api = LOLLIPOP)
-    private void requestWritePermission() {
-        runOnUiThread(() -> {
-            ImageView instructionsImage = new ImageView(this);
-            attachInstructionsImage(instructionsImage);
-
-            AlertDialog.Builder builder =
-                    new AlertDialog.Builder(this)
-                            .setTitle("Requesting Write Permissions")
-                            .setView(instructionsImage)
-                            .setPositiveButton(android.R.string.ok,
-                                    (dialogInterface, i) -> {
-                                        dialogInterface.dismiss();
-                                        newSAFIntent();
-                                    });
-            final AlertDialog dialog = builder.create();
-            instructionsImage.setOnClickListener(v -> {
-                dialog.dismiss();
-                newSAFIntent();
-            });
-            dialog.show();
-        });
-    }
-
-    @RequiresApi(api = LOLLIPOP)
-    private void newSAFIntent() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
-        }
-        // http://stackoverflow.com/a/31334967/1615876
-        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-        startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
-    }
-
-    @RequiresApi(api = KITKAT)
     private void revokePermission() {
         for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
             getContentResolver().releasePersistableUriPermission(p.getUri(),
@@ -489,62 +280,126 @@ public class ImportActivity extends BaseActivity {
         }
     }
 
+    private void openFolderPicker() {
+        // Run SAF directory picker for Lollipop and above
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
+            }
+            // http://stackoverflow.com/a/31334967/1615876
+            intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
 
-    /*
-        Return from SAF system dialog
+            // Start the SAF at the specified location
+            if (Build.VERSION.SDK_INT >= O && !Preferences.getSdStorageUri().isEmpty()) {
+                DocumentFile file = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getSdStorageUri()));
+                if (file != null)
+                    intent.putExtra(EXTRA_INITIAL_URI, file.getUri());
+            }
 
-        NB : Right now, this method _assumes_ the selected folder is on the first SD card
-        => Even if SAF actually selects internal phone memory or another SD card / an external USB storage device, it won't be processed properly
-     */
-    @RequiresApi(api = KITKAT)
+            startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
+        } else { // Kitkat : display the specific dialog for kitkat
+            KitkatRootFolderFragment.invoke(getSupportFragmentManager());
+        }
+    }
+
+    // Return from SAF picker
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Return from the SD card directory chooser
+        // Return from the SAF picker
         if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) { // TODO - what happens when resultCode is _not_ RESULT_OK ?
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
-            if (treeUri != null && treeUri.getPath() != null) {
-                // Persist selected folder URI in shared preferences
-                // NB : calling saveUri populates the preference used by FileHelper.isSAF, which indicates the library storage is on an SD card / an external USB storage device
-                // => this should be managed if SAF dialog is used to select folders on the internal phone memory
-                FileHelper.saveUri(treeUri);
-
-                // Persist access permissions
-                getContentResolver().takePersistableUriPermission(treeUri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-
-                dirChooserFragment.dismiss();
-
-                if (FileHelper.getExtSdCardPaths().length > 0) {
-                    String[] paths = FileHelper.getExtSdCardPaths();
-                    String[] uriContents = treeUri.getPath().split(":");
-                    String folderName = (uriContents.length > 1) ? uriContents[1] : "";
-                    String folderPath = paths[0] + File.separatorChar + folderName;
-                    // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
-                    if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)) {
-                        // Look for a Hentoid folder inside the selected folder
-                        if (!folderPath.endsWith(File.separator)) folderPath += File.separator;
-                        File folder = new File(folderPath);
-                        File targetFolder = getExistingHentoidDirFrom(folder);
-
-                        // If not, create one
-                        if (targetFolder.getAbsolutePath().equals(folder.getAbsolutePath()))
-                            targetFolder = new File(targetFolder, Consts.DEFAULT_LOCAL_DIRECTORY);
-                        folderPath = targetFolder.getAbsolutePath();
-                    }
-
-                    if (!folderPath.endsWith(File.separator)) folderPath += File.separator;
-                    File folder = new File(folderPath);
-
-                    Timber.d("Directory created successfully: %s", FileHelper.createDirectory(folder));
-                    importFolder(folder);
-                }
-            }
+            if (treeUri != null) onSelectSAFRootFolder(treeUri);
         }
     }
 
+    // Return from Kitkat picker
+    public void onSelectKitKatRootFolder(@NonNull File targetFolder) {
+        finalizeSelectRootFolder(targetFolder);
+    }
+
+    // Return from Kitkat picker
+    public void onSelectSAFRootFolder(@NonNull Uri treeUri) {
+        String treePath = treeUri.getPath();
+
+        if (null == treePath) {
+            Timber.w("treePath is null");
+            return;
+        }
+
+        int treePathSeparator = treePath.indexOf(':');
+        String folderName = treePath.substring(treePathSeparator + 1);
+
+        // Persist access permissions
+        getContentResolver().takePersistableUriPermission(treeUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+//                String folderPath = null;
+        File selectedFolder = null;
+        // Is the selected folder on a removable media ?
+        String[] removableMediaFolderRoots = FileHelper.getExtSdCardPaths();
+        for (String s : removableMediaFolderRoots) {
+            String sRoot = s.substring(s.lastIndexOf(File.separatorChar));
+            String treeRoot = treePath.substring(0, treePathSeparator);
+            treeRoot = treeRoot.substring(treeRoot.lastIndexOf(File.separatorChar));
+            if (sRoot.equalsIgnoreCase(treeRoot)) {
+                // Persist selected folder URI in shared preferences
+                // NB : calling saveUri populates the preference used by FileHelper.isSAF, which indicates the library storage is on an SD card / an external USB storage device
+                FileHelper.saveUri(treeUri);
+                selectedFolder = new File(s + File.separatorChar + folderName);
+                break;
+            }
+        }
+
+        // Try with phone memory
+        if (null == selectedFolder) {
+            FileHelper.clearUri();
+            selectedFolder = new File(Environment.getExternalStorageDirectory(), folderName);
+        }
+
+        finalizeSelectRootFolder(selectedFolder);
+    }
+
+    private void finalizeSelectRootFolder(@NonNull final File targetFolder) {
+        String message;
+        boolean success = false;
+
+        // Add the Hentoid folder at the end of the path, if not present
+        File folder = addHentoidFolder(targetFolder);
+
+        if (!folder.exists()) {
+            // Try and create directory; test if writable
+            if (FileHelper.createDirectory(folder)) {
+                Timber.i("Target folder created");
+                if (FileHelper.isWritable(folder)) {
+                    message = getResources().getString(R.string.kitkat_dialog_return_0);
+                    success = true;
+                } else message = getResources().getString(R.string.kitkat_dialog_return_1);
+            } else message = getResources().getString(R.string.kitkat_dialog_return_2);
+
+            message = message.replace("$s", folder.getAbsolutePath());
+            ToastUtil.toast(HentoidApp.getAppContext(), message, Toast.LENGTH_LONG);
+        } else success = true;
+
+        if (success) importFolder(folder);
+    }
+
+    private File addHentoidFolder(@NonNull final File baseFolder) {
+        String folderName = baseFolder.getName();
+        // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
+        if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)) {
+            File targetFolder = getExistingHentoidDirFrom(baseFolder);
+
+            // If not, create one
+            if (targetFolder.getAbsolutePath().equals(baseFolder.getAbsolutePath()))
+                return new File(targetFolder, Consts.DEFAULT_LOCAL_DIRECTORY);
+            else return targetFolder;
+        }
+        return baseFolder;
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEventProgress(ImportEvent event) {
@@ -570,7 +425,7 @@ public class ImportActivity extends BaseActivity {
     private boolean hasBooks() {
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(FileHelper.getOrCreateSiteDownloadDir(this, s));
+            downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDir(this, s));
         }
 
         for (File downloadDir : downloadDirs) {
@@ -588,10 +443,9 @@ public class ImportActivity extends BaseActivity {
         }
 
         if (hasBooks()) {
-
             if (isRefresh)
                 runImport(); // Do not ask if the user wants to import if he has asked for a refresh
-            else new AlertDialog.Builder(this)
+            else new MaterialAlertDialogBuilder(this)
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setCancelable(false)
                     .setTitle(R.string.app_name)

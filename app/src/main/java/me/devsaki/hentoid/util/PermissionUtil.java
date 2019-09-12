@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+
 import androidx.core.app.ActivityCompat;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;

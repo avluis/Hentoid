@@ -29,8 +29,8 @@ import timber.log.Timber;
  */
 public class FakkuParser implements ImageListParser {
 
-    private int currentStep;
-    private int maxSteps;
+    private final ParseProgress progress = new ParseProgress();
+
 
     public List<ImageFile> parseImageList(Content content) {
 
@@ -66,7 +66,7 @@ public class FakkuParser implements ImageListParser {
             return result;
         }
 
-        progressStart(info.pages.keySet().size() + 1);
+        progress.progressStart(info.pages.keySet().size() + 1);
 
         // Add referer information to downloadParams for future image download
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl());
@@ -92,7 +92,7 @@ public class FakkuParser implements ImageListParser {
         List<PageInfo> pageInfo = null;
         if (info.key_data != null)
             pageInfo = FakkuDecode.getBookPageData(info.key_hash, Helper.decode64(info.key_data), pid, BuildConfig.FK_TOKEN);
-        progressPlus();
+        progress.progressPlus();
 
         result = new ArrayList<>();
         for (String p : info.pages.keySet()) {
@@ -101,7 +101,8 @@ public class FakkuParser implements ImageListParser {
             ImageFile img = ParseHelper.urlToImageFile(page.image, order);
 
             String pageInfoValue;
-            if (pageInfo != null) pageInfoValue = JsonHelper.serializeToJson(pageInfo.get(order - 1)); // String contains JSON data within a JSON...
+            if (pageInfo != null)
+                pageInfoValue = JsonHelper.serializeToJson(pageInfo.get(order - 1)); // String contains JSON data within a JSON...
             else pageInfoValue = "unprotected";
 
             downloadParams.put("pageInfo", pageInfoValue);
@@ -109,26 +110,17 @@ public class FakkuParser implements ImageListParser {
 
             img.setDownloadParams(downloadParamsStr);
             result.add(img);
-            progressPlus();
+            progress.progressPlus();
         }
         Timber.d("%s", result);
 
-        progressComplete();
+        progress.progressComplete();
 
         return result;
     }
 
-    private void progressStart(int maxSteps) {
-        currentStep = 0;
-        this.maxSteps = maxSteps;
-        ParseHelper.signalProgress(currentStep, maxSteps);
-    }
-
-    private void progressPlus() {
-        ParseHelper.signalProgress(++currentStep, maxSteps);
-    }
-
-    private void progressComplete() {
-        ParseHelper.signalProgress(maxSteps, maxSteps);
+    public ImageFile parseBackupUrl(String url, int order) {
+        // This class does not use backup URLs
+        return null;
     }
 }

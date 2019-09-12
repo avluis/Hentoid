@@ -1,9 +1,10 @@
 package me.devsaki.hentoid.activities;
 
 import android.os.Bundle;
+import android.view.MenuItem;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import android.view.MenuItem;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;

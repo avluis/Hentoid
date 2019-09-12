@@ -80,7 +80,7 @@ public class NhentaiContent implements ContentParser {
             images.add(new ImageFile(index, serverUrl + index + "." + FileHelper.getExtension(s), StatusContent.SAVED)); // We infer actual book page images have the same format as their thumbs
             index++;
         }
-        result.addImageFiles(images);
+        result.setImageFiles(images);
         result.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
 
         return result;

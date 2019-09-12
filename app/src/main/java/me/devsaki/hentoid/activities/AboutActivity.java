@@ -1,9 +1,10 @@
 package me.devsaki.hentoid.activities;
 
 import android.os.Bundle;
-import androidx.annotation.IdRes;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.annotation.IdRes;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;

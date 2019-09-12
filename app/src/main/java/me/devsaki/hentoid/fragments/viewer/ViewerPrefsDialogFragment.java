@@ -1,16 +1,16 @@
 package me.devsaki.hentoid.fragments.viewer;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
-import android.widget.SeekBar;
 import android.widget.Switch;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 
 import java.security.InvalidParameterException;
 
@@ -56,6 +56,14 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
         theSwitch.setChecked(Preferences.isViewerTapTransitions());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerTapTransitions(isChecked));
 
+        theSwitch = requireViewById(view, R.id.viewer_prefs_swipe_to_fling_action);
+        theSwitch.setChecked(Preferences.isViewerSwipeToFling());
+        theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerSwipeToFling(isChecked));
+
+        theSwitch = requireViewById(view, R.id.viewer_prefs_invert_volume_action);
+        theSwitch.setChecked(Preferences.isViewerInvertVolumeRocker());
+        theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerInvertVolumeRocker(isChecked));
+
         RadioGroup theRadio = requireViewById(view, R.id.viewer_prefs_display_mode_group);
         switch (Preferences.getViewerResizeMode()) {
             case (Preferences.Constant.PREF_VIEWER_DISPLAY_FIT):
@@ -84,25 +92,6 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
                 throw new InvalidParameterException("Not implemented");
         }
         theRadio.setOnCheckedChangeListener(this::onChangeBrowseMode);
-
-        SeekBar flingSensitivity = requireViewById(view, R.id.viewer_prefs_fling_sensitivity);
-        flingSensitivity.setProgress(Preferences.getViewerFlingFactor());
-        flingSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // No need to do anything
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // No need to do anything
-            }
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) Preferences.setViewerFlingFactor(progress);
-            }
-        });
     }
 
     private void onChangeDisplayMode(RadioGroup group, int checkedId) {

@@ -19,7 +19,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 28
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.8.8'
+        versionName '1.9.0'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
@@ -71,31 +71,27 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     // Firebase
-    implementation 'com.google.firebase:firebase-core:17.0.0'
+    implementation 'com.google.firebase:firebase-analytics:17.2.0'
 
     // Crashlytics
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
 
-    // Stetho core
-//    implementation 'com.facebook.stetho:stetho:1.5.0'
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'androidx.exifinterface:exifinterface:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     //implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.google.android.material:material:1.1.0-alpha08'
     implementation 'androidx.preference:preference:1.0.0'
-    implementation 'androidx.media:media:1.0.1'
+    implementation 'androidx.media:media:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
 
-    // <-- this one to fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
-
     // Image loader: github.com/bumptech/glide
-    implementation 'com.github.bumptech.glide:glide:4.8.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
+    implementation 'com.github.bumptech.glide:glide:4.9.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.8.0'
 
     // Intro screens or slides: github.com/apl-devs/AppIntro
@@ -111,7 +107,8 @@ dependencies {
     implementation 'com.mani:ThinDownloadManager:1.3.0'
 
     // HTTP & HTTP/2 client: github.com/square/okhttp
-    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    // upgrading to okhttp4 or > 3.12.5 will drop support for android 4.4 (kitkat)
+    implementation 'com.squareup.okhttp3:okhttp:3.12.5'
 
     // For downloading images : github.com/google/volley
     implementation 'com.android.volley:volley:1.1.1' // <-- if this evolves, please examine RequestQueueManager.getRequestQueue for evolutions
@@ -123,7 +120,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.11.3'
 
     // Lightweight Stream : github.com/aNNiMON/Lightweight-Stream-API
-    implementation 'com.annimon:stream:1.2.0'
+    implementation 'com.annimon:stream:1.2.1'
 
     // LeakCanary: github.com/square/leakcanary -- WAITING FOR V2 TO BE STABILIZED
 /*
@@ -144,17 +141,17 @@ dependencies {
     implementation 'pl.droidsonroids.retrofit2:converter-jspoon:1.3.2'
 
     //    https://github.com/square/retrofit
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.6.1'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.1'
 
     //    https://github.com/ReactiveX/RxJava
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.16'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.12'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 
     // For ViewModel to work
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.0.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.1.0'
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").

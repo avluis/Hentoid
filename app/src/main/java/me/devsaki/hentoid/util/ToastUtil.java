@@ -1,10 +1,11 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
+import android.widget.Toast;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
-import android.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

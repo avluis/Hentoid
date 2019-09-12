@@ -3,32 +3,27 @@ package me.devsaki.hentoid.fragments;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
-
-import androidx.lifecycle.ViewModelProviders;
-
 import android.content.Context;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.SearchView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.annimon.stream.Stream;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -161,7 +156,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             public boolean onQueryTextSubmit(String s) {
 
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(view, R.string.masterdata_illegal_tag, BaseTransientBottomBar.LENGTH_LONG).show();
                 } else if (!s.isEmpty()) {
                     searchMasterData(s);
                 }
@@ -173,7 +168,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             @Override
             public boolean onQueryTextChange(String s) {
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(view, R.string.masterdata_illegal_tag, BaseTransientBottomBar.LENGTH_LONG).show();
                     searchMasterDataDebouncer.clear();
                 } else {
                     searchMasterDataDebouncer.submit(s);
@@ -263,7 +258,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void onAttributesFailed(String message) {
         Timber.w(message);
-        Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), message, Snackbar.LENGTH_SHORT);
+        Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), message, BaseTransientBottomBar.LENGTH_SHORT);
         // Set retry button if Mikan mode on
         if (MODE_MIKAN == mode) {
             bar.setAction("RETRY", v -> viewModel.onCategoryFilterChanged(tagSearchView.getQuery().toString(), currentPage, ATTRS_PER_PAGE));

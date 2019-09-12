@@ -1,168 +1,114 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="2dp"
-    app:cardElevation="2dp"
-    android:theme="@style/DownloadCard">
+    android:layout_marginBottom="@dimen/default_cardview_margin"
+    app:cardBackgroundColor="@color/card_surface"
+    app:cardCornerRadius="4dp"
+    app:cardElevation="6dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/card_surface"
-        android:orientation="vertical"
-        android:padding="8dp">
+        android:layout_height="wrap_content">
 
         <ProgressBar
             android:id="@+id/pbDownload"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:indeterminate="true" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+        <include layout="@layout/include_item_details" />
 
-            <ImageView
-                android:id="@+id/ivSource"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?colorSecondary"
-                android:tint="?colorSurface"
-                android:padding="1dp"
-                android:adjustViewBounds="true"
-                tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_menu_fakku" />
+        <ImageView
+            android:id="@+id/queueTopBtn"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:tint="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/queueUpBtn"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/barrier"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_doublearrowup" />
 
-            <TextView
-                android:id="@+id/tvTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:textColor="?colorSecondary"
-                android:textSize="@dimen/text_subtitle_1"
-                android:textStyle="bold"
-                tools:text="The Best Thing Ever Made" />
+        <ImageView
+            android:id="@+id/queueUpBtn"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:tint="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/queueDownBtn"
+            app:layout_constraintStart_toEndOf="@id/queueTopBtn"
+            app:layout_constraintTop_toBottomOf="@id/barrier"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_arrow_up" />
 
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/queueDownBtn"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:tint="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btnCancel"
+            app:layout_constraintStart_toEndOf="@id/queueUpBtn"
+            app:layout_constraintTop_toBottomOf="@id/barrier"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_arrow_down" />
 
-        <View style="@style/Divider"/>
+        <TextView
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:text="@string/cancel"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_body_1"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ivSite"
+            app:layout_constraintStart_toEndOf="@id/queueDownBtn"
+            app:layout_constraintTop_toBottomOf="@id/barrier" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/ivSite"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:tint="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/barrier"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_menu_nhentai" />
 
-            <ImageView
-                android:id="@+id/ivCover"
-                android:layout_width="100dp"
-                android:layout_height="match_parent"
-                android:padding="1dp"
-                android:scaleType="centerInside"
-                tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_placeholder" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvSeries"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="?colorOnSurface"
-                    tools:text="Best Series Ever" />
-
-                <TextView
-                    android:id="@+id/tvArtist"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="?colorOnSurface"
-                    tools:text="Best Author Ever" />
-
-                <View style="@style/Divider"/>
-
-                <TextView
-                    android:id="@+id/tvTags"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal|start"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@color/card_tags"
-                    tools:text="Best Set of TAGs Ever\nToo Awesome to pass up" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <View style="@style/Divider"/>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="40dp">
-
-            <ImageView
-                android:id="@+id/queueTopBtn"
-                android:layout_width="70dp"
-                android:layout_height="40dp"
-                android:scaleType="fitXY"
-                tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_doublearrowup"
-                android:tint="?colorPrimaryVariant"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                />
-
-            <ImageView
-                android:id="@+id/queueUpBtn"
-                android:layout_width="70dp"
-                android:layout_height="40dp"
-                android:scaleType="fitXY"
-                tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_arrow_up"
-                android:tint="?colorPrimaryVariant"
-                app:layout_constraintStart_toEndOf="@id/queueTopBtn"
-                app:layout_constraintEnd_toStartOf="@id/queueDownBtn"
-                app:layout_constraintTop_toTopOf="parent"
-                />
-
-            <ImageView
-                android:id="@+id/queueDownBtn"
-                android:layout_width="70dp"
-                android:layout_height="40dp"
-                android:scaleType="fitXY"
-                tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_arrow_down"
-                android:tint="?colorPrimaryVariant"
-                app:layout_constraintStart_toEndOf="@id/queueUpBtn"
-                app:layout_constraintEnd_toStartOf="@id/btnCancel"
-                app:layout_constraintTop_toTopOf="parent"
-                />
-
-            <TextView
-                android:id="@+id/btnCancel"
-                android:layout_width="80dp"
-                android:layout_height="40dp"
-                android:text="@string/cancel"
-                android:gravity="center"
-                android:textSize="@dimen/text_body_1"
-                android:textColor="?colorPrimaryVariant"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </LinearLayout>
 </androidx.cardview.widget.CardView>

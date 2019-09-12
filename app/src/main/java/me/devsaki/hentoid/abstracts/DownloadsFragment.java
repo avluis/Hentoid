@@ -26,7 +26,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -34,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.annimon.stream.Stream;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
@@ -68,6 +68,7 @@ import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
@@ -78,6 +79,7 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toCollection;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 /**
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
@@ -107,7 +109,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     // ======== UI ELEMENTS
 
     // Top tooltip appearing when a download has been completed
-    private LinearLayout newContentToolTip;
+    private TextView newContentToolTip;
     // "Search" button on top menu
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
@@ -116,8 +118,6 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     private MenuItem orderMenu;
     // Action view associated with search menu button
     private SearchView mainSearchView;
-    // Search pane that shows up on top when using search function
-    private View advancedSearchPane;
     // Layout containing the list of books
     private SwipeRefreshLayout refreshLayout;
     // List containing all books
@@ -130,8 +130,10 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     private TextView emptyText;
     // Bottom toolbar with page numbers
     protected LinearLayout pagerToolbar;
-    // Bar with CLEAR button that appears whenever a search filter is active
-    private ViewGroup filterBar;
+    // Bar with group that has the advancedSearchButton and its background View
+    private View advancedSearchBar;
+    // View with both the search result TextView and the CLEAR button that appears whenever a search filter is active
+    private View searchResultsClear;
     // Book count text on the filter bar
     private TextView filterBookCount;
     // CLEAR button on the filter bar
@@ -272,14 +274,17 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     public void onResume() {
         super.onResume();
 
-        // Display the "update success" dialog when an update is detected
-        if (Preferences.getLastKnownAppVersionCode() > 0 &&
-                Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
-            UpdateSuccessDialogFragment.invoke(requireFragmentManager());
-            Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
-        }
-
         defaultLoad();
+
+        // Display the "update success" dialog when an update is detected on a release version
+        if (!BuildConfig.DEBUG) {
+            if (0 == Preferences.getLastKnownAppVersionCode()) { // Don't show that during first run
+                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+            } else if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
+                UpdateSuccessDialogFragment.invoke(requireFragmentManager());
+                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+            }
+        }
     }
 
     /**
@@ -332,7 +337,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         if (this instanceof PagerFragment)
             pageOffset = (searchManager.getCurrentPage() - 1) * Preferences.getContentPageQuantity();
         bundle.putInt("contentIndex", pageOffset + mAdapter.getContentPosition(content) + 1);
-        FileHelper.openContent(requireContext(), content, bundle);
+        ContentHelper.openContent(requireContext(), content, bundle);
     }
 
     /**
@@ -395,7 +400,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     private void checkSDHealth() {
         if (!FileHelper.isWritable(new File(Preferences.getRootFolderName()))) {
             ToastUtil.toast(R.string.sd_access_error);
-            new AlertDialog.Builder(requireActivity())
+            new MaterialAlertDialogBuilder(requireActivity())
                     .setMessage(R.string.sd_access_fatal_error)
                     .setTitle("Error!")
                     .setPositiveButton(android.R.string.ok, null)
@@ -407,7 +412,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
      * Reset the app (to get write permissions)
      */
     private void resetApp() {
-        Helper.reset(HentoidApp.getAppContext(), requireActivity());
+        HentoidApp.reset(requireActivity());
     }
 
     @Override
@@ -501,12 +506,14 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         newContentToolTip = rootView.findViewById(R.id.tooltip);
         refreshLayout = rootView.findViewById(R.id.swipe_container);
 
-        filterBar = rootView.findViewById(R.id.filter_bar);
+        advancedSearchBar = rootView.findViewById(R.id.advanced_search_base);
+        // TextView used as advanced search button
+        TextView advancedSearchButton = rootView.findViewById(R.id.advanced_search);
+        advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
+
+        searchResultsClear = rootView.findViewById(R.id.search_results_control);
         filterBookCount = rootView.findViewById(R.id.filter_book_count);
         filterClearButton = rootView.findViewById(R.id.filter_clear);
-
-        advancedSearchPane = rootView.findViewById(R.id.advanced_search);
-        advancedSearchPane.setOnClickListener(v -> onAdvancedSearchClick());
     }
 
     protected void attachScrollListener() {
@@ -560,7 +567,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             setQuery("");
             mainSearchView.setQuery("", false);
             searchManager.clearSelectedSearchTags();
-            filterBar.setVisibility(View.GONE);
+            searchResultsClear.setVisibility(View.GONE);
             searchLibrary();
         });
 
@@ -646,7 +653,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                setSearchPaneVisibility(true);
+                advancedSearchBar.setVisibility(View.VISIBLE);
+                invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
                 if (!searchManager.getQuery().isEmpty())
@@ -662,7 +670,10 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                setSearchPaneVisibility(false);
+                if (!isSearchQueryActive()) {
+                    advancedSearchBar.setVisibility(View.GONE);
+                }
+                invalidateNextQueryTextChange = true;
                 return true;
             }
         });
@@ -694,6 +705,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
                     clearQuery();
+                    searchResultsClear.setVisibility(View.GONE);
                 }
 
                 return true;
@@ -704,7 +716,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         orderMenu.setIcon(getIconFromSortOrder(Preferences.getContentSortOrder()));
     }
 
-    private void onAdvancedSearchClick() {
+    private void onAdvancedSearchButtonClick() {
         Intent search = new Intent(this.getContext(), SearchActivity.class);
 
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
@@ -765,16 +777,6 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         searchLibrary();
 
         return true;
-    }
-
-    /**
-     * Toggles the visibility of the search pane
-     *
-     * @param visible True if search pane has to become visible; false if not
-     */
-    private void setSearchPaneVisibility(boolean visible) {
-        advancedSearchPane.setVisibility(visible ? View.VISIBLE : View.GONE);
-        invalidateNextQueryTextChange = true;
     }
 
     /**
@@ -879,7 +881,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     /**
      * Indicates whether a search query is active (using universal search or advanced search) or not
      *
-     * @return True if a search query is is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
+     * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
     private boolean isSearchQueryActive() {
         return (!searchManager.getQuery().isEmpty() || !searchManager.getTags().isEmpty());
@@ -959,8 +961,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             if (activity != null) { // Has to be crash-proof; sometimes there's no activity there...
                 String title;
                 if (mTotalSelectedCount == mTotalCount)
-                    title = "(" + mTotalCount + ")";
-                else title = "(" + mTotalSelectedCount + "/" + mTotalCount + ")";
+                    title = mTotalCount + " items";
+                else title = mTotalSelectedCount + "/" + mTotalCount + " items";
                 activity.setTitle(title);
             }
         }
@@ -982,13 +984,14 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             }
 
             Resources res = getResources();
-            String textRes = res.getQuantityString(R.plurals.downloads_filter_book_count_plural, (int)totalSelectedContent, (int)totalSelectedContent);
+            String textRes = res.getQuantityString(R.plurals.downloads_filter_book_count_plural, (int) totalSelectedContent, (int) totalSelectedContent);
 
             filterBookCount.setText(textRes);
-            filterBar.setVisibility(View.VISIBLE);
+            advancedSearchBar.setVisibility(View.VISIBLE);
+            searchResultsClear.setVisibility(View.VISIBLE);
             if (totalSelectedContent > 0 && searchMenu != null) searchMenu.collapseActionView();
         } else {
-            filterBar.setVisibility(View.GONE);
+            advancedSearchBar.setVisibility(View.GONE);
         }
 
         // User searches a book ID
@@ -1020,7 +1023,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         Timber.w(message);
         isLoading = false;
 
-        Snackbar.make(mListView, message, Snackbar.LENGTH_LONG)
+        Snackbar.make(mListView, message, LENGTH_LONG)
                 .setAction("RETRY", v -> searchLibrary())
                 .show();
         toggleUI(SHOW_BLANK);

@@ -155,6 +155,56 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/viewer_prefs_disable_tap_transitions_title" />
 
+        <TextView
+            android:id="@+id/viewer_prefs_swipe_to_fling_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="start"
+            android:text="@string/pref_viewer_swipe_to_fling"
+            android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
+            android:textSize="@dimen/text_body_1"
+            app:layout_constraintEnd_toStartOf="@id/viewer_prefs_swipe_to_fling_action"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/viewer_prefs_disable_tap_transitions_title" />
+
+        <Switch
+            android:id="@+id/viewer_prefs_swipe_to_fling_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:textAlignment="viewStart"
+            app:layout_constraintBottom_toBottomOf="@id/viewer_prefs_swipe_to_fling_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/viewer_prefs_swipe_to_fling_title" />
+
+        <TextView
+            android:id="@+id/viewer_prefs_invert_volume_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="start"
+            android:text="@string/pref_viewer_invert_volume"
+            android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
+            android:textSize="@dimen/text_body_1"
+            app:layout_constraintEnd_toStartOf="@id/viewer_prefs_invert_volume_action"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/viewer_prefs_swipe_to_fling_title" />
+
+        <Switch
+            android:id="@+id/viewer_prefs_invert_volume_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:textAlignment="viewStart"
+            app:layout_constraintBottom_toBottomOf="@id/viewer_prefs_invert_volume_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/viewer_prefs_invert_volume_title" />
+
         <!-- To be reactivated once fill mode works properly -->
 
         <TextView
@@ -169,7 +219,7 @@
             android:textSize="@dimen/text_body_1"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/viewer_prefs_disable_tap_transitions_title" />
+            app:layout_constraintTop_toBottomOf="@id/viewer_prefs_invert_volume_title" />
 
         <RadioGroup
             android:id="@+id/viewer_prefs_display_mode_group"
@@ -238,32 +288,6 @@
                 android:text="@string/viewer_direction_ttb"
                 android:textColor="?colorOnSurface" />
         </RadioGroup>
-
-        <TextView
-            android:id="@+id/viewer_prefs_fling_sensitivity_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:gravity="start"
-            android:text="@string/pref_viewer_fling_sensitivity"
-            android:textAlignment="viewStart"
-            android:textColor="?colorOnSurface"
-            android:textSize="@dimen/text_body_1"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/viewer_prefs_browse_mode_group" />
-
-        <SeekBar
-            android:id="@+id/viewer_prefs_fling_sensitivity"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:colorControlActivated="?colorSecondary"
-            android:max="100"
-            android:padding="8dp"
-            android:progressBackgroundTint="?colorOnSurface"
-            android:progressTint="?colorSecondary"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/viewer_prefs_fling_sensitivity_title" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

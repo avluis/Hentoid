@@ -5,13 +5,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import androidx.annotation.Nullable;
-import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro2;
+import com.google.android.material.snackbar.Snackbar;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -26,9 +26,9 @@ import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
-import static com.google.android.material.snackbar.Snackbar.LENGTH_INDEFINITE;
-import static com.google.android.material.snackbar.Snackbar.LENGTH_LONG;
-import static com.google.android.material.snackbar.Snackbar.LENGTH_SHORT;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT;
 import static me.devsaki.hentoid.HentoidApp.darkModeFromPrefs;
 import static me.devsaki.hentoid.util.ConstsImport.RESULT_KEY;
 
@@ -59,6 +59,8 @@ public class IntroActivity extends AppIntro2 {
         setGoBackLock(true);
         showPagerIndicator(false);
         setSwipeLock(true);
+
+        backgroundFrame.setBackgroundColor(getResources().getColor(R.color.window_background));
     }
 
     @Override
@@ -136,6 +138,7 @@ public class IntroActivity extends AppIntro2 {
             } else {
                 // If result passes validation, then we move to next slide
                 getPager().goToNextSlide();
+                setButtonState(nextButton, false);
             }
         } else {
             switch (result) {

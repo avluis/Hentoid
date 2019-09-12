@@ -9,11 +9,7 @@
         android:id="@+id/swipe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <me.devsaki.hentoid.views.ObservableWebView
-            android:id="@+id/wbMain"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+        <!-- webview inserted here programmatically -->
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

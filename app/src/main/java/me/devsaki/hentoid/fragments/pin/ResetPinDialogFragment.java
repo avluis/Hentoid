@@ -2,9 +2,10 @@ package me.devsaki.hentoid.fragments.pin;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.view.View;
 
 import java.security.InvalidParameterException;
 

@@ -70,7 +70,7 @@ public class DownloadsActivity extends BaseActivity implements BackInterface {
                     .commit();
         }
 
-        if (Preferences.getRecentVisibility()) {
+        if (!Preferences.getRecentVisibility()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
 
@@ -122,8 +122,7 @@ public class DownloadsActivity extends BaseActivity implements BackInterface {
     }
 
     @Override
-    public void setTitle(CharSequence subtitle) {
-        String title = getString(R.string.title_activity_downloads) + " " + subtitle;
+    public void setTitle(CharSequence title) {
         super.setTitle(title);
         toolbar.setTitle(title);
     }

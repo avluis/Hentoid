@@ -3,6 +3,7 @@ package me.devsaki.hentoid.parsers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ASMHentaiContent;
+import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
 import me.devsaki.hentoid.parsers.content.FakkuContent;
 import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
@@ -46,6 +47,8 @@ public class ContentParserFactory {
                 return NexusContent.class;
             case MUSES:
                 return MusesContent.class;
+            case DOUJINS:
+                return DoujinsContent.class;
             case EHENTAI: // E-H uses the API of the site -> no HTML parser
             default:
                 return DummyContent.class;
@@ -56,7 +59,7 @@ public class ContentParserFactory {
         return (null == content) ? new DummyParser() : getImageListParser(content.getSite());
     }
 
-    private ImageListParser getImageListParser(Site site) {
+    public ImageListParser getImageListParser(Site site) {
         switch (site) {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:

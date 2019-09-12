@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +43,7 @@ import me.devsaki.hentoid.widget.PageSnapWidget;
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.devsaki.hentoid.widget.VolumeGestureListener;
+import timber.log.Timber;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -60,13 +62,15 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
     private ZoomableFrame zoomFrame;
+    private VolumeGestureListener volumeGestureListener;
 
     private ImageViewerViewModel viewModel;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private int imageIndex = -1;
-    private int maxPosition;
+    private int maxPosition; // For navigation
+    private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
 
 
@@ -94,6 +98,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private TextView pageMaxNumber;
     private View prevBookButton;
     private View nextBookButton;
+    private View galleryBtn;
     private View favouritesGalleryBtn;
 
 
@@ -108,7 +113,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         initControlsOverlay(view);
 
         onBrowseModeChange();
-        onUpdateFlingFactor();
+        onUpdateSwipeToFling();
         onUpdatePageNumDisplay();
 
         return view;
@@ -176,16 +181,18 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         zoomFrame = requireViewById(rootView, R.id.image_viewer_zoom_frame);
 
-        VolumeGestureListener volumeGestureListener = new VolumeGestureListener()
+        volumeGestureListener = new VolumeGestureListener()
                 .setOnVolumeDownListener(this::previousPage)
                 .setOnVolumeUpListener(this::nextPage)
-                .setOnBackListener(this::onBackClick);
+                .setOnBackListener(this::onBackClick)
+                .setButtonsInverted(Preferences.isViewerInvertVolumeRocker());
 
         recyclerView = requireViewById(rootView, R.id.image_viewer_zoom_recycler);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
         recyclerView.setOnKeyListener(volumeGestureListener);
+        recyclerView.setOnGetMaxDimensionsListener(this::onGetMaxDimensions);
         recyclerView.requestFocus();
         recyclerView.setOnScaleListener(scale -> {
             if (pageSnapWidget != null && Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()) {
@@ -211,8 +218,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         adapter.setRecyclerView(recyclerView);
 
         llm = new PrefetchLinearLayoutManager(getContext());
-        llm.setItemPrefetchEnabled(true);
-        llm.setPreloadItemCount(2);
+        llm.setExtraLayoutSpace(10);
         recyclerView.setLayoutManager(llm);
 
         pageSnapWidget = new PageSnapWidget(recyclerView);
@@ -291,7 +297,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         });
 
         // Gallery
-        View galleryBtn = requireViewById(rootView, R.id.viewer_gallery_btn);
+        galleryBtn = requireViewById(rootView, R.id.viewer_gallery_btn);
         galleryBtn.setOnClickListener(v -> displayGallery(false));
         favouritesGalleryBtn = requireViewById(rootView, R.id.viewer_favourites_btn);
         favouritesGalleryBtn.setOnClickListener(v -> displayGallery(true));
@@ -394,6 +400,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         maxPosition = images.size() - 1;
         seekBar.setMax(maxPosition);
         updatePageDisplay();
+
+        // Can't access the gallery when there's no page to display
+        if (images.size() > 0) galleryBtn.setVisibility(View.VISIBLE);
+        else galleryBtn.setVisibility(View.GONE);
     }
 
     /**
@@ -456,8 +466,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Update the display of page position controls (text and bar)
      */
     private void updatePageDisplay() {
-        String pageNum = imageIndex + 1 + "";
-        String maxPage = maxPosition + 1 + "";
+        ImageFile img = adapter.getImageAt(imageIndex);
+        if (null == img) {
+            Timber.w("No image at position %s", imageIndex);
+            return;
+        }
+
+        String pageNum = img.getOrder() + "";
+        String maxPage = maxPageNumber + "";
 
         pageCurrentNumber.setText(pageNum);
         pageMaxNumber.setText(maxPage);
@@ -474,6 +490,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         else prevBookButton.setVisibility(View.VISIBLE);
         if (content.isLast()) nextBookButton.setVisibility(View.INVISIBLE);
         else nextBookButton.setVisibility(View.VISIBLE);
+
+        maxPageNumber = content.getQtyPages();
     }
 
     /**
@@ -541,11 +559,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY:
                 onUpdateImageDisplay();
                 break;
-            case Preferences.Key.PREF_VIEWER_FLING_FACTOR:
-                onUpdateFlingFactor();
+            case Preferences.Key.PREF_VIEWER_SWIPE_TO_FLING:
+                onUpdateSwipeToFling();
                 break;
             case Preferences.Key.PREF_VIEWER_DISPLAY_PAGENUM:
                 onUpdatePageNumDisplay();
+                break;
+            case Preferences.Key.PREF_VIEWER_INVERT_VOLUME_ROCKER:
+                onUpdateInvertVolumeRocker();
                 break;
             default:
                 // Other changes aren't handled here
@@ -559,8 +580,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             requireActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    private void onUpdateFlingFactor() {
-        pageSnapWidget.setFlingSensitivity(Preferences.getViewerFlingFactor() / 100f);
+    private void onUpdateSwipeToFling() {
+        int flingFactor = Preferences.isViewerSwipeToFling() ? 75 : 0;
+        pageSnapWidget.setFlingSensitivity(flingFactor / 100f);
+    }
+
+    private void onUpdateInvertVolumeRocker() {
+        volumeGestureListener.setButtonsInverted(Preferences.isViewerInvertVolumeRocker());
     }
 
     private void onUpdateImageDisplay() {
@@ -802,5 +828,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // (just don't ask me why...)
         View v = getView();
         if (v != null) v.setSystemUiVisibility(uiOptions);
+    }
+
+    private void onGetMaxDimensions(Point maxDimensions) {
+        adapter.setMaxDimensions(maxDimensions.x, maxDimensions.y);
     }
 }

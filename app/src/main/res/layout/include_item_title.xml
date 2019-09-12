@@ -3,17 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="8dp"
-    android:ellipsize="end"
-    android:gravity="start|center_vertical"
-    android:maxLines="2"
+    android:ellipsize="middle"
+    android:maxLines="4"
     android:textColor="?colorSecondary"
     android:textSize="@dimen/text_subtitle_1"
     android:textStyle="bold"
-    tools:text="This is a rather long title, just because we need it to be." />
-
-<!--
-    app:autoSizeMaxTextSize="18sp"
-    app:autoSizeMinTextSize="14sp"
-    app:autoSizeTextType="uniform"
--->
+    tools:text="@string/book_title" />

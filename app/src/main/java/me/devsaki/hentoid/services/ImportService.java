@@ -32,11 +32,12 @@ import me.devsaki.hentoid.model.URLBuilder;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.JSONParseException;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.exception.JSONParseException;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
@@ -182,7 +183,7 @@ public class ImportService extends IntentService {
                 content = importJson(folder);
                 if (content != null) {
                     if (rename) {
-                        String canonicalBookDir = FileHelper.formatDirPath(content);
+                        String canonicalBookDir = ContentHelper.formatDirPath(content);
 
                         String[] currentPathParts = folder.getAbsolutePath().split(File.separator);
                         String currentBookDir = File.separator + currentPathParts[currentPathParts.length - 2] + File.separator + currentPathParts[currentPathParts.length - 1];

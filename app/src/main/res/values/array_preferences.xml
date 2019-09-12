@@ -92,4 +92,25 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+
+    <string-array name="pref_dl_retries_number_entries">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <string-array name="pref_dl_retries_mem_limit_entries">
+        <item>90%</item>
+        <item>95%</item>
+        <item>98%</item>
+        <item>None</item>
+    </string-array>
+    <string-array name="pref_dl_retries_mem_limit_values">
+        <item>90</item>
+        <item>95</item>
+        <item>98</item>
+        <item>100</item>
+    </string-array>
 </resources>

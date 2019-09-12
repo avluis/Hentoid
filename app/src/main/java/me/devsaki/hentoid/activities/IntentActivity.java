@@ -9,7 +9,7 @@ import androidx.annotation.Nullable;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ContentHelper;
 import timber.log.Timber;
 
 import static android.content.Intent.ACTION_SEND;
@@ -63,7 +63,7 @@ public class IntentActivity extends BaseActivity {
         Content content = new Content();
         content.setSite(site);
         content.setUrl(parsedPath);
-        Helper.viewContent(this, content, true);
+        ContentHelper.viewContent(this, content, true);
     }
 
     @Nullable
@@ -87,12 +87,13 @@ public class IntentActivity extends BaseActivity {
             case PURURIN:
                 return toParse.replace("/gallery", "") + "/";
             case EHENTAI:
-                return toParse.replace("g/","");
+                return toParse.replace("g/", "");
             case FAKKU2:
                 return toParse.replace("/hentai", "");
             case NEXUS:
                 return toParse.replace("/view", "");
             case MUSES:
+            case DOUJINS:
                 return toParse;
             default:
                 return null;

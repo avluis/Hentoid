@@ -63,4 +63,8 @@ public class DownloadEvent {
         this.pagesKO = 0;
         this.pagesTotal = 0;
     }
+
+    public int getNumberRetries() {
+        return (null == content) ? 0 : content.getNumberDownloadRetries();
+    }
 }

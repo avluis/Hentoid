@@ -12,7 +12,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -85,7 +84,6 @@ public class ChangelogFragment extends Fragment {
         RecyclerView recyclerView = requireViewById(rootView, R.id.changelogList);
         recyclerView.setAdapter(changelogAdapter);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
     private void getReleases() {

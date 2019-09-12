@@ -2,6 +2,7 @@ package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.Nullable;
 
+import com.annimon.stream.Stream;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -19,6 +20,7 @@ import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
+import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
@@ -59,7 +61,7 @@ public class Content implements Serializable {
     @Expose
     private long uploadDate;
     @Expose
-    private long downloadDate;
+    private long downloadDate = 0;
     @Expose
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
@@ -96,15 +98,17 @@ public class Content implements Serializable {
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
-    private double percent;
+    private double percent;     // % progress to display the progress bar on the queue screen
     @Transient
-    private int queryOrder;
+    private int queryOrder;     // Order of current content in the DB query that creates it
     @Transient
-    private boolean isFirst;
+    private boolean isFirst;    // True if current content is the first of its set in the DB query
     @Transient
-    private boolean isLast;
+    private boolean isLast;     // True if current content is the last of its set in the DB query
     @Transient
-    private boolean selected = false;
+    private boolean selected = false; // True if current content is selected (library view)
+    @Transient
+    private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
 
     // Attributes kept for retro-compatibility with contentV2.json Hentoid files
     @Transient
@@ -184,6 +188,11 @@ public class Content implements Serializable {
                 return paths[paths.length - 1];
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
+            case DOUJINS:
+                // ID is the last numeric part of the URL
+                // e.g. lewd-title-ch-1-3-42116 -> 42116 is the ID
+                int lastIndex = url.lastIndexOf('-');
+                return url.substring(lastIndex + 1);
             default:
                 return "";
         }
@@ -244,6 +253,8 @@ public class Content implements Serializable {
                 return NexusActivity.class;
             case MUSES:
                 return MusesActivity.class;
+            case DOUJINS:
+                return DoujinsActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -298,10 +309,11 @@ public class Content implements Serializable {
             case NEXUS:
                 galleryConst = "/view";
                 break;
-            case MUSES:
             case FAKKU:
             case HENTAICAFE:
             case PANDA:
+            case MUSES:
+            case DOUJINS:
             default:
                 galleryConst = "";
         }
@@ -322,6 +334,7 @@ public class Content implements Serializable {
             case EHENTAI:               // Won't work anyway because of the temporary key
             case NHENTAI:
             case PANDA:
+            case DOUJINS:
                 return getGalleryUrl();
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
@@ -344,8 +357,8 @@ public class Content implements Serializable {
         if (attrMap.containsKey(AttributeType.ARTIST) && !attrMap.get(AttributeType.ARTIST).isEmpty())
             authorStr = attrMap.get(AttributeType.ARTIST).get(0).getName();
         if ((null == authorStr || authorStr.equals(""))
-             && attrMap.containsKey(AttributeType.CIRCLE)
-             && !attrMap.get(AttributeType.CIRCLE).isEmpty()) // Try and get Circle
+                && attrMap.containsKey(AttributeType.CIRCLE)
+                && !attrMap.get(AttributeType.CIRCLE).isEmpty()) // Try and get Circle
             authorStr = attrMap.get(AttributeType.CIRCLE).get(0).getName();
 
         if (null == authorStr) authorStr = "";
@@ -427,7 +440,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    long getDownloadDate() {
+    public long getDownloadDate() {
         return downloadDate;
     }
 
@@ -450,8 +463,8 @@ public class Content implements Serializable {
         return imageFiles;
     }
 
-    public Content addImageFiles(List<ImageFile> imageFiles) {
-        if (imageFiles != null) {
+    public Content setImageFiles(List<ImageFile> imageFiles) {
+        if (imageFiles != null && !imageFiles.equals(this.imageFiles)) {
             this.imageFiles.clear();
             this.imageFiles.addAll(imageFiles);
         }
@@ -469,6 +482,14 @@ public class Content implements Serializable {
 
     public void setPercent(double percent) {
         this.percent = percent;
+    }
+
+    public void computePercent()
+    {
+        if (imageFiles != null && 0 == percent) {
+            long progress = Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.ERROR).count();
+            percent = progress * 100.0 / qtyPages;
+        }
     }
 
     public Site getSite() {
@@ -586,6 +607,15 @@ public class Content implements Serializable {
     public void setJsonUri(String jsonUri) {
         this.jsonUri = jsonUri;
     }
+
+    public int getNumberDownloadRetries() {
+        return numberDownloadRetries;
+    }
+
+    public void increaseNumberDownloadRetries() {
+        this.numberDownloadRetries++;
+    }
+
 
 
     @Override

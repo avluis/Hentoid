@@ -43,7 +43,7 @@ public class HitomiContent implements ContentParser {
         Content result = new Content();
 
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty() || null == pages) return result.setStatus(StatusContent.IGNORED);
 
         result.setSite(Site.HITOMI);
         result.setUrl(theUrl.replace("/reader", ""));

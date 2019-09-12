@@ -3,6 +3,8 @@ package me.devsaki.hentoid.util;
 import android.util.Pair;
 import android.webkit.WebResourceResponse;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.Gson;
 
 import org.jsoup.Jsoup;
@@ -24,6 +26,11 @@ public class HttpHelper {
     private static final int TIMEOUT = 30000; // 30 seconds
     public static final String HEADER_COOKIE_KEY = "cookie";
     public static final String HEADER_REFERER_KEY = "referer";
+    public static final String HEADER_CONTENT_TYPE = "Content-Type";
+
+    private HttpHelper() {
+        throw new IllegalStateException("Utility class");
+    }
 
     @Nullable
     public static Document getOnlineDocument(String url) throws IOException {
@@ -73,19 +80,29 @@ public class HttpHelper {
      * @return The {@link WebResourceResponse}
      */
     public static WebResourceResponse okHttpResponseToWebResourceResponse(Response resp, InputStream is) {
-        final String contentTypeValue = resp.header("Content-Type");
+        final String contentTypeValue = resp.header(HEADER_CONTENT_TYPE);
 
         if (contentTypeValue != null) {
-            if (contentTypeValue.indexOf("charset=") > 0) {
-                final String[] contentTypeAndEncoding = contentTypeValue.replace("; ", ";").split(";");
-                final String contentType = contentTypeAndEncoding[0];
-                final String charset = contentTypeAndEncoding[1].split("=")[1];
-                return new WebResourceResponse(contentType, charset, is);
-            } else {
-                return new WebResourceResponse(contentTypeValue, null, is);
-            }
+            Pair<String, String> details = cleanContentType(contentTypeValue);
+            return new WebResourceResponse(details.first, details.second, is);
         } else {
             return new WebResourceResponse("application/octet-stream", null, is);
         }
+    }
+
+    /**
+     * Processes the value of a "Content-Type" HTTP header and returns its parts
+     * @param rawContentType Value of the "Content-type" header
+     * @return Pair containing
+     *      - The content-type (MIME-type) as its first value
+     *      - The charset, if it has been transmitted, as its second value (may be null)
+     */
+    public static Pair<String, String> cleanContentType(@NonNull String rawContentType) {
+        if (rawContentType.contains("charset=")) {
+            final String[] contentTypeAndEncoding = rawContentType.replace("; ", ";").split(";");
+            final String contentType = contentTypeAndEncoding[0];
+            final String charset = contentTypeAndEncoding[1].split("=")[1];
+            return new Pair<>(contentType, charset);
+        } else return new Pair<>(rawContentType, null);
     }
 }

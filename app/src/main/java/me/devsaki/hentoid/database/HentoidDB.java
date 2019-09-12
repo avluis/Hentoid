@@ -216,7 +216,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         long id = cursorContent.getLong(ContentTable.IDX_INTERNALID - 1);
 
-        content.addImageFiles(selectImageFilesByContentId(db, id))
+        content.setImageFiles(selectImageFilesByContentId(db, id))
                 .addAttributes(selectAttributesByContentId(db, id, content.getSite()));
 
         content.populateAuthor();

@@ -3,9 +3,10 @@ package me.devsaki.hentoid.fragments.pin;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.view.View;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;

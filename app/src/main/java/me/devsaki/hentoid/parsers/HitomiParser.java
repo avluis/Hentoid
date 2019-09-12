@@ -68,4 +68,9 @@ public class HitomiParser implements ImageListParser {
 
         return url.substring(0, subdomainBegin) + newSubdomain + url.substring(subdomainEnd);
     }
+
+    public ImageFile parseBackupUrl(String url, int order) {
+        // This class does not use backup URLs
+        return null;
+    }
 }

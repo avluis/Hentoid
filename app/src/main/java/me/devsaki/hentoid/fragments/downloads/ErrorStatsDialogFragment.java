@@ -1,15 +1,18 @@
 package me.devsaki.hentoid.fragments.downloads;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -122,8 +125,8 @@ public class ErrorStatsDialogFragment extends DialogFragment {
             details.setText(R.string.download_cancelled);
             previousNbErrors = 0;
         } else if ((event.eventType == DownloadEvent.EV_PROGRESS)
-                    && (event.pagesKO > previousNbErrors)
-                    && (event.content != null)) {
+                && (event.pagesKO > previousNbErrors)
+                && (event.content != null)) {
             currentId = event.content.getId();
             previousNbErrors = event.pagesKO;
             updateStats(currentId);
@@ -141,14 +144,16 @@ public class ErrorStatsDialogFragment extends DialogFragment {
             errorLogInfo.fileName = "error_log" + content.getId();
             errorLogInfo.noDataMessage = "No error detected.";
 
-            log.add("Error log for " + content.getTitle() + " : " + errorLog.size() + " errors");
-            for (ErrorRecord e : errorLog) log.add(e.toString());
+            if (errorLog != null) {
+                log.add("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
+                for (ErrorRecord e : errorLog) log.add(e.toString());
 
-            File logFile = LogUtil.writeLog(requireContext(), log, errorLogInfo);
-            if (logFile != null) {
-                Snackbar snackbar = Snackbar.make(rootView, R.string.cleanup_done, Snackbar.LENGTH_LONG);
-                snackbar.setAction("READ LOG", v -> FileHelper.openFile(requireContext(), logFile));
-                snackbar.show();
+                File logFile = LogUtil.writeLog(requireContext(), log, errorLogInfo);
+                if (logFile != null) {
+                    Snackbar snackbar = Snackbar.make(rootView, R.string.cleanup_done, BaseTransientBottomBar.LENGTH_LONG);
+                    snackbar.setAction("READ LOG", v -> FileHelper.openFile(requireContext(), logFile));
+                    snackbar.show();
+                }
             }
         }
     }

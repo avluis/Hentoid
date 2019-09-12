@@ -2,7 +2,10 @@ package me.devsaki.hentoid.activities.sources;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.net.Uri;
@@ -65,7 +68,7 @@ import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -224,12 +227,28 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
     private void reset() {
-        Helper.reset(HentoidApp.getAppContext(), this);
+        HentoidApp.reset(this);
+    }
+
+    // Fix for a crash on 5.1.1
+    // https://stackoverflow.com/questions/41025200/android-view-inflateexception-error-inflating-class-android-webkit-webview
+    // As fallback solution _only_ since it breaks other stuff in the webview (choice in SELECT tags for instance)
+    public static Context getFixedContext(Context context) {
+        return context.createConfigurationContext(new Configuration());
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
-        webView = findViewById(R.id.wbMain);
+
+        try {
+            webView = new ObservableWebView(this);
+        }
+        catch (Resources.NotFoundException e) {
+            // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
+            // Creating with the application Context fixes this, but is not generally recommended for view creation
+            webView = new ObservableWebView(getFixedContext(this));
+        }
+
         webView.setHapticFeedbackEnabled(false);
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -289,6 +308,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
+
+        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_container);
+        if (refreshLayout != null) refreshLayout.addView(webView, layoutParams);
     }
 
     private int getChromeVersion() {
@@ -364,7 +387,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 if (StatusContent.DOWNLOADED == currentContent.getStatus()
                         || StatusContent.ERROR == currentContent.getStatus()
                         || StatusContent.MIGRATED == currentContent.getStatus()) {
-                    FileHelper.openContent(this, currentContent);
+                    ContentHelper.openContent(this, currentContent);
                 } else {
                     fabAction.hide();
                 }
@@ -384,6 +407,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         fabActionMode = mode;
         setFabIcon(fabAction, resId);
         fabActionEnabled = true;
+// Timber.i(">> FAB SHOW");
         fabAction.show();
     }
 
@@ -536,6 +560,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         private void hideActionFab() {
+// Timber.i(">> FAB HIDE");
             fabAction.hide();
             fabActionEnabled = false;
         }
@@ -571,10 +596,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         /**
          * Determines if the browser can use one single OkHttp request to serve HTML pages
-         *   - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
-         *     https://issuetracker.google.com/issues/36989494
-         *   - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes issues on nHentai)
-         *     https://bugs.chromium.org/p/chromium/issues/detail?id=780491
+         * - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
+         * https://issuetracker.google.com/issues/36989494
+         * - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes issues on nHentai)
+         * https://bugs.chromium.org/p/chromium/issues/detail?id=780491
          *
          * @return true if HTML content can be served by a single OkHttp request,
          * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
@@ -599,12 +624,20 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             return hostStr != null && !hostStr.contains(restrictedDomainName);
         }
 
+        /**
+         * Important note
+         * <p>
+         * Based on observation, for a given URL, onPageStarted seems to be called
+         * - Before {@link this.shouldInterceptRequest} when the page is not cached (1st call)
+         * - After {@link this.shouldInterceptRequest} when the page is cached (Nth call; N>1)
+         */
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_clear);
             fabRefreshOrStop.show();
             fabHome.show();
             isPageLoading = true;
+// Timber.i(">> onPageStarted %s", url);
             if (!isHtmlLoaded) hideActionFab();
         }
 
@@ -613,18 +646,19 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             isPageLoading = false;
             isHtmlLoaded = false; // Reset for the next page
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_refresh);
+// Timber.i(">> onPageFinished %s", url);
         }
 
         @Override
         @Deprecated
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else {
-                if (!isPageLoading && isPageFiltered(url)) return parseResponse(url, null);
-                return super.shouldInterceptRequest(view, url);
+            // Prevents processing the page twice on Lollipop and above
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                WebResourceResponse result = shouldInterceptRequestInternal(view, url, null);
+                if (result != null) return result;
             }
+            return super.shouldInterceptRequest(view, url);
         }
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -632,16 +666,27 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
+            WebResourceResponse result = shouldInterceptRequestInternal(view, url, request.getRequestHeaders());
+            if (result != null) return result;
+            else return super.shouldInterceptRequest(view, request);
+        }
+
+        @Nullable
+        private WebResourceResponse shouldInterceptRequestInternal(@NonNull WebView view,
+                                                                   @NonNull String url,
+                                                                   @Nullable Map<String, String> headers) {
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (!isPageLoading && isPageFiltered(url))
-                    return parseResponse(url, request.getRequestHeaders());
-                return super.shouldInterceptRequest(view, request);
+// Timber.i(">> SIR 1 %s %s", isPageLoading, url);
+                if (/*!isPageLoading &&*/ isPageFiltered(url)) return parseResponse(url, headers);
+// Timber.i(">> SIR 2 %s %s", isPageLoading, url);
+                return null;
             }
         }
 
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
+// Timber.i(">> parseResponse %s", urlStr);
             List<Pair<String, String>> headersList = new ArrayList<>();
 
             if (headers != null)
@@ -694,8 +739,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList) {
+// Timber.i(">> processContent 1");
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
+// Timber.i(">> processContent 2");
 
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
