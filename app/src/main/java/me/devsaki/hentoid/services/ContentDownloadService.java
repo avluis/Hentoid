@@ -75,6 +75,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
+import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
@@ -260,7 +261,7 @@ public class ContentDownloadService extends IntentService {
                 Timber.w(lre, "The bandwidth limit has been reached while parsing %s. Aborting download.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Image list", lre.getMessage());
                 hasError = true;
-            } catch (InterruptedException ie) {
+            } catch (PreparationInterruptedException ie) {
                 Timber.i(ie, "Preparation of %s interrupted", content.getTitle());
                 // not an error
             } catch (EmptyResultException ere) {

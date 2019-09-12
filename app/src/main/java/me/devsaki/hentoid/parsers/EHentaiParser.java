@@ -23,7 +23,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
-import timber.log.Timber;
+import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 
@@ -123,7 +123,7 @@ public class EHentaiParser implements ImageListParser {
         progress.progressComplete();
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted) throw new InterruptedException();
+        if (processHalted) throw new PreparationInterruptedException();
 
         EventBus.getDefault().unregister(this);
         return result;
