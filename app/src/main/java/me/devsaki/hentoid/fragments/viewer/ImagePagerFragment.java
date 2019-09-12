@@ -98,6 +98,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private TextView pageMaxNumber;
     private View prevBookButton;
     private View nextBookButton;
+    private View galleryBtn;
     private View favouritesGalleryBtn;
 
 
@@ -296,7 +297,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         });
 
         // Gallery
-        View galleryBtn = requireViewById(rootView, R.id.viewer_gallery_btn);
+        galleryBtn = requireViewById(rootView, R.id.viewer_gallery_btn);
         galleryBtn.setOnClickListener(v -> displayGallery(false));
         favouritesGalleryBtn = requireViewById(rootView, R.id.viewer_favourites_btn);
         favouritesGalleryBtn.setOnClickListener(v -> displayGallery(true));
@@ -399,6 +400,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         maxPosition = images.size() - 1;
         seekBar.setMax(maxPosition);
         updatePageDisplay();
+
+        // Can't access the gallery when there's no page to display
+        if (images.size() > 0) galleryBtn.setVisibility(View.VISIBLE);
+        else galleryBtn.setVisibility(View.GONE);
     }
 
     /**
