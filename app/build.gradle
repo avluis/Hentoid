@@ -62,6 +62,7 @@ dependencies {
 
     // Compile any included libraries
     implementation fileTree(include: ['*jar'], dir: 'libs')
+    implementation fileTree(include: ['*aar'], dir: 'libs')
 
     implementation project(':fakkuLib')
 
