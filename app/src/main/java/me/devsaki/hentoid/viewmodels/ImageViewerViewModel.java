@@ -246,7 +246,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         currentContentIndex = contentIds.indexOf(theContent.getId());
 
         if (-1 == currentContentIndex) {
-            Timber.w("Content index %s not found in results", theContent.getId());
+            Timber.w("Content index %s not found in results", theContent.getId()); // TODO - that does not help when the list is empty !
             currentContentIndex = 0;
         }
 
