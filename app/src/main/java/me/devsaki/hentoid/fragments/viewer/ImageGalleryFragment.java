@@ -112,6 +112,7 @@ public class ImageGalleryFragment extends Fragment {
             if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
             galleryImagesAdapter.addItem(holder);
         }
+        updateListFilter();
     }
 
     private void onStartingIndexChanged(Integer startingIndex) {
@@ -150,17 +151,22 @@ public class ImageGalleryFragment extends Fragment {
     private void toggleFavouritesDisplay() {
         filterFavourites = !filterFavourites;
         updateFavouriteDisplay();
+        updateListFilter();
     }
 
     private void updateFavouriteDisplay() {
         favouritesFilterMenu.setVisible(galleryImagesAdapter.isFavouritePresent());
         favouritesFilterMenu.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
-        galleryImagesAdapter.setFilter(filterFavourites);
-        galleryImagesAdapter.filterItems();
-        if (galleryImagesAdapter.getItemCount() > startIndex)
-            galleryImagesAdapter.smoothScrollToPosition(startIndex);
-        else if (galleryImagesAdapter.getItemCount() > 0)
-            galleryImagesAdapter.smoothScrollToPosition(0);
+    }
+
+    private void updateListFilter() {
+        if (!galleryImagesAdapter.isEmpty()) {
+            galleryImagesAdapter.setFilter(filterFavourites);
+            galleryImagesAdapter.filterItems();
+            if (galleryImagesAdapter.getItemCount() > startIndex)
+                galleryImagesAdapter.smoothScrollToPosition(startIndex);
+            else galleryImagesAdapter.smoothScrollToPosition(0);
+        }
     }
 
     @Override
