@@ -429,8 +429,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
         ToastUtil.toast(this, R.string.add_to_queue);
 
-        currentContent.setDownloadDate(new Date().getTime())
-                .setStatus(StatusContent.DOWNLOADING);
+        currentContent.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(currentContent);
 
         List<QueueRecord> queue = db.selectQueue();
