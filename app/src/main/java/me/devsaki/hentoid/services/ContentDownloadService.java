@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.SparseIntArray;
@@ -105,6 +106,26 @@ public class ContentDownloadService extends IntentService {
         super(ContentDownloadService.class.getName());
     }
 
+    // Fix attempt for #349 : https://stackoverflow.com/questions/55894636/android-9-pie-context-startforegroundservice-did-not-then-call-service-star?rq=1
+    private void prepareAndStartForeground() {
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.startForegroundService(intent);
+        } else {
+            this.startService(intent);
+        }
+        notifyStart();
+    }
+
+    private void notifyStart() {
+        notificationManager = new ServiceNotificationManager(this, 1);
+        notificationManager.cancel();
+        notificationManager.startForeground(new DownloadProgressNotification("Starting download", 0, 0));
+
+        warningNotificationManager = new NotificationManager(this, 2);
+        warningNotificationManager.cancel();
+    }
 
     // Only called once when processing multiple downloads; will be only called
     // if the entire queue is paused (=service destroyed), then resumed (service re-created)
@@ -112,12 +133,8 @@ public class ContentDownloadService extends IntentService {
     public void onCreate() {
         creationTicks = SystemClock.elapsedRealtime();
         super.onCreate();
-        notificationManager = new ServiceNotificationManager(this, 1);
-        notificationManager.cancel();
-        notificationManager.startForeground(new DownloadProgressNotification("Starting download", 0, 0));
 
-        warningNotificationManager = new NotificationManager(this, 2);
-        warningNotificationManager.cancel();
+        notifyStart();
 
         EventBus.getDefault().register(this);
 
@@ -147,7 +164,12 @@ public class ContentDownloadService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Timber.d("New intent processed");
-        notificationManager.startForeground(new DownloadProgressNotification("Starting download", 0, 0));
+
+        // TODO remove when issue #349 fixed
+        double ticks = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
+        Crashlytics.log("New intent processed at (s) " + String.format(Locale.US, "%.2f", ticks));
+
+        notifyStart();
 
         Content content = downloadFirstInQueue();
         if (content != null) watchProgress(content);
@@ -164,8 +186,12 @@ public class ContentDownloadService extends IntentService {
 
     @Override
     public boolean onUnbind(Intent intent) {
-        if (notificationManager != null)
-            notificationManager.startForeground(new DownloadProgressNotification("Starting download", 0, 0)); // <- show notification again
+
+        // TODO remove when issue #349 fixed
+        double ticks = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
+        Crashlytics.log("Unbind at (s) " + String.format(Locale.US, "%.2f", ticks));
+
+        prepareAndStartForeground(); // <- show notification again
         return true;
     }
 
