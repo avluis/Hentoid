@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Standard background color -->
+    <item android:drawable="@drawable/bg_book_card_base" android:state_selected="false" />
+    <!-- Color when the row is pressed -->
+    <item android:drawable="@drawable/bg_book_card_pressed" android:state_pressed="true" />
+    <!-- Color when the row is selected -->
+    <item android:drawable="@drawable/bg_book_card_selected" android:state_pressed="false" android:state_selected="true" />
+</selector>
