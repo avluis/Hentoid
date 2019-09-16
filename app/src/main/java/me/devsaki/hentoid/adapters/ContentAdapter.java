@@ -2,6 +2,7 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -275,7 +276,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             for (Attribute attribute : tagsAttributes) {
                 allTags.add(attribute.getName());
             }
-            String tags = android.text.TextUtils.join(",", allTags);
+            if (Build.VERSION.SDK_INT >= 24) {
+                allTags.sort(null);
+            }
+            String tags = android.text.TextUtils.join(", ", allTags);
             holder.tvTags.setText(tags);
         }
     }

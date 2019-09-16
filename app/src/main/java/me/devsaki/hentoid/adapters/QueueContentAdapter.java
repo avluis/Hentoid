@@ -2,6 +2,7 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -207,7 +208,10 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             for (Attribute attribute : tagsAttributes) {
                 allTags.add(attribute.getName());
             }
-            String tags = android.text.TextUtils.join(",", allTags);
+            if (Build.VERSION.SDK_INT >= 24) {
+                allTags.sort(null);
+            }
+            String tags = android.text.TextUtils.join(", ", allTags);
             holder.tvTags.setText(tags);
         }
     }
