@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -57,8 +58,19 @@ public class QueueFragment extends BaseFragment {
 
 
     @Override
+    public void onPause() {
+        super.onPause();
+
+        if (!Preferences.getRecentVisibility()) {
+            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
+
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
         update();
     }
 

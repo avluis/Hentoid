@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.os.Build;
+import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -16,6 +17,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.parsers.content.EHentaiGalleryQuery;
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -69,5 +71,21 @@ public class EHentaiActivity extends BaseWebActivity {
             );
             return null;
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (!Preferences.getRecentVisibility()) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 }

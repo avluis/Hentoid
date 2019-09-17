@@ -160,13 +160,24 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+
+        if (!Preferences.getRecentVisibility()) {
+            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
+
         setSystemBarsVisible(controlsOverlay.getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
         if (Preferences.Constant.PREF_VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             BrowseModeDialogFragment.invoke(this);
         updatePageDisplay();
         updateFavouriteDisplay();
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 
     @Override
