@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -11,6 +12,7 @@ import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
 import me.devsaki.hentoid.fragments.QueueFragment;
+import me.devsaki.hentoid.util.Preferences;
 
 /**
  * Handles hosting of QueueFragment for a single screen.
@@ -40,6 +42,10 @@ public class QueueActivity extends BaseActivity implements BackInterface {
             manager.beginTransaction()
                     .add(R.id.content_frame, fragment, getFragmentTag())
                     .commit();
+        }
+
+        if (!Preferences.getRecentVisibility()) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
         }
     }
 

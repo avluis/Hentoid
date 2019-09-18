@@ -2,13 +2,11 @@ package me.devsaki.hentoid.activities.sources;
 
 import android.graphics.Bitmap;
 import android.view.View;
-import android.view.WindowManager;
 import android.webkit.WebView;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.util.Preferences;
 
 /**
  * Created by Shiro on 1/22/2016.
@@ -18,11 +16,9 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "tsumino.com";
     private static final String GALLERY_FILTER = "//www.tsumino.com/entry/";
-
+    private static final String[] blockedContent = {"/static/"};
     private boolean downloadFabPressed = false;
     private int historyIndex;
-    private static final String[] blockedContent = {"/static/"};
-
 
     Site getStartSite() {
         return Site.TSUMINO;
@@ -82,21 +78,5 @@ public class TsuminoActivity extends BaseWebActivity {
                 processDownload();
             }
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if (!Preferences.getRecentVisibility()) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 }
