@@ -62,6 +62,10 @@ public class ImageViewerActivity extends AppCompatActivity {
                     .add(android.R.id.content, new ImagePagerFragment())
                     .commit();
         }
+
+        if (!Preferences.getRecentVisibility()) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
+        }
     }
 
     private void onContentChanged(Content content) {

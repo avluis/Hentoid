@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -56,21 +55,10 @@ public class QueueFragment extends BaseFragment {
     private boolean isPaused = false;
     private boolean isEmpty = false;
 
-
-    @Override
-    public void onPause() {
-        super.onPause();
-
-        if (!Preferences.getRecentVisibility()) {
-            getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
-        }
-    }
-
     @Override
     public void onResume() {
         super.onResume();
 
-        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
         update();
     }
 
@@ -195,7 +183,8 @@ public class QueueFragment extends BaseFragment {
                 StringBuilder message = new StringBuilder();
                 String processedPagesFmt = Helper.formatIntAsStr(pagesOK, String.valueOf(totalPages).length());
                 message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
-                if (numberRetries > 0) message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
+                if (numberRetries > 0)
+                    message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
 
                 queueInfo.setText(message.toString());
                 isPreparingDownload = false;
