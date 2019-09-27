@@ -167,6 +167,9 @@ dependencies {
     // https://github.com/davideas/FlexibleAdapter
     implementation 'eu.davidea:flexible-adapter:5.1.0'
     implementation 'eu.davidea:flexible-adapter-ui:1.0.0'
+
+    // Cleaner date manipulation
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 }
 
 sonarqube {

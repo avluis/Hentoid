@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.jakewharton.threetenabp.AndroidThreeTen;
 
 import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.activities.IntroActivity;
@@ -76,6 +77,9 @@ public class HentoidApp extends Application {
             Timber.e(e, "Google Play ProviderInstaller exception");
         }
 
+        // Init datetime
+        AndroidThreeTen.init(this);
+
 /*
         // LeakCanary
         if (LeakCanary.isInAnalyzerProcess(this)) {
@@ -98,13 +102,6 @@ public class HentoidApp extends Application {
         // Firebase
         boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
-
-        // Stetho
-/*
-        if (BuildConfig.DEBUG) {
-            Stetho.initializeWithDefaults(this);
-        }
-*/
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
