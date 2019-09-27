@@ -224,4 +224,12 @@ public final class Helper {
 
         return result;
     }
+
+    public static boolean isImageExtensionSupported(String extension)
+    {
+        return extension.equalsIgnoreCase("jpg")
+                || extension.equalsIgnoreCase("jpeg")
+                || extension.equalsIgnoreCase("gif")
+                || extension.equalsIgnoreCase("png");
+    }
 }

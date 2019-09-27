@@ -71,12 +71,14 @@ import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.ImageListParser;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
+import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
@@ -578,11 +580,11 @@ public class ContentDownloadService extends IntentService {
                 img.getUrl(),
                 headers,
                 canKnowHentoidAgent,
-                result -> onRequestSuccess(result, img, dir, hasImageProcessing),
+                result -> onRequestSuccess(result, img, dir, hasImageProcessing, backupUrlFinal),
                 error -> onRequestError(error, img, dir, backupUrlFinal));
     }
 
-    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, @Nonnull ImageFile img, @Nonnull File dir, boolean hasImageProcessing) {
+    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, @Nonnull ImageFile img, @Nonnull File dir, boolean hasImageProcessing, @NonNull String backupUrl) {
         try {
             if (result != null) {
                 processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey(), hasImageProcessing);
@@ -590,6 +592,14 @@ public class ContentDownloadService extends IntentService {
             } else {
                 updateImageStatus(img, false);
                 logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), "Result null");
+            }
+        } catch (UnsupportedContentException e) {
+            Timber.w(e);
+            if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl);
+            else {
+                Timber.w("No backup URL found - aborting this image");
+                updateImageStatus(img, false);
+                logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), e.getMessage());
             }
         } catch (InvalidParameterException e) {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
@@ -605,26 +615,7 @@ public class ContentDownloadService extends IntentService {
     private void onRequestError(VolleyError error, @Nonnull ImageFile img, @Nonnull File dir, @Nonnull String backupUrl) {
         // Try with the backup URL, if it exists
         if (!backupUrl.isEmpty()) {
-            Timber.i("Using backup URL %s", backupUrl);
-            Site site = img.content.getTarget().getSite();
-            ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
-
-            // per Volley behaviour, this method is called on the UI thread
-            // -> need to create a new thread to do a network call
-            compositeDisposable.add(
-                    Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder()))
-                            .subscribeOn(Schedulers.computation())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(
-                                    imageFile -> processBackupImage(imageFile, img, dir, site),
-                                    throwable ->
-                                    {
-                                        updateImageStatus(img, false);
-                                        logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
-                                        Timber.e(throwable, "Error processing backup image.");
-                                    }
-                            )
-            );
+            tryUsingBackupUrl(img, dir, backupUrl);
             return;
         }
 
@@ -651,6 +642,29 @@ public class ContentDownloadService extends IntentService {
 
         updateImageStatus(img, false);
         logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
+    }
+
+    private void tryUsingBackupUrl(@Nonnull ImageFile img, @Nonnull File dir, @Nonnull String backupUrl) {
+        Timber.i("Using backup URL %s", backupUrl);
+        Site site = img.content.getTarget().getSite();
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
+
+        // per Volley behaviour, this method is called on the UI thread
+        // -> need to create a new thread to do a network call
+        compositeDisposable.add(
+                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder()))
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                imageFile -> processBackupImage(imageFile, img, dir, site),
+                                throwable ->
+                                {
+                                    updateImageStatus(img, false);
+                                    logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
+                                    Timber.e(throwable, "Error processing backup image.");
+                                }
+                        )
+        );
     }
 
     private void processBackupImage(ImageFile backupImage, @Nonnull ImageFile originalImage, @Nonnull File dir, Site site) {
@@ -710,7 +724,11 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private static void processAndSaveImage(ImageFile img, File dir, String contentType, byte[] binaryContent, boolean hasImageProcessing) throws IOException, InvalidParameterException {
+    private static void processAndSaveImage(ImageFile img,
+                                            File dir,
+                                            String contentType,
+                                            byte[] binaryContent,
+                                            boolean hasImageProcessing) throws IOException, InvalidParameterException, UnsupportedContentException {
 
         if (!dir.exists()) {
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getAbsolutePath());
@@ -731,20 +749,22 @@ public class ContentDownloadService extends IntentService {
         if (null != contentType) {
             contentType = HttpHelper.cleanContentType(contentType).first;
             fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
+            Timber.d("Using content-type %s to determine file extension %s", contentType, fileExt);
         }
         // Content-type has not been useful to determine the extension
         if (null == fileExt || fileExt.isEmpty()) {
             Timber.d("Using url to determine file extension (content-type was %s) for %s", contentType, img.getUrl());
-            fileExt = FileHelper.getExtension(img.getUrl());
-            // Cleans potential URL arguments
-            if (fileExt.contains("?")) fileExt = fileExt.substring(0, fileExt.indexOf('?'));
+            fileExt = HttpHelper.getExtensionFromUri(img.getUrl());
         }
         if (fileExt.isEmpty()) {
             Timber.d("Using default extension for %s", img.getUrl());
             fileExt = "jpg"; // If all else fails, use jpg as default
         }
 
-        saveImage(dir, img.getName() + "." + fileExt, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
+        if (!Helper.isImageExtensionSupported(fileExt))
+            throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - image not processed", fileExt, img.getUrl()));
+        else
+            saveImage(dir, img.getName() + "." + fileExt, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
     }
 
     /**

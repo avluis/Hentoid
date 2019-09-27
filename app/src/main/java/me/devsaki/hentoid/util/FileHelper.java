@@ -424,7 +424,6 @@ public class FileHelper {
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
-
     /**
      * Save the given binary content in the given file
      *

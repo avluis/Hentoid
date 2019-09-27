@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.parsers;
 
-import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -14,6 +13,6 @@ public class DummyParser implements ImageListParser {
 
     @Override
     public ImageFile parseBackupUrl(String url, int order) {
-        return null;
+        return ParseHelper.urlToImageFile(url, order);
     }
 }

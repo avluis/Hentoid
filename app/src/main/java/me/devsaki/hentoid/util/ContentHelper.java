@@ -229,13 +229,9 @@ public final class ContentHelper {
         }
 
         return dir.listFiles(
-                file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
-                        (
-                                file.getName().toLowerCase().endsWith("jpg")
-                                        || file.getName().toLowerCase().endsWith("jpeg")
-                                        || file.getName().toLowerCase().endsWith("png")
-                                        || file.getName().toLowerCase().endsWith("gif")
-                        )
+                file -> (file.isFile()
+                        && !file.getName().toLowerCase().startsWith("thumb")
+                        && Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName()))
                 )
         );
     }

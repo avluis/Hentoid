@@ -92,10 +92,11 @@ public class HttpHelper {
 
     /**
      * Processes the value of a "Content-Type" HTTP header and returns its parts
+     *
      * @param rawContentType Value of the "Content-type" header
      * @return Pair containing
-     *      - The content-type (MIME-type) as its first value
-     *      - The charset, if it has been transmitted, as its second value (may be null)
+     * - The content-type (MIME-type) as its first value
+     * - The charset, if it has been transmitted, as its second value (may be null)
      */
     public static Pair<String, String> cleanContentType(@NonNull String rawContentType) {
         if (rawContentType.contains("charset=")) {
@@ -104,5 +105,17 @@ public class HttpHelper {
             final String charset = contentTypeAndEncoding[1].split("=")[1];
             return new Pair<>(contentType, charset);
         } else return new Pair<>(rawContentType, null);
+    }
+
+
+    public static String getExtensionFromUri(String uri) {
+        String theUri = uri.toLowerCase();
+        int extIndex = theUri.indexOf('.', theUri.lastIndexOf('/'));
+        if (extIndex < 0) return ""; // No extension at all
+
+        int paramsIndex = theUri.lastIndexOf('?');
+
+        if (paramsIndex > -1) return theUri.substring(extIndex + 1, paramsIndex);
+        else return theUri.substring(extIndex + 1);
     }
 }
