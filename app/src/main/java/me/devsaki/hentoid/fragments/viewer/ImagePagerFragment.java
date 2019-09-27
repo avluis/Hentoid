@@ -125,14 +125,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         viewModel.onRestoreState(savedInstanceState);
 
+        viewModel.getContent()
+                .observe(this, this::onContentChanged);
+
         viewModel.getImages()
                 .observe(this, this::onImagesChanged);
 
         viewModel.getStartingIndex()
                 .observe(this, this::onStartingIndexChanged);
-
-        viewModel.getContent()
-                .observe(this, this::onContentChanged);
 
         viewModel.setOnShuffledChangeListener(this::onShuffleChanged);
 
@@ -493,6 +493,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         else nextBookButton.setVisibility(View.VISIBLE);
 
         maxPageNumber = content.getQtyPages();
+        updatePageDisplay();
     }
 
     /**
