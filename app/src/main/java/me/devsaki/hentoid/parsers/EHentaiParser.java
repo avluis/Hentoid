@@ -111,7 +111,7 @@ public class EHentaiParser implements ImageListParser {
                             doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
                             if (doc != null) {
                                 downloadParams.put("backupUrl", pageUrl);
-                                String downloadParamsStr = JsonHelper.serializeToJson(downloadParams);
+                                String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
                                 img.setDownloadParams(downloadParamsStr);
                             }
                         }

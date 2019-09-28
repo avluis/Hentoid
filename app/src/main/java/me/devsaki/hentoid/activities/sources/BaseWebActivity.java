@@ -753,7 +753,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
                     params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
 
-            content.setDownloadParams(JsonHelper.serializeToJson(params));
+            content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
             isHtmlLoaded = true;
             listener.onResultReady(content, 1);
         }

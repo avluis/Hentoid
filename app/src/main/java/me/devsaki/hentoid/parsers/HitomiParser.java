@@ -49,7 +49,7 @@ public class HitomiParser implements ImageListParser {
         Map<String, String> downloadParams = new HashMap<>();
         // Add referer information to downloadParams for future image download
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, pageUrl);
-        String downloadParamsStr = JsonHelper.serializeToJson(downloadParams);
+        String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
         int order = 1;
         for (Element element : imgElements) {

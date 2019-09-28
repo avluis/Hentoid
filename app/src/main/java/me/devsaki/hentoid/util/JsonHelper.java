@@ -34,8 +34,8 @@ public class JsonHelper {
             .add(new AttributeType.AttributeTypeAdapter())
             .build();
 
-    public static <K> String serializeToJson(K o) {
-        JsonAdapter<K> jsonAdapter = MOSHI.adapter((Class<K>) o.getClass());
+    public static <K> String serializeToJson(K o, Type type) {
+        JsonAdapter<K> jsonAdapter = MOSHI.adapter(type);
 
         return jsonAdapter.toJson(o);
     }
@@ -49,9 +49,9 @@ public class JsonHelper {
      * @param <K>    Type of the object to save
      * @throws IOException If anything happens during file I/O
      */
-    public static <K> File createJson(K object, File dir) throws IOException {
+    public static <K> File createJson(K object, Type type, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
-        String json = serializeToJson(object);
+        String json = serializeToJson(object, type);
         try (OutputStream output = FileHelper.getOutputStream(file)) {
             if (output != null) {
                 // build
@@ -75,10 +75,10 @@ public class JsonHelper {
      * @param <K>    Type of the object to save
      * @throws IOException If anything happens during file I/O
      */
-    static <K> void updateJson(K object, @Nonnull DocumentFile file) throws IOException {
+    static <K> void updateJson(K object, Type type, @Nonnull DocumentFile file) throws IOException {
         try (OutputStream output = FileHelper.getOutputStream(file)) {
             if (output != null) {
-                String json = serializeToJson(object);
+                String json = serializeToJson(object, type);
                 // build
                 byte[] bytes = json.getBytes();
                 // write

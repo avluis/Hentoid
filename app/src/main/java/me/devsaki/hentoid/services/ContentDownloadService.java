@@ -469,7 +469,7 @@ public class ContentDownloadService extends IntentService {
             // Save JSON file
             if (dir.exists()) {
                 try {
-                    File jsonFile = JsonHelper.createJson(new JsonContent(content), dir);
+                    File jsonFile = JsonHelper.createJson(new JsonContent(content), JsonContent.class, dir);
                     // Cache its URI to the newly created content
                     DocumentFile jsonDocFile = FileHelper.getDocumentFile(jsonFile, false);
                     if (jsonDocFile != null) {
