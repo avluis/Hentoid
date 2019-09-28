@@ -1,15 +1,15 @@
 package me.devsaki.hentoid.parsers.content;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class FakkuGalleryMetadata {
     public FakkuContent content;
-    public HashMap<String, FakkuPage> pages;
+    public Map<String, FakkuPage> pages;
     public String key_hash;
     public String key_data;
 
 
-    public class FakkuContent {
+    public static class FakkuContent {
         public String content_name;
         public String content_url;
         public String content_description;
@@ -17,7 +17,7 @@ public class FakkuGalleryMetadata {
         public String content_pages;
     }
 
-    public class FakkuPage {
+    public static class FakkuPage {
         public String page;
         public String image;
         public String thumb;
