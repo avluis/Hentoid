@@ -5,8 +5,6 @@ import android.webkit.WebResourceResponse;
 
 import androidx.annotation.NonNull;
 
-import com.google.gson.Gson;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -56,7 +54,7 @@ public class HttpHelper {
         ResponseBody resource = getOnlineResource(url, headers, useHentoidAgent).body();
         if (resource != null) {
             String s = resource.string();
-            if (s.startsWith("{")) return new Gson().fromJson(s, type);
+            if (s.startsWith("{")) return JsonHelper.jsonToObject(s, type);
         }
         return null;
     }

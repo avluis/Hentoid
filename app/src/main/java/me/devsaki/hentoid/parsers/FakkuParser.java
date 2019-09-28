@@ -2,8 +2,7 @@ package me.devsaki.hentoid.parsers;
 
 import android.util.Pair;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.squareup.moshi.Types;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -41,9 +40,13 @@ public class FakkuParser implements ImageListParser {
             return result;
         }
 
-        Type type = new TypeToken<Map<String, String>>() {
-        }.getType();
-        Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
+        Map<String, String> downloadParams;
+        try {
+            downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
+        } catch (IOException e) {
+            Timber.e(e);
+            return result;
+        }
 
         if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
             Timber.e("Download parameters do not contain any cookie");

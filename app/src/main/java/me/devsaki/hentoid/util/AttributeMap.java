@@ -25,7 +25,7 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
             list = new ArrayList<>();
             put(type, list);
         }
-        list.add(attributeItem);
+        if (list != null) list.add(attributeItem);
     }
 
     public void addAll(List<Attribute> attributeList) {

@@ -97,8 +97,9 @@ dependencies {
     // Intro screens or slides: github.com/apl-devs/AppIntro
     implementation 'com.github.paolorotolo:appintro:v5.1.0'
 
-    // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
-    implementation 'com.google.code.gson:gson:2.8.5'
+    // Java serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
+    implementation 'com.squareup.moshi:moshi:1.8.0'
+    implementation 'com.squareup.moshi:moshi-adapters:1.8.0'
 
     // Timber (Extensible Logger): github.com/JakeWharton/timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
@@ -143,7 +144,7 @@ dependencies {
     //    https://github.com/square/retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.6.1'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.6.1'
-    implementation 'com.squareup.retrofit2:converter-gson:2.6.1'
+    implementation 'com.squareup.retrofit2:converter-moshi:2.6.1'
 
     //    https://github.com/ReactiveX/RxJava
     implementation 'io.reactivex.rxjava2:rxjava:2.2.12'

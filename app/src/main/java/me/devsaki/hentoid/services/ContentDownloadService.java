@@ -24,8 +24,6 @@ import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.crashlytics.android.Crashlytics;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.greenrobot.eventbus.EventBus;
@@ -33,7 +31,6 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +60,7 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
@@ -471,7 +469,7 @@ public class ContentDownloadService extends IntentService {
             // Save JSON file
             if (dir.exists()) {
                 try {
-                    File jsonFile = JsonHelper.createJson(content.preJSONExport(), dir);
+                    File jsonFile = JsonHelper.createJson(new JsonContent(content), dir);
                     // Cache its URI to the newly created content
                     DocumentFile jsonDocFile = FileHelper.getDocumentFile(jsonFile, false);
                     if (jsonDocFile != null) {
@@ -562,16 +560,21 @@ public class ContentDownloadService extends IntentService {
         String downloadParamsStr = img.getDownloadParams();
         if (downloadParamsStr != null && downloadParamsStr.length() > 2) // Avoid empty and "{}"
         {
-            Type type = new TypeToken<Map<String, String>>() {
-            }.getType();
-            Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
+            Map<String, String> downloadParams = null;
+            try {
+                downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
+            } catch (IOException e) {
+                Timber.w(e);
+            }
 
-            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
-                headers.put(HttpHelper.HEADER_COOKIE_KEY, downloadParams.get(HttpHelper.HEADER_COOKIE_KEY));
-            if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
-                headers.put(HttpHelper.HEADER_REFERER_KEY, downloadParams.get(HttpHelper.HEADER_REFERER_KEY));
-            if (downloadParams.containsKey("backupUrl"))
-                backupUrl = downloadParams.get("backupUrl");
+            if (downloadParams != null) {
+                if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
+                    headers.put(HttpHelper.HEADER_COOKIE_KEY, downloadParams.get(HttpHelper.HEADER_COOKIE_KEY));
+                if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
+                    headers.put(HttpHelper.HEADER_REFERER_KEY, downloadParams.get(HttpHelper.HEADER_REFERER_KEY));
+                if (downloadParams.containsKey("backupUrl"))
+                    backupUrl = downloadParams.get("backupUrl");
+            }
         }
         final String backupUrlFinal = (null == backupUrl) ? "" : backupUrl;
 
@@ -608,7 +611,7 @@ public class ContentDownloadService extends IntentService {
         } catch (IOException e) {
             Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
             updateImageStatus(img, false);
-            logErrorRecord(img.content.getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getAbsolutePath());
+            logErrorRecord(img.content.getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getAbsolutePath() + " " + e.getMessage());
         }
     }
 
@@ -677,11 +680,9 @@ public class ContentDownloadService extends IntentService {
         } else Timber.w("Failed to parse backup URL");
     }
 
-    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException {
-        Type type = new TypeToken<Map<String, String>>() {
-        }.getType();
+    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException, IOException {
+        Map<String, String> downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
 
-        Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
         if (!downloadParams.containsKey("pageInfo"))
             throw new InvalidParameterException("No pageInfo");
 
@@ -694,7 +695,7 @@ public class ContentDownloadService extends IntentService {
 //        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
         Bitmap sourcePicture = BitmapFactory.decodeByteArray(binaryContent, 0, binaryContent.length);
 
-        PageInfo page = new Gson().fromJson(pageInfoValue, PageInfo.class);
+        PageInfo page = JsonHelper.jsonToObject(pageInfoValue, PageInfo.class);
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
         Bitmap destPicture = Bitmap.createBitmap(page.width, page.height, conf);
         Canvas destCanvas = new Canvas(destPicture);

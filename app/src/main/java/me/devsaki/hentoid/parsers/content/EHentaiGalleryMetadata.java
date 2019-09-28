@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.parsers.content;
 
-import com.google.gson.annotations.Expose;
-
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -15,35 +13,20 @@ import me.devsaki.hentoid.util.AttributeMap;
 
 public class EHentaiGalleryMetadata {
 
-    @Expose
     public String gid;
-    @Expose
     public String token;
-    @Expose
     public String archiver_key;
-    @Expose
     public String title;
-    @Expose
     public String title_jpn;
-    @Expose
     public String category;
-    @Expose
     public String thumb;
-    @Expose
     public String uploader;
-    @Expose
     public String posted;
-    @Expose
     public String filecount;
-    @Expose
     public String filesize;
-    @Expose
     public boolean expunged;
-    @Expose
     public double rating;
-    @Expose
     public String torrentcount;
-    @Expose
     public List<String> tags;
 
 

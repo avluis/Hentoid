@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.parsers;
 
-import com.google.gson.Gson;
-import com.google.gson.annotations.Expose;
+import com.squareup.moshi.Moshi;
 
 import org.jsoup.nodes.Document;
 
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.JsonHelper;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 
@@ -22,9 +22,7 @@ public class PururinParser extends BaseParser {
     private static final String IMAGE_PATH = "//cdn.pururin.io/assets/images/data/";
 
     private class PururinInfo {
-        @Expose
         String image_extension;
-        @Expose
         String id;
     }
 
@@ -43,7 +41,7 @@ public class PururinParser extends BaseParser {
         Document doc = getOnlineDocument(url);
         if (doc != null) {
             String json = doc.select("gallery-read").attr(":gallery");
-            PururinInfo info = new Gson().fromJson(json, PururinInfo.class);
+            PururinInfo info = JsonHelper.jsonToObject(json, PururinInfo.class);
 
             // 2- Get imagePath from app.js => it is constant anyway, and app.js is 3 MB long => put it there as a const
             for (int i = 0; i < content.getQtyPages(); i++) {

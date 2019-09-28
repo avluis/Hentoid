@@ -5,7 +5,7 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.annotations.SerializedName;
+import com.squareup.moshi.Json;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -122,18 +122,13 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         }
     }
 
-    public class Struct {
+    static public class Struct {
 
-        @SerializedName("tag_name")
+        @Json(name = "tag_name")
         String tagName;
-
-        @SerializedName("name")
         public String name;
-
-        @SerializedName("body")
         public String body;
-
-        @SerializedName("created_at")
+        @Json(name = "created_at")
         Date creationDate;
     }
 
