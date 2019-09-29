@@ -102,8 +102,8 @@ public class ImageGalleryFragment extends Fragment {
 
         galleryImagesAdapter = new ImageGalleryAdapter(null, this::onFavouriteClick);
         galleryImagesAdapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
-        RecyclerView releaseDescription = requireViewById(rootView, R.id.viewer_gallery_recycler);
-        releaseDescription.setAdapter(galleryImagesAdapter);
+        RecyclerView recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
+        recyclerView.setAdapter(galleryImagesAdapter);
     }
 
     private void onImagesChanged(List<ImageFile> images) {
