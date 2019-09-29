@@ -21,7 +21,7 @@ public class PururinParser extends BaseParser {
 
     private static final String IMAGE_PATH = "//cdn.pururin.io/assets/images/data/";
 
-    private class PururinInfo {
+    public static class PururinInfo {
         String image_extension;
         String id;
     }
