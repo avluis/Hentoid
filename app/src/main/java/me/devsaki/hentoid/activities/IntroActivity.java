@@ -100,7 +100,7 @@ public class IntroActivity extends AppIntro2 {
     @Override
     public void onDonePressed(Fragment currentFragment) {
         Preferences.setIsFirstRun(false);
-        Intent intent = new Intent(this, DownloadsActivity.class);
+        Intent intent = new Intent(this, LibraryActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK);

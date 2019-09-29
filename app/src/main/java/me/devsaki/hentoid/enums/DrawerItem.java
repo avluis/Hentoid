@@ -31,8 +31,6 @@ public enum DrawerItem {
     NEXUS("HENTAI NEXUS", R.drawable.ic_menu_nexus, NexusActivity.class),
     MUSES("8MUSES", R.drawable.ic_menu_8muses, MusesActivity.class),
     DOUJINS("DOUJINS.COM", R.drawable.ic_menu_doujins, DoujinsActivity.class),
-    //    MIKAN("MIKAN SEARCH", R.drawable.ic_menu_mikan, MikanSearchActivity.class),
-    //    HOME("HOME", R.drawable.ic_menu_home, DownloadsActivity.class),
     QUEUE("QUEUE", R.drawable.ic_menu_queue, QueueActivity.class),
     PREFS("PREFERENCES", R.drawable.ic_menu_prefs, PrefsActivity.class),
     ABOUT("ABOUT", R.drawable.ic_menu_about, AboutActivity.class);

@@ -9,6 +9,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -56,6 +57,12 @@ public class QueueFragment extends BaseFragment {
     private boolean isEmpty = false;
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
@@ -64,6 +71,7 @@ public class QueueFragment extends BaseFragment {
 
     @Override
     public void onDestroy() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         mAdapter.dispose();
         super.onDestroy();
     }

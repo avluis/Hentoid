@@ -27,7 +27,7 @@ import java.util.List;
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.SelectableAdapter;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.enums.DrawerItem;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.viewholders.DrawerItemFlex;
@@ -36,14 +36,14 @@ import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 
 public final class NavigationDrawerFragment extends Fragment {
 
-    private DownloadsActivity parentActivity;
+    private LibraryActivity parentActivity;
 
     private FlexibleAdapter<DrawerItemFlex> drawerAdapter;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        parentActivity = (DownloadsActivity) context;
+        parentActivity = (LibraryActivity) context;
     }
 
     @Override

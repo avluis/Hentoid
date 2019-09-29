@@ -91,18 +91,14 @@
                 android:resource="@xml/searchable" />
         </activity>
         <activity
-            android:name=".activities.MikanSearchActivity"
+            android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_mikan"
-            android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/AppTheme"
-            tools:ignore="UnusedAttribute">
+            android:label="@string/title_activity_downloads"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar.Overlay">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
         </activity>
         <activity
             android:name=".activities.QueueActivity"

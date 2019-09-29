@@ -60,7 +60,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.fragments.downloads.AboutMikanDialogFragment;
 import me.devsaki.hentoid.fragments.downloads.PagerFragment;
 import me.devsaki.hentoid.fragments.downloads.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.fragments.downloads.UpdateSuccessDialogFragment;
@@ -641,7 +640,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         aboutMikanMenu.setVisible(MODE_MIKAN == mode);
         if (MODE_MIKAN == mode) {
             aboutMikanMenu.setOnMenuItemClickListener(item -> {
-                AboutMikanDialogFragment.show(getFragmentManager());
+//                AboutMikanDialogFragment.show(getFragmentManager());
                 return true;
             });
         }

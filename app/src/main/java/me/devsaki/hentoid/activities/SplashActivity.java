@@ -36,7 +36,7 @@ public class SplashActivity extends AppCompatActivity {
         } else if (DatabaseMaintenance.hasToMigrate(this)) {
             handleDatabaseMigration();
         } else {
-            goToDownloadsActivity();
+            goToLibraryActivity();
         }
     }
 
@@ -53,8 +53,8 @@ public class SplashActivity extends AppCompatActivity {
         finish();
     }
 
-    private void goToDownloadsActivity() {
-        Intent intent = new Intent(this, DownloadsActivity.class);
+    private void goToLibraryActivity() {
+        Intent intent = new Intent(this, LibraryActivity.class);
         intent = UnlockActivity.wrapIntent(this, intent);
         goToActivity(intent);
     }
@@ -66,7 +66,7 @@ public class SplashActivity extends AppCompatActivity {
             progressDialog.setProgress(event.booksOK + event.booksKO);
         } else if (ImportEvent.EV_COMPLETE == event.eventType) {
             if (progressDialog != null) progressDialog.dismiss();
-            goToDownloadsActivity();
+            goToLibraryActivity();
         }
     }
 
