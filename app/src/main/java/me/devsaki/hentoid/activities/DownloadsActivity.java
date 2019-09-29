@@ -70,10 +70,6 @@ public class DownloadsActivity extends BaseActivity implements BackInterface {
                     .commit();
         }
 
-        if (!Preferences.getRecentVisibility()) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-        }
-
         drawerLayout = findViewById(R.id.drawer_layout);
 
         toolbar = findViewById(R.id.toolbar);
@@ -90,6 +86,10 @@ public class DownloadsActivity extends BaseActivity implements BackInterface {
         }
 
         setTitle("");
+
+        if (!Preferences.getRecentVisibility()) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
+        }
     }
 
     private Fragment instantiateContentFragment() {

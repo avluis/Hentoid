@@ -125,14 +125,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         viewModel.onRestoreState(savedInstanceState);
 
+        viewModel.getContent()
+                .observe(this, this::onContentChanged);
+
         viewModel.getImages()
                 .observe(this, this::onImagesChanged);
 
         viewModel.getStartingIndex()
                 .observe(this, this::onStartingIndexChanged);
-
-        viewModel.getContent()
-                .observe(this, this::onContentChanged);
 
         viewModel.setOnShuffledChangeListener(this::onShuffleChanged);
 
@@ -162,6 +162,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void onResume() {
         super.onResume();
+
         setSystemBarsVisible(controlsOverlay.getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
         if (Preferences.Constant.PREF_VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             BrowseModeDialogFragment.invoke(this);
@@ -492,6 +493,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         else nextBookButton.setVisibility(View.VISIBLE);
 
         maxPageNumber = content.getQtyPages();
+        updatePageDisplay();
     }
 
     /**

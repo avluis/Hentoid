@@ -30,7 +30,8 @@
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 
 
-#OKHTTP3 (from okhttp3.pro)
+#OKHTTP3 BEGIN (from okhttp3.pro)
+
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**
 
@@ -43,33 +44,106 @@
 # OkHttp platform used only on JVM and when Conscrypt dependency is available.
 -dontwarn okhttp3.internal.platform.ConscryptPlatform
 
-##---------------Begin: proguard configuration for Gson  ----------
-# Gson uses generic type information stored in a class file when working with fields. Proguard
-# removes such information by default, so configure it to keep all of it.
--keepattributes Signature
+#OKHTT3 END
 
-# For using GSON @Expose annotation
--keepattributes *Annotation*
 
-# Gson specific classes
--dontwarn sun.misc.**
-#-keep class com.google.gson.stream.** { *; }
+#RETROFIT BEGIN
 
-# Application classes that will be serialized/deserialized over Gson
--keep class com.google.gson.examples.android.model.** { <fields>; }
+# Retrofit does reflection on generic parameters. InnerClasses is required to use Signature and
+# EnclosingMethod is required to use InnerClasses.
+-keepattributes Signature, InnerClasses, EnclosingMethod
 
-# Prevent proguard from stripping interface information from TypeAdapterFactory,
-# JsonSerializer, JsonDeserializer instances (so they can be used in @JsonAdapter)
--keep class * implements com.google.gson.TypeAdapterFactory
--keep class * implements com.google.gson.JsonSerializer
--keep class * implements com.google.gson.JsonDeserializer
+# Retrofit does reflection on method and parameter annotations.
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
 
-# Prevent R8 from leaving Data object members always null
--keepclassmembers,allowobfuscation class * {
-  @com.google.gson.annotations.SerializedName <fields>;
+# Retain service method parameters when optimizing.
+-keepclassmembers,allowshrinking,allowobfuscation interface * {
+    @retrofit2.http.* <methods>;
 }
 
-##---------------End: proguard configuration for Gson  ----------
+# Ignore annotation used for build tooling.
+-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+
+# Ignore JSR 305 annotations for embedding nullability information.
+-dontwarn javax.annotation.**
+
+# Guarded by a NoClassDefFoundError try/catch and only used when on the classpath.
+-dontwarn kotlin.Unit
+
+# Top-level functions that can only be used by Kotlin.
+-dontwarn retrofit2.KotlinExtensions
+-dontwarn retrofit2.KotlinExtensions$*
+
+# With R8 full mode, it sees no subtypes of Retrofit interfaces since they are created with a Proxy
+# and replaces all potential values with null. Explicitly keeping the interfaces prevents this.
+-if interface * { @retrofit2.http.* <methods>; }
+-keep,allowobfuscation interface <1>
+
+#RETROFIT END
+
+
+##---------------Begin: proguard configuration for Moshi  ----------
+# JSR 305 annotations are for embedding nullability information.
+-dontwarn javax.annotation.**
+
+-keepclasseswithmembers class * {
+    @com.squareup.moshi.* <methods>;
+}
+
+-keep @com.squareup.moshi.JsonQualifier interface *
+
+# Enum field names are used by the integrated EnumJsonAdapter.
+# Annotate enums with @JsonClass(generateAdapter = false) to use them with Moshi.
+-keepclassmembers @com.squareup.moshi.JsonClass class * extends java.lang.Enum {
+    <fields>;
+}
+
+# The name of @JsonClass types is used to look up the generated adapter.
+-keepnames @com.squareup.moshi.JsonClass class *
+
+# Retain generated target class's synthetic defaults constructor and keep DefaultConstructorMarker's
+# name. We will look this up reflectively to invoke the type's constructor.
+#
+# We can't _just_ keep the defaults constructor because Proguard/R8's spec doesn't allow wildcard
+# matching preceding parameters.
+-keepnames class kotlin.jvm.internal.DefaultConstructorMarker
+-keepclassmembers @com.squareup.moshi.JsonClass @kotlin.Metadata class * {
+    synthetic <init>(...);
+}
+
+# Retain generated JsonAdapters if annotated type is retained.
+-if @com.squareup.moshi.JsonClass class *
+-keep class <1>JsonAdapter {
+    <init>(...);
+    <fields>;
+}
+-if @com.squareup.moshi.JsonClass class **$*
+-keep class <1>_<2>JsonAdapter {
+    <init>(...);
+    <fields>;
+}
+-if @com.squareup.moshi.JsonClass class **$*$*
+-keep class <1>_<2>_<3>JsonAdapter {
+    <init>(...);
+    <fields>;
+}
+-if @com.squareup.moshi.JsonClass class **$*$*$*
+-keep class <1>_<2>_<3>_<4>JsonAdapter {
+    <init>(...);
+    <fields>;
+}
+-if @com.squareup.moshi.JsonClass class **$*$*$*$*
+-keep class <1>_<2>_<3>_<4>_<5>JsonAdapter {
+    <init>(...);
+    <fields>;
+}
+-if @com.squareup.moshi.JsonClass class **$*$*$*$*$*
+-keep class <1>_<2>_<3>_<4>_<5>_<6>JsonAdapter {
+    <init>(...);
+    <fields>;
+}
+
+##---------------End: proguard configuration for Moshi  ----------
 
 
 #keep rules

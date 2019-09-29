@@ -9,7 +9,7 @@ import me.devsaki.hentoid.util.OkHttpClientSingleton;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.moshi.MoshiConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
@@ -23,7 +23,7 @@ public class MikanServer {
             .baseUrl(MIKAN_BASE_URL)
             .client(OkHttpClientSingleton.getInstance())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create())
             .build()
             .create(Api.class);
 

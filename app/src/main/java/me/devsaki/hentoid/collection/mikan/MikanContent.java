@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.collection.mikan;
 
-import com.google.gson.annotations.Expose;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,30 +13,18 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 public class MikanContent implements Serializable {
-    @Expose
     public long id;
-    @Expose
     public String name;
-    @Expose
     public String url;
-    @Expose
     public String image;
-    @Expose
     public final List<MikanAttribute> artist = new ArrayList<>();
-    @Expose
     public final List<MikanAttribute> group = new ArrayList<>();
-    @Expose
     public final List<MikanAttribute> series = new ArrayList<>();
-    @Expose
     public final List<MikanAttribute> characters = new ArrayList<>();
-    @Expose
     public final List<MikanAttribute> tags = new ArrayList<>();
-    @Expose
     public MikanAttribute type;
-    @Expose
     public MikanAttribute language;
     // TODO
-    @Expose
     public Date time;
 
 

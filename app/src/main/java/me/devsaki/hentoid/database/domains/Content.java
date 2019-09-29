@@ -1,13 +1,11 @@
 package me.devsaki.hentoid.database.domains;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.annimon.stream.Stream;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -44,56 +42,36 @@ public class Content implements Serializable {
 
     @Id
     private long id;
-    @Expose
     private String url;
-    @Expose(serialize = false, deserialize = false)
     private String uniqueSiteId; // Has to be queryable in DB, hence has to be a field
-    @Expose
     private String title;
-    @Expose
     private String author;
-    @Expose(serialize = false, deserialize = false)
     private ToMany<Attribute> attributes;
-    @Expose
     private String coverImageUrl;
-    @Expose
     private Integer qtyPages;
-    @Expose
     private long uploadDate;
-    @Expose
     private long downloadDate = 0;
-    @Expose
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
-    @Expose(serialize = false, deserialize = false)
     @Backlink(to = "content")
     private ToMany<ImageFile> imageFiles;
-    @Expose
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
     private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
-    @Expose
     private boolean favourite;
-    @Expose
     private long reads = 0;
-    @Expose
     private long lastReadDate;
-    @Expose
     private int lastReadPageIndex = 0;
     // Temporary during SAVED state only; no need to expose them for JSON persistence
-    @Expose(serialize = false, deserialize = false)
     private String downloadParams;
     // Temporary during ERROR state only; no need to expose them for JSON persistence
-    @Expose(serialize = false, deserialize = false)
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
     // Needs to be in the DB to keep the information when deletion takes a long time and user navigates
     // No need to save that into JSON
-    @Expose(serialize = false, deserialize = false)
     private boolean isBeingDeleted = false;
     // Needs to be in the DB to optimize I/O
     // No need to save that into the JSON file itself, obviously
-    @Expose(serialize = false, deserialize = false)
     private String jsonUri;
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
@@ -110,16 +88,6 @@ public class Content implements Serializable {
     @Transient
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
 
-    // Attributes kept for retro-compatibility with contentV2.json Hentoid files
-    @Transient
-    @Expose
-    @SerializedName("attributes")
-    private AttributeMap attributeMap;
-    @Transient
-    @Expose
-    @SerializedName("imageFiles")
-    private ArrayList<ImageFile> imageList;
-
 
     public ToMany<Attribute> getAttributes() {
         return this.attributes;
@@ -129,22 +97,29 @@ public class Content implements Serializable {
         this.attributes = attributes;
     }
 
+    public void clearAttributes() {
+        this.attributes.clear();
+    }
+
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        for (Attribute a : attributes) {
-            a.computeUrl(this.getSite());
-            result.add(a);
-        }
+        for (Attribute a : attributes) result.add(a);
         return result;
     }
 
-    public Content addAttributes(AttributeMap attributes) {
+    public Content addAttributes(@NonNull AttributeMap attrs) {
         if (attributes != null) {
-            for (AttributeType type : attributes.keySet()) {
-                this.attributes.addAll(attributes.get(type));
+            for (AttributeType type : attrs.keySet()) {
+                List<Attribute> attrList = attrs.get(type);
+                if (attrList != null)
+                    addAttributes(attrList);
             }
         }
         return this;
+    }
+
+    public void addAttributes(@NonNull List<Attribute> attrs) {
+        if (attributes != null) attributes.addAll(attrs);
     }
 
     public long getId() {
@@ -196,6 +171,10 @@ public class Content implements Serializable {
             default:
                 return "";
         }
+    }
+
+    public void populateUniqueSiteId() {
+        this.uniqueSiteId = computeUniqueSiteId();
     }
 
     // Used for upgrade purposes
@@ -281,7 +260,7 @@ public class Content implements Serializable {
 
     public Content setUrl(String url) {
         this.url = url;
-        this.uniqueSiteId = computeUniqueSiteId();
+        populateUniqueSiteId();
         return this;
     }
 
@@ -366,34 +345,6 @@ public class Content implements Serializable {
         return this;
     }
 
-    public Content preJSONExport() { // TODO - this is shabby
-        this.attributeMap = getAttributeMap();
-        this.imageList = new ArrayList<>(imageFiles);
-        return this;
-    }
-
-    public Content postJSONImport() {   // TODO - this is shabby
-        if (null == site) site = Site.NONE;
-
-        if (this.attributeMap != null) {
-            this.attributes.clear();
-            for (AttributeType type : this.attributeMap.keySet()) {
-                for (Attribute attr : this.attributeMap.get(type)) {
-                    if (null == attr.getType())
-                        attr.setType(AttributeType.SERIE); // Fix the issue with v1.6.5
-                    this.attributes.add(attr.computeLocation(site));
-                }
-            }
-        }
-        if (this.imageList != null) {
-            this.imageFiles.clear();
-            this.imageFiles.addAll(this.imageList);
-        }
-        this.populateAuthor();
-        this.uniqueSiteId = computeUniqueSiteId();
-        return this;
-    }
-
     public String getTitle() {
         return title;
     }
@@ -431,7 +382,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    long getUploadDate() {
+    public long getUploadDate() {
         return uploadDate;
     }
 
@@ -484,8 +435,7 @@ public class Content implements Serializable {
         this.percent = percent;
     }
 
-    public void computePercent()
-    {
+    public void computePercent() {
         if (imageFiles != null && 0 == percent) {
             long progress = Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.ERROR).count();
             percent = progress * 100.0 / qtyPages;
@@ -615,7 +565,6 @@ public class Content implements Serializable {
     public void increaseNumberDownloadRetries() {
         this.numberDownloadRetries++;
     }
-
 
 
     @Override

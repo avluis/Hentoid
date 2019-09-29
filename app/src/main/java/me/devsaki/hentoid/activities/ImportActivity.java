@@ -321,7 +321,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
         finalizeSelectRootFolder(targetFolder);
     }
 
-    // Return from Kitkat picker
+    // Return from SAF picker
     public void onSelectSAFRootFolder(@NonNull Uri treeUri) {
         String treePath = treeUri.getPath();
 

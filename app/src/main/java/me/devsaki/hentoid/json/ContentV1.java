@@ -1,9 +1,10 @@
-package me.devsaki.hentoid.database.domains;
-
-import com.google.gson.annotations.Expose;
+package me.devsaki.hentoid.json;
 
 import java.util.List;
 
+import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
@@ -17,39 +18,22 @@ import me.devsaki.hentoid.util.AttributeMap;
 @Deprecated
 public class ContentV1 {
 
-    @Expose
     private String url;
-    @Expose
     private String title;
-    @Expose
     private String htmlDescription;
-    @Expose
     private Attribute serie;
-    @Expose
     private List<Attribute> artists;
-    @Expose
     private List<Attribute> publishers;
-    @Expose
     private Attribute language;
-    @Expose
     private List<Attribute> tags;
-    @Expose
     private List<Attribute> translators;
-    @Expose
     private String coverImageUrl;
-    @Expose
     private Integer qtyPages;
-    @Expose
     private long uploadDate;
-    @Expose
     private Attribute user;
-    @Expose
     private long downloadDate;
-    @Expose
     private StatusContent status;
-    @Expose
     private List<ImageFile> imageFiles;
-    @Expose
     private Site site;
 
     public void setUrl(String url) {

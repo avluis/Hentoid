@@ -24,7 +24,7 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 public class HitomiParser implements ImageListParser {
 
     // Reproduction of the Hitomi.la Javascript to find the hostname of the image server (see subdomain_from_url@reader.js)
-    private static final int NUMBER_OF_FRONTENDS = 2;
+    private static final int NUMBER_OF_FRONTENDS = 3;
     private static final String HOSTNAME_SUFFIX = "a";
     private static final char HOSTNAME_PREFIX_BASE = 97;
 
@@ -42,14 +42,13 @@ public class HitomiParser implements ImageListParser {
         // New Hitomi image URLs starting from june 2018
         //  If book ID is even, starts with 'aa'; else starts with 'ba'
         int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
-        if (1 == referenceId)
-            referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
+
         String imageSubdomain = ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
 
         Map<String, String> downloadParams = new HashMap<>();
         // Add referer information to downloadParams for future image download
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, pageUrl);
-        String downloadParamsStr = JsonHelper.serializeToJson(downloadParams);
+        String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
         int order = 1;
         for (Element element : imgElements) {

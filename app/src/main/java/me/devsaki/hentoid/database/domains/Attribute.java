@@ -2,8 +2,6 @@ package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.NonNull;
 
-import com.google.gson.annotations.Expose;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -33,14 +31,11 @@ public class Attribute {
 
     @Id
     private long id;
-    @Expose
     @Index
     private String name;
-    @Expose
     @Index
     @Convert(converter = AttributeType.AttributeTypeConverter.class, dbType = Integer.class)
     private AttributeType type;
-    @Expose(serialize = false, deserialize = false)
     @Backlink(to = "attribute")
     private ToMany<AttributeLocation> locations; // One entry per site
 
@@ -52,11 +47,6 @@ public class Attribute {
     @Backlink(to = "attributes") // backed by the to-many relation in Content
     public ToMany<Content> contents;
 
-    // Kept for retro-compatibility with contentV2.json Hentoid files
-    @Transient
-    @Expose
-    private String url;
-
 
     public Attribute() {
     } // No-arg constructor required by ObjectBox
@@ -64,14 +54,12 @@ public class Attribute {
     public Attribute(@Nonnull AttributeType type, @Nonnull String name) {
         this.type = type;
         this.name = name;
-        this.url = "";
     }
 
     public Attribute(@Nonnull AttributeType type, @Nonnull String name, @Nonnull String url, @Nonnull Site site) {
         this.type = type;
         this.name = name;
-        this.url = url;
-        computeLocation(site);
+        computeLocation(site, url);
     }
 
     public Attribute(@Nonnull DataInputStream input) throws IOException {
@@ -91,10 +79,6 @@ public class Attribute {
     public Attribute setId(long id) {
         this.id = id;
         return this;
-    }
-
-    public String getUrl() {
-        return url;
     }
 
     public String getName() {
@@ -135,17 +119,7 @@ public class Attribute {
         return this;
     }
 
-    void computeUrl(Site site) {
-        for (AttributeLocation location : locations) {
-            if (location.site.equals(site)) {
-                url = location.url;
-                return;
-            }
-        }
-        url = ""; // Field shouldn't be null
-    }
-
-    Attribute computeLocation(Site site) {
+    Attribute computeLocation(Site site, String url) {
         locations.add(new AttributeLocation(site, url));
         return this;
     }

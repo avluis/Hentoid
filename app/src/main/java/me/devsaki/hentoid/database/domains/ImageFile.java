@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.database.domains;
 
-import com.google.gson.annotations.Expose;
-
 import java.util.Locale;
 
 import io.objectbox.annotation.Convert;
@@ -20,22 +18,16 @@ public class ImageFile {
 
     @Id
     private long id;
-    @Expose
     private Integer order;
-    @Expose
     private String url;
-    @Expose
     private String name;
-    @Expose
     private boolean favourite = false;
-    @Expose
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
     public ToOne<Content> content;
 
 
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
-    @Expose(serialize = false, deserialize = false)
     private String downloadParams;
 
 

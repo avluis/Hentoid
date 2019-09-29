@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.collection.mikan;
 
-import com.google.gson.annotations.Expose;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,22 +11,16 @@ import me.devsaki.hentoid.enums.StatusContent;
 
 public class MikanContentResponse implements Serializable {
 
-    @Expose
     public String request;
-    @Expose
     public int maxpage;
-    @Expose
     public final List<String> pages = new ArrayList<>();
-    @Expose
     public final List<MikanContent> result = new ArrayList<>();
 
 
-    public List<Content> toContentList(LibraryMatcher matcher)
-    {
+    public List<Content> toContentList(LibraryMatcher matcher) {
         List<Content> res = new ArrayList<>();
 
-        for (MikanContent mikanContent : result)
-        {
+        for (MikanContent mikanContent : result) {
             if (mikanContent.url != null) res.add(mikanContent.toContent());
         }
 
@@ -37,13 +29,11 @@ public class MikanContentResponse implements Serializable {
         return res;
     }
 
-    public List<ImageFile> toImageFileList()
-    {
-        int i=0;
+    public List<ImageFile> toImageFileList() {
+        int i = 0;
         List<ImageFile> res = new ArrayList<>();
 
-        for (String s : pages)
-        {
+        for (String s : pages) {
             res.add(new ImageFile(i, s, StatusContent.ONLINE));
             i++;
         }

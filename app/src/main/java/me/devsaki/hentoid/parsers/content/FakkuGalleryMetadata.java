@@ -1,39 +1,25 @@
 package me.devsaki.hentoid.parsers.content;
 
-import com.google.gson.annotations.Expose;
-
-import java.util.HashMap;
+import java.util.Map;
 
 public class FakkuGalleryMetadata {
-    @Expose
     public FakkuContent content;
-    @Expose
-    public HashMap<String, FakkuPage> pages;
-    @Expose
+    public Map<String, FakkuPage> pages;
     public String key_hash;
-    @Expose
     public String key_data;
 
 
-    public class FakkuContent {
-        @Expose
+    public static class FakkuContent {
         public String content_name;
-        @Expose
         public String content_url;
-        @Expose
         public String content_description;
-        @Expose
         public String content_language;
-        @Expose
         public String content_pages;
     }
 
-    public class FakkuPage {
-        @Expose
+    public static class FakkuPage {
         public String page;
-        @Expose
         public String image;
-        @Expose
         public String thumb;
     }
 }

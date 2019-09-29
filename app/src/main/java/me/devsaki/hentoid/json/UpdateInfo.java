@@ -1,19 +1,15 @@
-package me.devsaki.hentoid.model;
+package me.devsaki.hentoid.json;
 
-import com.google.gson.annotations.SerializedName;
+import com.squareup.moshi.Json;
 
-public class UpdateInfoJson {
+public class UpdateInfo {
 
-    @SerializedName("updateURL")
+    @Json(name = "updateURL")
     private String updateUrl;
-
-    @SerializedName("versionCode")
     private int versionCode;
-
-    @SerializedName("updateURL.debug")
+    @Json(name = "updateURL.debug")
     private String updateUrlDebug;
-
-    @SerializedName("versionCode.debug")
+    @Json(name = "versionCode.debug")
     private int versionCodeDebug;
 
 

@@ -1,114 +1,109 @@
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
-    app:cardBackgroundColor="@color/card_surface"
-    app:cardCornerRadius="4dp"
-    app:cardElevation="6dp">
+    android:background="@drawable/bg_book_card"
+    android:elevation="6dp"
+    tools:targetApi="lollipop">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <ProgressBar
+        android:id="@+id/pbDownload"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
 
-        <ProgressBar
-            android:id="@+id/pbDownload"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:indeterminate="true"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="visible" />
+    <include layout="@layout/include_item_details" />
 
-        <include layout="@layout/include_item_details" />
+    <ImageView
+        android:id="@+id/queueTopBtn"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:tint="?colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/queueUpBtn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barrier"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_doublearrowup" />
 
-        <ImageView
-            android:id="@+id/queueTopBtn"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:tint="?colorSecondary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/queueUpBtn"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/barrier"
-            tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_doublearrowup" />
+    <ImageView
+        android:id="@+id/queueUpBtn"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:tint="?colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/queueDownBtn"
+        app:layout_constraintStart_toEndOf="@id/queueTopBtn"
+        app:layout_constraintTop_toBottomOf="@id/barrier"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_arrow_up" />
 
-        <ImageView
-            android:id="@+id/queueUpBtn"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:tint="?colorSecondary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/queueDownBtn"
-            app:layout_constraintStart_toEndOf="@id/queueTopBtn"
-            app:layout_constraintTop_toBottomOf="@id/barrier"
-            tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_arrow_up" />
+    <ImageView
+        android:id="@+id/queueDownBtn"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:tint="?colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btnCancel"
+        app:layout_constraintStart_toEndOf="@id/queueUpBtn"
+        app:layout_constraintTop_toBottomOf="@id/barrier"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_arrow_down" />
 
-        <ImageView
-            android:id="@+id/queueDownBtn"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:tint="?colorSecondary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnCancel"
-            app:layout_constraintStart_toEndOf="@id/queueUpBtn"
-            app:layout_constraintTop_toBottomOf="@id/barrier"
-            tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_arrow_down" />
+    <TextView
+        android:id="@+id/btnCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:text="@string/cancel"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_body_1"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivSite"
+        app:layout_constraintStart_toEndOf="@id/queueDownBtn"
+        app:layout_constraintTop_toBottomOf="@id/barrier" />
 
-        <TextView
-            android:id="@+id/btnCancel"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"
-            android:text="@string/cancel"
-            android:textColor="?colorSecondary"
-            android:textSize="@dimen/text_body_1"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/ivSite"
-            app:layout_constraintStart_toEndOf="@id/queueDownBtn"
-            app:layout_constraintTop_toBottomOf="@id/barrier" />
+    <ImageView
+        android:id="@+id/ivSite"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:tint="?colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barrier"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_menu_nhentai" />
 
-        <ImageView
-            android:id="@+id/ivSite"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:adjustViewBounds="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:tint="?colorSecondary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/barrier"
-            tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_menu_nhentai" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

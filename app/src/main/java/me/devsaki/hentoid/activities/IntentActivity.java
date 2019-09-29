@@ -77,7 +77,7 @@ public class IntentActivity extends BaseActivity {
             case NHENTAI:
                 return toParse.replace("/g", "");
             case TSUMINO:
-                return toParse.replace("/Book/Info", "");
+                return toParse.replace("/entry", "");
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
                 return toParse.replace("/g", "") + "/"; // '/' required

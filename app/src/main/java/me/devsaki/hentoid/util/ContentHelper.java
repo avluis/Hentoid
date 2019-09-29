@@ -30,6 +30,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.json.JsonContent;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.FileHelper.deleteQuietly;
@@ -88,7 +89,7 @@ public final class ContentHelper {
             throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
         try {
-            JsonHelper.updateJson(content.preJSONExport(), file);
+            JsonHelper.updateJson(JsonContent.fromEntity(content), JsonContent.class, file);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getJsonUri());
         }
@@ -97,7 +98,7 @@ public final class ContentHelper {
     public static void createJson(@Nonnull Content content) {
         File dir = getContentDownloadDir(content);
         try {
-            JsonHelper.createJson(content.preJSONExport(), dir);
+            JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
         }
@@ -229,13 +230,9 @@ public final class ContentHelper {
         }
 
         return dir.listFiles(
-                file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
-                        (
-                                file.getName().toLowerCase().endsWith("jpg")
-                                        || file.getName().toLowerCase().endsWith("jpeg")
-                                        || file.getName().toLowerCase().endsWith("png")
-                                        || file.getName().toLowerCase().endsWith("gif")
-                        )
+                file -> (file.isFile()
+                        && !file.getName().toLowerCase().startsWith("thumb")
+                        && Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName()))
                 )
         );
     }

@@ -25,7 +25,7 @@ import timber.log.Timber;
  * Created by Robb_w on 2018/04
  * Manager class for image download queue (Volley)
  * <p>
- * NB : Class looks like a singleton but isn't really once, since it is reinstanciated everytime forceSlowMode changes
+ * NB : Class looks like a singleton but isn't really one, since it is reinstanciated everytime forceSlowMode changes
  */
 public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListener<T> {
     private static RequestQueueManager mInstance;           // Instance of the singleton

@@ -1,6 +1,4 @@
-package me.devsaki.hentoid.model;
-
-import com.google.gson.annotations.Expose;
+package me.devsaki.hentoid.json;
 
 import java.util.List;
 
@@ -12,25 +10,15 @@ import java.util.List;
 @Deprecated
 public class DoujinBuilder {
 
-    @Expose
     private String title;
-    @Expose
     private URLBuilder serie;
-    @Expose
     private URLBuilder artist;
-    @Expose
     private String description;
-    @Expose
     private String urlImageTitle;
-    @Expose
     private String url;
-    @Expose
     private int qtyPages;
-    @Expose
     private URLBuilder language;
-    @Expose
     private URLBuilder translator;
-    @Expose
     private List<URLBuilder> lstTags;
 
     public String getId() {

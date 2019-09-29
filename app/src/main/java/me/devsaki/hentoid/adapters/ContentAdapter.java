@@ -2,7 +2,7 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -145,12 +145,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @NonNull
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        long clicks = SystemClock.elapsedRealtime();
+//        long clicks = SystemClock.elapsedRealtime();
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_download, parent, false);
-        ContentHolder holder = new ContentHolder(view);
 //        Timber.i(">CreateViewHolder %ss", (SystemClock.elapsedRealtime() - clicks) / 1000.0);
-        return holder;
+        return new ContentHolder(view);
     }
 
     @Override
@@ -163,24 +162,33 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
      */
     @Override
     public void onBindViewHolder(@NonNull ContentHolder holder, final int pos) {
-        long clicks = SystemClock.elapsedRealtime();
+//        long clicks = SystemClock.elapsedRealtime();
         Content content = mSortedList.get(pos);
 
         updateLayoutVisibility(holder, content, pos);
+        attachCover(holder, content);
         attachTitle(holder, content);
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
         attachButtons(holder, content);
+        attachSource(holder, content);
         attachOnClickListeners(holder, content, pos);
+        holder.ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
 //        Timber.i(">BindViewHolder[%s] %ss", pos, (SystemClock.elapsedRealtime() - clicks) / 1000.0);
     }
 
     @Override
     public void onViewRecycled(@NonNull ContentHolder holder) {
         RequestManager requestManager = Glide.with(context.getApplicationContext());
-        requestManager.clear(holder.ivCover2);
         requestManager.clear(holder.ivCover);
+    }
+
+    private void attachCover(ContentHolder holder, Content content) {
+        Glide.with(context.getApplicationContext())
+                .load(ContentHelper.getThumb(content))
+                .apply(glideRequestOptions)
+                .into(holder.ivCover);
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
@@ -193,32 +201,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         if (holder.itemView.isSelected()) {
             Timber.d("Position: %s %s is a selected item currently in view.", pos, content.getTitle());
 
-            holder.fullLayout.setVisibility(View.GONE);
-            holder.miniLayout.setVisibility(View.VISIBLE);
-
-            //Update buttons
-            holder.ivError.setVisibility(View.GONE);
-            holder.ivNew.setVisibility(View.GONE);
-
-            Glide.with(context.getApplicationContext())
-                    .load(ContentHelper.getThumb(content))
-                    .apply(glideRequestOptions)
-                    .into(holder.ivCover2);
+            holder.ivError.setEnabled(false);
+            holder.ivFavourite.setEnabled(false);
+            holder.ivSite.setEnabled(false);
         } else {
-            holder.fullLayout.setVisibility(View.VISIBLE);
-            holder.miniLayout.setVisibility(View.GONE);
-
-            //Update buttons
-            if (content.getStatus() != null) {
-                StatusContent status = content.getStatus();
-                holder.ivError.setVisibility((status == StatusContent.ERROR) ? View.VISIBLE : View.GONE);
-            }
-            holder.ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
-
-            Glide.with(context.getApplicationContext())
-                    .load(ContentHelper.getThumb(content))
-                    .apply(glideRequestOptions)
-                    .into(holder.ivCover);
+            holder.ivError.setEnabled(true);
+            holder.ivFavourite.setEnabled(true);
+            holder.ivSite.setEnabled(true);
         }
 
         if (content.isBeingDeleted()) {
@@ -234,20 +223,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         } else {
             title = content.getTitle();
         }
-
         holder.tvTitle.setText(title);
-        if (holder.itemView.isSelected()) {
-            holder.tvTitle2.setText(title);
-        }
     }
 
     private void attachSeries(ContentHolder holder, Content content) {
         String templateSeries = context.getResources().getString(R.string.work_series);
-        StringBuilder seriesBuilder = new StringBuilder();
         List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
-            holder.tvSeries.setVisibility(View.GONE);
+            holder.tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
         } else {
+            StringBuilder seriesBuilder = new StringBuilder();
             for (int i = 0; i < seriesAttributes.size(); i++) {
                 Attribute attribute = seriesAttributes.get(i);
                 seriesBuilder.append(attribute.getName());
@@ -255,63 +240,51 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     seriesBuilder.append(", ");
                 }
             }
-            holder.tvSeries.setVisibility(View.VISIBLE);
-        }
-        holder.tvSeries.setText(templateSeries.replace("@series@", seriesBuilder.toString()));
-
-        if (seriesAttributes == null) {
-            holder.tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
-            holder.tvSeries.setVisibility(View.VISIBLE);
+            holder.tvSeries.setText(templateSeries.replace("@series@", seriesBuilder));
         }
     }
 
     private void attachArtist(ContentHolder holder, Content content) {
         String templateArtist = context.getResources().getString(R.string.work_artist);
-        StringBuilder artistsBuilder = new StringBuilder();
         List<Attribute> attributes = new ArrayList<>();
-        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
-        if (artistAttributes != null) attributes.addAll(artistAttributes);
-        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
-        if (circleAttributes != null) attributes.addAll(circleAttributes);
 
-        if (attributes.isEmpty()) {
-            holder.tvArtist.setVisibility(View.GONE);
-        } else {
-            boolean first = true;
-            for (Attribute attribute : attributes) {
-                if (first) first = false;
-                else artistsBuilder.append(", ");
-                artistsBuilder.append(attribute.getName());
-            }
-            holder.tvArtist.setVisibility(View.VISIBLE);
-        }
-        holder.tvArtist.setText(templateArtist.replace("@artist@", artistsBuilder.toString()));
+        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
+        if (artistAttributes != null)
+            attributes.addAll(artistAttributes);
+        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
+        if (circleAttributes != null)
+            attributes.addAll(circleAttributes);
 
         if (attributes.isEmpty()) {
             holder.tvArtist.setText(templateArtist.replace("@artist@", context.getResources().getString(R.string.work_untitled)));
-            holder.tvArtist.setVisibility(View.VISIBLE);
+        } else {
+            List<String> allArtists = new ArrayList<>();
+            for (Attribute attribute : attributes) {
+                allArtists.add(attribute.getName());
+            }
+            String artists = android.text.TextUtils.join(",", allArtists);
+            holder.tvArtist.setText(templateArtist.replace("@artist@", artists));
         }
     }
 
     private void attachTags(ContentHolder holder, Content content) {
-        StringBuilder tagsBuilder = new StringBuilder();
         List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
-        if (tagsAttributes != null) {
-            for (int i = 0; i < tagsAttributes.size(); i++) {
-                Attribute attribute = tagsAttributes.get(i);
-                if (attribute.getName() != null) {
-                    tagsBuilder.append(attribute.getName());
-                    if (i != tagsAttributes.size() - 1) {
-                        tagsBuilder.append(", ");
-                    }
-                }
+        if (tagsAttributes == null) {
+            holder.tvTags.setText(context.getResources().getString(R.string.work_untitled));
+        } else {
+            List<String> allTags = new ArrayList<>();
+            for (Attribute attribute : tagsAttributes) {
+                allTags.add(attribute.getName());
             }
+            if (Build.VERSION.SDK_INT >= 24) {
+                allTags.sort(null);
+            }
+            String tags = android.text.TextUtils.join(", ", allTags);
+            holder.tvTags.setText(tags);
         }
-        holder.tvTags.setText(tagsBuilder.toString());
     }
 
-    private void attachButtons(ContentHolder holder, final Content content) {
-        // Set source icon
+    private void attachSource(ContentHolder holder, Content content) {
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             holder.ivSite.setImageResource(img);
@@ -325,6 +298,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         } else {
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
         }
+    }
+
+    private void attachButtons(ContentHolder holder, final Content content) {
 
         //Set exclusive icons
         holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
@@ -373,6 +349,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                         }
                         downloadAgain(content);
                     });
+                    holder.ivError.setVisibility(View.VISIBLE);
+                } else {
+                    holder.ivError.setVisibility(View.GONE);
                 }
             }
         } else { // Mikan mode

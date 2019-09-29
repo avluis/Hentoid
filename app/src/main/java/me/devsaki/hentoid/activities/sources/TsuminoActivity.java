@@ -16,11 +16,9 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "tsumino.com";
     private static final String GALLERY_FILTER = "//www.tsumino.com/entry/";
-
+    private static final String[] blockedContent = {"/static/"};
     private boolean downloadFabPressed = false;
     private int historyIndex;
-    private static final String[] blockedContent = {"/static/"};
-
 
     Site getStartSite() {
         return Site.TSUMINO;
@@ -80,6 +78,5 @@ public class TsuminoActivity extends BaseWebActivity {
                 processDownload();
             }
         }
-
     }
 }

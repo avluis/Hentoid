@@ -15,6 +15,7 @@ import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
@@ -38,7 +39,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,6 +189,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             intentUrl = parser.getUrl();
         }
         webView.loadUrl(0 == intentUrl.length() ? getStartSite().getUrl() : intentUrl);
+
+        if (!Preferences.getRecentVisibility()) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
+        }
     }
 
     @Override
@@ -429,8 +433,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
         ToastUtil.toast(this, R.string.add_to_queue);
 
-        currentContent.setDownloadDate(new Date().getTime())
-                .setStatus(StatusContent.DOWNLOADING);
+        currentContent.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(currentContent);
 
         List<QueueRecord> queue = db.selectQueue();
@@ -750,7 +753,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
                     params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
 
-            content.setDownloadParams(JsonHelper.serializeToJson(params));
+            content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
             isHtmlLoaded = true;
             listener.onResultReady(content, 1);
         }

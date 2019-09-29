@@ -1,149 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
-    android:clickable="true"
-    android:focusable="true"
-    app:cardBackgroundColor="@android:color/transparent"
-    app:cardCornerRadius="4dp"
-    app:cardElevation="6dp">
+    android:background="@drawable/bg_book_card"
+    android:elevation="6dp"
+    android:longClickable="true"
+    tools:targetApi="lollipop">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/maximized_item_download"
-        android:background="@drawable/row_item_selector"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <!-- Dummy UI element to be able to attach to the top in library mode -->
+    <View
+        android:id="@+id/pbDownload"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Dummy UI element to be able to attach to the top in library mode -->
-        <View
-            android:id="@+id/pbDownload"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <include layout="@layout/include_item_details" />
 
-        <include layout="@layout/include_item_details" />
+    <View
+        android:id="@+id/lineNew"
+        android:layout_width="4dp"
+        android:layout_height="0dp"
+        android:background="?colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:id="@+id/lineNew"
-            android:layout_width="4dp"
-            android:layout_height="0dp"
-            android:background="?colorSecondary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <ImageView
+        android:id="@+id/ivDownload"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_action_download"
+        android:tint="?colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTags"
+        app:layout_constraintVertical_bias="1.0"
+        tools:ignore="ContentDescription" />
 
-        <ImageView
-            android:id="@+id/ivDownload"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="@color/transparent"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_action_download"
-            android:tint="?colorSecondary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvTags"
-            app:layout_constraintVertical_bias="1.0"
-            tools:ignore="ContentDescription" />
+    <ImageView
+        android:id="@+id/ivFavourite"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_fav_empty"
+        android:tint="?colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTags"
+        app:layout_constraintVertical_bias="1.0"
+        tools:ignore="ContentDescription" />
 
-        <ImageView
-            android:id="@+id/ivFavourite"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="@color/transparent"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_fav_empty"
-            android:tint="?colorSecondary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvTags"
-            app:layout_constraintVertical_bias="1.0"
-            tools:ignore="ContentDescription" />
+    <ImageView
+        android:id="@+id/ivSite"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:tint="?colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivFavourite"
+        app:layout_constraintTop_toBottomOf="@id/tvTags"
+        app:layout_constraintVertical_bias="1.0"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_menu_nhentai" />
 
-        <ImageView
-            android:id="@+id/ivSite"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:tint="?colorSecondary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/ivFavourite"
-            app:layout_constraintTop_toBottomOf="@id/tvTags"
-            app:layout_constraintVertical_bias="1.0"
-            tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_menu_nhentai" />
+    <ImageView
+        android:id="@+id/ivError"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/bg_round_edges"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="4dp"
+        android:src="@drawable/ic_exclamation"
+        android:tint="@color/card_surface"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivSite"
+        app:layout_constraintTop_toBottomOf="@id/tvTags"
+        app:layout_constraintVertical_bias="1.0"
+        tools:ignore="ContentDescription" />
 
-        <ImageView
-            android:id="@+id/ivError"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="16dp"
-            android:adjustViewBounds="true"
-            android:background="@drawable/bg_round_edges"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="4dp"
-            android:src="@drawable/ic_exclamation"
-            android:tint="@color/card_surface"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/ivSite"
-            app:layout_constraintTop_toBottomOf="@id/tvTags"
-            app:layout_constraintVertical_bias="1.0"
-            tools:ignore="ContentDescription" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/minimized_item_download"
-        android:background="@drawable/row_item_selector"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:visibility="gone">
-
-        <ImageView
-            android:id="@+id/ivCover2"
-            android:layout_width="125dp"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_placeholder" />
-
-        <include
-            android:id="@+id/tvTitle2"
-            layout="@layout/include_item_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="@id/ivCover2"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/ivCover2"
-            app:layout_constraintTop_toTopOf="@id/ivCover2" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -55,10 +55,10 @@ public class QueueFragment extends BaseFragment {
     private boolean isPaused = false;
     private boolean isEmpty = false;
 
-
     @Override
     public void onResume() {
         super.onResume();
+
         update();
     }
 
@@ -183,7 +183,8 @@ public class QueueFragment extends BaseFragment {
                 StringBuilder message = new StringBuilder();
                 String processedPagesFmt = Helper.formatIntAsStr(pagesOK, String.valueOf(totalPages).length());
                 message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
-                if (numberRetries > 0) message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
+                if (numberRetries > 0)
+                    message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
 
                 queueInfo.setText(message.toString());
                 isPreparingDownload = false;

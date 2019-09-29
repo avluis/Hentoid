@@ -2,6 +2,7 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -110,12 +111,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param content Content to display
      */
     private void attachTitle(ViewHolder holder, Content content) {
+        CharSequence title;
         if (content.getTitle() == null) {
-            holder.tvTitle.setText(R.string.work_untitled);
+            title = context.getText(R.string.work_untitled);
         } else {
-            holder.tvTitle.setText(content.getTitle());
-            holder.tvTitle.setSelected(true);
+            title = content.getTitle();
         }
+        holder.tvTitle.setText(title);
     }
 
     /**
@@ -145,26 +147,20 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param content Content to display
      */
     private void attachSeries(ViewHolder holder, Content content) {
-        String templateSeries = context.getString(R.string.work_series);
-        StringBuilder series = new StringBuilder();
+        String templateSeries = context.getResources().getString(R.string.work_series);
         List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
-            holder.tvSeries.setVisibility(View.GONE);
+            holder.tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
         } else {
+            StringBuilder seriesBuilder = new StringBuilder();
             for (int i = 0; i < seriesAttributes.size(); i++) {
                 Attribute attribute = seriesAttributes.get(i);
-                series.append(attribute.getName());
+                seriesBuilder.append(attribute.getName());
                 if (i != seriesAttributes.size() - 1) {
-                    series.append(", ");
+                    seriesBuilder.append(", ");
                 }
             }
-            holder.tvSeries.setVisibility(View.VISIBLE);
-        }
-        holder.tvSeries.setText(templateSeries.replace("@series@", series));
-
-        if (seriesAttributes == null) {
-            holder.tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
-            holder.tvSeries.setVisibility(View.VISIBLE);
+            holder.tvSeries.setText(templateSeries.replace("@series@", seriesBuilder));
         }
     }
 
@@ -175,27 +171,25 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param content Content to display
      */
     private void attachArtist(ViewHolder holder, Content content) {
-        String templateArtist = context.getString(R.string.work_artist);
-        StringBuilder artists = new StringBuilder();
+        String templateArtist = context.getResources().getString(R.string.work_artist);
         List<Attribute> attributes = new ArrayList<>();
-        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
-        if (artistAttributes != null) attributes.addAll(artistAttributes);
-        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
-        if (circleAttributes != null) attributes.addAll(circleAttributes);
 
-        boolean first = true;
-        if (!attributes.isEmpty()) {
-            for (Attribute attribute : attributes) {
-                if (first) first = false;
-                else artists.append(", ");
-                artists.append(attribute.getName());
-            }
-        }
-        holder.tvArtist.setText(templateArtist.replace("@artist@", artists));
+        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
+        if (artistAttributes != null)
+            attributes.addAll(artistAttributes);
+        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
+        if (circleAttributes != null)
+            attributes.addAll(circleAttributes);
 
         if (attributes.isEmpty()) {
             holder.tvArtist.setText(templateArtist.replace("@artist@", context.getResources().getString(R.string.work_untitled)));
-            holder.tvArtist.setVisibility(View.VISIBLE);
+        } else {
+            List<String> allArtists = new ArrayList<>();
+            for (Attribute attribute : attributes) {
+                allArtists.add(attribute.getName());
+            }
+            String artists = android.text.TextUtils.join(",", allArtists);
+            holder.tvArtist.setText(templateArtist.replace("@artist@", artists));
         }
     }
 
@@ -206,20 +200,20 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param content Content to display
      */
     private void attachTags(ViewHolder holder, Content content) {
-        StringBuilder tags = new StringBuilder();
         List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
-        if (tagsAttributes != null) {
-            for (int i = 0; i < tagsAttributes.size(); i++) {
-                Attribute attribute = tagsAttributes.get(i);
-                if (attribute.getName() != null) {
-                    tags.append(attribute.getName());
-                    if (i != tagsAttributes.size() - 1) {
-                        tags.append(", ");
-                    }
-                }
+        if (tagsAttributes == null) {
+            holder.tvTags.setText(context.getResources().getString(R.string.work_untitled));
+        } else {
+            List<String> allTags = new ArrayList<>();
+            for (Attribute attribute : tagsAttributes) {
+                allTags.add(attribute.getName());
             }
+            if (Build.VERSION.SDK_INT >= 24) {
+                allTags.sort(null);
+            }
+            String tags = android.text.TextUtils.join(", ", allTags);
+            holder.tvTags.setText(tags);
         }
-        holder.tvTags.setText(tags.toString());
     }
 
     /**
