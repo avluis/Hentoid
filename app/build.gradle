@@ -38,10 +38,7 @@ android {
 
             buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/dev/app/"'
 
-            //proguardFile 'proguard-rules-debug.pro'
-            proguardFile 'proguard-rules-release.pro'
-            testProguardFile 'proguard-rules-test.pro'
-            proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
+            proguardFile 'proguard-rules-debug.pro'
         }
         release {
             useProguard false // R8 is used instead
