@@ -77,7 +77,8 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
         return item.isFavourite();
     }
 
-    class ImageFileViewHolder extends FlexibleViewHolder {
+
+    static final class ImageFileViewHolder extends FlexibleViewHolder {
 
         private final TextView pageNumberTxt;
         private final ImageView image;
