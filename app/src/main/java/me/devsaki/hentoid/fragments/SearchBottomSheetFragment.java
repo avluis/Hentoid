@@ -38,7 +38,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
@@ -155,9 +154,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             @Override
             public boolean onQueryTextSubmit(String s) {
 
-                if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
+                /*if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(view, R.string.masterdata_illegal_tag, BaseTransientBottomBar.LENGTH_LONG).show();
-                } else if (!s.isEmpty()) {
+                } else*/ if (!s.isEmpty()) {
                     searchMasterData(s);
                 }
                 tagSearchView.clearFocus();
@@ -167,12 +166,12 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(view, R.string.masterdata_illegal_tag, BaseTransientBottomBar.LENGTH_LONG).show();
-                    searchMasterDataDebouncer.clear();
-                } else {
+//                if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
+//                    Snackbar.make(view, R.string.masterdata_illegal_tag, BaseTransientBottomBar.LENGTH_LONG).show();
+//                    searchMasterDataDebouncer.clear();
+//                } else {
                     searchMasterDataDebouncer.submit(s);
-                }
+//                }
 
                 return true;
             }

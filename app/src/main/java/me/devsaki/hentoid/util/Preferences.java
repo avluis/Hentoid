@@ -315,7 +315,7 @@ public final class Preferences {
         public static final String PREF_REFRESH_LIBRARY = "pref_refresh_bookshelf";
         static final String PREF_WELCOME_DONE = "pref_welcome_done";
         static final String PREFS_VERSION_KEY = "prefs_version";
-        static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
+        public static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
         static final String PREF_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String PREF_FIRST_RUN = "pref_first_run";

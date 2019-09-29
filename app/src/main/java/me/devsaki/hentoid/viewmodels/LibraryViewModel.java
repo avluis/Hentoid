@@ -2,6 +2,7 @@ package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -22,6 +23,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
 
 import javax.annotation.Nonnull;
 
@@ -52,7 +54,9 @@ import static com.annimon.stream.Collectors.toList;
 public class LibraryViewModel extends AndroidViewModel implements PagedResultListener<Content> {
 
     // Settings
-
+    private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
+    private int booksPerPage = Preferences.getContentPageQuantity();
+    private int contentOffset;
 
     // Collection data
     private final MutableLiveData<List<Content>> library = new MutableLiveData<>();        // Current content
@@ -76,9 +80,13 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         Context ctx = getApplication().getApplicationContext();
         searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
         searchManager.loadFromBundle(bundle);
-        int contentIndex = bundle.getInt("contentIndex", -1);
-        if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);
-        searchManager.searchLibraryForContent(-1, this);
+        contentOffset = bundle.getInt("contentOffset", -1);
+    }
+
+    private void performSearch()
+    {
+        if (contentOffset > -1) searchManager.setCurrentPage(contentOffset);
+        searchManager.searchLibraryForContent(booksPerPage, this);
     }
 
     @Override
@@ -97,5 +105,17 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         super.onCleared();
         if (searchManager != null) searchManager.dispose();
         compositeDisposable.clear();
+    }
+
+    private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        Timber.i("Prefs change detected : %s", key);
+        switch (key) {
+            case Preferences.Key.PREF_QUANTITY_PER_PAGE_LISTS:
+                booksPerPage = Preferences.getContentPageQuantity();
+                performSearch();
+                break;
+            default:
+                // Other changes aren't handled here
+        }
     }
 }

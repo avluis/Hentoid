@@ -54,7 +54,6 @@ import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -462,7 +461,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
-        CollectionAccessor collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
+        //CollectionAccessor collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
+        CollectionAccessor collectionAccessor = new ObjectBoxCollectionAccessor(mContext);
         searchManager = new ContentSearchManager(collectionAccessor);
 
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
@@ -477,7 +477,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     protected void initUI(View rootView, CollectionAccessor accessor) {
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
-        emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
+        //emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
+        emptyText.setText(R.string.downloads_empty_library);
 
         llm = new LinearLayoutManager(mContext);
 
@@ -945,7 +946,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         if (!searchManager.getQuery().isEmpty()) {
             emptyText.setText(R.string.search_entry_not_found);
         } else {
-            emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
+            //emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
+            emptyText.setText(R.string.downloads_empty_library);
         }
         toggleUI(SHOW_BLANK);
     }

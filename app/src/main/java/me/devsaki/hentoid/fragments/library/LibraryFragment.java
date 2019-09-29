@@ -19,25 +19,24 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.LibraryAdapter;
 import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ToastUtil;
-import me.devsaki.hentoid.viewholders.ImageFileFlex;
 import me.devsaki.hentoid.viewholders.LibaryItemFlex;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
+import me.devsaki.hentoid.views.ProgressItem;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
-public class LibraryFragment extends BaseFragment {
+public class LibraryFragment extends BaseFragment implements FlexibleAdapter.EndlessScrollListener {
 
     private LibraryViewModel viewModel;
     private LibraryAdapter adapter;
 
     // ======== UI
+    private final ProgressItem progressItem = new ProgressItem();
 
 
     // ======== VARIABLES
@@ -113,6 +112,11 @@ public class LibraryFragment extends BaseFragment {
     private void initUI(View rootView) {
         adapter = new LibraryAdapter(null, this::onSourceClick);
         adapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
+
+        ////////////////////
+        adapter.setEndlessScrollListener(this, progressItem)
+                .setEndlessScrollThreshold(1); // Default=1
+
         RecyclerView recyclerView = requireViewById(rootView, R.id.library_list);
         recyclerView.setAdapter(adapter);
     }
@@ -151,5 +155,15 @@ public class LibraryFragment extends BaseFragment {
             if (ctx != null) ToastUtil.toast(ctx, R.string.press_back_again);
         }
         return false;
+    }
+
+    @Override
+    public void noMoreLoad(int newItemsSize) {
+
+    }
+
+    @Override
+    public void onLoadMore(int lastPosition, int currentPage) {
+
     }
 }

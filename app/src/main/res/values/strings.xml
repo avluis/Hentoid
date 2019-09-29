@@ -11,7 +11,6 @@
     <!-- Activities -->
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
-    <string name="title_activity_mikan">Mikan Search</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
@@ -34,7 +33,6 @@
     <string name="menu_delete_multi">Delete Items</string>
     <string name="menu_share">Share</string>
     <string name="menu_archive">Archive</string>
-    <string name="menu_about_mikan">About Mikan</string>
     <string name="search_hint">Search title</string>
     <string name="send_to">Share with:</string>
 
@@ -118,13 +116,8 @@
 
     <string name="queue_empty">Why am I empty?</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
-    <string name="downloads_empty_mikan">Uh oh… how come there\'s nothing there ?!</string>
-    <string name="mikan_unsupported">Not implemented with Mikan</string>
     <string name="downloads_loading">Loading up~</string>
     <string name="masterdata_no_result">No result found :(</string>
-    <string name="masterdata_too_many_results_query">Too many results for « %1 »\nPlease be more specific</string>
-    <string name="masterdata_too_many_results_noquery">Too many results\nPlease use the search bar above to narrow your search</string>
-    <string name="masterdata_illegal_tag">Search is disabled for the tag you\'re looking for because it points to content that is illegal in many countries</string>
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="sd_access_error">SD Access Error!\nPlease check or replace SD Card!!</string>
@@ -144,6 +137,12 @@
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
+
+    <!-- Library fragment -->
+    <string name="no_more_load_retry">No more items to load. Refresh to retry</string>
+    <string name="endless_disabled">Loading has been disabled</string>
+    <string name="endless_cancel">Loading has been canceled</string>
+    <string name="endless_error">Error while loading</string>
 
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>

@@ -304,7 +304,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         //Set exclusive icons
         holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
-        holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == displayMode) ? View.VISIBLE : View.GONE);
+//        holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == displayMode) ? View.VISIBLE : View.GONE);
 
         //Set buttons
         if (DownloadsFragment.MODE_LIBRARY == displayMode) {
@@ -355,6 +355,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 }
             }
         } else { // Mikan mode
+            /*
             if (content.getStatus() != null) {
                 StatusContent status = content.getStatus();
                 // "Available online" icon
@@ -374,17 +375,21 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     holder.ivDownload.setOnClickListener(v -> openBookAction.accept(content));
                 }
             }
+
+             */
         }
     }
 
     // Mikan mode only
     private void tryDownloadPages(Content content) {
         ContentHolder holder = getHolderByContent(content);
+        /*
         if (holder != null) {
             holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
             holder.ivDownload.setOnClickListener(w -> viewQueue());
             collectionAccessor.getPages(content, this);
         }
+         */
     }
 
     private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
@@ -587,9 +592,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         ContentHolder holder = getHolderByContent(content);
 
         if (holder != null) {
+            /*
             holder.ivDownload.setImageResource(R.drawable.ic_action_play);
             holder.ivDownload.clearAnimation();
             holder.ivDownload.setOnClickListener(v -> openBookAction.accept(content));
+
+             */
         }
     }
 
@@ -812,8 +820,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         if (content != null) {
             ContentHolder holder = getHolderByContent(content);
             if (holder != null) {
+                /*
                 holder.ivDownload.clearAnimation();
                 holder.ivDownload.setOnClickListener(v -> tryDownloadPages(content));
+
+                 */
             }
             snackbar.setAction("RETRY", v -> tryDownloadPages(content));
         }
