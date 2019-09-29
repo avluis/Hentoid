@@ -357,7 +357,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
 
-            JsonHelper.createJson(new JsonContent(contentV2), JsonContent.class, json.getAbsoluteFile().getParentFile());
+            JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getAbsoluteFile().getParentFile());
 
             return contentV2;
         } catch (Exception e) {
@@ -380,7 +380,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
 
-            JsonHelper.createJson(new JsonContent(contentV2), JsonContent.class, json.getAbsoluteFile().getParentFile());
+            JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getAbsoluteFile().getParentFile());
 
             return contentV2;
         } catch (Exception e) {

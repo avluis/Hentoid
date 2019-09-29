@@ -89,7 +89,7 @@ public final class ContentHelper {
             throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
         try {
-            JsonHelper.updateJson(new JsonContent(content), JsonContent.class, file);
+            JsonHelper.updateJson(JsonContent.fromEntity(content), JsonContent.class, file);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getJsonUri());
         }
@@ -98,7 +98,7 @@ public final class ContentHelper {
     public static void createJson(@Nonnull Content content) {
         File dir = getContentDownloadDir(content);
         try {
-            JsonHelper.createJson(new JsonContent(content), JsonContent.class, dir);
+            JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
         }

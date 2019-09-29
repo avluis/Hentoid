@@ -31,6 +31,9 @@ public class JsonContent {
     public Map<AttributeType, List<JsonAttribute>> attributes;
     public List<JsonImageFile> imageFiles = new ArrayList<>();
 
+    private JsonContent() {
+    }
+
 
     private void addAttribute(JsonAttribute attributeItem) {
         if (null == attributeItem) return;
@@ -47,31 +50,32 @@ public class JsonContent {
         if (list != null) list.add(attributeItem);
     }
 
-    public JsonContent(Content c) {
-        url = c.getUrl();
-        title = c.getTitle();
-        author = c.getAuthor();
-        coverImageUrl = c.getCoverImageUrl();
-        qtyPages = c.getQtyPages();
-        uploadDate = c.getUploadDate();
-        downloadDate = c.getDownloadDate();
-        status = c.getStatus();
-        site = c.getSite();
-        favourite = c.isFavourite();
-        reads = c.getReads();
-        lastReadDate = c.getLastReadDate();
-        lastReadPageIndex = c.getLastReadPageIndex();
+    public static JsonContent fromEntity(Content c) {
+        JsonContent result = new JsonContent();
+        result.url = c.getUrl();
+        result.title = c.getTitle();
+        result.author = c.getAuthor();
+        result.coverImageUrl = c.getCoverImageUrl();
+        result.qtyPages = c.getQtyPages();
+        result.uploadDate = c.getUploadDate();
+        result.downloadDate = c.getDownloadDate();
+        result.status = c.getStatus();
+        result.site = c.getSite();
+        result.favourite = c.isFavourite();
+        result.reads = c.getReads();
+        result.lastReadDate = c.getLastReadDate();
+        result.lastReadPageIndex = c.getLastReadPageIndex();
 
         if (c.getImageFiles() != null)
             for (ImageFile img : c.getImageFiles())
-                imageFiles.add(new JsonImageFile(img));
+                result.imageFiles.add(JsonImageFile.fromEntity(img));
 
-        attributes = new HashMap<>();
+        result.attributes = new HashMap<>();
         for (Attribute a : c.getAttributes()) {
-            JsonAttribute attr = new JsonAttribute(a);
-            attr.computeUrl(a.getLocations(), this.site);
-            addAttribute(attr);
+            JsonAttribute attr = JsonAttribute.fromEntity(a, c.getSite());
+            result.addAttribute(attr);
         }
+        return result;
     }
 
     public Content toEntity() {

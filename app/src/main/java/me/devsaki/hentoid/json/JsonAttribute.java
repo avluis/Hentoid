@@ -13,12 +13,18 @@ public class JsonAttribute {
     public AttributeType type;
     public String url = "";
 
-    JsonAttribute(Attribute a) {
-        this.name = a.getName();
-        this.type = a.getType();
+    private JsonAttribute() {
     }
 
-    void computeUrl(List<AttributeLocation> locations, Site site) {
+    static JsonAttribute fromEntity(Attribute a, Site site) {
+        JsonAttribute result = new JsonAttribute();
+        result.name = a.getName();
+        result.type = a.getType();
+        result.computeUrl(a.getLocations(), site);
+        return result;
+    }
+
+    private void computeUrl(List<AttributeLocation> locations, Site site) {
         for (AttributeLocation location : locations) {
             if (location.site.equals(site)) {
                 url = location.url;
