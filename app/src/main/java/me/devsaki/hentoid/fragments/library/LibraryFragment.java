@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.library;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.items.IFlexible;
@@ -24,11 +26,13 @@ import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.LibaryItemFlex;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.views.ProgressItem;
 import me.devsaki.hentoid.widget.ContentSearchManager;
+import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -107,24 +111,22 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
     private void initUI(View rootView) {
         adapter = new LibraryAdapter(null, this::onSourceClick);
         adapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
-
-        ////////////////////
-        adapter.setEndlessScrollListener(this, progressItem)
-                .setEndlessScrollThreshold(1); // Default=1
+        if (Preferences.getEndlessScroll()) adapter.setEndlessScrollListener(this, progressItem);
 
         RecyclerView recyclerView = requireViewById(rootView, R.id.library_list);
         recyclerView.setAdapter(adapter);
     }
 
-    private void onLibraryChanged(List<Content> library) {
-        if (null == library) { // No library has been loaded yet (1st run with this instance)
+    private void onLibraryChanged(ObjectBoxCollectionAccessor.ContentQueryResult result) {
+        if (null == result) { // No library has been loaded yet (1st run with this instance)
             Bundle searchParams = new Bundle();
             searchManager.saveToBundle(searchParams);
             viewModel.loadFromSearchParams(searchParams);
         } else {
-            // TODO paging, endless
+            // TODO paging
+            updateTitle(result.totalSelectedContent, result.totalContent);
             List<IFlexible> items = new ArrayList<>();
-            for (Content content : library) {
+            for (Content content : result.pagedContents) {
                 LibaryItemFlex holder = new LibaryItemFlex(content);
                 items.add(holder);
             }
@@ -134,6 +136,22 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
                 adapter.onLoadMoreComplete(items);
         }
     }
+
+    /**
+     * Update the screen title according to current search filter (#TOTAL BOOKS) if no filter is
+     * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
+     */
+    private void updateTitle(long totalSelectedCount, long totalCount) {
+        Activity activity = getActivity();
+        if (activity != null) { // Has to be crash-proof; sometimes there's no activity there...
+            String title;
+            if (totalSelectedCount == totalCount)
+                title = totalCount + " items";
+            else title = String.format("%s/%s items", totalSelectedCount, totalCount);
+            activity.setTitle(title);
+        }
+    }
+
 
     private boolean onSourceClick(Content content) {
         ContentHelper.viewContent(requireContext(), content);
@@ -164,6 +182,7 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
 
     @Override
     public void onLoadMore(int lastPosition, int currentPage) {
+        Timber.d("LoadMore %s %s", lastPosition, currentPage);
         viewModel.loadMore();
     }
 }

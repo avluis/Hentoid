@@ -32,7 +32,7 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
     private int currentPage = 1;
 
     // Collection data
-    private final MutableLiveData<List<Content>> library = new MutableLiveData<>();        // Current content
+    private final MutableLiveData<ObjectBoxCollectionAccessor.ContentQueryResult> library = new MutableLiveData<>();        // Current content
 
     // Technical
     private ContentSearchManager searchManager = null;
@@ -46,7 +46,7 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
     }
 
     @NonNull
-    public LiveData<List<Content>> getLibrary() {
+    public LiveData<ObjectBoxCollectionAccessor.ContentQueryResult> getLibrary() {
         return library;
     }
 
@@ -57,8 +57,7 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         performSearch(1);
     }
 
-    private void performSearch(int page)
-    {
+    private void performSearch(int page) {
         currentPage = page;
         if (page > 1) searchManager.setCurrentPage(page);
         searchManager.searchLibraryForContent(booksPerPage, this);
@@ -66,8 +65,8 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
 
     @Override
     public void onPagedResultReady(List<Content> results, long totalSelectedContent, long totalContent) {
-        library.setValue(results);
-        // TODO set subtotals
+        ObjectBoxCollectionAccessor.ContentQueryResult result = new ObjectBoxCollectionAccessor.ContentQueryResult(results, totalSelectedContent, totalContent);
+        library.setValue(result);
     }
 
     @Override
@@ -94,8 +93,7 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         }
     }
 
-    public void loadMore()
-    {
+    public void loadMore() {
         performSearch(++currentPage);
     }
 }

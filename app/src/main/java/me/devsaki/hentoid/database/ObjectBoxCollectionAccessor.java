@@ -41,10 +41,19 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         long totalSelectedContent;
     }
 
-    static class ContentQueryResult {
-        List<Content> pagedContents;
-        long totalContent;
-        long totalSelectedContent;
+    public static class ContentQueryResult {
+        public List<Content> pagedContents;
+        public long totalContent;
+        public long totalSelectedContent;
+
+        ContentQueryResult() {
+        }
+
+        public ContentQueryResult(List<Content> pagedContents, long totalContent, long totalSelectedContent) {
+            this.pagedContents = pagedContents;
+            this.totalContent = totalContent;
+            this.totalSelectedContent = totalSelectedContent;
+        }
     }
 
     static class AttributeQueryResult {
