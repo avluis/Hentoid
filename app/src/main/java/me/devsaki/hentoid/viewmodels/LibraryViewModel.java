@@ -3,60 +3,34 @@ package me.devsaki.hentoid.viewmodels;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.annimon.stream.Stream;
-import com.annimon.stream.function.BooleanConsumer;
-import com.annimon.stream.function.Consumer;
-
-import java.io.File;
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Timer;
 
 import javax.annotation.Nonnull;
 
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
-import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.PagedResultListener;
-import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static com.annimon.stream.Collectors.toList;
 
 
 public class LibraryViewModel extends AndroidViewModel implements PagedResultListener<Content> {
 
     // Settings
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
-    private int booksPerPage = Preferences.getContentPageQuantity();
-    private int contentOffset;
+    //private int booksPerPage = Preferences.getContentPageQuantity();
+    private int booksPerPage = 10;
+    private int currentPage = 1;
 
     // Collection data
     private final MutableLiveData<List<Content>> library = new MutableLiveData<>();        // Current content
@@ -68,6 +42,7 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
 
     public LibraryViewModel(@NonNull Application application) {
         super(application);
+        Preferences.registerPrefsChangedListener(listener);
         library.setValue(null); // Default content; tells everyone nothing has been loaded yet
     }
 
@@ -80,12 +55,13 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         Context ctx = getApplication().getApplicationContext();
         searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
         searchManager.loadFromBundle(bundle);
-        contentOffset = bundle.getInt("contentOffset", -1);
+        performSearch(1);
     }
 
-    private void performSearch()
+    private void performSearch(int page)
     {
-        if (contentOffset > -1) searchManager.setCurrentPage(contentOffset);
+        currentPage = page;
+        if (page > 1) searchManager.setCurrentPage(page);
         searchManager.searchLibraryForContent(booksPerPage, this);
     }
 
@@ -104,6 +80,7 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
     protected void onCleared() {
         super.onCleared();
         if (searchManager != null) searchManager.dispose();
+        Preferences.unregisterPrefsChangedListener(listener);
         compositeDisposable.clear();
     }
 
@@ -112,10 +89,15 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         switch (key) {
             case Preferences.Key.PREF_QUANTITY_PER_PAGE_LISTS:
                 booksPerPage = Preferences.getContentPageQuantity();
-                performSearch();
+                performSearch(1);
                 break;
             default:
                 // Other changes aren't handled here
         }
+    }
+
+    public void loadMore()
+    {
+        performSearch(++currentPage);
     }
 }

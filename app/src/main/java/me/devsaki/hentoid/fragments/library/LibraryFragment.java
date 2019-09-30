@@ -12,9 +12,11 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
+import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.LibraryAdapter;
@@ -76,9 +78,6 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         searchManager.saveToBundle(outState);
-        /*
-        viewModel.onSaveState(outState);
-         */
     }
 
     @Override
@@ -92,11 +91,7 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
     @Override
     public void onResume() {
         super.onResume();
-
         /*
-        setSystemBarsVisible(controlsOverlay.getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
-        if (Preferences.Constant.PREF_VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
-            BrowseModeDialogFragment.invoke(this);
         updatePageDisplay();
         updateFavouriteDisplay();
          */
@@ -126,12 +121,17 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
             Bundle searchParams = new Bundle();
             searchManager.saveToBundle(searchParams);
             viewModel.loadFromSearchParams(searchParams);
-        } else { // Results load
+        } else {
             // TODO paging, endless
+            List<IFlexible> items = new ArrayList<>();
             for (Content content : library) {
                 LibaryItemFlex holder = new LibaryItemFlex(content);
-                adapter.addItem(holder);
+                items.add(holder);
             }
+            if (0 == adapter.getItemCount()) // 1st results load
+                adapter.addItems(0, items);
+            else // load more (endless mode)
+                adapter.onLoadMoreComplete(items);
         }
     }
 
@@ -164,6 +164,6 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
 
     @Override
     public void onLoadMore(int lastPosition, int currentPage) {
-
+        viewModel.loadMore();
     }
 }
