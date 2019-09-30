@@ -28,8 +28,7 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
 
     // Settings
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
-    //private int booksPerPage = Preferences.getContentPageQuantity();
-    private int booksPerPage = 10;
+    private int booksPerPage = Preferences.getContentPageQuantity();
     private int currentPage = 1;
 
     // Collection data
@@ -89,7 +88,6 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         switch (key) {
             case Preferences.Key.PREF_QUANTITY_PER_PAGE_LISTS:
                 booksPerPage = Preferences.getContentPageQuantity();
-                performSearch(1);
                 break;
             default:
                 // Other changes aren't handled here
