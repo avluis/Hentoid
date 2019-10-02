@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.library;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.LayoutInflater;
@@ -15,14 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.LibraryAdapter;
-import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -31,7 +30,7 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.LibaryItemFlex;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.views.ProgressItem;
-import me.devsaki.hentoid.widget.ContentSearchManager;
+import me.devsaki.hentoid.widget.LibraryPager;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -43,6 +42,7 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
 
     // ======== UI
     private final ProgressItem progressItem = new ProgressItem();
+    private final LibraryPager pager = new LibraryPager(this::onPreviousClick, this::onNextClick, this::onPageChange);
 
 
     // ======== VARIABLES
@@ -51,20 +51,20 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
 
 
     // === SEARCH
-    protected ContentSearchManager searchManager;
     // Last search parameters; used to determine whether or not page number should be reset to 1
     // NB : populated by getCurrentSearchParams
     private String lastSearchParams = "";
+
+    // Settings
+    private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = this::onSharedPreferenceChanged;
 
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_library, container, false);
 
-        CollectionAccessor collectionAccessor = new ObjectBoxCollectionAccessor(requireContext());
-        searchManager = new ContentSearchManager(collectionAccessor);
-
         viewModel = ViewModelProviders.of(requireActivity()).get(LibraryViewModel.class);
+        Preferences.registerPrefsChangedListener(prefsListener);
 
         initUI(view);
 
@@ -81,15 +81,13 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        searchManager.saveToBundle(outState);
+        if (viewModel != null) viewModel.onSaveState(outState);
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState != null) {
-            searchManager.loadFromBundle(savedInstanceState);
-        }
+        if (viewModel != null) viewModel.onRestoreState(savedInstanceState);
     }
 
     @Override
@@ -103,28 +101,50 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
 
     @Override
     public void onDestroy() {
-
+        Preferences.unregisterPrefsChangedListener(prefsListener);
         super.onDestroy();
     }
 
+    private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        Timber.i("Prefs change detected : %s", key);
+        switch (key) {
+            case Preferences.Key.PREF_ENDLESS_SCROLL:
+                initPagingMethod(Preferences.getEndlessScroll());
+                break;
+            default:
+                // Other changes aren't handled here
+        }
+    }
 
     private void initUI(View rootView) {
         adapter = new LibraryAdapter(null, this::onSourceClick);
         adapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
-        if (Preferences.getEndlessScroll()) adapter.setEndlessScrollListener(this, progressItem);
+
+        pager.initUI(rootView);
+
+        initPagingMethod(Preferences.getEndlessScroll());
 
         RecyclerView recyclerView = requireViewById(rootView, R.id.library_list);
         recyclerView.setAdapter(adapter);
     }
 
+    private void initPagingMethod(boolean isEndless) {
+        if (isEndless) {
+            adapter.setEndlessScrollListener(this, progressItem);
+            pager.disable();
+        } else {
+            adapter.setEndlessScrollListener(null, progressItem);
+            pager.enable();
+        }
+    }
+
     private void onLibraryChanged(ObjectBoxCollectionAccessor.ContentQueryResult result) {
         if (null == result) { // No library has been loaded yet (1st run with this instance)
-            Bundle searchParams = new Bundle();
-            searchManager.saveToBundle(searchParams);
-            viewModel.loadFromSearchParams(searchParams);
+            viewModel.load();
         } else {
-            // TODO paging
             updateTitle(result.totalSelectedContent, result.totalContent);
+            pager.setPageCount((int) Math.ceil(result.totalSelectedContent * 1.0 / Preferences.getContentPageQuantity()));
+            pager.setCurrentPage(result.currentPage);
             List<IFlexible> items = new ArrayList<>();
             for (Content content : result.pagedContents) {
                 LibaryItemFlex holder = new LibaryItemFlex(content);
@@ -132,8 +152,13 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
             }
             if (0 == adapter.getItemCount()) // 1st results load
                 adapter.addItems(0, items);
-            else // load more (endless mode)
+            else if (Preferences.getEndlessScroll()) // load more (endless mode)
                 adapter.onLoadMoreComplete(items);
+            else // load page (pager mode)
+            {
+                adapter.clear();
+                adapter.addItems(0, items);
+            }
         }
     }
 
@@ -183,6 +208,20 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
     @Override
     public void onLoadMore(int lastPosition, int currentPage) {
         Timber.d("LoadMore %s %s", lastPosition, currentPage);
-        viewModel.loadMore();
+        viewModel.nextPage();
+    }
+
+    private void onPreviousClick(View v) {
+        // TODO test at first page
+        viewModel.previousPage();
+    }
+
+    private void onNextClick(View v) {
+        // TODO test at last page
+        viewModel.nextPage();
+    }
+
+    private void onPageChange(int page) {
+        viewModel.loadPage(page);
     }
 }

@@ -319,7 +319,7 @@ public final class Preferences {
         static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
         static final String PREF_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String PREF_FIRST_RUN = "pref_first_run";
-        static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
+        public static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
         static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
         static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         static final String PREF_SETTINGS_FOLDER = "folder";

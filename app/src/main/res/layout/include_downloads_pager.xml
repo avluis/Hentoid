@@ -14,7 +14,7 @@
     app:contentInsetStart="0dp">
 
     <ImageButton
-        android:id="@+id/btnPrevious"
+        android:id="@+id/pager_btnPrevious"
         android:layout_width="?android:attr/actionBarSize"
         android:layout_height="?android:attr/actionBarSize"
         android:background="@drawable/btn_content_selector"
@@ -23,14 +23,14 @@
         tools:ignore="ContentDescription" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/pager"
+        android:id="@+id/pager_pageCarousel"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:textIsSelectable="false"
         tools:listitem="@layout/item_pagecarousel" />
 
     <ImageButton
-        android:id="@+id/btnNext"
+        android:id="@+id/pager_btnNext"
         android:layout_width="?android:attr/actionBarSize"
         android:layout_height="?android:attr/actionBarSize"
         android:background="@drawable/btn_content_selector"

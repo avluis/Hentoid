@@ -1,20 +1,19 @@
 package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import io.reactivex.disposables.CompositeDisposable;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.listener.PagedResultListener;
@@ -27,22 +26,32 @@ import timber.log.Timber;
 public class LibraryViewModel extends AndroidViewModel implements PagedResultListener<Content> {
 
     // Settings
-    private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
+    private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = this::onSharedPreferenceChanged;
     private int booksPerPage = Preferences.getContentPageQuantity();
     private int currentPage = 1;
+    private int maxPage = 999; //TODO
 
     // Collection data
     private final MutableLiveData<ObjectBoxCollectionAccessor.ContentQueryResult> library = new MutableLiveData<>();        // Current content
 
     // Technical
-    private ContentSearchManager searchManager = null;
+    private final ContentSearchManager searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(HentoidApp.getAppContext()));
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
     public LibraryViewModel(@NonNull Application application) {
         super(application);
-        Preferences.registerPrefsChangedListener(listener);
+        Preferences.registerPrefsChangedListener(prefsListener);
         library.setValue(null); // Default content; tells everyone nothing has been loaded yet
+    }
+
+    public void onSaveState(Bundle outState) {
+        searchManager.saveToBundle(outState);
+    }
+
+    public void onRestoreState(@Nullable Bundle savedState) {
+        if (savedState == null) return;
+        searchManager.loadFromBundle(savedState);
     }
 
     @NonNull
@@ -50,22 +59,21 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         return library;
     }
 
-    public void loadFromSearchParams(@Nonnull Bundle bundle) {
-        Context ctx = getApplication().getApplicationContext();
-        searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
-        searchManager.loadFromBundle(bundle);
-        performSearch(1);
-    }
 
-    private void performSearch(int page) {
+    private void performSearch(int page) { performSearch(page, false); }
+
+    private void performSearch(int page, boolean forceLoad) {
+        if (!forceLoad && (page == currentPage || page < 1 || page > maxPage)) return;
+
         currentPage = page;
-        if (page > 1) searchManager.setCurrentPage(page);
+        searchManager.setCurrentPage(currentPage);
         searchManager.searchLibraryForContent(booksPerPage, this);
     }
 
     @Override
     public void onPagedResultReady(List<Content> results, long totalSelectedContent, long totalContent) {
-        ObjectBoxCollectionAccessor.ContentQueryResult result = new ObjectBoxCollectionAccessor.ContentQueryResult(results, totalSelectedContent, totalContent);
+        Timber.i(">>Results ready : %s items (%s/%s) - page %s", results.size(), totalSelectedContent, totalContent, currentPage);
+        ObjectBoxCollectionAccessor.ContentQueryResult result = new ObjectBoxCollectionAccessor.ContentQueryResult(results, totalSelectedContent, totalContent, currentPage);
         library.setValue(result);
     }
 
@@ -77,8 +85,8 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
     @Override
     protected void onCleared() {
         super.onCleared();
-        if (searchManager != null) searchManager.dispose();
-        Preferences.unregisterPrefsChangedListener(listener);
+        searchManager.dispose();
+        Preferences.unregisterPrefsChangedListener(prefsListener);
         compositeDisposable.clear();
     }
 
@@ -93,7 +101,20 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         }
     }
 
-    public void loadMore() {
-        performSearch(++currentPage);
+    public void load() { performSearch(currentPage, true); }
+
+    public void previousPage() {
+        Timber.i(">>previousPage");
+        performSearch(currentPage - 1);
+    }
+
+    public void nextPage() {
+        Timber.i(">>nextPage");
+        performSearch(currentPage + 1);
+    }
+
+    public void loadPage(int page) {
+        Timber.i(">>loadPage");
+        if (page != currentPage) performSearch(page);
     }
 }

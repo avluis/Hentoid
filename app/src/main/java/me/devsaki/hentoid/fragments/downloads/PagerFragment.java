@@ -29,7 +29,7 @@ public class PagerFragment extends DownloadsFragment {
     protected void initUI(View rootView, CollectionAccessor accessor) {
         super.initUI(rootView, accessor);
 
-        RecyclerView pageCarousel = rootView.findViewById(R.id.pager);
+        RecyclerView pageCarousel = rootView.findViewById(R.id.pager_pageCarousel);
         pageCarousel.setHasFixedSize(true);
 
         pager = new CarouselDecorator(mContext, R.layout.item_pagecarousel);
@@ -50,7 +50,7 @@ public class PagerFragment extends DownloadsFragment {
     }
 
     private void attachPrevious(View rootView) {
-        ImageButton btnPrevious = rootView.findViewById(R.id.btnPrevious);
+        ImageButton btnPrevious = rootView.findViewById(R.id.pager_btnPrevious);
         btnPrevious.setOnClickListener(v -> {
             if (searchManager.getCurrentPage() > 1 && !isLoading) {
                 searchManager.decreaseCurrentPage();
@@ -65,7 +65,7 @@ public class PagerFragment extends DownloadsFragment {
     }
 
     private void attachNext(View rootView) {
-        ImageButton btnNext = rootView.findViewById(R.id.btnNext);
+        ImageButton btnNext = rootView.findViewById(R.id.pager_btnNext);
         btnNext.setOnClickListener(v -> {
             if (booksPerPage <= 0) {
                 Timber.d("No limit per page.");
