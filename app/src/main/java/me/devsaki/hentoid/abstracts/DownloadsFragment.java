@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -130,12 +129,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     protected LinearLayout pagerToolbar;
     // Bar with group that has the advancedSearchButton and its background View
     private View advancedSearchBar;
-    // View with both the search result TextView and the CLEAR button that appears whenever a search filter is active
-    private View searchResultsClear;
-    // Book count text on the filter bar
-    private TextView filterBookCount;
     // CLEAR button on the filter bar
-    private TextView filterClearButton;
+    private TextView searchClearButton;
 
     // ======== UTIL OBJECTS
     private ObjectAnimator animator;
@@ -501,7 +496,6 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
         loadingText.setVisibility(View.VISIBLE);
 
-
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
         newContentToolTip = rootView.findViewById(R.id.tooltip);
         refreshLayout = rootView.findViewById(R.id.swipe_container);
@@ -511,9 +505,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         TextView advancedSearchButton = rootView.findViewById(R.id.advanced_search);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
-        searchResultsClear = rootView.findViewById(R.id.search_results_control);
-        filterBookCount = rootView.findViewById(R.id.filter_book_count);
-        filterClearButton = rootView.findViewById(R.id.filter_clear);
+        searchClearButton = rootView.findViewById(R.id.search_clear);
     }
 
     protected void attachScrollListener() {
@@ -563,11 +555,11 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     protected void attachOnClickListeners(View rootView) {
         newContentToolTip.setOnClickListener(v -> commitRefresh());
 
-        filterClearButton.setOnClickListener(v -> {
+        searchClearButton.setOnClickListener(v -> {
             setQuery("");
             mainSearchView.setQuery("", false);
             searchManager.clearSelectedSearchTags();
-            searchResultsClear.setVisibility(View.GONE);
+            searchClearButton.setVisibility(View.GONE);
             searchLibrary();
         });
 
@@ -705,7 +697,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
                     clearQuery();
-                    searchResultsClear.setVisibility(View.GONE);
+                    searchClearButton.setVisibility(View.GONE);
                 }
 
                 return true;
@@ -984,12 +976,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
                 isNewContentAvailable = false;
             }
 
-            Resources res = getResources();
-            String textRes = res.getQuantityString(R.plurals.downloads_filter_book_count_plural, (int) totalSelectedContent, (int) totalSelectedContent);
-
-            filterBookCount.setText(textRes);
             advancedSearchBar.setVisibility(View.VISIBLE);
-            searchResultsClear.setVisibility(View.VISIBLE);
+            searchClearButton.setVisibility(View.VISIBLE);
             if (totalSelectedContent > 0 && searchMenu != null) searchMenu.collapseActionView();
         } else {
             advancedSearchBar.setVisibility(View.GONE);
