@@ -406,7 +406,7 @@ public class ImportService extends IntentService {
             return result;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v2) file");
-            throw new JSONParseException("Error reading JSON (v2) file : " + e.getMessage());
+            throw new JSONParseException("Error reading JSON (v2) file : " + e.getMessage(), e);
         }
     }
 }
