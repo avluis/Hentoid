@@ -5,17 +5,12 @@ package me.devsaki.hentoid.util.exception;
  * Attribute Exception
  */
 public class JSONParseException extends Exception {
-    private String result;
 
-    public JSONParseException(String result) {
-        this.result = result;
+    public JSONParseException(String message) {
+        super(message);
     }
 
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
+    public JSONParseException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
