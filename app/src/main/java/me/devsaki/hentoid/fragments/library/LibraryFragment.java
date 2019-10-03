@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.library;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.LayoutInflater;
@@ -172,7 +173,10 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
             String title;
             if (totalSelectedCount == totalCount)
                 title = totalCount + " items";
-            else title = String.format("%s/%s items", totalSelectedCount, totalCount);
+            else {
+                Resources res = getResources();
+                title = res.getQuantityString(R.plurals.number_of_book_search_results, (int)totalSelectedCount, (int)totalSelectedCount, (int)totalSelectedCount);
+            }
             activity.setTitle(title);
         }
     }
