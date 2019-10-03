@@ -25,7 +25,7 @@ public class LibraryPager {
     }
 
     public void initUI(View rootView) {
-        pagerPanel = rootView.findViewById(R.id.library_pager);
+        pagerPanel = rootView.findViewById(R.id.library_pager_group);
 
         RecyclerView pageCarousel = rootView.findViewById(R.id.pager_pageCarousel);
         pageCarousel.setHasFixedSize(true);

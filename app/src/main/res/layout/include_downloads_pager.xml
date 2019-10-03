@@ -1,41 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?colorPrimary"
-    android:elevation="@dimen/toolbar_layout_elevation"
-    android:gravity="center"
-    android:minHeight="?android:attr/actionBarSize"
-    android:orientation="horizontal"
-    android:theme="@style/Theme.MaterialComponents.CompactMenu"
-    app:contentInsetEnd="0dp"
-    app:contentInsetStart="0dp">
+    tools:context=".activities.LibraryActivity"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
+    tools:showIn="@layout/activity_library">
+
+    <View
+        android:id="@+id/pager_background"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/primary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/pager_pageCarousel" />
 
     <ImageButton
         android:id="@+id/pager_btnPrevious"
         android:layout_width="?android:attr/actionBarSize"
         android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginEnd="8dp"
         android:background="@drawable/btn_content_selector"
         android:scaleType="fitXY"
         android:src="@drawable/ic_action_previous_item"
+        app:layout_constraintBottom_toBottomOf="@id/pager_pageCarousel"
+        app:layout_constraintEnd_toStartOf="@+id/pager_pageCarousel"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/pager_pageCarousel"
         tools:ignore="ContentDescription" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/pager_pageCarousel"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="?android:attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:textIsSelectable="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/pager_btnNext"
+        app:layout_constraintStart_toEndOf="@+id/pager_btnPrevious"
         tools:listitem="@layout/item_pagecarousel" />
 
     <ImageButton
         android:id="@+id/pager_btnNext"
         android:layout_width="?android:attr/actionBarSize"
         android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginStart="8dp"
         android:background="@drawable/btn_content_selector"
         android:scaleType="fitXY"
         android:src="@drawable/ic_action_next_item"
+        app:layout_constraintBottom_toBottomOf="@id/pager_pageCarousel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/pager_pageCarousel"
+        app:layout_constraintTop_toTopOf="@id/pager_pageCarousel"
         tools:ignore="ContentDescription" />
 
-</LinearLayout>
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/library_pager_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="pager_pageCarousel,pager_btnPrevious,pager_btnNext,pager_background"
+        tools:visibility="visible" />
+</merge>
