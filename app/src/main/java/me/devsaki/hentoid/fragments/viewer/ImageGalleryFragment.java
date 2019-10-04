@@ -37,7 +37,7 @@ public class ImageGalleryFragment extends Fragment {
 
     private int startIndex = 0;
 
-    private Boolean filterFavourites = false;
+    private boolean filterFavourites = false;
 
 
     static ImageGalleryFragment newInstance(boolean filterFavourites) {

@@ -228,4 +228,5 @@
     <string name="changelog">Changelog</string>
     <string name="get_latest">Get the latest version (@v)</string>
     <string name="update_success">Update successful !</string>
+    <string name="starting_download">Starting download</string>
 </resources>

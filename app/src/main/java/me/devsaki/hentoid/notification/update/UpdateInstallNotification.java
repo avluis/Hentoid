@@ -19,7 +19,7 @@ import me.devsaki.hentoid.util.notification.Notification;
 
 public class UpdateInstallNotification implements Notification {
 
-    private final static String APK_MIMETYPE = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk");
+    private static final String APK_MIMETYPE = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk");
     private final Uri apkUri;
 
     public UpdateInstallNotification(Uri apkUri) {

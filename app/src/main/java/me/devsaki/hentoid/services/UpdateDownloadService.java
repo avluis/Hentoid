@@ -15,6 +15,7 @@ import com.thin.downloadmanager.ThinDownloadManager;
 
 import java.io.File;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.notification.update.UpdateFailedNotification;
 import me.devsaki.hentoid.notification.update.UpdateInstallNotification;
 import me.devsaki.hentoid.notification.update.UpdateProgressNotification;
@@ -86,7 +87,7 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
     }
 
     private void downloadUpdate(Uri updateUri) {
-        Timber.w("Starting download");
+        Timber.w(this.getResources().getString(R.string.starting_download));
 
         File apkFile = new File(getExternalCacheDir(), "hentoid.apk");
         Uri destinationUri = Uri.fromFile(apkFile);

@@ -51,6 +51,7 @@ import me.devsaki.fakku.FakkuDecode;
 import me.devsaki.fakku.PageInfo;
 import me.devsaki.fakku.PointTranslation;
 import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
@@ -121,7 +122,7 @@ public class ContentDownloadService extends IntentService {
     private void notifyStart() {
         notificationManager = new ServiceNotificationManager(this, 1);
         notificationManager.cancel();
-        notificationManager.startForeground(new DownloadProgressNotification("Starting download", 0, 0));
+        notificationManager.startForeground(new DownloadProgressNotification(this.getResources().getString(R.string.starting_download), 0, 0));
 
         warningNotificationManager = new NotificationManager(this, 2);
         warningNotificationManager.cancel();
