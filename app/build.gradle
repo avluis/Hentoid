@@ -19,7 +19,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 28
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.9.1-dev'
+        versionName '1.9.1'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
@@ -31,6 +31,7 @@ android {
     }
     buildTypes {
         debug {
+            useProguard false // R8 is used instead
             minifyEnabled true
             applicationIdSuffix ".debug"
             versionNameSuffix "-DEBUG"
@@ -40,6 +41,7 @@ android {
             proguardFile 'proguard-rules-debug.pro'
         }
         release {
+            useProguard false // R8 is used instead
             debuggable false
             minifyEnabled true
 
