@@ -32,7 +32,6 @@ import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.retrofit.sources.MikanServer;
 import me.devsaki.hentoid.util.AttributeCache;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.util.Preferences;
 import retrofit2.Response;
@@ -172,19 +171,19 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         params.put("page", page + "");
 
         List<Long> attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.ARTIST);
-        if (!attributes.isEmpty()) params.put("artist", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("artist", android.text.TextUtils.join(", ", attributes));
 
         attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.CIRCLE);
-        if (!attributes.isEmpty()) params.put("group", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("group", android.text.TextUtils.join(", ", attributes));
 
         attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.CHARACTER);
-        if (!attributes.isEmpty()) params.put("character", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("character", android.text.TextUtils.join(", ", attributes));
 
         attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.TAG);
-        if (!attributes.isEmpty()) params.put("tag", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("tag", android.text.TextUtils.join(", ", attributes));
 
         attributes = ContentHelper.extractAttributeIdsByType(metadata, AttributeType.LANGUAGE);
-        if (!attributes.isEmpty()) params.put("language", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("language", android.text.TextUtils.join(", ", attributes));
 
 
         compositeDisposable.add(MikanServer.API.search(getMikanCodeForSite(site) + suffix, params)
