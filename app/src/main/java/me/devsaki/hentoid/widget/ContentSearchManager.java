@@ -13,7 +13,6 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Language;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Preferences;
 
@@ -122,8 +121,7 @@ public class ContentSearchManager {
         else if (!tags.isEmpty())
             accessor.searchBooksPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
         else
-            accessor.getRecentBooksPaged(Site.HITOMI, Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
-        // TODO : do something about these ridiculous default 1st arguments
+            accessor.getRecentBooksPaged(Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
     public void searchLibraryForId(int booksPerPage, PagedResultListener<Long> listener) {
@@ -132,8 +130,7 @@ public class ContentSearchManager {
         else if (!tags.isEmpty())
             accessor.searchBookIdsPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
         else
-            accessor.getRecentBookIdsPaged(Site.HITOMI, Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
-        // TODO : do something about these ridiculous default 1st arguments
+            accessor.getRecentBookIdsPaged(Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
     public void dispose() {

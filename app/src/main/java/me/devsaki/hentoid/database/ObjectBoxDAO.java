@@ -15,7 +15,6 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.util.Helper;
@@ -73,7 +72,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
 
     @Override
-    public void getRecentBooksPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
+    public void getRecentBooksPaged(Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
                         () -> pagedContentSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
@@ -85,7 +84,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public void getRecentBookIdsPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
+    public void getRecentBookIdsPaged(Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
                         () -> pagedContentIdSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
