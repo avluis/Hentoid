@@ -273,11 +273,6 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
     }
 
-    @Nullable
-    public Attribute selectAttributeById(long id) {
-        return store.boxFor(Attribute.class).get(id);
-    }
-
     private static long[] getIdsFromAttributes(@Nonnull List<Attribute> attrs) {
         long[] result = new long[attrs.size()];
         if (!attrs.isEmpty()) {
@@ -324,8 +319,8 @@ public class ObjectBoxDB {
 
         boolean hasTitleFilter = (title != null && title.length() > 0);
         boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE)
-                                && (metadataMap.get(AttributeType.SOURCE) != null)
-                                && !(metadataMap.get(AttributeType.SOURCE).isEmpty());
+                && (metadataMap.get(AttributeType.SOURCE) != null)
+                && !(metadataMap.get(AttributeType.SOURCE).isEmpty());
         boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter ? 1 : 0);
 
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
@@ -688,19 +683,6 @@ public class ObjectBoxDB {
         }
 
         return result;
-    }
-
-    public List<Content> selectContentBySourceId(Site site, List<String> uniqueIds) {
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, new int[]{StatusContent.DOWNLOADED.getCode(),
-                StatusContent.ERROR.getCode(),
-                StatusContent.MIGRATED.getCode(),
-                StatusContent.DOWNLOADING.getCode(),
-                StatusContent.PAUSED.getCode()});
-        query.equal(Content_.site, site.getCode());
-        query.in(Content_.uniqueSiteId, uniqueIds.toArray(new String[0]));
-
-        return query.build().find();
     }
 
     List<Content> selectContentWithOldPururinHost() {

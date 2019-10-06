@@ -11,7 +11,6 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -21,7 +20,7 @@ import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.util.Helper;
 
-public class ObjectBoxCollectionAccessor implements CollectionAccessor {
+public class ObjectBoxDAO implements CollectionDAO {
 
     private final ObjectBoxDB db;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -68,7 +67,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     }
 
 
-    public ObjectBoxCollectionAccessor(Context ctx) {
+    public ObjectBoxDAO(Context ctx) {
         db = ObjectBoxDB.getInstance(ctx);
     }
 
@@ -96,11 +95,6 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
                         .subscribe(contentIdQueryResult -> listener.onPagedResultReady(
                                 Helper.getListFromPrimitiveArray(contentIdQueryResult.pagedContentIds), contentIdQueryResult.totalSelectedContent, contentIdQueryResult.totalContent))
         );
-    }
-
-    @Override
-    public void getPages(Content content, PagedResultListener<Content> listener) {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
@@ -228,18 +222,6 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         compositeDisposable.add(
                 Single.fromCallable(
                         () -> pagedAttributeSearch(MODE_SEARCH_ATTRIBUTE_COMBINED, types, filter, attrs, filterFavourites, orderStyle, page, booksPerPage)
-                )
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(result -> listener.onResultReady(result.pagedAttributes, result.totalSelectedAttributes))
-        );
-    }
-
-    @Override
-    public void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
-        compositeDisposable.add(
-                Single.fromCallable(
-                        () -> attributeSearch(MODE_SEARCH_ATTRIBUTE_AVAILABLE, types, "", attrs, filterFavourites, 1)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())

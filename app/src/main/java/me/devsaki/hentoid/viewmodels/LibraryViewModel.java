@@ -14,7 +14,7 @@ import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Preferences;
@@ -32,10 +32,10 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
     private int maxPage = 999; //TODO
 
     // Collection data
-    private final MutableLiveData<ObjectBoxCollectionAccessor.ContentQueryResult> library = new MutableLiveData<>();        // Current content
+    private final MutableLiveData<ObjectBoxDAO.ContentQueryResult> library = new MutableLiveData<>();        // Current content
 
     // Technical
-    private final ContentSearchManager searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(HentoidApp.getAppContext()));
+    private final ContentSearchManager searchManager = new ContentSearchManager(new ObjectBoxDAO(HentoidApp.getAppContext()));
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
@@ -55,12 +55,14 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
     }
 
     @NonNull
-    public LiveData<ObjectBoxCollectionAccessor.ContentQueryResult> getLibrary() {
+    public LiveData<ObjectBoxDAO.ContentQueryResult> getLibrary() {
         return library;
     }
 
 
-    private void performSearch(int page) { performSearch(page, false); }
+    private void performSearch(int page) {
+        performSearch(page, false);
+    }
 
     private void performSearch(int page, boolean forceLoad) {
         if (!forceLoad && (page == currentPage || page < 1 || page > maxPage)) return;
@@ -73,7 +75,7 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
     @Override
     public void onPagedResultReady(List<Content> results, long totalSelectedContent, long totalContent) {
         Timber.i(">>Results ready : %s items (%s/%s) - page %s", results.size(), totalSelectedContent, totalContent, currentPage);
-        ObjectBoxCollectionAccessor.ContentQueryResult result = new ObjectBoxCollectionAccessor.ContentQueryResult(results, totalSelectedContent, totalContent, currentPage);
+        ObjectBoxDAO.ContentQueryResult result = new ObjectBoxDAO.ContentQueryResult(results, totalSelectedContent, totalContent, currentPage);
         library.setValue(result);
     }
 
@@ -101,7 +103,9 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         }
     }
 
-    public void load() { performSearch(currentPage, true); }
+    public void load() {
+        performSearch(currentPage, true);
+    }
 
     public void previousPage() {
         Timber.i(">>previousPage");

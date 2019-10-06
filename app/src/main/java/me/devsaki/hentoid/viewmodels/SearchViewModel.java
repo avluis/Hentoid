@@ -12,8 +12,8 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -34,7 +34,7 @@ public class SearchViewModel extends AndroidViewModel {
     /**
      * @see #setMode(int)
      */
-    private CollectionAccessor collectionAccessor;
+    private CollectionDAO collectionAccessor;
 
     private List<AttributeType> category;
 
@@ -111,7 +111,7 @@ public class SearchViewModel extends AndroidViewModel {
     public void setMode(int mode) {
         Context ctx = getApplication().getApplicationContext();
         //collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(ctx) : new MikanCollectionAccessor(ctx);
-        collectionAccessor = new ObjectBoxCollectionAccessor(ctx);
+        collectionAccessor = new ObjectBoxDAO(ctx);
         countAttributesPerType();
     }
 

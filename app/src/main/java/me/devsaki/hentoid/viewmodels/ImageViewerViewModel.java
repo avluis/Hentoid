@@ -31,7 +31,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -117,7 +117,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     public void loadFromSearchParams(long contentId, @Nonnull Bundle bundle) {
         loadedContentId = contentId;
         Context ctx = getApplication().getApplicationContext();
-        searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
+        searchManager = new ContentSearchManager(new ObjectBoxDAO(ctx));
         searchManager.loadFromBundle(bundle);
         int contentIndex = bundle.getInt("contentIndex", -1);
         if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);

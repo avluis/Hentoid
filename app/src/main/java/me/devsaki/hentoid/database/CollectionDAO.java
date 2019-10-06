@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.collection;
+package me.devsaki.hentoid.database;
 
 import android.util.SparseIntArray;
 
@@ -12,15 +12,13 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
 
-public interface CollectionAccessor {
+public interface CollectionDAO {
 
     // BOOKS
 
     void getRecentBooksPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener);
 
     void getRecentBookIdsPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
-
-    void getPages(Content content, PagedResultListener<Content> listener);
 
     void searchBooksPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener);
 
@@ -47,8 +45,6 @@ public interface CollectionAccessor {
     void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, ResultListener<List<Attribute>> listener);
 
     void getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener);
-
-    void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener);
 
     void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener);
 

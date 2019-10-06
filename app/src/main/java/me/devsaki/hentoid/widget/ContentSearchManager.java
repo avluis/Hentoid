@@ -9,7 +9,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
-import me.devsaki.hentoid.collection.CollectionAccessor;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Language;
@@ -26,7 +26,7 @@ public class ContentSearchManager {
     private static final String KEY_SORT_ORDER = "sort_order";
     private static final String KEY_CURRENT_PAGE = "current_page";
 
-    private final CollectionAccessor accessor;
+    private final CollectionDAO accessor;
 
     // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
     private int currentPage = 1;
@@ -40,7 +40,7 @@ public class ContentSearchManager {
     private int contentSortOrder = Preferences.getContentSortOrder();
 
 
-    public ContentSearchManager(CollectionAccessor accessor) {
+    public ContentSearchManager(CollectionDAO accessor) {
         this.accessor = accessor;
     }
 

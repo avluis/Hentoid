@@ -52,8 +52,8 @@ import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.ContentAdapter;
-import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -457,7 +457,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
                              Bundle savedInstanceState) {
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
         //CollectionAccessor collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
-        CollectionAccessor collectionAccessor = new ObjectBoxCollectionAccessor(mContext);
+        CollectionDAO collectionAccessor = new ObjectBoxDAO(mContext);
         searchManager = new ContentSearchManager(collectionAccessor);
 
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
@@ -469,7 +469,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         return rootView;
     }
 
-    protected void initUI(View rootView, CollectionAccessor accessor) {
+    protected void initUI(View rootView, CollectionDAO accessor) {
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
         //emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);

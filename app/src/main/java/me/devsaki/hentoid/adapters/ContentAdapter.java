@@ -37,7 +37,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.collection.CollectionAccessor;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -70,7 +70,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final Context context;
     private final ItemSelectListener itemSelectListener;
     private final IntConsumer onContentRemovedListener;
-    private final CollectionAccessor collectionAccessor;
+    private final CollectionDAO collectionAccessor;
     private final int displayMode;
     private final RequestOptions glideRequestOptions;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -857,7 +857,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         private Context context;
         private ItemSelectListener itemSelectListener;
         private IntConsumer onContentRemovedListener;
-        private CollectionAccessor collectionAccessor;
+        private CollectionDAO collectionAccessor;
         private Comparator<Content> sortComparator;
         private int displayMode;
         private Consumer<Content> openBookAction;
@@ -872,7 +872,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             return this;
         }
 
-        public Builder setCollectionAccessor(CollectionAccessor collectionAccessor) {
+        public Builder setCollectionAccessor(CollectionDAO collectionAccessor) {
             this.collectionAccessor = collectionAccessor;
             return this;
         }

@@ -23,7 +23,7 @@ import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.LibraryAdapter;
-import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -139,7 +139,7 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
         }
     }
 
-    private void onLibraryChanged(ObjectBoxCollectionAccessor.ContentQueryResult result) {
+    private void onLibraryChanged(ObjectBoxDAO.ContentQueryResult result) {
         if (null == result) { // No library has been loaded yet (1st run with this instance)
             viewModel.load();
         } else {
