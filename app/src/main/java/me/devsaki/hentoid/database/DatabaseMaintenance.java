@@ -12,6 +12,10 @@ import timber.log.Timber;
 
 public class DatabaseMaintenance {
 
+    private DatabaseMaintenance() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Clean up and upgrade database
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup

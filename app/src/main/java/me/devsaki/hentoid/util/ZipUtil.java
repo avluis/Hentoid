@@ -23,6 +23,10 @@ import timber.log.Timber;
 
 class ZipUtil {
 
+    private ZipUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final int BUFFER = 32 * 1024;
 
     abstract static class ZipTask extends AsyncTask<Object, Void, Boolean> {

@@ -12,6 +12,10 @@ import me.devsaki.hentoid.HentoidApp;
  */
 public final class NetworkStatus {
 
+    private NetworkStatus() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static boolean isOnline() {
         return Optional.of(HentoidApp.getAppContext())
                 .map(context -> (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE))

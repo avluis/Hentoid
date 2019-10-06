@@ -2,6 +2,10 @@ package me.devsaki.hentoid.util;
 
 public class IllegalTags {
 
+    private IllegalTags() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final String[] ILLEGAL_TAGS = { "loli", "shota", "toddler", "baby" };
 
     public static boolean isIllegal(String s)

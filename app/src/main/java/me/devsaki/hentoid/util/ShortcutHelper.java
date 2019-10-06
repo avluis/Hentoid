@@ -23,6 +23,10 @@ import me.devsaki.hentoid.enums.Site;
 
 public final class ShortcutHelper {
 
+    private ShortcutHelper() {
+        throw new IllegalStateException("Utility class");
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.N_MR1)
     public static void buildShortcuts(Context context) {
         // TODO: Loop across all activities

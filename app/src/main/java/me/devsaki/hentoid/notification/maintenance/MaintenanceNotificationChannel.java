@@ -9,6 +9,10 @@ import java.util.Objects;
 
 public class MaintenanceNotificationChannel {
 
+    private MaintenanceNotificationChannel() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final String ID_OLD = "maintenance";
     static final String ID = "maintenance2";
 

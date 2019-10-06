@@ -25,6 +25,10 @@ import timber.log.Timber;
  */
 public class AttributeCache {
 
+    private AttributeCache() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final int EXPIRY_FILE_VERSION = 1;
     private static final int COLLECTION_FILE_VERSION = 1;
 

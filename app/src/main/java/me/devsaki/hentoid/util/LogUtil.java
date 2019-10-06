@@ -13,6 +13,10 @@ import timber.log.Timber;
 
 public class LogUtil {
 
+    private LogUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static class LogInfo {
         public String fileName;
         public String logName;

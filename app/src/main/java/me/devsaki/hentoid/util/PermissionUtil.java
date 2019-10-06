@@ -11,6 +11,10 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class PermissionUtil {
 
+    private PermissionUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static boolean requestExternalStoragePermission(Activity activity, int permissionRequestCode) {
         if (ContextCompat.checkSelfPermission(activity,
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {

@@ -6,6 +6,10 @@ package me.devsaki.hentoid.util;
  */
 public class ConstsImport {
 
+    private ConstsImport() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static final String PERMISSION_GRANTED = "PERMISSION_GRANTED";
     public static final String PERMISSION_DENIED = "PERMISSION_DENIED";
     public static final String PERMISSION_DENIED_FORCED = "PERMISSION_DENIED_FORCED";
