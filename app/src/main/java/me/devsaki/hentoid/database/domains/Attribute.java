@@ -3,7 +3,6 @@ package me.devsaki.hentoid.database.domains;
 import androidx.annotation.NonNull;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
 
@@ -26,8 +25,6 @@ import timber.log.Timber;
  */
 @Entity
 public class Attribute {
-
-    private static final int ATTRIBUTE_FILE_VERSION = 1;
 
     @Id
     private long id;
@@ -147,18 +144,6 @@ public class Attribute {
 
     public String formatLabel() {
         return String.format("%s %s", getName(), getCount() > 0 ? "(" + getCount() + ")" : "");
-    }
-
-    public void saveToStream(DataOutputStream output) throws IOException {
-        output.writeInt(ATTRIBUTE_FILE_VERSION);
-        output.writeUTF(name);
-        output.writeInt(type.getCode());
-        output.writeInt(count);
-        output.writeInt(externalId);
-        output.writeInt(locations.size());
-        for (AttributeLocation location : locations) {
-            location.saveToStream(output);
-        }
     }
 
     public static final Comparator<Attribute> NAME_COMPARATOR = (a, b) -> a.getName().compareTo(b.getName());
