@@ -8,6 +8,7 @@ import android.provider.Settings;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro2;
@@ -60,7 +61,7 @@ public class IntroActivity extends AppIntro2 {
         showPagerIndicator(false);
         setSwipeLock(true);
 
-        backgroundFrame.setBackgroundColor(getResources().getColor(R.color.window_background));
+        backgroundFrame.setBackgroundColor(ContextCompat.getColor(this, R.color.window_background));
     }
 
     @Override
