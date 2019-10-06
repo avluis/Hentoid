@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -45,7 +44,7 @@ public class FileHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
+    static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
 
     public static String getFileProviderAuthority() {
@@ -492,30 +491,7 @@ public class FileHelper {
         return false;
     }
 
-    static class AsyncUnzip extends ZipUtil.ZipTask {
-        final Context context; // TODO - omg leak !
-        final File dest;
-
-        AsyncUnzip(Context context, File dest) {
-            this.context = context;
-            this.dest = dest;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            Intent sendIntent = new Intent();
-            sendIntent.setAction(Intent.ACTION_SEND);
-            // Hentoid is FileProvider ready!!
-            sendIntent.putExtra(Intent.EXTRA_STREAM,
-                    FileProvider.getUriForFile(context, AUTHORITY, dest));
-            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(dest.getName()));
-            sendIntent.setType(mimeType);
-
-            context.startActivity(sendIntent);
-        }
-    }
-
-    // Please don't delete that method !
+    // Please don't delete this method!
     // I need some way to trace actions when working with SD card features - Robb
     public static void createFileWithMsg(@Nonnull String file, String msg) {
         try {

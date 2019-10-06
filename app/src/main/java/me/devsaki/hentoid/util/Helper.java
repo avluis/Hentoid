@@ -70,6 +70,7 @@ public final class Helper {
         }
     }
 
+    //Currently only nhentai source uses this method
     static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);
 
