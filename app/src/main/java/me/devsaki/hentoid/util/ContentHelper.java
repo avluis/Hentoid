@@ -16,7 +16,6 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -26,9 +25,7 @@ import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.JsonContent;
 import timber.log.Timber;
@@ -64,24 +61,6 @@ public final class ContentHelper {
         if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
-
-
-    public static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType type) {
-        return extractAttributeIdsByType(attrs, new AttributeType[]{type});
-    }
-
-    private static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType[] types) {
-        List<Long> result = new ArrayList<>();
-
-        for (Attribute a : attrs) {
-            for (AttributeType type : types) {
-                if (a.getType().equals(type)) result.add(a.getId());
-            }
-        }
-
-        return result;
-    }
-
 
     public static void updateJson(@Nonnull Context context, @Nonnull Content content) {
         DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
