@@ -142,17 +142,7 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
-        if (collectionAccessor.supportsAttributesPaging()) {
-            if (collectionAccessor.supportsAvailabilityFilter())
-                collectionAccessor.getAttributeMasterDataPaged(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
-            else
-                collectionAccessor.getAttributeMasterDataPaged(category, query, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
-        } else {
-            if (collectionAccessor.supportsAvailabilityFilter())
-                collectionAccessor.getAttributeMasterData(category, query, selectedAttributes.getValue(), false, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
-            else
-                collectionAccessor.getAttributeMasterData(category, query, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
-        }
+        collectionAccessor.getAttributeMasterDataPaged(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
     }
 
     public void onAttributeSelected(Attribute a) {

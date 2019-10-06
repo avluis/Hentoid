@@ -124,13 +124,13 @@ public class ContentSearchManager {
             accessor.getRecentBooksPaged(Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
-    public void searchLibraryForId(int booksPerPage, PagedResultListener<Long> listener) {
+    public void searchLibraryForId(PagedResultListener<Long> listener) {
         if (!getQuery().isEmpty())
-            accessor.searchBookIdsUniversalPaged(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Universal search
+            accessor.searchBookIdsUniversal(getQuery(), contentSortOrder, filterFavourites, listener); // Universal search
         else if (!tags.isEmpty())
-            accessor.searchBookIdsPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
+            accessor.searchBookIds("", tags, contentSortOrder, filterFavourites, listener); // Advanced search
         else
-            accessor.getRecentBookIdsPaged(Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
+            accessor.getRecentBookIds(Language.ANY, contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
     public void dispose() {

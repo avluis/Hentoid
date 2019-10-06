@@ -326,10 +326,12 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         // TODO : plan an individual refresh of displayed books according to their new DB value (esp. read/unread)
         Bundle bundle = new Bundle();
         searchManager.saveToBundle(bundle);
+/*
         int pageOffset = 0;
         if (this instanceof PagerFragment)
             pageOffset = (searchManager.getCurrentPage() - 1) * Preferences.getContentPageQuantity();
         bundle.putInt("contentIndex", pageOffset + mAdapter.getContentPosition(content) + 1);
+ */
         ContentHelper.openContent(requireContext(), content, bundle);
     }
 
