@@ -70,7 +70,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final Context context;
     private final ItemSelectListener itemSelectListener;
     private final IntConsumer onContentRemovedListener;
-    private final CollectionDAO collectionAccessor;
+    private final CollectionDAO collectionDAO;
     private final int displayMode;
     private final RequestOptions glideRequestOptions;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -84,7 +84,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         context = builder.context;
         itemSelectListener = builder.itemSelectListener;
         onContentRemovedListener = builder.onContentRemovedListener;
-        collectionAccessor = builder.collectionAccessor;
+        collectionDAO = builder.collectionDAO;
         sortComparator = builder.sortComparator;
         displayMode = builder.displayMode;
         openBookAction = builder.openBookAction;
@@ -387,7 +387,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         if (holder != null) {
             holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
             holder.ivDownload.setOnClickListener(w -> viewQueue());
-            collectionAccessor.getPages(content, this);
+            collectionDAO.getPages(content, this);
         }
          */
     }
@@ -857,7 +857,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         private Context context;
         private ItemSelectListener itemSelectListener;
         private IntConsumer onContentRemovedListener;
-        private CollectionDAO collectionAccessor;
+        private CollectionDAO collectionDAO;
         private Comparator<Content> sortComparator;
         private int displayMode;
         private Consumer<Content> openBookAction;
@@ -872,8 +872,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             return this;
         }
 
-        public Builder setCollectionAccessor(CollectionDAO collectionAccessor) {
-            this.collectionAccessor = collectionAccessor;
+        public Builder setCollectionDAO(CollectionDAO collectionDAO) {
+            this.collectionDAO = collectionDAO;
             return this;
         }
 

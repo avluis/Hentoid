@@ -26,8 +26,8 @@ public class PagerFragment extends DownloadsFragment {
 
 
     @Override
-    protected void initUI(View rootView, CollectionDAO accessor) {
-        super.initUI(rootView, accessor);
+    protected void initUI(View rootView, CollectionDAO collectionDAO) {
+        super.initUI(rootView, collectionDAO);
 
         RecyclerView pageCarousel = rootView.findViewById(R.id.pager_pageCarousel);
         pageCarousel.setHasFixedSize(true);

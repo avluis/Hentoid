@@ -25,7 +25,7 @@ public class ContentSearchManager {
     private static final String KEY_SORT_ORDER = "sort_order";
     private static final String KEY_CURRENT_PAGE = "current_page";
 
-    private final CollectionDAO accessor;
+    private final CollectionDAO collectionDAO;
 
     // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
     private int currentPage = 1;
@@ -39,8 +39,8 @@ public class ContentSearchManager {
     private int contentSortOrder = Preferences.getContentSortOrder();
 
 
-    public ContentSearchManager(CollectionDAO accessor) {
-        this.accessor = accessor;
+    public ContentSearchManager(CollectionDAO collectionDAO) {
+        this.collectionDAO = collectionDAO;
     }
 
     public void setFilterFavourites(boolean filterFavourites) {
@@ -117,23 +117,23 @@ public class ContentSearchManager {
 
     public void searchLibraryForContent(int booksPerPage, PagedResultListener<Content> listener) {
         if (!getQuery().isEmpty())
-            accessor.searchBooksUniversalPaged(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Universal search
+            collectionDAO.searchBooksUniversalPaged(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Universal search
         else if (!tags.isEmpty())
-            accessor.searchBooksPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
+            collectionDAO.searchBooksPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
         else
-            accessor.getRecentBooksPaged(Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
+            collectionDAO.getRecentBooksPaged(Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
     public void searchLibraryForId(PagedResultListener<Long> listener) {
         if (!getQuery().isEmpty())
-            accessor.searchBookIdsUniversal(getQuery(), contentSortOrder, filterFavourites, listener); // Universal search
+            collectionDAO.searchBookIdsUniversal(getQuery(), contentSortOrder, filterFavourites, listener); // Universal search
         else if (!tags.isEmpty())
-            accessor.searchBookIds("", tags, contentSortOrder, filterFavourites, listener); // Advanced search
+            collectionDAO.searchBookIds("", tags, contentSortOrder, filterFavourites, listener); // Advanced search
         else
-            accessor.getRecentBookIds(Language.ANY, contentSortOrder, filterFavourites, listener); // Default search (display recent)
+            collectionDAO.getRecentBookIds(Language.ANY, contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
     public void dispose() {
-        accessor.dispose();
+        collectionDAO.dispose();
     }
 }

@@ -58,7 +58,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.fragments.downloads.PagerFragment;
 import me.devsaki.hentoid.fragments.downloads.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.fragments.downloads.UpdateSuccessDialogFragment;
 import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
@@ -458,20 +457,20 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
-        //CollectionAccessor collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
-        CollectionDAO collectionAccessor = new ObjectBoxDAO(mContext);
-        searchManager = new ContentSearchManager(collectionAccessor);
+        //CollectionDAO collectionDAO = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionDAO(mContext) : new MikanCollectionDAO(mContext);
+        CollectionDAO collectionDAO = new ObjectBoxDAO(mContext);
+        searchManager = new ContentSearchManager(collectionDAO);
 
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
-        initUI(rootView, collectionAccessor);
+        initUI(rootView, collectionDAO);
         attachScrollListener();
         attachOnClickListeners(rootView);
 
         return rootView;
     }
 
-    protected void initUI(View rootView, CollectionDAO accessor) {
+    protected void initUI(View rootView, CollectionDAO collectionDAO) {
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
         //emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
@@ -481,7 +480,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
         mAdapter = new ContentAdapter.Builder()
                 .setContext(mContext)
-                .setCollectionAccessor(accessor)
+                .setCollectionDAO(collectionDAO)
                 .setDisplayMode(mode)
                 .setSortComparator(Content.getComparator())
                 .setItemSelectListener(this)

@@ -34,7 +34,7 @@ public class SearchViewModel extends AndroidViewModel {
     /**
      * @see #setMode(int)
      */
-    private CollectionDAO collectionAccessor;
+    private CollectionDAO collectionDAO;
 
     private List<AttributeType> category;
 
@@ -110,8 +110,8 @@ public class SearchViewModel extends AndroidViewModel {
 
     public void setMode(int mode) {
         Context ctx = getApplication().getApplicationContext();
-        //collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(ctx) : new MikanCollectionAccessor(ctx);
-        collectionAccessor = new ObjectBoxDAO(ctx);
+        //collectionDAO = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionDAO(ctx) : new MikanCollectionDAO(ctx);
+        collectionDAO = new ObjectBoxDAO(ctx);
         countAttributesPerType();
     }
 
@@ -142,7 +142,7 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
-        collectionAccessor.getAttributeMasterDataPaged(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
+        collectionDAO.getAttributeMasterDataPaged(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
     }
 
     public void onAttributeSelected(Attribute a) {
@@ -178,11 +178,11 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     private void countAttributesPerType() {
-        collectionAccessor.countAttributesPerType(selectedAttributes.getValue(), countPerTypeResultListener);
+        collectionDAO.countAttributesPerType(selectedAttributes.getValue(), countPerTypeResultListener);
     }
 
     private void updateSelectionResult() {
-        collectionAccessor.countBooks("", selectedAttributes.getValue(), false, contentResultListener);
+        collectionDAO.countBooks("", selectedAttributes.getValue(), false, contentResultListener);
     }
 
     // === HELPER RESULT STRUCTURES
@@ -212,7 +212,7 @@ public class SearchViewModel extends AndroidViewModel {
 
     @Override
     protected void onCleared() {
-        if (collectionAccessor != null) collectionAccessor.dispose();
+        if (collectionDAO != null) collectionDAO.dispose();
         super.onCleared();
     }
 }
