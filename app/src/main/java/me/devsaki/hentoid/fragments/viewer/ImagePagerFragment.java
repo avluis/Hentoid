@@ -403,7 +403,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         updatePageDisplay();
 
         // Can't access the gallery when there's no page to display
-        if (images.size() > 0) galleryBtn.setVisibility(View.VISIBLE);
+        if (!images.isEmpty()) galleryBtn.setVisibility(View.VISIBLE);
         else galleryBtn.setVisibility(View.GONE);
     }
 

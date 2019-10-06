@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.parsers;
 
-import com.squareup.moshi.Moshi;
-
 import org.jsoup.nodes.Document;
 
 import java.io.File;

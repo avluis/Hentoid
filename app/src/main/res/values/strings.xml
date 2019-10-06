@@ -82,6 +82,8 @@
     <string name="adding_to_db">Adding files to database…</string>
     <string name="kitkat_rationale">Unable to modify contents of the SD Card. This is caused by the external storage policy by Google in Android 4.4.\nTo bypass this limitation, you can try using one of the \'sd fix\' tools available in the Google Play Store (Root Required).</string>
     <string name="no_sd_support">Your device is not currently supported.\nPlease join our Discord Server if you wish to help us add support for your device.</string>
+    <string name="enabled">ENABLED</string>
+    <string name="disabled">DISABLED</string>
 
     <!-- Import / Kitkat folder dialog -->
     <string name="kitkat_dialog_title">Choose Hentoid folder</string>
