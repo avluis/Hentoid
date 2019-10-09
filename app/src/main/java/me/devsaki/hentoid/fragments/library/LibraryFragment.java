@@ -338,9 +338,12 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     }
 
     private void loadPagerAdapter(PagedList<Content> library) {
-        int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
-        int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size() - 1);
-        pagerAdapter.setShelf(library.subList(minIndex, maxIndex));
+        if (library.isEmpty()) pagerAdapter.setShelf(Collections.emptyList());
+        else {
+            int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
+            int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size() - 1);
+            pagerAdapter.setShelf(library.subList(minIndex, maxIndex));
+        }
         pagerAdapter.notifyDataSetChanged();
     }
 
@@ -354,6 +357,8 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
 
         if (Preferences.getEndlessScroll()) endlessAdapter.submitList(result);
         else loadPagerAdapter(result);
+
+        recyclerView.scrollToPosition(0);
 
         library = result;
     }
