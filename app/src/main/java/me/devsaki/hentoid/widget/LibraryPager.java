@@ -17,6 +17,9 @@ public class LibraryPager {
     private View pagerPanel;
     private CarouselDecorator decorator;
 
+    private int currentPageNumber = 1;
+    private int pageCount = 0;
+
 
     public LibraryPager(View.OnClickListener onPreviousListener, View.OnClickListener onNextListener, CarouselDecorator.OnPageChangeListener onPageChangeListener) {
         this.onPreviousListener = onPreviousListener;
@@ -42,10 +45,12 @@ public class LibraryPager {
 
     public void setPageCount(int pageCount) {
         decorator.setPageCount(pageCount);
+        this.pageCount = pageCount;
     }
 
     public void setCurrentPage(int page) {
         decorator.setCurrentPage(page);
+        currentPageNumber = page;
     }
 
     public void enable() {
@@ -55,4 +60,17 @@ public class LibraryPager {
     public void disable() {
         pagerPanel.setVisibility(View.GONE);
     }
+
+
+    public int nextPage() {
+        return currentPageNumber < pageCount ? ++currentPageNumber : currentPageNumber;
+    }
+
+    public int previousPage() {
+        return currentPageNumber > 1 ? --currentPageNumber : currentPageNumber;
+    }
+
+    public int getCurrentPageNumber() { return  currentPageNumber; }
+
+    public int getPageCount() { return  pageCount; }
 }

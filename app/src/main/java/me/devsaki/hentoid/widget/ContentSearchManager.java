@@ -3,6 +3,9 @@ package me.devsaki.hentoid.widget;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.lifecycle.LiveData;
+import androidx.paging.PagedList;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,6 +125,15 @@ public class ContentSearchManager {
             collectionDAO.searchBooksPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
         else
             collectionDAO.getRecentBooksPaged(Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
+    }
+
+    public LiveData<PagedList<Content>> getLibrary(int booksPerPage) {
+        if (!getQuery().isEmpty())
+            return collectionDAO.searchBooksUniversal(getQuery(), booksPerPage, contentSortOrder, filterFavourites); // Universal search
+        else if (!tags.isEmpty())
+            return collectionDAO.searchBooks("", tags, booksPerPage, contentSortOrder, filterFavourites); // Advanced search
+        else
+            return collectionDAO.getRecentBooks(booksPerPage, contentSortOrder, filterFavourites); // Default search (display recent)
     }
 
     public void searchLibraryForId(PagedResultListener<Long> listener) {

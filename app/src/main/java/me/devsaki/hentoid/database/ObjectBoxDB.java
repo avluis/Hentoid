@@ -347,6 +347,18 @@ public class ObjectBoxDB {
         return query.build();
     }
 
+    Query<Content> queryContentUniversalContent2(String queryStr, boolean filterFavourites, int orderStyle) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, visibleContentStatus);
+
+        if (filterFavourites) query.equal(Content_.favourite, true);
+        query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        query.or().equal(Content_.uniqueSiteId, queryStr);
+        applyOrderStyle(query, orderStyle);
+
+        return query.build();
+    }
+
     private Query<Content> queryContentUniversalContent(String queryStr, boolean filterFavourites, long[] additionalIds, int orderStyle) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
@@ -361,7 +373,7 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    private Query<Content> queryContentUniversalAttributes(String queryStr, boolean filterFavourites) {
+    Query<Content> queryContentUniversalAttributes(String queryStr, boolean filterFavourites) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
 
@@ -419,21 +431,9 @@ public class ObjectBoxDB {
         return setQueryIndexes(result, page, booksPerPage);
     }
 
-    Query<Content> selectContentSearchQ(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
-        int start = (page - 1) * booksPerPage;
+    Query<Content> selectContentSearchQ(String title, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
         return queryContentSearchContent(title, tags, filterFavourites, orderStyle);
     }
-/*
-        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
-            if (booksPerPage < 0) result = query.find();
-            else result = query.find(start, booksPerPage);
-        } else {
-            result = shuffleRandomSort(query, start, booksPerPage);
-        }
-        return setQueryIndexes(result, page, booksPerPage);
-    }
-
- */
 
     long[] selectContentSearchId(String title, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
         long[] result;

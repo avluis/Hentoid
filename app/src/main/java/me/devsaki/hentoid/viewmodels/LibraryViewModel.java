@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.paging.PagedList;
 
 import java.util.List;
 
@@ -31,18 +32,18 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
     private int currentPage = 1;
     private int maxPage = 999; //TODO
 
-    // Collection data
-    private final MutableLiveData<ObjectBoxDAO.ContentQueryResult> library = new MutableLiveData<>();        // Current content
-
     // Technical
     private final ContentSearchManager searchManager = new ContentSearchManager(new ObjectBoxDAO(HentoidApp.getAppContext()));
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    // Collection data
+    private final MutableLiveData<ObjectBoxDAO.ContentQueryResult> library = new MutableLiveData<>();        // Current content
+    private LiveData<PagedList<Content>> libraryPaged = searchManager.getLibrary(booksPerPage);
 
 
     public LibraryViewModel(@NonNull Application application) {
         super(application);
         Preferences.registerPrefsChangedListener(prefsListener);
-        library.setValue(null); // Default content; tells everyone nothing has been loaded yet
     }
 
     public void onSaveState(Bundle outState) {
@@ -59,6 +60,11 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
         return library;
     }
 
+    @NonNull
+    public LiveData<PagedList<Content>> getLibraryPaged() {
+        return libraryPaged;
+    }
+
 
     private void performSearch(int page) {
         performSearch(page, false);
@@ -69,7 +75,7 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
 
         currentPage = page;
         searchManager.setCurrentPage(currentPage);
-        searchManager.searchLibraryForContent(booksPerPage, this);
+        libraryPaged = searchManager.getLibrary(booksPerPage);
     }
 
     @Override
@@ -101,10 +107,6 @@ public class LibraryViewModel extends AndroidViewModel implements PagedResultLis
             default:
                 // Other changes aren't handled here
         }
-    }
-
-    public void load() {
-        performSearch(currentPage, true);
     }
 
     public void previousPage() {

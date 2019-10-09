@@ -13,7 +13,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.paging.PagedList;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,6 @@ import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.LibraryAdapter;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -31,14 +31,17 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.LibaryItemFlex;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.views.ProgressItem;
+import me.devsaki.hentoid.views.RestrictableRecyclerView;
 import me.devsaki.hentoid.widget.LibraryPager;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
-public class LibraryFragment extends BaseFragment implements FlexibleAdapter.EndlessScrollListener {
+public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.EndlessScrollListener*/ {
 
     private LibraryViewModel viewModel;
+    private RestrictableRecyclerView recyclerView;
+    private LinearLayoutManager llm;
     private LibraryAdapter adapter;
 
     // ======== UI
@@ -76,7 +79,8 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel.getLibrary().observe(this, this::onLibraryChanged);
+        //viewModel.getLibrary().observe(this, this::onLibraryChanged);
+        viewModel.getLibraryPaged().observe(this, this::onPagedLibraryChanged);
     }
 
     @Override
@@ -123,25 +127,35 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
 
         pager.initUI(rootView);
 
-        initPagingMethod(Preferences.getEndlessScroll());
-
-        RecyclerView recyclerView = requireViewById(rootView, R.id.library_list);
+        recyclerView = requireViewById(rootView, R.id.library_list);
         recyclerView.setAdapter(adapter);
+        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
+
+        initPagingMethod(Preferences.getEndlessScroll());
     }
 
     private void initPagingMethod(boolean isEndless) {
         if (isEndless) {
-            adapter.setEndlessScrollListener(this, progressItem);
+            //adapter.setEndlessScrollListener(this, progressItem);
             pager.disable();
+            recyclerView.resetBounds();
         } else {
-            adapter.setEndlessScrollListener(null, progressItem);
+            //adapter.setEndlessScrollListener(null, progressItem);
             pager.enable();
+            boundRecycleViewToPage(pager.getCurrentPageNumber());
         }
     }
 
+    private void boundRecycleViewToPage(int page) {
+        recyclerView.setBounds(
+                (page - 1) * Preferences.getContentPageQuantity(),
+                page * Preferences.getContentPageQuantity()
+        );
+    }
+/*
     private void onLibraryChanged(ObjectBoxDAO.ContentQueryResult result) {
         if (null == result) { // No library has been loaded yet (1st run with this instance)
-            viewModel.load();
+//            viewModel.load();
         } else {
             updateTitle(result.totalSelectedContent, result.totalContent);
             pager.setPageCount((int) Math.ceil(result.totalSelectedContent * 1.0 / Preferences.getContentPageQuantity()));
@@ -163,6 +177,36 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
         }
     }
 
+ */
+
+    private void onPagedLibraryChanged(PagedList<Content> result) {
+        Timber.d(">>Size=%s", result.size());
+        updateTitle(result.size(), result.size()); // TODO total size = size of unfiltered content
+
+        pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
+        Timber.d(">>Offset=%s", result.getPositionOffset());
+
+        List<IFlexible> items = new ArrayList<>();
+        for (Content content : result) {
+            LibaryItemFlex holder = new LibaryItemFlex(content);
+            items.add(holder);
+//            if (!Preferences.getEndlessScroll() && items.size() == Preferences.getContentPageQuantity()) break;
+        }
+
+        if (Preferences.getEndlessScroll()) recyclerView.resetBounds();
+        else boundRecycleViewToPage(pager.getCurrentPageNumber());
+
+        if (0 == adapter.getItemCount()) // 1st results load
+            adapter.addItems(0, items);
+        else if (Preferences.getEndlessScroll()) // load more (endless mode)
+            adapter.onLoadMoreComplete(items);
+        else // load page (pager mode)
+        {
+            adapter.clear();
+            adapter.addItems(0, items);
+        }
+    }
+
     /**
      * Update the screen title according to current search filter (#TOTAL BOOKS) if no filter is
      * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
@@ -175,7 +219,7 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
                 title = totalCount + " items";
             else {
                 Resources res = getResources();
-                title = res.getQuantityString(R.plurals.number_of_book_search_results, (int)totalSelectedCount, (int)totalSelectedCount, (int)totalSelectedCount);
+                title = res.getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, (int) totalSelectedCount);
             }
             activity.setTitle(title);
         }
@@ -204,6 +248,7 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
         return false;
     }
 
+    /*
     @Override
     public void noMoreLoad(int newItemsSize) {
 
@@ -215,17 +260,28 @@ public class LibraryFragment extends BaseFragment implements FlexibleAdapter.End
         viewModel.nextPage();
     }
 
+     */
+
     private void onPreviousClick(View v) {
-        // TODO test at first page
-        viewModel.previousPage();
+        pager.previousPage();
+        handleNewPage();
     }
 
     private void onNextClick(View v) {
-        // TODO test at last page
-        viewModel.nextPage();
+        pager.nextPage();
+        handleNewPage();
     }
 
     private void onPageChange(int page) {
-        viewModel.loadPage(page);
+        pager.setCurrentPage(page);
+        handleNewPage();
+    }
+
+    private void handleNewPage() {
+        int page = pager.getCurrentPageNumber();
+        pager.setCurrentPage(page); // TODO - handle this transparently...
+        recyclerView.resetBounds();
+        llm.scrollToPositionWithOffset((page - 1) * Preferences.getContentPageQuantity(), 0); // TODO fails doing so at first load (item height calulation issues ?)
+        boundRecycleViewToPage(page);
     }
 }

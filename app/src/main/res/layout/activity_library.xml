@@ -8,6 +8,7 @@
 
     <include layout="@layout/include_library_advanced_search" />
 
+    <!--
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/library_swipe_container"
         android:layout_width="0dp"
@@ -16,19 +17,23 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/advanced_search">
-
-        <androidx.recyclerview.widget.RecyclerView
+-->
+        <me.devsaki.hentoid.views.RestrictableRecyclerView
             android:id="@+id/library_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:clipToPadding="false"
             android:paddingStart="@dimen/default_cardview_margin"
             android:paddingTop="@dimen/default_cardview_margin"
             android:paddingEnd="@dimen/default_cardview_margin"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_download" />
+            tools:listitem="@layout/item_download"
+            app:layout_constraintBottom_toTopOf="@id/pager_background"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/advanced_search"
+            />
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+<!--    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout> -->
 
     <include layout="@layout/include_downloads_pager" />
 

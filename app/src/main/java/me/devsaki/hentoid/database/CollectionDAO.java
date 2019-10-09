@@ -2,6 +2,9 @@ package me.devsaki.hentoid.database;
 
 import android.util.SparseIntArray;
 
+import androidx.lifecycle.LiveData;
+import androidx.paging.PagedList;
+
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -30,6 +33,16 @@ public interface CollectionDAO {
     void searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
 
     void countBooksUniversal(String query, boolean favouritesOnly, PagedResultListener<Content> listener);
+
+
+
+    LiveData<PagedList<Content>> searchBooksUniversal(String query, int booksPerPage, int orderStyle, boolean favouritesOnly);
+
+    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly);
+
+    LiveData<PagedList<Content>> getRecentBooks(int booksPerPage, int orderStyle, boolean favouritesOnly);
+
+
 
     // ATTRIBUTES
 

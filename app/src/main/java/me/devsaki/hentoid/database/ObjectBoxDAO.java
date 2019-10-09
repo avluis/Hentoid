@@ -3,10 +3,20 @@ package me.devsaki.hentoid.database;
 import android.content.Context;
 import android.util.SparseIntArray;
 
+import androidx.annotation.IntDef;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
+import androidx.paging.LivePagedListBuilder;
+import androidx.paging.PagedList;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.objectbox.android.ObjectBoxDataSource;
+import io.objectbox.query.Query;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -18,16 +28,22 @@ import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 
 public class ObjectBoxDAO implements CollectionDAO {
 
     private final ObjectBoxDB db;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    private static final int MODE_SEARCH_CONTENT_MODULAR = 0;
-    private static final int MODE_COUNT_CONTENT_MODULAR = 1;
-    private static final int MODE_SEARCH_CONTENT_UNIVERSAL = 2;
-    private static final int MODE_COUNT_CONTENT_UNIVERSAL = 3;
+
+    @IntDef({Mode.SEARCH_CONTENT_MODULAR, Mode.COUNT_CONTENT_MODULAR, Mode.SEARCH_CONTENT_UNIVERSAL, Mode.COUNT_CONTENT_UNIVERSAL})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Mode {
+        int SEARCH_CONTENT_MODULAR = 0;
+        int COUNT_CONTENT_MODULAR = 1;
+        int SEARCH_CONTENT_UNIVERSAL = 2;
+        int COUNT_CONTENT_UNIVERSAL = 3;
+    }
 
     static class ContentIdQueryResult {
         long[] contentIds;
@@ -76,7 +92,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void getRecentBooksPaged(Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> pagedContentSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                        () -> pagedContentSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -88,7 +104,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void getRecentBookIds(Language language, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> contentIdSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly)
+                        () -> contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -101,7 +117,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void searchBooksPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> pagedContentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly)
+                        () -> pagedContentSearch(Mode.SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -113,7 +129,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> contentIdSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, orderStyle, favouritesOnly)
+                        () -> contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, query, metadata, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -126,7 +142,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> pagedContentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly)
+                        () -> pagedContentSearch(Mode.SEARCH_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -138,7 +154,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void searchBooksUniversalPaged(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> pagedContentSearch(MODE_SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                        () -> pagedContentSearch(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -150,7 +166,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> contentIdSearch(MODE_SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderStyle, favouritesOnly)
+                        () -> contentIdSearch(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -163,7 +179,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void countBooksUniversal(String query, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> pagedContentSearch(MODE_COUNT_CONTENT_UNIVERSAL, query, Collections.emptyList(), 1, 1, 1, favouritesOnly)
+                        () -> pagedContentSearch(Mode.COUNT_CONTENT_UNIVERSAL, query, Collections.emptyList(), 1, 1, 1, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -195,35 +211,64 @@ public class ObjectBoxDAO implements CollectionDAO {
         );
     }
 
-/*
-    public DataObserver<ContentQueryResult> getPagedContent(int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
-        // Main query
-        Query<Content> query;
-        if (MODE_SEARCH_CONTENT_MODULAR == mode) {
-            query = db.selectContentSearchQ(filter, page, booksPerPage, metadata, favouritesOnly, orderStyle);
-        } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode) {
-            //result.pagedContents = db.selectContentUniversal(filter, page, booksPerPage, favouritesOnly, orderStyle);
-        } else {
-            //result.pagedContents = Collections.emptyList();
-        }
-        return query.subscribe().observer(data -> processResults(data, orderStyle, booksPerPage));
+
+    public LiveData<PagedList<Content>> searchBooksUniversal(String query, int booksPerPage, int orderStyle, boolean favouritesOnly) {
+        return getPagedContent(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), booksPerPage, orderStyle, favouritesOnly);
     }
 
-    private List<Content> processResults(@NonNull List<Content> contents, int orderStyle, int booksPerPage)
-    {
-        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
-            if (booksPerPage < 0) result = query.find();
-            else result = query.find(start, booksPerPage);
-        } else {
-            result = shuffleRandomSort(query, start, booksPerPage);
-        }
-        return setQueryIndexes(result, page, booksPerPage);
+    public LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly) {
+        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, query, metadata, booksPerPage, orderStyle, favouritesOnly);
     }
 
-*/
+    public LiveData<PagedList<Content>> getRecentBooks(int booksPerPage, int orderStyle, boolean favouritesOnly) {
+        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), booksPerPage, orderStyle, favouritesOnly);
+    }
 
 
-    private ContentQueryResult pagedContentSearch(int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
+    private LiveData<PagedList<Content>> getPagedContent(int mode, String filter, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly) {
+        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM)
+            return getOrderedPagedContent(mode, filter, metadata, booksPerPage, orderStyle, favouritesOnly);
+        else
+            return getRandomPagedContent(mode, filter, metadata, booksPerPage, favouritesOnly);
+    }
+
+    private LiveData<PagedList<Content>> getOrderedPagedContent(@Mode int mode, String filter, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly) {
+        if (Mode.SEARCH_CONTENT_MODULAR == mode) {
+            Query<Content> query = db.selectContentSearchQ(filter, metadata, favouritesOnly, orderStyle);
+            return new LivePagedListBuilder<>(
+                    new ObjectBoxDataSource.Factory<>(query),
+                    booksPerPage
+            ).build();
+        } else { // Mode.SEARCH_CONTENT_UNIVERSAL
+            // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
+            // querying Content and attributes have to be done separately
+            Query<Content> query1 = db.queryContentUniversalAttributes(filter, favouritesOnly);
+            LiveData<PagedList<Content>> livedata1 = new LivePagedListBuilder<>(
+                    new ObjectBoxDataSource.Factory<>(query1),
+                    booksPerPage
+            ).build();
+
+            Query<Content> query2 = db.queryContentUniversalContent2(filter, favouritesOnly, orderStyle);
+            LiveData<PagedList<Content>> livedata2 = new LivePagedListBuilder<>(
+                    new ObjectBoxDataSource.Factory<>(query2),
+                    booksPerPage
+            ).build();
+
+            MediatorLiveData<PagedList<Content>> result = new MediatorLiveData<>();
+            result.addSource(livedata1, result::setValue);
+            result.addSource(livedata2, result::setValue);
+
+            return result;
+        }
+    }
+
+    private LiveData<PagedList<Content>> getRandomPagedContent(@Mode int mode, String filter, List<Attribute> metadata, int booksPerPage, boolean favouritesOnly) {
+        // TODO
+        return getOrderedPagedContent(mode, filter, metadata, booksPerPage, Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST, favouritesOnly);
+    }
+
+
+    private ContentQueryResult pagedContentSearch(@Mode int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
 
 // StringBuilder sb = new StringBuilder();
 // for (Attribute a : metadata) sb.append(a.getName()).append(";");
@@ -231,17 +276,17 @@ public class ObjectBoxDAO implements CollectionDAO {
 
         ContentQueryResult result = new ContentQueryResult();
 
-        if (MODE_SEARCH_CONTENT_MODULAR == mode) {
+        if (Mode.SEARCH_CONTENT_MODULAR == mode) {
             result.pagedContents = db.selectContentSearch(filter, page, booksPerPage, metadata, favouritesOnly, orderStyle);
-        } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode) {
+        } else if (Mode.SEARCH_CONTENT_UNIVERSAL == mode) {
             result.pagedContents = db.selectContentUniversal(filter, page, booksPerPage, favouritesOnly, orderStyle);
         } else {
             result.pagedContents = Collections.emptyList();
         }
         // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages)
-        if (MODE_SEARCH_CONTENT_MODULAR == mode || MODE_COUNT_CONTENT_MODULAR == mode) {
+        if (Mode.SEARCH_CONTENT_MODULAR == mode || Mode.COUNT_CONTENT_MODULAR == mode) {
             result.totalSelectedContent = db.countContentSearch(filter, metadata, favouritesOnly);
-        } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode || MODE_COUNT_CONTENT_UNIVERSAL == mode) {
+        } else if (Mode.SEARCH_CONTENT_UNIVERSAL == mode || Mode.COUNT_CONTENT_UNIVERSAL == mode) {
             result.totalSelectedContent = db.countContentUniversal(filter, favouritesOnly);
         } else {
             result.totalSelectedContent = 0;
@@ -256,21 +301,21 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
-    private ContentIdQueryResult contentIdSearch(int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
+    private ContentIdQueryResult contentIdSearch(@Mode int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
 
         ContentIdQueryResult result = new ContentIdQueryResult();
 
-        if (MODE_SEARCH_CONTENT_MODULAR == mode) {
+        if (Mode.SEARCH_CONTENT_MODULAR == mode) {
             result.contentIds = db.selectContentSearchId(filter, metadata, favouritesOnly, orderStyle);
-        } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode) {
+        } else if (Mode.SEARCH_CONTENT_UNIVERSAL == mode) {
             result.contentIds = db.selectContentUniversalId(filter, favouritesOnly, orderStyle);
         } else {
             result.contentIds = new long[0];
         }
         // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages)
-        if (MODE_SEARCH_CONTENT_MODULAR == mode || MODE_COUNT_CONTENT_MODULAR == mode) {
+        if (Mode.SEARCH_CONTENT_MODULAR == mode || Mode.COUNT_CONTENT_MODULAR == mode) {
             result.totalSelectedContent = db.countContentSearch(filter, metadata, favouritesOnly);
-        } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode || MODE_COUNT_CONTENT_UNIVERSAL == mode) {
+        } else if (Mode.SEARCH_CONTENT_UNIVERSAL == mode || Mode.COUNT_CONTENT_UNIVERSAL == mode) {
             result.totalSelectedContent = db.countContentUniversal(filter, favouritesOnly);
         } else {
             result.totalSelectedContent = 0;
