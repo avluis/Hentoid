@@ -36,11 +36,11 @@ public interface CollectionDAO {
 
 
 
-    LiveData<PagedList<Content>> searchBooksUniversal(String query, int booksPerPage, int orderStyle, boolean favouritesOnly);
+    LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly);
 
-    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly);
+    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
 
-    LiveData<PagedList<Content>> getRecentBooks(int booksPerPage, int orderStyle, boolean favouritesOnly);
+    LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly);
 
 
 

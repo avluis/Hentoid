@@ -8,22 +8,16 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProviders;
-
-import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.abstracts.BaseFragment;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.fragments.library.LibraryFragment;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 
 public class LibraryActivity extends BaseActivity implements BaseFragment.BackInterface {
 
     private DrawerLayout drawerLayout;
-    private LibraryViewModel viewModel;
     private BaseFragment baseFragment;
     private Toolbar toolbar;
 

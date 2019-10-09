@@ -52,10 +52,10 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public static class ContentQueryResult {
-        public List<Content> pagedContents;
-        public long totalContent;
-        public long totalSelectedContent;
-        public int currentPage;
+        List<Content> pagedContents;
+        long totalContent;
+        long totalSelectedContent;
+        int currentPage;
 
         ContentQueryResult() {
         }
@@ -212,19 +212,50 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
 
-    public LiveData<PagedList<Content>> searchBooksUniversal(String query, int booksPerPage, int orderStyle, boolean favouritesOnly) {
-        return getPagedContent(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), booksPerPage, orderStyle, favouritesOnly);
+    public LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly) {
+        return getPagedContent(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderStyle, favouritesOnly);
     }
 
-    public LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly) {
-        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, query, metadata, booksPerPage, orderStyle, favouritesOnly);
+    public LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
+        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, query, metadata, orderStyle, favouritesOnly);
     }
 
-    public LiveData<PagedList<Content>> getRecentBooks(int booksPerPage, int orderStyle, boolean favouritesOnly) {
-        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), booksPerPage, orderStyle, favouritesOnly);
+    public LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly) {
+        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly);
     }
 
+    private LiveData<PagedList<Content>> getPagedContent(int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
+        boolean isRandom = (orderStyle == Preferences.Constant.ORDER_CONTENT_RANDOM);
 
+        if (Mode.SEARCH_CONTENT_MODULAR == mode) {
+            Query<Content> query = db.selectContentSearchQ(filter, metadata, favouritesOnly, orderStyle);
+            return new LivePagedListBuilder<>(
+                    isRandom ? new ObjectBoxRandomDataSource.Factory<>(query) : new ObjectBoxDataSource.Factory<>(query),
+                    20
+            ).build();
+        } else { // Mode.SEARCH_CONTENT_UNIVERSAL
+            // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
+            // querying Content and attributes have to be done separately
+            Query<Content> query1 = db.queryContentUniversalAttributes(filter, favouritesOnly);
+            LiveData<PagedList<Content>> livedata1 = new LivePagedListBuilder<>(
+                    isRandom ? new ObjectBoxRandomDataSource.Factory<>(query1) : new ObjectBoxDataSource.Factory<>(query1),
+                    20
+            ).build();
+
+            Query<Content> query2 = db.queryContentUniversalContent2(filter, favouritesOnly, orderStyle);
+            LiveData<PagedList<Content>> livedata2 = new LivePagedListBuilder<>(
+                    isRandom ? new ObjectBoxRandomDataSource.Factory<>(query2) : new ObjectBoxDataSource.Factory<>(query2),
+                    20
+            ).build();
+
+            MediatorLiveData<PagedList<Content>> result = new MediatorLiveData<>();
+            result.addSource(livedata1, result::setValue);
+            result.addSource(livedata2, result::setValue);
+
+            return result;
+        }
+    }
+/*
     private LiveData<PagedList<Content>> getPagedContent(int mode, String filter, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly) {
         if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM)
             return getOrderedPagedContent(mode, filter, metadata, booksPerPage, orderStyle, favouritesOnly);
@@ -266,7 +297,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         // TODO
         return getOrderedPagedContent(mode, filter, metadata, booksPerPage, Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST, favouritesOnly);
     }
-
+*/
 
     private ContentQueryResult pagedContentSearch(@Mode int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
 

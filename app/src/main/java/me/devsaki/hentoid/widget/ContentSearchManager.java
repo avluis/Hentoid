@@ -127,13 +127,14 @@ public class ContentSearchManager {
             collectionDAO.getRecentBooksPaged(Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
-    public LiveData<PagedList<Content>> getLibrary(int booksPerPage) {
+    public LiveData<PagedList<Content>> getLibrary() {
+        contentSortOrder = Preferences.getContentSortOrder();
         if (!getQuery().isEmpty())
-            return collectionDAO.searchBooksUniversal(getQuery(), booksPerPage, contentSortOrder, filterFavourites); // Universal search
+            return collectionDAO.searchBooksUniversal(getQuery(), contentSortOrder, filterFavourites); // Universal search
         else if (!tags.isEmpty())
-            return collectionDAO.searchBooks("", tags, booksPerPage, contentSortOrder, filterFavourites); // Advanced search
+            return collectionDAO.searchBooks("", tags, contentSortOrder, filterFavourites); // Advanced search
         else
-            return collectionDAO.getRecentBooks(booksPerPage, contentSortOrder, filterFavourites); // Default search (display recent)
+            return collectionDAO.getRecentBooks(contentSortOrder, filterFavourites); // Default search (display recent)
     }
 
     public void searchLibraryForId(PagedResultListener<Long> listener) {

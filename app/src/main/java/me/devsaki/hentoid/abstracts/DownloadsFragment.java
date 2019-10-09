@@ -630,15 +630,6 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     public void onCreateOptionsMenu(@NonNull final Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.downloads_menu, menu);
 
-        MenuItem aboutMikanMenu = menu.findItem(R.id.action_about_mikan);
-        aboutMikanMenu.setVisible(MODE_MIKAN == mode);
-        if (MODE_MIKAN == mode) {
-            aboutMikanMenu.setOnMenuItemClickListener(item -> {
-//                AboutMikanDialogFragment.show(getFragmentManager());
-                return true;
-            });
-        }
-
         orderMenu = menu.findItem(R.id.action_order);
         orderMenu.setVisible(MODE_LIBRARY == mode);
 

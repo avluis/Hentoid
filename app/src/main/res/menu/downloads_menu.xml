@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".activities.DownloadsActivity"
+    tools:context=".activities.LibraryActivity"
     tools:ignore="AlwaysShowAction">
     <item
         android:id="@+id/action_search"
@@ -14,6 +14,8 @@
         android:id="@+id/action_favourites"
         android:icon="@drawable/ic_fav_empty"
         android:title="@string/menu_fav"
+        android:checkable="true"
+        android:checked="false"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_order"
@@ -55,11 +57,4 @@
                 android:title="@string/menu_order_random" />
         </menu>
     </item>
-    <item
-        android:id="@+id/action_about_mikan"
-        android:icon="@drawable/ic_menu_about"
-        android:title="@string/menu_search"
-        app:showAsAction="always"
-        android:visible="false"
-        />
 </menu>
