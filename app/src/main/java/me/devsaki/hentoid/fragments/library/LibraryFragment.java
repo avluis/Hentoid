@@ -14,24 +14,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import eu.davidea.flexibleadapter.FlexibleAdapter;
-import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
-import me.devsaki.hentoid.adapters.LibraryAdapter;
+import me.devsaki.hentoid.adapters.ContentAdapter2;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
-import me.devsaki.hentoid.viewholders.LibaryItemFlex;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
-import me.devsaki.hentoid.views.ProgressItem;
-import me.devsaki.hentoid.views.RestrictableRecyclerView;
 import me.devsaki.hentoid.widget.LibraryPager;
 import timber.log.Timber;
 
@@ -40,12 +32,9 @@ import static androidx.core.view.ViewCompat.requireViewById;
 public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.EndlessScrollListener*/ {
 
     private LibraryViewModel viewModel;
-    private RestrictableRecyclerView recyclerView;
-    private LinearLayoutManager llm;
-    private LibraryAdapter adapter;
+    private ContentAdapter2 adapter;
 
     // ======== UI
-    private final ProgressItem progressItem = new ProgressItem();
     private final LibraryPager pager = new LibraryPager(this::onPreviousClick, this::onNextClick, this::onPageChange);
 
 
@@ -122,36 +111,25 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     }
 
     private void initUI(View rootView) {
-        adapter = new LibraryAdapter(null, this::onSourceClick);
-        adapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
+        adapter = new ContentAdapter2(this::onSourceClick);
+//        adapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
 
         pager.initUI(rootView);
 
-        recyclerView = requireViewById(rootView, R.id.library_list);
+        RecyclerView recyclerView = requireViewById(rootView, R.id.library_list);
         recyclerView.setAdapter(adapter);
-        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         initPagingMethod(Preferences.getEndlessScroll());
     }
 
     private void initPagingMethod(boolean isEndless) {
         if (isEndless) {
-            //adapter.setEndlessScrollListener(this, progressItem);
             pager.disable();
-            recyclerView.resetBounds();
         } else {
-            //adapter.setEndlessScrollListener(null, progressItem);
             pager.enable();
-            boundRecycleViewToPage(pager.getCurrentPageNumber());
         }
     }
 
-    private void boundRecycleViewToPage(int page) {
-        recyclerView.setBounds(
-                (page - 1) * Preferences.getContentPageQuantity(),
-                page * Preferences.getContentPageQuantity()
-        );
-    }
 /*
     private void onLibraryChanged(ObjectBoxDAO.ContentQueryResult result) {
         if (null == result) { // No library has been loaded yet (1st run with this instance)
@@ -186,25 +164,7 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
         pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
         Timber.d(">>Offset=%s", result.getPositionOffset());
 
-        List<IFlexible> items = new ArrayList<>();
-        for (Content content : result) {
-            LibaryItemFlex holder = new LibaryItemFlex(content);
-            items.add(holder);
-//            if (!Preferences.getEndlessScroll() && items.size() == Preferences.getContentPageQuantity()) break;
-        }
-
-        if (Preferences.getEndlessScroll()) recyclerView.resetBounds();
-        else boundRecycleViewToPage(pager.getCurrentPageNumber());
-
-        if (0 == adapter.getItemCount()) // 1st results load
-            adapter.addItems(0, items);
-        else if (Preferences.getEndlessScroll()) // load more (endless mode)
-            adapter.onLoadMoreComplete(items);
-        else // load page (pager mode)
-        {
-            adapter.clear();
-            adapter.addItems(0, items);
-        }
+        adapter.submitList(result);
     }
 
     /**
@@ -280,8 +240,5 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     private void handleNewPage() {
         int page = pager.getCurrentPageNumber();
         pager.setCurrentPage(page); // TODO - handle this transparently...
-        recyclerView.resetBounds();
-        llm.scrollToPositionWithOffset((page - 1) * Preferences.getContentPageQuantity(), 0); // TODO fails doing so at first load (item height calulation issues ?)
-        boundRecycleViewToPage(page);
     }
 }
