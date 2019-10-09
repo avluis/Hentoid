@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.ContentAdapter2;
+import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -32,10 +33,13 @@ import static androidx.core.view.ViewCompat.requireViewById;
 public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.EndlessScrollListener*/ {
 
     private LibraryViewModel viewModel;
-    private ContentAdapter2 adapter;
+    private final PagedContentAdapter endlessAdapter = new PagedContentAdapter(this::onSourceClick);
+    private final ContentAdapter2 pagerAdapter = new ContentAdapter2(this::onSourceClick);
+    private PagedList<Content> library;
 
     // ======== UI
     private final LibraryPager pager = new LibraryPager(this::onPreviousClick, this::onNextClick, this::onPageChange);
+    private RecyclerView recyclerView;
 
 
     // ======== VARIABLES
@@ -68,7 +72,6 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        //viewModel.getLibrary().observe(this, this::onLibraryChanged);
         viewModel.getLibraryPaged().observe(this, this::onPagedLibraryChanged);
     }
 
@@ -111,13 +114,9 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     }
 
     private void initUI(View rootView) {
-        adapter = new ContentAdapter2(this::onSourceClick);
-//        adapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
-
         pager.initUI(rootView);
 
-        RecyclerView recyclerView = requireViewById(rootView, R.id.library_list);
-        recyclerView.setAdapter(adapter);
+        recyclerView = requireViewById(rootView, R.id.library_list);
 
         initPagingMethod(Preferences.getEndlessScroll());
     }
@@ -125,46 +124,32 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     private void initPagingMethod(boolean isEndless) {
         if (isEndless) {
             pager.disable();
+            recyclerView.setAdapter(endlessAdapter);
+            if (library != null) endlessAdapter.submitList(library);
         } else {
             pager.enable();
+            recyclerView.setAdapter(pagerAdapter);
+            if (library != null) loadPagerAdapter(library);
         }
     }
 
-/*
-    private void onLibraryChanged(ObjectBoxDAO.ContentQueryResult result) {
-        if (null == result) { // No library has been loaded yet (1st run with this instance)
-//            viewModel.load();
-        } else {
-            updateTitle(result.totalSelectedContent, result.totalContent);
-            pager.setPageCount((int) Math.ceil(result.totalSelectedContent * 1.0 / Preferences.getContentPageQuantity()));
-            pager.setCurrentPage(result.currentPage);
-            List<IFlexible> items = new ArrayList<>();
-            for (Content content : result.pagedContents) {
-                LibaryItemFlex holder = new LibaryItemFlex(content);
-                items.add(holder);
-            }
-            if (0 == adapter.getItemCount()) // 1st results load
-                adapter.addItems(0, items);
-            else if (Preferences.getEndlessScroll()) // load more (endless mode)
-                adapter.onLoadMoreComplete(items);
-            else // load page (pager mode)
-            {
-                adapter.clear();
-                adapter.addItems(0, items);
-            }
-        }
+    private void loadPagerAdapter(PagedList<Content> library) {
+        int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
+        int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size() - 1);
+        pagerAdapter.setShelf(library.subList(minIndex, maxIndex));
+        pagerAdapter.notifyDataSetChanged();
     }
-
- */
 
     private void onPagedLibraryChanged(PagedList<Content> result) {
         Timber.d(">>Size=%s", result.size());
         updateTitle(result.size(), result.size()); // TODO total size = size of unfiltered content
 
         pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
-        Timber.d(">>Offset=%s", result.getPositionOffset());
 
-        adapter.submitList(result);
+        if (Preferences.getEndlessScroll()) endlessAdapter.submitList(result);
+        else loadPagerAdapter(result);
+
+        library = result;
     }
 
     /**
@@ -208,20 +193,6 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
         return false;
     }
 
-    /*
-    @Override
-    public void noMoreLoad(int newItemsSize) {
-
-    }
-
-    @Override
-    public void onLoadMore(int lastPosition, int currentPage) {
-        Timber.d("LoadMore %s %s", lastPosition, currentPage);
-        viewModel.nextPage();
-    }
-
-     */
-
     private void onPreviousClick(View v) {
         pager.previousPage();
         handleNewPage();
@@ -240,5 +211,6 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     private void handleNewPage() {
         int page = pager.getCurrentPageNumber();
         pager.setCurrentPage(page); // TODO - handle this transparently...
+        loadPagerAdapter(library);
     }
 }

@@ -5,35 +5,23 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.paging.PagedListAdapter;
+import androidx.recyclerview.widget.DiffUtil;
 
 import com.annimon.stream.function.Consumer;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.viewholders.LibraryItem;
 
-public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implements LibraryAdapter {
+public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> implements LibraryAdapter {
 
     private final Consumer<Content> onSourceClickListener;
-    private List<Content> shelf = new ArrayList<>();
 
     // TODO instanciate with builder
-    public ContentAdapter2(Consumer<Content> onSourceClicked) {
+    public PagedContentAdapter(Consumer<Content> onSourceClicked) {
+        super(DIFF_CALLBACK);
         this.onSourceClickListener = onSourceClicked;
-    }
-
-    @Override
-    public int getItemCount() {
-        return shelf.size();
-    }
-
-    public void setShelf(List<Content> shelf) {
-        this.shelf = Collections.unmodifiableList(shelf);
     }
 
     @NonNull
@@ -45,7 +33,7 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
 
     @Override
     public void onBindViewHolder(@NonNull LibraryItem holder, int position) {
-        Content content = shelf.get(position);
+        Content content = getItem(position);
         if (content != null) {
             holder.bind(content);
         } else {
@@ -59,4 +47,21 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
     public Consumer<Content> getOnSourceClickListener() {
         return onSourceClickListener;
     }
+
+
+    private static DiffUtil.ItemCallback<Content> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<Content>() {
+                // Concert details may have changed if reloaded from the database,
+                // but ID is fixed.
+                @Override
+                public boolean areItemsTheSame(Content oldContent, Content newContent) {
+                    return oldContent.getId() == newContent.getId();
+                }
+
+                @Override
+                public boolean areContentsTheSame(Content oldContent,
+                                                  @NonNull Content newContent) {
+                    return oldContent.equals(newContent);
+                }
+            };
 }

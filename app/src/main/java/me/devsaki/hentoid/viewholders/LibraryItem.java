@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.adapters.ContentAdapter2;
+import me.devsaki.hentoid.adapters.LibraryAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -42,10 +42,10 @@ public class LibraryItem extends RecyclerView.ViewHolder {
     private final ImageView ivFavourite;
 
     private Content content;
-    private ContentAdapter2 adapter;
+    private LibraryAdapter adapter;
 
 
-    public LibraryItem(@NonNull View view, ContentAdapter2 adapter) {
+    public LibraryItem(@NonNull View view, LibraryAdapter adapter) {
         super(view);
 
         this.adapter = adapter;
