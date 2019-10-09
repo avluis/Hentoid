@@ -358,6 +358,9 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
         if (Preferences.getEndlessScroll()) endlessAdapter.submitList(result);
         else loadPagerAdapter(result);
 
+        /* TODO - this is not always what we want (e.g. new download coming when browsing)
+        this behaviour should occur only after a voluntary action
+         */
         recyclerView.scrollToPosition(0);
 
         library = result;
