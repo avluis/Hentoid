@@ -59,13 +59,6 @@ public class ObjectBoxDAO implements CollectionDAO {
 
         ContentQueryResult() {
         }
-
-        public ContentQueryResult(List<Content> pagedContents, long totalContent, long totalSelectedContent, int currentPage) {
-            this.pagedContents = pagedContents;
-            this.totalContent = totalContent;
-            this.totalSelectedContent = totalSelectedContent;
-            this.currentPage = currentPage;
-        }
     }
 
     static class AttributeQueryResult {
