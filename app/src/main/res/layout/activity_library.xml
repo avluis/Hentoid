@@ -29,7 +29,7 @@
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/pager_background"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/advanced_search"
+        app:layout_constraintTop_toBottomOf="@id/advanced_search_background"
         tools:listitem="@layout/item_download" />
 
     <!--    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout> -->

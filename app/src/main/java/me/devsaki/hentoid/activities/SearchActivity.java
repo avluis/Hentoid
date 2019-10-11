@@ -31,7 +31,6 @@ import timber.log.Timber;
 
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static java.lang.String.format;
-import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 
 /**
  * Created by Robb on 2018/11
@@ -52,9 +51,6 @@ public class SearchActivity extends BaseActivity {
     // Container where selected attributed are displayed
     private SelectedAttributeAdapter selectedAttributeAdapter;
     private RecyclerView searchTags;
-
-    // Mode : show library or show Mikan search
-    private int mode;
 
     // ViewModel of this activity
     private SearchViewModel viewModel;
@@ -90,7 +86,6 @@ public class SearchActivity extends BaseActivity {
         if (intent != null && intent.getExtras() != null) {
 
             SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(intent.getExtras());
-            mode = parser.getMode();
             Uri searchUri = parser.getUri();
             if (searchUri != null)
                 preSelectedAttributes = SearchActivityBundle.Parser.parseSearchUri(searchUri);
@@ -107,7 +102,7 @@ public class SearchActivity extends BaseActivity {
         TextView anyCategoryText = findViewById(R.id.textCategoryAny);
         anyCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.TAG, AttributeType.ARTIST,
                 AttributeType.CIRCLE, AttributeType.SERIE, AttributeType.CHARACTER, AttributeType.LANGUAGE)); // Everything but source !
-        anyCategoryText.setEnabled(MODE_LIBRARY == mode); // Unsupported by Mikan
+        anyCategoryText.setEnabled(true);
 
         tagCategoryText = findViewById(R.id.textCategoryTag);
         tagCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.TAG));
@@ -144,7 +139,7 @@ public class SearchActivity extends BaseActivity {
         searchButton.setOnClickListener(v -> validateForm());
 
         viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
-        viewModel.setMode(mode);
+        viewModel.start();
         viewModel.getAttributesCountData().observe(this, this::onQueryUpdated);
         viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
         viewModel.getSelectedContentData().observe(this, this::onBooksReady);
@@ -157,8 +152,7 @@ public class SearchActivity extends BaseActivity {
         updateCategoryButton(seriesCategoryText, attrCount, AttributeType.SERIE);
         updateCategoryButton(characterCategoryText, attrCount, AttributeType.CHARACTER);
         updateCategoryButton(languageCategoryText, attrCount, AttributeType.LANGUAGE);
-        if (MODE_LIBRARY == mode)
-            updateCategoryButton(sourceCategoryText, attrCount, AttributeType.SOURCE);
+        updateCategoryButton(sourceCategoryText, attrCount, AttributeType.SOURCE);
     }
 
     private void updateCategoryButton(TextView button, SparseIntArray attrCount, AttributeType... types) {
@@ -171,7 +165,7 @@ public class SearchActivity extends BaseActivity {
 
 
     private void onAttrButtonClick(AttributeType... attributeTypes) {
-        SearchBottomSheetFragment.show(getSupportFragmentManager(), mode, attributeTypes);
+        SearchBottomSheetFragment.show(getSupportFragmentManager(), attributeTypes);
     }
 
     /**

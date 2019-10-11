@@ -31,9 +31,6 @@ public class SearchViewModel extends AndroidViewModel {
     private final MutableLiveData<ContentSearchResult> selectedContent = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
 
-    /**
-     * @see #setMode(int)
-     */
     private CollectionDAO collectionDAO;
 
     private List<AttributeType> category;
@@ -108,9 +105,8 @@ public class SearchViewModel extends AndroidViewModel {
         selectedAttributes.setValue(new ArrayList<>());
     }
 
-    public void setMode(int mode) {
+    public void start() {
         Context ctx = getApplication().getApplicationContext();
-        //collectionDAO = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionDAO(ctx) : new MikanCollectionDAO(ctx);
         collectionDAO = new ObjectBoxDAO(ctx);
         countAttributesPerType();
     }

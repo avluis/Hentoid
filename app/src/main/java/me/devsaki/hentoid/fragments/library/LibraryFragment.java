@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.library;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -27,6 +28,8 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
+import me.devsaki.hentoid.activities.SearchActivity;
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.ContentAdapter2;
 import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -317,12 +320,31 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     }
 
     private void initUI(View rootView) {
-        advancedSearchBar = rootView.findViewById(R.id.advanced_search_base);
+        advancedSearchBar = rootView.findViewById(R.id.advanced_search_background);
+        // TextView used as advanced search button
+        TextView advancedSearchButton = rootView.findViewById(R.id.advanced_search_btn);
+        advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
+
+        searchClearButton = rootView.findViewById(R.id.search_clear_btn);
+
         recyclerView = requireViewById(rootView, R.id.library_list);
 
         // Pager
         pager.initUI(rootView);
         initPagingMethod(Preferences.getEndlessScroll());
+    }
+
+    private void onAdvancedSearchButtonClick() {
+        Intent search = new Intent(this.getContext(), SearchActivity.class);
+
+        SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
+
+        if (!metadata.isEmpty())
+            builder.setUri(SearchActivityBundle.Builder.buildSearchUri(metadata));
+        search.putExtras(builder.getBundle());
+
+        startActivityForResult(search, 999);
+        searchMenu.collapseActionView();
     }
 
     private void initPagingMethod(boolean isEndless) {

@@ -10,13 +10,13 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:background="@color/dark_gray"
-        app:layout_constraintBottom_toBottomOf="@id/advanced_search"
+        app:layout_constraintBottom_toBottomOf="@id/advanced_search_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/advanced_search"
+        android:id="@+id/advanced_search_btn"
         style="@style/TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -34,14 +34,14 @@
         android:layout_height="wrap_content"
         android:background="@color/dark_gray"
         android:visibility="gone"
-        app:constraint_referenced_ids="advanced_search,advanced_search_bar_background"
+        app:constraint_referenced_ids="advanced_search_btn,advanced_search_bar_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
 
     <TextView
-        android:id="@+id/search_clear"
+        android:id="@+id/search_clear_btn"
         style="@style/TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -57,7 +57,7 @@
         app:layout_constraintBottom_toTopOf="@id/downloads_toolbar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/advanced_search">
+        app:layout_constraintTop_toBottomOf="@id/advanced_search_btn">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list"

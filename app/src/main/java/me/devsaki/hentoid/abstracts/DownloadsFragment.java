@@ -503,10 +503,10 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
         advancedSearchBar = rootView.findViewById(R.id.advanced_search_base);
         // TextView used as advanced search button
-        TextView advancedSearchButton = rootView.findViewById(R.id.advanced_search);
+        TextView advancedSearchButton = rootView.findViewById(R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
-        searchClearButton = rootView.findViewById(R.id.search_clear);
+        searchClearButton = rootView.findViewById(R.id.search_clear_btn);
     }
 
     protected void attachScrollListener() {
