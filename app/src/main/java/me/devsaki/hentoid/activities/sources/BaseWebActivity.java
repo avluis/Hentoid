@@ -55,7 +55,7 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
@@ -191,7 +191,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         webView.loadUrl(0 == intentUrl.length() ? getStartSite().getUrl() : intentUrl);
 
         if (!Preferences.getRecentVisibility()) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
     }
 
@@ -246,8 +246,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         try {
             webView = new ObservableWebView(this);
-        }
-        catch (Resources.NotFoundException e) {
+        } catch (Resources.NotFoundException e) {
             // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
             // Creating with the application Context fixes this, but is not generally recommended for view creation
             webView = new ObservableWebView(getFixedContext(this));
@@ -352,7 +351,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
     private void goHome() {
-        Intent intent = new Intent(this, DownloadsActivity.class);
+        Intent intent = new Intent(this, LibraryActivity.class);
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
         // it can interfere with Double-Back (press back twice) to exit
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);

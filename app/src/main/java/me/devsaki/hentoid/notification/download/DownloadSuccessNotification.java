@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.receiver.DownloadNotificationDeleteReceiver;
 import me.devsaki.hentoid.util.notification.Notification;
 
@@ -40,7 +40,7 @@ public class DownloadSuccessNotification implements Notification {
     }
 
     private PendingIntent getDefaultIntent(Context context) {
-        Intent resultIntent = new Intent(context, DownloadsActivity.class);
+        Intent resultIntent = new Intent(context, LibraryActivity.class);
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         return PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
