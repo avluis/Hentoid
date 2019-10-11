@@ -24,6 +24,9 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Stream;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,7 +38,10 @@ import me.devsaki.hentoid.adapters.ContentAdapter2;
 import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.fragments.downloads.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -44,6 +50,7 @@ import me.devsaki.hentoid.widget.LibraryPager;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static com.annimon.stream.Collectors.toCollection;
 
 public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.EndlessScrollListener*/ {
 
@@ -344,6 +351,13 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
         searchClearButton = rootView.findViewById(R.id.search_clear_btn);
+        searchClearButton.setOnClickListener(v -> {
+            query = "";
+            mainSearchView.setQuery("", false);
+            metadata.clear();
+            searchClearButton.setVisibility(View.GONE);
+            viewModel.searchUniversal("");
+        });
 
         recyclerView = requireViewById(rootView, R.id.library_list);
 
@@ -393,6 +407,26 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
         if (result.size() > 0) Timber.d(">>1st item is ID %s", result.get(0).getId());
 
         updateTitle(result.size(), result.size()); // TODO total size = size of unfiltered content
+
+        if (isSearchQueryActive()) {
+            advancedSearchBar.setVisibility(View.VISIBLE);
+            searchClearButton.setVisibility(View.VISIBLE);
+            if (result.size() > 0 && searchMenu != null) searchMenu.collapseActionView();
+        } else {
+            advancedSearchBar.setVisibility(View.GONE);
+        }
+
+        // User searches a book ID
+        // => Suggests searching through all sources except those where the selected book ID is already in the collection
+        if (Helper.isNumeric(query)) {
+            ArrayList<Integer> siteCodes = Stream.of(result)
+                    .filter(content -> query.equals(content.getUniqueSiteId()))
+                    .map(Content::getSite)
+                    .map(Site::getCode)
+                    .collect(toCollection(ArrayList::new));
+
+            SearchBookIdDialogFragment.invoke(requireFragmentManager(), query, siteCodes);
+        }
 
         if (Preferences.getEndlessScroll()) endlessAdapter.submitList(result);
         else {
