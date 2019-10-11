@@ -364,7 +364,9 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
         else {
             int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
             int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size() - 1);
-            pagerAdapter.setShelf(library.subList(minIndex, maxIndex));
+
+            if (minIndex == maxIndex) pagerAdapter.setShelf(library.get(minIndex));
+            else pagerAdapter.setShelf(library.subList(minIndex, maxIndex));
         }
         pagerAdapter.notifyDataSetChanged();
     }
@@ -375,10 +377,15 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
 
         updateTitle(result.size(), result.size()); // TODO total size = size of unfiltered content
 
-        pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
-
         if (Preferences.getEndlessScroll()) endlessAdapter.submitList(result);
-        else loadPagerAdapter(result);
+        else {
+            /* TODO - this is not always what we want (e.g. new download coming when browsing)
+        this behaviour should occur only after a voluntary action
+         */
+            pager.setCurrentPage(1);
+            pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
+            loadPagerAdapter(result);
+        }
 
         /* TODO - this is not always what we want (e.g. new download coming when browsing)
         this behaviour should occur only after a voluntary action

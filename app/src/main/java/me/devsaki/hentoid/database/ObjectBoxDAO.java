@@ -235,7 +235,7 @@ public class ObjectBoxDAO implements CollectionDAO {
                     20
             ).build();
 
-            Query<Content> query2 = db.queryContentUniversalContent2(filter, favouritesOnly, orderStyle);
+            Query<Content> query2 = db.queryContentUniversalTitleId(filter, favouritesOnly, orderStyle);
             LiveData<PagedList<Content>> livedata2 = new LivePagedListBuilder<>(
                     isRandom ? new ObjectBoxRandomDataSource.Factory<>(query2) : new ObjectBoxDataSource.Factory<>(query2),
                     20
@@ -272,7 +272,7 @@ public class ObjectBoxDAO implements CollectionDAO {
                     booksPerPage
             ).build();
 
-            Query<Content> query2 = db.queryContentUniversalContent2(filter, favouritesOnly, orderStyle);
+            Query<Content> query2 = db.queryContentUniversalTitleId(filter, favouritesOnly, orderStyle);
             LiveData<PagedList<Content>> livedata2 = new LivePagedListBuilder<>(
                     new ObjectBoxDataSource.Factory<>(query2),
                     booksPerPage

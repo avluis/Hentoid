@@ -347,7 +347,17 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    Query<Content> queryContentUniversalContent2(String queryStr, boolean filterFavourites, int orderStyle) {
+    Query<Content> queryContentUniversalAttributes(String queryStr, boolean filterFavourites) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, visibleContentStatus);
+
+        if (filterFavourites) query.equal(Content_.favourite, true);
+        query.link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+
+        return query.build();
+    }
+
+    Query<Content> queryContentUniversalTitleId(String queryStr, boolean filterFavourites, int orderStyle) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
 
@@ -369,16 +379,6 @@ public class ObjectBoxDB {
 //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         query.or().in(Content_.id, additionalIds);
         applyOrderStyle(query, orderStyle);
-
-        return query.build();
-    }
-
-    Query<Content> queryContentUniversalAttributes(String queryStr, boolean filterFavourites) {
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, visibleContentStatus);
-
-        if (filterFavourites) query.equal(Content_.favourite, true);
-        query.link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
         return query.build();
     }
