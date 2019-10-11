@@ -365,8 +365,7 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
             int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
             int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size() - 1);
 
-            if (minIndex == maxIndex) pagerAdapter.setShelf(library.get(minIndex));
-            else pagerAdapter.setShelf(library.subList(minIndex, maxIndex));
+            pagerAdapter.setShelf(library.subList(minIndex, maxIndex + 1));
         }
         pagerAdapter.notifyDataSetChanged();
     }

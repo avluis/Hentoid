@@ -36,11 +36,6 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
         this.shelf = Collections.unmodifiableList(shelf);
     }
 
-    public void setShelf(Content book) {
-        this.shelf = new ArrayList<>();
-        this.shelf.add(book);
-    }
-
     @NonNull
     @Override
     public LibraryItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
