@@ -10,10 +10,14 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.paging.PagedList;
 
+import java.util.List;
+
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 
 
@@ -57,13 +61,20 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void performSearch() {
         libraryPaged.removeSource(currentSource);
+        searchManager.setContentSortOrder(Preferences.getContentSortOrder());
         currentSource = searchManager.getLibrary();
         libraryPaged.addSource(currentSource, libraryPaged::setValue);
     }
 
-    public void searchUniversal(String query) {
+    public void searchUniversal(@NonNull String query) {
         searchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
         searchManager.setQuery(query);
+        performSearch();
+    }
+
+    public void search(@NonNull String query, @NonNull List<Attribute> metadata) {
+        searchManager.setQuery(query);
+        searchManager.setTags(metadata);
         performSearch();
     }
 

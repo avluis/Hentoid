@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -300,6 +301,23 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
         updatePageDisplay();
         updateFavouriteDisplay();
          */
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 999
+                && resultCode == Activity.RESULT_OK
+                && data != null && data.getExtras() != null) {
+            Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
+
+            if (searchUri != null) {
+                query = searchUri.getPath();
+                metadata = SearchActivityBundle.Parser.parseSearchUri(searchUri);
+                viewModel.search(query, metadata);
+            }
+        }
     }
 
     @Override

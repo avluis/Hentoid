@@ -128,7 +128,6 @@ public class ContentSearchManager {
     }
 
     public LiveData<PagedList<Content>> getLibrary() {
-        contentSortOrder = Preferences.getContentSortOrder();
         if (!getQuery().isEmpty())
             return collectionDAO.searchBooksUniversal(getQuery(), contentSortOrder, filterFavourites); // Universal search
         else if (!tags.isEmpty())
