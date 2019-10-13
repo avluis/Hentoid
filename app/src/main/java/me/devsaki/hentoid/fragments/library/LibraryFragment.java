@@ -359,7 +359,7 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     }
 
     private void initUI(View rootView) {
-        advancedSearchBar = rootView.findViewById(R.id.advanced_search_background);
+        advancedSearchBar = rootView.findViewById(R.id.advanced_search_group);
         // TextView used as advanced search button
         TextView advancedSearchButton = rootView.findViewById(R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
