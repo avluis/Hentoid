@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -93,6 +94,11 @@ public class QueueFragment extends BaseFragment {
         List<Content> contents = db.selectQueueContents();
         mAdapter = new QueueContentAdapter(requireActivity(), contents);
         mListView.setAdapter(mAdapter);
+        Activity activity = getActivity();
+        if(activity != null) {
+            String title = activity.getApplication().getResources().getQuantityString(R.plurals.queue_book_count, mAdapter.getCount(), mAdapter.getCount());
+            activity.setTitle(title);
+        }
 
         return rootView;
     }
@@ -257,6 +263,11 @@ public class QueueFragment extends BaseFragment {
                 btnStats.setVisibility(View.GONE);
                 queueStatus.setText("");
             }
+        }
+        Activity activity = getActivity();
+        if(activity != null) {
+            String title = activity.getApplication().getResources().getQuantityString(R.plurals.queue_book_count, (mAdapter.getCount() - bookDiff), (mAdapter.getCount() - bookDiff));
+            activity.setTitle(title);
         }
     }
 
