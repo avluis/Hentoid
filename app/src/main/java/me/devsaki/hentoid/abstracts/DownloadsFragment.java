@@ -59,7 +59,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.fragments.library.SearchBookIdDialogFragment;
-import me.devsaki.hentoid.fragments.downloads.UpdateSuccessDialogFragment;
+import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment;
 import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;

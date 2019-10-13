@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.activities.SearchActivity;
@@ -303,10 +304,16 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     @Override
     public void onResume() {
         super.onResume();
-        /*
-        updatePageDisplay();
-        updateFavouriteDisplay();
-         */
+
+        // Display the "update success" dialog when an update is detected on a release version
+        if (!BuildConfig.DEBUG) {
+            if (0 == Preferences.getLastKnownAppVersionCode()) { // Don't show that during first run
+                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+            } else if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
+                UpdateSuccessDialogFragment.invoke(requireFragmentManager());
+                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+            }
+        }
     }
 
     @Override
