@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
+import com.annimon.stream.function.LongConsumer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,11 +23,13 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
 
     private final Consumer<Content> onSourceClickListener;
     private final Consumer<Content> onBookClickListener;
+    private final LongConsumer onSelectionChangedListener;
     private List<Content> shelf = new ArrayList<>();
 
     private ContentAdapter2(Builder builder) {
         this.onSourceClickListener = builder.onSourceClickListener;
         this.onBookClickListener = builder.onBookClickListener;
+        this.onSelectionChangedListener = builder.onSelectionChangedListener;
         setHasStableIds(true);
     }
 
@@ -67,6 +70,7 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
     public static class Builder {
         private Consumer<Content> onSourceClickListener;
         private Consumer<Content> onBookClickListener;
+        private LongConsumer onSelectionChangedListener;
 
         public Builder setSourceClickListener(Consumer<Content> sourceClickListener) {
             this.onSourceClickListener = sourceClickListener;
@@ -75,6 +79,11 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
 
         public Builder setBookClickListener(Consumer<Content> bookClickListener) {
             this.onBookClickListener = bookClickListener;
+            return this;
+        }
+
+        public Builder setSelectionChangedListener(LongConsumer selectionChangedListener) {
+            this.onSelectionChangedListener = selectionChangedListener;
             return this;
         }
 
@@ -94,5 +103,9 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
 
     public Consumer<Content> getOpenBookListener() {
         return onBookClickListener;
+    }
+
+    public LongConsumer getSelectionChangedListener() {
+        return onSelectionChangedListener;
     }
 }

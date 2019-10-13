@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,16 +53,18 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.EndlessScrollListener*/ {
+public class LibraryFragment extends BaseFragment {
 
     private final PagedContentAdapter endlessAdapter = new PagedContentAdapter.Builder()
             .setBookClickListener(this::onItemClick)
             .setSourceClickListener(this::onSourceClick)
+            .setSelectionChangedListener(this::onSelectionChanged)
             .build();
 
     private final ContentAdapter2 pagerAdapter = new ContentAdapter2.Builder()
             .setBookClickListener(this::onItemClick)
             .setSourceClickListener(this::onSourceClick)
+            .setSelectionChangedListener(this::onSelectionChanged)
             .build();
 
     private LibraryViewModel viewModel;
@@ -101,6 +104,14 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     private String query = "";
     // Current metadata search query
     private List<Attribute> metadata = Collections.emptyList();
+
+
+    // === TOOLBAR ACTION MODE
+    // Action mode manager for the toolbar
+    private ActionMode mActionMode;
+    // TODO
+    private boolean selectTrigger = false;
+
 
 
     // Settings
@@ -485,6 +496,10 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
 
     private void onItemClick(Content content) {
         ContentHelper.openContent(requireContext(), content, viewModel.getSearchManagerBundle());
+    }
+
+    private void onSelectionChanged(long selectedItemsCount) {
+        Timber.i("%s items selected", selectedItemsCount);
     }
 
     @Override

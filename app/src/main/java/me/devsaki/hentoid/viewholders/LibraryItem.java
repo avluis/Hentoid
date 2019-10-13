@@ -252,6 +252,7 @@ public class LibraryItem extends RecyclerView.ViewHolder {
                 int itemPos = getLayoutPosition();
                 if (getLayoutPosition() > -1) {
                     content.setSelected(!content.isSelected());
+                    adapter.getSelectionChangedListener().accept(adapter.getItemSelectedCount());
                     adapter.notifyItemChanged(itemPos);
                 }
             } else adapter.getOpenBookListener().accept(content); // Open book
@@ -263,6 +264,7 @@ public class LibraryItem extends RecyclerView.ViewHolder {
             int itemPos = getLayoutPosition();
             if (itemPos > -1 && !content.isBeingDeleted()) {
                 content.setSelected(!content.isSelected());
+                adapter.getSelectionChangedListener().accept(adapter.getItemSelectedCount());
                 adapter.notifyItemChanged(itemPos);
             }
 
