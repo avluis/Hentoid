@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 
 import com.annimon.stream.Stream;
 
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +37,7 @@ import me.devsaki.hentoid.util.AttributeMap;
  * Content builder
  */
 @Entity
-public class Content implements Serializable {
+public class Content {
 
     @Id
     private long id;
