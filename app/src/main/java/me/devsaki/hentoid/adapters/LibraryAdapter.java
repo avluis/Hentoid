@@ -9,6 +9,7 @@ public interface LibraryAdapter {
 
     long getItemSelectedCount();
     void notifyItemChanged(int pos);
+    void clearSelection();
 
     Consumer<Content> getOnSourceClickListener();
     Consumer<Content> getOpenBookListener();

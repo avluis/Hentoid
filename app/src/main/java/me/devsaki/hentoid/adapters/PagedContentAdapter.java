@@ -107,6 +107,17 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
         else return 0;
     }
 
+    @Override
+    public void clearSelection() {
+        for (int i = 0; i < getItemCount(); i++) {
+            Content c = getItem(i);
+            if (c != null) {
+                c.setSelected(false);
+                notifyItemChanged(i);
+            }
+        }
+    }
+
     public Consumer<Content> getOnSourceClickListener() {
         return onSourceClickListener;
     }

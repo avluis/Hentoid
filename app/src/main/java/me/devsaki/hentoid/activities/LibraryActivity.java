@@ -19,7 +19,6 @@ public class LibraryActivity extends BaseActivity implements BaseFragment.BackIn
 
     private DrawerLayout drawerLayout;
     private BaseFragment baseFragment;
-    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,12 +38,9 @@ public class LibraryActivity extends BaseActivity implements BaseFragment.BackIn
                     .commit();
         }
 
-//        viewModel = ViewModelProviders.of(this).get(LibraryViewModel.class);
-//        viewModel.getLibrary().observe(this, this::onLibraryChanged);
-
         drawerLayout = findViewById(R.id.drawer_layout);
 
-        toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_drawer);
         toolbar.setNavigationOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
@@ -63,14 +59,6 @@ public class LibraryActivity extends BaseActivity implements BaseFragment.BackIn
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
     }
-
-    /*
-    private void onLibraryChanged(List<Content> library) {
-        if (null == library) { // No library has been loaded yet (1st run with this instance)
-            viewModel.loadFromSearchParams(searchParams);
-        }
-    }
-     */
 
     @Override
     public void onBackPressed() {

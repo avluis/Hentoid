@@ -97,6 +97,17 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
         return Stream.of(shelf).filter(Content::isSelected).count();
     }
 
+    @Override
+    public void clearSelection() {
+        for (int i = 0; i < getItemCount(); i++) {
+            Content c = shelf.get(i);
+            if (c != null) {
+                c.setSelected(false);
+                notifyItemChanged(i);
+            }
+        }
+    }
+
     public Consumer<Content> getOnSourceClickListener() {
         return onSourceClickListener;
     }

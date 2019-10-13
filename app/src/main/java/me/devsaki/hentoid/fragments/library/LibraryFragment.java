@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
@@ -37,6 +38,7 @@ import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.ContentAdapter2;
+import me.devsaki.hentoid.adapters.LibraryAdapter;
 import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -109,10 +111,6 @@ public class LibraryFragment extends BaseFragment {
     // === TOOLBAR ACTION MODE
     // Action mode manager for the toolbar
     private ActionMode mActionMode;
-    // TODO
-    private boolean selectTrigger = false;
-
-
 
     // Settings
     private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = this::onSharedPreferenceChanged;
@@ -219,6 +217,66 @@ public class LibraryFragment extends BaseFragment {
         // Sets the starting book sort icon according to the current sort order
         orderMenu.setIcon(getIconFromSortOrder(Preferences.getContentSortOrder()));
     }
+
+    // Called when the action mode is created; startActionMode() was called.
+    private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+        // Called when action mode is first created.
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            // Inflate a menu resource providing context menu items
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.downloads_context_menu, menu);
+
+            return true;
+        }
+
+        // Called each time the action mode is shown. Always called after onCreateActionMode,
+        // but may be called multiple times if the mode is invalidated.
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            LibraryAdapter adapter = getAdapter();
+            boolean isMultipleSelection = adapter.getItemSelectedCount() > 1;
+
+            menu.findItem(R.id.action_delete).setVisible(!isMultipleSelection);
+            menu.findItem(R.id.action_share).setVisible(!isMultipleSelection);
+            menu.findItem(R.id.action_archive).setVisible(!isMultipleSelection);
+            menu.findItem(R.id.action_delete_sweep).setVisible(isMultipleSelection);
+
+            return true;
+        }
+
+        // Called when the user selects a contextual menu item.
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.action_share:
+                    //mAdapter.sharedSelectedItems(); TODO
+                    mode.finish();
+
+                    return true;
+                case R.id.action_delete:
+                case R.id.action_delete_sweep:
+                    //mAdapter.purgeSelectedItems(); TODO
+                    mode.finish();
+
+                    return true;
+                case R.id.action_archive:
+                    // mAdapter.archiveSelectedItems(); TODO
+                    mode.finish();
+
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        // Called when the user exits the action mode.
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            getAdapter().clearSelection();
+            mActionMode = null;
+        }
+    };
 
     /**
      * Update favourite filter button appearance (icon and color) on a book
@@ -356,6 +414,32 @@ public class LibraryFragment extends BaseFragment {
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        LibraryAdapter adapter = getAdapter();
+        // If content is selected, deselect it
+        if (adapter.getItemSelectedCount() > 0) {
+            adapter.clearSelection();
+            backButtonPressed = 0;
+
+            return false;
+        }
+
+        // If none of the above, user is asking to leave => use double-tap
+        if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
+            return true;
+        } else {
+            backButtonPressed = SystemClock.elapsedRealtime();
+            Context c = getContext();
+            if (c != null) ToastUtil.toast(getContext(), R.string.press_back_again);
+
+            if (recyclerView.getLayoutManager() != null)
+                ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(0, 0);
+        }
+
+        return false;
     }
 
     private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
@@ -498,20 +582,23 @@ public class LibraryFragment extends BaseFragment {
         ContentHelper.openContent(requireContext(), content, viewModel.getSearchManagerBundle());
     }
 
-    private void onSelectionChanged(long selectedItemsCount) {
-        Timber.i("%s items selected", selectedItemsCount);
+    private LibraryAdapter getAdapter() {
+        if (Preferences.getEndlessScroll()) return endlessAdapter;
+        else return pagerAdapter;
     }
 
-    @Override
-    public boolean onBackPressed() {
-        if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
-            return true;
+    private void onSelectionChanged(long selectedCount) {
+
+        if (0 == selectedCount) {
+            if (mActionMode != null) mActionMode.finish();
         } else {
-            backButtonPressed = SystemClock.elapsedRealtime();
-            Context ctx = getContext();
-            if (ctx != null) ToastUtil.toast(ctx, R.string.press_back_again);
+            if (mActionMode == null)
+                mActionMode = advancedSearchBar.startActionMode(mActionModeCallback);
+
+            mActionMode.invalidate();
+            mActionMode.setTitle(
+                    selectedCount + (selectedCount > 1 ? " items selected" : " item selected"));
         }
-        return false;
     }
 
     private void onPreviousClick(View v) {
