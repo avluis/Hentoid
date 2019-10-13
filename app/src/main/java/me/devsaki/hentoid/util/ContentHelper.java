@@ -162,19 +162,15 @@ public final class ContentHelper {
     }
 
     @Nullable
-    public static Content updateContentReads(@Nonnull Context context, long contentId) {
+    public static Content updateContentReads(@Nonnull Context context, @NonNull Content content) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        Content content = db.selectContentById(contentId);
-        if (content != null) {
-            content.increaseReads().setLastReadDate(new Date().getTime());
-            db.updateContentReads(content);
+        content.increaseReads().setLastReadDate(new Date().getTime());
+        db.insertContent(content);
 
-            if (!content.getJsonUri().isEmpty()) updateJson(context, content);
-            else createJson(content);
+        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
+        else createJson(content);
 
-            return content;
-        }
-        return null;
+        return content;
     }
 
 

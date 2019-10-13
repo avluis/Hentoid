@@ -201,16 +201,6 @@ public class ObjectBoxDB {
         }
     }
 
-    public void updateContentReads(Content content) {
-        Box<Content> contentBox = store.boxFor(Content.class);
-        Content c = contentBox.get(content.getId());
-        if (c != null) {
-            c.setReads(content.getReads());
-            c.setLastReadDate(content.getLastReadDate());
-            contentBox.put(c);
-        }
-    }
-
     public List<QueueRecord> selectQueue() {
         return store.boxFor(QueueRecord.class).query().order(QueueRecord_.rank).build().find();
     }
@@ -315,7 +305,7 @@ public class ObjectBoxDB {
         }
     }
 
-    private Query<Content> queryContentSearchContent(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
+    public Query<Content> queryContentSearchContent(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.addAll(metadata);
 
@@ -429,10 +419,6 @@ public class ObjectBoxDB {
             result = shuffleRandomSort(query, start, booksPerPage);
         }
         return setQueryIndexes(result, page, booksPerPage);
-    }
-
-    Query<Content> selectContentSearchQ(String title, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
-        return queryContentSearchContent(title, tags, filterFavourites, orderStyle);
     }
 
     long[] selectContentSearchId(String title, List<Attribute> tags, boolean filterFavourites, int orderStyle) {

@@ -221,7 +221,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         boolean isRandom = (orderStyle == Preferences.Constant.ORDER_CONTENT_RANDOM);
 
         if (Mode.SEARCH_CONTENT_MODULAR == mode) {
-            Query<Content> query = db.selectContentSearchQ(filter, metadata, favouritesOnly, orderStyle);
+            Query<Content> query = db.queryContentSearchContent(filter, metadata, favouritesOnly, orderStyle);
             return new LivePagedListBuilder<>(
                     isRandom ? new ObjectBoxRandomDataSource.Factory<>(query) : new ObjectBoxDataSource.Factory<>(query),
                     20
