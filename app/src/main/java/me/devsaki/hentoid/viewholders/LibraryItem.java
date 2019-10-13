@@ -244,50 +244,29 @@ public class LibraryItem extends RecyclerView.ViewHolder {
         }
     }
 
-    private void attachOnClickListeners(Content content) {
+    private void attachOnClickListeners(@NonNull Content content) {
 
-        itemView.setOnClickListener(v -> adapter.getOnBookClickListener().accept(content));
-
-            /*
-            // Simple click = open book (library mode only)
-            itemView.setOnClickListener(new ContentClickListener(content, pos, itemSelectListener) {
-
-                @Override
-                public void onClick(View v) {
-                    if (getSelectedItemsCount() > 0) { // Selection mode is on
-                        int itemPos = getLayoutPosition();
-                        if (itemPos > -1) {
-                            toggleSelection(itemPos);
-                            setSelected(isSelectedAt(pos), getSelectedItemsCount());
-                        }
-                        onLongClick(v);
-                    } else {
-                        clearSelections();
-                        setSelected(false, 0);
-                        openBookAction.accept(content);
-                    }
+        // Simple click
+        itemView.setOnClickListener(v -> {
+            if (adapter.getItemSelectedCount() > 0) { // Selection mode is on -> select more
+                int itemPos = getLayoutPosition();
+                if (getLayoutPosition() > -1) {
+                    content.setSelected(!content.isSelected());
+                    adapter.notifyItemChanged(itemPos);
                 }
-            });
+            } else adapter.getOpenBookListener().accept(content); // Open book
+        });
 
-            // Long click = select item (library mode only)
-            itemView.setOnLongClickListener(new ContentClickListener(content, pos, itemSelectListener) {
+        // Long click = select item
+        itemView.setOnLongClickListener(v -> {
 
-                @Override
-                public boolean onLongClick(View v) {
-                    int itemPos = getLayoutPosition();
-                    if (itemPos > -1) {
-                        Content c = getItemAt(itemPos);
-                        if (c != null && !c.isBeingDeleted()) {
-                            toggleSelection(itemPos);
-                            setSelected(isSelectedAt(pos), getSelectedItemsCount());
-                        }
-                    }
+            int itemPos = getLayoutPosition();
+            if (itemPos > -1 && !content.isBeingDeleted()) {
+                content.setSelected(!content.isSelected());
+                adapter.notifyItemChanged(itemPos);
+            }
 
-                    super.onLongClick(v);
-
-                    return true;
-                }
-            });
-            */
+            return true;
+        });
     }
 }

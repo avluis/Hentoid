@@ -7,7 +7,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import me.devsaki.hentoid.R;
@@ -46,6 +48,13 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
         }
     }
 
+    @Override
+    public long getItemId(int position) {
+        Content content = getItem(position);
+        if (content != null) return content.getId();
+        else return RecyclerView.NO_ID;
+    }
+
 
     private static DiffUtil.ItemCallback<Content> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<Content>() {
@@ -82,11 +91,18 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
         }
     }
 
+    @Override
+    public long getItemSelectedCount() {
+        if (getCurrentList() != null)
+            return Stream.of(getCurrentList()).filter(Content::isSelected).count();
+        else return 0;
+    }
+
     public Consumer<Content> getOnSourceClickListener() {
         return onSourceClickListener;
     }
 
-    public Consumer<Content> getOnBookClickListener() {
+    public Consumer<Content> getOpenBookListener() {
         return onBookClickListener;
     }
 }

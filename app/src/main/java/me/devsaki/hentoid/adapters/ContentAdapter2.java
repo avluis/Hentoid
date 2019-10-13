@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import java.util.ArrayList;
@@ -32,6 +33,11 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
     @Override
     public int getItemCount() {
         return shelf.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return shelf.get(position).getId();
     }
 
     public void setShelf(List<Content> shelf) {
@@ -77,11 +83,16 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
         }
     }
 
+    @Override
+    public long getItemSelectedCount() {
+        return Stream.of(shelf).filter(Content::isSelected).count();
+    }
+
     public Consumer<Content> getOnSourceClickListener() {
         return onSourceClickListener;
     }
 
-    public Consumer<Content> getOnBookClickListener() {
+    public Consumer<Content> getOpenBookListener() {
         return onBookClickListener;
     }
 }

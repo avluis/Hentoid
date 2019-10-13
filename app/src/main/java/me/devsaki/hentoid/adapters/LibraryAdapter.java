@@ -6,6 +6,9 @@ import me.devsaki.hentoid.database.domains.Content;
 
 public interface LibraryAdapter {
 
+    long getItemSelectedCount();
+    void notifyItemChanged(int pos);
+
     Consumer<Content> getOnSourceClickListener();
-    Consumer<Content> getOnBookClickListener();
+    Consumer<Content> getOpenBookListener();
 }
