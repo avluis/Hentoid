@@ -24,7 +24,7 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 public class LibraryViewModel extends AndroidViewModel {
 
     // Technical
-    private final ContentSearchManager searchManager = new ContentSearchManager(new ObjectBoxDAO(HentoidApp.getAppContext()));
+    private final ContentSearchManager searchManager = new ContentSearchManager(new ObjectBoxDAO(getApplication().getApplicationContext()));
     private final CompositeDisposable compositeDisposable = new CompositeDisposable(); // TODO remove if useless
 
     // Collection data
