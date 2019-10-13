@@ -21,7 +21,7 @@
 
     <fragment
         android:id="@+id/fragment_navigation_drawer"
-        android:name="me.devsaki.hentoid.fragments.downloads.NavigationDrawerFragment"
+        android:name="me.devsaki.hentoid.fragments.library.NavigationDrawerFragment"
         android:layout_width="@dimen/drawer_layout_width"
         android:layout_height="match_parent"
         android:layout_gravity="start" />

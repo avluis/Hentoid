@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.downloads;
+package me.devsaki.hentoid.fragments.library;
 
 import android.content.Context;
 import android.content.Intent;
