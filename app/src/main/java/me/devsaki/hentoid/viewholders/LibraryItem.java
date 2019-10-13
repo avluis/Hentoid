@@ -186,7 +186,7 @@ public class LibraryItem extends RecyclerView.ViewHolder {
         }
     }
 
-    void onSourceClicked(View v) {
+    private void onSourceClicked(View v) {
         adapter.getOnSourceClickListener().accept(content);
     }
 
@@ -244,7 +244,9 @@ public class LibraryItem extends RecyclerView.ViewHolder {
         }
     }
 
-    private void attachOnClickListeners(Content conten) {
+    private void attachOnClickListeners(Content content) {
+
+        itemView.setOnClickListener(v -> adapter.getOnBookClickListener().accept(content));
 
             /*
             // Simple click = open book (library mode only)

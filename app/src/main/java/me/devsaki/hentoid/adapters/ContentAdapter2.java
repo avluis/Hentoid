@@ -20,11 +20,13 @@ import me.devsaki.hentoid.viewholders.LibraryItem;
 public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implements LibraryAdapter {
 
     private final Consumer<Content> onSourceClickListener;
+    private final Consumer<Content> onBookClickListener;
     private List<Content> shelf = new ArrayList<>();
 
-    // TODO instanciate with builder
-    public ContentAdapter2(Consumer<Content> onSourceClicked) {
-        this.onSourceClickListener = onSourceClicked;
+    private ContentAdapter2(Builder builder) {
+        this.onSourceClickListener = builder.onSourceClickListener;
+        this.onBookClickListener = builder.onBookClickListener;
+        setHasStableIds(true);
     }
 
     @Override
@@ -56,7 +58,30 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
         }
     }
 
+    public static class Builder {
+        private Consumer<Content> onSourceClickListener;
+        private Consumer<Content> onBookClickListener;
+
+        public Builder setSourceClickListener(Consumer<Content> sourceClickListener) {
+            this.onSourceClickListener = sourceClickListener;
+            return this;
+        }
+
+        public Builder setBookClickListener(Consumer<Content> bookClickListener) {
+            this.onBookClickListener = bookClickListener;
+            return this;
+        }
+
+        public ContentAdapter2 build() {
+            return new ContentAdapter2(this);
+        }
+    }
+
     public Consumer<Content> getOnSourceClickListener() {
         return onSourceClickListener;
+    }
+
+    public Consumer<Content> getOnBookClickListener() {
+        return onBookClickListener;
     }
 }

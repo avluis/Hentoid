@@ -17,11 +17,13 @@ import me.devsaki.hentoid.viewholders.LibraryItem;
 public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> implements LibraryAdapter {
 
     private final Consumer<Content> onSourceClickListener;
+    private final Consumer<Content> onBookClickListener;
 
-    // TODO instanciate with builder
-    public PagedContentAdapter(Consumer<Content> onSourceClicked) {
+    private PagedContentAdapter(Builder builder) {
         super(DIFF_CALLBACK);
-        this.onSourceClickListener = onSourceClicked;
+        this.onSourceClickListener = builder.onSourceClickListener;
+        this.onBookClickListener = builder.onBookClickListener;
+        setHasStableIds(true);
     }
 
     @NonNull
@@ -44,10 +46,6 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
         }
     }
 
-    public Consumer<Content> getOnSourceClickListener() {
-        return onSourceClickListener;
-    }
-
 
     private static DiffUtil.ItemCallback<Content> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<Content>() {
@@ -64,4 +62,31 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
                     return oldContent.equals(newContent);
                 }
             };
+
+    public static class Builder {
+        private Consumer<Content> onSourceClickListener;
+        private Consumer<Content> onBookClickListener;
+
+        public Builder setSourceClickListener(Consumer<Content> sourceClickListener) {
+            this.onSourceClickListener = sourceClickListener;
+            return this;
+        }
+
+        public Builder setBookClickListener(Consumer<Content> bookClickListener) {
+            this.onBookClickListener = bookClickListener;
+            return this;
+        }
+
+        public PagedContentAdapter build() {
+            return new PagedContentAdapter(this);
+        }
+    }
+
+    public Consumer<Content> getOnSourceClickListener() {
+        return onSourceClickListener;
+    }
+
+    public Consumer<Content> getOnBookClickListener() {
+        return onBookClickListener;
+    }
 }

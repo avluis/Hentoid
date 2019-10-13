@@ -54,9 +54,17 @@ import static com.annimon.stream.Collectors.toCollection;
 
 public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.EndlessScrollListener*/ {
 
+    private final PagedContentAdapter endlessAdapter = new PagedContentAdapter.Builder()
+            .setBookClickListener(this::onItemClick)
+            .setSourceClickListener(this::onSourceClick)
+            .build();
+
+    private final ContentAdapter2 pagerAdapter = new ContentAdapter2.Builder()
+            .setBookClickListener(this::onItemClick)
+            .setSourceClickListener(this::onSourceClick)
+            .build();
+
     private LibraryViewModel viewModel;
-    private final PagedContentAdapter endlessAdapter = new PagedContentAdapter(this::onSourceClick);
-    private final ContentAdapter2 pagerAdapter = new ContentAdapter2(this::onSourceClick);
     private PagedList<Content> library;
 
     // ======== UI
@@ -471,14 +479,12 @@ public class LibraryFragment extends BaseFragment /*implements FlexibleAdapter.E
     }
 
 
-    private boolean onSourceClick(Content content) {
+    private void onSourceClick(Content content) {
         ContentHelper.viewContent(requireContext(), content);
-        return true;
     }
 
-    private boolean onItemClick(View view, int position) {
-        // Load item
-        return true;
+    private void onItemClick(Content content) {
+        ContentHelper.openContent(requireContext(), content, viewModel.getSearchManagerBundle());
     }
 
     @Override

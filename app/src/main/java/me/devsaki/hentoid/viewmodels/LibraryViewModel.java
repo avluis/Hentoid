@@ -58,6 +58,12 @@ public class LibraryViewModel extends AndroidViewModel {
         return libraryPaged;
     }
 
+    public Bundle getSearchManagerBundle() {
+        Bundle bundle = new Bundle();
+        searchManager.saveToBundle(bundle);
+        return bundle;
+    }
+
 
     public void performSearch() {
         libraryPaged.removeSource(currentSource);
