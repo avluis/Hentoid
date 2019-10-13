@@ -94,7 +94,6 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     protected static final int SHOW_RESULT = 3;
 
     public static final int MODE_LIBRARY = 0;
-    public static final int MODE_MIKAN = 1;
 
 
     // Save state constants
@@ -310,8 +309,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
         if (event.eventType == DownloadEvent.EV_COMPLETE && !isLoading) {
-            if (MODE_LIBRARY == mode) showReloadToolTip();
-            else mAdapter.switchStateToDownloaded(event.content);
+            showReloadToolTip();
         }
     }
 
@@ -474,7 +472,6 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
         mAdapter = new ContentAdapter.Builder()
                 .setContext(mContext)
-                .setCollectionDAO(collectionDAO)
                 .setDisplayMode(mode)
                 .setSortComparator(Content.getComparator())
                 .setItemSelectListener(this)
@@ -573,7 +570,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         }
 
         // If none of the above, user is asking to leave => use double-tap
-        if (MODE_MIKAN == mode || backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
+        if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
             return true;
         } else {
             backButtonPressed = SystemClock.elapsedRealtime();

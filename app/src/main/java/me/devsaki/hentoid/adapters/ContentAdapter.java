@@ -37,7 +37,6 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -48,7 +47,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ContentClickListener;
 import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
-import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -62,7 +60,7 @@ import timber.log.Timber;
  * Created by avluis on 04/23/2016. RecyclerView based Content Adapter
  * TODO - Consider replacing with https://github.com/davideas/FlexibleAdapter
  */
-public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements PagedResultListener<Content> {
+public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private static final int VISIBLE_THRESHOLD = 10;
 
@@ -70,7 +68,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final Context context;
     private final ItemSelectListener itemSelectListener;
     private final IntConsumer onContentRemovedListener;
-    private final CollectionDAO collectionDAO;
     private final int displayMode;
     private final RequestOptions glideRequestOptions;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -84,7 +81,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         context = builder.context;
         itemSelectListener = builder.itemSelectListener;
         onContentRemovedListener = builder.onContentRemovedListener;
-        collectionDAO = builder.collectionDAO;
         sortComparator = builder.sortComparator;
         displayMode = builder.displayMode;
         openBookAction = builder.openBookAction;
@@ -307,89 +303,52 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 //        holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == displayMode) ? View.VISIBLE : View.GONE);
 
         //Set buttons
-        if (DownloadsFragment.MODE_LIBRARY == displayMode) {
-            // Favourite toggle
-            if (content.isFavourite()) {
-                holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+        // Favourite toggle
+        if (content.isFavourite()) {
+            holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+        } else {
+            holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+        }
+        holder.ivFavourite.setOnClickListener(v -> {
+            if (getSelectedItemsCount() > 0) {
+                clearSelections();
+                itemSelectListener.onItemClear(0);
+            }
+
+            compositeDisposable.add(
+                    Single.fromCallable(() -> toggleFavourite(context, content.getId()))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    result -> {
+                                        content.setFavourite(result.isFavourite());
+                                        if (result.isFavourite()) {
+                                            holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                                        } else {
+                                            holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                                        }
+                                    },
+                                    Timber::e
+                            )
+            );
+        });
+
+        // Error icon
+        if (content.getStatus() != null) {
+            StatusContent status = content.getStatus();
+            if (status == StatusContent.ERROR) {
+                holder.ivError.setOnClickListener(v -> {
+                    if (getSelectedItemsCount() > 0) {
+                        clearSelections();
+                        itemSelectListener.onItemClear(0);
+                    }
+                    downloadAgain(content);
+                });
+                holder.ivError.setVisibility(View.VISIBLE);
             } else {
-                holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                holder.ivError.setVisibility(View.GONE);
             }
-            holder.ivFavourite.setOnClickListener(v -> {
-                if (getSelectedItemsCount() > 0) {
-                    clearSelections();
-                    itemSelectListener.onItemClear(0);
-                }
-
-                compositeDisposable.add(
-                        Single.fromCallable(() -> toggleFavourite(context, content.getId()))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(
-                                        result -> {
-                                            content.setFavourite(result.isFavourite());
-                                            if (result.isFavourite()) {
-                                                holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
-                                            } else {
-                                                holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                                            }
-                                        },
-                                        Timber::e
-                                )
-                );
-            });
-
-            // Error icon
-            if (content.getStatus() != null) {
-                StatusContent status = content.getStatus();
-                if (status == StatusContent.ERROR) {
-                    holder.ivError.setOnClickListener(v -> {
-                        if (getSelectedItemsCount() > 0) {
-                            clearSelections();
-                            itemSelectListener.onItemClear(0);
-                        }
-                        downloadAgain(content);
-                    });
-                    holder.ivError.setVisibility(View.VISIBLE);
-                } else {
-                    holder.ivError.setVisibility(View.GONE);
-                }
-            }
-        } else { // Mikan mode
-            /*
-            if (content.getStatus() != null) {
-                StatusContent status = content.getStatus();
-                // "Available online" icon
-                if (status == StatusContent.ONLINE) {
-                    holder.ivDownload.setImageResource(R.drawable.ic_action_download);
-                    holder.ivDownload.setOnClickListener(v -> tryDownloadPages(content));
-                }
-                // "In queue" icon
-                else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
-                    holder.ivDownload.setImageResource(R.drawable.ic_action_download);
-                    holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
-                    holder.ivDownload.setOnClickListener(v -> viewQueue());
-                }
-                // "In library" icon
-                else if (status == StatusContent.DOWNLOADED || status == StatusContent.MIGRATED || status == StatusContent.ERROR) {
-                    holder.ivDownload.setImageResource(R.drawable.ic_action_play);
-                    holder.ivDownload.setOnClickListener(v -> openBookAction.accept(content));
-                }
-            }
-
-             */
         }
-    }
-
-    // Mikan mode only
-    private void tryDownloadPages(Content content) {
-        ContentHolder holder = getHolderByContent(content);
-        /*
-        if (holder != null) {
-            holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
-            holder.ivDownload.setOnClickListener(w -> viewQueue());
-            collectionDAO.getPages(content, this);
-        }
-         */
     }
 
     private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
@@ -582,34 +541,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         throw new InvalidParameterException("ContentId " + contentId + " does not refer to a valid content");
     }
 
-    /**
-     * Change the state of the item relative to the given content to "downloaded"
-     * NB : Specific to Mikan screen
-     *
-     * @param content content that has been downloaded
-     */
-    public void switchStateToDownloaded(Content content) {
-        ContentHolder holder = getHolderByContent(content);
-
-        if (holder != null) {
-            /*
-            holder.ivDownload.setImageResource(R.drawable.ic_action_play);
-            holder.ivDownload.clearAnimation();
-            holder.ivDownload.setOnClickListener(v -> openBookAction.accept(content));
-
-             */
-        }
-    }
-
     @Nullable
     private ContentHolder getHolderByContent(Content content) {
         return (ContentHolder) libraryView.findViewHolderForItemId(content.getId());
-    }
-
-    public int getContentPosition(Content content) {
-        ContentHolder holder = getHolderByContent(content);
-        if (holder != null) return holder.getLayoutPosition();
-        else return -1;
     }
 
     @Override
@@ -801,36 +735,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         mSortedList.endBatchedUpdates();
     }
 
-    // PagedResultListener implementation -- Mikan mode only
-    // Listener for pages retrieval (Mikan mode only)
-    @Override
-    public void onPagedResultReady(List<Content> results, long totalSelectedContent, long totalContent) {
-        if (1 == results.size()) // 1 content with pages
-        {
-            downloadContent(results.get(0));
-        }
-    }
-
-    // Listener for error visual feedback (Mikan mode only)
-    @Override
-    public void onPagedResultFailed(Content content, String message) {
-        Timber.w(message);
-        Snackbar snackbar = Snackbar.make(libraryView, message, BaseTransientBottomBar.LENGTH_LONG);
-
-        if (content != null) {
-            ContentHolder holder = getHolderByContent(content);
-            if (holder != null) {
-                /*
-                holder.ivDownload.clearAnimation();
-                holder.ivDownload.setOnClickListener(v -> tryDownloadPages(content));
-
-                 */
-            }
-            snackbar.setAction("RETRY", v -> tryDownloadPages(content));
-        }
-        snackbar.show();
-    }
-
     private class SortedListCallback extends SortedListAdapterCallback<Content> {
 
         private SortedListCallback(RecyclerView.Adapter adapter) {
@@ -857,7 +761,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         private Context context;
         private ItemSelectListener itemSelectListener;
         private IntConsumer onContentRemovedListener;
-        private CollectionDAO collectionDAO;
         private Comparator<Content> sortComparator;
         private int displayMode;
         private Consumer<Content> openBookAction;
@@ -869,11 +772,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         public Builder setItemSelectListener(ItemSelectListener itemSelectListener) {
             this.itemSelectListener = itemSelectListener;
-            return this;
-        }
-
-        public Builder setCollectionDAO(CollectionDAO collectionDAO) {
-            this.collectionDAO = collectionDAO;
             return this;
         }
 
