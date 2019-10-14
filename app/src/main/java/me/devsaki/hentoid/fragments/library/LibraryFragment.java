@@ -579,7 +579,7 @@ public class LibraryFragment extends BaseFragment {
     }
 
     private void onItemClick(Content content) {
-        ContentHelper.openContent(requireContext(), content, viewModel.getSearchManagerBundle());
+        ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
     }
 
     private LibraryAdapter getAdapter() {

@@ -19,6 +19,10 @@ import static android.os.Build.VERSION_CODES.P;
 
 public final class Preferences {
 
+    private Preferences() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final int VERSION = 4;
 
     private static SharedPreferences sharedPreferences;
@@ -305,6 +309,11 @@ public final class Preferences {
     }
 
     public static final class Key {
+
+        private Key() {
+            throw new IllegalStateException("Utility class");
+        }
+
         public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
         static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         public static final String PREF_APP_LOCK = "pref_app_lock";
@@ -346,6 +355,11 @@ public final class Preferences {
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
     public static final class Default {
+
+        private Default() {
+            throw new IllegalStateException("Utility class");
+        }
+
         public static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final int PREF_ORDER_CONTENT_DEFAULT = Constant.ORDER_CONTENT_TITLE_ALPHA;
@@ -373,6 +387,11 @@ public final class Preferences {
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
     public static final class Constant {
+
+        private Constant() {
+            throw new IllegalStateException("Utility class");
+        }
+
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
         public static final int ORDER_CONTENT_NONE = -1;
         public static final int ORDER_CONTENT_TITLE_ALPHA = 0;

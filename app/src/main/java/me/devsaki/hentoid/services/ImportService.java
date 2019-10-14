@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -152,11 +153,13 @@ public class ImportService extends IntentService {
         }
 
         // 2nd pass : scan every folder for a JSON file or subdirectories
+        String enabled = getApplication().getResources().getString(R.string.enabled);
+        String disabled = getApplication().getResources().getString(R.string.disabled);
         trace(Log.DEBUG, log, "Import books starting - initial detected count : %s", files.size() + "");
-        trace(Log.INFO, log, "Rename folders %s", (rename ? "ENABLED" : "DISABLED"));
-        trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? "ENABLED" : "DISABLED"));
-        trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? "ENABLED" : "DISABLED"));
-        trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? "ENABLED" : "DISABLED"));
+        trace(Log.INFO, log, "Rename folders %s", (rename ? enabled : disabled));
+        trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
+        trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
+        trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
         for (int i = 0; i < files.size(); i++) {
             File folder = files.get(i);
 

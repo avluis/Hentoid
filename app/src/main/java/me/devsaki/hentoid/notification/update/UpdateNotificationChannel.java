@@ -11,6 +11,10 @@ import java.util.Objects;
 
 public class UpdateNotificationChannel {
 
+    private UpdateNotificationChannel() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final String ID_OLD = "update";
     private static final String ID_OLD2 = "update2";
     static final String ID = "update3";

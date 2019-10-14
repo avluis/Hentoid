@@ -121,7 +121,7 @@ public final class ContentHelper {
             // Convert ArrayList to Array
             File[] fileArray = fileList.toArray(new File[0]);
             // Compress files
-            new FileHelper.AsyncUnzip(context, dest).execute(fileArray, dest);
+            new ZipUtil.AsyncZip(context, dest).execute(fileArray, dest);
         }
     }
 
@@ -132,7 +132,10 @@ public final class ContentHelper {
      * @param context Context
      * @param content Content to be displayed
      */
-    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
+    public static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
+        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
+        ToastUtil.toast("Opening: " + content.getTitle());
+
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
@@ -141,24 +144,6 @@ public final class ContentHelper {
         viewer.putExtras(builder.getBundle());
 
         context.startActivity(viewer);
-    }
-
-
-    /**
-     * Open the given content using the viewer defined in user preferences
-     *
-     * @param context Context
-     * @param content Content to be opened
-     */
-    public static void openContent(final Context context, Content content) {
-        openContent(context, content, null);
-    }
-
-    public static void openContent(final Context context, Content content, Bundle searchParams) {
-        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
-        ToastUtil.toast("Opening: " + content.getTitle());
-
-        openHentoidViewer(context, content, searchParams);
     }
 
     @Nullable
@@ -278,7 +263,7 @@ public final class ContentHelper {
         }
 
         // Unique content ID
-        String suffix = "[" + formatBookId(content) + "]";
+        String suffix = formatBookId(content);
 
         // Truncate folder dir to something manageable for Windows
         // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
@@ -298,7 +283,7 @@ public final class ContentHelper {
         // For certain sources (8muses, fakku), unique IDs are strings that may be very long
         // => shorten them by using their hashCode
         if (id.length() > 10) id = Helper.formatIntAsStr(Math.abs(id.hashCode()), 10);
-        return id;
+        return "[" + id + "]";
     }
 
     public static File getOrCreateSiteDownloadDir(Context context, Site site) {

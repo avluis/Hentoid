@@ -7,6 +7,10 @@ package me.devsaki.hentoid.database.constants;
 @SuppressWarnings("squid:S1192") // That's okay here
 public abstract class ImageFileTable {
 
+    private ImageFileTable() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static final String TABLE_NAME = "image_file";
 
     private static final String ID_COLUMN = "id";

@@ -6,6 +6,10 @@ package me.devsaki.hentoid.database.constants;
  */
 public abstract class AttributeTable {
 
+    private AttributeTable() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final String TABLE_NAME = "attribute";
 
     private static final String ID_COLUMN = "id";

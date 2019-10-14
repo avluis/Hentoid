@@ -1,6 +1,11 @@
 package me.devsaki.hentoid.util;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.webkit.MimeTypeMap;
+
+import androidx.core.content.FileProvider;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -22,6 +27,10 @@ import timber.log.Timber;
  */
 
 class ZipUtil {
+
+    private ZipUtil() {
+        throw new IllegalStateException("Utility class");
+    }
 
     private static final int BUFFER = 32 * 1024;
 
@@ -122,6 +131,29 @@ class ZipUtil {
             if (!dir.mkdirs()) {
                 Timber.w("Could not create dir: %s", dir);
             }
+        }
+    }
+
+    static class AsyncZip extends ZipUtil.ZipTask {
+        final Context context; // TODO - omg leak !
+        final File dest;
+
+        AsyncZip(Context context, File dest) {
+            this.context = context;
+            this.dest = dest;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            // Hentoid is FileProvider ready!!
+            sendIntent.putExtra(Intent.EXTRA_STREAM,
+                    FileProvider.getUriForFile(context, FileHelper.AUTHORITY, dest));
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(dest.getName()));
+            sendIntent.setType(mimeType);
+
+            context.startActivity(sendIntent);
         }
     }
 }

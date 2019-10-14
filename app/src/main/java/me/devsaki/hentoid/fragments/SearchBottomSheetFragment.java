@@ -143,7 +143,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         tagSearchView = view.findViewById(R.id.tag_filter);
         tagSearchView.setSearchableInfo(getSearchableInfo(requireActivity())); // Associate searchable configuration with the SearchView
-        tagSearchView.setQueryHint("Search " + Helper.buildListAsString(selectedAttributeTypes));
+        tagSearchView.setQueryHint("Search " + android.text.TextUtils.join(", ", selectedAttributeTypes));
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {

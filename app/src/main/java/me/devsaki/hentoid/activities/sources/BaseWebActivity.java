@@ -390,7 +390,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 if (StatusContent.DOWNLOADED == currentContent.getStatus()
                         || StatusContent.ERROR == currentContent.getStatus()
                         || StatusContent.MIGRATED == currentContent.getStatus()) {
-                    ContentHelper.openContent(this, currentContent);
+                    ContentHelper.openHentoidViewer(this, currentContent, null);
                 } else {
                     fabAction.hide();
                 }

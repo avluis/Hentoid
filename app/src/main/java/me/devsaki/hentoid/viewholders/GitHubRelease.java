@@ -122,7 +122,7 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         }
     }
 
-    static public class Struct {
+    public static class Struct {
 
         @Json(name = "tag_name")
         String tagName;

@@ -8,6 +8,10 @@ import me.devsaki.hentoid.enums.StatusContent;
  */
 public abstract class QueueTable {
 
+    private QueueTable() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final String TABLE_NAME = "queue";
 
     public static final String INSERT_STATEMENT = "INSERT OR REPLACE INTO " + TABLE_NAME + " VALUES (?,?);";

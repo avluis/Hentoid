@@ -6,6 +6,10 @@ package me.devsaki.hentoid.database.constants;
  */
 public abstract class ContentTable {
 
+    private ContentTable() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static final String TABLE_NAME = "content";
 
     // COLUMN NAMES

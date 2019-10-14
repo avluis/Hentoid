@@ -70,6 +70,7 @@ public final class Helper {
         }
     }
 
+    //Currently only nhentai source uses this method
     static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);
 
@@ -124,25 +125,6 @@ public final class Helper {
         }
 
         return result;
-    }
-
-    public static String buildListAsString(List<?> list) {
-        return buildListAsString(list, "");
-    }
-
-    private static String buildListAsString(List<?> list, String valueDelimiter) {
-
-        StringBuilder str = new StringBuilder();
-        if (list != null) {
-            boolean first = true;
-            for (Object o : list) {
-                if (!first) str.append(",");
-                else first = false;
-                str.append(valueDelimiter).append(o.toString().toLowerCase()).append(valueDelimiter);
-            }
-        }
-
-        return str.toString();
     }
 
     public static String decode64(String encodedString) {

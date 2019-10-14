@@ -323,7 +323,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             pageOffset = (searchManager.getCurrentPage() - 1) * Preferences.getContentPageQuantity();
         bundle.putInt("contentIndex", pageOffset + mAdapter.getContentPosition(content) + 1);
  */
-        ContentHelper.openContent(requireContext(), content, bundle);
+        ContentHelper.openHentoidViewer(requireContext(), content, bundle);
     }
 
     /**

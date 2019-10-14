@@ -5,13 +5,18 @@ import android.app.Activity;
 import android.content.Context;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class PermissionUtil {
 
+    private PermissionUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static boolean requestExternalStoragePermission(Activity activity, int permissionRequestCode) {
-        if (ActivityCompat.checkSelfPermission(activity,
+        if (ContextCompat.checkSelfPermission(activity,
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
 
             return true;
@@ -24,6 +29,6 @@ public class PermissionUtil {
     }
 
     public static boolean checkExternalStoragePermission(Context context) {
-        return ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED;
     }
 }

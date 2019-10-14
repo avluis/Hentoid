@@ -8,6 +8,10 @@ import me.devsaki.hentoid.BuildConfig;
  */
 public abstract class Consts {
 
+    private Consts() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static final String DATABASE_NAME = "hentoid.db";
 
     public static final String DEFAULT_LOCAL_DIRECTORY_OLD = "Hentoid";

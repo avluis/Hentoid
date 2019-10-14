@@ -11,6 +11,10 @@ import java.util.Objects;
 
 public class ImportNotificationChannel {
 
+    private ImportNotificationChannel() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final String ID_OLD = "import";
     static final String ID = "import2";
 

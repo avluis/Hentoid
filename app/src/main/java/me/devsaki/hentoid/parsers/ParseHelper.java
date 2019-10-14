@@ -18,6 +18,11 @@ import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 public class ParseHelper {
+
+    private ParseHelper() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Remove counters from given string (e.g. "Futanari (2660)" => "Futanari")
      *

@@ -28,8 +28,12 @@ import timber.log.Timber;
  */
 public class JsonHelper {
 
-    public final static Type MAP_STRINGS = Types.newParameterizedType(Map.class, String.class, String.class);
-    private final static Moshi MOSHI = new Moshi.Builder()
+    private JsonHelper() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static final Type MAP_STRINGS = Types.newParameterizedType(Map.class, String.class, String.class);
+    private static final Moshi MOSHI = new Moshi.Builder()
             .add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new AttributeType.AttributeTypeAdapter())
             .build();
