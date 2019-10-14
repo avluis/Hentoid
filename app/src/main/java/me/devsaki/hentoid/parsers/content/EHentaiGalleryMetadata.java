@@ -13,21 +13,21 @@ import me.devsaki.hentoid.util.AttributeMap;
 
 public class EHentaiGalleryMetadata {
 
-    public String gid;
-    public String token;
-    public String archiver_key;
-    public String title;
-    public String title_jpn;
-    public String category;
-    public String thumb;
-    public String uploader;
-    public String posted;
-    public String filecount;
-    public String filesize;
-    public boolean expunged;
-    public double rating;
-    public String torrentcount;
-    public List<String> tags;
+    private String gid;
+    private String token;
+    private String archiver_key;
+    private String title;
+    private String title_jpn;
+    private String category;
+    private String thumb;
+    private String uploader;
+    private String posted;
+    private String filecount;
+    private String filesize;
+    private boolean expunged;
+    private double rating;
+    private String torrentcount;
+    private List<String> tags;
 
 
     public Content toContent(@Nonnull String url) {
