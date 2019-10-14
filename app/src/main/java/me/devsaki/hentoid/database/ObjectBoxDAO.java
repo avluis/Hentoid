@@ -55,7 +55,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         List<Content> pagedContents;
         long totalContent;
         long totalSelectedContent;
-        int currentPage;
 
         ContentQueryResult() {
         }
@@ -248,49 +247,6 @@ public class ObjectBoxDAO implements CollectionDAO {
             return result;
         }
     }
-/*
-    private LiveData<PagedList<Content>> getPagedContent(int mode, String filter, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly) {
-        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM)
-            return getOrderedPagedContent(mode, filter, metadata, booksPerPage, orderStyle, favouritesOnly);
-        else
-            return getRandomPagedContent(mode, filter, metadata, booksPerPage, favouritesOnly);
-    }
-
-    private LiveData<PagedList<Content>> getOrderedPagedContent(@Mode int mode, String filter, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly) {
-        if (Mode.SEARCH_CONTENT_MODULAR == mode) {
-            Query<Content> query = db.selectContentSearchQ(filter, metadata, favouritesOnly, orderStyle);
-            return new LivePagedListBuilder<>(
-                    new ObjectBoxDataSource.Factory<>(query),
-                    booksPerPage
-            ).build();
-        } else { // Mode.SEARCH_CONTENT_UNIVERSAL
-            // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
-            // querying Content and attributes have to be done separately
-            Query<Content> query1 = db.queryContentUniversalAttributes(filter, favouritesOnly);
-            LiveData<PagedList<Content>> livedata1 = new LivePagedListBuilder<>(
-                    new ObjectBoxDataSource.Factory<>(query1),
-                    booksPerPage
-            ).build();
-
-            Query<Content> query2 = db.queryContentUniversalTitleId(filter, favouritesOnly, orderStyle);
-            LiveData<PagedList<Content>> livedata2 = new LivePagedListBuilder<>(
-                    new ObjectBoxDataSource.Factory<>(query2),
-                    booksPerPage
-            ).build();
-
-            MediatorLiveData<PagedList<Content>> result = new MediatorLiveData<>();
-            result.addSource(livedata1, result::setValue);
-            result.addSource(livedata2, result::setValue);
-
-            return result;
-        }
-    }
-
-    private LiveData<PagedList<Content>> getRandomPagedContent(@Mode int mode, String filter, List<Attribute> metadata, int booksPerPage, boolean favouritesOnly) {
-        // TODO
-        return getOrderedPagedContent(mode, filter, metadata, booksPerPage, Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST, favouritesOnly);
-    }
-*/
 
     private ContentQueryResult pagedContentSearch(@Mode int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
 
