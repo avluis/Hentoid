@@ -123,13 +123,20 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
     }
 
     public static class Struct {
-
         @Json(name = "tag_name")
         String tagName;
-        public String name;
-        public String body;
+        String name;
+        String body;
         @Json(name = "created_at")
         Date creationDate;
+
+        public String getName() {
+            return name;
+        }
+
+        public String getBody() {
+            return body;
+        }
     }
 
 }
