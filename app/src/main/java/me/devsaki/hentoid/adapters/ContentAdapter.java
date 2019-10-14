@@ -435,7 +435,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 db.updateImageFileStatusAndParams(im.setStatus(StatusContent.SAVED));
 
         item.setStatus(StatusContent.DOWNLOADING);
-        item.setDownloadDate(0); // Reset download date
         db.insertContent(item);
 
         List<QueueRecord> queue = db.selectQueue();
