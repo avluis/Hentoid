@@ -76,9 +76,9 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     }
 
     private void onCheckSuccess(GitHubRelease.Struct latestReleaseInfo) {
-        releaseName.setText(latestReleaseInfo.name);
+        releaseName.setText(latestReleaseInfo.getName());
         // Parse content and add lines to the description
-        for (String s : latestReleaseInfo.body.split("\\r\\n")) { // TODO - refactor this code with its copy in GitHubRelease
+        for (String s : latestReleaseInfo.getBody().split("\\r\\n")) { // TODO - refactor this code with its copy in GitHubRelease
             s = s.trim();
             if (s.startsWith("-")) addListContent(s);
             else addDescContent(s);

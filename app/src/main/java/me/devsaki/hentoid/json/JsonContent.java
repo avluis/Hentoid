@@ -14,22 +14,22 @@ import me.devsaki.hentoid.enums.StatusContent;
 
 public class JsonContent {
 
-    public String url;
-    public String title;
-    public String author;
-    public String coverImageUrl;
-    public Integer qtyPages;
-    public long uploadDate;
-    public long downloadDate;
-    public StatusContent status;
-    public Site site;
-    public boolean favourite;
-    public long reads;
-    public long lastReadDate;
-    public int lastReadPageIndex;
+    private String url;
+    private String title;
+    private String author;
+    private String coverImageUrl;
+    private Integer qtyPages;
+    private long uploadDate;
+    private long downloadDate;
+    private StatusContent status;
+    private Site site;
+    private boolean favourite;
+    private long reads;
+    private long lastReadDate;
+    private int lastReadPageIndex;
 
-    public Map<AttributeType, List<JsonAttribute>> attributes;
-    public List<JsonImageFile> imageFiles = new ArrayList<>();
+    private Map<AttributeType, List<JsonAttribute>> attributes;
+    private List<JsonImageFile> imageFiles = new ArrayList<>();
 
     private JsonContent() {
     }
@@ -39,7 +39,7 @@ public class JsonContent {
         if (null == attributeItem) return;
 
         List<JsonAttribute> list;
-        AttributeType type = attributeItem.type;
+        AttributeType type = attributeItem.getType();
 
         if (attributes.containsKey(type)) {
             list = attributes.get(type);

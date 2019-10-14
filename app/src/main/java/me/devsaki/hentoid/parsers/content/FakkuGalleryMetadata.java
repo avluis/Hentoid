@@ -3,23 +3,42 @@ package me.devsaki.hentoid.parsers.content;
 import java.util.Map;
 
 public class FakkuGalleryMetadata {
-    public FakkuContent content;
-    public Map<String, FakkuPage> pages;
-    public String key_hash;
-    public String key_data;
+    private FakkuContent content;
+    private Map<String, FakkuPage> pages;
+    private String key_hash;
+    private String key_data;
 
+    public Map<String, FakkuPage> getPages() {
+        return pages;
+    }
 
-    public static class FakkuContent {
-        public String content_name;
-        public String content_url;
-        public String content_description;
-        public String content_language;
-        public String content_pages;
+    public FakkuContent getContent() {
+        return content;
+    }
+
+    public String getKeyHash() {
+        return key_hash;
+    }
+
+    public String getKeyData() {
+        return key_data;
+    }
+
+    private static class FakkuContent {
+        private String content_name;
+        private String content_url;
+        private String content_description;
+        private String content_language;
+        private String content_pages;
     }
 
     public static class FakkuPage {
-        public String page;
-        public String image;
-        public String thumb;
+        private String page;
+        private String image;
+        private String thumb;
+
+        public String getImage() {
+            return image;
+        }
     }
 }

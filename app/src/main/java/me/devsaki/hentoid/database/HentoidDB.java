@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Pair;
 import android.util.SparseIntArray;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -247,14 +249,14 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    @NonNull
     private AttributeMap selectAttributesByContentId(SQLiteDatabase db, long id, Site site) {
-        AttributeMap result = null;
+        AttributeMap result = new AttributeMap();
         try (Cursor cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_CONTENT_ID,
                 new String[]{id + ""})) {
 
             // looping through all rows and adding to list
             if (cursorAttributes.moveToFirst()) {
-                result = new AttributeMap();
                 do {
                     result.add(
                             new Attribute(

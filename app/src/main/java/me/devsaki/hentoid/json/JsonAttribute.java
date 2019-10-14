@@ -7,11 +7,11 @@ import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 
-public class JsonAttribute {
+class JsonAttribute {
 
-    public String name;
-    public AttributeType type;
-    public String url = "";
+    private String name;
+    private AttributeType type;
+    private String url = "";
 
     private JsonAttribute() {
     }
@@ -37,4 +37,6 @@ public class JsonAttribute {
     Attribute toEntity(Site site) {
         return new Attribute(type, name, url, site);
     }
+
+    public AttributeType getType() { return type; }
 }

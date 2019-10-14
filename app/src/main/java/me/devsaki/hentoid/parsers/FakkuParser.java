@@ -66,7 +66,7 @@ public class FakkuParser implements ImageListParser {
             return result;
         }
 
-        progress.progressStart(info.pages.keySet().size() + 1);
+        progress.progressStart(info.getPages().keySet().size() + 1);
 
         // Add referer information to downloadParams for future image download
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl());
@@ -90,27 +90,29 @@ public class FakkuParser implements ImageListParser {
         }
 
         List<PageInfo> pageInfo = null;
-        if (info.key_data != null)
-            pageInfo = FakkuDecode.getBookPageData(info.key_hash, Helper.decode64(info.key_data), pid, BuildConfig.FK_TOKEN);
+        if (info.getKeyData() != null)
+            pageInfo = FakkuDecode.getBookPageData(info.getKeyHash(), Helper.decode64(info.getKeyData()), pid, BuildConfig.FK_TOKEN);
         progress.progressPlus();
 
         result = new ArrayList<>();
-        for (String p : info.pages.keySet()) {
+        for (String p : info.getPages().keySet()) {
             int order = Integer.parseInt(p);
-            FakkuGalleryMetadata.FakkuPage page = info.pages.get(p);
-            ImageFile img = ParseHelper.urlToImageFile(page.image, order);
+            FakkuGalleryMetadata.FakkuPage page = info.getPages().get(p);
+            if (page != null) {
+                ImageFile img = ParseHelper.urlToImageFile(page.getImage(), order);
 
-            String pageInfoValue;
-            if (pageInfo != null)
-                pageInfoValue = JsonHelper.serializeToJson(pageInfo.get(order - 1), PageInfo.class); // String contains JSON data within a JSON...
-            else pageInfoValue = "unprotected";
+                String pageInfoValue;
+                if (pageInfo != null)
+                    pageInfoValue = JsonHelper.serializeToJson(pageInfo.get(order - 1), PageInfo.class); // String contains JSON data within a JSON...
+                else pageInfoValue = "unprotected";
 
-            downloadParams.put("pageInfo", pageInfoValue);
-            downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
+                downloadParams.put("pageInfo", pageInfoValue);
+                downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
-            img.setDownloadParams(downloadParamsStr);
-            result.add(img);
-            progress.progressPlus();
+                img.setDownloadParams(downloadParamsStr);
+                result.add(img);
+                progress.progressPlus();
+            }
         }
         Timber.d("%s", result);
 
