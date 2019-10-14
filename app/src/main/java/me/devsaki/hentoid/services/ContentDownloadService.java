@@ -311,6 +311,7 @@ public class ContentDownloadService extends IntentService {
 
         if (hasError) {
             content.setStatus(StatusContent.ERROR);
+            content.setDownloadDate(new Date().getTime()); // Needs a download date to appear the right location when sorted by download date
             db.insertContent(content);
             db.deleteQueue(content);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
