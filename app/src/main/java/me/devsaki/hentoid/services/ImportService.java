@@ -153,11 +153,13 @@ public class ImportService extends IntentService {
         }
 
         // 2nd pass : scan every folder for a JSON file or subdirectories
+        String enabled = getApplication().getResources().getString(R.string.enabled);
+        String disabled = getApplication().getResources().getString(R.string.disabled);
         trace(Log.DEBUG, log, "Import books starting - initial detected count : %s", files.size() + "");
-        trace(Log.INFO, log, "Rename folders %s", (rename ? getResources().getString(R.string.enabled) : getResources().getString(R.string.disabled)));
-        trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? getResources().getString(R.string.enabled) :getResources().getString(R.string.disabled)));
-        trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? getResources().getString(R.string.enabled) : getResources().getString(R.string.disabled)));
-        trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? getResources().getString(R.string.enabled) : getResources().getString(R.string.disabled)));
+        trace(Log.INFO, log, "Rename folders %s", (rename ? enabled : disabled));
+        trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
+        trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
+        trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
         for (int i = 0; i < files.size(); i++) {
             File folder = files.get(i);
 
