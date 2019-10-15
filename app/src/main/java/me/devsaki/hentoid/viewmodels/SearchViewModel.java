@@ -102,13 +102,9 @@ public class SearchViewModel extends AndroidViewModel {
 
     public SearchViewModel(@NonNull Application application) {
         super(application);
-        selectedAttributes.setValue(new ArrayList<>());
-    }
-
-    public void start() {
-        Context ctx = getApplication().getApplicationContext();
+        Context ctx = application.getApplicationContext();
         collectionDAO = new ObjectBoxDAO(ctx);
-        countAttributesPerType();
+        selectedAttributes.setValue(new ArrayList<>());
     }
 
     @NonNull
@@ -153,7 +149,12 @@ public class SearchViewModel extends AndroidViewModel {
         updateSelectionResult();
     }
 
-    public void setSelectedAttributes(List<Attribute> attrs) {
+    public void emptyStart() {
+        countAttributesPerType();
+        updateSelectionResult();
+    }
+
+    public void setSelectedAttributes(@NonNull List<Attribute> attrs) {
         selectedAttributes.setValue(attrs);
 
         // Indirect impact on attributesPerType

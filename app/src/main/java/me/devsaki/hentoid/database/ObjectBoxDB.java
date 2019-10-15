@@ -3,8 +3,6 @@ package me.devsaki.hentoid.database;
 import android.content.Context;
 import android.util.SparseIntArray;
 
-import androidx.annotation.NonNull;
-
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
@@ -407,7 +405,8 @@ public class ObjectBoxDB {
     }
 
     List<Content> selectContentSearch(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
-        if (booksPerPage <= 0) throw new UnsupportedOperationException("BookPerPage needs to be > 0");
+        if (booksPerPage <= 0)
+            throw new UnsupportedOperationException("BookPerPage needs to be > 0");
 
         List<Content> result;
         int start = (page - 1) * booksPerPage;
@@ -434,7 +433,8 @@ public class ObjectBoxDB {
     }
 
     List<Content> selectContentUniversal(String queryStr, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
-        if (booksPerPage <= 0) throw new UnsupportedOperationException("BookPerPage needs to be > 0");
+        if (booksPerPage <= 0)
+            throw new UnsupportedOperationException("BookPerPage needs to be > 0");
 
         List<Content> result;
         int start = (page - 1) * booksPerPage;
@@ -564,21 +564,19 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, List<Long> filteredContent) {
+    private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, long[] filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
-        if (!filteredContent.isEmpty())
-            query.filter(attr -> (Stream.of(attr.contents).filter(c -> filteredContent.contains(c.getId())).filter(c -> visibleContentStatusAsList.contains(c.getStatus().getCode())).count() > 0));
-//            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus); <-- does not work for an obscure reason; need to reproduce that on a clean project and submit it to ObjectBox
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
             query.contains(Attribute_.name, filter.trim(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        if (filteredContent.length > 0)
+            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus); // <-- does not work for an obscure reason; need to reproduce that on a clean project and submit it to ObjectBox
 
         return query.build();
     }
 
     long countAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
-        List<Long> filteredContent = Helper.getListFromPrimitiveArray(getFilteredContent(attributeFilter, filterFavourites));
-        return queryAvailableAttributes(type, filter, filteredContent).count();
+        return queryAvailableAttributes(type, filter, getFilteredContent(attributeFilter, filterFavourites)).count();
     }
 
     @SuppressWarnings("squid:S2184")
@@ -586,7 +584,7 @@ public class ObjectBoxDB {
     List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
-        List<Attribute> result = queryAvailableAttributes(type, filter, filteredContentAsList).find();
+        List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
 
         // Compute attribute count for sorting
         int count;

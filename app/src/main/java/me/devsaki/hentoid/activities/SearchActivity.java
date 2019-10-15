@@ -139,11 +139,11 @@ public class SearchActivity extends BaseActivity {
         searchButton.setOnClickListener(v -> validateForm());
 
         viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
-        viewModel.start();
         viewModel.getAttributesCountData().observe(this, this::onQueryUpdated);
         viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
         viewModel.getSelectedContentData().observe(this, this::onBooksReady);
         if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
+        else viewModel.emptyStart();
     }
 
     private void onQueryUpdated(SparseIntArray attrCount) {
