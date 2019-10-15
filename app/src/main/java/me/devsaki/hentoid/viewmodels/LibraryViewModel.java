@@ -24,11 +24,13 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 public class LibraryViewModel extends AndroidViewModel {
 
     // Technical
-    private final ContentSearchManager searchManager = new ContentSearchManager(new ObjectBoxDAO(getApplication().getApplicationContext()));
+    private final ObjectBoxDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
     private final CompositeDisposable compositeDisposable = new CompositeDisposable(); // TODO remove if useless
 
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
+    private LiveData<Integer> totalContent = collectionDao.countAllBooks();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
 
 
@@ -56,6 +58,11 @@ public class LibraryViewModel extends AndroidViewModel {
     @NonNull
     public LiveData<PagedList<Content>> getLibraryPaged() {
         return libraryPaged;
+    }
+
+    @NonNull
+    public LiveData<Integer> getTotalContent() {
+        return totalContent;
     }
 
     public Bundle getSearchManagerBundle() {

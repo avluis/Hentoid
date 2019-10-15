@@ -71,6 +71,7 @@ public class LibraryFragment extends BaseFragment {
 
     private LibraryViewModel viewModel;
     private PagedList<Content> library;
+    private int totalContent;
 
     // ======== UI
     private final LibraryPager pager = new LibraryPager(this::onPreviousClick, this::onNextClick, this::onPageChange);
@@ -141,6 +142,7 @@ public class LibraryFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
 
         viewModel.getLibraryPaged().observe(this, this::onPagedLibraryChanged);
+        viewModel.getTotalContent().observe(this, this::onTotalContentChanged);
     }
 
     @Override
@@ -515,7 +517,7 @@ public class LibraryFragment extends BaseFragment {
         Timber.d(">>Library changed ! Size=%s", result.size());
         if (result.size() > 0) Timber.d(">>1st item is ID %s", result.get(0).getId());
 
-        updateTitle(result.size(), result.size()); // TODO total size = size of unfiltered content
+        updateTitle(result.size(), totalContent);
 
         if (isSearchQueryActive()) {
             advancedSearchBar.setVisibility(View.VISIBLE);
@@ -555,6 +557,12 @@ public class LibraryFragment extends BaseFragment {
         library = result;
     }
 
+    private void onTotalContentChanged(Integer count) {
+        Timber.d(">>Total content changed ! Count=%s", count);
+        totalContent = count;
+        if (library != null) updateTitle(library.size(), totalContent);
+    }
+
     /**
      * Update the screen title according to current search filter (#TOTAL BOOKS) if no filter is
      * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
@@ -567,7 +575,7 @@ public class LibraryFragment extends BaseFragment {
                 title = totalCount + " items";
             else {
                 Resources res = getResources();
-                title = res.getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, (int) totalSelectedCount);
+                title = res.getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, totalCount);
             }
             activity.setTitle(title);
         }

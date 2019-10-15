@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.objectbox.android.ObjectBoxDataSource;
+import io.objectbox.android.ObjectBoxLiveData;
 import io.objectbox.query.Query;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -203,6 +204,15 @@ public class ObjectBoxDAO implements CollectionDAO {
         );
     }
 
+    public LiveData<Integer> countAllBooks() {
+        // This is not optimal because it fetches all the content and returns its size only
+        // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
+        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.getVisibleContentQ());
+
+        MediatorLiveData<Integer> result = new MediatorLiveData<>();
+        result.addSource(livedata, v -> result.setValue(v.size()));
+        return result;
+    }
 
     public LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly) {
         return getPagedContent(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderStyle, favouritesOnly);
@@ -272,7 +282,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             result.totalSelectedContent = 0;
         }
         // Fetch total book count (i.e. total number of books in all the collection, regardless of filter)
-        result.totalContent = db.countAllContent();
+        result.totalContent = db.countVisibleContent();
 
 // sb = new StringBuilder();
 //  for (Content c : result.pagedContents) sb.append(c.getId()).append(";");
@@ -301,7 +311,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             result.totalSelectedContent = 0;
         }
         // Fetch total book count (i.e. total number of books in all the collection, regardless of filter)
-        result.totalContent = db.countAllContent();
+        result.totalContent = db.countVisibleContent();
 
         return result;
     }

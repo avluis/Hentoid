@@ -53,8 +53,6 @@ public class ObjectBoxDB {
             StatusContent.ERROR.getCode(),
             StatusContent.MIGRATED.getCode()};
 
-    private static final List<Integer> visibleContentStatusAsList = Helper.getListFromPrimitiveArray(visibleContentStatus);
-
     private static ObjectBoxDB instance;
 
     private final BoxStore store;
@@ -249,8 +247,12 @@ public class ObjectBoxDB {
         store.boxFor(QueueRecord.class).removeAll();
     }
 
-    long countAllContent() {
+    long countVisibleContent() {
         return countContentSearch("", Collections.emptyList(), false);
+    }
+
+    Query<Content> getVisibleContentQ() {
+        return queryContentSearchContent("", Collections.emptyList(), false, Preferences.Constant.ORDER_CONTENT_NONE);
     }
 
     @Nullable
@@ -303,7 +305,7 @@ public class ObjectBoxDB {
         }
     }
 
-    public Query<Content> queryContentSearchContent(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
+    Query<Content> queryContentSearchContent(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.addAll(metadata);
 
@@ -570,7 +572,7 @@ public class ObjectBoxDB {
         if (filter != null && !filter.trim().isEmpty())
             query.contains(Attribute_.name, filter.trim(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (filteredContent.length > 0)
-            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus); // <-- does not work for an obscure reason; need to reproduce that on a clean project and submit it to ObjectBox
+            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus);
 
         return query.build();
     }
