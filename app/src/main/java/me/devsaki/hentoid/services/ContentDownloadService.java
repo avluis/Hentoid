@@ -23,7 +23,7 @@ import com.android.volley.Request;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.crashlytics.android.Crashlytics;
+// import com.crashlytics.android.Crashlytics;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.greenrobot.eventbus.EventBus;
@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -144,7 +143,7 @@ public class ContentDownloadService extends IntentService {
 
         // TODO remove when issue #349 fixed
         double lifespan = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
-        Crashlytics.log("Download service creation time (s) : " + String.format(Locale.US, "%.2f", lifespan));
+        //Crashlytics.log("Download service creation time (s) : " + String.format(Locale.US, "%.2f", lifespan));
     }
 
     @Override
@@ -156,7 +155,7 @@ public class ContentDownloadService extends IntentService {
 
         // TODO remove when issue #349 fixed
         double lifespan = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
-        Crashlytics.log("Download service lifespan (s) : " + String.format(Locale.US, "%.2f", lifespan));
+        //Crashlytics.log("Download service lifespan (s) : " + String.format(Locale.US, "%.2f", lifespan));
 
         super.onDestroy();
     }
@@ -167,7 +166,7 @@ public class ContentDownloadService extends IntentService {
 
         // TODO remove when issue #349 fixed
         double ticks = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
-        Crashlytics.log("New intent processed at (s) " + String.format(Locale.US, "%.2f", ticks));
+        //Crashlytics.log("New intent processed at (s) " + String.format(Locale.US, "%.2f", ticks));
 
         notifyStart();
 
@@ -189,7 +188,7 @@ public class ContentDownloadService extends IntentService {
 
         // TODO remove when issue #349 fixed
         double ticks = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
-        Crashlytics.log("Unbind at (s) " + String.format(Locale.US, "%.2f", ticks));
+        //Crashlytics.log("Unbind at (s) " + String.format(Locale.US, "%.2f", ticks));
 
         prepareAndStartForeground(); // <- show notification again
         return true;

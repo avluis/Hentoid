@@ -85,11 +85,13 @@ public class UpdateCheckService extends Service {
     }
 
     private void checkForUpdates() {
+        /*
         disposable = UpdateServer.API.getUpdateInfo()
                 .retry(3)
                 .observeOn(mainThread())
                 .doFinally(this::stopSelf)
                 .subscribe(this::onCheckSuccess, this::onCheckError);
+         */
     }
 
     private void onCheckSuccess(UpdateInfo updateInfoJson) {

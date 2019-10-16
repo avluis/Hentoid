@@ -12,12 +12,12 @@ import android.os.StrictMode;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
-import com.crashlytics.android.Crashlytics;
-import com.google.android.gms.security.ProviderInstaller;
-import com.google.firebase.analytics.FirebaseAnalytics;
+//import com.crashlytics.android.Crashlytics;
+//import com.google.android.gms.security.ProviderInstaller;
+//import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 
-import io.fabric.sdk.android.Fabric;
+//import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -26,7 +26,7 @@ import me.devsaki.hentoid.notification.maintenance.MaintenanceNotificationChanne
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.DatabaseMaintenanceService;
 import me.devsaki.hentoid.services.UpdateCheckService;
-import me.devsaki.hentoid.timber.CrashlyticsTree;
+//import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -60,19 +60,19 @@ public class HentoidApp extends Application {
     public static void trackDownloadEvent(String tag) {
         Bundle bundle = new Bundle();
         bundle.putString("tag", tag);
-        FirebaseAnalytics.getInstance(instance).logEvent("Download", bundle);
+        //FirebaseAnalytics.getInstance(instance).logEvent("Download", bundle);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        Fabric.with(this, new Crashlytics());
+        //Fabric.with(this, new Crashlytics());
 
         // Fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
         // see https://github.com/square/okhttp/issues/2372 for more information
         try {
-            ProviderInstaller.installIfNeeded(getApplicationContext());
+            //ProviderInstaller.installIfNeeded(getApplicationContext());
         } catch (Exception e) {
             Timber.e(e, "Google Play ProviderInstaller exception");
         }
@@ -91,8 +91,8 @@ public class HentoidApp extends Application {
 */
 
         // Timber
-        if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());
-        Timber.plant(new CrashlyticsTree());
+        //if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());
+        //Timber.plant(new CrashlyticsTree());
 
         // Prefs
         instance = this.getApplicationContext();
@@ -100,8 +100,8 @@ public class HentoidApp extends Application {
         Preferences.performHousekeeping();
 
         // Firebase
-        boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
-        FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
+        //boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
+        //FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -133,7 +133,7 @@ public class HentoidApp extends Application {
         // Set Night mode
         int darkMode = Preferences.getDarkMode();
         AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(darkMode));
-        FirebaseAnalytics.getInstance(this).setUserProperty("night_mode", Integer.toString(darkMode));
+        //FirebaseAnalytics.getInstance(this).setUserProperty("night_mode", Integer.toString(darkMode));
     }
 
     // We have asked for permissions, but still denied.

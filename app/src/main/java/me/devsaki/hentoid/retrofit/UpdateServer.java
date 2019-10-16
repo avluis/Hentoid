@@ -10,6 +10,7 @@ import retrofit2.http.GET;
 
 public class UpdateServer {
 
+    /*
     public static final Api API = new Retrofit.Builder()
             .baseUrl(BuildConfig.UPDATE_URL)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
@@ -22,4 +23,6 @@ public class UpdateServer {
         @GET("update.json")
         Single<UpdateInfo> getUpdateInfo();
     }
+    */
+
 }

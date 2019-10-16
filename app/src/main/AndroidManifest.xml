@@ -10,8 +10,6 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Required to run keep-alive service when targeting API 28 or higher -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <!-- Required to install update packages when targeting API 25 or higher -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <application
         android:name=".HentoidApp"
@@ -20,7 +18,6 @@
         android:label="@string/app_name"
         android:supportsRtl="false"
         android:extractNativeLibs="true"
-        android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.SplashActivity"
@@ -60,6 +57,10 @@
             android:name=".activities.sources.PururinActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
+        <!--<activity
+            android:name=".activities.sources.PandaActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/BrowserTheme" />-->
         <activity
             android:name=".activities.sources.EHentaiActivity"
             android:configChanges="orientation|screenSize"
@@ -69,23 +70,11 @@
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.sources.NexusActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
-        <activity
-            android:name=".activities.sources.MusesActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
-        <activity
-            android:name=".activities.sources.DoujinsActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
-        <activity
             android:name=".activities.DownloadsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.NoActionBar.Overlay">
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -120,7 +109,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/PrefsTheme"
+            android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -139,7 +128,7 @@
         <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
         </activity>
         <activity
@@ -151,12 +140,12 @@
             android:noHistory="true"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.PinPreferenceActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".activities.IntentActivity"
             android:theme="@style/BrowserTheme">
@@ -195,7 +184,7 @@
                 <!-- Accepts URIs that begin with "http://www.tsumino.com/Book/Info" -->
                 <data
                     android:host="www.tsumino.com"
-                    android:pathPrefix="/entry/"
+                    android:pathPrefix="/Book/Info"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -228,7 +217,7 @@
                 <!-- Accepts URIs that begin with "https://hentai.cafe/" -->
                 <data
                     android:host="hentai.cafe"
-                    android:pathPrefix="/hc.fyi/"
+                    android:pathPrefix="/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -247,6 +236,17 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://mangapanda.com/" -->
+                <data
+                    android:host="www.mangapanda.com"
+                    android:pathPrefix="/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
                 <data
                     android:host="e-hentai.org"
@@ -258,39 +258,10 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
                 <data
                     android:host="fakku.net"
                     android:pathPrefix="/hentai/"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:host="hentainexus.com"
-                    android:pathPrefix="/view/"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:host="8muses.com"
-                    android:pathPrefix="/comics/album/"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:host="doujins.com"
-                    android:pathPattern="..*/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>
@@ -298,7 +269,7 @@
         <activity
             android:name=".activities.ImageViewerActivity"
             android:label="Image Viewer"
-            android:theme="@style/AppTheme.NoActionBar.Monochrome">
+            android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.DownloadsActivity" />
@@ -323,7 +294,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
