@@ -195,12 +195,6 @@ public class LibraryFragment extends BaseFragment {
 
         favsMenu = menu.findItem(R.id.action_favourites);
         updateFavouriteFilter();
-        favsMenu.setOnMenuItemClickListener(item -> {
-            favsMenu.setChecked(!favsMenu.isChecked());
-            updateFavouriteFilter();
-            viewModel.toggleFavouriteFilter();
-            return true;
-        });
 
         mainSearchView = (SearchView) searchMenu.getActionView();
         mainSearchView.setIconifiedByDefault(true);
@@ -298,7 +292,7 @@ public class LibraryFragment extends BaseFragment {
      * Update favourite filter button appearance (icon and color) on a book
      */
     private void updateFavouriteFilter() {
-        favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty); // TODO handle that with a selector at the UI level ?
+        favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
     }
 
     private static int getIconFromSortOrder(int sortOrder) {
@@ -361,13 +355,21 @@ public class LibraryFragment extends BaseFragment {
                 contentSortOrder = Preferences.Constant.ORDER_CONTENT_RANDOM;
                 RandomSeedSingleton.getInstance().renewSeed();
                 break;
+            case R.id.action_favourites:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_NONE;
+                item.setChecked(!item.isChecked());
+                updateFavouriteFilter();
+                viewModel.toggleFavouriteFilter();
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }
 
-        orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
-        Preferences.setContentSortOrder(contentSortOrder);
-        viewModel.performSearch();
+        if (contentSortOrder != Preferences.Constant.ORDER_CONTENT_NONE) {
+            orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
+            Preferences.setContentSortOrder(contentSortOrder);
+            viewModel.performSearch();
+        }
 
         return true;
     }
@@ -460,12 +462,8 @@ public class LibraryFragment extends BaseFragment {
 
     private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         Timber.i("Prefs change detected : %s", key);
-        switch (key) {
-            case Preferences.Key.PREF_ENDLESS_SCROLL:
-                initPagingMethod(Preferences.getEndlessScroll());
-                break;
-            default:
-                // Other changes aren't handled here
+        if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
+            initPagingMethod(Preferences.getEndlessScroll());
         }
     }
 
