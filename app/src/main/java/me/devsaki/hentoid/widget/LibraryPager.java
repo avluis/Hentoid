@@ -10,9 +10,7 @@ import me.devsaki.hentoid.ui.CarouselDecorator;
 
 public class LibraryPager {
 
-    private final View.OnClickListener onPreviousListener;
-    private final View.OnClickListener onNextListener;
-    private final CarouselDecorator.OnPageChangeListener onPageChangeListener;
+    private final Runnable onPageChangeListener;
 
     private View pagerPanel;
     private CarouselDecorator decorator;
@@ -21,9 +19,7 @@ public class LibraryPager {
     private int pageCount = 0;
 
 
-    public LibraryPager(View.OnClickListener onPreviousListener, View.OnClickListener onNextListener, CarouselDecorator.OnPageChangeListener onPageChangeListener) {
-        this.onPreviousListener = onPreviousListener;
-        this.onNextListener = onNextListener;
+    public LibraryPager(Runnable onPageChangeListener) {
         this.onPageChangeListener = onPageChangeListener;
     }
 
@@ -35,12 +31,20 @@ public class LibraryPager {
 
         decorator = new CarouselDecorator(rootView.getContext(), R.layout.item_pagecarousel);
         decorator.decorate(pageCarousel);
-        decorator.setOnPageChangeListener(onPageChangeListener);
+        decorator.setOnPageChangeListener(this::pageChanged);
 
         ImageButton btnPrevious = rootView.findViewById(R.id.pager_btnPrevious);
-        btnPrevious.setOnClickListener(onPreviousListener);
+        btnPrevious.setOnClickListener(this::previousPage);
         ImageButton btnNext = rootView.findViewById(R.id.pager_btnNext);
-        btnNext.setOnClickListener(onNextListener);
+        btnNext.setOnClickListener(this::nextPage);
+    }
+
+    public void enable() {
+        pagerPanel.setVisibility(View.VISIBLE);
+    }
+
+    public void disable() {
+        pagerPanel.setVisibility(View.GONE);
     }
 
     public void setPageCount(int pageCount) {
@@ -53,24 +57,28 @@ public class LibraryPager {
         currentPageNumber = page;
     }
 
-    public void enable() {
-        pagerPanel.setVisibility(View.VISIBLE);
+    private void nextPage(View v) {
+        if (currentPageNumber < pageCount) currentPageNumber++;
+        decorator.setCurrentPage(currentPageNumber);
+        onPageChangeListener.run();
     }
 
-    public void disable() {
-        pagerPanel.setVisibility(View.GONE);
+    private void previousPage(View v) {
+        if (currentPageNumber > 1) currentPageNumber--;
+        decorator.setCurrentPage(currentPageNumber);
+        onPageChangeListener.run();
     }
 
-
-    public int nextPage() {
-        return currentPageNumber < pageCount ? ++currentPageNumber : currentPageNumber;
+    private void pageChanged(int newPageNumber) {
+        setCurrentPage(newPageNumber);
+        onPageChangeListener.run();
     }
 
-    public int previousPage() {
-        return currentPageNumber > 1 ? --currentPageNumber : currentPageNumber;
+    public int getCurrentPageNumber() {
+        return currentPageNumber;
     }
 
-    public int getCurrentPageNumber() { return  currentPageNumber; }
-
-    public int getPageCount() { return  pageCount; }
+    public int getPageCount() {
+        return pageCount;
+    }
 }

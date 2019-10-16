@@ -90,7 +90,7 @@ public class LibraryFragment extends BaseFragment {
     private boolean newSearch = false;
 
     // ======== UI
-    private final LibraryPager pager = new LibraryPager(this::onPreviousClick, this::onNextClick, this::onPageChange);
+    private final LibraryPager pager = new LibraryPager(this::handleNewPage);
     // "Search" button on top menu
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
@@ -116,9 +116,6 @@ public class LibraryFragment extends BaseFragment {
 
 
     // === SEARCH
-    // Last search parameters; used to determine whether or not page number should be reset to 1
-    // NB : populated by getCurrentSearchParams
-    private String lastSearchParams = "";
     // Current text search query
     private String query = "";
     // Current metadata search query
@@ -693,24 +690,7 @@ public class LibraryFragment extends BaseFragment {
         }
     }
 
-    private void onPreviousClick(View v) {
-        pager.previousPage();
-        handleNewPage();
-    }
-
-    private void onNextClick(View v) {
-        pager.nextPage();
-        handleNewPage();
-    }
-
-    private void onPageChange(int page) {
-        pager.setCurrentPage(page);
-        handleNewPage();
-    }
-
     private void handleNewPage() {
-        int page = pager.getCurrentPageNumber();
-        pager.setCurrentPage(page); // TODO - handle this transparently...
         loadPagerAdapter(library);
         recyclerView.scrollToPosition(0);
     }
