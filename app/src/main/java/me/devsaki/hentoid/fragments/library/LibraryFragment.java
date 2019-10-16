@@ -87,6 +87,7 @@ public class LibraryFragment extends BaseFragment {
     private LibraryViewModel viewModel;
     private PagedList<Content> library;
     private int totalContent;
+    private boolean newSearch = false;
 
     // ======== UI
     private final LibraryPager pager = new LibraryPager(this::onPreviousClick, this::onNextClick, this::onPageChange);
@@ -156,6 +157,7 @@ public class LibraryFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        viewModel.getNewSearch().observe(this, this::onNewSearch);
         viewModel.getLibraryPaged().observe(this, this::onPagedLibraryChanged);
         viewModel.getTotalContent().observe(this, this::onTotalContentChanged);
     }
@@ -528,6 +530,10 @@ public class LibraryFragment extends BaseFragment {
         pagerAdapter.notifyDataSetChanged();
     }
 
+    private void onNewSearch(Boolean b) {
+        newSearch = b;
+    }
+
     private void onPagedLibraryChanged(PagedList<Content> result) {
         Timber.d(">>Library changed ! Size=%s", result.size());
         if (result.size() > 0) Timber.d(">>1st item is ID %s", result.get(0).getId());
@@ -556,19 +562,14 @@ public class LibraryFragment extends BaseFragment {
 
         if (Preferences.getEndlessScroll()) endlessAdapter.submitList(result);
         else {
-            /* TODO - this is not always what we want (e.g. new download coming when browsing)
-        this behaviour should occur only after a voluntary action
-         */
-            pager.setCurrentPage(1);
+            if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
             loadPagerAdapter(result);
         }
 
-        /* TODO - this is not always what we want (e.g. new download coming when browsing)
-        this behaviour should occur only after a voluntary action
-         */
-        recyclerView.scrollToPosition(0);
+        if (newSearch) recyclerView.scrollToPosition(0);
 
+        newSearch = false;
         library = result;
     }
 
@@ -711,6 +712,7 @@ public class LibraryFragment extends BaseFragment {
         int page = pager.getCurrentPageNumber();
         pager.setCurrentPage(page); // TODO - handle this transparently...
         loadPagerAdapter(library);
+        recyclerView.scrollToPosition(0);
     }
 
     private void viewQueue() {

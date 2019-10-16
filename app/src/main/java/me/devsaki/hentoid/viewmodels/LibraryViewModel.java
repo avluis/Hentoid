@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class LibraryViewModel extends AndroidViewModel {
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
     private LiveData<Integer> totalContent = collectionDao.countAllBooks();
+    private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
 
 
@@ -65,6 +67,11 @@ public class LibraryViewModel extends AndroidViewModel {
         return totalContent;
     }
 
+    @NonNull
+    public LiveData<Boolean> getNewSearch() {
+        return newSearch;
+    }
+
     public Bundle getSearchManagerBundle() {
         Bundle bundle = new Bundle();
         searchManager.saveToBundle(bundle);
@@ -73,6 +80,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
 
     public void performSearch() {
+        newSearch.setValue(true);
         libraryPaged.removeSource(currentSource);
         searchManager.setContentSortOrder(Preferences.getContentSortOrder());
         currentSource = searchManager.getLibrary();
