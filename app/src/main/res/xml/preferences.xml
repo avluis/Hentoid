@@ -92,6 +92,7 @@
             android:key="pref_app_lock"
             android:title="App Lock" />
     </PreferenceCategory>
+    <!--
     <PreferenceCategory android:title="@string/pref_updates_category">
 
         <Preference
@@ -107,6 +108,7 @@
             android:summaryOn="@string/pref_check_updates_summary_on"
             android:title="@string/pref_check_updates_title" />
     </PreferenceCategory>
+    -->
     <PreferenceCategory android:title="@string/pref_misc_category">
         <ListPreference
             android:defaultValue="@string/pref_dark_mode_default"
@@ -123,6 +125,7 @@
             android:summaryOff="@string/pref_app_preview_summary_off"
             android:summaryOn="@string/pref_app_preview_summary_on"
             android:title="@string/pref_app_preview_title" />
+        <!--
         <CheckBoxPreference
             android:defaultValue="@string/pref_analytics_preference_default"
             android:icon="@null"
@@ -130,6 +133,7 @@
             android:summaryOff="@string/pref_analytics_preference_summary_off"
             android:summaryOn="@string/pref_analytics_preference_summary_on"
             android:title="@string/pref_analytics_preference_title" />
+            -->
     </PreferenceCategory>
     <PreferenceScreen
         android:key="advancedSettings"

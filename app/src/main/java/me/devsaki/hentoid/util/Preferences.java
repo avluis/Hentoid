@@ -365,7 +365,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
         static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
-        static final int PREF_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_OFF;
+        static final int PREF_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_ON;
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
