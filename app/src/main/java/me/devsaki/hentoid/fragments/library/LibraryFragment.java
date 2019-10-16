@@ -27,7 +27,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +39,7 @@ import java.util.List;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.ContentAdapter2;
@@ -42,9 +47,15 @@ import me.devsaki.hentoid.adapters.LibraryAdapter;
 import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -58,14 +69,18 @@ import static com.annimon.stream.Collectors.toCollection;
 public class LibraryFragment extends BaseFragment {
 
     private final PagedContentAdapter endlessAdapter = new PagedContentAdapter.Builder()
-            .setBookClickListener(this::onItemClick)
-            .setSourceClickListener(this::onSourceClick)
+            .setBookClickListener(this::onBookClick)
+            .setSourceClickListener(this::onBookSourceClick)
+            .setFavClickListener(this::onBookFavouriteClick)
+            .setErrorClickListener(this::onBookErrorClick)
             .setSelectionChangedListener(this::onSelectionChanged)
             .build();
 
     private final ContentAdapter2 pagerAdapter = new ContentAdapter2.Builder()
-            .setBookClickListener(this::onItemClick)
-            .setSourceClickListener(this::onSourceClick)
+            .setBookClickListener(this::onBookClick)
+            .setSourceClickListener(this::onBookSourceClick)
+            .setFavClickListener(this::onBookFavouriteClick)
+            .setErrorClickListener(this::onBookErrorClick)
             .setSelectionChangedListener(this::onSelectionChanged)
             .build();
 
@@ -582,12 +597,80 @@ public class LibraryFragment extends BaseFragment {
     }
 
 
-    private void onSourceClick(Content content) {
+    private void onBookSourceClick(Content content) {
         ContentHelper.viewContent(requireContext(), content);
     }
 
-    private void onItemClick(Content content) {
+    private void onBookClick(Content content) {
         ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
+    }
+
+    private void onBookFavouriteClick(Content content) {
+        viewModel.toggleContentFavourite(content);
+    }
+
+    private void onBookErrorClick(Content content) {
+        int images;
+        int imgErrors = 0;
+
+        Context context = getContext();
+        if (null == context) return;
+
+        if (content.getImageFiles() != null) {
+            images = content.getImageFiles().size();
+
+            for (ImageFile imgFile : content.getImageFiles()) {
+                if (imgFile.getStatus() == StatusContent.ERROR) {
+                    imgErrors++;
+                }
+            }
+
+            String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+            builder.setTitle(R.string.redownload_dialog_title)
+                    .setMessage(message)
+                    .setPositiveButton(android.R.string.yes,
+                            (dialog, which) -> {
+                                downloadContent(context, content);
+//                                remove(content);
+                            })
+                    .setNegativeButton(android.R.string.no, null)
+                    .setNeutralButton(R.string.redownload_view_log,
+                            (dialog, which) -> showErrorLog(context, content))
+                    .show();
+        }
+    }
+
+    private void downloadContent(@NonNull Context context, @NonNull final Content content) {
+        viewModel.addContentToQueue(content);
+
+        ContentQueueManager.getInstance().resumeQueue(context);
+
+        Snackbar snackbar = Snackbar.make(recyclerView, R.string.add_to_queue, BaseTransientBottomBar.LENGTH_LONG);
+        snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+        snackbar.show();
+    }
+
+    private void showErrorLog(@NonNull Context context, @NonNull final Content content) {
+        List<ErrorRecord> errorLog = content.getErrorLog();
+        List<String> log = new ArrayList<>();
+
+        LogUtil.LogInfo errorLogInfo = new LogUtil.LogInfo();
+        errorLogInfo.logName = "Error";
+        errorLogInfo.fileName = "error_log" + content.getId();
+        errorLogInfo.noDataMessage = "No error detected.";
+
+        if (errorLog != null) {
+            log.add("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
+            for (ErrorRecord e : errorLog) log.add(e.toString());
+        }
+
+        File logFile = LogUtil.writeLog(context, log, errorLogInfo);
+        if (logFile != null) {
+            Snackbar snackbar = Snackbar.make(recyclerView, R.string.cleanup_done, BaseTransientBottomBar.LENGTH_LONG);
+            snackbar.setAction("READ LOG", v -> FileHelper.openFile(context, logFile));
+            snackbar.show();
+        }
     }
 
     private LibraryAdapter getAdapter() {
@@ -628,5 +711,10 @@ public class LibraryFragment extends BaseFragment {
         int page = pager.getCurrentPageNumber();
         pager.setCurrentPage(page); // TODO - handle this transparently...
         loadPagerAdapter(library);
+    }
+
+    private void viewQueue() {
+        Intent intent = new Intent(requireContext(), QueueActivity.class);
+        requireContext().startActivity(intent);
     }
 }

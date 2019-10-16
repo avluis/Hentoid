@@ -13,10 +13,10 @@ import androidx.paging.PagedList;
 import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 
@@ -94,5 +94,23 @@ public class LibraryViewModel extends AndroidViewModel {
     public void toggleFavouriteFilter() {
         searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
         performSearch();
+    }
+
+    public void toggleContentFavourite(@NonNull final Content content) {
+        if (!content.isBeingDeleted()) {
+            content.setFavourite(!content.isFavourite());
+
+            // Persist in it DB
+            collectionDao.insertContent(content);
+
+            // Persist in it JSON
+            if (!content.getJsonUri().isEmpty())
+                ContentHelper.updateJson(getApplication(), content);
+            else ContentHelper.createJson(content);
+        }
+    }
+
+    public void addContentToQueue(@NonNull final Content content) {
+        collectionDao.addContentToQueue(content);
     }
 }

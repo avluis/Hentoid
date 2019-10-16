@@ -23,12 +23,16 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
 
     private final Consumer<Content> onSourceClickListener;
     private final Consumer<Content> onBookClickListener;
+    private final Consumer<Content> onFavClickListener;
+    private final Consumer<Content> onErrorClickListener;
     private final LongConsumer onSelectionChangedListener;
     private List<Content> shelf = new ArrayList<>();
 
     private ContentAdapter2(Builder builder) {
         this.onSourceClickListener = builder.onSourceClickListener;
         this.onBookClickListener = builder.onBookClickListener;
+        this.onFavClickListener = builder.onFavClickListener;
+        this.onErrorClickListener = builder.onErrorClickListener;
         this.onSelectionChangedListener = builder.onSelectionChangedListener;
         setHasStableIds(true);
     }
@@ -70,20 +74,32 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
     public static class Builder {
         private Consumer<Content> onSourceClickListener;
         private Consumer<Content> onBookClickListener;
+        private Consumer<Content> onFavClickListener;
+        private Consumer<Content> onErrorClickListener;
         private LongConsumer onSelectionChangedListener;
 
-        public Builder setSourceClickListener(Consumer<Content> sourceClickListener) {
-            this.onSourceClickListener = sourceClickListener;
+        public Builder setSourceClickListener(Consumer<Content> listener) {
+            this.onSourceClickListener = listener;
             return this;
         }
 
-        public Builder setBookClickListener(Consumer<Content> bookClickListener) {
-            this.onBookClickListener = bookClickListener;
+        public Builder setBookClickListener(Consumer<Content> listener) {
+            this.onBookClickListener = listener;
             return this;
         }
 
-        public Builder setSelectionChangedListener(LongConsumer selectionChangedListener) {
-            this.onSelectionChangedListener = selectionChangedListener;
+        public Builder setFavClickListener(Consumer<Content> listener) {
+            this.onFavClickListener = listener;
+            return this;
+        }
+
+        public Builder setErrorClickListener(Consumer<Content> listener) {
+            this.onErrorClickListener = listener;
+            return this;
+        }
+
+        public Builder setSelectionChangedListener(LongConsumer listener) {
+            this.onSelectionChangedListener = listener;
             return this;
         }
 
@@ -114,6 +130,14 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
 
     public Consumer<Content> getOpenBookListener() {
         return onBookClickListener;
+    }
+
+    public Consumer<Content> getFavClickListener() {
+        return onFavClickListener;
+    }
+
+    public Consumer<Content> getErrorClickListener() {
+        return onErrorClickListener;
     }
 
     public LongConsumer getSelectionChangedListener() {

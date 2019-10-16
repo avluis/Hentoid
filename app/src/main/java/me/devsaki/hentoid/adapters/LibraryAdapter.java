@@ -13,5 +13,7 @@ public interface LibraryAdapter {
 
     Consumer<Content> getOnSourceClickListener();
     Consumer<Content> getOpenBookListener();
+    Consumer<Content> getFavClickListener();
+    Consumer<Content> getErrorClickListener();
     LongConsumer getSelectionChangedListener();
 }

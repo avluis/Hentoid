@@ -71,7 +71,6 @@ public class LibraryItem extends RecyclerView.ViewHolder {
         attachArtist(content);
         attachTags(content);
         attachButtons(content);
-        attachSource(content);
         attachOnClickListeners(content);
     }
 
@@ -176,7 +175,20 @@ public class LibraryItem extends RecyclerView.ViewHolder {
         }
     }
 
-    private void attachSource(Content content) {
+    private void onSourceClicked(View v) {
+        adapter.getOnSourceClickListener().accept(content);
+    }
+
+    private void onFavouriteClicked(View v) {
+        adapter.getFavClickListener().accept(content);
+    }
+
+    private void onErrorClicked(View v) {
+        adapter.getErrorClickListener().accept(content);
+    }
+
+    private void attachButtons(final Content content) {
+        // Source
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             ivSite.setImageResource(img);
@@ -184,59 +196,20 @@ public class LibraryItem extends RecyclerView.ViewHolder {
         } else {
             ivSite.setImageResource(R.drawable.ic_stat_hentoid);
         }
-    }
 
-    private void onSourceClicked(View v) {
-        adapter.getOnSourceClickListener().accept(content);
-    }
-
-    private void attachButtons(final Content content) {
-
-        // Favourite toggle
+        // Favourite
+        ivFavourite.setOnClickListener(this::onFavouriteClicked);
         if (content.isFavourite()) {
             ivFavourite.setImageResource(R.drawable.ic_fav_full);
         } else {
             ivFavourite.setImageResource(R.drawable.ic_fav_empty);
         }
-            /*
-            ivFavourite.setOnClickListener(v -> {
-                if (getSelectedItemsCount() > 0) {
-                    clearSelections();
-                    itemSelectListener.onItemClear(0);
-                }
-
-                compositeDisposable.add(
-                        Single.fromCallable(() -> toggleFavourite(context, content.getId()))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(
-                                        result -> {
-                                            content.setFavourite(result.isFavourite());
-                                            if (result.isFavourite()) {
-                                                ivFavourite.setImageResource(R.drawable.ic_fav_full);
-                                            } else {
-                                                ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                                            }
-                                        },
-                                        Timber::e
-                                )
-                );
-            });
-             */
 
         // Error icon
+        ivError.setOnClickListener(this::onErrorClicked);
         if (content.getStatus() != null) {
             StatusContent status = content.getStatus();
             if (status == StatusContent.ERROR) {
-                    /*
-                    ivError.setOnClickListener(v -> {
-                        if (getSelectedItemsCount() > 0) {
-                            clearSelections();
-                            itemSelectListener.onItemClear(0);
-                        }
-                        downloadAgain(content);
-                    });
-                     */
                 ivError.setVisibility(View.VISIBLE);
             } else {
                 ivError.setVisibility(View.GONE);

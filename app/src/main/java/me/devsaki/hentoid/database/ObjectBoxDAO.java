@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.SparseIntArray;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.paging.LivePagedListBuilder;
@@ -24,8 +25,11 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.util.Helper;
@@ -169,18 +173,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public void countBooksUniversal(String query, boolean favouritesOnly, PagedResultListener<Content> listener) {
-        compositeDisposable.add(
-                Single.fromCallable(
-                        () -> pagedContentSearch(Mode.COUNT_CONTENT_UNIVERSAL, query, Collections.emptyList(), 1, 1, 1, favouritesOnly)
-                )
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
-        );
-    }
-
-    @Override
     public void getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
@@ -256,6 +248,25 @@ public class ObjectBoxDAO implements CollectionDAO {
 
             return result;
         }
+    }
+
+    public void insertContent(@NonNull final Content content) {
+        db.insertContent(content);
+    }
+
+    public void addContentToQueue(@NonNull final Content content) {
+        if (StatusContent.ONLINE == content.getStatus() && content.getImageFiles() != null)
+            for (ImageFile im : content.getImageFiles())
+                db.updateImageFileStatusAndParams(im.setStatus(StatusContent.SAVED));
+
+        content.setStatus(StatusContent.DOWNLOADING);
+        db.insertContent(content);
+
+        List<QueueRecord> queue = db.selectQueue();
+        int lastIndex = 1;
+        if (!queue.isEmpty())
+            lastIndex = queue.get(queue.size() - 1).rank + 1;
+        db.insertQueue(content.getId(), lastIndex);
     }
 
     private ContentQueryResult pagedContentSearch(@Mode int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
