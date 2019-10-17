@@ -74,7 +74,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme.Downloads">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -280,9 +280,10 @@
             android:enabled="true"
             android:exported="false" />
 
+        <!--
         <service android:name=".services.UpdateCheckService" />
-
         <service android:name=".services.UpdateDownloadService" />
+        -->
 
         <service android:name=".services.ImportService" />
 

@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 
 public class UpdateInfo {
 
+    /*
     @Json(name = "updateURL")
     private String updateUrl;
     private int versionCode;
@@ -20,4 +21,6 @@ public class UpdateInfo {
     public int getVersionCode(boolean isDebug) {
         return isDebug ? versionCodeDebug : versionCode;
     }
+
+     */
 }

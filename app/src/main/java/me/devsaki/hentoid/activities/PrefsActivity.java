@@ -90,8 +90,8 @@ public class PrefsActivity extends BaseActivity {
                 findPreference(Preferences.Key.PREF_APP_PREVIEW)
                         .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-                findPreference(Preferences.Key.PREF_ANALYTICS_PREFERENCE)
-                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+                //findPreference(Preferences.Key.PREF_ANALYTICS_PREFERENCE)
+                //       .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
                 findPreference(Preferences.Key.PREF_APP_LOCK)
                         .setOnPreferenceClickListener(preference -> onAppLockPreferenceClick());
@@ -109,8 +109,9 @@ public class PrefsActivity extends BaseActivity {
                 case Preferences.Key.PREF_ADD_NO_MEDIA_FILE:
                     FileHelper.createNoMedia();
                     return true;
-                case Preferences.Key.PREF_CHECK_UPDATE_MANUAL:
-                    return onCheckUpdatePrefClick();
+
+                //case Preferences.Key.PREF_CHECK_UPDATE_MANUAL:
+                //    return onCheckUpdatePrefClick();
                 case Preferences.Key.PREF_REFRESH_LIBRARY:
                     if (ImportService.isRunning()) {
                         ToastUtil.toast("Import is already running");
@@ -139,6 +140,7 @@ public class PrefsActivity extends BaseActivity {
                     .commit();
         }
 
+        /*
         private boolean onCheckUpdatePrefClick() {
             if (!UpdateDownloadService.isRunning()) {
                 Intent intent = UpdateCheckService.makeIntent(requireContext(), true);
@@ -150,6 +152,7 @@ public class PrefsActivity extends BaseActivity {
             }
             return true;
         }
+        */
 
         private boolean onPrefRequiringRestartChanged() {
             ToastUtil.toast(R.string.restart_needed);

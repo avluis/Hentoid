@@ -18,6 +18,11 @@
     <string name="pref_library_category">Library</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
+
+    <string name="pref_read_content_title">Image viewer</string>
+    <string name="pref_read_content_summary">Image reader to open by default:\n%s</string>
+    <string name="pref_read_content_default" translatable="false">2</string>
+
     <string name="pref_folder_naming_content_title">Folder names</string>
     <string name="pref_folder_naming_content_summary">Book folder naming convention:\n%s</string>
     <string name="pref_folder_naming_content_default" translatable="false">2</string>
@@ -43,6 +48,7 @@
     <!-- .nomedia -->
     <string name="nomedia_file_created">.nomedia file created.</string>
     <!-- Updates -->
+    <!--
     <string name="pref_updates_category">Updates</string>
     <string name="pref_check_updates_manual_title">Manual Update Check</string>
     <string name="pref_check_updates_manual_summary">Manually check for updates now.</string>
@@ -50,6 +56,7 @@
     <string name="pref_check_updates_summary_off">Enable automatic update checks over mobile data.</string>
     <string name="pref_check_updates_summary_on">Note: Does not override manual update checks.</string>
     <string name="pref_check_updates_default" translatable="false">true</string>
+    -->
     <!-- Misc -->
     <string name="pref_misc_category">Misc</string>
     <string name="pref_dark_mode_title">Dark mode</string>
@@ -59,10 +66,12 @@
     <string name="pref_app_preview_summary_off">App preview in Recent Apps disabled.\nEnable if you need to take a screen shot.</string>
     <string name="pref_app_preview_summary_on">App preview in Recent Apps enabled.</string>
     <string name="pref_app_preview_default" translatable="false">true</string>
+    <!--
     <string name="pref_analytics_preference_title">Google Analytics</string>
     <string name="pref_analytics_preference_summary_off">Analytics Tracking is currently disabled.\nEnabling it will help us improve the app by tracking crashes &amp; exceptions.</string>
     <string name="pref_analytics_preference_summary_on">Analytics Tracking is currently enabled.\nThanks for helping us improve Hentoid!</string>
     <string name="pref_analytics_preference_default" translatable="false">false</string>
+    -->
     <!-- Advanced -->
     <string name="advanced_screen_title">Advanced settings</string>
     <!-- Download retries -->

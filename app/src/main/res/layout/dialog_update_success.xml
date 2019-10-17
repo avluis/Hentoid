@@ -7,6 +7,7 @@
     android:gravity="center"
     android:maxHeight="500dp">
 
+    <!--
     <TextView
         android:id="@+id/updateSuccessText"
         android:layout_width="wrap_content"
@@ -25,6 +26,7 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
+
     <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -41,5 +43,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </ScrollView>
+     -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

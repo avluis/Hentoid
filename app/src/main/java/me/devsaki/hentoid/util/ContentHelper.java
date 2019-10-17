@@ -1,9 +1,12 @@
 package me.devsaki.hentoid.util;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.webkit.MimeTypeMap;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +23,9 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
@@ -146,6 +152,26 @@ public final class ContentHelper {
         }
     }
 
+    /**
+     * Open the given file using the device's app(s) of choice
+     *
+     * @param context Context
+     * @param aFile   File to be opened
+     */
+    public static void openFile(Context context, File aFile) {
+        Intent myIntent = new Intent(Intent.ACTION_VIEW);
+        File file = new File(aFile.getAbsolutePath());
+        String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        myIntent.setDataAndType(Uri.fromFile(file), mimeType);
+        try {
+            context.startActivity(myIntent);
+        } catch (ActivityNotFoundException e) {
+            Timber.e(e, "Activity not found to open %s", aFile.getAbsolutePath());
+            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
+        }
+    }
+
 
     /**
      * Open built-in image viewer telling it to display the images of the given Content
@@ -172,14 +198,54 @@ public final class ContentHelper {
      * @param content Content to be opened
      */
     public static void openContent(final Context context, Content content) {
-        openContent(context, content, null);
-    }
 
-    public static void openContent(final Context context, Content content, Bundle searchParams) {
+        //Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
+        //ToastUtil.toast("Opening: " + content.getTitle());
+
+        //openHentoidViewer(context, content, searchParams);
+
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
+
+        String rootFolderName = Preferences.getRootFolderName();
+        File dir = new File(rootFolderName, content.getStorageFolder());
+
+        Timber.d("Opening: %s from: %s", content.getTitle(), dir);
+        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
+            Timber.d("File not found!! Exiting method.");
+            ToastUtil.toast(R.string.sd_access_error);
+            return;
+        }
+
         ToastUtil.toast("Opening: " + content.getTitle());
 
-        openHentoidViewer(context, content, searchParams);
+        File imageFile = null;
+        File[] files = dir.listFiles(
+                file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
+                        (
+                                file.getName().toLowerCase().endsWith("jpg")
+                                        || file.getName().toLowerCase().endsWith("jpeg")
+                                        || file.getName().toLowerCase().endsWith("png")
+                                        || file.getName().toLowerCase().endsWith("gif")
+                        )
+                )
+        );
+        if (files != null && files.length > 0) {
+            Arrays.sort(files);
+            imageFile = files[0];
+        }
+        if (imageFile == null) {
+            String message = context.getString(R.string.image_file_not_found)
+                    .replace("@dir", dir.getAbsolutePath());
+            ToastUtil.toast(context, message);
+        } else {
+            int readContentPreference = Preferences.getContentReadAction();
+            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER) {
+                openFile(context, imageFile);
+            }  else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER) {
+                //openHentoidViewer(context, content, files);
+                openHentoidViewer(context, content, null);
+            }
+        }
     }
 
     @Nullable

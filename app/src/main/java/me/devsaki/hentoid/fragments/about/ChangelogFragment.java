@@ -33,6 +33,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 
 public class ChangelogFragment extends Fragment {
 
+    /*
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private FlexibleAdapter<IFlexible> changelogAdapter;
 
@@ -119,6 +120,7 @@ public class ChangelogFragment extends Fragment {
         downloadLatestButton.setVisibility(View.VISIBLE);
     }
 
+
     private void onDownloadClick(View v) {
         // Equivalent to "check for updates" preferences menu
         if (!UpdateDownloadService.isRunning()) {
@@ -130,5 +132,6 @@ public class ChangelogFragment extends Fragment {
             }
         }
     }
+    */
 
 }

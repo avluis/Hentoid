@@ -34,6 +34,13 @@ import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
  */
 public class UpdateCheckService extends Service {
 
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    /*
     private static final int NOTIFICATION_ID = 1;
 
     private static final String EXTRA_IS_MANUAL_CHECK = "isManualCheck";
@@ -85,13 +92,12 @@ public class UpdateCheckService extends Service {
     }
 
     private void checkForUpdates() {
-        /*
         disposable = UpdateServer.API.getUpdateInfo()
                 .retry(3)
                 .observeOn(mainThread())
                 .doFinally(this::stopSelf)
                 .subscribe(this::onCheckSuccess, this::onCheckError);
-         */
+
     }
 
     private void onCheckSuccess(UpdateInfo updateInfoJson) {
@@ -117,4 +123,5 @@ public class UpdateCheckService extends Service {
             Toast.makeText(this, message, LENGTH_SHORT).show();
         }
     }
+    */
 }

@@ -146,6 +146,7 @@
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
 
     <!-- Updates -->
+    <!--
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>
     <string name="downloading_update">Downloading update:</string>
@@ -154,6 +155,7 @@
     <string name="error_network_summary">Network error, please try again later.</string>
     <string name="error_file">Cannot find update file on server.</string>
     <string name="update_check_no_update">Update Check: No new updates.</string>
+    -->
 
     <!-- Image Viewer -->
     <string name="no_images">Could not load the book : No image found</string>

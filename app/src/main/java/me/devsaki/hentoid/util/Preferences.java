@@ -43,11 +43,13 @@ public final class Preferences {
             sharedPreferences.edit().remove(Key.PREF_VIEWER_FLING_FACTOR).apply();
         }
 
+        /*
         if (sharedPreferences.contains(Key.PREF_ANALYTICS_TRACKING)) {
             boolean analyticsTracking = sharedPreferences.getBoolean(Key.PREF_ANALYTICS_TRACKING, false);
             sharedPreferences.edit().putBoolean(Key.PREF_ANALYTICS_PREFERENCE, !analyticsTracking).apply();
             sharedPreferences.edit().remove(Key.PREF_ANALYTICS_TRACKING).apply();
         }
+         */
 
         if (sharedPreferences.contains(Key.PREF_HIDE_RECENT)) {
             boolean hideRecent = sharedPreferences.getBoolean(Key.PREF_HIDE_RECENT, !BuildConfig.DEBUG);
@@ -74,9 +76,11 @@ public final class Preferences {
                 .apply();
     }
 
+    /*
     public static boolean isAnalyticsEnabled() {
         return sharedPreferences.getBoolean(Key.PREF_ANALYTICS_PREFERENCE, true);
     }
+    */
 
     public static boolean isFirstRun() {
         return sharedPreferences.getBoolean(Key.PREF_FIRST_RUN, Default.PREF_FIRST_RUN_DEFAULT);
@@ -149,6 +153,18 @@ public final class Preferences {
         return sharedPreferences.edit()
                 .putString(Key.PREF_SETTINGS_FOLDER, rootFolderName)
                 .commit();
+    }
+
+    public static int getContentReadAction() {
+        return Integer.parseInt(
+                sharedPreferences.getString(Key.PREF_READ_CONTENT_LISTS,
+                        Default.PREF_READ_CONTENT_ACTION + ""));
+    }
+
+    public static void setContentReadAction(int contentReadAction) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_READ_CONTENT_LISTS, Integer.toString(contentReadAction))
+                .apply();
     }
 
     public static int getWebViewInitialZoom() {
@@ -305,8 +321,8 @@ public final class Preferences {
     }
 
     public static final class Key {
-        public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
-        static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
+        //public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
+        //static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_APP_PREVIEW = "pref_app_preview";
         static final String PREF_HIDE_RECENT = "pref_hide_recent";
@@ -342,6 +358,8 @@ public final class Preferences {
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
+        static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
+        static final String PREF_READ_CONTENT_LISTS = "pref_read_content_lists";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -369,6 +387,7 @@ public final class Preferences {
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
+        static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -404,5 +423,7 @@ public final class Preferences {
         public static final int DARK_MODE_ON = 1;
         public static final int DARK_MODE_BATTERY = 2;
         static final int DARK_MODE_DEVICE = 3;
+        public static final int PREF_READ_CONTENT_HENTOID_VIEWER = 2;
+        static final int PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER = 0;
     }
 }

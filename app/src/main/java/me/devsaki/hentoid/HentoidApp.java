@@ -110,7 +110,7 @@ public class HentoidApp extends Application {
         performDatabaseHousekeeping();
 
         // Init notification channels
-        UpdateNotificationChannel.init(this);
+        //UpdateNotificationChannel.init(this);
         DownloadNotificationChannel.init(this);
         MaintenanceNotificationChannel.init(this);
 
@@ -119,12 +119,14 @@ public class HentoidApp extends Application {
         if (manager != null) manager.cancelAll();
 
         // Run app update checks
+        /*
         Intent intent = UpdateCheckService.makeIntent(this, false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
         } else {
             startService(intent);
         }
+         */
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             ShortcutHelper.buildShortcuts(this);
@@ -134,6 +136,12 @@ public class HentoidApp extends Application {
         int darkMode = Preferences.getDarkMode();
         AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(darkMode));
         //FirebaseAnalytics.getInstance(this).setUserProperty("night_mode", Integer.toString(darkMode));
+
+        //Workaround FileUriExposedException
+        if(Build.VERSION.SDK_INT>=24) {
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+        }
     }
 
     // We have asked for permissions, but still denied.

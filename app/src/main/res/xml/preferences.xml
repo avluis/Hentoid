@@ -43,6 +43,16 @@
             android:summary="@string/pref_folder_trunc_summary"
             android:title="@string/pref_folder_trunc_title" />
         <ListPreference
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:defaultValue="@string/pref_read_content_default"
+            android:entries="@array/pref_read_content_entries"
+            android:entryValues="@array/pref_read_content_entry_values"
+            android:icon="@null"
+            android:key="pref_read_content_lists"
+            android:summary="@string/pref_read_content_summary"
+            android:title="@string/pref_read_content_title" />
+        <ListPreference
             android:defaultValue="@string/pref_attributes_list_order_default"
             android:entries="@array/pref_attribute_list_order_entries"
             android:entryValues="@array/pref_attribute_list_order_values"
