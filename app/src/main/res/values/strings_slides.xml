@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Slide 01 -->
-    <string name="slide_01_header">Welcome to Hentoid!</string>
-    <string name="slide_01_text">Hentoid is a Doujinshi\n&amp; H-Manga archiving app.</string>
+    <string name="slide_01_header">Welcome to Hendroid!</string>
+    <string name="slide_01_text">Hendroid is a Doujinshi\n&amp; H-Manga archiving app.</string>
     <!-- Slide 02 -->
     <string name="slide_02_header">Permissions</string>
     <string name="slide_02_text">Got Marshmallows?\nWe need to ask you for permission to device storage.</string>
@@ -11,7 +11,7 @@
     <string name="slide_03_text">Do you have an existing library?\nMake sure to set that as your storage folder.</string>
     <!-- Slide 04 -->
     <string name="slide_04_header">Library</string>
-    <string name="slide_04_text">Hentoid requires a dedicated folder for storing your media.</string>
+    <string name="slide_04_text">Hendroid requires a dedicated folder for storing your media.</string>
     <string name="slide_04_library_default">Default\nSave to internal device storage</string>
     <string name="slide_04_library_custom">Custom\nSave to a custom storage location</string>
     <!-- Slide 05 -->

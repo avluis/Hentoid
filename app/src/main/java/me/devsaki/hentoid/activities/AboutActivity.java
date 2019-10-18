@@ -33,14 +33,14 @@ public class AboutActivity extends BaseActivity {
         setContentView(R.layout.activity_about);
 
         bindTextViewLink(R.id.iv_app_logo, Consts.URL_GITHUB_WIKI);
-        bindTextViewLink(R.id.tv_github, Consts.URL_GITHUB);
-        bindTextViewLink(R.id.tv_discord, Consts.URL_DISCORD);
-        bindTextViewLink(R.id.tv_reddit, Consts.URL_REDDIT);
+        //bindTextViewLink(R.id.tv_github, Consts.URL_GITHUB);
+        //bindTextViewLink(R.id.tv_discord, Consts.URL_DISCORD);
+        //bindTextViewLink(R.id.tv_reddit, Consts.URL_REDDIT);
 
         TextView tvVersionName = findViewById(R.id.tv_version_name);
         tvVersionName.setText(String.format("Hentoid ver: %s (%s)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
 
-        btnChangelog = findViewById(R.id.about_changelog_button);
+        //btnChangelog = findViewById(R.id.about_changelog_button);
         btnChangelog.setOnClickListener(v -> showChangelogFragment());
 
         View btnLicenses = findViewById(R.id.about_licenses_button);

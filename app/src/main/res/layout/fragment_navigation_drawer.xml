@@ -6,24 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/drawer_image_height"
-        android:background="@drawable/nav_header_bg"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="@dimen/drawer_header_icon_padding">
-
-        <ImageView
-            android:id="@+id/app_logo"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_hentoid"
-            tools:ignore="ContentDescription" />
-
-    </FrameLayout>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drawer_list"
         android:layout_width="match_parent"

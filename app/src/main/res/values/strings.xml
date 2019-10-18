@@ -74,7 +74,7 @@
     <string name="import_canceled">Import canceled</string>
     <string name="existing_library_error">Please select a custom location.</string>
     <string name="cleanup_done">Task complete - see details in the log</string>
-    <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
+    <string name="contents_detected">Hendroid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="import_dialog">Importing Library</string>
     <string name="add_dialog">Adding files to DB</string>
     <string name="please_wait">Please wait…</string>
@@ -84,7 +84,7 @@
     <string name="no_sd_support">Your device is not currently supported.\nPlease join our Discord Server if you wish to help us add support for your device.</string>
 
     <!-- Import / Kitkat folder dialog -->
-    <string name="kitkat_dialog_title">Choose Hentoid folder</string>
+    <string name="kitkat_dialog_title">Choose Hendroid folder</string>
     <string name="kitkat_dialog_dir">$dir $default\n[$freeUsage MB free ($freePc%)]</string>
     <string name="kitkat_dialog_public">This is a public folder - your downloads will stay there even after uninstalling the app</string>
     <string name="kitkat_dialog_private">WARNING : This is a private folder - your downloads will be deleted after uninstalling the app !\nYou\'ll need to use ADB to download them to your computer.</string>
@@ -128,7 +128,7 @@
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="sd_access_error">SD Access Error!\nPlease check or replace SD Card!!</string>
-    <string name="sd_access_fatal_error">Hentoid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
+    <string name="sd_access_fatal_error">Hendroid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
     <string name="downloads_filter_book_count">%d result</string>
     <string name="downloads_filter_book_count_plural">%d results</string>
     <plurals name="downloads_filter_book_count_plural">
@@ -143,7 +143,7 @@
     <string name="book_tags">""tag1, tag2, tag3, etc.</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
-    <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
+    <string name="restart_needed">"Changes will be applied after Hendroid is restarted"</string>
 
     <!-- Updates -->
     <!--
@@ -175,14 +175,13 @@
     <string name="pin_explanation">App Lock prevents unauthorized use of this app by requiring a 4-digit PIN when launched</string>
 
     <!-- About Activity -->
-    <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
+    <string name="about1"><b>Hendroid</b> is a Doujinshi &amp; H-Manga archiving app. Hendroid was originally created by <b>Cesar Arasaki</b>.</string>
     <string name="about2">In regards to Tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
-    <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHentoid is a free and open-source software maintained by the Hentoid Community (join us on Discord - see link above)</string>
-    <string name="personalDataStatement2">Hentoid collects the following personal data and sends them to Google for processing through the firebase library :\n  - Session ID\n  - IP address</string>
-    <string name="personalDataStatement3">The abovementioned data is removed from Firebase live and backup system within 180 days (see https://firebase.google.com/support/privacy/ for more details)\n\nNo other personal data is collected nor sent to any other party.</string>
+    <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHendroid is a free and open-source software maintained by the Hendroid Community</string>
+    <string name="personalDataStatement2">No personal data is collected nor sent to any party.</string>
     <string name="about_github" translatable="false"><u>GitHub</u></string>
-    <string name="about_discord" translatable="false"><u>Discord</u></string>
-    <string name="about_reddit" translatable="false"><u>Reddit</u></string>
+    <string name="about_discord" translatable="false"></string>
+    <string name="about_reddit" translatable="false"></string>
     <string name="about_licenses">Display Licenses</string>
 
     <!-- Web viewer -->
