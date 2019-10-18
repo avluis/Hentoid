@@ -38,10 +38,10 @@ public class AboutActivity extends BaseActivity {
         //bindTextViewLink(R.id.tv_reddit, Consts.URL_REDDIT);
 
         TextView tvVersionName = findViewById(R.id.tv_version_name);
-        tvVersionName.setText(String.format("Hentoid ver: %s (%s)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
+        tvVersionName.setText(String.format("Hendroid ver: %s (%s)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
 
         //btnChangelog = findViewById(R.id.about_changelog_button);
-        btnChangelog.setOnClickListener(v -> showChangelogFragment());
+        //btnChangelog.setOnClickListener(v -> showChangelogFragment());
 
         View btnLicenses = findViewById(R.id.about_licenses_button);
         btnLicenses.setOnClickListener(v -> showLicenseFragment());

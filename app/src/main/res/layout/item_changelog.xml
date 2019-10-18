@@ -22,7 +22,7 @@
             android:textColor="?colorSecondary"
             android:textSize="@dimen/text_subtitle_1"
             android:textStyle="bold"
-            tools:text="Hentoid v99.99" />
+            tools:text="Hendroid v99.99" />
 
         <TextView
             android:id="@+id/changelogReleaseCaption"
