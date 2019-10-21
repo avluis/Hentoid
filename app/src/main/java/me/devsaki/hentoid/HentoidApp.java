@@ -119,11 +119,13 @@ public class HentoidApp extends Application {
         if (manager != null) manager.cancelAll();
 
         // Run app update checks
-        Intent intent = UpdateCheckService.makeIntent(this, false);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent);
-        } else {
-            startService(intent);
+        if (Preferences.isAutomaticUpdateEnabled()) {
+            Intent intent = UpdateCheckService.makeIntent(this, false);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            } else {
+                startService(intent);
+            }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {

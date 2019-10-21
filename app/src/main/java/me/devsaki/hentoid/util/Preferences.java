@@ -58,6 +58,12 @@ public final class Preferences {
             sharedPreferences.edit().putBoolean(Key.PREF_APP_PREVIEW, !hideRecent).apply();
             sharedPreferences.edit().remove(Key.PREF_HIDE_RECENT).apply();
         }
+
+        if (sharedPreferences.contains(Key.PREF_CHECK_UPDATES_LISTS)) {
+            boolean checkUpdates = sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES_LISTS, Default.PREF_CHECK_UPDATES_DEFAULT);
+            sharedPreferences.edit().putBoolean(Key.PREF_CHECK_UPDATES, checkUpdates).apply();
+            sharedPreferences.edit().remove(Key.PREF_CHECK_UPDATES_LISTS).apply();
+        }
     }
 
     public static void registerPrefsChangedListener(SharedPreferences.OnSharedPreferenceChangeListener listener) {
@@ -80,6 +86,10 @@ public final class Preferences {
 
     public static boolean isAnalyticsEnabled() {
         return sharedPreferences.getBoolean(Key.PREF_ANALYTICS_PREFERENCE, true);
+    }
+
+    public static boolean isAutomaticUpdateEnabled() {
+        return sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES, Default.PREF_CHECK_UPDATES_DEFAULT);
     }
 
     public static boolean isFirstRun() {
@@ -315,11 +325,10 @@ public final class Preferences {
         }
 
         public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
-        static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_APP_PREVIEW = "pref_app_preview";
-        static final String PREF_HIDE_RECENT = "pref_hide_recent";
         public static final String PREF_ADD_NO_MEDIA_FILE = "pref_add_no_media_file";
+        static final String PREF_CHECK_UPDATES = "pref_check_updates";
         public static final String PREF_CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         public static final String PREF_REFRESH_LIBRARY = "pref_refresh_bookshelf";
         static final String PREF_WELCOME_DONE = "pref_welcome_done";
@@ -340,7 +349,6 @@ public final class Preferences {
         public static final String PREF_VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
         public static final String PREF_VIEWER_IMAGE_DISPLAY = "pref_viewer_image_display";
         public static final String PREF_VIEWER_BROWSE_MODE = "pref_viewer_browse_mode";
-        static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         public static final String PREF_VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling";
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
@@ -351,6 +359,12 @@ public final class Preferences {
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
+
+        //Keys that were removed from the app, kept for housekeeping
+        static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
+        static final String PREF_HIDE_RECENT = "pref_hide_recent";
+        static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
+        static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -383,6 +397,7 @@ public final class Preferences {
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
+        public static boolean PREF_CHECK_UPDATES_DEFAULT = true;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

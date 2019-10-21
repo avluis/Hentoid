@@ -102,7 +102,7 @@
         <CheckBoxPreference
             android:defaultValue="@string/pref_check_updates_default"
             android:icon="@null"
-            android:key="pref_check_updates_lists"
+            android:key="pref_check_updates"
             android:summaryOff="@string/pref_check_updates_summary_off"
             android:summaryOn="@string/pref_check_updates_summary_on"
             android:title="@string/pref_check_updates_title" />
