@@ -156,7 +156,7 @@ public class LibraryViewModel extends AndroidViewModel {
     private Content deleteContent(final Content content) throws ContentNotRemovedException {
         try {
             // Check if given content still exists in DB
-            ObjectBoxDB db = ObjectBoxDB.getInstance(HentoidApp.getAppContext());
+            ObjectBoxDB db = ObjectBoxDB.getInstance(HentoidApp.getAppContext()); // TODO use DAO instead
             Content theContent = db.selectContentById(content.getId());
 
             if (theContent != null) {
