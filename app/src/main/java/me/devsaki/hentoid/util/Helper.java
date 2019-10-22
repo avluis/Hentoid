@@ -230,6 +230,7 @@ public final class Helper {
         return extension.equalsIgnoreCase("jpg")
                 || extension.equalsIgnoreCase("jpeg")
                 || extension.equalsIgnoreCase("gif")
-                || extension.equalsIgnoreCase("png");
+                || extension.equalsIgnoreCase("png")
+                || extension.equalsIgnoreCase("webp");
     }
 }
