@@ -59,6 +59,7 @@ import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.widget.LibraryPager;
 import timber.log.Timber;
@@ -245,7 +246,7 @@ public class LibraryFragment extends BaseFragment {
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             LibraryAdapter adapter = getAdapter();
-            boolean isMultipleSelection = adapter.getItemSelectedCount() > 1;
+            boolean isMultipleSelection = adapter.getSelectedItemsCount() > 1;
 
             menu.findItem(R.id.action_delete).setVisible(!isMultipleSelection);
             menu.findItem(R.id.action_share).setVisible(!isMultipleSelection);
@@ -260,13 +261,13 @@ public class LibraryFragment extends BaseFragment {
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.action_share:
-                    //mAdapter.sharedSelectedItems(); TODO
+                    shareSelectedItems();
                     mode.finish();
 
                     return true;
                 case R.id.action_delete:
                 case R.id.action_delete_sweep:
-                    //mAdapter.purgeSelectedItems(); TODO
+                    purgeSelectedItems();
                     mode.finish();
 
                     return true;
@@ -287,6 +288,52 @@ public class LibraryFragment extends BaseFragment {
             mActionMode = null;
         }
     };
+
+    private void shareSelectedItems() {
+        List<Content> selectedItems = getAdapter().getSelectedItems();
+        Context context = getActivity();
+        if (1 == selectedItems.size() && context != null)
+            ContentHelper.shareContent(context, selectedItems.get(0));
+    }
+
+    private void purgeSelectedItems() {
+        List<Content> selectedItems = getAdapter().getSelectedItems();
+        Context context = getActivity();
+        if (!selectedItems.isEmpty() && context != null) askDeleteItems(context, selectedItems);
+    }
+
+    private void askDeleteItems(final Context context, final List<Content> items) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        builder.setMessage(R.string.ask_delete_multiple) // TODO plural
+                .setPositiveButton(android.R.string.yes,
+                        (dialog, which) -> {
+                            getAdapter().clearSelection();
+                            viewModel.deleteItems(items, this::deleteComplete, this::deleteError);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog, which) -> getAdapter().clearSelection())
+                .create().show();
+    }
+
+    private void deleteComplete() {
+        Context context = getActivity();
+        if (context != null) ToastUtil.toast(context, "Selected items have been deleted.");
+    }
+
+    private void deleteError(Throwable t) {
+        Timber.e(t);
+        if (t instanceof ContentNotRemovedException) {
+            ContentNotRemovedException e = (ContentNotRemovedException) t;
+            Snackbar snackbar = Snackbar.make(recyclerView, "Content removal failed", BaseTransientBottomBar.LENGTH_LONG);
+            if (e.getContent() != null) {
+                viewModel.flagContentDelete(e.getContent(), false);
+                List<Content> contents = new ArrayList<>();
+                contents.add(e.getContent());
+                snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::deleteComplete, this::deleteError));
+            }
+            snackbar.show();
+        }
+    }
 
     /**
      * Update favourite filter button appearance (icon and color) on a book
@@ -438,7 +485,7 @@ public class LibraryFragment extends BaseFragment {
     public boolean onBackPressed() {
         LibraryAdapter adapter = getAdapter();
         // If content is selected, deselect it
-        if (adapter.getItemSelectedCount() > 0) {
+        if (adapter.getSelectedItemsCount() > 0) {
             adapter.clearSelection();
             backButtonPressed = 0;
 

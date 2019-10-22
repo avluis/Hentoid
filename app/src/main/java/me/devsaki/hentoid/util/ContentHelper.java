@@ -303,4 +303,16 @@ public final class ContentHelper {
 
         return file;
     }
+
+    public static void shareContent(final Context context, final Content item) {
+        String url = item.getGalleryUrl();
+
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, item.getTitle());
+        intent.putExtra(Intent.EXTRA_TEXT, url);
+
+        context.startActivity(Intent.createChooser(intent, context.getString(R.string.send_to)));
+    }
 }

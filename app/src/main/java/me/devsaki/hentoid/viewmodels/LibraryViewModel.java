@@ -11,15 +11,24 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.function.Consumer;
+
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
+import timber.log.Timber;
 
 
 public class LibraryViewModel extends AndroidViewModel {
@@ -104,7 +113,7 @@ public class LibraryViewModel extends AndroidViewModel {
         performSearch();
     }
 
-    public void toggleContentFavourite(@NonNull final Content content) {
+    public void toggleContentFavourite(@NonNull final Content content) { // TODO file update in another thread
         if (!content.isBeingDeleted()) {
             content.setFavourite(!content.isFavourite());
 
@@ -120,5 +129,46 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void addContentToQueue(@NonNull final Content content) {
         collectionDao.addContentToQueue(content);
+    }
+
+    public void flagContentDelete(@NonNull final Content content, boolean flag) {
+        content.setIsBeingDeleted(flag);
+        collectionDao.insertContent(content);
+    }
+
+    public void deleteItems(@NonNull final List<Content> contents, Runnable callback, Consumer<Throwable> onError) {
+        for (Content c : contents) flagContentDelete(c, true);
+
+        compositeDisposable.add(
+                Observable.fromIterable(contents)
+                        .subscribeOn(Schedulers.io())
+                        .flatMap(s -> Observable.fromCallable(() -> deleteContent(s)))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                },
+                                onError::accept,
+                                callback::run
+                        )
+        );
+    }
+
+    private Content deleteContent(final Content content) throws ContentNotRemovedException {
+        try {
+            // Check if given content still exists in DB
+            ObjectBoxDB db = ObjectBoxDB.getInstance(HentoidApp.getAppContext());
+            Content theContent = db.selectContentById(content.getId());
+
+            if (theContent != null) {
+                ContentHelper.removeContent(content);
+                db.deleteContent(content);
+                Timber.d("Removed item: %s from db and file system.", content.getTitle());
+                return content;
+            }
+            throw new ContentNotRemovedException(content, "ContentId " + content.getId() + " does not refer to a valid content");
+        } catch (Exception e) {
+            Timber.e(e, "Error when trying to delete %s", content.getId());
+            throw new ContentNotRemovedException(content, "Error when trying to delete " + content.getId() + " : " + e.getMessage());
+        }
     }
 }

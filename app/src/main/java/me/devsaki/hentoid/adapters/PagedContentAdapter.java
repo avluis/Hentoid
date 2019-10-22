@@ -13,6 +13,9 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 import com.annimon.stream.function.LongConsumer;
 
+import java.util.Collections;
+import java.util.List;
+
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.viewholders.LibraryItem;
@@ -117,10 +120,17 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
     }
 
     @Override
-    public long getItemSelectedCount() {
+    public long getSelectedItemsCount() {
         if (getCurrentList() != null)
             return Stream.of(getCurrentList()).filter(Content::isSelected).count();
         else return 0;
+    }
+
+    @Override
+    public List<Content> getSelectedItems() {
+        if (getCurrentList() != null)
+            return Stream.of(getCurrentList()).filter(Content::isSelected).toList();
+        else return Collections.emptyList();
     }
 
     @Override

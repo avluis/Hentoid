@@ -221,11 +221,11 @@ public class LibraryItem extends RecyclerView.ViewHolder {
 
         // Simple click
         itemView.setOnClickListener(v -> {
-            if (adapter.getItemSelectedCount() > 0) { // Selection mode is on -> select more
+            if (adapter.getSelectedItemsCount() > 0) { // Selection mode is on -> select more
                 int itemPos = getLayoutPosition();
                 if (getLayoutPosition() > -1) {
                     content.setSelected(!content.isSelected());
-                    adapter.getSelectionChangedListener().accept(adapter.getItemSelectedCount());
+                    adapter.getSelectionChangedListener().accept(adapter.getSelectedItemsCount());
                     adapter.notifyItemChanged(itemPos);
                 }
             } else adapter.getOpenBookListener().accept(content); // Open book
@@ -237,7 +237,7 @@ public class LibraryItem extends RecyclerView.ViewHolder {
             int itemPos = getLayoutPosition();
             if (itemPos > -1 && !content.isBeingDeleted()) {
                 content.setSelected(!content.isSelected());
-                adapter.getSelectionChangedListener().accept(adapter.getItemSelectedCount());
+                adapter.getSelectionChangedListener().accept(adapter.getSelectedItemsCount());
                 adapter.notifyItemChanged(itemPos);
             }
 

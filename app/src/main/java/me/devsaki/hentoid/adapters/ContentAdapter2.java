@@ -109,8 +109,13 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
     }
 
     @Override
-    public long getItemSelectedCount() {
+    public long getSelectedItemsCount() {
         return Stream.of(shelf).filter(Content::isSelected).count();
+    }
+
+    @Override
+    public List<Content> getSelectedItems() {
+        return Stream.of(shelf).filter(Content::isSelected).toList();
     }
 
     @Override
