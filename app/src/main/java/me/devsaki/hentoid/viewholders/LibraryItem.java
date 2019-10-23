@@ -186,6 +186,7 @@ public class LibraryItem extends RecyclerView.ViewHolder {
 
     private void onFavouriteClicked(View v) {
         adapter.getFavClickListener().accept(content);
+        adapter.notifyItemChanged(getLayoutPosition()); // Hack to display the blinking with PagedListAdapter
     }
 
     private void onErrorClicked(View v) {
