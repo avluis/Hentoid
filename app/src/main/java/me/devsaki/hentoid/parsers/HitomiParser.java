@@ -1,9 +1,15 @@
 package me.devsaki.hentoid.parsers;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
+import com.squareup.moshi.Types;
+
+import org.jsoup.nodes.Document;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,8 +17,12 @@ import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.json.HitomiGalleryPage;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import okhttp3.Response;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
@@ -29,30 +39,39 @@ public class HitomiParser implements ImageListParser {
     private static final char HOSTNAME_PREFIX_BASE = 97;
 
     public List<ImageFile> parseImageList(Content content) throws Exception {
-        List<ImageFile> result = new ArrayList<>();
         String pageUrl = content.getReaderUrl();
 
         Document doc = getOnlineDocument(pageUrl);
         if (null == doc) throw new Exception("Document unreachable : " + pageUrl);
 
         Timber.d("Parsing: %s", pageUrl);
-        Elements imgElements = doc.select(".img-url");
-        if (imgElements.isEmpty()) throw new Exception("No images found @ " + pageUrl);
 
-        // New Hitomi image URLs starting from june 2018
-        //  If book ID is even, starts with 'aa'; else starts with 'ba'
-        int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
+        List<ImageFile> result = new ArrayList<>();
 
-        String imageSubdomain = ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
+        String galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + content.getUniqueSiteId() + ".js";
+
+        // Get the gallery JSON
+        List<Pair<String, String>> headers = new ArrayList<>();
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, pageUrl));
+        Response response = HttpHelper.getOnlineResource(galleryJsonUrl, headers, Site.HITOMI.canKnowHentoidAgent());
+        if (null == response.body()) throw new IOException("Empty body");
+
+        String json = response.body().string().replace("var galleryinfo = ", "");
+        Type listPagesType = Types.newParameterizedType(List.class, HitomiGalleryPage.class);
+        List<HitomiGalleryPage> gallery = JsonHelper.jsonToObject(json, listPagesType);
 
         Map<String, String> downloadParams = new HashMap<>();
         // Add referer information to downloadParams for future image download
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, pageUrl);
         String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
+        ImageFile img;
         int order = 1;
-        for (Element element : imgElements) {
-            ImageFile img = ParseHelper.urlToImageFile("https:" + replaceSubdomainWith(element.text(), imageSubdomain), order++);
+        for (HitomiGalleryPage page : gallery) {
+            if (1 == page.getHaswebp()) img = buildWebpPicture(content, page, order++);
+            else if (page.getHash() != null && !page.getHash().isEmpty())
+                img = buildHashPicture(page, order++);
+            else img = buildSimplePicture(content, page, order++);
             img.setDownloadParams(downloadParamsStr);
             result.add(img);
         }
@@ -60,16 +79,43 @@ public class HitomiParser implements ImageListParser {
         return result;
     }
 
-    private String replaceSubdomainWith(String url, String newSubdomain) {
-        // Get the beginning and end of subdomain
-        int subdomainBegin = 2; // Just after '//'
-        int subdomainEnd = url.indexOf(".hitomi");
+    private ImageFile buildWebpPicture(@NonNull Content content, @NonNull HitomiGalleryPage page, int order) {
+        // New Hitomi image URLs starting from june 2018
+        //  If book ID is even, starts with 'aa'; else starts with 'ba'
+        int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
+        String imageSubdomain = subdomainFromGalleryId(referenceId);
+        String pageUrl = "https://" + imageSubdomain + ".hitomi.la/webp/" + content.getUniqueSiteId() + "/" + page.getName() + ".webp";
 
-        return url.substring(0, subdomainBegin) + newSubdomain + url.substring(subdomainEnd);
+        return ParseHelper.urlToImageFile(pageUrl, order);
+    }
+
+    private ImageFile buildHashPicture(@NonNull HitomiGalleryPage page, int order) {
+        String hash = page.getHash();
+        String componentA = hash.substring(hash.length() - 1);
+        String componentB = hash.substring(hash.length() - 3, hash.length() - 1);
+
+        String imageSubdomain = subdomainFromGalleryId(Integer.valueOf(componentB, 16));
+        String pageUrl = "https://" + imageSubdomain + ".hitomi.la/images/" + componentA + "/" + componentB + "/" + hash + "." + FileHelper.getExtension(page.getName());
+
+        return ParseHelper.urlToImageFile(pageUrl, order);
+    }
+
+    private ImageFile buildSimplePicture(@NonNull Content content, @NonNull HitomiGalleryPage page, int order) {
+        // New Hitomi image URLs starting from june 2018
+        //  If book ID is even, starts with 'aa'; else starts with 'ba'
+        int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
+        String imageSubdomain = subdomainFromGalleryId(referenceId);
+        String pageUrl = "https://" + imageSubdomain + ".hitomi.la/galleries/" + content.getUniqueSiteId() + "/" + page.getName();
+
+        return ParseHelper.urlToImageFile(pageUrl, order);
+    }
+
+    private String subdomainFromGalleryId(int referenceId) {
+        return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
     }
 
     public ImageFile parseBackupUrl(String url, int order) {
-        // This class does not use backup URLs
+        // Hitomi does not use backup URLs
         return null;
     }
 }
