@@ -160,7 +160,7 @@ public class LibraryFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
 
         viewModel.getNewSearch().observe(this, this::onNewSearch);
-        viewModel.getLibraryPaged().observe(this, this::onPagedLibraryChanged);
+        viewModel.getLibraryPaged().observe(this, this::onLibraryChanged);
         viewModel.getTotalContent().observe(this, this::onTotalContentChanged);
     }
 
@@ -599,6 +599,12 @@ public class LibraryFragment extends BaseFragment {
             int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
             int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size() - 1);
 
+            if (minIndex > maxIndex) { // We just deleted the last item of the last page => Go back one page
+                pager.setCurrentPage(pager.getCurrentPageNumber() - 1);
+                loadPagerAdapter(library);
+                return;
+            }
+
             pagerAdapter.setShelf(library.subList(minIndex, maxIndex + 1));
         }
         pagerAdapter.notifyDataSetChanged();
@@ -608,9 +614,8 @@ public class LibraryFragment extends BaseFragment {
         newSearch = b;
     }
 
-    private void onPagedLibraryChanged(PagedList<Content> result) {
+    private void onLibraryChanged(PagedList<Content> result) {
         Timber.d(">>Library changed ! Size=%s", result.size());
-        if (result.size() > 0) Timber.d(">>1st item is ID %s", result.get(0).getId());
 
         updateTitle(result.size(), totalContent);
 
