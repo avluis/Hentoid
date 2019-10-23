@@ -597,15 +597,15 @@ public class LibraryFragment extends BaseFragment {
         if (library.isEmpty()) pagerAdapter.setShelf(Collections.emptyList());
         else {
             int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
-            int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size() - 1);
+            int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size());
 
-            if (minIndex > maxIndex) { // We just deleted the last item of the last page => Go back one page
+            if (minIndex >= maxIndex) { // We just deleted the last item of the last page => Go back one page
                 pager.setCurrentPage(pager.getCurrentPageNumber() - 1);
                 loadPagerAdapter(library);
                 return;
             }
 
-            pagerAdapter.setShelf(library.subList(minIndex, maxIndex + 1));
+            pagerAdapter.setShelf(library.subList(minIndex, maxIndex));
         }
         pagerAdapter.notifyDataSetChanged();
     }
