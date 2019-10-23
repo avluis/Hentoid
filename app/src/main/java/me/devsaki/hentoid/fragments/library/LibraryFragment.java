@@ -641,7 +641,7 @@ public class LibraryFragment extends BaseFragment {
             loadPagerAdapter(result);
         }
 
-        if (newSearch) recyclerView.scrollToPosition(0);
+        if (newSearch) new Handler().postDelayed(() -> recyclerView.scrollToPosition(0), 300);
 
         newSearch = false;
         library = result;
