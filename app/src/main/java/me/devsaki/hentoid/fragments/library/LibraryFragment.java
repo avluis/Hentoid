@@ -705,9 +705,7 @@ public class LibraryFragment extends BaseFragment {
             builder.setTitle(R.string.redownload_dialog_title)
                     .setMessage(message)
                     .setPositiveButton(android.R.string.yes,
-                            (dialog, which) -> {
-                                downloadContent(context, content);
-                            })
+                            (dialog, which) -> downloadContent(context, content))
                     .setNegativeButton(android.R.string.no, null)
                     .setNeutralButton(R.string.redownload_view_log,
                             (dialog, which) -> showErrorLog(context, content))
