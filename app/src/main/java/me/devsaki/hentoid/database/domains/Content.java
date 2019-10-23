@@ -574,24 +574,19 @@ public class Content {
         this.numberDownloadRetries++;
     }
 
-
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Content)) {
-            return false;
-        }
-
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-
-        return this == o || (Objects.equals(content.url, url) && Objects.equals(content.site, site) && Objects.equals(content.favourite, favourite));
+        return favourite == content.favourite &&
+                Objects.equals(url, content.url) &&
+                site == content.site;
     }
 
     @Override
     public int hashCode() {
-        int result = url != null ? url.hashCode() : 0;
-        result = 31 * result + (site != null ? site.hashCode() : 0);
-        result = 31 * result + (favourite ? 1 : 0);
-        return result;
+        return Objects.hash(url, site, favourite);
     }
 
     public static Comparator<Content> getComparator() {
