@@ -58,15 +58,19 @@ public class LibraryPager {
     }
 
     private void nextPage(View v) {
-        if (currentPageNumber < pageCount) currentPageNumber++;
-        decorator.setCurrentPage(currentPageNumber);
-        onPageChangeListener.run();
+        if (currentPageNumber < pageCount) {
+            currentPageNumber++;
+            decorator.setCurrentPage(currentPageNumber);
+            onPageChangeListener.run();
+        }
     }
 
     private void previousPage(View v) {
-        if (currentPageNumber > 1) currentPageNumber--;
-        decorator.setCurrentPage(currentPageNumber);
-        onPageChangeListener.run();
+        if (currentPageNumber > 1) {
+            currentPageNumber--;
+            decorator.setCurrentPage(currentPageNumber);
+            onPageChangeListener.run();
+        }
     }
 
     private void pageChanged(int newPageNumber) {
