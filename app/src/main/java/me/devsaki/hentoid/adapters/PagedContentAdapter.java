@@ -68,8 +68,6 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
 
     private static DiffUtil.ItemCallback<Content> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<Content>() {
-                // Concert details may have changed if reloaded from the database,
-                // but ID is fixed.
                 @Override
                 public boolean areItemsTheSame(Content oldContent, Content newContent) {
                     return oldContent.getId() == newContent.getId();

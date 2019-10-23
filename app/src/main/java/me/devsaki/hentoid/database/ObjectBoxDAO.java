@@ -250,8 +250,16 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
     }
 
+    public Content selectContent(long id) {
+        return db.selectContentById(id);
+    }
+
     public void insertContent(@NonNull final Content content) {
         db.insertContent(content);
+    }
+
+    public void deleteContent(@NonNull final Content content) {
+        db.deleteContent(content);
     }
 
     public void addContentToQueue(@NonNull final Content content) {

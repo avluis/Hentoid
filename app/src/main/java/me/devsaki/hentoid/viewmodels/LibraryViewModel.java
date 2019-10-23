@@ -13,15 +13,15 @@ import androidx.paging.PagedList;
 
 import com.annimon.stream.function.Consumer;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -113,18 +113,46 @@ public class LibraryViewModel extends AndroidViewModel {
         performSearch();
     }
 
-    public void toggleContentFavourite(@NonNull final Content content) { // TODO file update in another thread
-        if (!content.isBeingDeleted()) {
-            content.setFavourite(!content.isFavourite());
+    public void toggleContentFavourite(@NonNull final Content content) {
+        if (content.isBeingDeleted()) return;
 
-            // Persist in it DB
-            collectionDao.insertContent(content);
+        // Flag the content as "being favourited" (triggers blink animation)
+        content.setIsBeingFavourited(true);
+        collectionDao.insertContent(content);
+
+        compositeDisposable.add(
+                Single.fromCallable(() -> toggleFavourite(content.getId()))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    private Content toggleFavourite(long contentId) {
+
+        // Check if given content still exists in DB
+        Content theContent = collectionDao.selectContent(contentId);
+
+        if (theContent != null) {
+            theContent.setFavourite(!theContent.isFavourite());
+            theContent.setIsBeingFavourited(false);
 
             // Persist in it JSON
-            if (!content.getJsonUri().isEmpty())
-                ContentHelper.updateJson(getApplication(), content);
-            else ContentHelper.createJson(content);
+            if (!theContent.getJsonUri().isEmpty())
+                ContentHelper.updateJson(getApplication(), theContent);
+            else ContentHelper.createJson(theContent);
+
+            // Persist in it DB
+            collectionDao.insertContent(theContent);
+
+            return theContent;
         }
+
+        throw new InvalidParameterException("ContentId " + contentId + " does not refer to a valid content");
     }
 
     public void addContentToQueue(@NonNull final Content content) {
@@ -136,7 +164,8 @@ public class LibraryViewModel extends AndroidViewModel {
         collectionDao.insertContent(content);
     }
 
-    public void deleteItems(@NonNull final List<Content> contents, Runnable callback, Consumer<Throwable> onError) {
+    public void deleteItems(@NonNull final List<Content> contents, Runnable onComplete, Consumer<Throwable> onError) {
+        // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contents) flagContentDelete(c, true);
 
         compositeDisposable.add(
@@ -148,27 +177,26 @@ public class LibraryViewModel extends AndroidViewModel {
                                 v -> {
                                 },
                                 onError::accept,
-                                callback::run
+                                onComplete::run
                         )
         );
     }
 
-    private Content deleteContent(final Content content) throws ContentNotRemovedException {
+    private Content deleteContent(@NonNull final Content content) throws ContentNotRemovedException {
         try {
             // Check if given content still exists in DB
-            ObjectBoxDB db = ObjectBoxDB.getInstance(HentoidApp.getAppContext()); // TODO use DAO instead
-            Content theContent = db.selectContentById(content.getId());
+            Content theContent = collectionDao.selectContent(content.getId());
 
             if (theContent != null) {
-                ContentHelper.removeContent(content);
-                db.deleteContent(content);
-                Timber.d("Removed item: %s from db and file system.", content.getTitle());
-                return content;
+                ContentHelper.removeContent(theContent);
+                collectionDao.deleteContent(theContent);
+                Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
+                return theContent;
             }
             throw new ContentNotRemovedException(content, "ContentId " + content.getId() + " does not refer to a valid content");
         } catch (Exception e) {
             Timber.e(e, "Error when trying to delete %s", content.getId());
-            throw new ContentNotRemovedException(content, "Error when trying to delete " + content.getId() + " : " + e.getMessage());
+            throw new ContentNotRemovedException(content, "Error when trying to delete " + content.getId() + " : " + e.getMessage(), e);
         }
     }
 }

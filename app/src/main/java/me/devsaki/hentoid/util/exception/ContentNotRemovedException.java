@@ -6,6 +6,11 @@ public class ContentNotRemovedException extends Exception {
 
     private final Content content;
 
+    public ContentNotRemovedException(Content content, String message, Throwable cause) {
+        super(message, cause);
+        this.content = content;
+    }
+
     public ContentNotRemovedException(Content content, String message)
     {
         super(message);

@@ -89,10 +89,15 @@ public class LibraryItem extends RecyclerView.ViewHolder {
         ivFavourite.setEnabled(!content.isSelected());
         ivSite.setEnabled(!content.isSelected());
 
-        if (content.isBeingDeleted()) {
-            BlinkAnimation animation = new BlinkAnimation(500, 250);
-            baseLayout.startAnimation(animation);
-        }
+        if (content.isBeingDeleted())
+            baseLayout.startAnimation(new BlinkAnimation(500, 250));
+        else
+            baseLayout.clearAnimation();
+
+        if (content.isBeingFavourited())
+            ivFavourite.startAnimation(new BlinkAnimation(500, 250));
+        else
+            ivFavourite.clearAnimation();
     }
 
     private void attachCover(Content content) {

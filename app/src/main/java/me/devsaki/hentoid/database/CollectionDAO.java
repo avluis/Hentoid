@@ -17,7 +17,18 @@ import me.devsaki.hentoid.listener.ResultListener;
 
 public interface CollectionDAO {
 
-    // BOOKS
+    // CONTENT
+
+    // Low-level operations
+
+    Content selectContent(long id);
+
+    void insertContent(@NonNull final Content content);
+
+    void deleteContent(@NonNull final Content content);
+
+
+    // High-level queries
 
     void getRecentBooksPaged(Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener);
 
@@ -40,7 +51,8 @@ public interface CollectionDAO {
 
     LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly);
 
-    void insertContent(@NonNull final Content content);
+
+    // Other stuff
 
     void addContentToQueue(@NonNull final Content content);
 

@@ -66,9 +66,10 @@ public class Content {
     // Temporary during ERROR state only; no need to expose them for JSON persistence
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
-    // Needs to be in the DB to keep the information when deletion takes a long time and user navigates
-    // No need to save that into JSON
+    // Needs to be in the DB to keep the information when deletion/favouriting takes a long time
+    // and user navigates away; no need to save that into JSON
     private boolean isBeingDeleted = false;
+    private boolean isBeingFavourited = false;
     // Needs to be in the DB to optimize I/O
     // No need to save that into the JSON file itself, obviously
     private String jsonUri;
@@ -549,6 +550,14 @@ public class Content {
         this.isBeingDeleted = isBeingDeleted;
     }
 
+    public boolean isBeingFavourited() {
+        return isBeingFavourited;
+    }
+
+    public void setIsBeingFavourited(boolean isBeingFavourited) {
+        this.isBeingFavourited = isBeingFavourited;
+    }
+
     public String getJsonUri() {
         return (null == jsonUri) ? "" : jsonUri;
     }
@@ -574,13 +583,14 @@ public class Content {
 
         Content content = (Content) o;
 
-        return this == o || (Objects.equals(content.url, url) && Objects.equals(content.site, site));
+        return this == o || (Objects.equals(content.url, url) && Objects.equals(content.site, site) && Objects.equals(content.favourite, favourite));
     }
 
     @Override
     public int hashCode() {
         int result = url != null ? url.hashCode() : 0;
         result = 31 * result + (site != null ? site.hashCode() : 0);
+        result = 31 * result + (favourite ? 1 : 0);
         return result;
     }
 

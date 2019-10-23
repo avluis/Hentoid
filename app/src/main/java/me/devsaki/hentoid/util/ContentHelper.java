@@ -146,7 +146,7 @@ public final class ContentHelper {
         context.startActivity(viewer);
     }
 
-    @Nullable
+    @WorkerThread
     public static Content updateContentReads(@Nonnull Context context, @NonNull Content content) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         content.increaseReads().setLastReadDate(new Date().getTime());
@@ -199,9 +199,9 @@ public final class ContentHelper {
 
 
     @WorkerThread
-    public static void removeContent(Content content) {
+    public static void removeContent(@NonNull Content content) {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
-        if (content.getStorageFolder().length() > 0) {
+        if (!content.getStorageFolder().isEmpty()) {
             File dir = getContentDownloadDir(content);
             if (deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
                 Timber.i("Directory %s removed.", dir);
