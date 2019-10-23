@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.library;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,11 +17,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.FileProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -272,7 +276,7 @@ public class LibraryFragment extends BaseFragment {
 
                     return true;
                 case R.id.action_archive:
-                    // mAdapter.archiveSelectedItems(); TODO
+                    archiveSelectedItems();
                     mode.finish();
 
                     return true;
@@ -300,6 +304,34 @@ public class LibraryFragment extends BaseFragment {
         List<Content> selectedItems = getAdapter().getSelectedItems();
         Context context = getActivity();
         if (!selectedItems.isEmpty() && context != null) askDeleteItems(context, selectedItems);
+    }
+
+    private void archiveSelectedItems() {
+        List<Content> selectedItems = getAdapter().getSelectedItems();
+        Context context = getActivity();
+        if (1 == selectedItems.size() && context != null) {
+            ToastUtil.toast(R.string.packaging_content);
+            viewModel.archiveContent(selectedItems.get(0), this::onContentArchived);
+        }
+    }
+
+    private void onContentArchived(File archive) {
+        Context context = getActivity();
+        if (context != null) {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_STREAM,
+                    FileProvider.getUriForFile(context, FileHelper.AUTHORITY, archive));
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(archive.getName()));
+            sendIntent.setType(mimeType);
+
+            try {
+                context.startActivity(sendIntent);
+            } catch (ActivityNotFoundException e) {
+                Timber.e(e, "No activity found to send %s", archive.getPath());
+                ToastUtil.toast(context, R.string.error_send, Toast.LENGTH_LONG);
+            }
+        }
     }
 
     private void askDeleteItems(final Context context, final List<Content> items) {

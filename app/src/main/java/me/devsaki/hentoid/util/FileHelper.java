@@ -44,7 +44,7 @@ public class FileHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
+    public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
 
     public static String getFileProviderAuthority() {
@@ -252,7 +252,7 @@ public class FileHelper {
      * @param target The folder.
      * @return true if cleaned successfully.
      */
-    static boolean cleanDirectory(@NonNull File target) {
+    public static boolean cleanDirectory(@NonNull File target) {
         try {
             return tryCleanDirectory(target);
         } catch (Exception e) {
@@ -404,7 +404,7 @@ public class FileHelper {
         try {
             context.startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
-            Timber.e(e, "Activity not found to open %s", aFile.getAbsolutePath());
+            Timber.e(e, "No activity found to open %s", aFile.getAbsolutePath());
             ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }

@@ -180,7 +180,7 @@ public final class Helper {
         try {
             context.startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
-            Timber.e(e, "Activity not found to open %s", url);
+            Timber.e(e, "No activity found to open %s", url);
             ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
@@ -207,8 +207,7 @@ public final class Helper {
         return result;
     }
 
-    public static boolean isImageExtensionSupported(String extension)
-    {
+    public static boolean isImageExtensionSupported(String extension) {
         return extension.equalsIgnoreCase("jpg")
                 || extension.equalsIgnoreCase("jpeg")
                 || extension.equalsIgnoreCase("gif")

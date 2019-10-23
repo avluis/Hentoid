@@ -13,7 +13,10 @@ import androidx.paging.PagedList;
 
 import com.annimon.stream.function.Consumer;
 
+import java.io.File;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -25,7 +28,9 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ZipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
@@ -36,7 +41,9 @@ public class LibraryViewModel extends AndroidViewModel {
     // Technical
     private final ObjectBoxDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
     private final ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable(); // TODO remove if useless
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    private static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
@@ -197,6 +204,50 @@ public class LibraryViewModel extends AndroidViewModel {
         } catch (Exception e) {
             Timber.e(e, "Error when trying to delete %s", content.getId());
             throw new ContentNotRemovedException(content, "Error when trying to delete " + content.getId() + " : " + e.getMessage(), e);
+        }
+    }
+
+    public void archiveContent(@NonNull final Content content, Consumer<File> onSuccess) {
+        Timber.d("Building file list for: %s", content.getTitle());
+        // Build list of files
+
+        File dir = ContentHelper.getContentDownloadDir(content);
+
+        File[] files = dir.listFiles();
+        if (files != null && files.length > 0) {
+            Arrays.sort(files);
+            ArrayList<File> fileList = new ArrayList<>();
+            for (File file : files) {
+                String filename = file.getName();
+                if (filename.endsWith(".json") || filename.contains("thumb")) {
+                    break;
+                }
+                fileList.add(file);
+            }
+
+            // Create folder to share from
+            File sharedDir = new File(getApplication().getExternalCacheDir() + "/shared");
+            if (FileHelper.createDirectory(sharedDir)) {
+                Timber.d("Shared folder created.");
+            }
+
+            // Clean directory (in case of previous job)
+            if (FileHelper.cleanDirectory(sharedDir)) {
+                Timber.d("Shared folder cleaned up.");
+            }
+
+            // Build destination file
+            File dest = new File(getApplication().getExternalCacheDir() + "/shared",
+                    content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + ".zip");
+            Timber.d("Destination file: %s", dest);
+
+            compositeDisposable.add(
+                    Single.fromCallable(() -> ZipUtil.zipFiles(fileList, dest))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(onSuccess::accept,
+                                    Timber::e)
+            );
         }
     }
 }

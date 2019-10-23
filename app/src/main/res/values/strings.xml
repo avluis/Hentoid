@@ -102,6 +102,7 @@
     <string name="error_creating_folder">Folder is not valid.</string>
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
     <string name="error_open">Error opening image : no image viewer found.</string>
+    <string name="error_send">Error sending archive : no relevant application found.</string>
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
