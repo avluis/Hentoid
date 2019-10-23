@@ -347,18 +347,6 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    Query<Content> queryContentUniversalTitleId(String queryStr, boolean filterFavourites, int orderStyle) {
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, visibleContentStatus);
-
-        if (filterFavourites) query.equal(Content_.favourite, true);
-        query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        query.or().equal(Content_.uniqueSiteId, queryStr);
-        applyOrderStyle(query, orderStyle);
-
-        return query.build();
-    }
-
     private Query<Content> queryContentUniversalContent(String queryStr, boolean filterFavourites, long[] additionalIds, int orderStyle) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
@@ -371,6 +359,13 @@ public class ObjectBoxDB {
         applyOrderStyle(query, orderStyle);
 
         return query.build();
+    }
+
+    Query<Content> queryContentUniversal(String queryStr, boolean filterFavourites, int orderStyle) {
+        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
+        // querying Content and attributes have to be done separately
+        Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
+        return queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
     }
 
     long countContentSearch(String title, List<Attribute> tags, boolean filterFavourites) {

@@ -221,33 +221,17 @@ public class ObjectBoxDAO implements CollectionDAO {
     private LiveData<PagedList<Content>> getPagedContent(int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
         boolean isRandom = (orderStyle == Preferences.Constant.ORDER_CONTENT_RANDOM);
 
+        Query<Content> query;
         if (Mode.SEARCH_CONTENT_MODULAR == mode) {
-            Query<Content> query = db.queryContentSearchContent(filter, metadata, favouritesOnly, orderStyle);
-            return new LivePagedListBuilder<>(
-                    isRandom ? new ObjectBoxRandomDataSource.Factory<>(query) : new ObjectBoxDataSource.Factory<>(query),
-                    20
-            ).build();
+            query = db.queryContentSearchContent(filter, metadata, favouritesOnly, orderStyle);
         } else { // Mode.SEARCH_CONTENT_UNIVERSAL
-            // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
-            // querying Content and attributes have to be done separately
-            Query<Content> query1 = db.queryContentUniversalAttributes(filter, favouritesOnly);
-            LiveData<PagedList<Content>> livedata1 = new LivePagedListBuilder<>(
-                    isRandom ? new ObjectBoxRandomDataSource.Factory<>(query1) : new ObjectBoxDataSource.Factory<>(query1),
-                    20
-            ).build();
-
-            Query<Content> query2 = db.queryContentUniversalTitleId(filter, favouritesOnly, orderStyle);
-            LiveData<PagedList<Content>> livedata2 = new LivePagedListBuilder<>(
-                    isRandom ? new ObjectBoxRandomDataSource.Factory<>(query2) : new ObjectBoxDataSource.Factory<>(query2),
-                    20
-            ).build();
-
-            MediatorLiveData<PagedList<Content>> result = new MediatorLiveData<>();
-            result.addSource(livedata1, result::setValue);
-            result.addSource(livedata2, result::setValue);
-
-            return result;
+            query = db.queryContentUniversal(filter, favouritesOnly, orderStyle);
         }
+
+        return new LivePagedListBuilder<>(
+                isRandom ? new ObjectBoxRandomDataSource.Factory<>(query) : new ObjectBoxDataSource.Factory<>(query),
+                20
+        ).build();
     }
 
     public Content selectContent(long id) {
