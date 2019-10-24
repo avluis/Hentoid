@@ -89,10 +89,11 @@ public class LibraryFragment extends BaseFragment {
             .setSelectionChangedListener(this::onSelectionChanged)
             .build();
 
+    // ======== COMMUNICATION
+    // Viewmodel
     private LibraryViewModel viewModel;
-    private PagedList<Content> library;
-    private int totalContent;
-    private boolean newSearch = false;
+    // Settings listener
+    private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = this::onSharedPreferenceChanged;
 
     // ======== UI
     private final LibraryPager pager = new LibraryPager(this::handleNewPage);
@@ -108,19 +109,24 @@ public class LibraryFragment extends BaseFragment {
     private View advancedSearchBar;
     // CLEAR button on the filter bar
     private TextView searchClearButton;
-
+    // Main view where books are displayed
     private RecyclerView recyclerView;
 
 
     // ======== VARIABLES
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
-
     // Used to ignore native calls to onQueryTextChange
     private boolean invalidateNextQueryTextChange = false;
+    // Total number of books in the whole unfiltered library
+    private int totalContentCount;
+    // True when a new search has been performed and its results have not been handled yet
+    private boolean newSearch = false;
+    // Collection of books according to current filters
+    private PagedList<Content> library;
 
 
-    // === SEARCH
+    // === SEARCH PARAMETERS
     // Current text search query
     private String query = "";
     // Current metadata search query
@@ -130,9 +136,6 @@ public class LibraryFragment extends BaseFragment {
     // === TOOLBAR ACTION MODE
     // Action mode manager for the toolbar
     private ActionMode mActionMode;
-
-    // Settings
-    private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = this::onSharedPreferenceChanged;
 
 
     @Override
@@ -229,11 +232,13 @@ public class LibraryFragment extends BaseFragment {
             }
         });
 
-        // Sets the starting book sort icon according to the current sort order
+        // Set the starting book sort icon according to the current sort order
         orderMenu.setIcon(getIconFromSortOrder(Preferences.getContentSortOrder()));
     }
 
-    // Called when the action mode is created; startActionMode() was called.
+    /**
+     * Called when the action mode is created; startActionMode() was called.
+     */
     private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
         // Called when action mode is first created.
         @Override
@@ -293,6 +298,9 @@ public class LibraryFragment extends BaseFragment {
         }
     };
 
+    /**
+     * Callback for the "share item" action button
+     */
     private void shareSelectedItems() {
         List<Content> selectedItems = getAdapter().getSelectedItems();
         Context context = getActivity();
@@ -300,59 +308,84 @@ public class LibraryFragment extends BaseFragment {
             ContentHelper.shareContent(context, selectedItems.get(0));
     }
 
+    /**
+     * Callback for the "delete item" action button
+     */
     private void purgeSelectedItems() {
         List<Content> selectedItems = getAdapter().getSelectedItems();
-        Context context = getActivity();
-        if (!selectedItems.isEmpty() && context != null) askDeleteItems(context, selectedItems);
+        if (!selectedItems.isEmpty()) askDeleteItems(selectedItems);
     }
 
+    /**
+     * Callback for the "archive item" action button
+     */
     private void archiveSelectedItems() {
         List<Content> selectedItems = getAdapter().getSelectedItems();
         Context context = getActivity();
         if (1 == selectedItems.size() && context != null) {
             ToastUtil.toast(R.string.packaging_content);
-            viewModel.archiveContent(selectedItems.get(0), this::onContentArchived);
+            viewModel.archiveContent(selectedItems.get(0), this::onContentArchiveSuccess);
         }
     }
 
-    private void onContentArchived(File archive) {
+    /**
+     * Callback for the success of the "archive item" action
+     *
+     * @param archive File containing the created archive
+     */
+    private void onContentArchiveSuccess(File archive) {
         Context context = getActivity();
-        if (context != null) {
-            Intent sendIntent = new Intent();
-            sendIntent.setAction(Intent.ACTION_SEND);
-            sendIntent.putExtra(Intent.EXTRA_STREAM,
-                    FileProvider.getUriForFile(context, FileHelper.AUTHORITY, archive));
-            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(archive.getName()));
-            sendIntent.setType(mimeType);
+        if (null == context) return;
 
-            try {
-                context.startActivity(sendIntent);
-            } catch (ActivityNotFoundException e) {
-                Timber.e(e, "No activity found to send %s", archive.getPath());
-                ToastUtil.toast(context, R.string.error_send, Toast.LENGTH_LONG);
-            }
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_STREAM,
+                FileProvider.getUriForFile(context, FileHelper.AUTHORITY, archive));
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(archive.getName()));
+        sendIntent.setType(mimeType);
+
+        try {
+            context.startActivity(sendIntent);
+        } catch (ActivityNotFoundException e) {
+            Timber.e(e, "No activity found to send %s", archive.getPath());
+            ToastUtil.toast(context, R.string.error_send, Toast.LENGTH_LONG);
         }
     }
 
-    private void askDeleteItems(final Context context, final List<Content> items) {
+    /**
+     * Display the yes/no dialog to make sure the user really wants to delete selected items
+     *
+     * @param items Items to be deleted if the answer is yes
+     */
+    private void askDeleteItems(final List<Content> items) {
+        Context context = getActivity();
+        if (null == context) return;
+
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        builder.setMessage(R.string.ask_delete_multiple) // TODO plural
+        String title = context.getResources().getQuantityString(R.plurals.ask_delete_multiple, items.size());
+        builder.setMessage(title)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
                             getAdapter().clearSelection();
-                            viewModel.deleteItems(items, this::deleteComplete, this::deleteError);
+                            viewModel.deleteItems(items, this::onDeleteSuccess, this::onDeleteError);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog, which) -> getAdapter().clearSelection())
                 .create().show();
     }
 
-    private void deleteComplete() {
+    /**
+     * Callback for the success of the "delete item" action
+     */
+    private void onDeleteSuccess() {
         Context context = getActivity();
         if (context != null) ToastUtil.toast(context, "Selected items have been deleted.");
     }
 
-    private void deleteError(Throwable t) {
+    /**
+     * Callback for the failure of the "delete item" action
+     */
+    private void onDeleteError(Throwable t) {
         Timber.e(t);
         if (t instanceof ContentNotRemovedException) {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
@@ -361,19 +394,22 @@ public class LibraryFragment extends BaseFragment {
                 viewModel.flagContentDelete(e.getContent(), false);
                 List<Content> contents = new ArrayList<>();
                 contents.add(e.getContent());
-                snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::deleteComplete, this::deleteError));
+                snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::onDeleteSuccess, this::onDeleteError));
             }
             snackbar.show();
         }
     }
 
     /**
-     * Update favourite filter button appearance (icon and color) on a book
+     * Update favourite filter button appearance on the action bar
      */
     private void updateFavouriteFilter() {
         favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
     }
 
+    /**
+     * Get the icon resource ID according to the sort order code
+     */
     private static int getIconFromSortOrder(int sortOrder) {
         switch (sortOrder) {
             case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
@@ -398,8 +434,8 @@ public class LibraryFragment extends BaseFragment {
     }
 
     /**
-     * Callback method used when a sort method is selected in the sort drop-down menu => Updates the
-     * UI according to the chosen sort method
+     * Callback method used when a sort method is selected in the sort drop-down menu
+     * Updates the UI according to the chosen sort method
      *
      * @param item MenuItem that has been selected
      * @return true if the order has been successfully processed
@@ -435,16 +471,18 @@ public class LibraryFragment extends BaseFragment {
                 RandomSeedSingleton.getInstance().renewSeed();
                 break;
             case R.id.action_favourites:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_NONE;
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_FAVOURITE;
                 item.setChecked(!item.isChecked());
-                updateFavouriteFilter();
-                viewModel.toggleFavouriteFilter();
                 break;
             default:
                 return super.onOptionsItemSelected(item);
         }
 
-        if (contentSortOrder != Preferences.Constant.ORDER_CONTENT_NONE) {
+        // If favourite is selected, apply the filter
+        if (Preferences.Constant.ORDER_CONTENT_FAVOURITE == contentSortOrder) {
+            updateFavouriteFilter();
+            viewModel.toggleFavouriteFilter();
+        } else { // Update the order menu icon and run a new search
             orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
             Preferences.setContentSortOrder(contentSortOrder);
             viewModel.performSearch();
@@ -490,6 +528,9 @@ public class LibraryFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Called when returning from the Advanced Search screen
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -539,6 +580,9 @@ public class LibraryFragment extends BaseFragment {
         return false;
     }
 
+    /**
+     * Callback for any change in Preferences
+     */
     private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         Timber.i("Prefs change detected : %s", key);
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
@@ -546,6 +590,11 @@ public class LibraryFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Initialize the UI components
+     *
+     * @param rootView Root view of the library screen
+     */
     private void initUI(View rootView) {
         advancedSearchBar = rootView.findViewById(R.id.advanced_search_group);
         // TextView used as advanced search button
@@ -568,6 +617,9 @@ public class LibraryFragment extends BaseFragment {
         initPagingMethod(Preferences.getEndlessScroll());
     }
 
+    /**
+     * Handler for the "Advanced search" button
+     */
     private void onAdvancedSearchButtonClick() {
         Intent search = new Intent(this.getContext(), SearchActivity.class);
 
@@ -581,19 +633,31 @@ public class LibraryFragment extends BaseFragment {
         searchMenu.collapseActionView();
     }
 
+    /**
+     * Initialize the paging method of the screen
+     *
+     * @param isEndless True if endless mode has to be set; false if paged mode has to be set
+     */
     private void initPagingMethod(boolean isEndless) {
         if (isEndless) {
-            pager.disable();
+            pager.hide();
             recyclerView.setAdapter(endlessAdapter);
             if (library != null) endlessAdapter.submitList(library);
         } else {
-            pager.enable();
+            pager.show();
             recyclerView.setAdapter(pagerAdapter);
-            if (library != null) loadPagerAdapter(library);
+            if (library != null) loadBookshelf(library);
         }
     }
 
-    private void loadPagerAdapter(PagedList<Content> library) {
+    /**
+     * Loads current shelf of books to into the paged mode adapter
+     * NB : A bookshelf is the portion of the collection that is displayed on screen by the paged mode
+     * The width of the shelf is determined by the "Quantity per page" setting
+     *
+     * @param library Library to extract the shelf from
+     */
+    private void loadBookshelf(PagedList<Content> library) {
         if (library.isEmpty()) pagerAdapter.setShelf(Collections.emptyList());
         else {
             int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
@@ -601,7 +665,7 @@ public class LibraryFragment extends BaseFragment {
 
             if (minIndex >= maxIndex) { // We just deleted the last item of the last page => Go back one page
                 pager.setCurrentPage(pager.getCurrentPageNumber() - 1);
-                loadPagerAdapter(library);
+                loadBookshelf(library);
                 return;
             }
 
@@ -610,14 +674,26 @@ public class LibraryFragment extends BaseFragment {
         pagerAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * LiveData callback when a new search takes place
+     *
+     * @param b Unused parameter (always set to true)
+     */
     private void onNewSearch(Boolean b) {
         newSearch = b;
     }
 
+    /**
+     * LiveData callback when the library changes
+     * - Either because a new search has been performed
+     * - Or because a book has been downloaded, deleted, updated
+     *
+     * @param result Current library according to active filters
+     */
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.d(">>Library changed ! Size=%s", result.size());
 
-        updateTitle(result.size(), totalContent);
+        updateTitle(result.size(), totalContentCount);
 
         if (isSearchQueryActive()) {
             advancedSearchBar.setVisibility(View.VISIBLE);
@@ -643,19 +719,25 @@ public class LibraryFragment extends BaseFragment {
         else {
             if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
-            loadPagerAdapter(result);
+            loadBookshelf(result);
         }
 
+        // If the update is the result of a new search, let the items be sorted
+        // and get back to the top of the list
         if (newSearch) new Handler().postDelayed(() -> recyclerView.scrollToPosition(0), 300);
 
         newSearch = false;
         library = result;
     }
 
+    /**
+     * LiveData callback when the total number of books changes (because of book download of removal)
+     *
+     * @param count Current book count in the whole, unfiltered library
+     */
     private void onTotalContentChanged(Integer count) {
-        Timber.d(">>Total content changed ! Count=%s", count);
-        totalContent = count;
-        if (library != null) updateTitle(library.size(), totalContent);
+        totalContentCount = count;
+        if (library != null) updateTitle(library.size(), totalContentCount);
     }
 
     /**
@@ -676,48 +758,69 @@ public class LibraryFragment extends BaseFragment {
         }
     }
 
-
-    private void onBookSourceClick(Content content) {
-        ContentHelper.viewContent(requireContext(), content);
-    }
-
+    /**
+     * Callback for the book holder itself
+     *
+     * @param content Content that has been clicked on
+     */
     private void onBookClick(Content content) {
         ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
     }
 
+    /**
+     * Callback for the "source" button of the book holder
+     *
+     * @param content Content whose "source" button has been clicked on
+     */
+    private void onBookSourceClick(Content content) {
+        ContentHelper.viewContent(requireContext(), content);
+    }
+
+    /**
+     * Callback for the "favourite" button of the book holder
+     *
+     * @param content Content whose "favourite" button has been clicked on
+     */
     private void onBookFavouriteClick(Content content) {
         viewModel.toggleContentFavourite(content);
     }
 
+    /**
+     * Callback for the "error" button of the book holder
+     *
+     * @param content Content whose "error" button has been clicked on
+     */
     private void onBookErrorClick(Content content) {
         int images;
         int imgErrors = 0;
 
         Context context = getContext();
         if (null == context) return;
+        if (null == content.getImageFiles()) return;
 
-        if (content.getImageFiles() != null) {
-            images = content.getImageFiles().size();
+        images = content.getImageFiles().size();
 
-            for (ImageFile imgFile : content.getImageFiles()) {
-                if (imgFile.getStatus() == StatusContent.ERROR) {
-                    imgErrors++;
-                }
-            }
+        for (ImageFile imgFile : content.getImageFiles())
+            if (imgFile.getStatus() == StatusContent.ERROR) imgErrors++;
 
-            String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-            builder.setTitle(R.string.redownload_dialog_title)
-                    .setMessage(message)
-                    .setPositiveButton(android.R.string.yes,
-                            (dialog, which) -> downloadContent(context, content))
-                    .setNegativeButton(android.R.string.no, null)
-                    .setNeutralButton(R.string.redownload_view_log,
-                            (dialog, which) -> showErrorLog(context, content))
-                    .show();
-        }
+        String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        builder.setTitle(R.string.redownload_dialog_title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog, which) -> downloadContent(context, content))
+                .setNegativeButton(android.R.string.no, null)
+                .setNeutralButton(R.string.redownload_view_log,
+                        (dialog, which) -> showErrorLog(context, content))
+                .show();
     }
 
+    /**
+     * Add the given content back to the download queue
+     *
+     * @param context Context to be used
+     * @param content Content to add back to the download queue
+     */
     private void downloadContent(@NonNull Context context, @NonNull final Content content) {
         viewModel.addContentToQueue(content);
 
@@ -728,6 +831,12 @@ public class LibraryFragment extends BaseFragment {
         snackbar.show();
     }
 
+    /**
+     * Generate and show the detailed error log for the given content
+     *
+     * @param context Context to be used
+     * @param content Content whose error log to be generated and shown
+     */
     private void showErrorLog(@NonNull Context context, @NonNull final Content content) {
         List<ErrorRecord> errorLog = content.getErrorLog();
         List<String> log = new ArrayList<>();
@@ -750,11 +859,21 @@ public class LibraryFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Get the currently active adapter (according to current mode : endless or paged)
+     *
+     * @return Currently active adapter
+     */
     private LibraryAdapter getAdapter() {
         if (Preferences.getEndlessScroll()) return endlessAdapter;
         else return pagerAdapter;
     }
 
+    /**
+     * Callback for any selection change (item added to or removed from selection)
+     *
+     * @param selectedCount Number of currently selected items
+     */
     private void onSelectionChanged(long selectedCount) {
 
         if (0 == selectedCount) {
@@ -769,11 +888,17 @@ public class LibraryFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Handler for any page change
+     */
     private void handleNewPage() {
-        loadPagerAdapter(library);
+        loadBookshelf(library);
         recyclerView.scrollToPosition(0);
     }
 
+    /**
+     * Navigate to the queue screen
+     */
     private void viewQueue() {
         Intent intent = new Intent(requireContext(), QueueActivity.class);
         requireContext().startActivity(intent);

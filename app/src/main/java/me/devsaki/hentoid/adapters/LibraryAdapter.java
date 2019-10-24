@@ -7,6 +7,9 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 
+/**
+ * Common interface for both library screen adapters
+ */
 public interface LibraryAdapter {
 
     long getSelectedItemsCount();

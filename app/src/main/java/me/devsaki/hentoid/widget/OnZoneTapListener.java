@@ -9,6 +9,9 @@ import androidx.core.view.GestureDetectorCompat;
 
 import me.devsaki.hentoid.R;
 
+/**
+ * Zoned tap listener for the image viewer
+ */
 public class OnZoneTapListener implements View.OnTouchListener {
 
     /**

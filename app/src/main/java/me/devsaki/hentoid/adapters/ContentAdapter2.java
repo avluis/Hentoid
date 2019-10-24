@@ -19,13 +19,19 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.viewholders.LibraryItem;
 
+/**
+ * Adapter for the library screen's paged mode
+ */
 public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implements LibraryAdapter {
 
+    // Listeners for holder click events
     private final Consumer<Content> onSourceClickListener;
     private final Consumer<Content> onBookClickListener;
     private final Consumer<Content> onFavClickListener;
     private final Consumer<Content> onErrorClickListener;
     private final LongConsumer onSelectionChangedListener;
+
+    // Currently displayed books
     private List<Content> shelf = new ArrayList<>();
 
     private ContentAdapter2(Builder builder) {
@@ -47,7 +53,12 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
         return shelf.get(position).getId();
     }
 
-    public void setShelf(List<Content> shelf) {
+    /**
+     * Set the list of books to be displayed
+     *
+     * @param shelf List of books, in their display order
+     */
+    public void setShelf(@NonNull List<Content> shelf) {
         this.shelf = Collections.unmodifiableList(shelf);
     }
 
@@ -61,14 +72,52 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
     @Override
     public void onBindViewHolder(@NonNull LibraryItem holder, int position) {
         Content content = shelf.get(position);
-        if (content != null) {
-            holder.bind(content);
-        } else {
-            // Null defines a placeholder item - PagedListAdapter automatically
-            // invalidates this row when the actual object is loaded from the
-            // database.
-            holder.clear();
+        if (content != null) holder.bind(content);
+        else holder.clear();
+    }
+
+    @Override
+    public long getSelectedItemsCount() {
+        return Stream.of(shelf).filter(Content::isSelected).count();
+    }
+
+    @Override
+    public List<Content> getSelectedItems() {
+        return Stream.of(shelf).filter(Content::isSelected).toList();
+    }
+
+    /**
+     * Unselect all currently selected items
+     */
+    @Override
+    public void clearSelection() {
+        for (int i = 0; i < getItemCount(); i++) {
+            Content c = shelf.get(i);
+            if (c != null) {
+                c.setSelected(false);
+                notifyItemChanged(i);
+            }
         }
+    }
+
+    public Consumer<Content> getOnSourceClickListener() {
+        return onSourceClickListener;
+    }
+
+    public Consumer<Content> getOpenBookListener() {
+        return onBookClickListener;
+    }
+
+    public Consumer<Content> getFavClickListener() {
+        return onFavClickListener;
+    }
+
+    public Consumer<Content> getErrorClickListener() {
+        return onErrorClickListener;
+    }
+
+    public LongConsumer getSelectionChangedListener() {
+        return onSelectionChangedListener;
     }
 
     public static class Builder {
@@ -106,46 +155,5 @@ public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implement
         public ContentAdapter2 build() {
             return new ContentAdapter2(this);
         }
-    }
-
-    @Override
-    public long getSelectedItemsCount() {
-        return Stream.of(shelf).filter(Content::isSelected).count();
-    }
-
-    @Override
-    public List<Content> getSelectedItems() {
-        return Stream.of(shelf).filter(Content::isSelected).toList();
-    }
-
-    @Override
-    public void clearSelection() {
-        for (int i = 0; i < getItemCount(); i++) {
-            Content c = shelf.get(i);
-            if (c != null) {
-                c.setSelected(false);
-                notifyItemChanged(i);
-            }
-        }
-    }
-
-    public Consumer<Content> getOnSourceClickListener() {
-        return onSourceClickListener;
-    }
-
-    public Consumer<Content> getOpenBookListener() {
-        return onBookClickListener;
-    }
-
-    public Consumer<Content> getFavClickListener() {
-        return onFavClickListener;
-    }
-
-    public Consumer<Content> getErrorClickListener() {
-        return onErrorClickListener;
-    }
-
-    public LongConsumer getSelectionChangedListener() {
-        return onSelectionChangedListener;
     }
 }

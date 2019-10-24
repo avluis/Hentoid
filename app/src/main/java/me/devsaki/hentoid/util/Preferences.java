@@ -408,6 +408,7 @@ public final class Preferences {
         }
 
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
+        public static final int ORDER_CONTENT_FAVOURITE = -2; // Artificial order created for clarity purposes
         public static final int ORDER_CONTENT_NONE = -1;
         public static final int ORDER_CONTENT_TITLE_ALPHA = 0;
         public static final int ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;

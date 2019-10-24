@@ -20,8 +20,12 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.viewholders.LibraryItem;
 
+/**
+ * Adapter for the library screen's endless mode
+ */
 public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> implements LibraryAdapter {
 
+    // Listeners for holder click events
     private final Consumer<Content> onSourceClickListener;
     private final Consumer<Content> onBookClickListener;
     private final Consumer<Content> onFavClickListener;
@@ -48,14 +52,8 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
     @Override
     public void onBindViewHolder(@NonNull LibraryItem holder, int position) {
         Content content = getItem(position);
-        if (content != null) {
-            holder.bind(content);
-        } else {
-            // Null defines a placeholder item - PagedListAdapter automatically
-            // invalidates this row when the actual object is loaded from the
-            // database.
-            holder.clear();
-        }
+        if (content != null) holder.bind(content);
+        else holder.clear();
     }
 
     @Override
@@ -65,6 +63,53 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
         else return RecyclerView.NO_ID;
     }
 
+    @Override
+    public long getSelectedItemsCount() {
+        if (getCurrentList() != null)
+            return Stream.of(getCurrentList()).filter(Content::isSelected).count(); // TODO doesn't this ruin the performance ?
+        else return 0;
+    }
+
+    @Override
+    public List<Content> getSelectedItems() {
+        if (getCurrentList() != null)
+            return Stream.of(getCurrentList()).filter(Content::isSelected).toList(); // TODO doesn't this ruin the performance ?
+        else return Collections.emptyList();
+    }
+
+    /**
+     * Unselect all currently selected items
+     */
+    @Override
+    public void clearSelection() {
+        for (int i = 0; i < getItemCount(); i++) {
+            Content c = getItem(i);
+            if (c != null) {
+                c.setSelected(false);
+                notifyItemChanged(i);
+            }
+        }
+    }
+
+    public Consumer<Content> getOnSourceClickListener() {
+        return onSourceClickListener;
+    }
+
+    public Consumer<Content> getOpenBookListener() {
+        return onBookClickListener;
+    }
+
+    public Consumer<Content> getFavClickListener() {
+        return onFavClickListener;
+    }
+
+    public Consumer<Content> getErrorClickListener() {
+        return onErrorClickListener;
+    }
+
+    public LongConsumer getSelectionChangedListener() {
+        return onSelectionChangedListener;
+    }
 
     private static DiffUtil.ItemCallback<Content> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<Content>() {
@@ -115,50 +160,5 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
         public PagedContentAdapter build() {
             return new PagedContentAdapter(this);
         }
-    }
-
-    @Override
-    public long getSelectedItemsCount() {
-        if (getCurrentList() != null)
-            return Stream.of(getCurrentList()).filter(Content::isSelected).count(); // TODO doesn't this ruin the performance ?
-        else return 0;
-    }
-
-    @Override
-    public List<Content> getSelectedItems() {
-        if (getCurrentList() != null)
-            return Stream.of(getCurrentList()).filter(Content::isSelected).toList(); // TODO doesn't this ruin the performance ?
-        else return Collections.emptyList();
-    }
-
-    @Override
-    public void clearSelection() {
-        for (int i = 0; i < getItemCount(); i++) {
-            Content c = getItem(i);
-            if (c != null) {
-                c.setSelected(false);
-                notifyItemChanged(i);
-            }
-        }
-    }
-
-    public Consumer<Content> getOnSourceClickListener() {
-        return onSourceClickListener;
-    }
-
-    public Consumer<Content> getOpenBookListener() {
-        return onBookClickListener;
-    }
-
-    public Consumer<Content> getFavClickListener() {
-        return onFavClickListener;
-    }
-
-    public Consumer<Content> getErrorClickListener() {
-        return onErrorClickListener;
-    }
-
-    public LongConsumer getSelectionChangedListener() {
-        return onSelectionChangedListener;
     }
 }

@@ -11,7 +11,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
-import me.devsaki.hentoid.fragments.QueueFragment;
+import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Preferences;
 
 /**

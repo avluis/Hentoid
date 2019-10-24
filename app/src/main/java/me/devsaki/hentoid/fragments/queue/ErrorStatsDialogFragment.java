@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.downloads;
+package me.devsaki.hentoid.fragments.queue;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
