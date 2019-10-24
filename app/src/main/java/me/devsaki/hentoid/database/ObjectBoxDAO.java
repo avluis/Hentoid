@@ -192,7 +192,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
 
         return new LivePagedListBuilder<>(
-                isRandom ? new ObjectBoxRandomDataSource.Factory<>(query) : new ObjectBoxDataSource.Factory<>(query),
+                isRandom ? new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query) : new ObjectBoxDataSource.Factory<>(query),
                 20
         ).build();
     }

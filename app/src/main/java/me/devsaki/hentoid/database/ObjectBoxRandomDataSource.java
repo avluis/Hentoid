@@ -65,10 +65,10 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
         return result;
     }
 
-    public static class Factory<Item> extends androidx.paging.DataSource.Factory<Integer, Item> {
+    public static class RandomDataSourceFactory<Item> extends androidx.paging.DataSource.Factory<Integer, Item> {
         private final Query<Item> query;
 
-        Factory(Query<Item> query) {
+        RandomDataSourceFactory(Query<Item> query) {
             this.query = query;
         }
 
