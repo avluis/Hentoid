@@ -1,0 +1,3 @@
+# v1.9.2
+Hitomi works again
+Books whose download is interrupted in preparation phase (e.g. Tsumino captcha) are given a relevant download date
