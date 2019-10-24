@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -35,21 +36,25 @@ import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.util.FileHelper.AUTHORIZED_CHARS;
+
 
 public class LibraryViewModel extends AndroidViewModel {
 
-    // Technical
+    // Collection DAO
     private final ObjectBoxDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    // Library search manager
     private final ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
+    // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-
-    private static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
     private LiveData<Integer> totalContent = collectionDao.countAllBooks();
-    private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
+
+    // Updated whenever a new search is performed
+    private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
 
 
     public LibraryViewModel(@NonNull Application application) {
@@ -94,7 +99,13 @@ public class LibraryViewModel extends AndroidViewModel {
         return bundle;
     }
 
+    // =========================
+    // ========= LIBRARY ACTIONS
+    // =========================
 
+    /**
+     * Perform a new library search
+     */
     public void performSearch() {
         newSearch.setValue(true);
         libraryPaged.removeSource(currentSource);
@@ -103,23 +114,47 @@ public class LibraryViewModel extends AndroidViewModel {
         libraryPaged.addSource(currentSource, libraryPaged::setValue);
     }
 
+    /**
+     * Perform a new universal search using the given query
+     *
+     * @param query Query to use for the universal search
+     */
     public void searchUniversal(@NonNull String query) {
         searchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
         searchManager.setQuery(query);
         performSearch();
     }
 
+    /**
+     * Perform a new search using the given query and metadata
+     *
+     * @param query    Query to use for the search
+     * @param metadata Metadata to use for the search
+     */
     public void search(@NonNull String query, @NonNull List<Attribute> metadata) {
         searchManager.setQuery(query);
         searchManager.setTags(metadata);
         performSearch();
     }
 
+    /**
+     * Toggle the favourite filter
+     */
     public void toggleFavouriteFilter() {
         searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
         performSearch();
     }
 
+
+    // =========================
+    // ========= CONTENT ACTIONS
+    // =========================
+
+    /**
+     * Toggle the "favourite" state of the given content
+     *
+     * @param content Content whose favourite state to toggle
+     */
     public void toggleContentFavourite(@NonNull final Content content) {
         if (content.isBeingDeleted()) return;
 
@@ -128,7 +163,7 @@ public class LibraryViewModel extends AndroidViewModel {
         collectionDao.insertContent(content);
 
         compositeDisposable.add(
-                Single.fromCallable(() -> toggleFavourite(content.getId()))
+                Single.fromCallable(() -> doToggleContentFavourite(content.getId()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -139,7 +174,14 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    private Content toggleFavourite(long contentId) {
+    /**
+     * Toggle the "favourite" state of the given content
+     *
+     * @param contentId ID of the content whose favourite state to toggle
+     * @return Resulting content
+     */
+    @WorkerThread
+    private Content doToggleContentFavourite(long contentId) {
 
         // Check if given content still exists in DB
         Content theContent = collectionDao.selectContent(contentId);
@@ -162,15 +204,33 @@ public class LibraryViewModel extends AndroidViewModel {
         throw new InvalidParameterException("ContentId " + contentId + " does not refer to a valid content");
     }
 
+    /**
+     * Add the given content to the download queue
+     *
+     * @param content Content to be added to the download queue
+     */
     public void addContentToQueue(@NonNull final Content content) {
         collectionDao.addContentToQueue(content);
     }
 
+    /**
+     * Set the "being deleted" flag of the given content
+     *
+     * @param content Content whose flag to set
+     * @param flag    Value of the flag to be set
+     */
     public void flagContentDelete(@NonNull final Content content, boolean flag) {
         content.setIsBeingDeleted(flag);
         collectionDao.insertContent(content);
     }
 
+    /**
+     * Delete the given list of content
+     *
+     * @param contents   List of content to be deleted
+     * @param onComplete Callback to run when the whole operation succeeds
+     * @param onError    Callback to run when an error occurs
+     */
     public void deleteItems(@NonNull final List<Content> contents, Runnable onComplete, Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contents) flagContentDelete(c, true);
@@ -178,7 +238,7 @@ public class LibraryViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(contents)
                         .subscribeOn(Schedulers.io())
-                        .flatMap(s -> Observable.fromCallable(() -> deleteContent(s)))
+                        .flatMap(s -> Observable.fromCallable(() -> doDeleteContent(s)))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> {
@@ -189,7 +249,15 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    private Content deleteContent(@NonNull final Content content) throws ContentNotRemovedException {
+    /**
+     * Delete the given content
+     *
+     * @param content Content to be deleted
+     * @return Content that has been deleted
+     * @throws ContentNotRemovedException When any issue occurs during removal
+     */
+    @WorkerThread
+    private Content doDeleteContent(@NonNull final Content content) throws ContentNotRemovedException {
         try {
             // Check if given content still exists in DB
             Content theContent = collectionDao.selectContent(content.getId());
@@ -207,9 +275,14 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
+    /**
+     * Archive the given Content into a temp ZIP file
+     *
+     * @param content   Content to be archived
+     * @param onSuccess Callback to run when the operation succeeds
+     */
     public void archiveContent(@NonNull final Content content, Consumer<File> onSuccess) {
         Timber.d("Building file list for: %s", content.getTitle());
-        // Build list of files
 
         File dir = ContentHelper.getContentDownloadDir(content);
 

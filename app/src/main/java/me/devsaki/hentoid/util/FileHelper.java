@@ -44,6 +44,8 @@ public class FileHelper {
         throw new IllegalStateException("Utility class");
     }
 
+    public static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
+
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
 

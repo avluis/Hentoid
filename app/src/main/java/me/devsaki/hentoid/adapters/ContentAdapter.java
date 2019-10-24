@@ -506,7 +506,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private void askDeleteItems(final List<Content> items) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        builder.setMessage(R.string.ask_delete_multiple)
+        /*builder.setMessage(R.string.ask_delete_multiple)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
                             clearSelections();
@@ -518,6 +518,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             itemSelectListener.onItemClear(0);
                         })
                 .create().show();
+         */
     }
 
     private static Content toggleFavourite(Context context, long contentId) {

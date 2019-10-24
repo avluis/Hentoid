@@ -21,6 +21,11 @@ import me.devsaki.hentoid.viewholders.LibraryItem;
 
 /**
  * Adapter for the library screen's paged mode
+ *
+ * NB : FlexibleAdapter has not been used yet because v5.1.0 does not support PagedList
+ * We're using instead :
+ *   - a "classic" RecyclerView.Adapter (for paged mode) <-- current class
+ *   - an PagedListAdapter (for endless mode) <-- PagedContentAdapter
  */
 public class ContentAdapter2 extends RecyclerView.Adapter<LibraryItem> implements LibraryAdapter {
 

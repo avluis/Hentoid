@@ -24,6 +24,9 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 
+/**
+ * ViewHolder for Content
+ */
 public class LibraryItem extends RecyclerView.ViewHolder {
 
     private final static RequestOptions glideRequestOptions = new RequestOptions()
@@ -41,7 +44,9 @@ public class LibraryItem extends RecyclerView.ViewHolder {
     private final ImageView ivError;
     private final ImageView ivFavourite;
 
+    // Corresponding content
     private Content content;
+    // Containing adapter
     private LibraryAdapter adapter;
 
 
@@ -180,21 +185,8 @@ public class LibraryItem extends RecyclerView.ViewHolder {
         }
     }
 
-    private void onSourceClicked(View v) {
-        adapter.getOnSourceClickListener().accept(content);
-    }
-
-    private void onFavouriteClicked(View v) {
-        adapter.getFavClickListener().accept(content);
-        adapter.notifyItemChanged(getLayoutPosition()); // Hack to display the blinking with PagedListAdapter
-    }
-
-    private void onErrorClicked(View v) {
-        adapter.getErrorClickListener().accept(content);
-    }
-
     private void attachButtons(final Content content) {
-        // Source
+        // Source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             ivSite.setImageResource(img);
@@ -203,7 +195,7 @@ public class LibraryItem extends RecyclerView.ViewHolder {
             ivSite.setImageResource(R.drawable.ic_stat_hentoid);
         }
 
-        // Favourite
+        // Favourite icon
         ivFavourite.setOnClickListener(this::onFavouriteClicked);
         if (content.isFavourite()) {
             ivFavourite.setImageResource(R.drawable.ic_fav_full);
@@ -221,6 +213,21 @@ public class LibraryItem extends RecyclerView.ViewHolder {
                 ivError.setVisibility(View.GONE);
             }
         }
+    }
+
+    // NB : There's only one listener instantiated in the fragment and consuming the corresponding Content
+
+    private void onSourceClicked(View v) {
+        adapter.getOnSourceClickListener().accept(content);
+    }
+
+    private void onFavouriteClicked(View v) {
+        adapter.getFavClickListener().accept(content);
+        adapter.notifyItemChanged(getLayoutPosition()); // Hack to display the blinking with PagedListAdapter
+    }
+
+    private void onErrorClicked(View v) {
+        adapter.getErrorClickListener().accept(content);
     }
 
     private void attachOnClickListeners(@NonNull Content content) {
