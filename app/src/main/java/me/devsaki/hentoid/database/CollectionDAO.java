@@ -11,7 +11,6 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
 
@@ -30,7 +29,7 @@ public interface CollectionDAO {
 
     // High-level queries
 
-    void getRecentBookIds(Language language, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
+    void getRecentBookIds(int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
 
     void searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
 

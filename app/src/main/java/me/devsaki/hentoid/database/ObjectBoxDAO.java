@@ -28,7 +28,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -85,7 +84,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public void getRecentBookIds(Language language, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
+    public void getRecentBookIds(int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
                         () -> contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly)

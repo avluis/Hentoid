@@ -15,7 +15,6 @@ import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Preferences;
 
@@ -113,7 +112,7 @@ public class ContentSearchManager {
         else if (!tags.isEmpty())
             collectionDAO.searchBookIds("", tags, contentSortOrder, filterFavourites, listener); // Advanced search
         else
-            collectionDAO.getRecentBookIds(Language.ANY, contentSortOrder, filterFavourites, listener); // Default search (display recent)
+            collectionDAO.getRecentBookIds(contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
     public void dispose() {

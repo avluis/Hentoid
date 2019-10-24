@@ -147,12 +147,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             @Override
             public boolean onQueryTextSubmit(String s) {
 
-                /*if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(view, R.string.masterdata_illegal_tag, BaseTransientBottomBar.LENGTH_LONG).show();
-                } else*/
-                if (!s.isEmpty()) {
-                    searchMasterData(s);
-                }
+                if (!s.isEmpty()) searchMasterData(s);
                 tagSearchView.clearFocus();
 
                 return true;
@@ -160,12 +155,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
             @Override
             public boolean onQueryTextChange(String s) {
-//                if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-//                    Snackbar.make(view, R.string.masterdata_illegal_tag, BaseTransientBottomBar.LENGTH_LONG).show();
-//                    searchMasterDataDebouncer.clear();
-//                } else {
                 searchMasterDataDebouncer.submit(s);
-//                }
 
                 return true;
             }
