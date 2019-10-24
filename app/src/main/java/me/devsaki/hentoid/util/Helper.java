@@ -150,12 +150,6 @@ public final class Helper {
         return list;
     }
 
-    public static List<Integer> getListFromPrimitiveArray(int[] input) {
-        List<Integer> list = new ArrayList<>(input.length);
-        for (int n : input) list.add(n);
-        return list;
-    }
-
     public static long[] getPrimitiveLongArrayFromList(List<Long> integers) {
         long[] ret = new long[integers.size()];
         Iterator<Long> iterator = integers.iterator();

@@ -75,28 +75,8 @@ public class ContentSearchManager {
         if (tags != null) tags.clear();
     }
 
-    public int getContentSortOrder() {
-        return contentSortOrder;
-    }
-
     public void setContentSortOrder(int contentSortOrder) {
         this.contentSortOrder = contentSortOrder;
-    }
-
-    public int getCurrentPage() {
-        return currentPage;
-    }
-
-    public void setCurrentPage(int currentPage) {
-        this.currentPage = currentPage;
-    }
-
-    public void increaseCurrentPage() {
-        currentPage++;
-    }
-
-    public void decreaseCurrentPage() {
-        currentPage--;
     }
 
     public void saveToBundle(@Nonnull Bundle outState) {
@@ -116,15 +96,6 @@ public class ContentSearchManager {
 
         String searchUri = state.getString(KEY_SELECTED_TAGS);
         tags = SearchActivityBundle.Parser.parseSearchUri(Uri.parse(searchUri));
-    }
-
-    public void searchLibraryForContent(int booksPerPage, PagedResultListener<Content> listener) {
-        if (!getQuery().isEmpty())
-            collectionDAO.searchBooksUniversalPaged(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Universal search
-        else if (!tags.isEmpty())
-            collectionDAO.searchBooksPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
-        else
-            collectionDAO.getRecentBooksPaged(Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
     public LiveData<PagedList<Content>> getLibrary() {

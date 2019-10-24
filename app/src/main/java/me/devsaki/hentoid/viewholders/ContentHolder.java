@@ -27,7 +27,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 /**
  * ViewHolder for Content
  */
-public class LibraryItem extends RecyclerView.ViewHolder {
+public class ContentHolder extends RecyclerView.ViewHolder {
 
     private final static RequestOptions glideRequestOptions = new RequestOptions()
             .centerInside()
@@ -50,7 +50,7 @@ public class LibraryItem extends RecyclerView.ViewHolder {
     private LibraryAdapter adapter;
 
 
-    public LibraryItem(@NonNull View view, LibraryAdapter adapter) {
+    public ContentHolder(@NonNull View view, LibraryAdapter adapter) {
         super(view);
 
         this.adapter = adapter;

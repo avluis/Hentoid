@@ -45,11 +45,6 @@ public class HttpHelper {
     }
 
     @Nullable
-    public static <T> T getOnlineJson(String url, Class<T> type) throws IOException {
-        return getOnlineJson(url, null, true, type);
-    }
-
-    @Nullable
     public static <T> T getOnlineJson(String url, List<Pair<String, String>> headers, boolean useHentoidAgent, Class<T> type) throws IOException {
         ResponseBody resource = getOnlineResource(url, headers, useHentoidAgent).body();
         if (resource != null) {

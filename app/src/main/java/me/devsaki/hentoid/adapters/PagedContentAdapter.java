@@ -18,7 +18,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.viewholders.LibraryItem;
+import me.devsaki.hentoid.viewholders.ContentHolder;
 
 /**
  * Adapter for the library screen's endless mode
@@ -28,7 +28,7 @@ import me.devsaki.hentoid.viewholders.LibraryItem;
  *  *   - a "classic" RecyclerView.Adapter (for paged mode) <-- ContentAdapter
  *  *   - an PagedListAdapter (for endless mode) <-- current class
  */
-public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> implements LibraryAdapter {
+public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder> implements LibraryAdapter {
 
     // Listeners for holder click events
     private final Consumer<Content> onSourceClickListener;
@@ -49,13 +49,13 @@ public class PagedContentAdapter extends PagedListAdapter<Content, LibraryItem> 
 
     @NonNull
     @Override
-    public LibraryItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_download, parent, false);
-        return new LibraryItem(view, this);
+        return new ContentHolder(view, this);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull LibraryItem holder, int position) {
+    public void onBindViewHolder(@NonNull ContentHolder holder, int position) {
         Content content = getItem(position);
         if (content != null) holder.bind(content);
         else holder.clear();

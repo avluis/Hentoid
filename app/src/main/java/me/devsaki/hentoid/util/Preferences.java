@@ -333,7 +333,7 @@ public final class Preferences {
         public static final String PREF_REFRESH_LIBRARY = "pref_refresh_bookshelf";
         static final String PREF_WELCOME_DONE = "pref_welcome_done";
         static final String PREFS_VERSION_KEY = "prefs_version";
-        public static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
+        static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
         static final String PREF_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String PREF_FIRST_RUN = "pref_first_run";
@@ -374,7 +374,7 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        public static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
+        static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final int PREF_ORDER_CONTENT_DEFAULT = Constant.ORDER_CONTENT_TITLE_ALPHA;
         static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
@@ -397,7 +397,7 @@ public final class Preferences {
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
-        public static boolean PREF_CHECK_UPDATES_DEFAULT = true;
+        static boolean PREF_CHECK_UPDATES_DEFAULT = true;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

@@ -46,7 +46,7 @@ import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
-import me.devsaki.hentoid.adapters.ContentAdapter2;
+import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.LibraryAdapter;
 import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -81,7 +81,7 @@ public class LibraryFragment extends BaseFragment {
             .setSelectionChangedListener(this::onSelectionChanged)
             .build();
 
-    private final ContentAdapter2 pagerAdapter = new ContentAdapter2.Builder()
+    private final ContentAdapter pagerAdapter = new ContentAdapter.Builder()
             .setBookClickListener(this::onBookClick)
             .setSourceClickListener(this::onBookSourceClick)
             .setFavClickListener(this::onBookFavouriteClick)

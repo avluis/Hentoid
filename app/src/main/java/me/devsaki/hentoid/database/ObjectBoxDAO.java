@@ -84,19 +84,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         compositeDisposable.clear();
     }
 
-
-    @Override
-    public void getRecentBooksPaged(Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
-        compositeDisposable.add(
-                Single.fromCallable(
-                        () -> pagedContentSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
-                )
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
-        );
-    }
-
     @Override
     public void getRecentBookIds(Language language, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
         compositeDisposable.add(
@@ -107,18 +94,6 @@ public class ObjectBoxDAO implements CollectionDAO {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(contentIdQueryResult -> listener.onPagedResultReady(
                                 Helper.getListFromPrimitiveArray(contentIdQueryResult.contentIds), contentIdQueryResult.totalSelectedContent, contentIdQueryResult.totalContent))
-        );
-    }
-
-    @Override
-    public void searchBooksPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
-        compositeDisposable.add(
-                Single.fromCallable(
-                        () -> pagedContentSearch(Mode.SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly)
-                )
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
         );
     }
 
@@ -140,18 +115,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         compositeDisposable.add(
                 Single.fromCallable(
                         () -> pagedContentSearch(Mode.SEARCH_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly)
-                )
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
-        );
-    }
-
-    @Override
-    public void searchBooksUniversalPaged(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
-        compositeDisposable.add(
-                Single.fromCallable(
-                        () -> pagedContentSearch(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())

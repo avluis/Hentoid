@@ -337,7 +337,7 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    Query<Content> queryContentUniversalAttributes(String queryStr, boolean filterFavourites) {
+    private Query<Content> queryContentUniversalAttributes(String queryStr, boolean filterFavourites) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
 

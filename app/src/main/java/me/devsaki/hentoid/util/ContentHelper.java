@@ -13,8 +13,6 @@ import androidx.documentfile.provider.DocumentFile;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 import javax.annotation.Nonnull;
@@ -82,49 +80,6 @@ public final class ContentHelper {
             Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
         }
     }
-
-
-    public static void archiveContent(final Context context, Content content) {
-        Timber.d("Building file list for: %s", content.getTitle());
-        // Build list of files
-
-        File dir = getContentDownloadDir(content);
-
-        File[] files = dir.listFiles();
-        if (files != null && files.length > 0) {
-            Arrays.sort(files);
-            ArrayList<File> fileList = new ArrayList<>();
-            for (File file : files) {
-                String filename = file.getName();
-                if (filename.endsWith(".json") || filename.contains("thumb")) {
-                    break;
-                }
-                fileList.add(file);
-            }
-
-            // Create folder to share from
-            File sharedDir = new File(context.getExternalCacheDir() + "/shared");
-            if (FileUtil.makeDir(sharedDir)) {
-                Timber.d("Shared folder created.");
-            }
-
-            // Clean directory (in case of previous job)
-            if (FileHelper.cleanDirectory(sharedDir)) {
-                Timber.d("Shared folder cleaned up.");
-            }
-
-            // Build destination file
-            File dest = new File(context.getExternalCacheDir() + "/shared",
-                    content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + ".zip");
-            Timber.d("Destination file: %s", dest);
-
-            // Convert ArrayList to Array
-            File[] fileArray = fileList.toArray(new File[0]);
-            // Compress files
-            new ZipUtil.AsyncZip(context, dest).execute(fileArray, dest);
-        }
-    }
-
 
     /**
      * Open built-in image viewer telling it to display the images of the given Content
