@@ -223,7 +223,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
 
     private void onFavouriteClicked(View v) {
         adapter.getFavClickListener().accept(content);
-        adapter.notifyItemChanged(getLayoutPosition()); // Hack to display the blinking with PagedListAdapter
+        adapter.notifyItemChanged(getLayoutPosition()); // Hack to make fav icon blink with PagedListAdapter by force-rebinding the holder
     }
 
     private void onErrorClicked(View v) {

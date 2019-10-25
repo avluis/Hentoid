@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -611,6 +612,9 @@ public class LibraryFragment extends BaseFragment {
         });
 
         recyclerView = requireViewById(rootView, R.id.library_list);
+        RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
+        if (animator instanceof SimpleItemAnimator)
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
 
         // Pager
         pager.initUI(rootView);
