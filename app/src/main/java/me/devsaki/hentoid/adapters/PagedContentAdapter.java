@@ -71,14 +71,14 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
     @Override
     public long getSelectedItemsCount() {
         if (getCurrentList() != null)
-            return Stream.of(getCurrentList()).filter(Content::isSelected).count(); // TODO doesn't this ruin the performance ?
+            return Stream.of(getCurrentList()).filter(c -> c != null).filter(Content::isSelected).count();
         else return 0;
     }
 
     @Override
     public List<Content> getSelectedItems() {
         if (getCurrentList() != null)
-            return Stream.of(getCurrentList()).filter(Content::isSelected).toList(); // TODO doesn't this ruin the performance ?
+            return Stream.of(getCurrentList()).filter(c -> c != null).filter(Content::isSelected).toList();
         else return Collections.emptyList();
     }
 
