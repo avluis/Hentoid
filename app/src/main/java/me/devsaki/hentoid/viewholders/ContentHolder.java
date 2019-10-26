@@ -2,6 +2,7 @@ package me.devsaki.hentoid.viewholders;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -201,8 +202,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full);
             }
-        }
-        else {
+        } else {
             ivFavourite.clearAnimation();
             if (content.isFavourite()) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full);
@@ -231,7 +231,9 @@ public class ContentHolder extends RecyclerView.ViewHolder {
 
     private void onFavouriteClicked(View v) {
         adapter.getFavClickListener().accept(content);
-        adapter.notifyItemChanged(getLayoutPosition()); // Hack to make fav icon blink with PagedListAdapter by force-rebinding the holder
+        // Hack to make fav icon blink with PagedListAdapter by force-rebinding the holder
+        // Call is delayed to give time for the adapter list to be updated by LiveData
+        new Handler().postDelayed(() -> adapter.notifyItemChanged(getLayoutPosition()), 100);
     }
 
     private void onErrorClicked(View v) {
