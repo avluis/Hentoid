@@ -28,6 +28,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.SelectableAdapter;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
+import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.enums.DrawerItem;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.viewholders.DrawerItemFlex;
@@ -62,17 +63,27 @@ public final class NavigationDrawerFragment extends Fragment {
         Drawable d = ContextCompat.getDrawable(parentActivity, R.drawable.line_divider);
         if (d != null) divider.setDrawable(d);
 
-        View view = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
 
-        RecyclerView recyclerView = view.findViewById(R.id.drawer_list);
+        View btn = rootView.findViewById(R.id.drawer_prefs_btn);
+        btn.setOnClickListener(this::onPrefsClick);
+
+        btn = rootView.findViewById(R.id.drawer_edit_btn);
+        btn.setOnClickListener(this::onEditClick);
+
+        RecyclerView recyclerView = rootView.findViewById(R.id.drawer_list);
         recyclerView.setAdapter(drawerAdapter);
         recyclerView.addItemDecoration(divider);
 
-        return view;
+        return rootView;
     }
 
     private boolean onItemClick(View view, int position) {
-        Class activityClass = DrawerItem.values()[position].activityClass;
+        launchActivity(DrawerItem.values()[position].activityClass);
+        return true;
+    }
+
+    private void launchActivity(@NonNull Class activityClass) {
         Intent intent = new Intent(parentActivity, activityClass);
         Bundle bundle = ActivityOptionsCompat
                 .makeCustomAnimation(parentActivity, R.anim.fade_in, R.anim.fade_out)
@@ -81,8 +92,6 @@ public final class NavigationDrawerFragment extends Fragment {
 
         parentActivity.overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         parentActivity.onNavigationDrawerItemClicked();
-
-        return true;
     }
 
     private void showFlagAboutItem() {
@@ -111,5 +120,13 @@ public final class NavigationDrawerFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
+    }
+
+    private void onPrefsClick(View view) {
+        launchActivity(PrefsActivity.class);
+    }
+
+    private void onEditClick(View view) {
+        // TODO
     }
 }
