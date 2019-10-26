@@ -166,6 +166,12 @@ public class ContentDownloadService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Timber.d("New intent processed");
 
+        // Process these here to avoid initializing notifications for downloads that will never start
+        if (ContentQueueManager.getInstance().isQueuePaused()) {
+            Timber.w("Queue is paused. Aborting download.");
+            return;
+        }
+
         // TODO remove when issue #349 fixed
         double ticks = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
         Crashlytics.log("New intent processed at (s) " + String.format(Locale.US, "%.2f", ticks));
@@ -174,6 +180,7 @@ public class ContentDownloadService extends IntentService {
 
         Content content = downloadFirstInQueue();
         if (content != null) watchProgress(content);
+        else notificationManager.cancel();
     }
 
     // The following 3 overrides are there to attempt fixing https://stackoverflow.com/questions/55894636/android-9-pie-context-startforegroundservice-did-not-then-call-service-star
@@ -204,17 +211,22 @@ public class ContentDownloadService extends IntentService {
     /**
      * Start the download of the 1st book of the download queue
      *
-     * @return 1st book of the download queue
+     * NB : This method is not only called the 1st time the queue is awakened,
+     * but also after every book has finished downloading
+     *
+     * @return 1st book of the download queue; null if no book is available to download
      */
     @Nullable
     private Content downloadFirstInQueue() {
-        // Check if queue is already paused
+        // Check if queue has been paused
         if (ContentQueueManager.getInstance().isQueuePaused()) {
             Timber.w("Queue is paused. Aborting download.");
             return null;
         }
 
-        // Works on first item of queue
+        // Work on first item of queue
+
+        // Check if there is a first item to process
         List<QueueRecord> queue = db.selectQueue();
         if (queue.isEmpty()) {
             Timber.w("Queue is empty. Aborting download.");
@@ -228,6 +240,7 @@ public class ContentDownloadService extends IntentService {
             db.deleteQueue(0);
             content = new Content().setId(queue.get(0).content.getTargetId()); // Must supply content ID to the event for the UI to update properly
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
+            notificationManager.notify(new DownloadErrorNotification());
             return null;
         }
 
@@ -235,6 +248,7 @@ public class ContentDownloadService extends IntentService {
             Timber.w("Content is already downloaded. Aborting download.");
             db.deleteQueue(0);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
+            notificationManager.notify(new DownloadErrorNotification(content));
             return null;
         }
 
@@ -317,10 +331,12 @@ public class ContentDownloadService extends IntentService {
             db.deleteQueue(content);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             HentoidApp.trackDownloadEvent("Error");
+            notificationManager.notify(new DownloadErrorNotification(content));
             return null;
         }
 
         // In case the download has been canceled while in preparation phase
+        // NB : No log of any sort because this is normal behaviour
         if (downloadCanceled || downloadSkipped) return null;
 
         // Create destination folder for images to be downloaded
