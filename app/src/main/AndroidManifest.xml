@@ -81,16 +81,6 @@
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.DownloadsActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_downloads"
-            android:launchMode="singleTop"
-            android:theme="@style/AppTheme.NoActionBar.Overlay">
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-        </activity>
-        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -104,33 +94,33 @@
             android:name=".activities.QueueActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_queue"
-            android:parentActivityName=".activities.DownloadsActivity"
+            android:parentActivityName=".activities.LibraryActivity"
             android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
+                android:value=".activities.LibraryActivity" />
         </activity>
         <activity
             android:name=".activities.PrefsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
-            android:parentActivityName=".activities.DownloadsActivity"
+            android:parentActivityName=".activities.LibraryActivity"
             android:theme="@style/PrefsTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
+                android:value=".activities.LibraryActivity" />
         </activity>
         <activity
             android:name=".activities.AboutActivity"
             android:label="@string/title_activity_about"
-            android:parentActivityName=".activities.DownloadsActivity"
+            android:parentActivityName=".activities.LibraryActivity"
             android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
+                android:value=".activities.LibraryActivity" />
         </activity>
         <activity
             android:name=".activities.SearchActivity"
@@ -297,7 +287,7 @@
             android:theme="@style/AppTheme.NoActionBar.Monochrome">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
+                android:value=".activities.LibraryActivity" />
         </activity>
 
         <service
