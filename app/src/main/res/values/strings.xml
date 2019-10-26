@@ -110,14 +110,13 @@
     <string name="redownload_view_log">View detailed error log</string>
     <string name="redownload_log_saved">Log saved</string>
 
-    <!-- Downloads fragment -->
+    <!-- Library fragment -->
     <string name="ask_delete">Are you sure you wish to delete this?</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
     </plurals>
     <string name="deleted">\@content deleted.</string>
-    <string name="new_content">New Content!</string>
     <string name="not_previous_page">First page - can\'t proceed any further.</string>
     <string name="not_next_page">Last page - download more!</string>
     <string name="on_first_page">Already on the first page.</string>

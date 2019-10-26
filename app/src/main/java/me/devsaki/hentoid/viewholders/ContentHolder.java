@@ -98,11 +98,6 @@ public class ContentHolder extends RecyclerView.ViewHolder {
             baseLayout.startAnimation(new BlinkAnimation(500, 250));
         else
             baseLayout.clearAnimation();
-
-        if (content.isBeingFavourited())
-            ivFavourite.startAnimation(new BlinkAnimation(500, 250));
-        else
-            ivFavourite.clearAnimation();
     }
 
     private void attachCover(Content content) {
@@ -197,10 +192,23 @@ public class ContentHolder extends RecyclerView.ViewHolder {
 
         // Favourite icon
         ivFavourite.setOnClickListener(this::onFavouriteClicked);
-        if (content.isFavourite()) {
-            ivFavourite.setImageResource(R.drawable.ic_fav_full);
-        } else {
-            ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+
+        // When transitioning to the other state, button blinks with its target state
+        if (content.isBeingFavourited()) {
+            ivFavourite.startAnimation(new BlinkAnimation(500, 250));
+            if (content.isFavourite()) {
+                ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+            } else {
+                ivFavourite.setImageResource(R.drawable.ic_fav_full);
+            }
+        }
+        else {
+            ivFavourite.clearAnimation();
+            if (content.isFavourite()) {
+                ivFavourite.setImageResource(R.drawable.ic_fav_full);
+            } else {
+                ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+            }
         }
 
         // Error icon

@@ -97,7 +97,10 @@ public class LibraryFragment extends BaseFragment {
     private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = this::onSharedPreferenceChanged;
 
     // ======== UI
+    // Wrapper for the bottom pager
     private final LibraryPager pager = new LibraryPager(this::handleNewPage);
+    // Text that displays in the background when the list is empty
+    private TextView emptyText;
     // "Search" button on top menu
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
@@ -597,6 +600,8 @@ public class LibraryFragment extends BaseFragment {
      * @param rootView Root view of the library screen
      */
     private void initUI(View rootView) {
+        emptyText = rootView.findViewById(R.id.library_empty_txt);
+
         advancedSearchBar = rootView.findViewById(R.id.advanced_search_group);
         // TextView used as advanced search button
         TextView advancedSearchButton = rootView.findViewById(R.id.advanced_search_btn);
@@ -612,6 +617,7 @@ public class LibraryFragment extends BaseFragment {
         });
 
         recyclerView = requireViewById(rootView, R.id.library_list);
+        // Disable blink animation on card change (bind holder)
         RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator)
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
@@ -699,6 +705,14 @@ public class LibraryFragment extends BaseFragment {
 
         updateTitle(result.size(), totalContentCount);
 
+        // Update background text
+        if (result.isEmpty()) {
+            emptyText.setVisibility(View.VISIBLE);
+            if (isSearchQueryActive()) emptyText.setText(R.string.search_entry_not_found);
+            else emptyText.setText(R.string.downloads_empty_library);
+        } else emptyText.setVisibility(View.GONE);
+
+        // Update visibility of advanced search bar
         if (isSearchQueryActive()) {
             advancedSearchBar.setVisibility(View.VISIBLE);
             searchClearButton.setVisibility(View.VISIBLE);
@@ -719,6 +733,7 @@ public class LibraryFragment extends BaseFragment {
             SearchBookIdDialogFragment.invoke(requireFragmentManager(), query, siteCodes);
         }
 
+        // Update displayed books
         if (Preferences.getEndlessScroll()) endlessAdapter.submitList(result);
         else {
             if (newSearch) pager.setCurrentPage(1);
