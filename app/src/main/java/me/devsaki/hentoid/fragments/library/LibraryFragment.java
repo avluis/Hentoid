@@ -654,9 +654,13 @@ public class LibraryFragment extends BaseFragment {
             recyclerView.setAdapter(endlessAdapter);
             if (library != null) endlessAdapter.submitList(library);
         } else {
-            pager.show();
             recyclerView.setAdapter(pagerAdapter);
-            if (library != null) loadBookshelf(library);
+            pager.setCurrentPage(1);
+            pager.show();
+            if (library != null) {
+                pager.setPageCount((int) Math.ceil(library.size() * 1.0 / Preferences.getContentPageQuantity()));
+                loadBookshelf(library);
+            }
         }
     }
 
