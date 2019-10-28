@@ -580,14 +580,13 @@ public class Content implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-        return favourite == content.favourite &&
-                Objects.equals(url, content.url) &&
+        return Objects.equals(url, content.url) &&
                 site == content.site;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url, site, favourite);
+        return Objects.hash(url, site);
     }
 
     public static Comparator<Content> getComparator() {
