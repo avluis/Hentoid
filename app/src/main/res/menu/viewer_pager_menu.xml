@@ -11,16 +11,18 @@
         android:title="@string/viewer_favourite_off"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_settings"
-        android:enabled="true"
-        android:icon="@drawable/ic_settings"
-        android:title="@string/open_settings"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/action_shuffle"
         android:enabled="true"
         android:icon="@drawable/ic_menu_sort_random"
         android:orderInCategory="1"
         android:title="@string/viewer_order_shuffle"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_settings"
+        android:enabled="true"
+        android:icon="@drawable/ic_settings"
+        android:orderInCategory="2"
+        android:title="@string/open_settings"
+        app:showAsAction="always" />
+
 </menu>

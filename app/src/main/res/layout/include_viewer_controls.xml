@@ -152,4 +152,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="ContentDescription" />
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/viewer_pager_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorPrimaryVariant"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:longClickable="true"
+        android:minHeight="?android:attr/actionBarSize"
+        android:textAlignment="center"
+        android:textSize="@dimen/text_subtitle_2"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,15 +2,12 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
@@ -33,7 +30,7 @@ public class ImageGalleryFragment extends Fragment {
 
     private ImageGalleryAdapter galleryImagesAdapter;
     private ImageViewerViewModel viewModel;
-    private MenuItem favouritesFilterMenu;
+    private MenuItem showFavouritePagesButton;
 
     private int startIndex = 0;
 
@@ -60,7 +57,25 @@ public class ImageGalleryFragment extends Fragment {
         setHasOptionsMenu(true);
         viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
 
-        initUI(view);
+        galleryImagesAdapter = new ImageGalleryAdapter(null, this::onFavouriteClick);
+        galleryImagesAdapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
+        RecyclerView recyclerView = requireViewById(view, R.id.viewer_gallery_recycler);
+        recyclerView.setAdapter(galleryImagesAdapter);
+
+        Toolbar toolbar = requireViewById(view, R.id.viewer_gallery_toolbar);
+        toolbar.inflateMenu(R.menu.viewer_gallery_menu);
+        toolbar.setTitle("Gallery");
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
+
+        toolbar.setOnMenuItemClickListener(clickedMenuItem-> {
+            if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
+                toggleFavouritesDisplay();
+            }
+            return true;
+        });
+        showFavouritePagesButton = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
+        updateFavouriteDisplay();
 
         return view;
     }
@@ -71,39 +86,6 @@ public class ImageGalleryFragment extends Fragment {
 
         viewModel.getStartingIndex().observe(this, this::onStartingIndexChanged);
         viewModel.getImages().observe(this, this::onImagesChanged);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            requireActivity().onBackPressed();
-            return true;
-        } else if (item.getItemId() == R.id.gallery_menu_action_favourites) {
-            toggleFavouritesDisplay();
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull final Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.viewer_gallery_menu, menu);
-        favouritesFilterMenu = menu.findItem(R.id.gallery_menu_action_favourites);
-        updateFavouriteDisplay();
-    }
-
-    private void initUI(View rootView) {
-        Toolbar toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
-        ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
-        toolbar.setTitle("Gallery");
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
-
-        galleryImagesAdapter = new ImageGalleryAdapter(null, this::onFavouriteClick);
-        galleryImagesAdapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
-        RecyclerView recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
-        recyclerView.setAdapter(galleryImagesAdapter);
     }
 
     private void onImagesChanged(List<ImageFile> images) {
@@ -145,7 +127,7 @@ public class ImageGalleryFragment extends Fragment {
             }
         } else galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder());
 
-        favouritesFilterMenu.setVisible(galleryImagesAdapter.isFavouritePresent());
+        showFavouritePagesButton.setVisible(galleryImagesAdapter.isFavouritePresent());
     }
 
     private void toggleFavouritesDisplay() {
@@ -155,8 +137,8 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private void updateFavouriteDisplay() {
-        favouritesFilterMenu.setVisible(galleryImagesAdapter.isFavouritePresent());
-        favouritesFilterMenu.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
+        showFavouritePagesButton.setVisible(galleryImagesAdapter.isFavouritePresent());
+        showFavouritePagesButton.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
     }
 
     private void updateListFilter() {

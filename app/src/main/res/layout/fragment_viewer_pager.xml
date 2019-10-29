@@ -6,21 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".activities.ImageViewerActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/viewer_pager_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?colorPrimaryVariant"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:longClickable="true"
-        android:minHeight="?android:attr/actionBarSize"
-        android:textAlignment="center"
-        android:textSize="@dimen/text_subtitle_2"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <me.devsaki.hentoid.views.ZoomableFrame
         android:id="@+id/image_viewer_zoom_frame"
         android:layout_width="0dp"
@@ -28,7 +13,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewer_pager_toolbar">
+        app:layout_constraintTop_toTopOf="parent">
 
         <me.devsaki.hentoid.views.ZoomableRecyclerView
             android:id="@+id/image_viewer_zoom_recycler"

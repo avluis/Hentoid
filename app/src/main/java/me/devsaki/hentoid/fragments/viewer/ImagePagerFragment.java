@@ -101,15 +101,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private View favouritesGalleryBtn;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setHasOptionsMenu(true);
-    }
-
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_viewer, container, false);
+        View view = inflater.inflate(R.layout.fragment_viewer_pager, container, false);
 
         Preferences.registerPrefsChangedListener(listener);
         viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
@@ -121,16 +114,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         onUpdateSwipeToFling();
         onUpdatePageNumDisplay();
 
-        initUI(view);
-
-        return view;
-    }
-
-    private void initUI(View view) {
         toolbar = requireViewById(view, R.id.viewer_pager_toolbar);
-        toolbar.inflateMenu(R.menu.viewer_menu);
-        favoritePageButton = toolbar.getMenu().findItem(R.id.action_favourite_page);
-        shuffleButton = toolbar.getMenu().findItem(R.id.action_shuffle);
+        toolbar.inflateMenu(R.menu.viewer_pager_menu);
+
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> onBackClick());
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem-> {
             switch(clickedMenuItem.getItemId()) {
@@ -146,9 +134,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             }
             return true;
         });
+        favoritePageButton = toolbar.getMenu().findItem(R.id.action_favourite_page);
+        shuffleButton = toolbar.getMenu().findItem(R.id.action_shuffle);
 
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        toolbar.setNavigationOnClickListener(v -> onBackClick());
+        return view;
     }
 
     @Override
