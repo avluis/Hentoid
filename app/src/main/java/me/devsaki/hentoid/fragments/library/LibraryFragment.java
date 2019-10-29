@@ -173,7 +173,7 @@ public class LibraryFragment extends BaseFragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull final Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.downloads_menu, menu);
+        inflater.inflate(R.menu.library_menu, menu);
 
         orderMenu = menu.findItem(R.id.action_order);
         searchMenu = menu.findItem(R.id.action_search);
@@ -249,7 +249,7 @@ public class LibraryFragment extends BaseFragment {
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             // Inflate a menu resource providing context menu items
             MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.downloads_context_menu, menu);
+            inflater.inflate(R.menu.library_context_menu, menu);
 
             return true;
         }
@@ -276,18 +276,15 @@ public class LibraryFragment extends BaseFragment {
                 case R.id.action_share:
                     shareSelectedItems();
                     mode.finish();
-
                     return true;
                 case R.id.action_delete:
                 case R.id.action_delete_sweep:
                     purgeSelectedItems();
                     mode.finish();
-
                     return true;
                 case R.id.action_archive:
                     archiveSelectedItems();
                     mode.finish();
-
                     return true;
                 default:
                     return false;

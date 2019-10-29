@@ -10,53 +10,6 @@
     <!-- Top bar -->
 
     <ImageButton
-        android:id="@+id/viewer_back_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="?colorPrimaryVariant"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="8dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_arrow_back"
-        android:tint="?colorOnPrimary"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
-
-    <TextView
-        android:id="@+id/viewer_book_info_text"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
-        android:background="?colorPrimaryVariant"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:padding="8dp"
-        android:textAlignment="center"
-        android:textSize="@dimen/text_subtitle_2"
-        android:textColor="?colorOnPrimary"
-        app:layout_constraintStart_toEndOf="@id/viewer_back_btn"
-        app:layout_constraintEnd_toStartOf="@id/viewer_settings_btn"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Title\nby Artist" />
-
-    <ImageButton
-        android:id="@+id/viewer_settings_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="?colorPrimaryVariant"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="8dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_settings"
-        android:tint="?colorOnPrimary"
-        app:layout_constraintEnd_toStartOf="@id/viewer_more_btn"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
-
-    <ImageButton
         android:id="@+id/viewer_more_btn"
         android:layout_width="48dp"
         android:layout_height="48dp"
@@ -72,80 +25,6 @@
         tools:ignore="ContentDescription" />
 
     <!-- "More" menu -->
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/viewer_more_menu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?colorPrimaryVariant"
-        android:padding="8dp"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewer_more_btn">
-
-        <ImageButton
-            android:id="@+id/viewer_shuffle_btn"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="8dp"
-            android:background="@color/transparent"
-            android:clickable="true"
-            android:focusable="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_menu_sort_random"
-            android:tint="?colorOnPrimary"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            android:id="@+id/viewer_shuffle_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:padding="8dp"
-            android:text="@string/viewer_order_shuffle"
-            android:textAlignment="center"
-            android:textSize="@dimen/text_subtitle_2"
-            android:textColor="?colorOnPrimary"
-            app:layout_constraintBottom_toBottomOf="@id/viewer_shuffle_btn"
-            app:layout_constraintStart_toEndOf="@id/viewer_shuffle_btn"
-            app:layout_constraintTop_toTopOf="@id/viewer_shuffle_btn" />
-
-        <ImageButton
-            android:id="@+id/viewer_favourite_btn"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="8dp"
-            android:background="@color/transparent"
-            android:clickable="true"
-            android:focusable="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_fav_empty"
-            android:tint="?colorOnPrimary"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/viewer_shuffle_btn"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            android:id="@+id/viewer_favourite_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:padding="8dp"
-            android:text="@string/viewer_favourite_off"
-            android:textAlignment="center"
-            android:textSize="@dimen/text_subtitle_2"
-            android:textColor="?colorOnPrimary"
-            app:layout_constraintBottom_toBottomOf="@id/viewer_favourite_btn"
-            app:layout_constraintStart_toEndOf="@id/viewer_favourite_btn"
-            app:layout_constraintTop_toTopOf="@id/viewer_favourite_btn" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Bottom bar -->
 
