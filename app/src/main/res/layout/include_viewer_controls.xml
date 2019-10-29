@@ -7,25 +7,6 @@
     android:background="@color/transparent"
     android:fitsSystemWindows="true">
 
-    <!-- Top bar -->
-
-    <ImageButton
-        android:id="@+id/viewer_more_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="?colorPrimaryVariant"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="8dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_action_more_vertical"
-        android:tint="?colorOnPrimary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
-
-    <!-- "More" menu -->
-
     <!-- Bottom bar -->
 
     <View

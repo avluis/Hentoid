@@ -130,7 +130,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         toolbar = requireViewById(view, R.id.viewer_pager_toolbar);
         toolbar.inflateMenu(R.menu.viewer_menu);
         favoritePageButton = toolbar.getMenu().findItem(R.id.action_favourite_page);
-        MenuItem settingsButton = toolbar.getMenu().findItem(R.id.action_settings);
         shuffleButton = toolbar.getMenu().findItem(R.id.action_shuffle);
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem-> {
