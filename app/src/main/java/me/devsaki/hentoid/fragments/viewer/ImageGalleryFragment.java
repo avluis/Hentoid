@@ -75,7 +75,6 @@ public class ImageGalleryFragment extends Fragment {
             return true;
         });
         showFavouritePagesButton = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
-        updateFavouriteDisplay();
 
         return view;
     }
@@ -95,6 +94,7 @@ public class ImageGalleryFragment extends Fragment {
             galleryImagesAdapter.addItem(holder);
         }
         updateListFilter();
+        updateFavouriteDisplay();
     }
 
     private void onStartingIndexChanged(Integer startingIndex) {
