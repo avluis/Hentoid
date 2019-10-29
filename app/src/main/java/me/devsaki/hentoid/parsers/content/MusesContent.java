@@ -53,10 +53,12 @@ public class MusesContent implements ContentParser {
     public Content toContent(@Nonnull String url) {
         // Gallery pages are the only ones whose gallery links end with numbers
         // The others are album lists
-        for (int i = 0; i < thumbLinks.size(); i++) {
-            if (!thumbLinks.get(i).endsWith("/" + (i + 1)))
-                return new Content().setStatus(StatusContent.IGNORED);
+        int nbImages = 0;
+        for (String thumbLink : thumbLinks) {
+            int numSeparator = thumbLink.lastIndexOf('/');
+            if (Helper.isNumeric(thumbLink.substring(numSeparator + 1))) nbImages++;
         }
+        if (nbImages < thumbLinks.size() / 3) return new Content().setStatus(StatusContent.IGNORED);
 
         Content result = new Content();
 
@@ -109,7 +111,7 @@ public class MusesContent implements ContentParser {
         }
 
 
-        result.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
+        result.setQtyPages(nbImages);
 
         String[] thumbParts;
         int index = 1;
@@ -127,7 +129,7 @@ public class MusesContent implements ContentParser {
 
         // Tags are not shown on the album page, but on the picture page (!)
         try {
-            Document doc = HttpHelper.getOnlineDocument(Site.MUSES.getUrl() + thumbLinks.get(0));
+            Document doc = HttpHelper.getOnlineDocument(Site.MUSES.getUrl() + thumbLinks.get(thumbLinks.size() - 1));
             if (doc != null) {
                 Elements elements = doc.select(".album-tags a[href*='/search/tag']");
                 if (!elements.isEmpty())
