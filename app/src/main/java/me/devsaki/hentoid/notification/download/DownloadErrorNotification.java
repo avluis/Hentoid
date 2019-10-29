@@ -17,6 +17,10 @@ public class DownloadErrorNotification implements Notification {
 
     private final Content content;
 
+    public DownloadErrorNotification() {
+        this.content = null;
+    }
+
     public DownloadErrorNotification(Content content) {
         this.content = content;
     }
@@ -24,10 +28,11 @@ public class DownloadErrorNotification implements Notification {
     @NonNull
     @Override
     public android.app.Notification onCreateNotification(Context context) {
+        String contentTitle = (content != null) ? content.getTitle() : "";
         return new NotificationCompat.Builder(context, DownloadNotificationChannel.ID)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setContentTitle(context.getString(R.string.download_error))
-                .setContentText(content.getTitle())
+                .setContentText(contentTitle)
                 .setContentIntent(getDefaultIntent(context))
                 .setDeleteIntent(getDeleteIntent(context))
                 .setLocalOnly(true)
