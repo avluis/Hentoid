@@ -48,7 +48,7 @@ public class Content implements Serializable {
     private String author;
     private ToMany<Attribute> attributes;
     private String coverImageUrl;
-    private int qtyPages = 0;
+    private Integer qtyPages = 0; // Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
     private long uploadDate;
     private long downloadDate = 0;
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
