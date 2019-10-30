@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
@@ -96,6 +97,11 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
         }
     }
 
+    @Nullable
+    public Content getItemAtPosition(int pos) {
+        return this.getItem(pos);
+    }
+
     public Consumer<Content> getOnSourceClickListener() {
         return onSourceClickListener;
     }
@@ -124,7 +130,7 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
                 }
 
                 @Override
-                public boolean areContentsTheSame(Content oldContent,
+                public boolean areContentsTheSame(@NonNull Content oldContent,
                                                   @NonNull Content newContent) {
                     return oldContent.equals(newContent)
                             && oldContent.getLastReadDate() == newContent.getLastReadDate()

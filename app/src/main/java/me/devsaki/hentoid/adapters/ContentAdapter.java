@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
@@ -21,11 +22,11 @@ import me.devsaki.hentoid.viewholders.ContentHolder;
 
 /**
  * Adapter for the library screen's paged mode
- *
+ * <p>
  * NB : FlexibleAdapter has not been used yet because v5.1.0 does not support PagedList
  * We're using instead :
- *   - a "classic" RecyclerView.Adapter (for paged mode) <-- current class
- *   - an PagedListAdapter (for endless mode) <-- PagedContentAdapter
+ * - a "classic" RecyclerView.Adapter (for paged mode) <-- current class
+ * - an PagedListAdapter (for endless mode) <-- PagedContentAdapter
  */
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements LibraryAdapter {
 
@@ -103,6 +104,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 notifyItemChanged(i);
             }
         }
+    }
+
+    @Nullable
+    public Content getItemAtPosition(int pos) {
+        if (pos < 0 || pos > shelf.size() - 1) return null;
+        return shelf.get(pos);
     }
 
     public Consumer<Content> getOnSourceClickListener() {
