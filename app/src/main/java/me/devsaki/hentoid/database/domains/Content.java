@@ -48,7 +48,7 @@ public class Content implements Serializable {
     private String author;
     private ToMany<Attribute> attributes;
     private String coverImageUrl;
-    private Integer qtyPages;
+    private Integer qtyPages = 0; // Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
     private long uploadDate;
     private long downloadDate = 0;
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
@@ -374,11 +374,11 @@ public class Content implements Serializable {
         return this;
     }
 
-    public Integer getQtyPages() {
+    public int getQtyPages() {
         return qtyPages;
     }
 
-    public Content setQtyPages(Integer qtyPages) {
+    public Content setQtyPages(int qtyPages) {
         this.qtyPages = qtyPages;
         return this;
     }
@@ -437,7 +437,7 @@ public class Content implements Serializable {
     }
 
     public void computePercent() {
-        if (imageFiles != null && 0 == percent) {
+        if (imageFiles != null && 0 == percent && qtyPages > 0) {
             long progress = Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.ERROR).count();
             percent = progress * 100.0 / qtyPages;
         }
