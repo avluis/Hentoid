@@ -2,6 +2,7 @@ package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.annimon.stream.Stream;
 
@@ -206,11 +207,11 @@ public class Content implements Serializable {
         }
     }
 
-    public Class<?> getWebActivityClass() {
+    public Class<? extends AppCompatActivity> getWebActivityClass() {
         return getWebActivityClass(this.site);
     }
 
-    public static Class<?> getWebActivityClass(Site site) {
+    public static Class<? extends AppCompatActivity> getWebActivityClass(Site site) {
         switch (site) {
             case HITOMI:
                 return HitomiActivity.class;
