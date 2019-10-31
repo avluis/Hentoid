@@ -21,8 +21,8 @@ public class HitomiContent implements ContentParser {
     private String coverUrl;
     @Selector("h1 a[href*='/reader/']")
     private String title;
-    @Selector(".thumbnail-container")
-    private List<Element> pages;
+//    @Selector(".thumbnail-container")
+//    private List<Element> pages;
     @Selector(value = "div.gallery h2 a[href^='/artist']")
     private List<Element> artists;
     @Selector(value = "div.gallery tr a[href^='/group']")
@@ -43,13 +43,12 @@ public class HitomiContent implements ContentParser {
         Content result = new Content();
 
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty() || null == pages) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
         result.setSite(Site.HITOMI);
         result.setUrl(theUrl.replace("/reader", ""));
         result.setCoverImageUrl("https:"+ coverUrl);
         result.setTitle(title);
-        result.setQtyPages(pages.size());
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.HITOMI);
