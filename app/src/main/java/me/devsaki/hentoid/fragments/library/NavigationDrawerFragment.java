@@ -27,6 +27,7 @@ import java.util.List;
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.SelectableAdapter;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.DrawerEditActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.enums.DrawerItem;
@@ -127,6 +128,6 @@ public final class NavigationDrawerFragment extends Fragment {
     }
 
     private void onEditClick(View view) {
-        // TODO
+        launchActivity(DrawerEditActivity.class);
     }
 }
