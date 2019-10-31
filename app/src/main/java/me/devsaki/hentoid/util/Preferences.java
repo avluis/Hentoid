@@ -5,7 +5,14 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
 
+import com.annimon.stream.Stream;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.P;
@@ -318,6 +325,21 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_RETRIES_MEM_LIMIT, Integer.toString(Default.PREF_DL_RETRIES_MEM_LIMIT)) + "");
     }
 
+    public static List<Site> getActiveSites() {
+        String siteCodesStr = sharedPreferences.getString(Key.ACTIVE_SITES, Default.ACTIVE_SITES) + "";
+        if (siteCodesStr.isEmpty()) return Collections.emptyList();
+
+        List<String> siteCodes = Arrays.asList(siteCodesStr.split(","));
+        return Stream.of(siteCodes).map(s -> Site.searchByCode(Long.valueOf(s))).toList();
+    }
+
+    public static void setActiveSites(List<Site> activeSites) {
+        List<Integer> siteCodes = Stream.of(activeSites).map(Site::getCode).toList();
+        sharedPreferences.edit()
+                .putString(Key.ACTIVE_SITES, android.text.TextUtils.join(",", siteCodes))
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -359,6 +381,7 @@ public final class Preferences {
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
+        public static final String ACTIVE_SITES = "active_sites";
 
         //Keys that were removed from the app, kept for housekeeping
         static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -397,7 +420,8 @@ public final class Preferences {
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
-        static boolean PREF_CHECK_UPDATES_DEFAULT = true;
+        static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
+        static final String ACTIVE_SITES = Site.HITOMI.getCode() + "," + Site.NHENTAI.getCode() + "," + Site.HENTAICAFE.getCode() + "," + Site.TSUMINO.getCode() + "," + Site.EHENTAI.getCode();
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

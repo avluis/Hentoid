@@ -13,6 +13,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.SiteFlex;
 
 /**
@@ -50,12 +51,19 @@ public class DrawerEditActivity extends BaseActivity {
 
         // Recycler
         List<SiteFlex> items = new ArrayList<>();
+        List<Site> activeSites = Preferences.getActiveSites();
+
+        // First add active sites
+        for (Site s : activeSites) items.add(new SiteFlex(s, true));
+        // Then add the others
         for (Site s : Site.values())
             // We don't want to show these
             if (s != Site.FAKKU                     // Old Fakku; kept for retrocompatibility
                     && s != Site.ASMHENTAI_COMICS   // Does not work directly
                     && s != Site.PANDA              // Dropped; kept for retrocompatibility
-                    && s != Site.NONE)              // Technical fallback)
+                    && s != Site.NONE               // Technical fallback
+                    && !activeSites.contains(s)
+            )
                 items.add(new SiteFlex(s));
 
         siteAdapter = new FlexibleAdapter<>(items, null, true);
@@ -71,15 +79,22 @@ public class DrawerEditActivity extends BaseActivity {
     }
 
     private void onCheckAll() {
-
+        for (SiteFlex s : siteAdapter.getCurrentItems()) s.setSelected(true);
+        siteAdapter.notifyDataSetChanged();
     }
 
     private void onUncheckAll() {
-
+        for (SiteFlex s : siteAdapter.getCurrentItems()) s.setSelected(false);
+        siteAdapter.notifyDataSetChanged();
     }
 
-    private void onValidateClick(View item) {
-        // TODO - record selected sites and their order
+    private void onValidateClick(View view) {
+        List<Site> newSites = new ArrayList<>();
+        for (SiteFlex s : siteAdapter.getCurrentItems())
+            if (s.isSelected()) newSites.add(s.getSite());
+
+        Preferences.setActiveSites(newSites);
+
         onBackPressed();
     }
 }

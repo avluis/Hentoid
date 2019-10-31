@@ -5,6 +5,8 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.annimon.stream.function.Consumer;
+
 import java.util.List;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
@@ -23,8 +25,21 @@ public class SiteFlex extends AbstractFlexibleItem<SiteFlex.SiteViewHolder> {
         this.site = site;
     }
 
+    public SiteFlex(Site site, boolean selected) {
+        this.site = site;
+        this.selected = selected;
+    }
+
     public void setSelected(boolean selected) {
         this.selected = selected;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public Site getSite() {
+        return site;
     }
 
     @Override
@@ -53,8 +68,9 @@ public class SiteFlex extends AbstractFlexibleItem<SiteFlex.SiteViewHolder> {
 
     @Override
     public void bindViewHolder(FlexibleAdapter<IFlexible> adapter, SiteViewHolder holder, int position, List<Object> payloads) {
-        holder.setContent(site, selected);
+        holder.setSite(site, selected, b -> selected = b);
     }
+
 
     class SiteViewHolder extends FlexibleViewHolder {
 
@@ -72,10 +88,11 @@ public class SiteFlex extends AbstractFlexibleItem<SiteFlex.SiteViewHolder> {
             chk = view.findViewById(R.id.drawer_item_chk);
         }
 
-        void setContent(Site site, boolean checked) {
+        void setSite(Site site, boolean checked, Consumer<Boolean> onSelectChange) {
             title.setText(site.getDescription());
             icon.setImageResource(site.getIco());
             chk.setChecked(checked);
+            chk.setOnCheckedChangeListener((v, b) -> onSelectChange.accept(b));
         }
     }
 }
