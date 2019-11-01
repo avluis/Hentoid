@@ -107,8 +107,11 @@ public class HttpHelper {
         int paramsIndex = theUri.lastIndexOf('?');
         if (paramsIndex > -1) uriNoParams = theUri.substring(0, paramsIndex);
 
-        int extIndex = uriNoParams.indexOf('.', uriNoParams.lastIndexOf('/'));
-        if (extIndex < 0) return ""; // No extension at all
+        int pathIndex = uriNoParams.lastIndexOf('/');
+        int extIndex = uriNoParams.lastIndexOf('.');
+
+        // No extensions detected
+        if (extIndex < 0 || extIndex < pathIndex) return "";
 
         return uriNoParams.substring(extIndex + 1);
     }
