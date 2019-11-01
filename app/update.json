@@ -6,11 +6,11 @@
   "sourceAlerts":[
 	  {"sourceName":"PURURIN", "status":"O", "message":"aaa" }, 
 	  {"sourceName":"HITOMI", "status":"R", "message":"bbb" }, 
-	  {"sourceName":"SAMPLE", "status":"R", "message":"ccc" } 
+	  {"sourceName":"NONE", "status":"R", "message":"ccc" } 
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"PURURIN", "status":"O", "message":"aaa" }, 
 	  {"sourceName":"HITOMI", "status":"R", "message":"bbb" }, 
-	  {"sourceName":"SAMPLE", "status":"R", "message":"ccc" } 
+	  {"sourceName":"NONE", "status":"R", "message":"ccc" } 
   ]
 }
