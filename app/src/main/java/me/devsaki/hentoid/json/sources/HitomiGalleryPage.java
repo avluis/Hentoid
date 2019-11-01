@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json;
+package me.devsaki.hentoid.json.sources;
 
 public class HitomiGalleryPage {
     private String hash;
