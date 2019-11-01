@@ -32,11 +32,16 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -121,6 +126,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
     private List<String> localBlockedContent;                                           // Local list (applied to current site)
+    // List of "dirty" elements (CSS selector) to be cleaned before displaying the page
+    private List<String> dirtyElements;
 
     static {
         universalBlockedContent.add("exoclick.com");
@@ -158,6 +165,16 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     protected void addContentBlockFilter(String[] filter) {
         if (null == localBlockedContent) localBlockedContent = new ArrayList<>();
         Collections.addAll(localBlockedContent, filter);
+    }
+
+    /**
+     * Add an element filter to current site
+     *
+     * @param elements Elements (CSS selector) to addAll to page cleaner
+     */
+    protected void addDirtyElements(String[] elements) {
+        if (null == dirtyElements) dirtyElements = new ArrayList<>();
+        Collections.addAll(dirtyElements, elements);
     }
 
     @Override
@@ -533,7 +550,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      */
     class CustomWebViewClient extends WebViewClient {
 
-        protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
+        final CompositeDisposable compositeDisposable = new CompositeDisposable();
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
         protected final ResultListener<Content> listener;
         private final Pattern filteredUrlPattern;
@@ -592,7 +609,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 for (String s : localBlockedContent) {
                     if (url.contains(s)) return true;
                 }
-
             return false;
         }
 
@@ -600,13 +616,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
          * Determines if the browser can use one single OkHttp request to serve HTML pages
          * - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
          * https://issuetracker.google.com/issues/36989494
-         * - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes issues on nHentai)
+         * - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes session issues on nHentai)
          * https://bugs.chromium.org/p/chromium/issues/detail?id=780491
          *
          * @return true if HTML content can be served by a single OkHttp request,
          * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
          */
-        private boolean useSingleOkHttpRequest() {
+        private boolean canUseSingleOkHttpRequest() {
             return (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
                     && (chromeVersion < 58 || chromeVersion > 71)
             );
@@ -680,14 +696,21 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
+
 // Timber.i(">> SIR 1 %s %s", isPageLoading, url);
-                if (/*!isPageLoading &&*/ isPageFiltered(url)) return parseResponse(url, headers);
+                if (isPageFiltered(url)) return parseResponse(url, headers, true);
 // Timber.i(">> SIR 2 %s %s", isPageLoading, url);
+                // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
+                if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty()) return parseResponse(url, headers, false);
+
                 return null;
             }
         }
 
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers, boolean analyzeForDownload) {
+            // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
+            if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
+
 // Timber.i(">> parseResponse %s", urlStr);
             List<Pair<String, String>> headersList = new ArrayList<>();
 
@@ -695,41 +718,55 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 for (String key : headers.keySet())
                     headersList.add(new Pair<>(key, headers.get(key)));
 
-            if (useSingleOkHttpRequest()) {
+            if (canUseSingleOkHttpRequest()) {
                 String cookie = CookieManager.getInstance().getCookie(urlStr);
                 if (cookie != null)
                     headersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
             }
 
             try {
+                // Query resource here, using OkHttp
                 Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
                 if (null == response.body()) throw new IOException("Empty body");
 
                 InputStream parserStream;
                 WebResourceResponse result;
-                if (useSingleOkHttpRequest()) {
-                    // Response body bytestream needs to be duplicated
-                    // because Jsoup closes it, which makes it unavailable for the WebView to use
-                    List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
-                    parserStream = is.get(0);
-                    result = HttpHelper.okHttpResponseToWebResourceResponse(response, is.get(1));
+                if (canUseSingleOkHttpRequest()) {
+                    InputStream browserStream;
+                    if (analyzeForDownload) {
+                        // Response body bytestream needs to be duplicated
+                        // because Jsoup closes it, which makes it unavailable for the WebView to use
+                        List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
+                        parserStream = is.get(0);
+                        browserStream = is.get(1);
+                    } else {
+                        parserStream = null;
+                        browserStream = response.body().byteStream();
+                    }
+
+                    // Remove dirty elements if needed
+                    if (dirtyElements != null) browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
+
+                    // Convert OkHttp response to the expected format
+                    result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
                 } else {
                     parserStream = response.body().byteStream();
                     result = null; // Default webview behaviour
                 }
 
-                compositeDisposable.add(
-                        Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
-                                .subscribeOn(Schedulers.computation())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(
-                                        content -> processContent(content, headersList),
-                                        throwable -> {
-                                            Timber.e(throwable, "Error parsing content.");
-                                            isHtmlLoaded = true;
-                                            listener.onResultFailed("");
-                                        })
-                );
+                if (analyzeForDownload)
+                    compositeDisposable.add(
+                            Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
+                                    .subscribeOn(Schedulers.computation())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(
+                                            content -> processContent(content, headersList),
+                                            throwable -> {
+                                                Timber.e(throwable, "Error parsing content.");
+                                                isHtmlLoaded = true;
+                                                listener.onResultFailed("");
+                                            })
+                    );
 
                 return result;
             } catch (MalformedURLException e) {
@@ -762,8 +799,19 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
          *
          * @return True if current webpage is being loaded; false if not
          */
-        public boolean isLoading() {
+        boolean isLoading() {
             return isPageLoading;
+        }
+
+        private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, @NonNull List<String> dirtyElements) {
+            try {
+                Document doc = Jsoup.parse(stream, null, baseUri);
+                for (String s : dirtyElements) for (Element e : doc.select(s)) e.remove();
+                return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                Timber.e(e);
+                return stream;
+            }
         }
     }
 
