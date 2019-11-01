@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.parsers;
+package me.devsaki.hentoid.parsers.images;
 
 import android.webkit.URLUtil;
 
@@ -6,6 +6,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.parsers.ParseHelper;
 import timber.log.Timber;
 
 public abstract class BaseParser implements ImageListParser {

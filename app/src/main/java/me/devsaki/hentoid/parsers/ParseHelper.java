@@ -52,7 +52,7 @@ public class ParseHelper {
         map.add(attribute);
     }
 
-    static ImageFile urlToImageFile(@Nonnull String imgUrl, int order) {
+    public static ImageFile urlToImageFile(@Nonnull String imgUrl, int order) {
         ImageFile result = new ImageFile();
 
         String name = String.format(Locale.US, "%03d", order);
@@ -61,7 +61,7 @@ public class ParseHelper {
         return result;
     }
 
-    static List<ImageFile> urlsToImageFiles(@Nonnull List<String> imgUrls) {
+    public static List<ImageFile> urlsToImageFiles(@Nonnull List<String> imgUrls) {
         List<ImageFile> result = new ArrayList<>();
 
         int order = 1;
@@ -70,7 +70,7 @@ public class ParseHelper {
         return result;
     }
 
-    static void signalProgress(int current, int max) {
+    public static void signalProgress(int current, int max) {
         EventBus.getDefault().post(new DownloadPreparationEvent(current, max));
     }
 }

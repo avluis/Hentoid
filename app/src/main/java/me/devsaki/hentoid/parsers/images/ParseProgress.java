@@ -1,4 +1,6 @@
-package me.devsaki.hentoid.parsers;
+package me.devsaki.hentoid.parsers.images;
+
+import me.devsaki.hentoid.parsers.ParseHelper;
 
 class ParseProgress {
 
