@@ -4,13 +4,13 @@
   "updateURL.beta": "https://cdn.discordapp.com/attachments/418817277383671808/597183217996529664/hentoid181114.apk",
   "versionCode.beta": "114",
   "sourceAlerts":[
-	  {"sourceName":"PURURIN", "status":"O", "message":"aaa" }, 
-	  {"sourceName":"HITOMI", "status":"R", "message":"bbb" }, 
-	  {"sourceName":"NONE", "status":"R", "message":"ccc" } 
+	  {"sourceName":"PURURIN", "status":"ORANGE", "message":"aaa" }, 
+	  {"sourceName":"HITOMI", "status":"RED", "message":"bbb" }, 
+	  {"sourceName":"NONE", "status":"RED", "message":"ccc" } 
   ],
   "sourceAlerts.beta":[
-	  {"sourceName":"PURURIN", "status":"O", "message":"aaa" }, 
-	  {"sourceName":"HITOMI", "status":"R", "message":"bbb" }, 
-	  {"sourceName":"NONE", "status":"R", "message":"ccc" } 
+	  {"sourceName":"PURURIN", "status":"ORANGE", "message":"aaa" }, 
+	  {"sourceName":"HITOMI", "status":"RED", "message":"bbb" }, 
+	  {"sourceName":"NONE", "status":"RED", "message":"ccc" } 
   ]
 }
