@@ -41,7 +41,7 @@ public class UpdateInfo {
         private String message;
 
         public Site getSite() {
-            return Site.valueOf(sourceName);
+            return Site.searchByName(sourceName);
         }
 
         public AlertStatus getStatus() {

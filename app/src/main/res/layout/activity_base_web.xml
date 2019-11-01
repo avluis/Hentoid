@@ -9,16 +9,50 @@
         android:id="@+id/web_alert_txt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="64dp"
         android:background="@color/secondary"
-        android:padding="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="64dp"
+        android:paddingEnd="64dp"
         android:textStyle="bold"
         android:text=""
         tools:text="@string/please_wait"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:visibility="gone"
-        tools:visibility="visible"
         />
+
+    <ImageView
+        android:id="@+id/web_alert_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="8dp"
+        android:src="@drawable/ic_nuclear"
+        android:tint="@color/white_opacity_66"
+        app:layout_constraintStart_toStartOf="@id/web_alert_txt"
+        app:layout_constraintTop_toTopOf="@id/web_alert_txt"
+        tools:ignore="ContentDescription"
+        />
+
+    <ImageView
+        android:id="@+id/web_alert_close_btn"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_margin="8dp"
+        android:src="@drawable/ic_cancel"
+        android:onClick="onAlertCloseClick"
+        app:layout_constraintEnd_toEndOf="@id/web_alert_txt"
+        app:layout_constraintTop_toTopOf="@id/web_alert_txt"
+        tools:ignore="ContentDescription"
+        />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/web_alert_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="web_alert_icon,web_alert_txt,web_alert_close_btn"
+        tools:visibility="visible" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"

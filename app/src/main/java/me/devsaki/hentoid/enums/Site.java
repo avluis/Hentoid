@@ -67,6 +67,15 @@ public enum Site {
         return NONE;
     }
 
+    // Same as ValueOf with a fallback to NONE
+    // (vital for forward compatibility)
+    public static Site searchByName(String name) {
+        for (Site s : values())
+            if (s.name().equalsIgnoreCase(name)) return s;
+
+        return NONE;
+    }
+
     public static Site searchByUrl(String url) {
         if (null == url || url.isEmpty()) {
             Timber.w("Invalid url");

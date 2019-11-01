@@ -24,6 +24,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
@@ -66,7 +67,6 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
-import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.UpdateEvent;
@@ -114,7 +114,9 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private FloatingActionButton fabHome;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
-    // Alert message panel
+    // Alert message panel and text
+    private View alertBanner;
+    private ImageView alertIcon;
     private TextView alertMessage;
 
     // === VARIABLES
@@ -208,6 +210,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
 
+        alertBanner = findViewById(R.id.web_alert_group);
+        alertIcon = findViewById(R.id.web_alert_icon);
         alertMessage = findViewById(R.id.web_alert_txt);
         displayAlertBanner();
     }
@@ -345,8 +349,9 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
     private void displayAlertBanner() {
         if (alertMessage != null && alert != null) {
+            alertIcon.setImageResource(alert.getStatus().getIcon());
             alertMessage.setText(alert.getMessage());
-            alertMessage.setVisibility(View.VISIBLE);
+            alertBanner.setVisibility(View.VISIBLE);
         }
     }
 
@@ -407,6 +412,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      */
     public void onHomeFabClick(View view) {
         goHome();
+    }
+
+    public void onAlertCloseClick(View view) {
+        alertBanner.setVisibility(View.GONE);
     }
 
     /**
