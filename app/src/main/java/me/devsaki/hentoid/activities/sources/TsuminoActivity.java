@@ -26,9 +26,9 @@ public class TsuminoActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
+        addContentBlockFilter(blockedContent);
         CustomWebViewClient client = new TsuminoWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        addContentBlockFilter(blockedContent);
 
         return client;
     }
