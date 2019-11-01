@@ -47,7 +47,7 @@ public final class Helper {
         throw new IllegalStateException("Utility class");
     }
 
-    static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     public static void doRestart(@NonNull Context context) {
         try {
