@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/drawer_item_icon"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_gravity="center"
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
@@ -18,6 +18,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/drawer_item_txt"
         app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/drawer_item_alert"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:layout_gravity="center"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_circle"
+        app:layout_constraintBottom_toBottomOf="@id/drawer_item_icon"
+        app:layout_constraintEnd_toEndOf="@id/drawer_item_icon"
+        android:visibility="gone"
+        tools:visibility="visible"
         tools:ignore="ContentDescription" />
 
     <TextView
