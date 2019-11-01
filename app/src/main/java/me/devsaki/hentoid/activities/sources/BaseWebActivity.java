@@ -24,6 +24,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -31,6 +32,10 @@ import androidx.annotation.Nullable;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -61,8 +66,11 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.UpdateEvent;
+import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
@@ -97,7 +105,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private static final int MODE_QUEUE = 1;
     private static final int MODE_READ = 2;
 
-    // UI
+    // === UI
     // Associated webview
     protected ObservableWebView webView;
     // Action buttons
@@ -106,17 +114,22 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private FloatingActionButton fabHome;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
+    // Alert message panel
+    private TextView alertMessage;
 
-    // Content currently viewed
+    // === VARIABLES
+    // Currently viewed content
     private Content currentContent;
     // Database
     private ObjectBoxDB db;
-    // Indicated which mode the download FAB is in
+    // Indicates which mode the download FAB is in
     protected int fabActionMode;
     private boolean fabActionEnabled;
-
     private CustomWebViewClient webClient;
+    // Version iof installed Chrome client
     private int chromeVersion;
+    // Alert to be displayed
+    private UpdateInfo.SourceAlert alert;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -163,6 +176,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         setContentView(R.layout.activity_base_web);
 
@@ -193,6 +207,17 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
+
+        alertMessage = findViewById(R.id.web_alert_txt);
+        displayAlertBanner();
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onUpdateEvent(UpdateEvent event) {
+        if (event.sourceAlerts.containsKey(getStartSite())) {
+            alert = event.sourceAlerts.get(getStartSite());
+            displayAlertBanner();
+        }
     }
 
     @Override
@@ -217,6 +242,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             webView = null;
         }
 
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 
@@ -315,6 +341,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_container);
         if (refreshLayout != null) refreshLayout.addView(webView, layoutParams);
+    }
+
+    private void displayAlertBanner() {
+        if (alertMessage != null && alert != null) {
+            alertMessage.setText(alert.getMessage());
+            alertMessage.setVisibility(View.VISIBLE);
+        }
     }
 
     private int getChromeVersion() {
