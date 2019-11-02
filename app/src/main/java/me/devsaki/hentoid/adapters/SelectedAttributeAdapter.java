@@ -34,7 +34,7 @@ public class SelectedAttributeAdapter extends ListAdapter<Attribute, AttributeVi
 
     @Override
     public void onBindViewHolder(@NonNull AttributeViewHolder holder, int position) {
-        holder.bindTo(getItem(position));
+        holder.bindTo(getItem(position), true);
         holder.itemView.setOnClickListener(onClickListener);
     }
 
