@@ -17,8 +17,8 @@ public class AttributeViewHolder extends RecyclerView.ViewHolder {
         view = itemView.findViewById(R.id.attributeChip);
     }
 
-    public void bindTo(Attribute attribute) {
-        view.setText(attribute.formatLabel());
+    public void bindTo(Attribute attribute, boolean useNamespace) {
+        view.setText(attribute.formatLabel(useNamespace));
         view.setTag(attribute);
     }
 }

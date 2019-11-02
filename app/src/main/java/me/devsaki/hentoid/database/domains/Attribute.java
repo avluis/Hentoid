@@ -142,8 +142,8 @@ public class Attribute {
         return getName();
     }
 
-    public String formatLabel() {
-        return String.format("%s %s", getName(), getCount() > 0 ? "(" + getCount() + ")" : "");
+    public String formatLabel(boolean useNamespace) {
+        return String.format("%s%s %s", useNamespace ? type.getDisplayName().toLowerCase() + ":" : "", getName(), getCount() > 0 ? "(" + getCount() + ")" : "");
     }
 
     public static final Comparator<Attribute> NAME_COMPARATOR = (a, b) -> a.getName().compareTo(b.getName());
