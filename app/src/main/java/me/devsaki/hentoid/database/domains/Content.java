@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.annimon.stream.Stream;
 
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -79,8 +78,6 @@ public class Content implements Serializable {
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
     private double percent;     // % progress to display the progress bar on the queue screen
-    @Transient
-    private int queryOrder;     // Order of current content in the DB query that creates it
     @Transient
     private boolean isFirst;    // True if current content is the first of its set in the DB query
     @Transient
@@ -471,15 +468,6 @@ public class Content implements Serializable {
         return this;
     }
 
-    private int getQueryOrder() {
-        return queryOrder;
-    }
-
-    public Content setQueryOrder(int order) {
-        queryOrder = order;
-        return this;
-    }
-
     public boolean isLast() {
         return isLast;
     }
@@ -589,10 +577,4 @@ public class Content implements Serializable {
     public int hashCode() {
         return Objects.hash(url, site);
     }
-
-    public static Comparator<Content> getComparator() {
-        return QUERY_ORDER_COMPARATOR;
-    }
-
-    private static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
 }

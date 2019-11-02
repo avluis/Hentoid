@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Comparator;
 
 import javax.annotation.Nonnull;
 
@@ -145,10 +144,6 @@ public class Attribute {
     public String formatLabel(boolean useNamespace) {
         return String.format("%s%s %s", useNamespace ? type.getDisplayName().toLowerCase() + ":" : "", getName(), getCount() > 0 ? "(" + getCount() + ")" : "");
     }
-
-    public static final Comparator<Attribute> NAME_COMPARATOR = (a, b) -> a.getName().compareTo(b.getName());
-
-    public static final Comparator<Attribute> COUNT_COMPARATOR = (a, b) -> Long.compare(a.getCount(), b.getCount()) * -1; /* Inverted - higher count first */
 
     @Override
     public boolean equals(Object o) {
