@@ -23,8 +23,8 @@ class JsonImageFile {
         return result;
     }
 
-    ImageFile toEntity() {
-        ImageFile result = new ImageFile(order, url, status);
+    ImageFile toEntity(int maxPages) {
+        ImageFile result = new ImageFile(order, url, status, maxPages);
         result.setName(name);
         result.setFavourite(favourite);
         return result;

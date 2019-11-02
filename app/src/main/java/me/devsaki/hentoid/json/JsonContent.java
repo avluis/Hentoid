@@ -106,7 +106,7 @@ public class JsonContent {
         }
         if (imageFiles != null) {
             List<ImageFile> imgs = new ArrayList<>();
-            for (JsonImageFile img : imageFiles) imgs.add(img.toEntity());
+            for (JsonImageFile img : imageFiles) imgs.add(img.toEntity(imageFiles.size()));
             result.setImageFiles(imgs);
         }
 

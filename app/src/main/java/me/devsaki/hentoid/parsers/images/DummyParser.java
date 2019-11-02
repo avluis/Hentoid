@@ -13,7 +13,7 @@ public class DummyParser implements ImageListParser {
     }
 
     @Override
-    public ImageFile parseBackupUrl(String url, int order) {
-        return ParseHelper.urlToImageFile(url, order);
+    public ImageFile parseBackupUrl(String url, int order, int maxPages) {
+        return ParseHelper.urlToImageFile(url, order, maxPages);
     }
 }

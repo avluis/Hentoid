@@ -11,5 +11,5 @@ public interface ImageListParser {
     List<ImageFile> parseImageList(Content content) throws Exception;
 
     @Nullable
-    ImageFile parseBackupUrl(String url, int order) throws Exception;
+    ImageFile parseBackupUrl(String url, int order, int maxPages) throws Exception;
 }

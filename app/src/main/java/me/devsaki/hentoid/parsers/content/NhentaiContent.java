@@ -77,7 +77,7 @@ public class NhentaiContent implements ContentParser {
         int index = 1;
         List<ImageFile> images = new ArrayList<>();
         for (String s : thumbs) {
-            images.add(new ImageFile(index, serverUrl + index + "." + FileHelper.getExtension(s), StatusContent.SAVED)); // We infer actual book page images have the same format as their thumbs
+            images.add(new ImageFile(index, serverUrl + index + "." + FileHelper.getExtension(s), StatusContent.SAVED, thumbs.size())); // We infer actual book page images have the same format as their thumbs
             index++;
         }
         result.setImageFiles(images);

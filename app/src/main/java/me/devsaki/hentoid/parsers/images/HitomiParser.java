@@ -69,10 +69,11 @@ public class HitomiParser implements ImageListParser {
         ImageFile img;
         int order = 1;
         for (HitomiGalleryPage page : gallery) {
-            if (1 == page.getHaswebp()) img = buildWebpPicture(content, page, order++);
+            if (1 == page.getHaswebp())
+                img = buildWebpPicture(content, page, order++, gallery.size());
             else if (page.getHash() != null && !page.getHash().isEmpty())
-                img = buildHashPicture(page, order++);
-            else img = buildSimplePicture(content, page, order++);
+                img = buildHashPicture(page, order++, gallery.size());
+            else img = buildSimplePicture(content, page, order++, gallery.size());
             img.setDownloadParams(downloadParamsStr);
             result.add(img);
         }
@@ -80,17 +81,17 @@ public class HitomiParser implements ImageListParser {
         return result;
     }
 
-    private ImageFile buildWebpPicture(@NonNull Content content, @NonNull HitomiGalleryPage page, int order) {
+    private ImageFile buildWebpPicture(@NonNull Content content, @NonNull HitomiGalleryPage page, int order, int maxPages) {
         // New Hitomi image URLs starting from june 2018
         //  If book ID is even, starts with 'aa'; else starts with 'ba'
         int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
         String imageSubdomain = subdomainFromGalleryId(referenceId);
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/webp/" + content.getUniqueSiteId() + "/" + page.getName() + ".webp";
 
-        return ParseHelper.urlToImageFile(pageUrl, order);
+        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
     }
 
-    private ImageFile buildHashPicture(@NonNull HitomiGalleryPage page, int order) {
+    private ImageFile buildHashPicture(@NonNull HitomiGalleryPage page, int order, int maxPages) {
         String hash = page.getHash();
         String componentA = hash.substring(hash.length() - 1);
         String componentB = hash.substring(hash.length() - 3, hash.length() - 1);
@@ -98,24 +99,24 @@ public class HitomiParser implements ImageListParser {
         String imageSubdomain = subdomainFromGalleryId(Integer.valueOf(componentB, 16));
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/images/" + componentA + "/" + componentB + "/" + hash + "." + FileHelper.getExtension(page.getName());
 
-        return ParseHelper.urlToImageFile(pageUrl, order);
+        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
     }
 
-    private ImageFile buildSimplePicture(@NonNull Content content, @NonNull HitomiGalleryPage page, int order) {
+    private ImageFile buildSimplePicture(@NonNull Content content, @NonNull HitomiGalleryPage page, int order, int maxPages) {
         // New Hitomi image URLs starting from june 2018
         //  If book ID is even, starts with 'aa'; else starts with 'ba'
         int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
         String imageSubdomain = subdomainFromGalleryId(referenceId);
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/galleries/" + content.getUniqueSiteId() + "/" + page.getName();
 
-        return ParseHelper.urlToImageFile(pageUrl, order);
+        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
     }
 
     private String subdomainFromGalleryId(int referenceId) {
         return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
     }
 
-    public ImageFile parseBackupUrl(String url, int order) {
+    public ImageFile parseBackupUrl(String url, int order, int maxPages) {
         // Hitomi does not use backup URLs
         return null;
     }

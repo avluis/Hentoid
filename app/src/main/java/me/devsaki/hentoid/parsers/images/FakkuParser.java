@@ -100,7 +100,7 @@ public class FakkuParser implements ImageListParser {
             int order = Integer.parseInt(p);
             FakkuGalleryMetadata.FakkuPage page = info.getPages().get(p);
             if (page != null) {
-                ImageFile img = ParseHelper.urlToImageFile(page.getImage(), order);
+                ImageFile img = ParseHelper.urlToImageFile(page.getImage(), order, info.getPages().size());
 
                 String pageInfoValue;
                 if (pageInfo != null)
@@ -122,7 +122,7 @@ public class FakkuParser implements ImageListParser {
         return result;
     }
 
-    public ImageFile parseBackupUrl(String url, int order) {
+    public ImageFile parseBackupUrl(String url, int order, int maxPages) {
         // This class does not use backup URLs
         return null;
     }

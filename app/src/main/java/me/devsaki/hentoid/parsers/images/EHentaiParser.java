@@ -92,7 +92,7 @@ public class EHentaiParser implements ImageListParser {
                         // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
                         if (imageUrl.contains("/509.gif"))
                             throw new LimitReachedException("Bandwidth limit reached");
-                        img = ParseHelper.urlToImageFile(imageUrl, order++);
+                        img = ParseHelper.urlToImageFile(imageUrl, order++, pageUrls.size());
                         result.add(img);
 
                         // "Click here if the image fails loading" link
@@ -131,7 +131,7 @@ public class EHentaiParser implements ImageListParser {
     }
 
     @Nullable
-    public ImageFile parseBackupUrl(String url, int order) throws Exception {
+    public ImageFile parseBackupUrl(String url, int order, int maxPages) throws Exception {
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         Document doc = getOnlineDocument(url, headers, Site.EHENTAI.canKnowHentoidAgent());
@@ -140,7 +140,7 @@ public class EHentaiParser implements ImageListParser {
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
             if (imageUrl.contains("/509.gif"))
                 throw new LimitReachedException("Bandwidth limit reached");
-            if (!imageUrl.isEmpty()) return ParseHelper.urlToImageFile(imageUrl, order);
+            if (!imageUrl.isEmpty()) return ParseHelper.urlToImageFile(imageUrl, order, maxPages);
         }
         return null;
     }

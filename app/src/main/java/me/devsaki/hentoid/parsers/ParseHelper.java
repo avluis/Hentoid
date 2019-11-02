@@ -52,10 +52,11 @@ public class ParseHelper {
         map.add(attribute);
     }
 
-    public static ImageFile urlToImageFile(@Nonnull String imgUrl, int order) {
+    public static ImageFile urlToImageFile(@Nonnull String imgUrl, int order, int nbPages) {
         ImageFile result = new ImageFile();
 
-        String name = String.format(Locale.US, "%03d", order);
+        int nbMaxDigits = (int) (Math.floor(Math.log10(nbPages)) + 1);
+        String name = String.format(Locale.US, "%0" + nbMaxDigits + "d", order);
         result.setName(name).setOrder(order).setUrl(imgUrl).setStatus(StatusContent.ONLINE);
 
         return result;
@@ -65,7 +66,7 @@ public class ParseHelper {
         List<ImageFile> result = new ArrayList<>();
 
         int order = 1;
-        for (String s : imgUrls) result.add(urlToImageFile(s, order++));
+        for (String s : imgUrls) result.add(urlToImageFile(s, order++, imgUrls.size()));
 
         return result;
     }
