@@ -20,6 +20,7 @@ public class SiteFlex extends AbstractFlexibleItem<SiteFlex.SiteViewHolder> {
 
     private final Site site;
     private boolean selected = false;
+    private boolean showHandle = true;
 
     public SiteFlex(Site site) {
         this.site = site;
@@ -28,6 +29,12 @@ public class SiteFlex extends AbstractFlexibleItem<SiteFlex.SiteViewHolder> {
     public SiteFlex(Site site, boolean selected) {
         this.site = site;
         this.selected = selected;
+    }
+
+    public SiteFlex(Site site, boolean selected, boolean showHandle) {
+        this.site = site;
+        this.selected = selected;
+        this.showHandle = showHandle;
     }
 
     public void setSelected(boolean selected) {
@@ -68,19 +75,20 @@ public class SiteFlex extends AbstractFlexibleItem<SiteFlex.SiteViewHolder> {
 
     @Override
     public void bindViewHolder(FlexibleAdapter<IFlexible> adapter, SiteViewHolder holder, int position, List<Object> payloads) {
-        holder.setSite(site, selected, b -> selected = b);
+        holder.setSite(site, selected, showHandle, b -> selected = b);
     }
 
 
     class SiteViewHolder extends FlexibleViewHolder {
 
+        private final ImageView dragHandle;
         private final ImageView icon;
         private final TextView title;
         private final CheckBox chk;
 
         SiteViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
-            ImageView dragHandle = view.findViewById(R.id.drawer_item_handle);
+            dragHandle = view.findViewById(R.id.drawer_item_handle);
             setDragHandleView(dragHandle);
 
             icon = view.findViewById(R.id.drawer_item_icon);
@@ -88,7 +96,8 @@ public class SiteFlex extends AbstractFlexibleItem<SiteFlex.SiteViewHolder> {
             chk = view.findViewById(R.id.drawer_item_chk);
         }
 
-        void setSite(Site site, boolean checked, Consumer<Boolean> onSelectChange) {
+        void setSite(Site site, boolean checked, boolean showHandle, Consumer<Boolean> onSelectChange) {
+            dragHandle.setVisibility(showHandle ? View.VISIBLE : View.GONE);
             title.setText(site.getDescription());
             icon.setImageResource(site.getIco());
             chk.setChecked(checked);

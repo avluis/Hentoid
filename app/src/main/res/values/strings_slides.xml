@@ -19,6 +19,10 @@
     <string name="slide_05_text">Choose a display theme.</string>
     <string name="slide_05_light">Light</string>
     <string name="slide_05_dark">Dark</string>
+    <!-- Slide 06 -->
+    <string name="slide_06_header">Sources</string>
+    <string name="slide_06_text">Select sources to download from.</string>
+    <string name="slide_06_subtext">You can change this selection later at any time using the edit button on the left menu.</string>
     <!-- Last slide -->
     <string name="slide_end_header">All set up!</string>
     <string name="slide_end_text">We are set!\nEnjoy the app.</string>

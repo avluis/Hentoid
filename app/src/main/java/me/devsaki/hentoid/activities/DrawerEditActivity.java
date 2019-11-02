@@ -75,7 +75,7 @@ public class DrawerEditActivity extends BaseActivity {
 
         // OK button
         View okBtn = findViewById(R.id.drawer_edit_ok_btn);
-        okBtn.setOnClickListener(this::onValidateClick);
+        okBtn.setOnClickListener(v -> onValidateClick());
     }
 
     private void onCheckAll() {
@@ -88,7 +88,7 @@ public class DrawerEditActivity extends BaseActivity {
         siteAdapter.notifyDataSetChanged();
     }
 
-    private void onValidateClick(View view) {
+    private void onValidateClick() {
         List<Site> newSites = new ArrayList<>();
         for (SiteFlex s : siteAdapter.getCurrentItems())
             if (s.isSelected()) newSites.add(s.getSite());
