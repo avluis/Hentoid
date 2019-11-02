@@ -37,7 +37,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -715,7 +714,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                                                           @NonNull String url) {
             // Prevents processing the page twice on Lollipop and above
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                WebResourceResponse result = shouldInterceptRequestInternal(view, url, null);
+                WebResourceResponse result = shouldInterceptRequestInternal(url, null);
                 if (result != null) return result;
             }
             return super.shouldInterceptRequest(view, url);
@@ -726,14 +725,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
-            WebResourceResponse result = shouldInterceptRequestInternal(view, url, request.getRequestHeaders());
+            WebResourceResponse result = shouldInterceptRequestInternal(url, request.getRequestHeaders());
             if (result != null) return result;
             else return super.shouldInterceptRequest(view, request);
         }
 
         @Nullable
-        private WebResourceResponse shouldInterceptRequestInternal(@NonNull WebView view,
-                                                                   @NonNull String url,
+        private WebResourceResponse shouldInterceptRequestInternal(@NonNull String url,
                                                                    @Nullable Map<String, String> headers) {
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
@@ -743,7 +741,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 if (isPageFiltered(url)) return parseResponse(url, headers, true);
 // Timber.i(">> SIR 2 %s %s", isPageLoading, url);
                 // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
-                if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty()) return parseResponse(url, headers, false);
+                if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
+                    return parseResponse(url, headers, false);
 
                 return null;
             }
@@ -787,7 +786,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                     }
 
                     // Remove dirty elements if needed
-                    if (dirtyElements != null) browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
+                    if (dirtyElements != null)
+                        browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
 
                     // Convert OkHttp response to the expected format
                     result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
