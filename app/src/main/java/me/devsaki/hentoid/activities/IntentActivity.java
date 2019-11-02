@@ -73,7 +73,7 @@ public class IntentActivity extends BaseActivity {
 
         switch (site) {
             case HITOMI:
-                return toParse.replace("/galleries", "");
+                return "/" + toParse.substring(toParse.lastIndexOf('-') + 1); // Reconstitute old gallery URL
             case NHENTAI:
                 return toParse.replace("/g", "");
             case TSUMINO:
