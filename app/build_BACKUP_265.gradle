@@ -17,9 +17,16 @@ android {
         applicationId "org.nonononoki.hendroid"
         minSdkVersion 19
         //noinspection ExpiringTargetSdkVersion
+<<<<<<< HEAD
         targetSdkVersion 29
         versionCode 131 // is updated automatically by BitRise; only used when building locally
+
+        versionName '1.9.2'
+=======
+        targetSdkVersion 28
+        versionCode 130 // is updated automatically by BitRise; only used when building locally
         versionName '1.9.3'
+>>>>>>> a2ff4ff429265658cf91943dcf642e76dc2d0192
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"

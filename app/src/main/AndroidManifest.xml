@@ -170,7 +170,7 @@
                 <!-- Accepts URIs that begin with "https://hitomi.la/galleries" -->
                 <data
                     android:host="hitomi.la"
-                    android:pathPrefix="/galleries"
+                    android:pathPattern="..*/..*"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>

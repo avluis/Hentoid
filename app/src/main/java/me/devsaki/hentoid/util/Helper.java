@@ -27,6 +27,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -44,6 +46,8 @@ public final class Helper {
     private Helper() {
         throw new IllegalStateException("Utility class");
     }
+
+    static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     public static void doRestart(@NonNull Context context) {
         try {
@@ -183,8 +187,10 @@ public final class Helper {
         return ret;
     }
 
+    // Match a number with optional '-' and decimal.
     public static boolean isNumeric(String str) {
-        return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
+        Matcher m = NUMERIC_PATTERN.matcher(str);
+        return m.matches();
     }
 
     /**
