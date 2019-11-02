@@ -13,6 +13,7 @@ import timber.log.Timber;
  */
 public enum Site {
 
+    // NOTE : to maintain compatiblity with saved JSON files and prefs, do _not_ edit either existing names or codes
     FAKKU(0, "Fakku", "https://www.fakku.net", "fakku", R.drawable.ic_menu_fakku, true, true, false, false), // Legacy support for old fakku archives
     PURURIN(1, "Pururin", "https://pururin.io", "pururin", R.drawable.ic_menu_pururin, true, true, false, false),
     HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi, true, false, false, false),
