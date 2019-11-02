@@ -213,8 +213,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
                 .setReads(cursorContent.getLong(ContentTable.IDX_READS - 1))
                 .setLastReadDate(cursorContent.getLong(ContentTable.IDX_LAST_READ_DATE - 1))
-                .setDownloadParams(cursorContent.getString(ContentTable.IDX_DOWNLOAD_PARAMS - 1))
-                .setQueryOrder(cursorContent.getPosition());
+                .setDownloadParams(cursorContent.getString(ContentTable.IDX_DOWNLOAD_PARAMS - 1));
 
         long id = cursorContent.getLong(ContentTable.IDX_INTERNALID - 1);
 

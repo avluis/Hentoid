@@ -414,7 +414,7 @@ public class ObjectBoxDB {
         } else {
             result = shuffleRandomSort(query, start, booksPerPage);
         }
-        return setQueryIndexes(result, page, booksPerPage);
+        return result;
     }
 
     long[] selectContentSearchId(String title, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
@@ -445,7 +445,7 @@ public class ObjectBoxDB {
         } else {
             result = shuffleRandomSort(query, start, booksPerPage);
         }
-        return setQueryIndexes(result, page, booksPerPage);
+        return result;
     }
 
     long[] selectContentUniversalId(String queryStr, boolean filterFavourites, int orderStyle) {
@@ -461,12 +461,6 @@ public class ObjectBoxDB {
             result = shuffleRandomSortId(query);
         }
         return result;
-    }
-
-    private List<Content> setQueryIndexes(List<Content> content, int page, int booksPerPage) {
-        for (int i = 0; i < content.size(); i++)
-            content.get(i).setQueryOrder((page - 1) * booksPerPage + i);
-        return content;
     }
 
     long countContentUniversal(String queryStr, boolean filterFavourites) {
