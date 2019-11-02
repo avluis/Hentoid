@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.List;
+
 import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.events.UpdateEvent;
@@ -93,18 +95,21 @@ public class UpdateCheckService extends Service {
     }
 
     private void onCheckSuccess(UpdateInfo updateInfoJson) {
+        boolean newVersion = false;
         if (BuildConfig.VERSION_CODE < updateInfoJson.getVersionCode(BuildConfig.DEBUG)) {
             stopForeground(true);
 
             String updateUrl = updateInfoJson.getUpdateUrl(BuildConfig.DEBUG);
-            EventBus.getDefault().postSticky(new UpdateEvent(true));
             notificationManager.notify(new UpdateAvailableNotification(updateUrl));
-        } else {
-            if (shouldShowToast) {
-                String message = "Update Check: No new updates.";
-                Toast.makeText(this, message, LENGTH_SHORT).show();
-            }
+            newVersion = true;
+        } else if (shouldShowToast) {
+            String message = "Update Check: No new updates.";
+            Toast.makeText(this, message, LENGTH_SHORT).show();
         }
+
+        // Send update info through the bus to whom it may concern
+        List<UpdateInfo.SourceAlert> sourceAlerts = updateInfoJson.getSourceAlerts(BuildConfig.DEBUG);
+        EventBus.getDefault().postSticky(new UpdateEvent(newVersion, sourceAlerts));
     }
 
     private void onCheckError(Throwable t) {

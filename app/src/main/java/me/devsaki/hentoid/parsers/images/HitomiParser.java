@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.parsers;
+package me.devsaki.hentoid.parsers.images;
 
 import android.util.Pair;
 
@@ -18,7 +18,8 @@ import java.util.Map;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.json.HitomiGalleryPage;
+import me.devsaki.hentoid.json.sources.HitomiGalleryPage;
+import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;

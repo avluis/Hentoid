@@ -1,9 +1,10 @@
-package me.devsaki.hentoid.parsers;
+package me.devsaki.hentoid.parsers.images;
 
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.parsers.ParseHelper;
 
 public class DummyParser implements ImageListParser {
     @Override

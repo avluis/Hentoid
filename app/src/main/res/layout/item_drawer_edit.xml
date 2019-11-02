@@ -7,44 +7,52 @@
     android:paddingBottom="4dp">
 
     <ImageView
-        android:id="@+id/drawer_item_icon"
+        android:id="@+id/drawer_item_handle"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_gravity="center"
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_menu_about"
+        android:src="@drawable/ic_drag_handle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/drawer_item_txt"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
     <ImageView
-        android:id="@+id/drawer_item_alert"
-        android:layout_width="10dp"
-        android:layout_height="10dp"
+        android:id="@+id/drawer_item_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_gravity="center"
+        android:layout_marginStart="12dp"
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_circle"
-        app:layout_constraintBottom_toBottomOf="@id/drawer_item_icon"
-        app:layout_constraintEnd_toEndOf="@id/drawer_item_icon"
-        android:visibility="gone"
-        tools:visibility="visible"
+        android:src="@drawable/ic_menu_about"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/drawer_item_handle"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/drawer_item_txt"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:background="?attr/selectableItemBackground"
+        android:layout_marginStart="12dp"
         android:gravity="center_vertical"
         android:minHeight="@dimen/drawer_item_height"
         android:textSize="@dimen/text_body_1"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/drawer_item_icon"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="@string/app_name" />
+
+    <CheckBox
+        android:id="@+id/drawer_item_chk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

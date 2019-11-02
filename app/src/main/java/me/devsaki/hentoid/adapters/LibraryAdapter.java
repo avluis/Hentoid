@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.adapters;
 
+import androidx.annotation.Nullable;
+
 import com.annimon.stream.function.Consumer;
 import com.annimon.stream.function.LongConsumer;
 
@@ -16,6 +18,8 @@ public interface LibraryAdapter {
     List<Content> getSelectedItems();
     void notifyItemChanged(int pos);
     void clearSelection();
+    @Nullable
+    Content getItemAtPosition(int pos);
 
     Consumer<Content> getOnSourceClickListener();
     Consumer<Content> getOpenBookListener();

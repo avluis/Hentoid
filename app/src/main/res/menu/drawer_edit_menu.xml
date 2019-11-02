@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.DrawerEditActivity"
+    tools:ignore="AlwaysShowAction">
+    <item
+        android:id="@+id/action_check_all"
+        android:icon="@drawable/ic_check"
+        android:title="@string/menu_search"
+        app:showAsAction="collapseActionView|always" />
+    <item
+        android:id="@+id/action_uncheck_all"
+        android:icon="@drawable/ic_uncheck"
+        android:title="@string/menu_fav"
+        app:showAsAction="collapseActionView|always" />
+</menu>

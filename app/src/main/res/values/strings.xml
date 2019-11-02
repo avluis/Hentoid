@@ -9,14 +9,14 @@
     <string name="off">Off</string>
 
     <!-- Activities -->
-    <string name="title_activity_downloads">Downloads</string>
+    <string name="title_activity_downloads">Library</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
 
-    <!-- Menu -->
+    <!-- Library screen toolbar -->
     <string name="menu_tags">Tags</string>
     <string name="menu_search">Search</string>
     <string name="menu_order">order books</string>
@@ -238,4 +238,7 @@
     <string name="get_latest">Get the latest version (@v)</string>
     <string name="update_success">Update successful !</string>
     <string name="starting_download">Starting download</string>
+
+    <!-- Edit drawer -->
+    <string name="title_activity_drawer_edit">Edit menu</string>
 </resources>

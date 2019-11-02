@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.parsers;
+package me.devsaki.hentoid.parsers.images;
 
 import android.util.Pair;
 
@@ -20,6 +20,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.LimitReachedException;

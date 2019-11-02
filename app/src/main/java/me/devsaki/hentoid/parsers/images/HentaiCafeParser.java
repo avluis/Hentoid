@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.parsers;
+package me.devsaki.hentoid.parsers.images;
 
 import android.util.Pair;
 import android.webkit.URLUtil;

@@ -14,7 +14,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.parsers.content.EHentaiGalleryQuery;
+import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery;
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer;
 import timber.log.Timber;
 
