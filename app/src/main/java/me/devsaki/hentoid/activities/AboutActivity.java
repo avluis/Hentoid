@@ -32,7 +32,7 @@ public class AboutActivity extends BaseActivity {
 
         setContentView(R.layout.activity_about);
 
-        bindTextViewLink(R.id.iv_app_logo, Consts.URL_GITHUB_WIKI);
+        //bindTextViewLink(R.id.iv_app_logo, Consts.URL_GITHUB_WIKI);
         //bindTextViewLink(R.id.tv_github, Consts.URL_GITHUB);
         //bindTextViewLink(R.id.tv_discord, Consts.URL_DISCORD);
         //bindTextViewLink(R.id.tv_reddit, Consts.URL_REDDIT);

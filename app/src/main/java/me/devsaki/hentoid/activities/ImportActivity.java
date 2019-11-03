@@ -390,7 +390,8 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
     private File addHentoidFolder(@NonNull final File baseFolder) {
         String folderName = baseFolder.getName();
         // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
-        if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)) {
+        if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD) &&
+                !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_FORK) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_FORK_OLD)) {
             File targetFolder = getExistingHentoidDirFrom(baseFolder);
 
             // If not, create one
