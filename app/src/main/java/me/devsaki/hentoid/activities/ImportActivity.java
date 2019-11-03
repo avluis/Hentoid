@@ -367,17 +367,15 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
             }
         }
 
-        /*
-            In some other cases, there is no common name
-            (e.g. /storage/sdcard1 vs. /tree/3437-3934)
+        /* In some other cases, there is no common name (e.g. /storage/sdcard1 vs. /tree/3437-3934)
 
             We can use a slower method to translate the Uri obtained with SAF into a pre-SAF path
-            and compare it to the removable media volumes we have
-         */
+            and compare it to the known removable media volume names */
         if (null == selectedFolder) {
             for (String s : removableMediaFolderRoots) {
                 String treeRoot = FileHelper.getFullPathFromTreeUri(treeUri, this);
                 if (treeRoot != null && treeRoot.startsWith(s)) {
+                    // Persist selected folder URI in shared preferences
                     FileHelper.saveUri(treeUri);
                     selectedFolder = new File(treeRoot);
                     break;
