@@ -305,6 +305,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
 
     // Return from SAF picker
     // TODO - check if the processing can be done on a separate thread to avoid freezing while displaying the SAF dialog
+    // TODO - just after a successful import, when the SAF dialog is reopened and another folder is chosen, that method is never called
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
