@@ -71,6 +71,7 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.UpdateEvent;
@@ -366,7 +367,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private void displayAlertBanner() {
         if (alertMessage != null && alert != null) {
             alertIcon.setImageResource(alert.getStatus().getIcon());
-            alertMessage.setText(alert.getMessage());
+            alertMessage.setText(formatAlertMessage(alert));
             alertBanner.setVisibility(View.VISIBLE);
         }
     }
@@ -861,5 +862,25 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private void setFabIcon(@Nonnull FloatingActionButton btn, @DrawableRes int resId) {
         btn.setImageResource(resId);
         btn.setImageMatrix(new Matrix());
+    }
+
+    private String formatAlertMessage(@NonNull UpdateInfo.SourceAlert alert) {
+        String result = "";
+
+        // Main message body
+        if (alert.getStatus().equals(AlertStatus.ORANGE)) {
+            result = getResources().getString(R.string.alert_orange);
+        } else if (alert.getStatus().equals(AlertStatus.RED)) {
+            result = getResources().getString(R.string.alert_red);
+        } else if (alert.getStatus().equals(AlertStatus.BLACK)) {
+            result = getResources().getString(R.string.alert_black);
+        }
+
+        // End of message
+        if (alert.getFixedByBuild() < Integer.MAX_VALUE)
+            result = result.replace("%s", getResources().getString(R.string.alert_fix_available));
+        else result = result.replace("%s", getResources().getString(R.string.alert_wip));
+
+        return result;
     }
 }

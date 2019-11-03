@@ -37,19 +37,20 @@ public class UpdateInfo {
 
     public static class SourceAlert {
         private String sourceName;
-        private AlertStatus status;
-        private String message;
+        private String status;
+        private String fixedByBuild;
 
         public Site getSite() {
             return Site.searchByName(sourceName);
         }
 
         public AlertStatus getStatus() {
-            return status;
+            return AlertStatus.searchByName(status);
         }
 
-        public String getMessage() {
-            return message;
+        public int getFixedByBuild() {
+            if (null == fixedByBuild || fixedByBuild.isEmpty()) return Integer.MAX_VALUE;
+            else return Integer.parseInt(fixedByBuild);
         }
     }
 }

@@ -8,6 +8,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.annimon.stream.Stream;
+
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
@@ -107,8 +109,11 @@ public class UpdateCheckService extends Service {
             Toast.makeText(this, message, LENGTH_SHORT).show();
         }
 
+        // Get the alerts relevant to current version code
+        List<UpdateInfo.SourceAlert> sourceAlerts = Stream.of(updateInfoJson.getSourceAlerts(BuildConfig.DEBUG))
+                .filter(a -> a.getFixedByBuild() > BuildConfig.VERSION_CODE)
+                .toList();
         // Send update info through the bus to whom it may concern
-        List<UpdateInfo.SourceAlert> sourceAlerts = updateInfoJson.getSourceAlerts(BuildConfig.DEBUG);
         EventBus.getDefault().postSticky(new UpdateEvent(newVersion, sourceAlerts));
     }
 

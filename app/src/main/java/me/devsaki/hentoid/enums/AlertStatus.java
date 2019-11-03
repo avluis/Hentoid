@@ -32,4 +32,14 @@ public enum AlertStatus {
     int getIcon() {
         return icon;
     }
+
+
+    // Same as ValueOf with a fallback to NONE
+    // (vital for forward compatibility)
+    public static AlertStatus searchByName(String name) {
+        for (AlertStatus s : values())
+            if (s.name().equalsIgnoreCase(name)) return s;
+
+        return NONE;
+    }
 }
