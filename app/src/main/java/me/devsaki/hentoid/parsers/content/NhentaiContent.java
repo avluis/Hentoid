@@ -29,7 +29,7 @@ public class NhentaiContent implements ContentParser {
 
     @Selector(value = "#info a[href*='/artist']")
     private List<Element> artists;
-    @Selector(value = "#info a[href*='/group']")
+    @Selector(value = "#info a[href^='/group/']")
     private List<Element> circles;
     @Selector(value = "#info a[href*='/tag']")
     private List<Element> tags;
