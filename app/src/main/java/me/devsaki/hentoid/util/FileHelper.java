@@ -1,9 +1,14 @@
 package me.devsaki.hentoid.util;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
+import android.os.storage.StorageManager;
+import android.provider.DocumentsContract;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -21,6 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -47,6 +54,8 @@ public class FileHelper {
     public static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
+
+    private static final String PRIMARY_VOLUME_NAME = "primary";
 
 
     public static String getFileProviderAuthority() {
@@ -83,7 +92,7 @@ public class FileHelper {
      * @return The main folder of the external SD card containing this file,
      * if the file is on an SD card. Otherwise, null is returned.
      */
-    public static String getExtSdCardFolder(final File file) {
+    static String getExtSdCardFolder(final File file) {
         String[] extSdPaths = getExtSdCardPaths();
         try {
             for (String extSdPath : extSdPaths) {
@@ -124,6 +133,78 @@ public class FileHelper {
         }
 
         return paths.toArray(new String[0]);
+    }
+
+    // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
+    @Nullable
+    public static String getFullPathFromTreeUri(@Nullable final Uri treeUri, Context con) {
+        if (treeUri == null) return null;
+        String volumePath = getVolumePath(getVolumeIdFromTreeUri(treeUri), con);
+        if (volumePath == null) return File.separator;
+        if (volumePath.endsWith(File.separator))
+            volumePath = volumePath.substring(0, volumePath.length() - 1);
+
+        String documentPath = getDocumentPathFromTreeUri(treeUri);
+        if (documentPath.endsWith(File.separator))
+            documentPath = documentPath.substring(0, documentPath.length() - 1);
+
+        if (documentPath.length() > 0) {
+            if (documentPath.startsWith(File.separator))
+                return volumePath + documentPath;
+            else
+                return volumePath + File.separator + documentPath;
+        } else return volumePath;
+    }
+
+
+    @SuppressLint("ObsoleteSdkInt")
+    private static String getVolumePath(final String volumeId, Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return null;
+        try {
+            StorageManager mStorageManager =
+                    (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+            Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
+            Method getVolumeList = mStorageManager.getClass().getMethod("getVolumeList");
+            Method getUuid = storageVolumeClazz.getMethod("getUuid");
+            Method getPath = storageVolumeClazz.getMethod("getPath");
+            Method isPrimary = storageVolumeClazz.getMethod("isPrimary");
+            Object result = getVolumeList.invoke(mStorageManager);
+
+            final int length = Array.getLength(result);
+            for (int i = 0; i < length; i++) {
+                Object storageVolumeElement = Array.get(result, i);
+                String uuid = (String) getUuid.invoke(storageVolumeElement);
+                Boolean primary = (Boolean) isPrimary.invoke(storageVolumeElement);
+
+                // primary volume?
+                if (primary && PRIMARY_VOLUME_NAME.equals(volumeId))
+                    return (String) getPath.invoke(storageVolumeElement);
+
+                // other volumes?
+                if (uuid != null && uuid.equals(volumeId))
+                    return (String) getPath.invoke(storageVolumeElement);
+            }
+            // not found.
+            return null;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static String getVolumeIdFromTreeUri(final Uri treeUri) {
+        final String docId = DocumentsContract.getTreeDocumentId(treeUri);
+        final String[] split = docId.split(":");
+        if (split.length > 0) return split[0];
+        else return null;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static String getDocumentPathFromTreeUri(final Uri treeUri) {
+        final String docId = DocumentsContract.getTreeDocumentId(treeUri);
+        final String[] split = docId.split(":");
+        if ((split.length >= 2) && (split[1] != null)) return split[1];
+        else return File.separator;
     }
 
     /**
@@ -498,6 +579,7 @@ public class FileHelper {
     public static void createFileWithMsg(@Nonnull String file, String msg) {
         try {
             FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getAppContext(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
+            Timber.i(">>file %s -> %s", file, msg);
         } catch (Exception e) {
             e.printStackTrace();
         }
