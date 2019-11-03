@@ -417,11 +417,11 @@ public class FileHelper {
      * @param fileName Filename
      * @return Extension of the given filename
      */
-    public static String getExtension(String fileName) {
+    public static String getExtension(@NonNull final String fileName) {
         return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.US) : "";
     }
 
-    public static String getFileNameWithoutExtension(String fileName) {
+    public static String getFileNameWithoutExtension(@NonNull final String fileName) {
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 

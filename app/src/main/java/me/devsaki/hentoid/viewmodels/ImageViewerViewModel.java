@@ -295,7 +295,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             boolean matchFound = false;
             for (File f : files) {
                 // Image and file name match => store absolute path
-                if (FileHelper.getFileNameWithoutExtension(images.get(i).getName()).equals(FileHelper.getFileNameWithoutExtension(f.getName()))) {
+                if (fileNamesMatch(images.get(i).getName(), f.getName())) {
                     matchFound = true;
                     images.get(i).setAbsolutePath(f.getAbsolutePath());
                     break;
@@ -305,6 +305,19 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             if (!matchFound) {
                 images.remove(i);
             } else i++;
+        }
+    }
+
+    // Match when the names are exactly the same, or when their value is
+    private static boolean fileNamesMatch(@NonNull String name1, @NonNull String name2) {
+        name1 = FileHelper.getFileNameWithoutExtension(name1);
+        name2 = FileHelper.getFileNameWithoutExtension(name2);
+        if (name1.equalsIgnoreCase(name2)) return true;
+
+        try {
+            return (Integer.parseInt(name1) == Integer.parseInt(name2));
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 
