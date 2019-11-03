@@ -29,7 +29,7 @@
         android:scrollbars="vertical"
         android:fadeScrollbars="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="@id/drawer_edit_ok_btn"
+        app:layout_constraintBottom_toTopOf="@id/drawer_edit_ok_btn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         tools:listitem="@layout/item_drawer_edit" />
