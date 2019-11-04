@@ -174,7 +174,12 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
         Content theContent = content.getValue();
         if (theContent != null) {
-            theContent.setLastReadPageIndex(index);
+            int indexToSet = index;
+            // Reset the memorized page index if it represents the last page
+            List<ImageFile> images = getImages().getValue();
+            if (images != null && index == images.size() - 1) indexToSet = 0;
+
+            theContent.setLastReadPageIndex(indexToSet);
             db.insertContent(theContent);
         }
     }
