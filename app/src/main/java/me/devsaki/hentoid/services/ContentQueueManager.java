@@ -50,11 +50,14 @@ public class ContentQueueManager {
     public void resumeQueue(Context context)
     {
         Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
+        context.startService(intent);
+/*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);
         } else {
             context.startService(intent);
         }
+ */
         isQueueActive = true;
     }
 
