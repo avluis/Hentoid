@@ -767,8 +767,8 @@ public class ContentDownloadService extends IntentService {
 
         String fileExt = null;
         // Determine the extension of the file
-        //  - Case 1: Content served from an URL without any extension, but with a content-type in the HTTP headers of the response
-        //  - Case 2: Content served from an URL with an extension, but with no content-type at all
+
+        // Use the Content-type contained in the HTTP headers of the response
         if (null != contentType) {
             contentType = HttpHelper.cleanContentType(contentType).first;
             // Ignore neutral binary content-type
@@ -777,17 +777,19 @@ public class ContentDownloadService extends IntentService {
                 Timber.d("Using content-type %s to determine file extension -> %s", contentType, fileExt);
             }
         }
-        // Content-type has not been useful to determine the extension
+        // Content-type has not been useful to determine the extension => See if the URL contains an extension
         if (null == fileExt || fileExt.isEmpty()) {
             fileExt = HttpHelper.getExtensionFromUri(img.getUrl());
             Timber.d("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
         }
+        // No extension detected in the URL => Read binary header of the file to detect known formats
         if (fileExt.isEmpty()) {
             fileExt = FileHelper.getImageExtensionFromPictureHeader(Arrays.copyOf(binaryContent, 12));
             Timber.d("Reading headers to determine file extension for %s -> %s", img.getUrl(), fileExt);
         }
+        // If all else fails, fall back to jpg as default
         if (fileExt.isEmpty()) {
-            fileExt = "jpg"; // If all else fails, use jpg as default
+            fileExt = "jpg";
             Timber.d("Using default extension for %s -> %s", img.getUrl(), fileExt);
         }
 
