@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.SparseIntArray;
@@ -33,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -212,7 +212,7 @@ public class ContentDownloadService extends IntentService {
 
     /**
      * Start the download of the 1st book of the download queue
-     *
+     * <p>
      * NB : This method is not only called the 1st time the queue is awakened,
      * but also after every book has finished downloading
      *
@@ -771,17 +771,24 @@ public class ContentDownloadService extends IntentService {
         //  - Case 2: Content served from an URL with an extension, but with no content-type at all
         if (null != contentType) {
             contentType = HttpHelper.cleanContentType(contentType).first;
-            fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
-            Timber.d("Using content-type %s to determine file extension %s", contentType, fileExt);
+            // Ignore neutral binary content-type
+            if (!contentType.equalsIgnoreCase("application/octet-stream")) {
+                fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
+                Timber.d("Using content-type %s to determine file extension -> %s", contentType, fileExt);
+            }
         }
         // Content-type has not been useful to determine the extension
         if (null == fileExt || fileExt.isEmpty()) {
-            Timber.d("Using url to determine file extension (content-type was %s) for %s", contentType, img.getUrl());
             fileExt = HttpHelper.getExtensionFromUri(img.getUrl());
+            Timber.d("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
         }
         if (fileExt.isEmpty()) {
-            Timber.d("Using default extension for %s", img.getUrl());
+            fileExt = FileHelper.getImageExtensionFromPictureHeader(Arrays.copyOf(binaryContent, 12));
+            Timber.d("Reading headers to determine file extension for %s -> %s", img.getUrl(), fileExt);
+        }
+        if (fileExt.isEmpty()) {
             fileExt = "jpg"; // If all else fails, use jpg as default
+            Timber.d("Using default extension for %s -> %s", img.getUrl(), fileExt);
         }
 
         if (!Helper.isImageExtensionSupported(fileExt))

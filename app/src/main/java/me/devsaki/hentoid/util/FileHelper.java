@@ -574,6 +574,24 @@ public class FileHelper {
         return false;
     }
 
+    public static String getImageExtensionFromPictureHeader(byte[] header) {
+        if (header.length < 12) return "";
+
+        // In Java, byte type is signed !
+        // => Converting all raw values to byte to be sure they are evaluated as expected
+        if ((byte) 0xFF == header[0] && (byte) 0xD8 == header[1] && (byte) 0xFF == header[2])
+            return "jpg";
+        else if ((byte) 0x89 == header[0] && (byte) 0x50 == header[1] && (byte) 0x4E == header[2])
+            return "png";
+        else if ((byte) 0x47 == header[0] && (byte) 0x49 == header[1] && (byte) 0x46 == header[2])
+            return "gif";
+        else if ((byte) 0x52 == header[0] && (byte) 0x49 == header[1] && (byte) 0x46 == header[2] && (byte) 0x46 == header[3]
+                && (byte) 0x57 == header[8] && (byte) 0x45 == header[9] && (byte) 0x42 == header[10] && (byte) 0x50 == header[11])
+            return "webp";
+        else if ((byte) 0x42 == header[0] && (byte) 0x4D == header[1]) return "bmp";
+        else return "";
+    }
+
     // Please don't delete this method!
     // I need some way to trace actions when working with SD card features - Robb
     public static void createFileWithMsg(@Nonnull String file, String msg) {
