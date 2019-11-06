@@ -41,6 +41,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
+import static androidx.core.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
 
 /**
@@ -117,20 +118,20 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.include_search_filter_category, container, false);
+        View rootView = inflater.inflate(R.layout.include_search_filter_category, container, false);
         AttributeType mainAttr = selectedAttributeTypes.get(0);
 
         // Image that displays current metadata type icon (e.g. face icon for character)
-        ImageView tagWaitImage = view.findViewById(R.id.tag_wait_image);
+        ImageView tagWaitImage = requireViewById(rootView, R.id.tag_wait_image);
         tagWaitImage.setImageResource(mainAttr.getIcon());
 
         // Image that displays current metadata type title (e.g. "Character search")
-        TextView tagWaitTitle = view.findViewById(R.id.tag_wait_title);
+        TextView tagWaitTitle = requireViewById(rootView, R.id.tag_wait_title);
         tagWaitTitle.setText(format("%s search", Helper.capitalizeString(mainAttr.name())));
 
-        tagWaitPanel = view.findViewById(R.id.tag_wait_panel);
-        tagWaitMessage = view.findViewById(R.id.tag_wait_description);
-        RecyclerView attributeMosaic = view.findViewById(R.id.tag_suggestion);
+        tagWaitPanel = requireViewById(rootView, R.id.tag_wait_panel);
+        tagWaitMessage = requireViewById(rootView, R.id.tag_wait_description);
+        RecyclerView attributeMosaic = requireViewById(rootView, R.id.tag_suggestion);
         FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this.getContext());
 //        layoutManager.setAlignContent(AlignContent.FLEX_START); <-- not possible
         layoutManager.setFlexWrap(FlexWrap.WRAP);
@@ -140,7 +141,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         attributeAdapter.setOnClickListener(this::onAttributeChosen);
         attributeMosaic.setAdapter(attributeAdapter);
 
-        tagSearchView = view.findViewById(R.id.tag_filter);
+        tagSearchView = requireViewById(rootView, R.id.tag_filter);
         tagSearchView.setSearchableInfo(getSearchableInfo(requireActivity())); // Associate searchable configuration with the SearchView
         tagSearchView.setQueryHint("Search " + android.text.TextUtils.join(", ", selectedAttributeTypes));
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -161,7 +162,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             }
         });
 
-        return view;
+        return rootView;
     }
 
     @Override

@@ -7,16 +7,14 @@
     android:background="@color/transparent"
     android:fitsSystemWindows="true">
 
-    <!-- Bottom bar -->
-
     <View
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="?colorPrimaryVariant"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/viewer_currentpage_text" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/viewer_current_page_text" />
 
     <ImageButton
         android:id="@+id/viewer_prev_book_btn"
@@ -34,15 +32,15 @@
         tools:ignore="ContentDescription" />
 
     <TextView
-        android:id="@+id/viewer_currentpage_text"
+        android:id="@+id/viewer_current_page_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:minWidth="48dp"
         android:padding="8dp"
         android:textAlignment="center"
-        android:textSize="@dimen/text_body_1"
         android:textColor="?colorOnPrimary"
+        android:textSize="@dimen/text_body_1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/viewer_prev_book_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
@@ -52,24 +50,25 @@
         android:id="@+id/viewer_seekbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:colorControlActivated="?colorSecondary"
         android:padding="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:progressBackgroundTint="?colorOnPrimary"
         android:progressTint="?colorSecondary"
-        android:colorControlActivated="?colorSecondary"
-        app:layout_constraintStart_toEndOf="@id/viewer_currentpage_text"
-        app:layout_constraintEnd_toStartOf="@id/viewer_maxpage_text" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_max_page_text"
+        app:layout_constraintStart_toEndOf="@id/viewer_current_page_text"
+        tools:targetApi="lollipop" />
 
     <TextView
-        android:id="@+id/viewer_maxpage_text"
+        android:id="@+id/viewer_max_page_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:minWidth="48dp"
         android:padding="8dp"
         android:textAlignment="center"
-        android:textSize="@dimen/text_body_1"
         android:textColor="?colorOnPrimary"
+        android:textSize="@dimen/text_body_1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_gallery_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
@@ -128,8 +127,8 @@
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_image_preview2"
+        app:layout_constraintStart_toStartOf="parent"
         tools:ignore="ContentDescription" />
 
     <ImageView
@@ -138,8 +137,8 @@
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintStart_toEndOf="@id/viewer_image_preview1"
         app:layout_constraintEnd_toStartOf="@id/viewer_image_preview3"
+        app:layout_constraintStart_toEndOf="@id/viewer_image_preview1"
         tools:ignore="ContentDescription" />
 
     <ImageView
@@ -148,23 +147,18 @@
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintStart_toEndOf="@id/viewer_image_preview2"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/viewer_image_preview2"
         tools:ignore="ContentDescription" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/viewer_pager_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="?colorPrimaryVariant"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
+        android:elevation="@dimen/toolbar_layout_elevation"
         android:longClickable="true"
-        android:minHeight="?android:attr/actionBarSize"
-        android:textAlignment="center"
-        android:textSize="@dimen/text_subtitle_2"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:targetApi="lollipop" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

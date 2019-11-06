@@ -59,27 +59,21 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
-
+    private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
     private ZoomableFrame zoomFrame;
     private VolumeGestureListener volumeGestureListener;
-
-    private ImageViewerViewModel viewModel;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
-    private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
-
+    private ImageViewerViewModel viewModel;
     private int imageIndex = -1;
     private int maxPosition; // For navigation
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
-
-
     // Controls
     private TextView pageNumberOverlay;
     private ZoomableRecyclerView recyclerView;
-
     // == CONTROLS OVERLAY ==
     private View controlsOverlay;
 
@@ -102,26 +96,26 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_viewer_pager, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_viewer_pager, container, false);
 
         Preferences.registerPrefsChangedListener(listener);
         viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
 
-        initPager(view);
-        initControlsOverlay(view);
+        initPager(rootView);
+        initControlsOverlay(rootView);
 
         onBrowseModeChange();
         onUpdateSwipeToFling();
         onUpdatePageNumDisplay();
 
-        toolbar = requireViewById(view, R.id.viewer_pager_toolbar);
+        toolbar = requireViewById(rootView, R.id.viewer_pager_toolbar);
         toolbar.inflateMenu(R.menu.viewer_pager_menu);
 
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(v -> onBackClick());
 
-        toolbar.setOnMenuItemClickListener(clickedMenuItem-> {
-            switch(clickedMenuItem.getItemId()) {
+        toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
+            switch (clickedMenuItem.getItemId()) {
                 case R.id.action_favourite_page:
                     onFavouriteClick();
                     break;
@@ -137,7 +131,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         favoritePageButton = toolbar.getMenu().findItem(R.id.action_favourite_page);
         shuffleButton = toolbar.getMenu().findItem(R.id.action_shuffle);
 
-        return view;
+        return rootView;
     }
 
     @Override
@@ -250,9 +244,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         controlsOverlay = requireViewById(rootView, R.id.image_viewer_controls_overlay);
 
         // Page number button
-        pageCurrentNumber = requireViewById(rootView, R.id.viewer_currentpage_text);
+        pageCurrentNumber = requireViewById(rootView, R.id.viewer_current_page_text);
         pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.invoke(this));
-        pageMaxNumber = requireViewById(rootView, R.id.viewer_maxpage_text);
+        pageMaxNumber = requireViewById(rootView, R.id.viewer_max_page_text);
         pageNumberOverlay = requireViewById(rootView, R.id.viewer_pagenumber_text);
 
         // Next/previous book

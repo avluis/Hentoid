@@ -20,6 +20,8 @@ import eu.davidea.flexibleadapter.items.IFlexible;
 import eu.davidea.viewholders.FlexibleViewHolder;
 import me.devsaki.hentoid.R;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseViewHolder> {
 
     private final String tagName;
@@ -98,10 +100,10 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
 
         ReleaseViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
-            title = view.findViewById(R.id.changelogReleaseTitle);
+            title = requireViewById(view, R.id.changelogReleaseTitle);
 
             releaseDescriptionAdapter = new FlexibleAdapter<>(null);
-            RecyclerView releasedDescription = view.findViewById(R.id.changelogReleaseDescription);
+            RecyclerView releasedDescription = requireViewById(view, R.id.changelogReleaseDescription);
             releasedDescription.setAdapter(releaseDescriptionAdapter);
         }
 

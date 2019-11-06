@@ -25,6 +25,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 /**
  * ViewHolder for Content
  */
@@ -56,16 +58,16 @@ public class ContentHolder extends RecyclerView.ViewHolder {
 
         this.adapter = adapter;
 
-        baseLayout = itemView.findViewById(R.id.item);
-        tvTitle = itemView.findViewById(R.id.tvTitle);
-        ivNew = itemView.findViewById(R.id.lineNew);
-        ivCover = itemView.findViewById(R.id.ivCover);
-        tvSeries = itemView.findViewById(R.id.tvSeries);
-        tvArtist = itemView.findViewById(R.id.tvArtist);
-        tvTags = itemView.findViewById(R.id.tvTags);
-        ivSite = itemView.findViewById(R.id.ivSite);
-        ivError = itemView.findViewById(R.id.ivError);
-        ivFavourite = itemView.findViewById(R.id.ivFavourite);
+        baseLayout = requireViewById(itemView, R.id.item);
+        tvTitle = requireViewById(itemView, R.id.tvTitle);
+        ivNew = requireViewById(itemView, R.id.lineNew);
+        ivCover = requireViewById(itemView, R.id.ivCover);
+        tvSeries = requireViewById(itemView, R.id.tvSeries);
+        tvArtist = requireViewById(itemView, R.id.tvArtist);
+        tvTags = requireViewById(itemView, R.id.tvTags);
+        ivSite = requireViewById(itemView, R.id.ivSite);
+        ivError = requireViewById(itemView, R.id.ivError);
+        ivFavourite = requireViewById(itemView, R.id.ivFavourite);
     }
 
     public void bind(@NonNull Content content) {

@@ -8,13 +8,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 public class AttributeViewHolder extends RecyclerView.ViewHolder {
 
     private final TextView view;
 
     public AttributeViewHolder(View itemView) {
         super(itemView);
-        view = itemView.findViewById(R.id.attributeChip);
+        view = requireViewById(itemView, R.id.attributeChip);
     }
 
     public void bindTo(Attribute attribute) {

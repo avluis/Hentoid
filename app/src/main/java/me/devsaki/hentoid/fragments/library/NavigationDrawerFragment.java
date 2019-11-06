@@ -32,6 +32,7 @@ import me.devsaki.hentoid.enums.DrawerItem;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.viewholders.DrawerItemFlex;
 
+import static androidx.core.view.ViewCompat.requireViewById;
 import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 
 public final class NavigationDrawerFragment extends Fragment {
@@ -62,13 +63,13 @@ public final class NavigationDrawerFragment extends Fragment {
         Drawable d = ContextCompat.getDrawable(parentActivity, R.drawable.line_divider);
         if (d != null) divider.setDrawable(d);
 
-        View view = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
 
-        RecyclerView recyclerView = view.findViewById(R.id.drawer_list);
+        RecyclerView recyclerView = requireViewById(rootView, R.id.drawer_list);
         recyclerView.setAdapter(drawerAdapter);
         recyclerView.addItemDecoration(divider);
 
-        return view;
+        return rootView;
     }
 
     private boolean onItemClick(View view, int position) {

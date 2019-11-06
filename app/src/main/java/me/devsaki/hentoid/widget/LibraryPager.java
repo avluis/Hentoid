@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.ui.CarouselDecorator;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 /**
  * Page navigation bar for the library screen's paged mode
  */
@@ -43,18 +45,18 @@ public class LibraryPager {
      * @param rootView Root view of the library screen
      */
     public void initUI(View rootView) {
-        pagerPanel = rootView.findViewById(R.id.library_pager_group);
+        pagerPanel = requireViewById(rootView, R.id.library_pager_group);
 
-        RecyclerView pageCarousel = rootView.findViewById(R.id.pager_pageCarousel);
+        RecyclerView pageCarousel = requireViewById(rootView, R.id.pager_pageCarousel);
         pageCarousel.setHasFixedSize(true);
 
         decorator = new CarouselDecorator(rootView.getContext(), R.layout.item_pagecarousel);
         decorator.decorate(pageCarousel);
         decorator.setOnPageChangeListener(this::pageChanged);
 
-        ImageButton btnPrevious = rootView.findViewById(R.id.pager_btnPrevious);
+        ImageButton btnPrevious = requireViewById(rootView, R.id.pager_btnPrevious);
         btnPrevious.setOnClickListener(this::previousPage);
-        ImageButton btnNext = rootView.findViewById(R.id.pager_btnNext);
+        ImageButton btnNext = requireViewById(rootView, R.id.pager_btnNext);
         btnNext.setOnClickListener(this::nextPage);
     }
 

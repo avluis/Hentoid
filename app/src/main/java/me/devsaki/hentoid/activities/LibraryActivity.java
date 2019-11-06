@@ -3,7 +3,6 @@ package me.devsaki.hentoid.activities;
 import android.os.Bundle;
 import android.view.WindowManager;
 
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -27,23 +26,17 @@ public class LibraryActivity extends BaseActivity implements BaseFragment.BackIn
         setContentView(R.layout.activity_hentoid);
 
         FragmentManager manager = getSupportFragmentManager();
-        Fragment fragment = manager.findFragmentById(R.id.content_frame);
+        Fragment fragment = manager.findFragmentById(R.id.fragment_library);
 
         if (fragment == null) {
             fragment = new LibraryFragment();
-            String tag = fragment.getClass().getSimpleName();
 
             manager.beginTransaction()
-                    .add(R.id.content_frame, fragment, tag)
+                    .add(R.id.fragment_library, fragment)
                     .commit();
         }
 
         drawerLayout = findViewById(R.id.drawer_layout);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_drawer);
-        toolbar.setNavigationOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
@@ -52,8 +45,6 @@ public class LibraryActivity extends BaseActivity implements BaseFragment.BackIn
             drawerLayout.openDrawer(GravityCompat.START);
             Preferences.setIsFirstRunProcessComplete(true);
         }
-
-        setTitle("");
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
@@ -80,5 +71,9 @@ public class LibraryActivity extends BaseActivity implements BaseFragment.BackIn
 
     public void onNavigationDrawerItemClicked() {
         drawerLayout.closeDrawer(GravityCompat.START);
+    }
+
+    public void onNavigationDrawerClicked() {
+        drawerLayout.openDrawer(GravityCompat.START);
     }
 }

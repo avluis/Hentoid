@@ -46,7 +46,7 @@
 
     <include
         android:id="@+id/image_viewer_controls_overlay"
-        layout="@layout/include_viewer_controls"
+        layout="@layout/include_viewer_bottom_bar"
         android:clickable="true"
         android:focusable="true"
         android:visibility="invisible" />

@@ -13,6 +13,8 @@ import eu.davidea.viewholders.FlexibleViewHolder;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.DrawerItem;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 public class DrawerItemFlex extends AbstractFlexibleItem<DrawerItemFlex.DrawerItemViewHolder> {
 
     private final DrawerItem item;
@@ -62,8 +64,8 @@ public class DrawerItemFlex extends AbstractFlexibleItem<DrawerItemFlex.DrawerIt
 
         DrawerItemViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
-            title = view.findViewById(R.id.drawer_item_txt);
-            icon = view.findViewById(R.id.drawer_item_icon);
+            title = requireViewById(view, R.id.drawer_item_txt);
+            icon = requireViewById(view, R.id.drawer_item_icon);
         }
 
         void setContent(DrawerItem item, boolean flag) {

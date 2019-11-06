@@ -48,7 +48,7 @@ public class ImageGalleryFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
 
         Bundle arguments = getArguments();
         if (arguments != null)
@@ -59,16 +59,16 @@ public class ImageGalleryFragment extends Fragment {
 
         galleryImagesAdapter = new ImageGalleryAdapter(null, this::onFavouriteClick);
         galleryImagesAdapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
-        RecyclerView recyclerView = requireViewById(view, R.id.viewer_gallery_recycler);
+        RecyclerView recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
         recyclerView.setAdapter(galleryImagesAdapter);
 
-        Toolbar toolbar = requireViewById(view, R.id.viewer_gallery_toolbar);
+        Toolbar toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
         toolbar.inflateMenu(R.menu.viewer_gallery_menu);
         toolbar.setTitle("Gallery");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
-        toolbar.setOnMenuItemClickListener(clickedMenuItem-> {
+        toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
                 toggleFavouritesDisplay();
             }
@@ -76,7 +76,7 @@ public class ImageGalleryFragment extends Fragment {
         });
         showFavouritePagesButton = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
 
-        return view;
+        return rootView;
     }
 
     @Override
