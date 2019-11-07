@@ -164,8 +164,8 @@ dependencies {
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
     if (includeObjectBoxBrowser.toBoolean()) {
-        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.4.0"
-        releaseImplementation "io.objectbox:objectbox-android:2.4.0"
+        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.4.1"
+        releaseImplementation "io.objectbox:objectbox-android:2.4.1"
     }
 
     // https://github.com/davemorrissey/subsampling-scale-image-view
