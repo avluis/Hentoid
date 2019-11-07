@@ -139,7 +139,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         startingIndex.setValue(index);
     }
 
-    public void setImages(List<ImageFile> imgs) {
+    private void setImages(List<ImageFile> imgs) {
         List<ImageFile> list = new ArrayList<>(imgs);
         sortAndSetImages(list, isShuffled);
     }
