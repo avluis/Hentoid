@@ -20,11 +20,13 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.fragments.intro.BaseSlide;
+import me.devsaki.hentoid.fragments.intro.EndIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ImportIntroFragment;
 import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment;
+import me.devsaki.hentoid.fragments.intro.PreImportIntroFragment;
 import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment;
+import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
@@ -48,15 +50,15 @@ public class IntroActivity extends AppIntro2 {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        addSlide(BaseSlide.newInstance(R.layout.intro_slide_01));
+        addSlide(new WelcomeIntroFragment());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addSlide(new PermissionIntroFragment());
         }
-        addSlide(BaseSlide.newInstance(R.layout.intro_slide_03));
+        addSlide(new PreImportIntroFragment());
         addSlide(new ImportIntroFragment());
         addSlide(new ThemeIntroFragment());
         addSlide(new SourcesIntroFragment());
-        addSlide(BaseSlide.newInstance(R.layout.intro_slide_end));
+        addSlide(new EndIntroFragment());
 
         setTitle(R.string.app_name);
         showSkipButton(false);
