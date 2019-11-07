@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json;
 
+import com.annimon.stream.Stream;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -99,6 +101,8 @@ public class JsonContent {
         if (attributes != null) {
             result.clearAttributes();
             for (List<JsonAttribute> jsonAttrList : attributes.values()) {
+                // Remove duplicates that may exist in old JSONs (cause weird single tags to appear in the DB)
+                jsonAttrList = Stream.of(jsonAttrList).distinct().toList();
                 List<Attribute> attrList = new ArrayList<>();
                 for (JsonAttribute attr : jsonAttrList) attrList.add(attr.toEntity(site));
                 result.addAttributes(attrList);
