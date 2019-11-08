@@ -11,6 +11,8 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
@@ -76,7 +78,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.json.UpdateInfo;
-import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
@@ -104,7 +105,7 @@ import timber.log.Timber;
  * this activity's function, it is recommended to request for this permission and show rationale if
  * permission request is denied
  */
-public abstract class BaseWebActivity extends BaseActivity implements ResultListener<Content> {
+public abstract class BaseWebActivity extends BaseActivity implements WebContentListener {
 
     protected static final int MODE_DL = 0;
     private static final int MODE_QUEUE = 1;
@@ -345,6 +346,34 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         webClient = getWebClient();
         webView.setWebViewClient(webClient);
 
+        // Download immediately on long click on a link / image link
+        webView.setOnLongClickListener(v -> {
+            WebView.HitTestResult result = webView.getHitTestResult();
+
+            String url = "";
+            // Plain link
+            if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null)
+                url = result.getExtra();
+
+            // Image link (https://stackoverflow.com/a/55299801/8374722)
+            if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+                Handler handler = new Handler();
+                Message message = handler.obtainMessage();
+
+                webView.requestFocusNodeHref(message);
+                url = message.getData().getString("url");
+            }
+
+            if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
+                webClient.parseResponse(url, null, true, true);
+            } else {
+                return true;
+            }
+
+            return false;
+        });
+
+
         Timber.i("Using agent %s", webView.getSettings().getUserAgentString());
         chromeVersion = getChromeVersion();
 
@@ -578,11 +607,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         currentContent = content;
     }
 
-    public void onResultReady(Content results, long totalContent) {
-        processContent(results);
+    public void onResultReady(Content results, boolean downloadImmediately) {
+        processContent(results); // TODO : don't show buttons
+        if (downloadImmediately) processDownload();
     }
 
-    public void onResultFailed(String message) {
+    public void onResultFailed() {
         runOnUiThread(() -> ToastUtil.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
     }
 
@@ -594,7 +624,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         final CompositeDisposable compositeDisposable = new CompositeDisposable();
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-        protected final ResultListener<Content> listener;
+        protected final WebContentListener listener;
         private final Pattern filteredUrlPattern;
         private final HtmlAdapter<ContentParser> htmlAdapter;
 
@@ -604,7 +634,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
 
         @SuppressWarnings("unchecked")
-        CustomWebViewClient(String filteredUrl, ResultListener<Content> listener) {
+        CustomWebViewClient(String filteredUrl, WebContentListener listener) {
             this.listener = listener;
 
             Class c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
@@ -739,17 +769,17 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             } else {
 
 // Timber.i(">> SIR 1 %s %s", isPageLoading, url);
-                if (isPageFiltered(url)) return parseResponse(url, headers, true);
+                if (isPageFiltered(url)) return parseResponse(url, headers, true, false);
 // Timber.i(">> SIR 2 %s %s", isPageLoading, url);
                 // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
                 if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
-                    return parseResponse(url, headers, false);
+                    return parseResponse(url, headers, false, false);
 
                 return null;
             }
         }
 
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers, boolean analyzeForDownload) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers, boolean analyzeForDownload, boolean downloadImmediately) {
             // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
             if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
@@ -803,11 +833,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                                     .subscribeOn(Schedulers.computation())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
-                                            content -> processContent(content, headersList),
+                                            content -> processContent(content, headersList, downloadImmediately),
                                             throwable -> {
                                                 Timber.e(throwable, "Error parsing content.");
                                                 isHtmlLoaded = true;
-                                                listener.onResultFailed("");
+                                                listener.onResultFailed();
                                             })
                     );
 
@@ -820,7 +850,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             return null;
         }
 
-        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList) {
+        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList, boolean downloadImmediately) {
 // Timber.i(">> processContent 1");
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
@@ -834,7 +864,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
             content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
             isHtmlLoaded = true;
-            listener.onResultReady(content, 1);
+
+            listener.onResultReady(content, downloadImmediately);
         }
 
         /**

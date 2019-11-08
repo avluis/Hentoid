@@ -49,7 +49,7 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
 
-        TsuminoWebViewClient(String galleryFilter, ResultListener<Content> listener) {
+        TsuminoWebViewClient(String galleryFilter, WebContentListener listener) {
             super(galleryFilter, listener);
         }
 
