@@ -226,6 +226,7 @@ public final class ContentHelper {
                                         || file.getName().toLowerCase().endsWith("jpeg")
                                         || file.getName().toLowerCase().endsWith("png")
                                         || file.getName().toLowerCase().endsWith("gif")
+                                        || file.getName().toLowerCase().endsWith("webp")
                         )
                 )
         );
