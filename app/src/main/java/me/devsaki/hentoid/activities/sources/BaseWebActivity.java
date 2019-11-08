@@ -111,6 +111,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private static final int MODE_QUEUE = 1;
     private static final int MODE_READ = 2;
 
+    private static final int STATUS_UNKNOWN = 0;
+    private static final int STATUS_IN_COLLECTION = 1;
+    private static final int STATUS_IN_QUEUE = 2;
+
     // === UI
     // Associated webview
     protected ObservableWebView webView;
@@ -572,10 +576,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      *
      * @param content Currently displayed content
      */
-    private void processContent(Content content) {
-        if (null == content || null == content.getUrl()) {
-            return;
-        }
+    private int processContent(Content content) {
+        int result = STATUS_UNKNOWN;
+        if (null == content || null == content.getUrl()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
         Content contentDB = db.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
@@ -601,15 +604,22 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             changeFabActionMode(MODE_DL);
         }
 
-        if (isInCollection) changeFabActionMode(MODE_READ);
-        if (isInQueue) changeFabActionMode(MODE_QUEUE);
+        if (isInCollection) {
+            changeFabActionMode(MODE_READ);
+            result = STATUS_IN_COLLECTION;
+        }
+        if (isInQueue) {
+            changeFabActionMode(MODE_QUEUE);
+            result = STATUS_IN_QUEUE;
+        }
 
         currentContent = content;
+        return result;
     }
 
     public void onResultReady(Content results, boolean downloadImmediately) {
-        processContent(results); // TODO : don't show buttons
-        if (downloadImmediately) processDownload();
+        int status = processContent(results);
+        if (downloadImmediately && STATUS_UNKNOWN == status) processDownload();
     }
 
     public void onResultFailed() {
