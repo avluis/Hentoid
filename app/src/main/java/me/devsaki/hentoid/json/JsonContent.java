@@ -112,6 +112,9 @@ public class JsonContent {
             List<ImageFile> imgs = new ArrayList<>();
             for (JsonImageFile img : imageFiles) imgs.add(img.toEntity(imageFiles.size()));
             result.setImageFiles(imgs);
+
+            // Fix books with incorrect QtyPages that may exist in old JSONs
+            if (qtyPages <= 0) result.setQtyPages(imageFiles.size());
         }
 
         result.populateAuthor();
