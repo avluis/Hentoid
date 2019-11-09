@@ -138,7 +138,7 @@ class FileUtil {
                                                           String relativePath, boolean isDirectory,
                                                           boolean canCreate) {
         // start with root and then parse through document tree.
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         DocumentFile document = DocumentFile.fromTreeUri(context, rootURI);
 
         if (null == document) return null;
@@ -195,7 +195,7 @@ class FileUtil {
                 // Storage Access Framework
                 DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
                 if (targetDocument != null) {
-                    Context context = HentoidApp.getAppContext();
+                    Context context = HentoidApp.getInstance();
                     return context.getContentResolver().openOutputStream(
                             targetDocument.getUri());
                 }
@@ -209,7 +209,7 @@ class FileUtil {
     }
 
     static OutputStream getOutputStream(@NonNull final DocumentFile target) throws FileNotFoundException {
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         return context.getContentResolver().openOutputStream(target.getUri());
     }
 
@@ -225,7 +225,7 @@ class FileUtil {
                 // Storage Access Framework
                 DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
                 if (targetDocument != null) {
-                    Context context = HentoidApp.getAppContext();
+                    Context context = HentoidApp.getInstance();
                     return context.getContentResolver().openInputStream(
                             targetDocument.getUri());
                 }
