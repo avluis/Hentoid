@@ -623,7 +623,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     public void onResultFailed() {
-        runOnUiThread(() -> ToastUtil.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+        runOnUiThread(() -> ToastUtil.toast(HentoidApp.getInstance(), R.string.web_unparsable));
     }
 
     /**

@@ -334,7 +334,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             images.add(img);
         }
         content.setImageFiles(images);
-        ObjectBoxDB.getInstance(HentoidApp.getAppContext()).insertContent(content);
+        ObjectBoxDB.getInstance(HentoidApp.getInstance()).insertContent(content);
     }
 
     @WorkerThread

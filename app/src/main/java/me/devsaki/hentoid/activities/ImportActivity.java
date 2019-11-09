@@ -410,7 +410,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
             } else message = getResources().getString(R.string.kitkat_dialog_return_2);
 
             message = message.replace("$s", folder.getAbsolutePath());
-            ToastUtil.toast(HentoidApp.getAppContext(), message, Toast.LENGTH_LONG);
+            ToastUtil.toast(HentoidApp.getInstance(), message, Toast.LENGTH_LONG);
         } else success = true;
 
         if (success) importFolder(folder);
@@ -539,7 +539,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
 
     private void cleanUpDB() {
         Timber.d("Cleaning up DB.");
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.deleteAllBooks();
     }

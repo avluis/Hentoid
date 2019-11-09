@@ -92,7 +92,7 @@ public class DatabaseMigrationService extends IntentService {
 
     private void cleanUpDB() {
         Timber.d("Cleaning up DB.");
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.deleteAllBooks();
         db.deleteAllQueue();
