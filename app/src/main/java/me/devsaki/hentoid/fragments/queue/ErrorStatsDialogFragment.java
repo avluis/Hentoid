@@ -98,7 +98,8 @@ public class ErrorStatsDialogFragment extends DialogFragment {
 
         for (ErrorRecord error : errors) {
             if (errorsByType.containsKey(error.type)) {
-                int nbErrors = errorsByType.get(error.type);
+                Integer nbErrorsObj = errorsByType.get(error.type);
+                int nbErrors = (null == nbErrorsObj) ? 0 : nbErrorsObj;
                 errorsByType.put(error.type, ++nbErrors);
             } else {
                 errorsByType.put(error.type, 1);
