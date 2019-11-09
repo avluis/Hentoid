@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.retrofit.sources;
 
 import io.reactivex.Single;
-import me.devsaki.hentoid.parsers.content.EHentaiGalleriesMetadata;
-import me.devsaki.hentoid.parsers.content.EHentaiGalleryQuery;
+import me.devsaki.hentoid.json.sources.EHentaiGalleriesMetadata;
+import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery;
 import me.devsaki.hentoid.util.OkHttpClientSingleton;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;

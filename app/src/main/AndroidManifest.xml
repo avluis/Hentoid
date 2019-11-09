@@ -123,6 +123,12 @@
                 android:value=".activities.LibraryActivity" />
         </activity>
         <activity
+            android:name=".activities.DrawerEditActivity"
+            android:label="@string/title_activity_drawer_edit"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:ignore="UnusedAttribute">
+        </activity>
+        <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
             android:theme="@style/AppTheme.NoActionBar"
@@ -159,7 +165,7 @@
                 <!-- Accepts URIs that begin with "https://hitomi.la/galleries" -->
                 <data
                     android:host="hitomi.la"
-                    android:pathPrefix="/galleries"
+                    android:pathPattern="..*/..*"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>

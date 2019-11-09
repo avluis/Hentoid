@@ -26,9 +26,9 @@ public class TsuminoActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
+        addContentBlockFilter(blockedContent);
         CustomWebViewClient client = new TsuminoWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        addContentBlockFilter(blockedContent);
 
         return client;
     }
@@ -49,7 +49,7 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
 
-        TsuminoWebViewClient(String galleryFilter, ResultListener<Content> listener) {
+        TsuminoWebViewClient(String galleryFilter, WebContentListener listener) {
             super(galleryFilter, listener);
         }
 

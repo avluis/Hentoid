@@ -9,14 +9,14 @@
     <string name="off">Off</string>
 
     <!-- Activities -->
-    <string name="title_activity_downloads">Downloads</string>
+    <string name="title_activity_downloads">Library</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
 
-    <!-- Menu -->
+    <!-- Library screen toolbar -->
     <string name="menu_tags">Tags</string>
     <string name="menu_search">Search</string>
     <string name="menu_order">order books</string>
@@ -162,6 +162,13 @@
     <string name="error_file">Cannot find update file on server.</string>
     <string name="update_check_no_update">Update Check: No new updates.</string>
 
+    <!-- Alerts -->
+    <string name="alert_orange">Be aware that downloads may fail on this site.\n%s</string>
+    <string name="alert_red">The download button is currently broken for this site.\n%s</string>
+    <string name="alert_black">This site is currently unavailable for real. The app has nothing to do about it. Please try again later.</string>
+    <string name="alert_wip">The Hentoid dev team is working on a fix. You will be notified by the app when a new version is ready.</string>
+    <string name="alert_fix_available">A fix is available on the latest version of the app. Please update.</string>
+
     <!-- Image Viewer -->
     <string name="no_images">Could not load the book : No image found</string>
     <string name="image_file_not_found">File not found in @dir</string>
@@ -220,7 +227,7 @@
     <string name="viewer_order_123">Reorder pages</string>
     <string name="viewer_favourite_off">Mark page as favourite</string>
     <string name="viewer_favourite_on">Unmark page as favourite</string>
-    <string name="pref_viewer_resume_last_left">Resume reading at last left page</string>
+    <string name="pref_viewer_resume_last_left">Resume reading when reopening books (except last page)</string>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
     <string name="pref_viewer_display_pagenum">Always display page number</string>
@@ -239,4 +246,7 @@
     <string name="get_latest">Get the latest version (@v)</string>
     <string name="update_success">Update successful !</string>
     <string name="starting_download">Starting download</string>
+
+    <!-- Edit drawer -->
+    <string name="title_activity_drawer_edit">Edit menu</string>
 </resources>

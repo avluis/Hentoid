@@ -304,6 +304,8 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
     }
 
     // Return from SAF picker
+    // TODO - check if the processing can be done on a separate thread to avoid freezing while displaying the SAF dialog
+    // TODO - just after a successful import, when the SAF dialog is reopened and another folder is chosen, that method is never called
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -337,10 +339,21 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
         getContentResolver().takePersistableUriPermission(treeUri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-//                String folderPath = null;
+
+        // Determine whether the designated file is
+        // - on a removable media (e.g. SD card, OTG)
+        // or
+        // - on the internal phone memory
+
         File selectedFolder = null;
-        // Is the selected folder on a removable media ?
         String[] removableMediaFolderRoots = FileHelper.getExtSdCardPaths();
+        /* First test is to compare root names with known roots of removable media
+
+         In many cases, the SD card root name is shared between pre-SAF (File) and SAF (DocumentFile) frameworks
+         (e.g. /storage/3437-3934 vs. /tree/3437-3934)
+
+         This is what the following block is trying to do
+         */
         for (String s : removableMediaFolderRoots) {
             String sRoot = s.substring(s.lastIndexOf(File.separatorChar));
             String treeRoot = treePath.substring(0, treePathSeparator);
@@ -354,7 +367,23 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
             }
         }
 
-        // Try with phone memory
+        /* In some other cases, there is no common name (e.g. /storage/sdcard1 vs. /tree/3437-3934)
+
+            We can use a slower method to translate the Uri obtained with SAF into a pre-SAF path
+            and compare it to the known removable media volume names */
+        if (null == selectedFolder) {
+            for (String s : removableMediaFolderRoots) {
+                String treeRoot = FileHelper.getFullPathFromTreeUri(treeUri, this);
+                if (treeRoot != null && treeRoot.startsWith(s)) {
+                    // Persist selected folder URI in shared preferences
+                    FileHelper.saveUri(treeUri);
+                    selectedFolder = new File(treeRoot);
+                    break;
+                }
+            }
+        }
+
+        // Finally, try with (or fall back to) phone memory
         if (null == selectedFolder) {
             FileHelper.clearUri();
             selectedFolder = new File(Environment.getExternalStorageDirectory(), folderName);

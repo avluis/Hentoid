@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'io.fabric'
 apply plugin: 'org.sonarqube'
 
@@ -19,7 +21,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 28
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.9.1'
+        versionName '1.10.0-beta2-dev'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN")?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -71,6 +73,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.50"
 
     // Firebase
     implementation 'com.google.firebase:firebase-analytics:17.2.0'
@@ -160,8 +164,8 @@ dependencies {
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
     if (includeObjectBoxBrowser.toBoolean()) {
-        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.4.0"
-        releaseImplementation "io.objectbox:objectbox-android:2.4.0"
+        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.4.1"
+        releaseImplementation "io.objectbox:objectbox-android:2.4.1"
     }
 
     // https://github.com/davemorrissey/subsampling-scale-image-view

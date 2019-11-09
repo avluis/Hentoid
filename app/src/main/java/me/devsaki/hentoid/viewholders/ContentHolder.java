@@ -48,6 +48,10 @@ public class ContentHolder extends RecyclerView.ViewHolder {
     private final ImageView ivFavourite;
 
     // Corresponding content
+    // NB : When using PagedListAdapter, this does _not_ always match the freshest instance
+    // of the object stored in the adapter since it is constantly updated as data evolves,
+    // and does not trigger binding for each of these updates
+    // (binding only happens when the content is different / see DiffUtil)
     private Content content;
     // Containing adapter
     private LibraryAdapter adapter;
@@ -79,7 +83,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
         attachArtist(content);
         attachTags(content);
         attachButtons(content);
-        attachOnClickListeners(content);
+        attachOnClickListeners();
     }
 
     public void clear() {
@@ -242,16 +246,19 @@ public class ContentHolder extends RecyclerView.ViewHolder {
         adapter.getErrorClickListener().accept(content);
     }
 
-    private void attachOnClickListeners(@NonNull Content content) {
+    private void attachOnClickListeners() {
 
         // Simple click
         itemView.setOnClickListener(v -> {
             if (adapter.getSelectedItemsCount() > 0) { // Selection mode is on -> select more
                 int itemPos = getLayoutPosition();
-                if (getLayoutPosition() > -1) {
-                    content.setSelected(!content.isSelected());
-                    adapter.getSelectionChangedListener().accept(adapter.getSelectedItemsCount());
-                    adapter.notifyItemChanged(itemPos);
+                if (itemPos > -1) {
+                    Content c = adapter.getItemAtPosition(itemPos); // Get the freshest content from the adapter
+                    if (c != null) {
+                        c.setSelected(!c.isSelected());
+                        adapter.getSelectionChangedListener().accept(adapter.getSelectedItemsCount());
+                        adapter.notifyItemChanged(itemPos);
+                    }
                 }
             } else adapter.getOpenBookListener().accept(content); // Open book
         });
@@ -260,8 +267,10 @@ public class ContentHolder extends RecyclerView.ViewHolder {
         itemView.setOnLongClickListener(v -> {
 
             int itemPos = getLayoutPosition();
-            if (itemPos > -1 && !content.isBeingDeleted()) {
-                content.setSelected(!content.isSelected());
+            Content c = adapter.getItemAtPosition(itemPos); // Get the freshest content from the adapter
+
+            if (c != null && itemPos > -1 && !c.isBeingDeleted()) {
+                c.setSelected(!c.isSelected());
                 adapter.getSelectionChangedListener().accept(adapter.getSelectedItemsCount());
                 adapter.notifyItemChanged(itemPos);
             }

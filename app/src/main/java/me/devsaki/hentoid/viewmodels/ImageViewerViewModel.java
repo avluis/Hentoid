@@ -139,7 +139,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         startingIndex.setValue(index);
     }
 
-    public void setImages(List<ImageFile> imgs) {
+    private void setImages(List<ImageFile> imgs) {
         List<ImageFile> list = new ArrayList<>(imgs);
         sortAndSetImages(list, isShuffled);
     }
@@ -174,7 +174,12 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
         Content theContent = content.getValue();
         if (theContent != null) {
-            theContent.setLastReadPageIndex(index);
+            int indexToSet = index;
+            // Reset the memorized page index if it represents the last page
+            List<ImageFile> images = getImages().getValue();
+            if (images != null && index == images.size() - 1) indexToSet = 0;
+
+            theContent.setLastReadPageIndex(indexToSet);
             db.insertContent(theContent);
         }
     }
@@ -244,14 +249,10 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
     private void processContent(Content theContent) {
         currentContentIndex = contentIds.indexOf(theContent.getId());
-
-        if (-1 == currentContentIndex) {
-            Timber.w("Content index %s not found in results", theContent.getId()); // TODO - that does not help when the list is empty !
-            currentContentIndex = 0;
-        }
+        if (-1 == currentContentIndex) currentContentIndex = 0;
 
         theContent.setFirst(0 == currentContentIndex);
-        theContent.setLast(currentContentIndex == contentIds.size() - 1);
+        theContent.setLast(currentContentIndex >= contentIds.size() - 1);
         content.setValue(theContent);
 
         // Load new content
@@ -295,7 +296,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             boolean matchFound = false;
             for (File f : files) {
                 // Image and file name match => store absolute path
-                if (FileHelper.getFileNameWithoutExtension(images.get(i).getName()).equals(FileHelper.getFileNameWithoutExtension(f.getName()))) {
+                if (fileNamesMatch(images.get(i).getName(), f.getName())) {
                     matchFound = true;
                     images.get(i).setAbsolutePath(f.getAbsolutePath());
                     break;
@@ -305,6 +306,19 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             if (!matchFound) {
                 images.remove(i);
             } else i++;
+        }
+    }
+
+    // Match when the names are exactly the same, or when their value is
+    private static boolean fileNamesMatch(@NonNull String name1, @NonNull String name2) {
+        name1 = FileHelper.getFileNameWithoutExtension(name1);
+        name2 = FileHelper.getFileNameWithoutExtension(name2);
+        if (name1.equalsIgnoreCase(name2)) return true;
+
+        try {
+            return (Integer.parseInt(name1) == Integer.parseInt(name2));
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 

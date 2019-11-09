@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.SparseIntArray;
@@ -33,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,7 +67,7 @@ import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.parsers.ImageListParser;
+import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -110,12 +110,14 @@ public class ContentDownloadService extends IntentService {
     // Fix attempt for #349 : https://stackoverflow.com/questions/55894636/android-9-pie-context-startforegroundservice-did-not-then-call-service-star?rq=1
     private void prepareAndStartForeground() {
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
-
+        this.startService(intent);
+/*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.startForegroundService(intent);
         } else {
             this.startService(intent);
         }
+ */
         notifyStart();
     }
 
@@ -210,7 +212,7 @@ public class ContentDownloadService extends IntentService {
 
     /**
      * Start the download of the 1st book of the download queue
-     *
+     * <p>
      * NB : This method is not only called the 1st time the queue is awakened,
      * but also after every book has finished downloading
      *
@@ -366,6 +368,7 @@ public class ContentDownloadService extends IntentService {
         // Folder creation succeeds -> memorize its path
         String fileRoot = Preferences.getRootFolderName();
         content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
+        if (0 == content.getQtyPages()) content.setQtyPages(images.size());
         content.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(content);
 
@@ -446,7 +449,7 @@ public class ContentDownloadService extends IntentService {
 
             boolean hasError = false;
             // Less pages than initially detected - More than 10% difference in number of pages
-            if (nbImages < content.getQtyPages() && Math.abs(nbImages - content.getQtyPages()) > content.getQtyPages() * 0.1) {
+            if (content.getQtyPages() > 0 && nbImages < content.getQtyPages() && Math.abs(nbImages - content.getQtyPages()) > content.getQtyPages() * 0.1) {
                 String errorMsg = String.format("The number of images found (%s) does not match the book's number of pages (%s)", nbImages, content.getQtyPages());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
                 hasError = true;
@@ -667,13 +670,14 @@ public class ContentDownloadService extends IntentService {
 
     private void tryUsingBackupUrl(@Nonnull ImageFile img, @Nonnull File dir, @Nonnull String backupUrl) {
         Timber.i("Using backup URL %s", backupUrl);
-        Site site = img.content.getTarget().getSite();
+        Content content = img.content.getTarget();
+        Site site = content.getSite();
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
 
         // per Volley behaviour, this method is called on the UI thread
         // -> need to create a new thread to do a network call
         compositeDisposable.add(
-                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder()))
+                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder(), content.getQtyPages()))
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -763,21 +767,30 @@ public class ContentDownloadService extends IntentService {
 
         String fileExt = null;
         // Determine the extension of the file
-        //  - Case 1: Content served from an URL without any extension, but with a content-type in the HTTP headers of the response
-        //  - Case 2: Content served from an URL with an extension, but with no content-type at all
+
+        // Use the Content-type contained in the HTTP headers of the response
         if (null != contentType) {
             contentType = HttpHelper.cleanContentType(contentType).first;
-            fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
-            Timber.d("Using content-type %s to determine file extension %s", contentType, fileExt);
+            // Ignore neutral binary content-type
+            if (!contentType.equalsIgnoreCase("application/octet-stream")) {
+                fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
+                Timber.d("Using content-type %s to determine file extension -> %s", contentType, fileExt);
+            }
         }
-        // Content-type has not been useful to determine the extension
+        // Content-type has not been useful to determine the extension => See if the URL contains an extension
         if (null == fileExt || fileExt.isEmpty()) {
-            Timber.d("Using url to determine file extension (content-type was %s) for %s", contentType, img.getUrl());
             fileExt = HttpHelper.getExtensionFromUri(img.getUrl());
+            Timber.d("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
         }
+        // No extension detected in the URL => Read binary header of the file to detect known formats
         if (fileExt.isEmpty()) {
-            Timber.d("Using default extension for %s", img.getUrl());
-            fileExt = "jpg"; // If all else fails, use jpg as default
+            fileExt = FileHelper.getImageExtensionFromPictureHeader(Arrays.copyOf(binaryContent, 12));
+            Timber.d("Reading headers to determine file extension for %s -> %s", img.getUrl(), fileExt);
+        }
+        // If all else fails, fall back to jpg as default
+        if (fileExt.isEmpty()) {
+            fileExt = "jpg";
+            Timber.d("Using default extension for %s -> %s", img.getUrl(), fileExt);
         }
 
         if (!Helper.isImageExtensionSupported(fileExt))

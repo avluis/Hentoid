@@ -50,9 +50,12 @@ public class ImageFile {
     public ImageFile() {
     }
 
-    public ImageFile(int order, String url, StatusContent status) {
+    public ImageFile(int order, String url, StatusContent status, int maxPages) {
         this.order = order;
-        this.name = String.format(Locale.US, "%03d", order);
+
+        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
+        this.name = String.format(Locale.US, "%0" + nbMaxDigits + "d", order);
+
         this.url = url;
         this.status = status;
         this.favourite = false;

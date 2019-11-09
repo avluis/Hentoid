@@ -100,15 +100,19 @@ public class HttpHelper {
         } else return new Pair<>(rawContentType, null);
     }
 
-
     public static String getExtensionFromUri(String uri) {
         String theUri = uri.toLowerCase();
-        int extIndex = theUri.indexOf('.', theUri.lastIndexOf('/'));
-        if (extIndex < 0) return ""; // No extension at all
+        String uriNoParams = theUri;
 
         int paramsIndex = theUri.lastIndexOf('?');
+        if (paramsIndex > -1) uriNoParams = theUri.substring(0, paramsIndex);
 
-        if (paramsIndex > -1) return theUri.substring(extIndex + 1, paramsIndex);
-        else return theUri.substring(extIndex + 1);
+        int pathIndex = uriNoParams.lastIndexOf('/');
+        int extIndex = uriNoParams.lastIndexOf('.');
+
+        // No extensions detected
+        if (extIndex < 0 || extIndex < pathIndex) return "";
+
+        return uriNoParams.substring(extIndex + 1);
     }
 }

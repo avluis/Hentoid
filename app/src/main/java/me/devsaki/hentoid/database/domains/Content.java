@@ -2,11 +2,11 @@ package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.annimon.stream.Stream;
 
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,7 +48,7 @@ public class Content implements Serializable {
     private String author;
     private ToMany<Attribute> attributes;
     private String coverImageUrl;
-    private Integer qtyPages;
+    private Integer qtyPages = 0; // Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
     private long uploadDate;
     private long downloadDate = 0;
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
@@ -78,8 +78,6 @@ public class Content implements Serializable {
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
     private double percent;     // % progress to display the progress bar on the queue screen
-    @Transient
-    private int queryOrder;     // Order of current content in the DB query that creates it
     @Transient
     private boolean isFirst;    // True if current content is the first of its set in the DB query
     @Transient
@@ -206,11 +204,11 @@ public class Content implements Serializable {
         }
     }
 
-    public Class<?> getWebActivityClass() {
+    public Class<? extends AppCompatActivity> getWebActivityClass() {
         return getWebActivityClass(this.site);
     }
 
-    public static Class<?> getWebActivityClass(Site site) {
+    public static Class<? extends AppCompatActivity> getWebActivityClass(Site site) {
         switch (site) {
             case HITOMI:
                 return HitomiActivity.class;
@@ -374,11 +372,11 @@ public class Content implements Serializable {
         return this;
     }
 
-    public Integer getQtyPages() {
+    public int getQtyPages() {
         return qtyPages;
     }
 
-    public Content setQtyPages(Integer qtyPages) {
+    public Content setQtyPages(int qtyPages) {
         this.qtyPages = qtyPages;
         return this;
     }
@@ -437,7 +435,7 @@ public class Content implements Serializable {
     }
 
     public void computePercent() {
-        if (imageFiles != null && 0 == percent) {
+        if (imageFiles != null && 0 == percent && qtyPages > 0) {
             long progress = Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.ERROR).count();
             percent = progress * 100.0 / qtyPages;
         }
@@ -467,15 +465,6 @@ public class Content implements Serializable {
 
     public Content setFavourite(boolean favourite) {
         this.favourite = favourite;
-        return this;
-    }
-
-    private int getQueryOrder() {
-        return queryOrder;
-    }
-
-    public Content setQueryOrder(int order) {
-        queryOrder = order;
         return this;
     }
 
@@ -580,19 +569,12 @@ public class Content implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-        return favourite == content.favourite &&
-                Objects.equals(url, content.url) &&
+        return Objects.equals(url, content.url) &&
                 site == content.site;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url, site, favourite);
+        return Objects.hash(url, site);
     }
-
-    public static Comparator<Content> getComparator() {
-        return QUERY_ORDER_COMPARATOR;
-    }
-
-    private static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
 }

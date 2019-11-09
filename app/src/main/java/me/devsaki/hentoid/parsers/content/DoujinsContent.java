@@ -51,7 +51,7 @@ public class DoujinsContent implements ContentParser {
             int index = 1;
             List<ImageFile> imgs = new ArrayList<>();
             for (Element e : images)
-                imgs.add(new ImageFile(index++, e.attr("data-file"), StatusContent.SAVED));
+                imgs.add(new ImageFile(index++, e.attr("data-file"), StatusContent.SAVED, images.size()));
             result.setImageFiles(imgs);
         }
 

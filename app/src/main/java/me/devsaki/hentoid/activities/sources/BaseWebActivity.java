@@ -11,6 +11,8 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
@@ -24,6 +26,8 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -32,11 +36,19 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -61,9 +73,11 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.events.UpdateEvent;
+import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
@@ -91,13 +105,17 @@ import timber.log.Timber;
  * this activity's function, it is recommended to request for this permission and show rationale if
  * permission request is denied
  */
-public abstract class BaseWebActivity extends BaseActivity implements ResultListener<Content> {
+public abstract class BaseWebActivity extends BaseActivity implements WebContentListener {
 
     protected static final int MODE_DL = 0;
     private static final int MODE_QUEUE = 1;
     private static final int MODE_READ = 2;
 
-    // UI
+    private static final int STATUS_UNKNOWN = 0;
+    private static final int STATUS_IN_COLLECTION = 1;
+    private static final int STATUS_IN_QUEUE = 2;
+
+    // === UI
     // Associated webview
     protected ObservableWebView webView;
     // Action buttons
@@ -106,21 +124,30 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private FloatingActionButton fabHome;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
+    // Alert message panel and text
+    private View alertBanner;
+    private ImageView alertIcon;
+    private TextView alertMessage;
 
-    // Content currently viewed
+    // === VARIABLES
+    // Currently viewed content
     private Content currentContent;
     // Database
     private ObjectBoxDB db;
-    // Indicated which mode the download FAB is in
+    // Indicates which mode the download FAB is in
     protected int fabActionMode;
     private boolean fabActionEnabled;
-
     private CustomWebViewClient webClient;
+    // Version iof installed Chrome client
     private int chromeVersion;
+    // Alert to be displayed
+    private UpdateInfo.SourceAlert alert;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
     private List<String> localBlockedContent;                                           // Local list (applied to current site)
+    // List of "dirty" elements (CSS selector) to be cleaned before displaying the page
+    private List<String> dirtyElements;
 
     static {
         universalBlockedContent.add("exoclick.com");
@@ -160,9 +187,20 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         Collections.addAll(localBlockedContent, filter);
     }
 
+    /**
+     * Add an element filter to current site
+     *
+     * @param elements Elements (CSS selector) to addAll to page cleaner
+     */
+    protected void addDirtyElements(String[] elements) {
+        if (null == dirtyElements) dirtyElements = new ArrayList<>();
+        Collections.addAll(dirtyElements, elements);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         setContentView(R.layout.activity_base_web);
 
@@ -193,6 +231,19 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
+
+        alertBanner = findViewById(R.id.web_alert_group);
+        alertIcon = findViewById(R.id.web_alert_icon);
+        alertMessage = findViewById(R.id.web_alert_txt);
+        displayAlertBanner();
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onUpdateEvent(UpdateEvent event) {
+        if (event.sourceAlerts.containsKey(getStartSite())) {
+            alert = event.sourceAlerts.get(getStartSite());
+            displayAlertBanner();
+        }
     }
 
     @Override
@@ -217,6 +268,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             webView = null;
         }
 
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 
@@ -298,6 +350,34 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         webClient = getWebClient();
         webView.setWebViewClient(webClient);
 
+        // Download immediately on long click on a link / image link
+        webView.setOnLongClickListener(v -> {
+            WebView.HitTestResult result = webView.getHitTestResult();
+
+            String url = "";
+            // Plain link
+            if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null)
+                url = result.getExtra();
+
+            // Image link (https://stackoverflow.com/a/55299801/8374722)
+            if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+                Handler handler = new Handler();
+                Message message = handler.obtainMessage();
+
+                webView.requestFocusNodeHref(message);
+                url = message.getData().getString("url");
+            }
+
+            if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
+                webClient.parseResponse(url, null, true, true);
+            } else {
+                return true;
+            }
+
+            return false;
+        });
+
+
         Timber.i("Using agent %s", webView.getSettings().getUserAgentString());
         chromeVersion = getChromeVersion();
 
@@ -315,6 +395,14 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_container);
         if (refreshLayout != null) refreshLayout.addView(webView, layoutParams);
+    }
+
+    private void displayAlertBanner() {
+        if (alertMessage != null && alert != null) {
+            alertIcon.setImageResource(alert.getStatus().getIcon());
+            alertMessage.setText(formatAlertMessage(alert));
+            alertBanner.setVisibility(View.VISIBLE);
+        }
     }
 
     private int getChromeVersion() {
@@ -374,6 +462,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      */
     public void onHomeFabClick(View view) {
         goHome();
+    }
+
+    public void onAlertCloseClick(View view) {
+        alertBanner.setVisibility(View.GONE);
     }
 
     /**
@@ -484,10 +576,9 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      *
      * @param content Currently displayed content
      */
-    private void processContent(Content content) {
-        if (null == content || null == content.getUrl()) {
-            return;
-        }
+    private int processContent(Content content) {
+        int result = STATUS_UNKNOWN;
+        if (null == content || null == content.getUrl()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
         Content contentDB = db.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
@@ -513,17 +604,25 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             changeFabActionMode(MODE_DL);
         }
 
-        if (isInCollection) changeFabActionMode(MODE_READ);
-        if (isInQueue) changeFabActionMode(MODE_QUEUE);
+        if (isInCollection) {
+            changeFabActionMode(MODE_READ);
+            result = STATUS_IN_COLLECTION;
+        }
+        if (isInQueue) {
+            changeFabActionMode(MODE_QUEUE);
+            result = STATUS_IN_QUEUE;
+        }
 
         currentContent = content;
+        return result;
     }
 
-    public void onResultReady(Content results, long totalContent) {
-        processContent(results);
+    public void onResultReady(Content results, boolean downloadImmediately) {
+        int status = processContent(results);
+        if (downloadImmediately && STATUS_UNKNOWN == status) processDownload();
     }
 
-    public void onResultFailed(String message) {
+    public void onResultFailed() {
         runOnUiThread(() -> ToastUtil.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
     }
 
@@ -533,9 +632,9 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      */
     class CustomWebViewClient extends WebViewClient {
 
-        protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
+        final CompositeDisposable compositeDisposable = new CompositeDisposable();
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-        protected final ResultListener<Content> listener;
+        protected final WebContentListener listener;
         private final Pattern filteredUrlPattern;
         private final HtmlAdapter<ContentParser> htmlAdapter;
 
@@ -545,7 +644,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
 
         @SuppressWarnings("unchecked")
-        CustomWebViewClient(String filteredUrl, ResultListener<Content> listener) {
+        CustomWebViewClient(String filteredUrl, WebContentListener listener) {
             this.listener = listener;
 
             Class c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
@@ -592,7 +691,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 for (String s : localBlockedContent) {
                     if (url.contains(s)) return true;
                 }
-
             return false;
         }
 
@@ -600,13 +698,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
          * Determines if the browser can use one single OkHttp request to serve HTML pages
          * - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
          * https://issuetracker.google.com/issues/36989494
-         * - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes issues on nHentai)
+         * - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes session issues on nHentai)
          * https://bugs.chromium.org/p/chromium/issues/detail?id=780491
          *
          * @return true if HTML content can be served by a single OkHttp request,
          * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
          */
-        private boolean useSingleOkHttpRequest() {
+        private boolean canUseSingleOkHttpRequest() {
             return (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
                     && (chromeVersion < 58 || chromeVersion > 71)
             );
@@ -657,7 +755,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                                                           @NonNull String url) {
             // Prevents processing the page twice on Lollipop and above
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                WebResourceResponse result = shouldInterceptRequestInternal(view, url, null);
+                WebResourceResponse result = shouldInterceptRequestInternal(url, null);
                 if (result != null) return result;
             }
             return super.shouldInterceptRequest(view, url);
@@ -668,26 +766,33 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
-            WebResourceResponse result = shouldInterceptRequestInternal(view, url, request.getRequestHeaders());
+            WebResourceResponse result = shouldInterceptRequestInternal(url, request.getRequestHeaders());
             if (result != null) return result;
             else return super.shouldInterceptRequest(view, request);
         }
 
         @Nullable
-        private WebResourceResponse shouldInterceptRequestInternal(@NonNull WebView view,
-                                                                   @NonNull String url,
+        private WebResourceResponse shouldInterceptRequestInternal(@NonNull String url,
                                                                    @Nullable Map<String, String> headers) {
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
+
 // Timber.i(">> SIR 1 %s %s", isPageLoading, url);
-                if (/*!isPageLoading &&*/ isPageFiltered(url)) return parseResponse(url, headers);
+                if (isPageFiltered(url)) return parseResponse(url, headers, true, false);
 // Timber.i(">> SIR 2 %s %s", isPageLoading, url);
+                // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
+                if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
+                    return parseResponse(url, headers, false, false);
+
                 return null;
             }
         }
 
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers, boolean analyzeForDownload, boolean downloadImmediately) {
+            // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
+            if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
+
 // Timber.i(">> parseResponse %s", urlStr);
             List<Pair<String, String>> headersList = new ArrayList<>();
 
@@ -695,41 +800,56 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 for (String key : headers.keySet())
                     headersList.add(new Pair<>(key, headers.get(key)));
 
-            if (useSingleOkHttpRequest()) {
+            if (canUseSingleOkHttpRequest()) {
                 String cookie = CookieManager.getInstance().getCookie(urlStr);
                 if (cookie != null)
                     headersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
             }
 
             try {
+                // Query resource here, using OkHttp
                 Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
                 if (null == response.body()) throw new IOException("Empty body");
 
                 InputStream parserStream;
                 WebResourceResponse result;
-                if (useSingleOkHttpRequest()) {
-                    // Response body bytestream needs to be duplicated
-                    // because Jsoup closes it, which makes it unavailable for the WebView to use
-                    List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
-                    parserStream = is.get(0);
-                    result = HttpHelper.okHttpResponseToWebResourceResponse(response, is.get(1));
+                if (canUseSingleOkHttpRequest()) {
+                    InputStream browserStream;
+                    if (analyzeForDownload) {
+                        // Response body bytestream needs to be duplicated
+                        // because Jsoup closes it, which makes it unavailable for the WebView to use
+                        List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
+                        parserStream = is.get(0);
+                        browserStream = is.get(1);
+                    } else {
+                        parserStream = null;
+                        browserStream = response.body().byteStream();
+                    }
+
+                    // Remove dirty elements if needed
+                    if (dirtyElements != null)
+                        browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
+
+                    // Convert OkHttp response to the expected format
+                    result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
                 } else {
                     parserStream = response.body().byteStream();
                     result = null; // Default webview behaviour
                 }
 
-                compositeDisposable.add(
-                        Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
-                                .subscribeOn(Schedulers.computation())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(
-                                        content -> processContent(content, headersList),
-                                        throwable -> {
-                                            Timber.e(throwable, "Error parsing content.");
-                                            isHtmlLoaded = true;
-                                            listener.onResultFailed("");
-                                        })
-                );
+                if (analyzeForDownload)
+                    compositeDisposable.add(
+                            Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
+                                    .subscribeOn(Schedulers.computation())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(
+                                            content -> processContent(content, headersList, downloadImmediately),
+                                            throwable -> {
+                                                Timber.e(throwable, "Error parsing content.");
+                                                isHtmlLoaded = true;
+                                                listener.onResultFailed();
+                                            })
+                    );
 
                 return result;
             } catch (MalformedURLException e) {
@@ -740,7 +860,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             return null;
         }
 
-        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList) {
+        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList, boolean downloadImmediately) {
 // Timber.i(">> processContent 1");
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
@@ -754,7 +874,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
             content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
             isHtmlLoaded = true;
-            listener.onResultReady(content, 1);
+
+            listener.onResultReady(content, downloadImmediately);
         }
 
         /**
@@ -762,8 +883,19 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
          *
          * @return True if current webpage is being loaded; false if not
          */
-        public boolean isLoading() {
+        boolean isLoading() {
             return isPageLoading;
+        }
+
+        private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, @NonNull List<String> dirtyElements) {
+            try {
+                Document doc = Jsoup.parse(stream, null, baseUri);
+                for (String s : dirtyElements) for (Element e : doc.select(s)) e.remove();
+                return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                Timber.e(e);
+                return stream;
+            }
         }
     }
 
@@ -771,5 +903,25 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private void setFabIcon(@Nonnull FloatingActionButton btn, @DrawableRes int resId) {
         btn.setImageResource(resId);
         btn.setImageMatrix(new Matrix());
+    }
+
+    private String formatAlertMessage(@NonNull UpdateInfo.SourceAlert alert) {
+        String result = "";
+
+        // Main message body
+        if (alert.getStatus().equals(AlertStatus.ORANGE)) {
+            result = getResources().getString(R.string.alert_orange);
+        } else if (alert.getStatus().equals(AlertStatus.RED)) {
+            result = getResources().getString(R.string.alert_red);
+        } else if (alert.getStatus().equals(AlertStatus.BLACK)) {
+            result = getResources().getString(R.string.alert_black);
+        }
+
+        // End of message
+        if (alert.getFixedByBuild() < Integer.MAX_VALUE)
+            result = result.replace("%s", getResources().getString(R.string.alert_fix_available));
+        else result = result.replace("%s", getResources().getString(R.string.alert_wip));
+
+        return result;
     }
 }

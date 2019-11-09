@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json;
 
+import com.annimon.stream.Stream;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -99,6 +101,8 @@ public class JsonContent {
         if (attributes != null) {
             result.clearAttributes();
             for (List<JsonAttribute> jsonAttrList : attributes.values()) {
+                // Remove duplicates that may exist in old JSONs (cause weird single tags to appear in the DB)
+                jsonAttrList = Stream.of(jsonAttrList).distinct().toList();
                 List<Attribute> attrList = new ArrayList<>();
                 for (JsonAttribute attr : jsonAttrList) attrList.add(attr.toEntity(site));
                 result.addAttributes(attrList);
@@ -106,8 +110,11 @@ public class JsonContent {
         }
         if (imageFiles != null) {
             List<ImageFile> imgs = new ArrayList<>();
-            for (JsonImageFile img : imageFiles) imgs.add(img.toEntity());
+            for (JsonImageFile img : imageFiles) imgs.add(img.toEntity(imageFiles.size()));
             result.setImageFiles(imgs);
+
+            // Fix books with incorrect QtyPages that may exist in old JSONs
+            if (qtyPages <= 0) result.setQtyPages(imageFiles.size());
         }
 
         result.populateAuthor();

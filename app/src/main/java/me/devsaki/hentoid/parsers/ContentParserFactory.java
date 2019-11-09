@@ -13,6 +13,16 @@ import me.devsaki.hentoid.parsers.content.NexusContent;
 import me.devsaki.hentoid.parsers.content.NhentaiContent;
 import me.devsaki.hentoid.parsers.content.PururinContent;
 import me.devsaki.hentoid.parsers.content.TsuminoContent;
+import me.devsaki.hentoid.parsers.images.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.images.DummyParser;
+import me.devsaki.hentoid.parsers.images.EHentaiParser;
+import me.devsaki.hentoid.parsers.images.FakkuParser;
+import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
+import me.devsaki.hentoid.parsers.images.HitomiParser;
+import me.devsaki.hentoid.parsers.images.ImageListParser;
+import me.devsaki.hentoid.parsers.images.NexusParser;
+import me.devsaki.hentoid.parsers.images.PururinParser;
+import me.devsaki.hentoid.parsers.images.TsuminoParser;
 
 public class ContentParserFactory {
 
