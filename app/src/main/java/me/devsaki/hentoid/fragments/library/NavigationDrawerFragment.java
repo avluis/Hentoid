@@ -98,7 +98,7 @@ public final class NavigationDrawerFragment extends Fragment {
         for (Site s : activeSites) drawerItems.add(new DrawerItemFlex(s));
 
         drawerItems.add(new DrawerItemFlex("QUEUE", R.drawable.ic_menu_queue, QueueActivity.class));
-        drawerItems.add(new DrawerItemFlex("ABOUT", R.drawable.ic_menu_about, AboutActivity.class));
+        drawerItems.add(new DrawerItemFlex("ABOUT", R.drawable.ic_info, AboutActivity.class));
 
         drawerAdapter.clear();
         drawerAdapter.addItems(0, drawerItems);

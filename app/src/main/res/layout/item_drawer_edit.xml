@@ -27,7 +27,7 @@
         android:layout_marginStart="12dp"
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_menu_about"
+        android:src="@drawable/ic_info"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/drawer_item_handle"
         app:layout_constraintTop_toTopOf="parent"

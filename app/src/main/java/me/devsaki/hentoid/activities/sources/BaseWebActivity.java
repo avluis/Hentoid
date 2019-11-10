@@ -491,7 +491,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     private void changeFabActionMode(int mode) {
-        @DrawableRes int resId = R.drawable.ic_menu_about;
+        @DrawableRes int resId = R.drawable.ic_info;
         if (MODE_DL == mode) {
             resId = R.drawable.ic_action_download;
         } else if (MODE_QUEUE == mode) {
