@@ -23,7 +23,6 @@ import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
 import static java.util.Objects.requireNonNull;
-import static me.devsaki.hentoid.notification.update.UpdateProgressNotification.INDETERMINATE;
 
 /**
  * Service responsible for downloading an update APK.
@@ -60,7 +59,7 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
         downloadManager = new ThinDownloadManager();
 
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
-        notificationManager.startForeground(new UpdateProgressNotification(INDETERMINATE));
+        notificationManager.startForeground(new UpdateProgressNotification());
 
         progressHandler = new Handler();
         Timber.w("Service created");
