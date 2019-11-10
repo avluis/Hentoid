@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="start"
-    android:padding="16dp">
+    android:padding="16dp"
+    app:theme="@style/Dialog">
 
     <TextView
         android:id="@+id/stats_title"
@@ -22,8 +24,8 @@
         android:id="@+id/stats_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/err_stats_title"
         android:textSize="@dimen/text_body_1"
+        tools:text="@string/err_stats_title"
         app:layout_constraintTop_toBottomOf="@id/stats_title"
         app:layout_constraintStart_toStartOf="parent"
         />

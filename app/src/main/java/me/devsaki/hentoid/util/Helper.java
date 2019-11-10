@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.util;
 
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -35,6 +37,7 @@ import javax.annotation.Nonnull;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
+import static android.content.Context.CLIPBOARD_SERVICE;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
 /**
@@ -205,6 +208,15 @@ public final class Helper {
             result.add(new ByteArrayInputStream(baos.toByteArray()));
 
         return result;
+    }
+
+    public static boolean copyPlainTextToClipboard(@NonNull Context context, @NonNull String text) {
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
+        if (clipboard != null) {
+            ClipData clip = ClipData.newPlainText("book URL", text);
+            clipboard.setPrimaryClip(clip);
+            return true;
+        } else return false;
     }
 
     public static boolean isImageExtensionSupported(String extension) {

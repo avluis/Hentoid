@@ -250,7 +250,7 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
 
         // Write cleanup log in root folder
-        File cleanupLogFile = LogUtil.writeLog(this, log, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON));
+        File cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
 
         eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -259,11 +259,12 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
-    private LogUtil.LogInfo buildLogInfo(boolean cleanup) {
+    private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<String> log) {
         LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
         logInfo.logName = cleanup ? "Cleanup" : "Import";
         logInfo.fileName = cleanup ? "cleanup_log" : "import_log";
         logInfo.noDataMessage = "No content detected.";
+        logInfo.log = log;
         return logInfo;
     }
 

@@ -2,8 +2,6 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -33,6 +31,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -45,7 +44,6 @@ import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.devsaki.hentoid.widget.VolumeGestureListener;
 import timber.log.Timber;
 
-import static android.content.Context.CLIPBOARD_SERVICE;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
 
@@ -305,13 +303,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private boolean onBookTitleLongClick(Content content) {
-        ClipboardManager clipboard = (ClipboardManager) requireActivity().getSystemService(CLIPBOARD_SERVICE);
-        if (clipboard != null) {
-            ClipData clip = ClipData.newPlainText("book URL", content.getGalleryUrl());
-            clipboard.setPrimaryClip(clip);
-            ToastUtil.toast("Book URL copied to clipboard");
-            return true;
-        } else return false;
+        boolean result = Helper.copyPlainTextToClipboard(requireActivity(), content.getGalleryUrl());
+        if (result) ToastUtil.toast("Book URL copied to clipboard");
+        return result;
     }
 
     @Override

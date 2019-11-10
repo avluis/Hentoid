@@ -5,47 +5,47 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
-    <!-- This is the layout that is used in both dialog_error_stats and XXX -->
+    <!-- This is the layout that is used in both dialog_queue_errors and dialog_libary_errors -->
 
     <TextView
         android:id="@+id/errlog_txt"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:text="@string/redownload_get_log"
         android:textSize="@dimen/text_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/errlog_barrier"
-        app:layout_constraintBottom_toBottomOf="@id/errlog_getfile_btn"
         />
 
     <ImageView
-        android:id="@+id/errlog_getfile_btn"
+        android:id="@+id/errlog_open_btn"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginStart="16dp"
         android:adjustViewBounds="true"
         android:clickable="true"
         android:focusable="true"
+        android:tint="@color/secondary"
         android:src="@drawable/ic_action_open_in_new"
-        app:layout_constraintLeft_toRightOf="@id/errlog_txt"
-        app:layout_constraintTop_toTopOf="@id/errlog_barrier"
+        app:layout_constraintStart_toEndOf="@id/errlog_txt"
+        app:layout_constraintEnd_toStartOf="@id/errlog_copy_btn"
+        app:layout_constraintTop_toTopOf="@id/errlog_txt"
+        app:layout_constraintBottom_toBottomOf="@id/errlog_txt"
         tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/errlog_copy_btn"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginStart="16dp"
         android:adjustViewBounds="true"
         android:clickable="true"
         android:focusable="true"
+        android:tint="@color/secondary"
         android:src="@drawable/ic_action_copy"
-        app:layout_constraintLeft_toRightOf="@id/errlog_getfile_btn"
-        app:layout_constraintTop_toTopOf="@id/errlog_barrier"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/errlog_txt"
+        app:layout_constraintBottom_toBottomOf="@id/errlog_txt"
         tools:ignore="ContentDescription" />
 </merge>

@@ -52,15 +52,11 @@ import me.devsaki.hentoid.adapters.LibraryAdapter;
 import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ErrorRecord;
-import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -72,7 +68,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryFragment extends BaseFragment {
+public class LibraryFragment extends BaseFragment implements ErrorsDialogFragment.Parent {
 
     private final PagedContentAdapter endlessAdapter = new PagedContentAdapter.Builder()
             .setBookClickListener(this::onBookClick)
@@ -814,72 +810,22 @@ public class LibraryFragment extends BaseFragment {
      * @param content Content whose "error" button has been clicked on
      */
     private void onBookErrorClick(Content content) {
-        int images;
-        int imgErrors = 0;
-
-        Context context = getContext();
-        if (null == context) return;
-        if (null == content.getImageFiles()) return;
-
-        images = content.getImageFiles().size();
-
-        for (ImageFile imgFile : content.getImageFiles())
-            if (imgFile.getStatus() == StatusContent.ERROR) imgErrors++;
-
-        String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        builder.setTitle(R.string.redownload_dialog_title)
-                .setMessage(message)
-                .setPositiveButton(android.R.string.yes,
-                        (dialog, which) -> downloadContent(context, content))
-                .setNegativeButton(android.R.string.no, null)
-                .setNeutralButton(R.string.redownload_view_log,
-                        (dialog, which) -> showErrorLog(context, content))
-                .show();
+        ErrorsDialogFragment.invoke(this, content.getId());
     }
 
     /**
      * Add the given content back to the download queue
      *
-     * @param context Context to be used
      * @param content Content to add back to the download queue
      */
-    private void downloadContent(@NonNull Context context, @NonNull final Content content) {
+    public void downloadContent(@NonNull final Content content) {
         viewModel.addContentToQueue(content);
 
-        ContentQueueManager.getInstance().resumeQueue(context);
+        ContentQueueManager.getInstance().resumeQueue(getContext());
 
         Snackbar snackbar = Snackbar.make(recyclerView, R.string.add_to_queue, BaseTransientBottomBar.LENGTH_LONG);
         snackbar.setAction("VIEW QUEUE", v -> viewQueue());
         snackbar.show();
-    }
-
-    /**
-     * Generate and show the detailed error log for the given content
-     *
-     * @param context Context to be used
-     * @param content Content whose error log to be generated and shown
-     */
-    private void showErrorLog(@NonNull Context context, @NonNull final Content content) {
-        List<ErrorRecord> errorLog = content.getErrorLog();
-        List<String> log = new ArrayList<>();
-
-        LogUtil.LogInfo errorLogInfo = new LogUtil.LogInfo();
-        errorLogInfo.logName = "Error";
-        errorLogInfo.fileName = "error_log" + content.getId();
-        errorLogInfo.noDataMessage = "No error detected.";
-
-        if (errorLog != null) {
-            log.add("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
-            for (ErrorRecord e : errorLog) log.add(e.toString());
-        }
-
-        File logFile = LogUtil.writeLog(context, log, errorLogInfo);
-        if (logFile != null) {
-            Snackbar snackbar = Snackbar.make(recyclerView, R.string.cleanup_done, BaseTransientBottomBar.LENGTH_LONG);
-            snackbar.setAction("READ LOG", v -> FileHelper.openFile(context, logFile));
-            snackbar.show();
-        }
     }
 
     /**
