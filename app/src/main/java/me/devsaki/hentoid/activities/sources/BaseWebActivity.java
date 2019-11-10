@@ -733,7 +733,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          */
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            setFabIcon(fabRefreshOrStop, R.drawable.ic_action_clear);
+            setFabIcon(fabRefreshOrStop, R.drawable.ic_close);
             fabRefreshOrStop.show();
             fabHome.show();
             isPageLoading = true;

@@ -33,7 +33,7 @@ public class DrawerEditActivity extends BaseActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.inflateMenu(R.menu.drawer_edit_menu);
 
-        toolbar.setNavigationIcon(R.drawable.ic_action_clear);
+        toolbar.setNavigationIcon(R.drawable.ic_close);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
