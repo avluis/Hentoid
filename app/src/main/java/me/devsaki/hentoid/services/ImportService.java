@@ -11,11 +11,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
+import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -355,7 +355,7 @@ public class ImportService extends IntentService {
             content.setLanguage(from(doujinBuilder.getLanguage(), AttributeType.LANGUAGE, content.getSite()));
 
             content.setMigratedStatus();
-            content.setDownloadDate(new Date().getTime());
+            content.setDownloadDate(Instant.now().toEpochMilli());
             Content contentV2 = content.toV2Content();
 
             String fileRoot = Preferences.getRootFolderName();

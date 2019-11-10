@@ -10,10 +10,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.documentfile.provider.DocumentFile;
 
+import org.threeten.bp.Instant;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
-import java.util.Date;
 
 import javax.annotation.Nonnull;
 
@@ -31,7 +32,6 @@ import timber.log.Timber;
 import static me.devsaki.hentoid.util.FileHelper.deleteQuietly;
 import static me.devsaki.hentoid.util.FileHelper.getDefaultDir;
 import static me.devsaki.hentoid.util.FileHelper.getExtSdCardFolder;
-import static me.devsaki.hentoid.util.FileHelper.getExtension;
 import static me.devsaki.hentoid.util.FileHelper.isSAF;
 
 /**
@@ -104,7 +104,7 @@ public final class ContentHelper {
     @WorkerThread
     public static Content updateContentReads(@Nonnull Context context, @NonNull Content content) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        content.increaseReads().setLastReadDate(new Date().getTime());
+        content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         db.insertContent(content);
 
         if (!content.getJsonUri().isEmpty()) updateJson(context, content);
