@@ -107,7 +107,7 @@
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
     <string name="redownload_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
-    <string name="redownload_view_log">View detailed error log</string>
+    <string name="redownload_get_log">Error log</string>
     <string name="redownload_log_saved">Log saved</string>
 
     <!-- Library fragment -->

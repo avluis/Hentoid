@@ -85,11 +85,11 @@ public class ErrorStatsDialogFragment extends DialogFragment {
             if (id > 0) updateStats(id);
         }
 
-        TextView okButton = view.findViewById(R.id.stats_ok);
-        okButton.setOnClickListener(v -> this.dismiss());
-
+        /*
         TextView logButton = view.findViewById(R.id.stats_log);
         logButton.setOnClickListener(v -> this.showErrorLog());
+
+         */
     }
 
     private void updateStats(long contentId) {
