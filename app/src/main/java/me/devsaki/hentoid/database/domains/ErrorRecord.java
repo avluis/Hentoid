@@ -22,10 +22,10 @@ public class ErrorRecord {
     @Convert(converter = ErrorType.ErrorTypeConverter.class, dbType = Integer.class)
     public ErrorType type;
     public String url;
-    String contentPart;
+    public String contentPart;
     public String description;
     @Convert(converter = InstantConverter.class, dbType = Long.class)
-    Instant timestamp;
+    public Instant timestamp;
 
     public ErrorRecord() {
     }

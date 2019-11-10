@@ -9,6 +9,7 @@ import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -32,6 +33,7 @@ public class JsonContent {
 
     private Map<AttributeType, List<JsonAttribute>> attributes;
     private List<JsonImageFile> imageFiles = new ArrayList<>();
+    private List<JsonErrorRecord> errorRecords = new ArrayList<>();
 
     private JsonContent() {
     }
@@ -68,15 +70,20 @@ public class JsonContent {
         result.lastReadDate = c.getLastReadDate();
         result.lastReadPageIndex = c.getLastReadPageIndex();
 
-        if (c.getImageFiles() != null)
-            for (ImageFile img : c.getImageFiles())
-                result.imageFiles.add(JsonImageFile.fromEntity(img));
-
         result.attributes = new HashMap<>();
         for (Attribute a : c.getAttributes()) {
             JsonAttribute attr = JsonAttribute.fromEntity(a, c.getSite());
             result.addAttribute(attr);
         }
+
+        if (c.getImageFiles() != null)
+            for (ImageFile img : c.getImageFiles())
+                result.imageFiles.add(JsonImageFile.fromEntity(img));
+
+        if (c.getErrorLog() != null)
+            for (ErrorRecord err : c.getErrorLog())
+                result.errorRecords.add(JsonErrorRecord.fromEntity(err));
+
         return result;
     }
 
@@ -115,6 +122,11 @@ public class JsonContent {
 
             // Fix books with incorrect QtyPages that may exist in old JSONs
             if (qtyPages <= 0) result.setQtyPages(imageFiles.size());
+        }
+        if (errorRecords != null) {
+            List<ErrorRecord> errs = new ArrayList<>();
+            for (JsonErrorRecord err : errorRecords) errs.add(err.toEntity());
+            result.setErrorLog(errs);
         }
 
         result.populateAuthor();
