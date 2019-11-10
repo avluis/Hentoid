@@ -6,8 +6,6 @@ import org.threeten.bp.Instant;
 import org.threeten.bp.ZoneId;
 import org.threeten.bp.format.DateTimeFormatter;
 
-import java.util.Locale;
-
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -27,7 +25,7 @@ public class ErrorRecord {
     String contentPart;
     public String description;
     @Convert(converter = InstantConverter.class, dbType = Long.class)
-    public Instant timestamp;
+    Instant timestamp;
 
     public ErrorRecord() {
     }
@@ -46,7 +44,7 @@ public class ErrorRecord {
     public String toString() {
         String timeStr = "";
         if (timestamp != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.US);
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // e.g. 2011-12-03T10:15:30
             timeStr = timestamp.atZone(ZoneId.systemDefault()).format(formatter) + " ";
         }
         return String.format("%s%s - [%s] : %s @ %s", timeStr, contentPart, type.getName(), description, url);
