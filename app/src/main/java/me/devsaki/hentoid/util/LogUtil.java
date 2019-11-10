@@ -29,7 +29,7 @@ public class LogUtil {
     public static String buildLog(@Nonnull LogInfo info) {
         StringBuilder logStr = new StringBuilder();
         logStr.append(info.logName).append(" log : begin").append(System.getProperty("line.separator"));
-        logStr.append(info.logName).append(String.format("Hentoid ver: %s (%s)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)).append(System.getProperty("line.separator"));
+        logStr.append(String.format("Hentoid ver: %s (%s)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)).append(System.getProperty("line.separator"));
         if (info.log.isEmpty())
             logStr.append("No activity to report - ").append(info.noDataMessage);
         else

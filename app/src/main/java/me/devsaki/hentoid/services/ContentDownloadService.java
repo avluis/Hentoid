@@ -27,6 +27,7 @@ import com.crashlytics.android.Crashlytics;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
@@ -858,7 +859,7 @@ public class ContentDownloadService extends IntentService {
     }
 
     private void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
-        ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description);
+        ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description, Instant.now());
         if (contentId > 0) db.insertErrorRecord(record);
     }
 }
