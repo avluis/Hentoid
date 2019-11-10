@@ -109,6 +109,8 @@
     <string name="redownload_dialog_title">Try downloading again?</string>
     <string name="redownload_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
     <string name="redownload_action">REDOWNLOAD</string>
+    <string name="redownload_open_log">Open error log</string>
+    <string name="redownload_copy_log">Copy error log</string>
     <string name="redownload_get_log">Get error log</string>
     <string name="redownload_generating_log_file">Generating log file…</string>
     <string name="redownload_log_clipboard">Log copied to clipboard</string>

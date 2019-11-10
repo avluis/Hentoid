@@ -84,10 +84,10 @@ public class ErrorsDialogFragment extends DialogFragment {
         View redownloadButton = view.findViewById(R.id.redownload_btn);
         redownloadButton.setOnClickListener(v -> redownload(content));
 
-        View openLogButton = view.findViewById(R.id.errlog_open_btn);
+        View openLogButton = view.findViewById(R.id.open_log_btn);
         openLogButton.setOnClickListener(v -> showErrorLog(content));
 
-        View copyLogButton = view.findViewById(R.id.errlog_copy_btn);
+        View copyLogButton = view.findViewById(R.id.copy_log_btn);
         copyLogButton.setOnClickListener(v -> copyErrorLog(content));
     }
 

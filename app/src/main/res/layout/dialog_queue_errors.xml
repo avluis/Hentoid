@@ -16,27 +16,39 @@
         android:text="@string/err_stats_title"
         android:textSize="@dimen/text_header_6"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/stats_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/text_body_1"
-        tools:text="@string/err_stats_title"
-        app:layout_constraintTop_toBottomOf="@id/stats_title"
         app:layout_constraintStart_toStartOf="parent"
-        />
+        app:layout_constraintTop_toBottomOf="@id/stats_title"
+        tools:text="@string/err_stats_title" />
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/errlog_barrier"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/open_log_btn"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="stats_details" />
+        android:layout_marginTop="16dp"
+        android:text="@string/redownload_open_log"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_action_open_in_new"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/stats_details" />
 
-    <include layout="@layout/include_error_log_access" />
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/copy_log_btn"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/redownload_copy_log"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_action_copy"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/open_log_btn" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
