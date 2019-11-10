@@ -1,6 +1,5 @@
 package me.devsaki.hentoid;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.app.NotificationManager;
@@ -40,11 +39,10 @@ import timber.log.Timber;
 public class HentoidApp extends Application {
 
     private static boolean beginImport;
-    @SuppressLint("StaticFieldLeak")
-    // A context leak happening at app level isn't _really_ a leak, right ? ;-)
-    private static Context instance;
 
-    public static Context getAppContext() {
+    private static Application instance;
+
+    public static Application getInstance() {
         return instance;
     }
 
@@ -66,6 +64,7 @@ public class HentoidApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
 
         Fabric.with(this, new Crashlytics());
 
@@ -95,7 +94,6 @@ public class HentoidApp extends Application {
         Timber.plant(new CrashlyticsTree());
 
         // Prefs
-        instance = this.getApplicationContext();
         Preferences.init(this);
         Preferences.performHousekeeping();
 
@@ -115,7 +113,7 @@ public class HentoidApp extends Application {
         MaintenanceNotificationChannel.init(this);
 
         // Clears all previous notifications
-        NotificationManager manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) manager.cancelAll();
 
         // Run app update checks

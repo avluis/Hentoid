@@ -113,7 +113,7 @@ public class FileHelper {
      * @return A list of external SD card paths.
      */
     public static String[] getExtSdCardPaths() {
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         List<String> paths = new ArrayList<>();
         for (File file : ContextCompat.getExternalFilesDirs(context, "external")) {
             if (file != null && !file.equals(context.getExternalFilesDir("external"))) {
@@ -372,7 +372,7 @@ public class FileHelper {
     }
 
     public static boolean checkAndSetRootFolder(String folder, boolean notify) {
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
 
         // Validate folder
         File file = new File(folder);
@@ -596,7 +596,7 @@ public class FileHelper {
     // I need some way to trace actions when working with SD card features - Robb
     public static void createFileWithMsg(@Nonnull String file, String msg) {
         try {
-            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getAppContext(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
+            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
             Timber.i(">>file %s -> %s", file, msg);
         } catch (Exception e) {
             e.printStackTrace();

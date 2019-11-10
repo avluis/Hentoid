@@ -95,7 +95,7 @@ public class UnlockActivity extends BaseActivity implements UnlockPinDialogFragm
         else {
             int siteCode = getIntent().getIntExtra(EXTRA_SITE_CODE, Site.NONE.getCode());
             Class c = Content.getWebActivityClass(Site.searchByCode(siteCode));
-            targetIntent = new Intent(HentoidApp.getAppContext(), c);
+            targetIntent = new Intent(HentoidApp.getInstance(), c);
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             targetIntent.setAction(Intent.ACTION_VIEW);
         }
