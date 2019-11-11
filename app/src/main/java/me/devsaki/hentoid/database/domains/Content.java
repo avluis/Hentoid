@@ -426,6 +426,13 @@ public class Content implements Serializable {
         return errorLog;
     }
 
+    public void setErrorLog(List<ErrorRecord> errorLog) {
+        if (errorLog != null && !errorLog.equals(this.errorLog)) {
+            this.errorLog.clear();
+            this.errorLog.addAll(errorLog);
+        }
+    }
+
     public double getPercent() {
         return percent;
     }

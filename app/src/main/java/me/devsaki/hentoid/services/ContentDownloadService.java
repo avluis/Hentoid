@@ -27,6 +27,7 @@ import com.crashlytics.android.Crashlytics;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +35,6 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -328,7 +328,7 @@ public class ContentDownloadService extends IntentService {
 
         if (hasError) {
             content.setStatus(StatusContent.ERROR);
-            content.setDownloadDate(new Date().getTime()); // Needs a download date to appear the right location when sorted by download date
+            content.setDownloadDate(Instant.now().toEpochMilli()); // Needs a download date to appear the right location when sorted by download date
             db.insertContent(content);
             db.deleteQueue(content);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
@@ -480,7 +480,8 @@ public class ContentDownloadService extends IntentService {
             }
 
             // Mark content as downloaded
-            if (0 == content.getDownloadDate()) content.setDownloadDate(new Date().getTime());
+            if (0 == content.getDownloadDate())
+                content.setDownloadDate(Instant.now().toEpochMilli());
             content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
             // Clear download params from content
             if (0 == pagesKO && !hasError) content.setDownloadParams("");
@@ -858,7 +859,7 @@ public class ContentDownloadService extends IntentService {
     }
 
     private void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
-        ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description);
+        ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description, Instant.now());
         if (contentId > 0) db.insertErrorRecord(record);
     }
 }

@@ -275,7 +275,7 @@
     },
     {
       "id": "8:2761588808510077107",
-      "lastPropertyId": "6:6859233072010087049",
+      "lastPropertyId": "7:4722768682213725119",
       "name": "ErrorRecord",
       "properties": [
         {
@@ -312,6 +312,12 @@
           "type": 11,
           "flags": 1548,
           "relationTarget": "Content"
+        },
+        {
+          "id": "7:4722768682213725119",
+          "name": "timestamp",
+          "type": 6,
+          "flags": 2
         }
       ],
       "relations": []

@@ -97,7 +97,7 @@ public class QueueFragment extends BaseFragment {
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
-        btnStats.setOnClickListener(v -> showStats());
+        btnStats.setOnClickListener(v -> showErrorStats());
 
         ObjectBoxDB db = ObjectBoxDB.getInstance(requireActivity());
         List<Content> contents = db.selectQueueContents();
@@ -279,8 +279,8 @@ public class QueueFragment extends BaseFragment {
         return true;
     }
 
-    private void showStats() {
+    private void showErrorStats() {
         if (mAdapter != null && mAdapter.getCount() > 0 && mAdapter.getItem(0) != null)
-            ErrorStatsDialogFragment.invoke(requireFragmentManager(), mAdapter.getItem(0).getId());
+            ErrorStatsDialogFragment.invoke(this, mAdapter.getItem(0).getId());
     }
 }

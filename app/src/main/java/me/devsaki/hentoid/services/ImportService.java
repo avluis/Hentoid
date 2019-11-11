@@ -11,11 +11,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
+import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -250,7 +250,7 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
 
         // Write cleanup log in root folder
-        File cleanupLogFile = LogUtil.writeLog(this, log, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON));
+        File cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
 
         eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -259,11 +259,12 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
-    private LogUtil.LogInfo buildLogInfo(boolean cleanup) {
+    private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<String> log) {
         LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
         logInfo.logName = cleanup ? "Cleanup" : "Import";
         logInfo.fileName = cleanup ? "cleanup_log" : "import_log";
         logInfo.noDataMessage = "No content detected.";
+        logInfo.log = log;
         return logInfo;
     }
 
@@ -354,7 +355,7 @@ public class ImportService extends IntentService {
             content.setLanguage(from(doujinBuilder.getLanguage(), AttributeType.LANGUAGE, content.getSite()));
 
             content.setMigratedStatus();
-            content.setDownloadDate(new Date().getTime());
+            content.setDownloadDate(Instant.now().toEpochMilli());
             Content contentV2 = content.toV2Content();
 
             String fileRoot = Preferences.getRootFolderName();
