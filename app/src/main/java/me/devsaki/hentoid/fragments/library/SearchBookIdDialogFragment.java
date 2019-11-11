@@ -47,7 +47,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_search_bookid, container, false);
+        return inflater.inflate(R.layout.dialog_library_search_id, container, false);
     }
 
     @Override
