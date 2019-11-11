@@ -31,7 +31,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/open_log_btn"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
         android:layout_marginTop="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/copy_log_btn"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/redownload_copy_log"
@@ -54,6 +54,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/redownload_btn"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/redownload_action"
