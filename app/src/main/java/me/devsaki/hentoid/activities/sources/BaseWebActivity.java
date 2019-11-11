@@ -22,6 +22,7 @@ import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebHistoryItem;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -127,6 +128,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // Toolbar buttons
     private MenuItem backMenu;
     private MenuItem forwardMenu;
+    private MenuItem galleryMenu;
     private MenuItem refreshStopMenu;
     // Action buttons
     private FloatingActionButton fabAction;
@@ -246,6 +248,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         refreshStopMenu = actionMenuRight.getMenu().findItem(R.id.web_menu_refresh_stop);
         backMenu = actionMenuLeft.getMenu().findItem(R.id.web_menu_back);
         forwardMenu = actionMenuLeft.getMenu().findItem(R.id.web_menu_forward);
+        galleryMenu = actionMenuLeft.getMenu().findItem(R.id.web_menu_gallery);
 
         fabAction = findViewById(R.id.fabAction);
         fabActionEnabled = false;
@@ -278,6 +281,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 break;
             case R.id.web_menu_forward:
                 this.onForwardClick();
+                break;
+            case R.id.web_menu_gallery:
+                this.onGalleryClick();
                 break;
             case R.id.web_menu_refresh_stop:
                 this.onRefreshStopClick();
@@ -479,9 +485,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 android.R.color.holo_red_light);
     }
 
-    private void refreshBackForwardButtons() {
+    private void refreshNavigationMenu() {
         backMenu.setVisible(webView.canGoBack());
         forwardMenu.setVisible(webView.canGoForward());
+        galleryMenu.setVisible(backListContainsGallery(webView.copyBackForwardList()) > -1);
     }
 
     private void onBackClick() {
@@ -490,6 +497,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
     private void onForwardClick() {
         webView.goForward();
+    }
+
+    private void onGalleryClick() {
+        WebBackForwardList list = webView.copyBackForwardList();
+        int galleryIndex = backListContainsGallery(list);
+        if (galleryIndex > -1) webView.goBackOrForward(galleryIndex - list.getCurrentIndex());
     }
 
     private void onRefreshStopClick() {
@@ -727,7 +740,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             restrictedDomainName = s;
         }
 
-        private boolean isPageFiltered(String url) {
+        boolean isPageFiltered(String url) {
             if (null == filteredUrlPattern) return false;
 
             Matcher matcher = filteredUrlPattern.matcher(url);
@@ -791,7 +804,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             refreshStopMenu.setIcon(R.drawable.ic_close);
-            refreshBackForwardButtons();
             isPageLoading = true;
 // Timber.i(">> onPageStarted %s", url);
             if (!isHtmlLoaded) hideActionFab();
@@ -802,6 +814,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             isPageLoading = false;
             isHtmlLoaded = false; // Reset for the next page
             refreshStopMenu.setIcon(R.drawable.ic_action_refresh);
+            refreshNavigationMenu();
 // Timber.i(">> onPageFinished %s", url);
         }
 
@@ -953,6 +966,14 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 return stream;
             }
         }
+    }
+
+    private int backListContainsGallery(WebBackForwardList backForwardList) {
+        for (int i = backForwardList.getCurrentIndex() - 1; i >= 0; i--) {
+            WebHistoryItem item = backForwardList.getItemAtIndex(i);
+            if (webClient.isPageFiltered(item.getUrl())) return i;
+        }
+        return -1;
     }
 
     // Workaround for https://issuetracker.google.com/issues/111316656

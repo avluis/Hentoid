@@ -390,12 +390,10 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         if (t instanceof ContentNotRemovedException) {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
             Snackbar snackbar = Snackbar.make(recyclerView, "Content removal failed", BaseTransientBottomBar.LENGTH_LONG);
-            if (e.getContent() != null) {
-                viewModel.flagContentDelete(e.getContent(), false);
-                List<Content> contents = new ArrayList<>();
-                contents.add(e.getContent());
-                snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::onDeleteSuccess, this::onDeleteError));
-            }
+            viewModel.flagContentDelete(e.getContent(), false);
+            List<Content> contents = new ArrayList<>();
+            contents.add(e.getContent());
+            snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::onDeleteSuccess, this::onDeleteError));
             snackbar.show();
         }
     }
