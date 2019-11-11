@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Pair;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -32,6 +33,9 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.view.SupportMenuInflater;
+import androidx.appcompat.widget.ActionMenuView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -212,6 +216,21 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             Timber.d("Loading site: %s", getStartSite());
         }
 
+        // Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        // TODO define back behaviour
+        ActionMenuView actionMenuLeft = toolbar.findViewById(R.id.toolbar_action_left);
+        ActionMenuView actionMenuRight = toolbar.findViewById(R.id.toolbar_action_right);
+        actionMenuLeft.setOnMenuItemClickListener(this::onMenuItemSelected);
+        actionMenuRight.setOnMenuItemClickListener(this::onMenuItemSelected);
+
+        SupportMenuInflater inflater = new SupportMenuInflater(this);
+        inflater.inflate(R.menu.web_menu_left, actionMenuLeft.getMenu());
+        inflater.inflate(R.menu.web_menu_right, actionMenuRight.getMenu());
+
+        //toolbar.inflateMenu(R.menu.library_menu);
+
         fabAction = findViewById(R.id.fabAction);
         fabRefreshOrStop = findViewById(R.id.fabRefreshStop);
         fabHome = findViewById(R.id.fabHome);
@@ -232,10 +251,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
 
+        // Alert banner
         alertBanner = findViewById(R.id.web_alert_group);
         alertIcon = findViewById(R.id.web_alert_icon);
         alertMessage = findViewById(R.id.web_alert_txt);
         displayAlertBanner();
+    }
+
+    private boolean onMenuItemSelected(MenuItem item) {
+        return true;
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
