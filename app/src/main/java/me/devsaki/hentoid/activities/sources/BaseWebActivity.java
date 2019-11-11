@@ -37,8 +37,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.view.SupportMenuInflater;
 import androidx.appcompat.widget.ActionMenuView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -231,7 +233,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          To achieve that, the toolbar is divided into two action menus (left and right)
          See https://stackoverflow.com/questions/29807744/how-can-i-align-android-toolbar-menu-icons-to-the-left-like-in-google-maps-app
          */
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(v -> goHome());
@@ -447,7 +448,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
 
-        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        layoutParams.setBehavior(new AppBarLayout.ScrollingViewBehavior());
+
         SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_container);
         if (refreshLayout != null) refreshLayout.addView(webView, layoutParams);
     }

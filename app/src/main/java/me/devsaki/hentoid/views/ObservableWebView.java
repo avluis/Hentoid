@@ -2,13 +2,14 @@ package me.devsaki.hentoid.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.webkit.WebView;
+
+import com.tobiasrohloff.view.NestedScrollWebView;
 
 /**
  * WebView implementation with scroll listener
  * Ref: http://stackoverflow.com/questions/14752523/
  */
-public class ObservableWebView extends WebView {
+public class ObservableWebView extends NestedScrollWebView {
     private OnScrollChangedCallback mOnScrollChangedCallback;
 
     public ObservableWebView(final Context context) {
@@ -26,13 +27,9 @@ public class ObservableWebView extends WebView {
     @Override
     protected void onScrollChanged(final int l, final int t, final int oldl, final int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);
-        int deltaX = l-oldl;
-        int deltaY = t-oldt;
+        int deltaX = l - oldl;
+        int deltaY = t - oldt;
         if (mOnScrollChangedCallback != null) mOnScrollChangedCallback.onScroll(deltaX, deltaY);
-    }
-
-    public OnScrollChangedCallback getOnScrollChangedCallback() {
-        return mOnScrollChangedCallback;
     }
 
     public void setOnScrollChangedCallback(final OnScrollChangedCallback onScrollChangedCallback) {
