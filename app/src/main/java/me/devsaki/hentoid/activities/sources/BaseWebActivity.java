@@ -217,9 +217,19 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         // Toolbar
+        /*
+         Design makes it so we have :
+           - Navigation icons aligned to the left
+           - Action icons aligned to the right
+
+         To achieve that, the toolbar is divided into two action menus (left and right)
+         See https://stackoverflow.com/questions/29807744/how-can-i-align-android-toolbar-menu-icons-to-the-left-like-in-google-maps-app
+         */
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-        // TODO define back behaviour
+        toolbar.setNavigationOnClickListener(v -> goHome());
+
         ActionMenuView actionMenuLeft = toolbar.findViewById(R.id.toolbar_action_left);
         ActionMenuView actionMenuRight = toolbar.findViewById(R.id.toolbar_action_right);
         actionMenuLeft.setOnMenuItemClickListener(this::onMenuItemSelected);
@@ -228,8 +238,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         SupportMenuInflater inflater = new SupportMenuInflater(this);
         inflater.inflate(R.menu.web_menu_left, actionMenuLeft.getMenu());
         inflater.inflate(R.menu.web_menu_right, actionMenuRight.getMenu());
-
-        //toolbar.inflateMenu(R.menu.library_menu);
 
         fabAction = findViewById(R.id.fabAction);
         fabRefreshOrStop = findViewById(R.id.fabRefreshStop);
