@@ -7,16 +7,19 @@
     <item
         android:id="@+id/web_menu_gallery"
         android:icon="@drawable/ic_action_gallery"
-        android:title="@string/menu_search"
+        android:title="@string/web_gallery"
+        android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/web_menu_back"
         android:icon="@drawable/ic_action_back"
-        android:title="@string/menu_fav"
+        android:title="@string/web_back"
+        android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/web_menu_forward"
         android:icon="@drawable/ic_action_forward"
-        android:title="@string/menu_fav"
-        app:showAsAction="always" />
+        android:title="@string/web_forward"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
 </menu>

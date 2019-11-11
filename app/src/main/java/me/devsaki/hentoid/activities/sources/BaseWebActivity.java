@@ -39,6 +39,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -122,10 +124,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // === UI
     // Associated webview
     protected ObservableWebView webView;
+    // Toolbar buttons
+    private MenuItem backMenu;
+    private MenuItem forwardMenu;
+    private MenuItem refreshStopMenu;
     // Action buttons
     private FloatingActionButton fabAction;
-    private FloatingActionButton fabRefreshOrStop;
-    private FloatingActionButton fabHome;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
     // Alert message panel and text
@@ -239,10 +243,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         inflater.inflate(R.menu.web_menu_left, actionMenuLeft.getMenu());
         inflater.inflate(R.menu.web_menu_right, actionMenuRight.getMenu());
 
-        fabAction = findViewById(R.id.fabAction);
-        fabRefreshOrStop = findViewById(R.id.fabRefreshStop);
-        fabHome = findViewById(R.id.fabHome);
+        refreshStopMenu = actionMenuRight.getMenu().findItem(R.id.web_menu_refresh_stop);
+        backMenu = actionMenuLeft.getMenu().findItem(R.id.web_menu_back);
+        forwardMenu = actionMenuLeft.getMenu().findItem(R.id.web_menu_forward);
 
+        fabAction = findViewById(R.id.fabAction);
         fabActionEnabled = false;
 
         initWebView();
@@ -267,6 +272,22 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     private boolean onMenuItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.web_menu_back:
+                this.onBackClick();
+                break;
+            case R.id.web_menu_forward:
+                this.onForwardClick();
+                break;
+            case R.id.web_menu_refresh_stop:
+                this.onRefreshStopClick();
+                break;
+            case R.id.web_menu_copy:
+                this.onCopyClick();
+                break;
+            default:
+                return false;
+        }
         return true;
     }
 
@@ -351,12 +372,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         webView.setOnScrollChangedCallback((deltaX, deltaY) -> {
             if (!webClient.isLoading()) {
                 if (deltaY <= 0) {
-                    fabRefreshOrStop.show();
-                    fabHome.show();
                     if (fabActionEnabled) fabAction.show();
                 } else {
-                    fabRefreshOrStop.hide();
-                    fabHome.hide();
                     fabAction.hide();
                 }
             }
@@ -462,11 +479,28 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 android.R.color.holo_red_light);
     }
 
-    public void onRefreshStopFabClick(View view) {
-        if (webClient.isLoading()) {
-            webView.stopLoading();
-        } else {
-            webView.reload();
+    private void refreshBackForwardButtons() {
+        backMenu.setVisible(webView.canGoBack());
+        forwardMenu.setVisible(webView.canGoForward());
+    }
+
+    private void onBackClick() {
+        webView.goBack();
+    }
+
+    private void onForwardClick() {
+        webView.goForward();
+    }
+
+    private void onRefreshStopClick() {
+        if (webClient.isLoading()) webView.stopLoading();
+        else webView.reload();
+    }
+
+    private void onCopyClick() {
+        if (Helper.copyPlainTextToClipboard(this, webView.getUrl())) {
+            Snackbar snackbar = Snackbar.make(webView, R.string.web_url_clipboard, BaseTransientBottomBar.LENGTH_LONG);
+            snackbar.show();
         }
     }
 
@@ -485,15 +519,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (!webView.canGoBack()) {
             goHome();
         }
-    }
-
-    /**
-     * Listener for Home floating action button : go back to Library view
-     *
-     * @param view Calling view (part of the mandatory signature)
-     */
-    public void onHomeFabClick(View view) {
-        goHome();
     }
 
     public void onAlertCloseClick(View view) {
@@ -765,9 +790,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          */
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            setFabIcon(fabRefreshOrStop, R.drawable.ic_close);
-            fabRefreshOrStop.show();
-            fabHome.show();
+            refreshStopMenu.setIcon(R.drawable.ic_close);
+            refreshBackForwardButtons();
             isPageLoading = true;
 // Timber.i(">> onPageStarted %s", url);
             if (!isHtmlLoaded) hideActionFab();
@@ -777,7 +801,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         public void onPageFinished(WebView view, String url) {
             isPageLoading = false;
             isHtmlLoaded = false; // Reset for the next page
-            setFabIcon(fabRefreshOrStop, R.drawable.ic_action_refresh);
+            refreshStopMenu.setIcon(R.drawable.ic_action_refresh);
 // Timber.i(">> onPageFinished %s", url);
         }
 

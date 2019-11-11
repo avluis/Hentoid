@@ -112,35 +112,4 @@
         tools:ignore="RelativeOverlap"
         tools:visibility="visible" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabRefreshStop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/refresh_fab_margin_left"
-        android:onClick="onRefreshStopFabClick"
-        android:src="@drawable/ic_action_refresh"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="@dimen/fab_default_elevation"
-        app:fabSize="mini"
-        app:layout_constraintBottom_toTopOf="@id/fabHome"
-        app:layout_constraintStart_toStartOf="parent"
-        app:rippleColor="@color/ripple"
-        app:tint="?attr/colorOnPrimary" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabHome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/home_fab_margin_left"
-        android:layout_marginBottom="@dimen/home_fab_margin_bottom"
-        android:onClick="onHomeFabClick"
-        android:src="@drawable/ic_action_sd_storage"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="@dimen/fab_default_elevation"
-        app:fabSize="mini"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:rippleColor="@color/ripple"
-        app:tint="?attr/colorOnPrimary" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

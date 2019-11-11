@@ -202,7 +202,13 @@
     <string name="about_licenses">Display Licenses</string>
 
     <!-- Web viewer -->
+    <string name="web_gallery">Back to gallery page</string>
+    <string name="web_back">Back</string>
+    <string name="web_forward">Forward</string>
+    <string name="web_refresh_stop">Refresh/stop</string>
+    <string name="web_copy_url">Copy current URL to clipboard</string>
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
+    <string name="web_url_clipboard">URL copied to clipboard</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
