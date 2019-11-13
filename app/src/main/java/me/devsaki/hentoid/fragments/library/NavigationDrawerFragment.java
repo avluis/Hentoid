@@ -75,13 +75,13 @@ public final class NavigationDrawerFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
 
-        View btn = rootView.findViewById(R.id.drawer_prefs_btn);
+        View btn = requireViewById(rootView, R.id.drawer_prefs_btn);
         btn.setOnClickListener(v -> onPrefsClick());
 
-        btn = rootView.findViewById(R.id.drawer_edit_btn);
+        btn = requireViewById(rootView, R.id.drawer_edit_btn);
         btn.setOnClickListener(v -> onEditClick());
 
-        RecyclerView recyclerView = rootView.findViewById(R.id.drawer_list);
+        RecyclerView recyclerView = requireViewById(rootView, R.id.drawer_list);
         recyclerView.setAdapter(drawerAdapter);
         recyclerView.addItemDecoration(divider);
 

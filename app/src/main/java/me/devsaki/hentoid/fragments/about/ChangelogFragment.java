@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -42,6 +43,11 @@ public class ChangelogFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_changelog, container, false);
+
+        Toolbar toolbar = requireViewById(rootView, R.id.changelog_toolbar);
+        toolbar.setTitle("Changelog");
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         downloadLatestText = requireViewById(rootView, R.id.changelogDownloadLatestText);
         downloadLatestButton = requireViewById(rootView, R.id.changelogDownloadLatestButton);

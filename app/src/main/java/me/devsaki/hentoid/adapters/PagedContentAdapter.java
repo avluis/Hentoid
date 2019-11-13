@@ -72,6 +72,7 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
     @Override
     public long getSelectedItemsCount() {
         if (getCurrentList() != null)
+            //noinspection Convert2MethodRef need API24
             return Stream.of(getCurrentList()).filter(c -> c != null).filter(Content::isSelected).count();
         else return 0;
     }
@@ -79,6 +80,7 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
     @Override
     public List<Content> getSelectedItems() {
         if (getCurrentList() != null)
+            //noinspection Convert2MethodRef need API24
             return Stream.of(getCurrentList()).filter(c -> c != null).filter(Content::isSelected).toList();
         else return Collections.emptyList();
     }

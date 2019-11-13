@@ -91,10 +91,10 @@ public class ErrorStatsDialogFragment extends DialogFragment {
             if (id > 0) updateStats(id);
         }
 
-        View openLogButton = view.findViewById(R.id.open_log_btn);
+        View openLogButton = requireViewById(rootView, R.id.open_log_btn);
         openLogButton.setOnClickListener(v -> this.showErrorLog());
 
-        View copyLogButton = view.findViewById(R.id.copy_log_btn);
+        View copyLogButton = requireViewById(rootView, R.id.copy_log_btn);
         copyLogButton.setOnClickListener(v -> this.copyErrorLog());
     }
 
