@@ -81,23 +81,26 @@ public class PrefsActivity extends BaseActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.preferences, rootKey);
 
-            if ("advancedSettings".equals(rootKey)) {
-                findPreference(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)
-                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
-            } else if ("downloadRetries".equals(rootKey)) {
-                // nothing here
-            } else {
-                findPreference(Preferences.Key.PREF_APP_PREVIEW)
-                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+            if ("interface".equals(rootKey)) {
+                Preference p = findPreference(Preferences.Key.DARK_MODE);
+                if (p != null)
+                    p.setOnPreferenceChangeListener((preference, newValue) -> onPrefDarkModeChanged(newValue));
+            } else if ("downloader".equals(rootKey)) {
+                Preference p = findPreference(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS);
+                if (p != null)
+                    p.setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+            } else if ("privacy".equals(rootKey)) {
+                Preference p1 = findPreference(Preferences.Key.PREF_APP_LOCK);
+                if (p1 != null)
+                    p1.setOnPreferenceChangeListener((preference, newValue) -> onAppLockPreferenceClick());
 
-                findPreference(Preferences.Key.PREF_ANALYTICS_PREFERENCE)
-                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+                Preference p2 = findPreference(Preferences.Key.PREF_APP_PREVIEW);
+                if (p2 != null)
+                    p2.setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-                findPreference(Preferences.Key.PREF_APP_LOCK)
-                        .setOnPreferenceClickListener(preference -> onAppLockPreferenceClick());
-
-                findPreference(Preferences.Key.DARK_MODE)
-                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefDarkModeChanged(newValue));
+                Preference p3 = findPreference(Preferences.Key.PREF_ANALYTICS_PREFERENCE);
+                if (p3 != null)
+                    p3.setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
             }
         }
 

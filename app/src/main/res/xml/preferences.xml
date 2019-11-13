@@ -1,180 +1,221 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory android:title="@string/pref_downloads_category">
-
-        <CheckBoxPreference
-            android:defaultValue="@string/pref_endless_scroll_default"
-            android:disableDependentsState="true"
-            android:icon="@null"
-            android:key="pref_endless_scroll"
-            android:summaryOff="@string/pref_endless_scroll_summary_off"
-            android:summaryOn="@string/pref_endless_scroll_summary_on"
-            android:title="@string/pref_endless_scroll_title" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_performance_category">
-
-        <ListPreference
-            android:defaultValue="@string/pref_quantity_per_page_default"
-            android:dependency="pref_endless_scroll"
-            android:entries="@array/pref_quantity_per_page_entries"
-            android:entryValues="@array/pref_quantity_per_page_entry_values"
-            android:icon="@null"
-            android:key="pref_quantity_per_page_lists"
-            android:summary="@string/pref_quantity_per_page_summary"
-            android:title="@string/pref_quantity_per_page_title" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_library_category">
-        <ListPreference
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:defaultValue="@string/pref_folder_naming_content_default"
-            android:entries="@array/pref_folder_naming_content_entries"
-            android:entryValues="@array/pref_folder_naming_content_entry_values"
-            android:icon="@null"
-            android:key="pref_folder_naming_content_lists"
-            android:summary="@string/pref_folder_naming_content_summary"
-            android:title="@string/pref_folder_naming_content_title" />
-        <ListPreference
-            android:defaultValue="@string/pref_folder_trunc_default"
-            android:entries="@array/pref_folder_trunc_content_entries"
-            android:entryValues="@array/pref_folder_trunc_content_entry_values"
-            android:icon="@null"
-            android:key="pref_folder_trunc_lists"
-            android:summary="@string/pref_folder_trunc_summary"
-            android:title="@string/pref_folder_trunc_title" />
-        <ListPreference
-            android:defaultValue="@string/pref_attributes_list_order_default"
-            android:entries="@array/pref_attribute_list_order_entries"
-            android:entryValues="@array/pref_attribute_list_order_values"
-            android:icon="@null"
-            android:key="pref_order_attribute_lists"
-            android:summary="@string/pref_attributes_list_order_summary"
-            android:title="@string/pref_attributes_list_order_title" />
-        <Preference
-            android:icon="@null"
-            android:key="folder"
-            android:summary="@string/pref_select_folder_summary"
-            android:title="@string/pref_select_folder_title">
-
-            <intent
-                android:action="android.intent.action.APPLICATION_PREFERENCES"
-                android:targetClass="me.devsaki.hentoid.activities.ImportActivity"
-                android:targetPackage="@string/app_id" />
-        </Preference>
-        <Preference
-            android:icon="@null"
-            android:key="pref_add_no_media_file"
-            android:summary="@string/pref_add_no_media_file_summary"
-            android:title="@string/pref_add_no_media_file_title" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_webview_category">
-
-        <CheckBoxPreference
-            android:defaultValue="@string/pref_webview_override_overview_default"
-            android:icon="@null"
-            android:key="pref_webview_override_overview_lists"
-            android:summaryOff="@string/pref_webview_override_overview_summary_off"
-            android:summaryOn="@string/pref_webview_override_overview_summary_on"
-            android:title="@string/pref_webview_override_overview_title" />
-
-        <ListPreference
-            android:defaultValue="@string/pref_webview_initial_zoom_default"
-            android:dependency="pref_webview_override_overview_lists"
-            android:entries="@array/pref_webview_initial_zoom_entries"
-            android:entryValues="@array/pref_webview_initial_zoom_values"
-            android:icon="@null"
-            android:key="pref_webview_initial_zoom_lists"
-            android:summary="@string/pref_webview_initial_zoom_summary"
-            android:title="@string/pref_webview_initial_zoom_title" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="Privacy">
-        <Preference
-            android:key="pref_app_lock"
-            android:title="App Lock" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_updates_category">
-
-        <Preference
-            android:icon="@null"
-            android:key="pref_check_updates_manual"
-            android:summary="@string/pref_check_updates_manual_summary"
-            android:title="@string/pref_check_updates_manual_title" />
-        <CheckBoxPreference
-            android:defaultValue="@string/pref_check_updates_default"
-            android:icon="@null"
-            android:key="pref_check_updates"
-            android:summaryOff="@string/pref_check_updates_summary_off"
-            android:summaryOn="@string/pref_check_updates_summary_on"
-            android:title="@string/pref_check_updates_title" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_misc_category">
-        <ListPreference
-            android:defaultValue="@string/pref_dark_mode_default"
-            android:entries="@array/pref_dark_mode_entries"
-            android:entryValues="@array/pref_dark_mode_values"
-            android:icon="@null"
-            android:key="pref_dark_mode"
-            android:summary="@string/pref_dark_mode_summary"
-            android:title="@string/pref_dark_mode_title" />
-        <CheckBoxPreference
-            android:defaultValue="@string/pref_app_preview_default"
-            android:icon="@null"
-            android:key="pref_app_preview"
-            android:summaryOff="@string/pref_app_preview_summary_off"
-            android:summaryOn="@string/pref_app_preview_summary_on"
-            android:title="@string/pref_app_preview_title" />
-        <CheckBoxPreference
-            android:defaultValue="@string/pref_analytics_preference_default"
-            android:icon="@null"
-            android:key="pref_analytics_preference"
-            android:summaryOff="@string/pref_analytics_preference_summary_off"
-            android:summaryOn="@string/pref_analytics_preference_summary_on"
-            android:title="@string/pref_analytics_preference_title" />
-    </PreferenceCategory>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceScreen
-        android:key="advancedSettings"
-        android:title="@string/advanced_screen_title">
-        <ListPreference
-            android:defaultValue="@string/pref_dl_threads_quantity_default"
-            android:entries="@array/pref_dl_threads_quantity_entries"
-            android:entryValues="@array/pref_dl_threads_quantity_values"
-            android:icon="@null"
-            android:key="pref_dl_threads_quantity_lists"
-            android:summary="@string/pref_dl_threads_quantity_summary"
-            android:title="@string/pref_dl_threads_quantity_title" />
-        <Preference
-            android:icon="@null"
-            android:key="pref_refresh_bookshelf"
-            android:summary="@string/pref_refresh_library_summary"
-            android:title="@string/pref_refresh_library_title" />
-
+        android:icon="@drawable/ic_ui"
+        android:key="interface"
+        android:title="@string/pref_screen_interface">
+        <PreferenceCategory
+            android:title="@string/pref_cat_library"
+            app:iconSpaceReserved="false">
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_endless_scroll_default"
+                android:disableDependentsState="true"
+                app:iconSpaceReserved="false"
+                android:key="pref_endless_scroll"
+                android:summaryOff="@string/pref_endless_scroll_summary_off"
+                android:summaryOn="@string/pref_endless_scroll_summary_on"
+                android:title="@string/pref_endless_scroll_title" />
+            <ListPreference
+                android:defaultValue="@string/pref_quantity_per_page_default"
+                android:dependency="pref_endless_scroll"
+                android:entries="@array/pref_quantity_per_page_entries"
+                android:entryValues="@array/pref_quantity_per_page_entry_values"
+                app:iconSpaceReserved="false"
+                android:key="pref_quantity_per_page_lists"
+                android:summary="@string/pref_quantity_per_page_summary"
+                android:title="@string/pref_quantity_per_page_title" />
+        </PreferenceCategory>
+        <PreferenceCategory android:title="@string/pref_cat_search"
+            app:iconSpaceReserved="false">
+            <ListPreference
+                android:defaultValue="@string/pref_attributes_list_order_default"
+                android:entries="@array/pref_attribute_list_order_entries"
+                android:entryValues="@array/pref_attribute_list_order_values"
+                app:iconSpaceReserved="false"
+                android:key="pref_order_attribute_lists"
+                android:summary="@string/pref_attributes_list_order_summary"
+                android:title="@string/pref_attributes_list_order_title" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_webview"
+            app:iconSpaceReserved="false">
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_webview_override_overview_default"
+                app:iconSpaceReserved="false"
+                android:key="pref_webview_override_overview_lists"
+                android:summaryOff="@string/pref_webview_override_overview_summary_off"
+                android:summaryOn="@string/pref_webview_override_overview_summary_on"
+                android:title="@string/pref_webview_override_overview_title" />
+            <ListPreference
+                android:defaultValue="@string/pref_webview_initial_zoom_default"
+                android:dependency="pref_webview_override_overview_lists"
+                android:entries="@array/pref_webview_initial_zoom_entries"
+                android:entryValues="@array/pref_webview_initial_zoom_values"
+                app:iconSpaceReserved="false"
+                android:key="pref_webview_initial_zoom_lists"
+                android:summary="@string/pref_webview_initial_zoom_summary"
+                android:title="@string/pref_webview_initial_zoom_title" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_theme"
+            app:iconSpaceReserved="false">
+            <ListPreference
+                android:defaultValue="@string/pref_dark_mode_default"
+                android:entries="@array/pref_dark_mode_entries"
+                android:entryValues="@array/pref_dark_mode_values"
+                app:iconSpaceReserved="false"
+                android:key="pref_dark_mode"
+                android:summary="@string/pref_dark_mode_summary"
+                android:title="@string/pref_dark_mode_title" />
+        </PreferenceCategory>
     </PreferenceScreen>
+
     <PreferenceScreen
-        android:key="downloadRetries"
-        android:title="@string/download_retries_screen_title">
-        <CheckBoxPreference
-            android:defaultValue="@string/pref_dl_retries_active_default"
-            android:icon="@null"
-            android:key="pref_dl_retries_active"
-            android:summaryOff="@string/pref_dl_retries_off"
-            android:summaryOn="@string/pref_dl_retries_on"
-            android:title="@string/download_retries_active_title" />
-        <ListPreference
-            android:defaultValue="@string/pref_dl_retries_number_default"
-            android:entries="@array/pref_dl_retries_number_entries"
-            android:entryValues="@array/pref_dl_retries_number_entries"
-            android:icon="@null"
-            android:key="pref_dl_retries_number"
-            android:summary="@string/pref_dl_retries_number_summary"
-            android:title="@string/pref_dl_retries_number_title" />
-        <ListPreference
-            android:defaultValue="@string/pref_dl_retries_mem_limit_default"
-            android:entries="@array/pref_dl_retries_mem_limit_entries"
-            android:entryValues="@array/pref_dl_retries_mem_limit_values"
-            android:icon="@null"
-            android:key="pref_dl_retries_mem_limit"
-            android:summary="@string/pref_dl_retries_mem_limit_summary"
-            android:title="@string/pref_dl_retries_mem_limit_title" />
-
+        android:icon="@drawable/ic_folder"
+        android:key="storage"
+        android:title="@string/pref_screen_storage">
+        <PreferenceCategory
+            android:title="@string/pref_cat_downloads_folder"
+            app:iconSpaceReserved="false">
+            <Preference
+                app:iconSpaceReserved="false"
+                android:key="folder"
+                android:summary="@string/pref_select_folder_summary"
+                android:title="@string/pref_select_folder_title">
+                <intent
+                    android:action="android.intent.action.APPLICATION_PREFERENCES"
+                    android:targetClass="me.devsaki.hentoid.activities.ImportActivity"
+                    android:targetPackage="@string/app_id" />
+            </Preference>
+            <ListPreference
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:defaultValue="@string/pref_folder_naming_content_default"
+                android:entries="@array/pref_folder_naming_content_entries"
+                android:entryValues="@array/pref_folder_naming_content_entry_values"
+                app:iconSpaceReserved="false"
+                android:key="pref_folder_naming_content_lists"
+                android:summary="@string/pref_folder_naming_content_summary"
+                android:title="@string/pref_folder_naming_content_title" />
+            <ListPreference
+                android:defaultValue="@string/pref_folder_trunc_default"
+                android:entries="@array/pref_folder_trunc_content_entries"
+                android:entryValues="@array/pref_folder_trunc_content_entry_values"
+                app:iconSpaceReserved="false"
+                android:key="pref_folder_trunc_lists"
+                android:summary="@string/pref_folder_trunc_summary"
+                android:title="@string/pref_folder_trunc_title" />
+            <Preference
+                app:iconSpaceReserved="false"
+                android:key="pref_add_no_media_file"
+                android:summary="@string/pref_add_no_media_file_summary"
+                android:title="@string/pref_add_no_media_file_title" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_advanced"
+            app:iconSpaceReserved="false">
+            <Preference
+                app:iconSpaceReserved="false"
+                android:key="pref_refresh_bookshelf"
+                android:summary="@string/pref_refresh_library_summary"
+                android:title="@string/pref_refresh_library_title" />
+        </PreferenceCategory>
     </PreferenceScreen>
+
+    <PreferenceScreen
+        android:icon="@drawable/ic_action_download"
+        android:key="downloader"
+        android:title="@string/pref_screen_downloader">
+        <PreferenceCategory
+            android:title="@string/download_retries_screen_title"
+            app:iconSpaceReserved="false">
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_dl_retries_active_default"
+                app:iconSpaceReserved="false"
+                android:key="pref_dl_retries_active"
+                android:summaryOff="@string/pref_dl_retries_off"
+                android:summaryOn="@string/pref_dl_retries_on"
+                android:title="@string/download_retries_active_title" />
+            <ListPreference
+                android:defaultValue="@string/pref_dl_retries_number_default"
+                android:entries="@array/pref_dl_retries_number_entries"
+                android:entryValues="@array/pref_dl_retries_number_entries"
+                app:iconSpaceReserved="false"
+                android:key="pref_dl_retries_number"
+                android:summary="@string/pref_dl_retries_number_summary"
+                android:title="@string/pref_dl_retries_number_title" />
+            <ListPreference
+                android:defaultValue="@string/pref_dl_retries_mem_limit_default"
+                android:entries="@array/pref_dl_retries_mem_limit_entries"
+                android:entryValues="@array/pref_dl_retries_mem_limit_values"
+                app:iconSpaceReserved="false"
+                android:key="pref_dl_retries_mem_limit"
+                android:summary="@string/pref_dl_retries_mem_limit_summary"
+                android:title="@string/pref_dl_retries_mem_limit_title" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_advanced"
+            app:iconSpaceReserved="false">
+            <ListPreference
+                android:defaultValue="@string/pref_dl_threads_quantity_default"
+                android:entries="@array/pref_dl_threads_quantity_entries"
+                android:entryValues="@array/pref_dl_threads_quantity_values"
+                app:iconSpaceReserved="false"
+                android:key="pref_dl_threads_quantity_lists"
+                android:summary="@string/pref_dl_threads_quantity_summary"
+                android:title="@string/pref_dl_threads_quantity_title" />
+        </PreferenceCategory>
+    </PreferenceScreen>
+
+    <PreferenceScreen
+        android:icon="@drawable/ic_lock"
+        android:key="privacy"
+        android:title="@string/pref_screen_privacy">
+        <PreferenceCategory
+            android:title="@string/pref_screen_privacy"
+            app:iconSpaceReserved="false">
+            <Preference
+                app:iconSpaceReserved="false"
+                android:key="pref_app_lock"
+                android:title="App Lock" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_app_preview_default"
+                app:iconSpaceReserved="false"
+                android:key="pref_app_preview"
+                android:summaryOff="@string/pref_app_preview_summary_off"
+                android:summaryOn="@string/pref_app_preview_summary_on"
+                android:title="@string/pref_app_preview_title" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_analytics_preference_default"
+                app:iconSpaceReserved="false"
+                android:key="pref_analytics_preference"
+                android:summaryOff="@string/pref_analytics_preference_summary_off"
+                android:summaryOn="@string/pref_analytics_preference_summary_on"
+                android:title="@string/pref_analytics_preference_title" />
+        </PreferenceCategory>
+    </PreferenceScreen>
+
+    <PreferenceScreen
+        android:icon="@drawable/ic_action_refresh"
+        android:key="updates"
+        android:title="@string/pref_screen_updates">
+        <PreferenceCategory
+            android:title="@string/pref_screen_updates"
+            app:iconSpaceReserved="false">
+            <Preference
+                app:iconSpaceReserved="false"
+                android:key="pref_check_updates_manual"
+                android:summary="@string/pref_check_updates_manual_summary"
+                android:title="@string/pref_check_updates_manual_title" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_check_updates_default"
+                app:iconSpaceReserved="false"
+                android:key="pref_check_updates"
+                android:summaryOff="@string/pref_check_updates_summary_off"
+                android:summaryOn="@string/pref_check_updates_summary_on"
+                android:title="@string/pref_check_updates_title" />
+        </PreferenceCategory>
+    </PreferenceScreen>
+
 </PreferenceScreen>
