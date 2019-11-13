@@ -159,9 +159,9 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         initUI(rootView);
 
         initToolbar(rootView);
-        toolbarOnItemClicked(toolbar);
         initSelectionToolbar(rootView);
-        selectionToolbarOnItemClicked(selectionToolbar);
+        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
+        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
 
         return rootView;
     }
@@ -283,57 +283,55 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
      * Callback method used when a sort method is selected in the sort drop-down menu
      * Updates the UI according to the chosen sort method
      *
-     * @param toolbar Toolbar of the fragment
+     * @param menuItem Toolbar of the fragment
      */
-    private void toolbarOnItemClicked(@NonNull Toolbar toolbar) {
-        toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
-            int contentSortOrder;
-            switch (clickedMenuItem.getItemId()) {
-                case R.id.action_order_AZ:
-                    contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA;
-                    break;
-                case R.id.action_order_321:
-                    contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST;
-                    break;
-                case R.id.action_order_ZA:
-                    contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED;
-                    break;
-                case R.id.action_order_123:
-                    contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST;
-                    break;
-                case R.id.action_order_least_read:
-                    contentSortOrder = Preferences.Constant.ORDER_CONTENT_LEAST_READ;
-                    break;
-                case R.id.action_order_most_read:
-                    contentSortOrder = Preferences.Constant.ORDER_CONTENT_MOST_READ;
-                    break;
-                case R.id.action_order_last_read:
-                    contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_READ;
-                    break;
-                case R.id.action_order_random:
-                    contentSortOrder = Preferences.Constant.ORDER_CONTENT_RANDOM;
-                    RandomSeedSingleton.getInstance().renewSeed();
-                    break;
-                case R.id.action_favourites:
-                    contentSortOrder = Preferences.Constant.ORDER_CONTENT_FAVOURITE;
-                    clickedMenuItem.setChecked(!clickedMenuItem.isChecked());
-                    break;
-                default:
-                    return false;
-            }
+    private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
+        int contentSortOrder;
+        switch (menuItem.getItemId()) {
+            case R.id.action_order_AZ:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA;
+                break;
+            case R.id.action_order_321:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST;
+                break;
+            case R.id.action_order_ZA:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED;
+                break;
+            case R.id.action_order_123:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST;
+                break;
+            case R.id.action_order_least_read:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LEAST_READ;
+                break;
+            case R.id.action_order_most_read:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_MOST_READ;
+                break;
+            case R.id.action_order_last_read:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_READ;
+                break;
+            case R.id.action_order_random:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_RANDOM;
+                RandomSeedSingleton.getInstance().renewSeed();
+                break;
+            case R.id.action_favourites:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_FAVOURITE;
+                menuItem.setChecked(!menuItem.isChecked());
+                break;
+            default:
+                return false;
+        }
 
-            // If favourite is selected, apply the filter
-            if (Preferences.Constant.ORDER_CONTENT_FAVOURITE == contentSortOrder) {
-                updateFavouriteFilter();
-                viewModel.toggleFavouriteFilter();
-            } else { // Update the order menu icon and run a new search
-                orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
-                Preferences.setContentSortOrder(contentSortOrder);
-                viewModel.performSearch();
-            }
+        // If favourite is selected, apply the filter
+        if (Preferences.Constant.ORDER_CONTENT_FAVOURITE == contentSortOrder) {
+            updateFavouriteFilter();
+            viewModel.toggleFavouriteFilter();
+        } else { // Update the order menu icon and run a new search
+            orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
+            Preferences.setContentSortOrder(contentSortOrder);
+            viewModel.performSearch();
+        }
 
-            return true;
-        });
+        return true;
     }
 
     private void initSelectionToolbar(@NonNull View rootView) {
@@ -351,26 +349,24 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         itemDeleteSwipe = selectionToolbar.getMenu().findItem(R.id.action_delete_sweep);
     }
 
-    private void selectionToolbarOnItemClicked(@NonNull Toolbar selectionToolbar) {
-        selectionToolbar.setOnMenuItemClickListener(clickedMenuItem -> {
-            switch (clickedMenuItem.getItemId()) {
-                case R.id.action_share:
-                    shareSelectedItems();
-                    break;
-                case R.id.action_delete:
-                case R.id.action_delete_sweep:
-                    purgeSelectedItems();
-                    break;
-                case R.id.action_archive:
-                    archiveSelectedItems();
-                    break;
-                default:
-                    selectionToolbar.setVisibility(View.GONE);
-                    return false;
-            }
-            selectionToolbar.setVisibility(View.GONE);
-            return true;
-        });
+    private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.action_share:
+                shareSelectedItems();
+                break;
+            case R.id.action_delete:
+            case R.id.action_delete_sweep:
+                purgeSelectedItems();
+                break;
+            case R.id.action_archive:
+                archiveSelectedItems();
+                break;
+            default:
+                selectionToolbar.setVisibility(View.GONE);
+                return false;
+        }
+        selectionToolbar.setVisibility(View.GONE);
+        return true;
     }
 
     private void updateSelectionToolbar(long selectedCount) {
