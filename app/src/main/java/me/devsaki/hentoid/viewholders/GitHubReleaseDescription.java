@@ -16,6 +16,8 @@ import eu.davidea.viewholders.FlexibleViewHolder;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Helper;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 public class GitHubReleaseDescription extends AbstractFlexibleItem<GitHubReleaseDescription.ReleaseDescriptionViewHolder> {
 
     @IntDef({Type.DESCRIPTION, Type.LIST_ITEM})
@@ -71,7 +73,7 @@ public class GitHubReleaseDescription extends AbstractFlexibleItem<GitHubRelease
 
         ReleaseDescriptionViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
-            title = view.findViewById(R.id.drawer_item_txt);
+            title = requireViewById(view, R.id.drawer_item_txt);
             DP_8 = Helper.dpToPixel(view.getContext(), 8);
         }
 

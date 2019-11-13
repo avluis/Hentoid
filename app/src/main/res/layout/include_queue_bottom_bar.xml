@@ -3,12 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="?android:attr/actionBarSize"
     android:background="?colorPrimary"
-    android:minHeight="?android:attr/actionBarSize"
-    android:theme="@style/Theme.MaterialComponents.CompactMenu"
-    app:contentInsetEnd="0dp"
-    app:contentInsetStart="0dp">
+    android:elevation="@dimen/toolbar_layout_elevation"
+    tools:targetApi="lollipop">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/queue_nav"
@@ -44,12 +42,11 @@
             style="?android:attr/progressBarStyle"
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             android:clickable="false"
             android:focusable="false"
             android:visibility="gone"
-            />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/queueStatus"
@@ -60,10 +57,10 @@
             android:ellipsize="middle"
             android:scrollHorizontally="false"
             android:singleLine="true"
-            tools:text="@string/app_intro"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/app_intro" />
 
         <TextView
             android:id="@+id/queueInfo"
@@ -71,10 +68,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="?android:attr/actionBarSize"
             android:layout_marginBottom="6dp"
-            tools:text="@string/app_intro"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="@string/app_intro" />
 
         <ImageButton
             android:id="@+id/btnStats"

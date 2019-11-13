@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.queue;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -34,6 +34,8 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
@@ -50,6 +52,7 @@ public class QueueFragment extends BaseFragment {
     private TextView queueStatus;   // 1st line of text displayed on the right of the queue pause / play button
     private TextView queueInfo;     // 2nd line of text displayed on the right of the queue pause / play button
     private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
+    private Toolbar toolbar;
 
     // State
     private boolean isPreparingDownload = false;
@@ -66,7 +69,7 @@ public class QueueFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
 
-        update();
+        update(-1);
     }
 
     @Override
@@ -77,20 +80,19 @@ public class QueueFragment extends BaseFragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
         // Book list container
-        ListView mListView = rootView.findViewById(android.R.id.list);
-        mEmptyText = rootView.findViewById(android.R.id.empty);
+        ListView mListView = requireViewById(rootView, android.R.id.list);
+        mEmptyText = requireViewById(rootView,R.id.queue_empty_txt);
 
-        btnStart = rootView.findViewById(R.id.btnStart);
-        btnPause = rootView.findViewById(R.id.btnPause);
-        btnStats = rootView.findViewById(R.id.btnStats);
-        queueStatus = rootView.findViewById(R.id.queueStatus);
-        queueInfo = rootView.findViewById(R.id.queueInfo);
-        dlPreparationProgressBar = rootView.findViewById(R.id.queueDownloadPreparationProgressBar);
+        btnStart = requireViewById(rootView, R.id.btnStart);
+        btnPause = requireViewById(rootView, R.id.btnPause);
+        btnStats = requireViewById(rootView, R.id.btnStats);
+        queueStatus = requireViewById(rootView, R.id.queueStatus);
+        queueInfo = requireViewById(rootView, R.id.queueInfo);
+        dlPreparationProgressBar = requireViewById(rootView, R.id.queueDownloadPreparationProgressBar);
 
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
@@ -101,11 +103,11 @@ public class QueueFragment extends BaseFragment {
         List<Content> contents = db.selectQueueContents();
         mAdapter = new QueueContentAdapter(requireActivity(), contents);
         mListView.setAdapter(mAdapter);
-        Activity activity = getActivity();
-        if(activity != null) {
-            String title = activity.getApplication().getResources().getQuantityString(R.plurals.queue_book_count, mAdapter.getCount(), mAdapter.getCount());
-            activity.setTitle(title);
-        }
+
+        toolbar = requireViewById(rootView, R.id.queue_toolbar);
+        toolbar.setTitle(getResources().getQuantityString(R.plurals.queue_book_count, mAdapter.getCount(), mAdapter.getCount()));
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         return rootView;
     }
@@ -221,10 +223,6 @@ public class QueueFragment extends BaseFragment {
         queueStatus.setText(MessageFormat.format(requireActivity().getString(R.string.queue_dl), bookTitle));
     }
 
-    private void update() {
-        update(-1);
-    }
-
     /**
      * Update the entire Download queue screen
      *
@@ -271,11 +269,8 @@ public class QueueFragment extends BaseFragment {
                 queueStatus.setText("");
             }
         }
-        Activity activity = getActivity();
-        if(activity != null) {
-            String title = activity.getApplication().getResources().getQuantityString(R.plurals.queue_book_count, (mAdapter.getCount() - bookDiff), (mAdapter.getCount() - bookDiff));
-            activity.setTitle(title);
-        }
+
+        toolbar.setTitle(getResources().getQuantityString(R.plurals.queue_book_count, (mAdapter.getCount() - bookDiff), (mAdapter.getCount() - bookDiff)));
     }
 
     @Override

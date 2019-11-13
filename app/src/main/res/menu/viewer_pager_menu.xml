@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.ImageViewerActivity">
+    <item
+        android:id="@+id/action_favourite_page"
+        android:enabled="true"
+        android:icon="@drawable/ic_fav_empty"
+        android:orderInCategory="0"
+        android:title="@string/viewer_favourite_off"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_shuffle"
+        android:enabled="true"
+        android:icon="@drawable/ic_menu_sort_random"
+        android:orderInCategory="1"
+        android:title="@string/viewer_order_shuffle"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_settings"
+        android:enabled="true"
+        android:icon="@drawable/ic_settings"
+        android:orderInCategory="2"
+        android:title="@string/open_settings"
+        app:showAsAction="always" />
+
+</menu>

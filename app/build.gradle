@@ -33,7 +33,6 @@ android {
     }
     buildTypes {
         debug {
-            useProguard false // R8 is used instead
             minifyEnabled true
             applicationIdSuffix ".debug"
             versionNameSuffix "-DEBUG"
@@ -43,7 +42,6 @@ android {
             proguardFile 'proguard-rules-debug.pro'
         }
         release {
-            useProguard false // R8 is used instead
             debuggable false
             minifyEnabled true
 

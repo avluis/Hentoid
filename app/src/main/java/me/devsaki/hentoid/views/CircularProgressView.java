@@ -53,6 +53,7 @@ public class CircularProgressView extends View {
     }
 
     private void drawProgress(Canvas canvas, int total, Paint paint) {
+        //noinspection SuspiciousNameCombination
         canvas.drawArc(new RectF(strokeWidth, strokeWidth, getWidth() - strokeWidth, getHeight() - strokeWidth), -90, total, false, paint);
     }
 

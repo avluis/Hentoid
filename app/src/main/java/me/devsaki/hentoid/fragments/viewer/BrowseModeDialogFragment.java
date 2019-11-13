@@ -30,16 +30,16 @@ public class BrowseModeDialogFragment extends DialogFragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(rootView, savedInstanceState);
 
-        View ltrButton = requireViewById(view, R.id.chooseHorizontalLtr);
+        View ltrButton = requireViewById(rootView, R.id.chooseHorizontalLtr);
         ltrButton.setOnClickListener(v -> chooseBrowseMode(Preferences.Constant.PREF_VIEWER_BROWSE_LTR));
 
-        View rtlButton = requireViewById(view, R.id.chooseHorizontalRtl);
+        View rtlButton = requireViewById(rootView, R.id.chooseHorizontalRtl);
         rtlButton.setOnClickListener(v -> chooseBrowseMode(Preferences.Constant.PREF_VIEWER_BROWSE_RTL));
 
-        View verticalButton = requireViewById(view, R.id.chooseVertical);
+        View verticalButton = requireViewById(rootView, R.id.chooseVertical);
         verticalButton.setOnClickListener(v -> chooseBrowseMode(Preferences.Constant.PREF_VIEWER_BROWSE_TTB));
     }
 

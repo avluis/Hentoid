@@ -5,15 +5,11 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.view.ActionMode;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +20,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
@@ -44,6 +41,7 @@ import java.util.List;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
+import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
@@ -133,9 +131,14 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
     private List<Attribute> metadata = Collections.emptyList();
 
 
-    // === TOOLBAR ACTION MODE
-    // Action mode manager for the toolbar
-    private ActionMode mActionMode;
+    // === TOOLBAR
+    private Toolbar toolbar;
+    // === SELECTION TOOLBAR
+    private Toolbar selectionToolbar;
+    private MenuItem itemDelete;
+    private MenuItem itemShare;
+    private MenuItem itemArchive;
+    private MenuItem itemDeleteSwipe;
 
 
     @Override
@@ -148,14 +151,19 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_library, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_library, container, false);
 
         viewModel = ViewModelProviders.of(requireActivity()).get(LibraryViewModel.class);
         Preferences.registerPrefsChangedListener(prefsListener);
 
-        initUI(view);
+        initUI(rootView);
 
-        return view;
+        initToolbar(rootView);
+        initSelectionToolbar(rootView);
+        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
+        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
+
+        return rootView;
     }
 
     @Override
@@ -167,12 +175,47 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         viewModel.getTotalContent().observe(this, this::onTotalContentChanged);
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull final Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.downloads_menu, menu);
+    /**
+     * Initialize the UI components
+     *
+     * @param rootView Root view of the library screen
+     */
+    private void initUI(@NonNull View rootView) {
+        emptyText = requireViewById(rootView, R.id.library_empty_txt);
+        advancedSearchBar = requireViewById(rootView, R.id.advanced_search_group);
+        // TextView used as advanced search button
+        TextView advancedSearchButton = requireViewById(rootView, R.id.advanced_search_btn);
+        advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
-        orderMenu = menu.findItem(R.id.action_order);
-        searchMenu = menu.findItem(R.id.action_search);
+        searchClearButton = requireViewById(rootView, R.id.search_clear_btn);
+        searchClearButton.setOnClickListener(v -> {
+            query = "";
+            mainSearchView.setQuery("", false);
+            metadata.clear();
+            searchClearButton.setVisibility(View.GONE);
+            viewModel.searchUniversal("");
+        });
+
+        recyclerView = requireViewById(rootView, R.id.library_list);
+        // Disable blink animation on card change (bind holder)
+        RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
+        if (animator instanceof SimpleItemAnimator)
+            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+
+        // Pager
+        pager.initUI(rootView);
+        initPagingMethod(Preferences.getEndlessScroll());
+    }
+
+    private void initToolbar(@NonNull View rootView) {
+        toolbar = requireViewById(rootView, R.id.library_toolbar);
+        toolbar.setNavigationIcon(R.drawable.ic_drawer);
+        Activity activity = requireActivity();
+        toolbar.setNavigationOnClickListener(v -> ((LibraryActivity) activity).onNavigationDrawerClicked());
+        toolbar.inflateMenu(R.menu.library_menu);
+
+        orderMenu = toolbar.getMenu().findItem(R.id.action_order);
+        searchMenu = toolbar.getMenu().findItem(R.id.action_search);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
@@ -201,7 +244,7 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
             }
         });
 
-        favsMenu = menu.findItem(R.id.action_favourites);
+        favsMenu = toolbar.getMenu().findItem(R.id.action_favourites);
         updateFavouriteFilter();
 
         mainSearchView = (SearchView) searchMenu.getActionView();
@@ -237,66 +280,106 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
     }
 
     /**
-     * Called when the action mode is created; startActionMode() was called.
+     * Callback method used when a sort method is selected in the sort drop-down menu
+     * Updates the UI according to the chosen sort method
+     *
+     * @param menuItem Toolbar of the fragment
      */
-    private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
-        // Called when action mode is first created.
-        @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            // Inflate a menu resource providing context menu items
-            MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.downloads_context_menu, menu);
-
-            return true;
+    private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
+        int contentSortOrder;
+        switch (menuItem.getItemId()) {
+            case R.id.action_order_AZ:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA;
+                break;
+            case R.id.action_order_321:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST;
+                break;
+            case R.id.action_order_ZA:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED;
+                break;
+            case R.id.action_order_123:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST;
+                break;
+            case R.id.action_order_least_read:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LEAST_READ;
+                break;
+            case R.id.action_order_most_read:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_MOST_READ;
+                break;
+            case R.id.action_order_last_read:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_READ;
+                break;
+            case R.id.action_order_random:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_RANDOM;
+                RandomSeedSingleton.getInstance().renewSeed();
+                break;
+            case R.id.action_favourites:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_FAVOURITE;
+                menuItem.setChecked(!menuItem.isChecked());
+                break;
+            default:
+                return false;
         }
 
-        // Called each time the action mode is shown. Always called after onCreateActionMode,
-        // but may be called multiple times if the mode is invalidated.
-        @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            LibraryAdapter adapter = getAdapter();
-            boolean isMultipleSelection = adapter.getSelectedItemsCount() > 1;
-
-            menu.findItem(R.id.action_delete).setVisible(!isMultipleSelection);
-            menu.findItem(R.id.action_share).setVisible(!isMultipleSelection);
-            menu.findItem(R.id.action_archive).setVisible(!isMultipleSelection);
-            menu.findItem(R.id.action_delete_sweep).setVisible(isMultipleSelection);
-
-            return true;
+        // If favourite is selected, apply the filter
+        if (Preferences.Constant.ORDER_CONTENT_FAVOURITE == contentSortOrder) {
+            updateFavouriteFilter();
+            viewModel.toggleFavouriteFilter();
+        } else { // Update the order menu icon and run a new search
+            orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
+            Preferences.setContentSortOrder(contentSortOrder);
+            viewModel.performSearch();
         }
 
-        // Called when the user selects a contextual menu item.
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.action_share:
-                    shareSelectedItems();
-                    mode.finish();
+        return true;
+    }
 
-                    return true;
-                case R.id.action_delete:
-                case R.id.action_delete_sweep:
-                    purgeSelectedItems();
-                    mode.finish();
-
-                    return true;
-                case R.id.action_archive:
-                    archiveSelectedItems();
-                    mode.finish();
-
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        // Called when the user exits the action mode.
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
+    private void initSelectionToolbar(@NonNull View rootView) {
+        selectionToolbar= requireViewById(rootView, R.id.library_selection_toolbar);
+        selectionToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        selectionToolbar.setNavigationOnClickListener(v -> {
             getAdapter().clearSelection();
-            mActionMode = null;
+            selectionToolbar.setVisibility(View.GONE);
+        });
+        selectionToolbar.inflateMenu(R.menu.library_selection_menu);
+
+        itemDelete = selectionToolbar.getMenu().findItem(R.id.action_delete);
+        itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
+        itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
+        itemDeleteSwipe = selectionToolbar.getMenu().findItem(R.id.action_delete_sweep);
+    }
+
+    private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.action_share:
+                shareSelectedItems();
+                break;
+            case R.id.action_delete:
+            case R.id.action_delete_sweep:
+                purgeSelectedItems();
+                break;
+            case R.id.action_archive:
+                archiveSelectedItems();
+                break;
+            default:
+                selectionToolbar.setVisibility(View.GONE);
+                return false;
         }
-    };
+        selectionToolbar.setVisibility(View.GONE);
+        return true;
+    }
+
+    private void updateSelectionToolbar(long selectedCount) {
+        LibraryAdapter adapter = getAdapter();
+        boolean isMultipleSelection = adapter.getSelectedItemsCount() > 1;
+
+        itemDelete.setVisible(!isMultipleSelection);
+        itemShare.setVisible(!isMultipleSelection);
+        itemArchive.setVisible(!isMultipleSelection);
+        itemDeleteSwipe.setVisible(isMultipleSelection);
+
+        selectionToolbar.setTitle(selectedCount + (selectedCount > 1 ? " items selected" : " item selected"));
+    }
 
     /**
      * Callback for the "share item" action button
@@ -434,64 +517,6 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
     }
 
     /**
-     * Callback method used when a sort method is selected in the sort drop-down menu
-     * Updates the UI according to the chosen sort method
-     *
-     * @param item MenuItem that has been selected
-     * @return true if the order has been successfully processed
-     */
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        int contentSortOrder;
-
-        switch (item.getItemId()) {
-            case R.id.action_order_AZ:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA;
-                break;
-            case R.id.action_order_321:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST;
-                break;
-            case R.id.action_order_ZA:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED;
-                break;
-            case R.id.action_order_123:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST;
-                break;
-            case R.id.action_order_least_read:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LEAST_READ;
-                break;
-            case R.id.action_order_most_read:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_MOST_READ;
-                break;
-            case R.id.action_order_last_read:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_READ;
-                break;
-            case R.id.action_order_random:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_RANDOM;
-                RandomSeedSingleton.getInstance().renewSeed();
-                break;
-            case R.id.action_favourites:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_FAVOURITE;
-                item.setChecked(!item.isChecked());
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-
-        // If favourite is selected, apply the filter
-        if (Preferences.Constant.ORDER_CONTENT_FAVOURITE == contentSortOrder) {
-            updateFavouriteFilter();
-            viewModel.toggleFavouriteFilter();
-        } else { // Update the order menu icon and run a new search
-            orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
-            Preferences.setContentSortOrder(contentSortOrder);
-            viewModel.performSearch();
-        }
-
-        return true;
-    }
-
-    /**
      * Indicates whether a search query is active (using universal search or advanced search) or not
      *
      * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
@@ -560,8 +585,12 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         // If content is selected, deselect it
         if (adapter.getSelectedItemsCount() > 0) {
             adapter.clearSelection();
+            selectionToolbar.setVisibility(View.GONE);
             backButtonPressed = 0;
 
+            return false;
+        } else if (searchMenu.isActionViewExpanded()) {
+            searchMenu.collapseActionView();
             return false;
         }
 
@@ -588,39 +617,6 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
             initPagingMethod(Preferences.getEndlessScroll());
         }
-    }
-
-    /**
-     * Initialize the UI components
-     *
-     * @param rootView Root view of the library screen
-     */
-    private void initUI(View rootView) {
-        emptyText = rootView.findViewById(R.id.library_empty_txt);
-
-        advancedSearchBar = rootView.findViewById(R.id.advanced_search_group);
-        // TextView used as advanced search button
-        TextView advancedSearchButton = rootView.findViewById(R.id.advanced_search_btn);
-        advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
-
-        searchClearButton = rootView.findViewById(R.id.search_clear_btn);
-        searchClearButton.setOnClickListener(v -> {
-            query = "";
-            mainSearchView.setQuery("", false);
-            metadata.clear();
-            searchClearButton.setVisibility(View.GONE);
-            viewModel.searchUniversal("");
-        });
-
-        recyclerView = requireViewById(rootView, R.id.library_list);
-        // Disable blink animation on card change (bind holder)
-        RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
-        if (animator instanceof SimpleItemAnimator)
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-
-        // Pager
-        pager.initUI(rootView);
-        initPagingMethod(Preferences.getEndlessScroll());
     }
 
     /**
@@ -764,18 +760,14 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
      * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
      */
     private void updateTitle(long totalSelectedCount, long totalCount) {
-        Activity activity = getActivity();
-        if (activity != null) { // Has to be crash-proof; sometimes there's no activity there...
             String title;
             if (totalSelectedCount == totalCount)
                 title = totalCount + " items";
             else {
-                Resources res = getResources();
-                title = res.getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, totalCount);
+                title = getResources().getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, totalCount);
             }
-            activity.setTitle(title);
+            toolbar.setTitle(title);
         }
-    }
 
     /**
      * Callback for the book holder itself
@@ -846,14 +838,10 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
     private void onSelectionChanged(long selectedCount) {
 
         if (0 == selectedCount) {
-            if (mActionMode != null) mActionMode.finish();
+            selectionToolbar.setVisibility(View.GONE);
         } else {
-            if (mActionMode == null)
-                mActionMode = advancedSearchBar.startActionMode(mActionModeCallback);
-
-            mActionMode.invalidate();
-            mActionMode.setTitle(
-                    selectedCount + (selectedCount > 1 ? " items selected" : " item selected"));
+            updateSelectionToolbar(selectedCount);
+            selectionToolbar.setVisibility(View.VISIBLE);
         }
     }
 

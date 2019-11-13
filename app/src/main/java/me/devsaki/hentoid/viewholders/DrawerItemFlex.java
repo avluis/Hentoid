@@ -20,6 +20,8 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 public class DrawerItemFlex extends AbstractFlexibleItem<DrawerItemFlex.DrawerItemViewHolder> {
 
     // Label of the item
@@ -110,9 +112,9 @@ public class DrawerItemFlex extends AbstractFlexibleItem<DrawerItemFlex.DrawerIt
 
         DrawerItemViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
-            icon = view.findViewById(R.id.drawer_item_icon);
-            alert = view.findViewById(R.id.drawer_item_alert);
-            title = view.findViewById(R.id.drawer_item_txt);
+            icon = requireViewById(view, R.id.drawer_item_icon);
+            alert = requireViewById(view, R.id.drawer_item_alert);
+            title = requireViewById(view, R.id.drawer_item_txt);
         }
 
         void setContent(String label, int iconRes, boolean flag, AlertStatus alertStatus) {

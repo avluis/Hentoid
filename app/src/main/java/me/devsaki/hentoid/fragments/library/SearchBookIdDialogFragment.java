@@ -22,6 +22,8 @@ import me.devsaki.hentoid.adapters.SiteAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 /**
  * Created by Robb on 11/2018
  * Launcher dialog for the library refresh feature
@@ -51,14 +53,14 @@ public class SearchBookIdDialogFragment extends DialogFragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(rootView, savedInstanceState);
 
         if (getArguments() != null) {
             bookId = getArguments().getString(ID, "");
             ArrayList<Integer> foundSitesList = getArguments().getIntegerArrayList(FOUND_SITES);
 
-            TextView title = view.findViewById(R.id.search_bookid_title);
+            TextView title = requireViewById(rootView, R.id.search_bookid_title);
             title.setText(getString(R.string.search_bookid_label, bookId));
 
             // Not possible for Pururin, e-hentai
@@ -78,7 +80,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             siteAdapter.setOnClickListener(this::onItemSelected);
             siteAdapter.add(sites);
 
-            RecyclerView sitesRecycler = view.findViewById(R.id.select_sites);
+            RecyclerView sitesRecycler = requireViewById(rootView, R.id.select_sites);
             sitesRecycler.setAdapter(siteAdapter);
         }
     }
