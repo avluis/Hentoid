@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
+import androidx.appcompat.widget.Toolbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -31,6 +32,11 @@ public class AboutActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_about);
+
+        Toolbar toolbar = findViewById(R.id.about_toolbar);
+        toolbar.setTitle("About");
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         bindTextViewLink(R.id.iv_app_logo, Consts.URL_GITHUB_WIKI);
         bindTextViewLink(R.id.tv_github, Consts.URL_GITHUB);

@@ -33,38 +33,38 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(rootView, savedInstanceState);
 
-        Switch theSwitch = requireViewById(view, R.id.viewer_prefs_keep_screen_action);
+        Switch theSwitch = requireViewById(rootView, R.id.viewer_prefs_keep_screen_action);
         theSwitch.setChecked(Preferences.isViewerKeepScreenOn());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerKeepScreenOn(isChecked));
 
-        theSwitch = requireViewById(view, R.id.viewer_prefs_resume_reading_action);
+        theSwitch = requireViewById(rootView, R.id.viewer_prefs_resume_reading_action);
         theSwitch.setChecked(Preferences.isViewerResumeLastLeft());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerResumeLastLeft(isChecked));
 
-        theSwitch = requireViewById(view, R.id.viewer_prefs_open_gallery_action);
+        theSwitch = requireViewById(rootView, R.id.viewer_prefs_open_gallery_action);
         theSwitch.setChecked(Preferences.isOpenBookInGalleryMode());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setOpenBookInGalleryMode(isChecked));
 
-        theSwitch = requireViewById(view, R.id.viewer_prefs_display_pagenum_action);
+        theSwitch = requireViewById(rootView, R.id.viewer_prefs_display_pagenum_action);
         theSwitch.setChecked(Preferences.isViewerDisplayPageNum());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerDisplayPageNum(isChecked));
 
-        theSwitch = requireViewById(view, R.id.viewer_prefs_tap_transitions_action);
+        theSwitch = requireViewById(rootView, R.id.viewer_prefs_tap_transitions_action);
         theSwitch.setChecked(Preferences.isViewerTapTransitions());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerTapTransitions(isChecked));
 
-        theSwitch = requireViewById(view, R.id.viewer_prefs_swipe_to_fling_action);
+        theSwitch = requireViewById(rootView, R.id.viewer_prefs_swipe_to_fling_action);
         theSwitch.setChecked(Preferences.isViewerSwipeToFling());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerSwipeToFling(isChecked));
 
-        theSwitch = requireViewById(view, R.id.viewer_prefs_invert_volume_action);
+        theSwitch = requireViewById(rootView, R.id.viewer_prefs_invert_volume_action);
         theSwitch.setChecked(Preferences.isViewerInvertVolumeRocker());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerInvertVolumeRocker(isChecked));
 
-        RadioGroup theRadio = requireViewById(view, R.id.viewer_prefs_display_mode_group);
+        RadioGroup theRadio = requireViewById(rootView, R.id.viewer_prefs_display_mode_group);
         switch (Preferences.getViewerResizeMode()) {
             case (Preferences.Constant.PREF_VIEWER_DISPLAY_FIT):
                 theRadio.check(R.id.viewer_prefs_display_mode_action_fit);
@@ -77,7 +77,7 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
         }
         theRadio.setOnCheckedChangeListener(this::onChangeDisplayMode);
 
-        theRadio = requireViewById(view, R.id.viewer_prefs_browse_mode_group);
+        theRadio = requireViewById(rootView, R.id.viewer_prefs_browse_mode_group);
         switch (Preferences.getViewerBrowseMode()) {
             case (Preferences.Constant.PREF_VIEWER_BROWSE_LTR):
                 theRadio.check(R.id.viewer_prefs_browse_mode_action_ltr);

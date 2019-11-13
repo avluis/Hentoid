@@ -2,11 +2,8 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    tools:context=".activities.LibraryActivity"
     tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
-    tools:showIn="@layout/activity_library">
+    tools:showIn="@layout/fragment_library">
 
     <View
         android:id="@+id/advanced_search_background"
@@ -16,7 +13,7 @@
         app:layout_constraintBottom_toBottomOf="@id/advanced_search_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/library_toolbar" />
 
     <TextView
         android:id="@+id/advanced_search_btn"
@@ -28,7 +25,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/library_toolbar"
         tools:visibility="visible" />
 
     <TextView
@@ -40,7 +37,7 @@
         android:text="@string/downloads_filter_clear"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/library_toolbar"
         tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Group

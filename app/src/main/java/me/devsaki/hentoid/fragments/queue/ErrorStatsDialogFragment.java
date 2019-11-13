@@ -37,6 +37,8 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.ToastUtil;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 /**
  * Created by Robb on 11/2018
  * Info dialog for download errors details
@@ -74,13 +76,13 @@ public class ErrorStatsDialogFragment extends DialogFragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(rootView, savedInstanceState);
 
-        rootView = view;
+        this.rootView = rootView;
 
         if (getArguments() != null) {
-            details = view.findViewById(R.id.stats_details);
+            details = requireViewById(rootView, R.id.stats_details);
             details.setText(R.string.downloads_loading);
 
             previousNbErrors = 0;
@@ -89,10 +91,10 @@ public class ErrorStatsDialogFragment extends DialogFragment {
             if (id > 0) updateStats(id);
         }
 
-        View openLogButton = view.findViewById(R.id.open_log_btn);
+        View openLogButton = requireViewById(rootView, R.id.open_log_btn);
         openLogButton.setOnClickListener(v -> this.showErrorLog());
 
-        View copyLogButton = view.findViewById(R.id.copy_log_btn);
+        View copyLogButton = requireViewById(rootView, R.id.copy_log_btn);
         copyLogButton.setOnClickListener(v -> this.copyErrorLog());
     }
 

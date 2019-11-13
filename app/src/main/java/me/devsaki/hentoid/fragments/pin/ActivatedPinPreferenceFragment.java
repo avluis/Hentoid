@@ -24,15 +24,15 @@ public final class ActivatedPinPreferenceFragment extends Fragment
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_pin_preference_on, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_pin_preference_on, container, false);
 
-        offSwitch = requireViewById(view, R.id.switch_off);
+        offSwitch = requireViewById(rootView, R.id.switch_off);
         offSwitch.setOnClickListener(v -> onOffClick());
 
-        View resetButton = requireViewById(view, R.id.text_reset_pin);
+        View resetButton = requireViewById(rootView, R.id.text_reset_pin);
         resetButton.setOnClickListener(v -> onResetClick());
 
-        return view;
+        return rootView;
     }
 
     @Override

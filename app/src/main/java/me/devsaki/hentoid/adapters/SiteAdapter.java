@@ -15,6 +15,8 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Helper;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterViewHolder> {
 
     private View.OnClickListener onClickListener = null;
@@ -57,7 +59,7 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterVie
 
         private SiteAdapterViewHolder(View itemView) {
             super(itemView);
-            textView = itemView.findViewById(R.id.drawer_item_txt);
+            textView = requireViewById(itemView, R.id.drawer_item_txt);
         }
 
         void bindTo(Site site) {
