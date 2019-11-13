@@ -155,8 +155,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private int chromeVersion;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
-    // URL to start with
-    private String startUrl;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -314,6 +312,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         super.onStart();
 
         SiteHistory siteHistory = db.getHistory(getStartSite());
+        // URL to start with
+        String startUrl;
         if (siteHistory != null && Preferences.isBrowserResumeLast()) startUrl = siteHistory.url;
         else {
             String intentUrl = "";
