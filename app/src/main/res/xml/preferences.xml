@@ -41,6 +41,13 @@
             android:title="@string/pref_cat_browser"
             app:iconSpaceReserved="false">
             <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_resume_last_default"
+                app:iconSpaceReserved="false"
+                android:key="pref_browser_resume_last"
+                android:summaryOff="@string/pref_browser_resume_last_off"
+                android:summaryOn="@string/pref_browser_resume_last_on"
+                android:title="@string/pref_browser_resume_last_title" />
+            <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_override_overview_default"
                 app:iconSpaceReserved="false"
                 android:key="pref_webview_override_overview_lists"
@@ -63,7 +70,7 @@
                 android:key="pref_browser_show_fab"
                 android:summaryOff="@string/pref_browser_show_fab_off"
                 android:summaryOn="@string/pref_browser_show_fab_on"
-                android:title="@string/pref_browser_show_fab" />
+                android:title="@string/pref_browser_show_fab_title" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_theme"

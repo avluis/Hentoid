@@ -82,6 +82,7 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -154,6 +155,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private int chromeVersion;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
+    // URL to start with
+    private String startUrl;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -257,13 +260,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         initWebView();
         initSwipeLayout();
 
-        String intentUrl = "";
-        if (getIntent().getExtras() != null) {
-            BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
-            intentUrl = parser.getUrl();
-        }
-        webView.loadUrl(0 == intentUrl.length() ? getStartSite().getUrl() : intentUrl);
-
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
@@ -311,6 +307,29 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         super.onResume();
 
         checkPermissions();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        SiteHistory siteHistory = db.getHistory(getStartSite());
+        if (siteHistory != null && Preferences.isBrowserResumeLast()) startUrl = siteHistory.url;
+        else {
+            String intentUrl = "";
+            if (getIntent().getExtras() != null) {
+                BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
+                intentUrl = parser.getUrl();
+            }
+            startUrl = intentUrl.isEmpty() ? getStartSite().getUrl() : intentUrl;
+        }
+        webView.loadUrl(startUrl);
+    }
+
+    @Override
+    protected void onStop() {
+        db.insertSiteHistory(getStartSite(), webView.getUrl());
+        super.onStop();
     }
 
     @Override

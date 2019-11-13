@@ -34,6 +34,8 @@ import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
+import me.devsaki.hentoid.database.domains.SiteHistory;
+import me.devsaki.hentoid.database.domains.SiteHistory_;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -691,5 +693,20 @@ public class ObjectBoxDB {
     public ImageFile selectImageFile(long id) {
         if (id > 0) return store.boxFor(ImageFile.class).get(id);
         else return null;
+    }
+
+    public void insertSiteHistory(Site site, String url) {
+        SiteHistory siteHistory = getHistory(site);
+        if (siteHistory != null) {
+            siteHistory.url = url;
+            store.boxFor(SiteHistory.class).put(siteHistory);
+        } else {
+            store.boxFor(SiteHistory.class).put(new SiteHistory(site, url));
+        }
+    }
+
+    @Nullable
+    public SiteHistory getHistory(Site s) {
+        return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
     }
 }
