@@ -17,14 +17,18 @@
     <string name="pref_attributes_list_order_default" translatable="false">1</string>
     <string name="pref_attributes_list_order_summary">%s</string>
 
-    <string name="pref_cat_webview">Browser</string>
-    <string name="pref_webview_override_overview_title">Disable Page Overview</string>
-    <string name="pref_webview_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below.</string>
-    <string name="pref_webview_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi and e-hentai.</string>
-    <string name="pref_webview_override_overview_default" translatable="false">false</string>
-    <string name="pref_webview_initial_zoom_title">Initial Zoom Level</string>
-    <string name="pref_webview_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
-    <string name="pref_webview_initial_zoom_default" translatable="false">20</string>
+    <string name="pref_cat_browser">Browser</string>
+    <string name="pref_browser_override_overview_title">Disable Page Overview</string>
+    <string name="pref_browser_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below.</string>
+    <string name="pref_browser_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi and e-hentai.</string>
+    <string name="pref_browser_override_overview_default" translatable="false">false</string>
+    <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
+    <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
+    <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
+    <string name="pref_browser_show_fab">Show action button</string>
+    <string name="pref_browser_show_fab_off">Action button is never visible</string>
+    <string name="pref_browser_show_fab_on">Action button is visible when the gallery can be downloaded</string>
+    <string name="pref_browser_show_fab_default" translatable="false">true</string>
 
     <string name="pref_cat_theme">App theme</string>
     <string name="pref_dark_mode_title">Dark mode</string>

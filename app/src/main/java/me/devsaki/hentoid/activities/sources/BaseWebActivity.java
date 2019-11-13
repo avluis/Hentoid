@@ -379,7 +379,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         webView.setOnScrollChangedCallback((deltaX, deltaY) -> {
             if (!webClient.isLoading()) {
                 if (deltaY <= 0) {
-                    if (fabActionEnabled) fabAction.show();
+                    if (fabActionEnabled && Preferences.isBrowserShowFab()) fabAction.show();
                 } else {
                     fabAction.hide();
                 }
@@ -576,7 +576,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         setFabIcon(fabAction, resId);
         fabActionEnabled = true;
 // Timber.i(">> FAB SHOW");
-        fabAction.show();
+        if (Preferences.isBrowserShowFab()) fabAction.show();
     }
 
     /**

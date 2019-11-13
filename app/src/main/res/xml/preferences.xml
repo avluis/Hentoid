@@ -38,24 +38,32 @@
                 android:title="@string/pref_attributes_list_order_title" />
         </PreferenceCategory>
         <PreferenceCategory
-            android:title="@string/pref_cat_webview"
+            android:title="@string/pref_cat_browser"
             app:iconSpaceReserved="false">
             <CheckBoxPreference
-                android:defaultValue="@string/pref_webview_override_overview_default"
+                android:defaultValue="@string/pref_browser_override_overview_default"
                 app:iconSpaceReserved="false"
                 android:key="pref_webview_override_overview_lists"
-                android:summaryOff="@string/pref_webview_override_overview_summary_off"
-                android:summaryOn="@string/pref_webview_override_overview_summary_on"
-                android:title="@string/pref_webview_override_overview_title" />
+                android:summaryOff="@string/pref_browser_override_overview_summary_off"
+                android:summaryOn="@string/pref_browser_override_overview_summary_on"
+                android:title="@string/pref_browser_override_overview_title" />
             <ListPreference
-                android:defaultValue="@string/pref_webview_initial_zoom_default"
+                android:defaultValue="@string/pref_browser_initial_zoom_default"
                 android:dependency="pref_webview_override_overview_lists"
                 android:entries="@array/pref_webview_initial_zoom_entries"
                 android:entryValues="@array/pref_webview_initial_zoom_values"
                 app:iconSpaceReserved="false"
                 android:key="pref_webview_initial_zoom_lists"
-                android:summary="@string/pref_webview_initial_zoom_summary"
-                android:title="@string/pref_webview_initial_zoom_title" />
+                android:summary="@string/pref_browser_initial_zoom_summary"
+                android:title="@string/pref_browser_initial_zoom_title" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_show_fab_default"
+                android:disableDependentsState="true"
+                app:iconSpaceReserved="false"
+                android:key="pref_browser_show_fab"
+                android:summaryOff="@string/pref_browser_show_fab_off"
+                android:summaryOn="@string/pref_browser_show_fab_on"
+                android:title="@string/pref_browser_show_fab" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_theme"
