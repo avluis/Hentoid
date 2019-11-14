@@ -105,6 +105,8 @@ import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.util.HttpHelper.HEADER_CONTENT_TYPE;
+
 /**
  * Browser activity which allows the user to navigate a supported source.
  * No particular source should be filtered/defined here.
@@ -594,7 +596,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         fabActionMode = mode;
         setFabIcon(fabAction, resId);
         fabActionEnabled = true;
-// Timber.i(">> FAB SHOW");
         if (Preferences.isBrowserShowFab()) fabAction.show();
     }
 
@@ -753,7 +754,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         private void hideActionFab() {
-// Timber.i(">> FAB HIDE");
             fabAction.hide();
             fabActionEnabled = false;
         }
@@ -827,7 +827,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             refreshStopMenu.setIcon(R.drawable.ic_close);
             isPageLoading = true;
-// Timber.i(">> onPageStarted %s", url);
             if (!isHtmlLoaded) hideActionFab();
         }
 
@@ -837,7 +836,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             isHtmlLoaded = false; // Reset for the next page
             refreshStopMenu.setIcon(R.drawable.ic_action_refresh);
             refreshNavigationMenu();
-// Timber.i(">> onPageFinished %s", url);
         }
 
         @Override
@@ -856,6 +854,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
+            // Data fetched with POST is out of scope of analysis and adblock
+            if (!request.getMethod().equalsIgnoreCase("get")) {
+                Timber.d("[%s] ignoring; method = %s", request.getUrl().toString(), request.getMethod());
+                return super.shouldInterceptRequest(view, request);
+            }
+
             String url = request.getUrl().toString();
             WebResourceResponse result = shouldInterceptRequestInternal(url, request.getRequestHeaders());
             if (result != null) return result;
@@ -868,10 +872,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-
-// Timber.i(">> SIR 1 %s %s", isPageLoading, url);
                 if (isPageFiltered(url)) return parseResponse(url, headers, true, false);
-// Timber.i(">> SIR 2 %s %s", isPageLoading, url);
                 // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
                 if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
                     return parseResponse(url, headers, false, false);
@@ -884,7 +885,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
             if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
-// Timber.i(">> parseResponse %s", urlStr);
             List<Pair<String, String>> headersList = new ArrayList<>();
 
             if (headers != null)
@@ -917,9 +917,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                         browserStream = response.body().byteStream();
                     }
 
-                    // Remove dirty elements if needed
-                    if (dirtyElements != null)
-                        browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
+                    // Remove dirty elements from HTML resources
+                    if (dirtyElements != null) {
+                        String mimeType = response.header(HEADER_CONTENT_TYPE);
+                        if (mimeType != null) {
+                            mimeType = HttpHelper.cleanContentType(mimeType).first.toLowerCase();
+                            if (mimeType.contains("html"))
+                                browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
+                        }
+                    }
 
                     // Convert OkHttp response to the expected format
                     result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
@@ -952,10 +958,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList, boolean downloadImmediately) {
-// Timber.i(">> processContent 1");
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
-// Timber.i(">> processContent 2");
 
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
@@ -981,7 +985,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, @NonNull List<String> dirtyElements) {
             try {
                 Document doc = Jsoup.parse(stream, null, baseUri);
-                for (String s : dirtyElements) for (Element e : doc.select(s)) e.remove();
+                for (String s : dirtyElements)
+                    for (Element e : doc.select(s)) {
+                        Timber.d("[%s] Removing node %s", baseUri, e.toString());
+                        e.remove();
+                    }
                 return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
                 Timber.e(e);
