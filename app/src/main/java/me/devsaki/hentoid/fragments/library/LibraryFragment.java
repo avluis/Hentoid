@@ -119,6 +119,7 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
     // Total number of books in the whole unfiltered library
     private int totalContentCount;
     // True when a new search has been performed and its results have not been handled yet
+    // False when the refresh is passive (i.e. not from a direct user action)
     private boolean newSearch = false;
     // Collection of books according to current filters
     private PagedList<Content> library;
@@ -696,6 +697,9 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
      */
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.d(">>Library changed ! Size=%s", result.size());
+
+        // Don't passive-refresh the list if the order is random
+        if (!newSearch && Preferences.Constant.ORDER_CONTENT_RANDOM == Preferences.getContentSortOrder()) return;
 
         updateTitle(result.size(), totalContentCount);
 
