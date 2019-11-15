@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import android.os.Build;
+import android.text.TextUtils;
 import android.util.Pair;
 import android.webkit.WebResourceResponse;
 
@@ -10,7 +12,9 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -72,15 +76,44 @@ public class HttpHelper {
      * @param resp The OkHttp {@link Response}
      * @return The {@link WebResourceResponse}
      */
-    public static WebResourceResponse okHttpResponseToWebResourceResponse(Response resp, InputStream is) {
+    public static WebResourceResponse okHttpResponseToWebResourceResponse(@NonNull final Response resp, @NonNull final InputStream is) {
         final String contentTypeValue = resp.header(HEADER_CONTENT_TYPE);
 
+        WebResourceResponse result;
         if (contentTypeValue != null) {
             Pair<String, String> details = cleanContentType(contentTypeValue);
-            return new WebResourceResponse(details.first, details.second, is);
+            result = new WebResourceResponse(details.first, details.second, is);
         } else {
-            return new WebResourceResponse("application/octet-stream", null, is);
+            result = new WebResourceResponse("application/octet-stream", null, is);
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            result.setResponseHeaders(okHttpHeadersToWebResourceHeaders(resp.headers().toMultimap()));
+        }
+
+        return result;
+    }
+
+    private static Map<String, String> okHttpHeadersToWebResourceHeaders(@NonNull final Map<String, List<String>> okHttpHeaders) {
+        Map<String, String> result = new HashMap<>();
+
+        for (String key : okHttpHeaders.keySet()) {
+            List<String> values = okHttpHeaders.get(key);
+            if (values != null)
+                result.put(key, TextUtils.join(getValuesSeparatorFromHttpHeader(key), values));
+        }
+
+        return result;
+    }
+
+    private static String getValuesSeparatorFromHttpHeader(@NonNull final String header) {
+
+        String separator = ", "; // HTTP spec
+
+        if (header.equalsIgnoreCase("set-cookie") || header.equalsIgnoreCase("www-authenticate") || header.equalsIgnoreCase("proxy-authenticate"))
+            separator = "\n"; // Special case : commas may appear in these headers => use a newline delimiter
+
+        return separator;
     }
 
     /**

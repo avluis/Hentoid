@@ -48,7 +48,7 @@ public class EHentaiActivity extends BaseWebActivity {
 
         // We keep calling the API without using BaseWebActivity.parseResponse
         @Override
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers, boolean analyzeForDownload, boolean downloadImmediately) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean downloadImmediately) {
             String[] galleryUrlParts = urlStr.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
             compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)

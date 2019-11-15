@@ -237,7 +237,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          See https://stackoverflow.com/questions/29807744/how-can-i-align-android-toolbar-menu-icons-to-the-left-like-in-google-maps-app
          */
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationIcon(R.drawable.ic_close);
         toolbar.setNavigationOnClickListener(v -> goHome());
 
         ActionMenuView actionMenuLeft = toolbar.findViewById(R.id.toolbar_action_left);
@@ -881,25 +881,26 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             }
         }
 
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers, boolean analyzeForDownload, boolean downloadImmediately) {
+        @SuppressLint("NewApi")
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean downloadImmediately) {
             // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
             if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
-            List<Pair<String, String>> headersList = new ArrayList<>();
+            List<Pair<String, String>> requestHeadersList = new ArrayList<>();
 
-            if (headers != null)
-                for (String key : headers.keySet())
-                    headersList.add(new Pair<>(key, headers.get(key)));
+            if (requestHeaders != null)
+                for (String key : requestHeaders.keySet())
+                    requestHeadersList.add(new Pair<>(key, requestHeaders.get(key)));
 
             if (canUseSingleOkHttpRequest()) {
                 String cookie = CookieManager.getInstance().getCookie(urlStr);
                 if (cookie != null)
-                    headersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
+                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
             }
 
             try {
                 // Query resource here, using OkHttp
-                Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
+                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().canKnowHentoidAgent());
                 if (null == response.body()) throw new IOException("Empty body");
 
                 InputStream parserStream;
@@ -929,6 +930,18 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
                     // Convert OkHttp response to the expected format
                     result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
+
+                    // Manually set cookie if present in response header (won't be set by Android if we don't do this)
+                    if (result.getResponseHeaders().containsKey("set-cookie")) {
+                        String cookieStr = result.getResponseHeaders().get("set-cookie");
+                        if (cookieStr != null) {
+                            String[] parts = cookieStr.split(";");
+
+                            String cookie = parts[0].trim();
+                            if (cookie.contains("="))
+                                CookieManager.getInstance().setCookie(urlStr, cookie);
+                        }
+                    }
                 } else {
                     parserStream = response.body().byteStream();
                     result = null; // Default webview behaviour
@@ -940,7 +953,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                                     .subscribeOn(Schedulers.computation())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
-                                            content -> processContent(content, headersList, downloadImmediately),
+                                            content -> processContent(content, requestHeadersList, downloadImmediately),
                                             throwable -> {
                                                 Timber.e(throwable, "Error parsing content.");
                                                 isHtmlLoaded = true;
