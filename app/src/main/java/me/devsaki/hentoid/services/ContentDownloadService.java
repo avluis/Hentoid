@@ -108,12 +108,14 @@ public class ContentDownloadService extends IntentService {
     // Fix attempt for #349 : https://stackoverflow.com/questions/55894636/android-9-pie-context-startforegroundservice-did-not-then-call-service-star?rq=1
     private void prepareAndStartForeground() {
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
-
+        this.startService(intent);
+/*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.startForegroundService(intent);
         } else {
             this.startService(intent);
         }
+*/
         notifyStart();
     }
 
