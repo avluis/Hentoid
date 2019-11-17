@@ -8,6 +8,7 @@ import me.devsaki.hentoid.parsers.content.DummyContent;
 import me.devsaki.hentoid.parsers.content.FakkuContent;
 import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
 import me.devsaki.hentoid.parsers.content.HitomiContent;
+import me.devsaki.hentoid.parsers.content.LusciousContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
 import me.devsaki.hentoid.parsers.content.NexusContent;
 import me.devsaki.hentoid.parsers.content.NhentaiContent;
@@ -59,6 +60,8 @@ public class ContentParserFactory {
                 return MusesContent.class;
             case DOUJINS:
                 return DoujinsContent.class;
+            case LUSCIOUS:
+                return LusciousContent.class;
             case EHENTAI: // E-H uses the API of the site -> no HTML parser
             default:
                 return DummyContent.class;
@@ -90,6 +93,8 @@ public class ContentParserFactory {
                 return new NexusParser();
             case MUSES: // No image parser; images are fetched by ContentParser
             case NHENTAI:
+            case DOUJINS:
+            case LUSCIOUS:
             default:
                 return new DummyParser();
         }

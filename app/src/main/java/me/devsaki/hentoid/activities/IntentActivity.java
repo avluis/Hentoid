@@ -94,6 +94,7 @@ public class IntentActivity extends BaseActivity {
                 return toParse.replace("/view", "");
             case MUSES:
             case DOUJINS:
+            case LUSCIOUS:
                 return toParse;
             default:
                 return null;

@@ -74,6 +74,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
                 if (!foundSitesList.contains(Site.HENTAICAFE.getCode())) sites.add(Site.HENTAICAFE);
                 if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
                 if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
+                if (!foundSitesList.contains(Site.LUSCIOUS.getCode())) sites.add(Site.LUSCIOUS);
             }
 
             SiteAdapter siteAdapter = new SiteAdapter();
@@ -99,6 +100,8 @@ public class SearchBookIdDialogFragment extends DialogFragment {
                 return site.getUrl() + "/entry/" + id;
             case NEXUS:
                 return site.getUrl() + "/view/" + id;
+            case LUSCIOUS:
+                return site.getUrl().replace("manga", "albums") + id + "/";
             default:
                 return site.getUrl();
         }

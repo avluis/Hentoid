@@ -23,6 +23,7 @@ import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
+import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
@@ -167,6 +168,11 @@ public class Content implements Serializable {
                 // e.g. lewd-title-ch-1-3-42116 -> 42116 is the ID
                 int lastIndex = url.lastIndexOf('-');
                 return url.substring(lastIndex + 1);
+            case LUSCIOUS:
+                // ID is the last numeric part of the URL
+                // e.g. /albums/lewd_title_ch_1_3_42116/ -> 42116 is the ID
+                lastIndex = url.lastIndexOf('_');
+                return url.substring(lastIndex + 1, url.length() - 1);
             default:
                 return "";
         }
@@ -233,6 +239,8 @@ public class Content implements Serializable {
                 return MusesActivity.class;
             case DOUJINS:
                 return DoujinsActivity.class;
+            case LUSCIOUS:
+                return LusciousActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -287,6 +295,8 @@ public class Content implements Serializable {
             case NEXUS:
                 galleryConst = "/view";
                 break;
+            case LUSCIOUS:
+                return site.getUrl().replace("manga","albums") + url;
             case FAKKU:
             case HENTAICAFE:
             case PANDA:
@@ -324,6 +334,8 @@ public class Content implements Serializable {
                 return site.getUrl() + "/read" + url + "/001";
             case MUSES:
                 return site.getUrl().replace("album", "picture") + "/1";
+            case LUSCIOUS:
+                return getGalleryUrl() + "read/";
             default:
                 return null;
         }

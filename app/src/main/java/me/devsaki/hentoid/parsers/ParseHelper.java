@@ -46,8 +46,8 @@ public class ParseHelper {
     }
 
     public static void parseAttribute(AttributeMap map, AttributeType type, Element element, boolean filterCount, Site site) {
-        String name = element.text();
-        if (filterCount) name = Helper.removeNonPrintableChars(removeBrackets(name));
+        String name = Helper.removeNonPrintableChars(element.text());
+        if (filterCount) name = removeBrackets(name);
         Attribute attribute = new Attribute(type, name, element.attr("href"), site);
 
         map.add(attribute);
