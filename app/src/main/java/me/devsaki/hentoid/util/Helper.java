@@ -226,4 +226,28 @@ public final class Helper {
                 || extension.equalsIgnoreCase("png")
                 || extension.equalsIgnoreCase("webp");
     }
+
+    // https://stackoverflow.com/a/18603020/8374722
+    public static String removeInvisibleChars(String s) {
+        StringBuilder newString = new StringBuilder(s.length());
+        for (int offset = 0; offset < s.length(); ) {
+            int codePoint = s.codePointAt(offset);
+            offset += Character.charCount(codePoint);
+
+            // Replace invisible control characters and unused code points
+            switch (Character.getType(codePoint)) {
+                case Character.CONTROL:     // \p{Cc}
+                case Character.FORMAT:      // \p{Cf}
+                case Character.PRIVATE_USE: // \p{Co}
+                case Character.SURROGATE:   // \p{Cs}
+                case Character.UNASSIGNED:  // \p{Cn}
+                    // Don't do anything; these are characters we don't want in the new string
+                    break;
+                default:
+                    newString.append(Character.toChars(codePoint));
+                    break;
+            }
+        }
+        return newString.toString();
+    }
 }
