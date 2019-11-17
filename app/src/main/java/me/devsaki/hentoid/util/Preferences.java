@@ -417,7 +417,7 @@ public final class Preferences {
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final boolean PREF_BROWSER_SHOW_FAB_DEFAULT = true;
-        static final boolean PREF_BROWSER_RESUME_LAST_DEFAULT = true;
+        static final boolean PREF_BROWSER_RESUME_LAST_DEFAULT = false;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
         static final boolean PREF_VIEWER_RESUME_LAST_LEFT = true;
