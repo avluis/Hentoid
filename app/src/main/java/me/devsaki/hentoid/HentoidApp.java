@@ -97,6 +97,9 @@ public class HentoidApp extends Application {
         Preferences.init(this);
         Preferences.performHousekeeping();
 
+        // Init version number on first run
+        if (0 == Preferences.getLastKnownAppVersionCode()) Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+
         // Firebase
         boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);

@@ -33,6 +33,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +55,7 @@ import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -336,7 +341,7 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
     }
 
     private void initSelectionToolbar(@NonNull View rootView) {
-        selectionToolbar= requireViewById(rootView, R.id.library_selection_toolbar);
+        selectionToolbar = requireViewById(rootView, R.id.library_selection_toolbar);
         selectionToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         selectionToolbar.setNavigationOnClickListener(v -> {
             getAdapter().clearSelection();
@@ -537,19 +542,11 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         if (viewModel != null) viewModel.onRestoreState(savedInstanceState);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onAppUpdated(AppUpdatedEvent event) {
+        EventBus.getDefault().removeStickyEvent(event);
         // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) {
-            if (0 == Preferences.getLastKnownAppVersionCode()) { // Don't show that during first run
-                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
-            } else if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
-                UpdateSuccessDialogFragment.invoke(requireFragmentManager());
-                Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
-            }
-        }
+        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(requireFragmentManager());
     }
 
     /**
@@ -699,7 +696,8 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         Timber.d(">>Library changed ! Size=%s", result.size());
 
         // Don't passive-refresh the list if the order is random
-        if (!newSearch && Preferences.Constant.ORDER_CONTENT_RANDOM == Preferences.getContentSortOrder()) return;
+        if (!newSearch && Preferences.Constant.ORDER_CONTENT_RANDOM == Preferences.getContentSortOrder())
+            return;
 
         updateTitle(result.size(), totalContentCount);
 
@@ -762,14 +760,14 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
      * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
      */
     private void updateTitle(long totalSelectedCount, long totalCount) {
-            String title;
-            if (totalSelectedCount == totalCount)
-                title = totalCount + " items";
-            else {
-                title = getResources().getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, totalCount);
-            }
-            toolbar.setTitle(title);
+        String title;
+        if (totalSelectedCount == totalCount)
+            title = totalCount + " items";
+        else {
+            title = getResources().getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, totalCount);
         }
+        toolbar.setTitle(title);
+    }
 
     /**
      * Callback for the book holder itself
