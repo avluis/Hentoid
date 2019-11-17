@@ -12,16 +12,17 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HitomiContent implements ContentParser {
-    @Selector(value = "h1 a[href*='/reader/']", attr="href", defValue = "")
+    @Selector(value = "h1 a[href*='/reader/']", attr = "href", defValue = "")
     private String galleryUrl;
-    @Selector(value = ".cover img", attr="src")
+    @Selector(value = ".cover img", attr = "src")
     private String coverUrl;
     @Selector("h1 a[href*='/reader/']")
     private String title;
-//    @Selector(".thumbnail-container")
+    //    @Selector(".thumbnail-container")
 //    private List<Element> pages;
     @Selector(value = "div.gallery h2 a[href^='/artist']")
     private List<Element> artists;
@@ -47,8 +48,8 @@ public class HitomiContent implements ContentParser {
 
         result.setSite(Site.HITOMI);
         result.setUrl(theUrl.replace("/reader", ""));
-        result.setCoverImageUrl("https:"+ coverUrl);
-        result.setTitle(title);
+        result.setCoverImageUrl("https:" + coverUrl);
+        result.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.HITOMI);

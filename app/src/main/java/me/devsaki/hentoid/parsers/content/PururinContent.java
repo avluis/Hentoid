@@ -12,6 +12,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class PururinContent implements ContentParser {
@@ -52,7 +53,7 @@ public class PururinContent implements ContentParser {
 
         result.setUrl(theUrl.replace(getProtocol() + "://pururin.io/gallery", ""));
         result.setCoverImageUrl(getProtocol() + ":" + coverUrl);
-        result.setTitle(!title.isEmpty() ? title.get(0) : "");
+        result.setTitle(!title.isEmpty() ? Helper.removeNonPrintableChars(title.get(0)) : "");
         int qtyPages = 0;
         boolean pagesFound = false;
         for (String s : pages) {

@@ -107,7 +107,7 @@ public class MusesContent implements ContentParser {
                     }
                 }
             }
-            result.setTitle(bookTitle);
+            result.setTitle(Helper.removeNonPrintableChars(bookTitle));
         }
 
 

@@ -15,6 +15,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 // NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
@@ -54,11 +55,12 @@ public class NhentaiContent implements ContentParser {
 
         if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
         if (null == thumbs || thumbs.isEmpty()) return result.setStatus(StatusContent.IGNORED);
-        if (theUrl.endsWith("favorite")) return result.setStatus(StatusContent.IGNORED); // Fav button
+        if (theUrl.endsWith("favorite"))
+            return result.setStatus(StatusContent.IGNORED); // Fav button
 
         result.setUrl(theUrl.replace("/g", "").replaceFirst("/1/$", "/"));
         result.setCoverImageUrl(coverUrl);
-        result.setTitle(title);
+        result.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.NHENTAI);

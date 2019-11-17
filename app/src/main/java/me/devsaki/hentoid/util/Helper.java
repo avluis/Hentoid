@@ -228,7 +228,7 @@ public final class Helper {
     }
 
     // https://stackoverflow.com/a/18603020/8374722
-    public static String removeInvisibleChars(String s) {
+    public static String removeNonPrintableChars(@NonNull final String s) {
         StringBuilder newString = new StringBuilder(s.length());
         for (int offset = 0; offset < s.length(); ) {
             int codePoint = s.codePointAt(offset);
