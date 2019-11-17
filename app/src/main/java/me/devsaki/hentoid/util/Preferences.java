@@ -458,6 +458,8 @@ public final class Preferences {
         public static final int ORDER_CONTENT_LEAST_READ = 6;
         public static final int ORDER_CONTENT_MOST_READ = 7;
         public static final int ORDER_CONTENT_LAST_READ = 8;
+        public static final int ORDER_CONTENT_PAGES_DESC = 9;
+        public static final int ORDER_CONTENT_PAGES_ASC = 10;
         public static final int ORDER_ATTRIBUTES_ALPHABETIC = 0;
         static final int ORDER_ATTRIBUTES_COUNT = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;

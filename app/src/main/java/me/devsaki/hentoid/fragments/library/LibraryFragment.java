@@ -315,6 +315,12 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
             case R.id.action_order_last_read:
                 contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_READ;
                 break;
+            case R.id.action_order_pages_desc:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_PAGES_DESC;
+                break;
+            case R.id.action_order_pages_asc:
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_PAGES_ASC;
+                break;
             case R.id.action_order_random:
                 contentSortOrder = Preferences.Constant.ORDER_CONTENT_RANDOM;
                 RandomSeedSingleton.getInstance().renewSeed();
@@ -513,6 +519,10 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
                 return R.drawable.ic_menu_sort_read;
             case Preferences.Constant.ORDER_CONTENT_LAST_READ:
                 return R.drawable.ic_menu_sort_last_read;
+            case Preferences.Constant.ORDER_CONTENT_PAGES_DESC:
+                return R.drawable.ic_menu_sort_pages_desc;
+            case Preferences.Constant.ORDER_CONTENT_PAGES_ASC:
+                return R.drawable.ic_menu_sort_pages_asc;
             case Preferences.Constant.ORDER_CONTENT_RANDOM:
                 return R.drawable.ic_menu_sort_random;
             default:

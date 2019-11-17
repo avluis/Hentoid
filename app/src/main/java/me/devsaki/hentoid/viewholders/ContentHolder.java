@@ -42,6 +42,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
     private final ImageView ivCover;
     private final TextView tvSeries;
     private final TextView tvArtist;
+    private final TextView tvPages;
     private final TextView tvTags;
     private final ImageView ivSite;
     private final ImageView ivError;
@@ -68,6 +69,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
         ivCover = requireViewById(itemView, R.id.ivCover);
         tvSeries = requireViewById(itemView, R.id.tvSeries);
         tvArtist = requireViewById(itemView, R.id.tvArtist);
+        tvPages = requireViewById(itemView, R.id.tvPages);
         tvTags = requireViewById(itemView, R.id.tvTags);
         ivSite = requireViewById(itemView, R.id.ivSite);
         ivError = requireViewById(itemView, R.id.ivError);
@@ -81,6 +83,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
         attachTitle(content);
         attachSeries(content);
         attachArtist(content);
+        attachPages(content);
         attachTags(content);
         attachButtons(content);
         attachOnClickListeners();
@@ -164,9 +167,15 @@ public class ContentHolder extends RecyclerView.ViewHolder {
             for (Attribute attribute : attributes) {
                 allArtists.add(attribute.getName());
             }
-            String artists = android.text.TextUtils.join(",", allArtists);
+            String artists = android.text.TextUtils.join(", ", allArtists);
             tvArtist.setText(templateArtist.replace("@artist@", artists));
         }
+    }
+
+    private void attachPages(Content content) {
+        Context context = tvPages.getContext();
+        String template = context.getResources().getString(R.string.work_pages);
+        tvPages.setText(template.replace("@pages@", content.getQtyPages() + ""));
     }
 
     private void attachTags(Content content) {
@@ -192,13 +201,13 @@ public class ContentHolder extends RecyclerView.ViewHolder {
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             ivSite.setImageResource(img);
-            ivSite.setOnClickListener(this::onSourceClicked);
+            ivSite.setOnClickListener(v -> onSourceClicked());
         } else {
             ivSite.setImageResource(R.drawable.ic_stat_hentoid);
         }
 
         // Favourite icon
-        ivFavourite.setOnClickListener(this::onFavouriteClicked);
+        ivFavourite.setOnClickListener(v -> onFavouriteClicked());
 
         // When transitioning to the other state, button blinks with its target state
         if (content.isBeingFavourited()) {
@@ -218,7 +227,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
         }
 
         // Error icon
-        ivError.setOnClickListener(this::onErrorClicked);
+        ivError.setOnClickListener(v -> onErrorClicked());
         if (content.getStatus() != null) {
             StatusContent status = content.getStatus();
             if (status == StatusContent.ERROR) {
@@ -231,18 +240,18 @@ public class ContentHolder extends RecyclerView.ViewHolder {
 
     // NB : There's only one listener instantiated in the fragment and consuming the corresponding Content
 
-    private void onSourceClicked(View v) {
+    private void onSourceClicked() {
         adapter.getOnSourceClickListener().accept(content);
     }
 
-    private void onFavouriteClicked(View v) {
+    private void onFavouriteClicked() {
         adapter.getFavClickListener().accept(content);
         // Hack to make fav icon blink with PagedListAdapter by force-rebinding the holder
         // Call is delayed to give time for the adapter list to be updated by LiveData
         new Handler().postDelayed(() -> adapter.notifyItemChanged(getLayoutPosition()), 100);
     }
 
-    private void onErrorClicked(View v) {
+    private void onErrorClicked() {
         adapter.getErrorClickListener().accept(content);
     }
 

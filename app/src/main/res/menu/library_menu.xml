@@ -52,6 +52,14 @@
                 android:icon="@drawable/ic_menu_sort_last_read"
                 android:title="@string/menu_order_last_read" />
             <item
+                android:id="@+id/action_order_pages_desc"
+                android:icon="@drawable/ic_menu_sort_pages_desc"
+                android:title="@string/menu_order_pages_desc" />
+            <item
+                android:id="@+id/action_order_pages_asc"
+                android:icon="@drawable/ic_menu_sort_pages_asc"
+                android:title="@string/menu_order_pages_asc" />
+            <item
                 android:id="@+id/action_order_random"
                 android:icon="@drawable/ic_menu_sort_random"
                 android:title="@string/menu_order_random" />

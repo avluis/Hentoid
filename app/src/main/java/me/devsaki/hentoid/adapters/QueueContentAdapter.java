@@ -70,6 +70,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             holder.ivCover = requireViewById(rootView, R.id.ivCover);
             holder.tvSeries = requireViewById(rootView, R.id.tvSeries);
             holder.tvArtist = requireViewById(rootView, R.id.tvArtist);
+            holder.tvPages = requireViewById(rootView, R.id.tvPages);
             holder.tvTags = requireViewById(rootView, R.id.tvTags);
             holder.ivSource = requireViewById(rootView, R.id.ivSite);
 
@@ -101,6 +102,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         attachCover(holder, content);
         attachSeries(holder, content);
         attachArtist(holder, content);
+        attachPages(holder);
         attachTags(holder, content);
         attachSource(holder, content);
     }
@@ -189,9 +191,22 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             for (Attribute attribute : attributes) {
                 allArtists.add(attribute.getName());
             }
-            String artists = android.text.TextUtils.join(",", allArtists);
+            String artists = android.text.TextUtils.join(", ", allArtists);
             holder.tvArtist.setText(templateArtist.replace("@artist@", artists));
         }
+    }
+
+    /**
+     * Build the pages layout of the book viewholder using the designated Content properties
+     * <p>
+     * NB : depending on the source, the number of pages is not always known
+     * at the very beginning of the download. To avoid displaying an invalid number and having to
+     * refresh it afterwards, queue cards won't have any number of pages displayed
+     *
+     * @param holder Holder to populate
+     */
+    private void attachPages(ViewHolder holder) {
+        holder.tvPages.setVisibility(View.GONE);
     }
 
     /**
@@ -236,7 +251,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Build the buttons of the book viewholder using the designated Content properties
      *
-     * @param rootView        View to populate
+     * @param rootView    View to populate
      * @param content     Designated content
      * @param isFirstItem True if designated Content is the first item of the queue; false if not
      * @param isLastItem  True if designated Content is the last item of the queue; false if not
@@ -467,6 +482,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         ImageView ivCover;
         TextView tvSeries;
         TextView tvArtist;
+        View tvPages;
         TextView tvTags;
         ImageView ivSource;
     }

@@ -299,6 +299,12 @@ public class ObjectBoxDB {
             case Preferences.Constant.ORDER_CONTENT_LAST_READ:
                 query.orderDesc(Content_.lastReadDate);
                 break;
+            case Preferences.Constant.ORDER_CONTENT_PAGES_DESC:
+                query.orderDesc(Content_.qtyPages);
+                break;
+            case Preferences.Constant.ORDER_CONTENT_PAGES_ASC:
+                query.order(Content_.qtyPages);
+                break;
             case Preferences.Constant.ORDER_CONTENT_RANDOM:
                 // That one's tricky - see https://github.com/objectbox/objectbox-java/issues/17 => Implemented post-query build
                 break;
