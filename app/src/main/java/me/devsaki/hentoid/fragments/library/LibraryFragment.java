@@ -17,11 +17,13 @@ import android.webkit.MimeTypeMap;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -44,7 +46,6 @@ import java.util.List;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
@@ -71,7 +72,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryFragment extends BaseFragment implements ErrorsDialogFragment.Parent {
+public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent {
 
     private final PagedContentAdapter endlessAdapter = new PagedContentAdapter.Builder()
             .setBookClickListener(this::onBookClick)
@@ -90,6 +91,7 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
             .build();
 
     // ======== COMMUNICATION
+    private OnBackPressedCallback callback;
     // Viewmodel
     private LibraryViewModel viewModel;
     // Settings listener
@@ -146,6 +148,17 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
     private MenuItem itemArchive;
     private MenuItem itemDeleteSwipe;
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                customBackPress();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -217,7 +230,7 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         toolbar = requireViewById(rootView, R.id.library_toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_drawer);
         Activity activity = requireActivity();
-        toolbar.setNavigationOnClickListener(v -> ((LibraryActivity) activity).onNavigationDrawerClicked());
+        toolbar.setNavigationOnClickListener(v -> ((LibraryActivity) activity).openNavigationDrawer());
         toolbar.inflateMenu(R.menu.library_menu);
 
         orderMenu = toolbar.getMenu().findItem(R.id.action_order);
@@ -585,24 +598,22 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
         super.onDestroy();
     }
 
-    @Override
-    public boolean onBackPressed() {
+    private void customBackPress() {
         LibraryAdapter adapter = getAdapter();
         // If content is selected, deselect it
         if (adapter.getSelectedItemsCount() > 0) {
             adapter.clearSelection();
             selectionToolbar.setVisibility(View.GONE);
             backButtonPressed = 0;
-
-            return false;
         } else if (searchMenu.isActionViewExpanded()) {
             searchMenu.collapseActionView();
-            return false;
         }
 
         // If none of the above, user is asking to leave => use double-tap
-        if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
-            return true;
+        else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
+            callback.remove();
+            requireActivity().onBackPressed();
+
         } else {
             backButtonPressed = SystemClock.elapsedRealtime();
             Context c = getContext();
@@ -611,8 +622,6 @@ public class LibraryFragment extends BaseFragment implements ErrorsDialogFragmen
             if (recyclerView.getLayoutManager() != null)
                 ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(0, 0);
         }
-
-        return false;
     }
 
     /**

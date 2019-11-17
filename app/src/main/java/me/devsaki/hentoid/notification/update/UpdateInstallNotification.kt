@@ -8,12 +8,10 @@ import android.os.Build
 import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
-
-import java.io.File
-
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.notification.Notification
+import java.io.File
 
 private val APK_MIMETYPE = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk")
 

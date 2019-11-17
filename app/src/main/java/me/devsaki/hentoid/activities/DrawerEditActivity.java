@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities;
 import android.os.Bundle;
 import android.view.View;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,7 +12,6 @@ import java.util.List;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.SiteFlex;
@@ -19,7 +19,7 @@ import me.devsaki.hentoid.viewholders.SiteFlex;
 /**
  * Created by Robb on 10/2019
  */
-public class DrawerEditActivity extends BaseActivity {
+public class DrawerEditActivity extends AppCompatActivity {
 
     private FlexibleAdapter<SiteFlex> siteAdapter;
 

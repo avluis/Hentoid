@@ -3,7 +3,6 @@ package me.devsaki.hentoid.fragments.library;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
@@ -40,7 +38,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.DrawerItemFlex;
 
 import static androidx.core.view.ViewCompat.requireViewById;
-import static androidx.recyclerview.widget.DividerItemDecoration.VERTICAL;
 
 public final class NavigationDrawerFragment extends Fragment {
 
@@ -68,11 +65,6 @@ public final class NavigationDrawerFragment extends Fragment {
         drawerAdapter.setMode(SelectableAdapter.Mode.SINGLE);
         drawerAdapter.addListener((FlexibleAdapter.OnItemClickListener) (v, p) -> onItemClick(p));
 
-        DividerItemDecoration divider = new DividerItemDecoration(inflater.getContext(), VERTICAL);
-
-        Drawable d = ContextCompat.getDrawable(parentActivity, R.drawable.line_divider);
-        if (d != null) divider.setDrawable(d);
-
         View rootView = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
 
         View btn = requireViewById(rootView, R.id.drawer_prefs_btn);
@@ -83,7 +75,6 @@ public final class NavigationDrawerFragment extends Fragment {
 
         RecyclerView recyclerView = requireViewById(rootView, R.id.drawer_list);
         recyclerView.setAdapter(drawerAdapter);
-        recyclerView.addItemDecoration(divider);
 
         updateItems();
 
@@ -120,7 +111,7 @@ public final class NavigationDrawerFragment extends Fragment {
         ContextCompat.startActivity(parentActivity, intent, bundle);
 
         parentActivity.overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-        parentActivity.onNavigationDrawerItemClicked();
+        parentActivity.closeNavigationDrawer();
     }
 
     private void showFlagAboutItem() {

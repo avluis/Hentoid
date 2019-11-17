@@ -5,6 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -20,7 +21,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.fragments.import_.LibRefreshDialogFragment;
 import me.devsaki.hentoid.services.ImportService;
@@ -39,7 +39,7 @@ import static me.devsaki.hentoid.HentoidApp.darkModeFromPrefs;
  * Maintained by wightwulf1944 22/02/2018
  * updated class for new AppCompatActivity and cleanup
  */
-public class PrefsActivity extends BaseActivity {
+public class PrefsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -2,7 +2,6 @@ package me.devsaki.hentoid.services;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 
 /**
  * Created by Robb_w on 2018/04

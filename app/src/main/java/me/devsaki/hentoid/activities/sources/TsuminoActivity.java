@@ -4,9 +4,7 @@ import android.graphics.Bitmap;
 import android.view.View;
 import android.webkit.WebView;
 
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.listener.ResultListener;
 
 /**
  * Created by Shiro on 1/22/2016.

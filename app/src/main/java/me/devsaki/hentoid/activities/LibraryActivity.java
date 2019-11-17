@@ -3,21 +3,22 @@ package me.devsaki.hentoid.activities;
 import android.os.Bundle;
 import android.view.WindowManager;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.fragments.library.LibraryFragment;
 import me.devsaki.hentoid.util.Preferences;
 
-public class LibraryActivity extends BaseActivity implements BaseFragment.BackInterface {
+public class LibraryActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
-    private BaseFragment baseFragment;
+
+    private OnBackPressedCallback callback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,11 +33,19 @@ public class LibraryActivity extends BaseActivity implements BaseFragment.BackIn
             fragment = new LibraryFragment();
 
             manager.beginTransaction()
-                    .add(R.id.fragment_library, fragment)
+                    .add(android.R.id.content, fragment)
                     .commit();
         }
 
         drawerLayout = findViewById(R.id.drawer_layout);
+
+        callback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                closeNavigationDrawer();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, callback);
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
@@ -51,29 +60,13 @@ public class LibraryActivity extends BaseActivity implements BaseFragment.BackIn
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawers();
-            return;
-        }
-
-        if (baseFragment == null || baseFragment.onBackPressed()) {
-            // Fragment did not consume onBackPressed.
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public void addBackInterface(BaseFragment fragment) {
-        this.baseFragment = fragment;
-    }
-
-    public void onNavigationDrawerItemClicked() {
+    public void closeNavigationDrawer() {
         drawerLayout.closeDrawer(GravityCompat.START);
+        callback.setEnabled(false);
     }
 
-    public void onNavigationDrawerClicked() {
+    public void openNavigationDrawer() {
         drawerLayout.openDrawer(GravityCompat.START);
+        callback.setEnabled(true);
     }
 }
