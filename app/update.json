@@ -8,6 +8,7 @@
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" },
-	  {"sourceName":"TSUMINO", "status":"ORANGE" }
+	  {"sourceName":"TSUMINO", "status":"ORANGE" },
+	  {"sourceName":"FAKKU2", "status":"RED", "fixedByBuild":"162" }
   ]
 }
