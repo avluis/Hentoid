@@ -259,6 +259,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         initWebView();
         initSwipeLayout();
+        webView.loadUrl(getStartUrl());
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
@@ -269,6 +270,18 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         alertIcon = findViewById(R.id.web_alert_icon);
         alertMessage = findViewById(R.id.web_alert_txt);
         displayAlertBanner();
+    }
+
+    private String getStartUrl() {
+        SiteHistory siteHistory = db.getHistory(getStartSite());
+        if (siteHistory != null && Preferences.isBrowserResumeLast()) return siteHistory.url;
+
+        String intentUrl = "";
+        if (getIntent().getExtras() != null) {
+            BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
+            intentUrl = parser.getUrl();
+        }
+        return intentUrl.isEmpty() ? getStartSite().getUrl() : intentUrl;
     }
 
     private boolean onMenuItemSelected(MenuItem item) {
@@ -307,25 +320,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         super.onResume();
 
         checkPermissions();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        SiteHistory siteHistory = db.getHistory(getStartSite());
-        // URL to start with
-        String startUrl;
-        if (siteHistory != null && Preferences.isBrowserResumeLast()) startUrl = siteHistory.url;
-        else {
-            String intentUrl = "";
-            if (getIntent().getExtras() != null) {
-                BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
-                intentUrl = parser.getUrl();
-            }
-            startUrl = intentUrl.isEmpty() ? getStartSite().getUrl() : intentUrl;
-        }
-        webView.loadUrl(startUrl);
     }
 
     @Override
