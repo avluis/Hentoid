@@ -296,7 +296,7 @@ public class Content implements Serializable {
                 galleryConst = "/view";
                 break;
             case LUSCIOUS:
-                return site.getUrl().replace("manga","albums") + url;
+                return site.getUrl().replace("/manga/","") + url;
             case FAKKU:
             case HENTAICAFE:
             case PANDA:
