@@ -8,8 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import me.devsaki.fakku.FakkuDecode;
-import me.devsaki.fakku.PageInfo;
+//import me.devsaki.fakku.FakkuDecode;
+//import me.devsaki.fakku.PageInfo;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -30,6 +30,7 @@ public class FakkuParser implements ImageListParser {
 
     public List<ImageFile> parseImageList(Content content) {
 
+        /*
         List<ImageFile> result = Collections.emptyList();
         String downloadParamsStr = content.getDownloadParams();
         if (null == downloadParamsStr || downloadParamsStr.isEmpty()) {
@@ -117,6 +118,9 @@ public class FakkuParser implements ImageListParser {
         progress.progressComplete();
 
         return result;
+         */
+
+        return null;
     }
 
     public ImageFile parseBackupUrl(String url, int order) {

@@ -46,9 +46,9 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.fakku.FakkuDecode;
-import me.devsaki.fakku.PageInfo;
-import me.devsaki.fakku.PointTranslation;
+//import me.devsaki.fakku.FakkuDecode;
+//import me.devsaki.fakku.PageInfo;
+//import me.devsaki.fakku.PointTranslation;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -699,6 +699,7 @@ public class ContentDownloadService extends IntentService {
         } else Timber.w("Failed to parse backup URL");
     }
 
+    /*
     private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException, IOException {
         Map<String, String> downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
 
@@ -711,12 +712,12 @@ public class ContentDownloadService extends IntentService {
         if (pageInfoValue.equals("unprotected"))
             return binaryContent; // Free content, picture is not protected
 
-//        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
+        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
         Bitmap sourcePicture = BitmapFactory.decodeByteArray(binaryContent, 0, binaryContent.length);
-
         PageInfo page = JsonHelper.jsonToObject(pageInfoValue, PageInfo.class);
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
         Bitmap destPicture = Bitmap.createBitmap(page.width, page.height, conf);
+
         Canvas destCanvas = new Canvas(destPicture);
 
         FakkuDecode.getTranslations(page);
@@ -734,6 +735,7 @@ public class ContentDownloadService extends IntentService {
         destPicture.compress(Bitmap.CompressFormat.PNG, 100, out); // Fakku is _always_ PNG
         return out.toByteArray();
     }
+     */
 
     /**
      * Create the given file in the given destination folder, and write binary data to it
@@ -755,12 +757,14 @@ public class ContentDownloadService extends IntentService {
             return;
         }
 
+        /*
         byte[] finalBinaryContent = null;
         if (hasImageProcessing && !img.getName().equals("thumb")) {
             if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty())
                 finalBinaryContent = processImage(img.getDownloadParams(), binaryContent);
             else throw new InvalidParameterException("No processing parameters found");
         }
+         */
 
         String fileExt = null;
         // Determine the extension of the file
@@ -784,7 +788,8 @@ public class ContentDownloadService extends IntentService {
         if (!Helper.isImageExtensionSupported(fileExt))
             throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - image not processed", fileExt, img.getUrl()));
         else
-            saveImage(dir, img.getName() + "." + fileExt, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
+        //    saveImage(dir, img.getName() + "." + fileExt, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
+            saveImage(dir, img.getName() + "." + fileExt, binaryContent );
     }
 
     /**
