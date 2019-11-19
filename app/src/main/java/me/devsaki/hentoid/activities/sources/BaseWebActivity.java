@@ -464,7 +464,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         webSettings.setLoadWithOverviewMode(true);
 
         CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        layoutParams.setBehavior(new AppBarLayout.ScrollingViewBehavior());
 
         SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_container);
         if (refreshLayout != null) refreshLayout.addView(webView, layoutParams);
