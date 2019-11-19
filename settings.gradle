@@ -1,1 +1,1 @@
-include ':app', ':fakkuLib'
+include ':app'
