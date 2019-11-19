@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,7 +20,6 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.SelectedAttributeAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -35,7 +35,7 @@ import static java.lang.String.format;
 /**
  * Created by Robb on 2018/11
  */
-public class SearchActivity extends BaseActivity {
+public class SearchActivity extends AppCompatActivity {
 
     private TextView tagCategoryText;
     private TextView artistCategoryText;

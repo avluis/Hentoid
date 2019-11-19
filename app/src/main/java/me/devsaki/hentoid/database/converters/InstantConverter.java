@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 import org.threeten.bp.Instant;
 
 import io.objectbox.converter.PropertyConverter;
-import me.devsaki.hentoid.enums.AttributeType;
 
 public class InstantConverter implements PropertyConverter<Instant, Long> {
     @Override

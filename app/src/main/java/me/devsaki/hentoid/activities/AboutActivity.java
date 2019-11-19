@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import org.greenrobot.eventbus.EventBus;
@@ -13,7 +14,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.fragments.about.ChangelogFragment;
 import me.devsaki.hentoid.fragments.about.LicensesFragment;
@@ -23,7 +23,7 @@ import me.devsaki.hentoid.util.Helper;
 /**
  * Created by wightwulf1944 on 03/21/18.
  */
-public class AboutActivity extends BaseActivity {
+public class AboutActivity extends AppCompatActivity {
 
     private TextView btnChangelog;
 

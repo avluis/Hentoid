@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -20,7 +21,6 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -40,7 +40,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
  */
-public class QueueFragment extends BaseFragment {
+public class QueueFragment extends Fragment {
 
     private QueueContentAdapter mAdapter;   // Adapter for queue management
 
@@ -271,12 +271,6 @@ public class QueueFragment extends BaseFragment {
         }
 
         toolbar.setTitle(getResources().getQuantityString(R.plurals.queue_book_count, (mAdapter.getCount() - bookDiff), (mAdapter.getCount() - bookDiff)));
-    }
-
-    @Override
-    public boolean onBackPressed() {
-        // Let the activity handle it.
-        return true;
     }
 
     private void showErrorStats() {

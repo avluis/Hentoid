@@ -5,8 +5,8 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
-import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -24,7 +24,7 @@ import static android.content.Intent.EXTRA_TEXT;
  * e.g. Click a link on reddit - it opens in my browser but I wanna download it in Hentoid
  * => tap share in the browser and select hentoid; that's when IntentActivity takes the lead
  */
-public class IntentActivity extends BaseActivity {
+public class IntentActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

@@ -15,7 +15,9 @@ import android.provider.DocumentsContract;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.documentfile.provider.DocumentFile;
 
@@ -31,7 +33,6 @@ import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.enums.Site;
@@ -57,7 +58,7 @@ import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
  */
-public class ImportActivity extends BaseActivity implements KitkatRootFolderFragment.Parent {
+public class ImportActivity extends AppCompatActivity implements KitkatRootFolderFragment.Parent {
 
     // Instance state keys
     private static final String CURRENT_DIR = "currentDir";
@@ -70,6 +71,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
 
     private File currentRootDir;
     private File prevRootDir;
+    private OnBackPressedCallback callback;
     private boolean restartOnExit = false;              // True if app has to be restarted when exiting the activity
     private boolean calledByPrefs = false;              // True if activity has been called by PrefsActivity
     private boolean useDefaultFolder = false;           // True if activity has been called by IntroActivity and user has selected default storage
@@ -88,6 +90,14 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
 
         View contentView = new View(this, null, R.style.ImportTheme);
         setContentView(contentView);
+
+        callback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                customBackPress();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, callback);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -122,8 +132,8 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
         prepImport(savedInstanceState);
     }
 
-    @Override
-    public void onBackPressed() {
+
+    public void customBackPress() {
         exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
     }
 
@@ -547,6 +557,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
     private void exit(int resultCode, String data) {
         Timber.d("Import activity exit - Data : %s, Restart needed: %s", data, restartOnExit);
 
+        callback.remove();
         Intent returnIntent = new Intent();
         returnIntent.putExtra(ConstsImport.RESULT_KEY, data);
         setResult(resultCode, returnIntent);
