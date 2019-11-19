@@ -68,9 +68,11 @@ public class LusciousBookMetadata {
 
         if (info.tags != null) for (TagInfo tag : info.tags) {
             String name = Helper.removeNonPrintableChars(tag.text);
+            if (name.contains(":"))
+                name = name.substring(name.indexOf(':') + 1).trim(); // Clean all tags starting with "Type :" (e.g. "Artist : someguy")
             AttributeType type = AttributeType.TAG;
             if (tag.url.startsWith("/tags/artist:")) type = AttributeType.ARTIST;
-            else if (tag.url.startsWith("/tags/parody:")) type = AttributeType.SERIE;
+//            else if (tag.url.startsWith("/tags/parody:")) type = AttributeType.SERIE;  <-- duplicate with series
             else if (tag.url.startsWith("/tags/character:")) type = AttributeType.CHARACTER;
             else if (tag.url.startsWith("/tags/series:")) type = AttributeType.SERIE;
             else if (tag.url.startsWith("/tags/group:")) type = AttributeType.ARTIST;
