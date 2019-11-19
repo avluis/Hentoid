@@ -126,7 +126,7 @@ public final class Preferences {
     }
 
     public static boolean getRecentVisibility() {
-        return sharedPreferences.getBoolean(Key.PREF_APP_PREVIEW, BuildConfig.DEBUG);
+        return sharedPreferences.getBoolean(Key.PREF_APP_PREVIEW, Default.PREF_APP_PREVIEW);
     }
 
     public static String getSdStorageUri() {
@@ -388,6 +388,8 @@ public final class Preferences {
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
         static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
+        static final boolean PREF_APP_PREVIEW = true;
+
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

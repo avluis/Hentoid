@@ -27,7 +27,7 @@ public enum DrawerItem {
     TSUMINO("TSUMINO", R.drawable.ic_menu_tsumino, TsuminoActivity.class),
     PURURIN("PURURIN", R.drawable.ic_menu_pururin, PururinActivity.class),
     EHENTAI("E-HENTAI", R.drawable.ic_menu_ehentai, EHentaiActivity.class),
-    FAKKU("FAKKU", R.drawable.ic_menu_fakku, FakkuActivity.class),
+    //FAKKU("FAKKU", R.drawable.ic_menu_fakku, FakkuActivity.class),
     NEXUS("HENTAI NEXUS", R.drawable.ic_menu_nexus, NexusActivity.class),
     MUSES("8MUSES", R.drawable.ic_menu_8muses, MusesActivity.class),
     DOUJINS("DOUJINS.COM", R.drawable.ic_menu_doujins, DoujinsActivity.class),

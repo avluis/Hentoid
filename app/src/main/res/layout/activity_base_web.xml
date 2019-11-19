@@ -47,6 +47,24 @@
         app:tint="?attr/colorOnPrimary" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabOpenBrowser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/fabRefreshStop"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="@dimen/refresh_fab_margin_left"
+        android:layout_marginTop="@dimen/refresh_fab_margin_top"
+        android:layout_marginEnd="@dimen/refresh_fab_margin_right"
+        android:layout_marginBottom="@dimen/refresh_fab_margin_bottom"
+        android:onClick="onOpenBrowserClick"
+        android:src="@drawable/ic_open_in_browser"
+        app:backgroundTint="?attr/colorPrimary"
+        app:elevation="@dimen/fab_default_elevation"
+        app:fabSize="mini"
+        app:rippleColor="@color/ripple"
+        app:tint="?attr/colorOnPrimary" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabHome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

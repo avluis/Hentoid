@@ -102,6 +102,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     protected ObservableWebView webView;
     // Action buttons
     private FloatingActionButton fabAction;
+    private FloatingActionButton fabOpenBrowser;
     private FloatingActionButton fabRefreshOrStop;
     private FloatingActionButton fabHome;
     // Swipe layout
@@ -175,6 +176,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         fabAction = findViewById(R.id.fabAction);
+        fabOpenBrowser = findViewById(R.id.fabOpenBrowser);
         fabRefreshOrStop = findViewById(R.id.fabRefreshStop);
         fabHome = findViewById(R.id.fabHome);
 
@@ -268,10 +270,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         webView.setOnScrollChangedCallback((deltaX, deltaY) -> {
             if (!webClient.isLoading()) {
                 if (deltaY <= 0) {
+                    fabOpenBrowser.show();
                     fabRefreshOrStop.show();
                     fabHome.show();
                     if (fabActionEnabled) fabAction.show();
                 } else {
+                    fabOpenBrowser.hide();
                     fabRefreshOrStop.hide();
                     fabHome.hide();
                     fabAction.hide();
@@ -341,6 +345,14 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
+    }
+
+    public void onOpenBrowserClick(View view) {
+        try {
+            String url = webView.getOriginalUrl();
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(browserIntent);
+        } catch(Exception e) {}
     }
 
     public void onRefreshStopFabClick(View view) {
@@ -637,6 +649,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_clear);
+            fabOpenBrowser.show();
             fabRefreshOrStop.show();
             fabHome.show();
             isPageLoading = true;

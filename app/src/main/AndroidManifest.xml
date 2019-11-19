@@ -61,10 +61,10 @@
             android:name=".activities.sources.EHentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
-        <activity
+        <!--<activity
             android:name=".activities.sources.FakkuActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/BrowserTheme" />-->
         <activity
             android:name=".activities.sources.NexusActivity"
             android:configChanges="orientation|screenSize"
@@ -250,6 +250,7 @@
                     android:pathPrefix="/g/"
                     android:scheme="https" />
             </intent-filter>
+            <!--
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -260,6 +261,7 @@
                     android:pathPrefix="/hentai/"
                     android:scheme="https" />
             </intent-filter>
+            -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
