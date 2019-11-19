@@ -9,7 +9,7 @@ import me.devsaki.hentoid.enums.Site;
 public class HentaiCafeActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "hentai.cafe";
-    private static final String GALLERY_FILTER = "//hentai.cafe/hc.fyi/[0-9]+$";
+    private static final String[] GALLERY_FILTER = {"//hentai.cafe/hc.fyi/[0-9]+$"};
 
     Site getStartSite() {
         return Site.HENTAICAFE;

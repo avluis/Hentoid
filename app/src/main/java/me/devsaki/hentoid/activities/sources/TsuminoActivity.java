@@ -13,7 +13,7 @@ import me.devsaki.hentoid.enums.Site;
 public class TsuminoActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "tsumino.com";
-    private static final String GALLERY_FILTER = "//www.tsumino.com/entry/";
+    private static final String[] GALLERY_FILTER = {"//www.tsumino.com/entry/"};
     private static final String[] blockedContent = {"/static/"};
     private static final String[] DIRTY_ELEMENTS = {".ads-area"};
     private boolean downloadFabPressed = false;
@@ -49,7 +49,7 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
 
-        TsuminoWebViewClient(String galleryFilter, WebContentListener listener) {
+        TsuminoWebViewClient(String[] galleryFilter, WebContentListener listener) {
             super(galleryFilter, listener);
         }
 

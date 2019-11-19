@@ -728,7 +728,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         final CompositeDisposable compositeDisposable = new CompositeDisposable();
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
         protected final WebContentListener listener;
-        private final Pattern filteredUrlPattern;
+        private final List<Pattern> filteredUrlPattern = new ArrayList<>();
         private final HtmlAdapter<ContentParser> htmlAdapter;
 
         private String restrictedDomainName = "";
@@ -737,15 +737,14 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
 
         @SuppressWarnings("unchecked")
-        CustomWebViewClient(String filteredUrl, WebContentListener listener) {
+        CustomWebViewClient(String[] filteredUrl, WebContentListener listener) {
             this.listener = listener;
 
             Class c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
             final Jspoon jspoon = Jspoon.create();
             htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
-            if (filteredUrl.length() > 0) filteredUrlPattern = Pattern.compile(filteredUrl);
-            else filteredUrlPattern = null;
+            for (String s : filteredUrl) filteredUrlPattern.add(Pattern.compile(s));
         }
 
         void destroy() {
@@ -763,10 +762,13 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         }
 
         boolean isPageFiltered(String url) {
-            if (null == filteredUrlPattern) return false;
+            if (filteredUrlPattern.isEmpty()) return false;
 
-            Matcher matcher = filteredUrlPattern.matcher(url);
-            return matcher.find();
+            for (Pattern p : filteredUrlPattern) {
+                Matcher matcher = p.matcher(url);
+                if (matcher.find()) return true;
+            }
+            return false;
         }
 
         /**

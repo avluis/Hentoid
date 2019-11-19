@@ -18,12 +18,20 @@ public class LusciousGalleryMetadata {
     }
 
     private static class PictureInfo {
-        //        private PictureContainerMetadata info;
+        private PictureContainerMetadata info;
         private List<PictureMetadata> items;
+    }
+
+    private static class PictureContainerMetadata {
+        private int total_pages;
     }
 
     private static class PictureMetadata {
         private String url_to_original;
+    }
+
+    public int getNbPages() {
+        return data.picture.list.info.total_pages;
     }
 
     public List<ImageFile> toImageFileList() {
