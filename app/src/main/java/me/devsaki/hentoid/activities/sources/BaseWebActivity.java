@@ -444,7 +444,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         db.insertQueue(currentContent.getId(), lastIndex);
 
         ContentQueueManager.getInstance().resumeQueue(this);
-
+        //after download go back
+        webView.goBack();
         changeFabActionMode(MODE_QUEUE);
     }
 
