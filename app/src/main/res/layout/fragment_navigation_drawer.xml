@@ -5,26 +5,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <View
         android:id="@+id/drawer_header"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/drawer_image_height"
+        android:layout_height="0dp"
         android:background="@drawable/nav_header_bg"
-        android:clickable="true"
-        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="@id/app_logo"
+        app:layout_constraintTop_toTopOf="@id/app_logo" />
+
+    <ImageView
+        android:id="@+id/app_logo"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/drawer_image_height"
+        android:padding="12dp"
+        android:src="@drawable/ic_hentoid"
+        app:layout_constraintBottom_toTopOf="@id/drawer_list"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:padding="@dimen/drawer_header_icon_padding">
-
-        <ImageView
-            android:id="@+id/app_logo"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_hentoid"
-            tools:ignore="ContentDescription" />
-
-    </FrameLayout>
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/drawer_prefs_btn"
@@ -37,8 +34,8 @@
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/ic_menu_prefs"
-        app:layout_constraintTop_toTopOf="@id/drawer_header"
         app:layout_constraintRight_toRightOf="@id/drawer_header"
+        app:layout_constraintTop_toTopOf="@id/drawer_header"
         tools:ignore="ContentDescription" />
 
     <ImageView
@@ -52,23 +49,22 @@
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/ic_edit"
-        app:layout_constraintTop_toBottomOf="@id/drawer_prefs_btn"
         app:layout_constraintRight_toRightOf="@id/drawer_header"
+        app:layout_constraintTop_toBottomOf="@id/drawer_prefs_btn"
         tools:ignore="ContentDescription" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drawer_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="?attr/colorPrimary"
+        android:background="@color/window_background"
         android:fastScrollEnabled="false"
         android:scrollbars="none"
         android:textIsSelectable="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_drawer"
-        app:layout_constraintTop_toBottomOf="@id/drawer_header"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        />
+        app:layout_constraintTop_toBottomOf="@id/drawer_header"
+        tools:listitem="@layout/item_drawer" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
