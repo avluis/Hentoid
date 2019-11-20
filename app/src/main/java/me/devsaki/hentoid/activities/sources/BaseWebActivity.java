@@ -273,15 +273,21 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     }
 
     private String getStartUrl() {
-        SiteHistory siteHistory = db.getHistory(getStartSite());
-        if (siteHistory != null && Preferences.isBrowserResumeLast()) return siteHistory.url;
-
-        String intentUrl = "";
+        // Priority 1 : URL specifically given to the activity ("view source" action)
         if (getIntent().getExtras() != null) {
             BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
-            intentUrl = parser.getUrl();
+            String intentUrl = parser.getUrl();
+            if (!intentUrl.isEmpty()) return intentUrl;
         }
-        return intentUrl.isEmpty() ? getStartSite().getUrl() : intentUrl;
+
+        // Priority 2 : Last viewed position, if option activated
+        if (Preferences.isBrowserResumeLast()) {
+            SiteHistory siteHistory = db.getHistory(getStartSite());
+            if (siteHistory != null && !siteHistory.url.isEmpty()) return siteHistory.url;
+        }
+
+        // Default site URL
+        return getStartSite().getUrl();
     }
 
     private boolean onMenuItemSelected(MenuItem item) {
