@@ -35,12 +35,16 @@ public class LusciousGalleryMetadata {
     }
 
     public List<ImageFile> toImageFileList() {
+        return toImageFileList(0);
+    }
+
+    public List<ImageFile> toImageFileList(int offset) {
         List<ImageFile> result = new ArrayList<>();
 
-        int order = 0;
+        int order = offset;
         List<PictureMetadata> imageList = data.picture.list.items;
         for (PictureMetadata pm : imageList)
-            result.add(new ImageFile(order++, pm.url_to_original, StatusContent.SAVED, imageList.size()));
+            result.add(new ImageFile(++order, pm.url_to_original, StatusContent.SAVED, imageList.size()));
 
         return result;
     }

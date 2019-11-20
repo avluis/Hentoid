@@ -99,7 +99,7 @@ public class LusciousActivity extends BaseWebActivity {
                     .subscribe(
                             metadata ->
                             {
-                                imageFiles.addAll(metadata.toImageFileList());
+                                imageFiles.addAll(metadata.toImageFileList(imageFiles.size()));
                                 if (metadata.getNbPages() > pageNumber) {
                                     getPages(content, bookId, pageNumber + 1, downloadImmediately, imageFiles);
                                 } else {
