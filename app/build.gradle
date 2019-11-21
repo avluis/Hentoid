@@ -18,8 +18,8 @@ android {
         minSdkVersion 19
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 29
-        versionCode 138
-        versionName '1.9.4.3'
+        versionCode 139
+        versionName '1.9.4.4'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
