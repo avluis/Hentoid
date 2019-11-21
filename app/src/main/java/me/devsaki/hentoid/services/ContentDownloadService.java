@@ -111,13 +111,6 @@ public class ContentDownloadService extends IntentService {
     private void prepareAndStartForeground() {
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
         this.startService(intent);
-/*
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            this.startForegroundService(intent);
-        } else {
-            this.startService(intent);
-        }
- */
         notifyStart();
     }
 
