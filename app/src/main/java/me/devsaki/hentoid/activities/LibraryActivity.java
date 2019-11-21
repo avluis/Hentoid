@@ -51,7 +51,7 @@ public class LibraryActivity extends AppCompatActivity {
         // navigation drawer open. But just the first time.
         if (!Preferences.isFirstRunProcessComplete()) {
             // first run of the app starts with the nav drawer open
-            drawerLayout.openDrawer(GravityCompat.START);
+            openNavigationDrawer();
             Preferences.setIsFirstRunProcessComplete(true);
         }
 
