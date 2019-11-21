@@ -381,7 +381,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      */
     private void onContentChanged(Content content) {
         if (null == content) return;
-        updateBookInfo(content);
+        //updateBookInfo(content);
         updateBookNavigation(content);
     }
 

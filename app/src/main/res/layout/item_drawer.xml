@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp">
+    android:background="?attr/selectableItemBackground">
 
     <ImageView
         android:id="@+id/drawer_item_icon"
@@ -39,9 +38,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:background="?attr/selectableItemBackground"
+        android:layout_marginBottom="8dp"
         android:gravity="center_vertical"
         android:minHeight="@dimen/drawer_item_height"
         android:textSize="@dimen/text_body_1"
@@ -55,7 +53,6 @@
         android:id="@+id/divider"
         style="@style/Divider"
         android:layout_width="match_parent"
-        android:layout_marginBottom="8dp"
         app:layout_constraintTop_toBottomOf="@id/drawer_item_txt" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
