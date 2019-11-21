@@ -7,14 +7,16 @@
     tools:context=".activities.AboutActivity">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/about_toolbar"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?colorPrimary"
         android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
-        tools:targetApi="lollipop" />
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="About"
+        tools:ignore="UnusedAttribute" />
 
     <ScrollView
         android:layout_width="0dp"
@@ -23,14 +25,14 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/about_toolbar">
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <ImageView
-                android:id="@+id/iv_app_logo"
+                android:id="@+id/appLogo"
                 android:layout_width="@dimen/about_ic_hentoid_width"
                 android:layout_height="@dimen/about_ic_hentoid_height"
                 android:src="@drawable/ic_hentoid"
@@ -45,12 +47,12 @@
                 android:cropToPadding="true"
                 android:src="@drawable/ic_social_github"
                 app:layout_constraintBottom_toTopOf="@id/discordIcon"
-                app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+                app:layout_constraintStart_toEndOf="@id/appLogo"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="ContentDescription" />
 
             <TextView
-                android:id="@+id/tv_github"
+                android:id="@+id/githubText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
@@ -68,12 +70,12 @@
                 android:cropToPadding="true"
                 android:src="@drawable/ic_social_discord"
                 app:layout_constraintBottom_toTopOf="@id/redditIcon"
-                app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+                app:layout_constraintStart_toEndOf="@id/appLogo"
                 app:layout_constraintTop_toBottomOf="@id/githubIcon"
                 tools:ignore="ContentDescription" />
 
             <TextView
-                android:id="@+id/tv_discord"
+                android:id="@+id/discordText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
@@ -89,12 +91,12 @@
                 android:layout_height="@dimen/about_ic_icons_height"
                 android:cropToPadding="true"
                 android:src="@drawable/ic_social_reddit"
-                app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+                app:layout_constraintStart_toEndOf="@id/appLogo"
                 app:layout_constraintTop_toBottomOf="@id/discordIcon"
                 tools:ignore="ContentDescription" />
 
             <TextView
-                android:id="@+id/tv_reddit"
+                android:id="@+id/redditText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
@@ -105,7 +107,7 @@
                 app:layout_constraintTop_toTopOf="@id/redditIcon" />
 
             <TextView
-                android:id="@+id/about_changelog_button"
+                android:id="@+id/changelogButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -113,7 +115,7 @@
                 android:textColor="?attr/colorSecondary"
                 android:textSize="@dimen/about_textSize"
                 android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+                app:layout_constraintStart_toEndOf="@id/appLogo"
                 app:layout_constraintTop_toBottomOf="@id/redditIcon" />
 
             <TextView
@@ -126,7 +128,7 @@
                 android:textSize="@dimen/about_textSize"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/iv_app_logo"
+                app:layout_constraintTop_toBottomOf="@id/appLogo"
                 tools:text="Hentoid X.X.X (bbb)" />
 
             <TextView
@@ -185,7 +187,7 @@
                 app:layout_constraintTop_toBottomOf="@id/personalDataStatement2" />
 
             <TextView
-                android:id="@+id/about_licenses_button"
+                android:id="@+id/licensesButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"

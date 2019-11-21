@@ -93,6 +93,7 @@ dependencies {
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.0'
+    implementation "androidx.fragment:fragment-ktx:1.1.0"
 
     // Image loader: github.com/bumptech/glide
     implementation 'com.github.bumptech.glide:glide:4.9.0'

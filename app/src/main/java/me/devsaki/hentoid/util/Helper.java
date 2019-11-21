@@ -172,22 +172,6 @@ public final class Helper {
         return m.matches();
     }
 
-    /**
-     * Open the given url using the device's app(s) of choice
-     *
-     * @param context Context
-     * @param url     Url to be opened
-     */
-    public static void openUrl(Context context, String url) {
-        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        try {
-            context.startActivity(myIntent);
-        } catch (ActivityNotFoundException e) {
-            Timber.e(e, "No activity found to open %s", url);
-            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
-        }
-    }
-
     public static float coerceIn(float value, float min, float max) {
         if (value < min) return min;
         else if (value > max) return max;
