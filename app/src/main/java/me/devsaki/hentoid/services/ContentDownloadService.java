@@ -534,8 +534,8 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Content download skipped : %s [%s]", content.getTitle(), content.getId());
         }
 
-        // Download next content in a new Intent
-        contentQueueManager.resumeQueue(this);
+        // Download next content
+        downloadFirstInQueue();
     }
 
     /**
