@@ -6,8 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.os.IBinder;
-import android.os.SystemClock;
 import android.util.SparseIntArray;
 import android.webkit.MimeTypeMap;
 
@@ -22,7 +20,6 @@ import com.android.volley.Request;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.crashlytics.android.Crashlytics;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.greenrobot.eventbus.EventBus;
@@ -37,7 +34,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -99,19 +95,9 @@ public class ContentDownloadService extends IntentService {
     private RequestQueueManager<Object> requestQueueManager = null;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    // TODO remove when issue #349 fixed
-    private long creationTicks;
-
 
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
-    }
-
-    // Fix attempt for #349 : https://stackoverflow.com/questions/55894636/android-9-pie-context-startforegroundservice-did-not-then-call-service-star?rq=1
-    private void prepareAndStartForeground() {
-        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
-        this.startService(intent);
-        notifyStart();
     }
 
     private void notifyStart() {
@@ -127,7 +113,6 @@ public class ContentDownloadService extends IntentService {
     // if the entire queue is paused (=service destroyed), then resumed (service re-created)
     @Override
     public void onCreate() {
-        creationTicks = SystemClock.elapsedRealtime();
         super.onCreate();
 
         notifyStart();
@@ -137,10 +122,6 @@ public class ContentDownloadService extends IntentService {
         db = ObjectBoxDB.getInstance(this);
 
         Timber.d("Download service created");
-
-        // TODO remove when issue #349 fixed
-        double lifespan = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
-        Crashlytics.log("Download service creation time (s) : " + String.format(Locale.US, "%.2f", lifespan));
     }
 
     @Override
@@ -149,10 +130,6 @@ public class ContentDownloadService extends IntentService {
         compositeDisposable.clear();
 
         Timber.d("Download service destroyed");
-
-        // TODO remove when issue #349 fixed
-        double lifespan = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
-        Crashlytics.log("Download service lifespan (s) : " + String.format(Locale.US, "%.2f", lifespan));
 
         super.onDestroy();
     }
@@ -167,40 +144,11 @@ public class ContentDownloadService extends IntentService {
             return;
         }
 
-        // TODO remove when issue #349 fixed
-        double ticks = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
-        Crashlytics.log("New intent processed at (s) " + String.format(Locale.US, "%.2f", ticks));
-
         notifyStart();
 
         Content content = downloadFirstInQueue();
         if (content != null) watchProgress(content);
         else notificationManager.cancel();
-    }
-
-    // The following 3 overrides are there to attempt fixing https://stackoverflow.com/questions/55894636/android-9-pie-context-startforegroundservice-did-not-then-call-service-star
-
-    @androidx.annotation.Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        stopForeground(true); // <- remove notification
-        return null;
-    }
-
-    @Override
-    public boolean onUnbind(Intent intent) {
-
-        // TODO remove when issue #349 fixed
-        double ticks = (SystemClock.elapsedRealtime() - creationTicks) / 1000.0;
-        Crashlytics.log("Unbind at (s) " + String.format(Locale.US, "%.2f", ticks));
-
-        prepareAndStartForeground(); // <- show notification again
-        return true;
-    }
-
-    @Override
-    public void onRebind(Intent intent) {
-        stopForeground(true); // <- remove notification
     }
 
     /**
