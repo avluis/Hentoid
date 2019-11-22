@@ -123,6 +123,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 case R.id.action_shuffle:
                     onShuffleClick();
                     break;
+                default :
+                    // Nothing to do here
             }
             return true;
         });

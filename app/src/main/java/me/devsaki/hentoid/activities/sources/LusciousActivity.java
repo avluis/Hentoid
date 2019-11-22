@@ -87,6 +87,7 @@ public class LusciousActivity extends BaseWebActivity {
             return null;
         }
 
+        // TODO move that method in an ImageListParser
         private void getPages(@NonNull Content content, @NonNull String bookId, int pageNumber, boolean downloadImmediately, @NonNull List<ImageFile> imageFiles) {
             Map<String, String> query = new HashMap<>();
             query.put("id", (int) (Math.random() * 10) + "");

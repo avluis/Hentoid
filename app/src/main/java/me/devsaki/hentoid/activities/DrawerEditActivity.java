@@ -44,6 +44,8 @@ public class DrawerEditActivity extends AppCompatActivity {
                 case R.id.action_uncheck_all:
                     onUncheckAll();
                     break;
+                default:
+                    // Nothing to do here
             }
             return true;
         });
