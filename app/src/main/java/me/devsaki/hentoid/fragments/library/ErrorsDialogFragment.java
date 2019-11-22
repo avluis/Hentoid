@@ -41,7 +41,6 @@ public class ErrorsDialogFragment extends DialogFragment {
 
     private Parent parent;
     private View rootView;
-    private Content content;
 
     public static void invoke(Fragment parent, long id) {
         ErrorsDialogFragment fragment = new ErrorsDialogFragment();
@@ -75,7 +74,7 @@ public class ErrorsDialogFragment extends DialogFragment {
         if (0 == id) throw new IllegalArgumentException("No ID found");
 
         CollectionDAO dao = new ObjectBoxDAO(getContext());
-        content = dao.selectContent(id);
+        Content content = dao.selectContent(id);
         if (null == content) throw new IllegalArgumentException("Content not found for ID " + id);
 
         rootView = view;

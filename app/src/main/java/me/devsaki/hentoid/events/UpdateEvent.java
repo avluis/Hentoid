@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.events;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +13,7 @@ public class UpdateEvent {
 
     public UpdateEvent(boolean hasNewVersion, List<UpdateInfo.SourceAlert> sourceAlerts) {
         this.hasNewVersion = hasNewVersion;
-        this.sourceAlerts = new HashMap<>();
+        this.sourceAlerts = new EnumMap<>(Site.class);
         for (UpdateInfo.SourceAlert alert : sourceAlerts)
             this.sourceAlerts.put(alert.getSite(), alert);
     }
