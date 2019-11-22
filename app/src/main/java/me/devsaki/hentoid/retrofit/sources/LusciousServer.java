@@ -3,17 +3,13 @@ package me.devsaki.hentoid.retrofit.sources;
 import java.util.Map;
 
 import io.reactivex.Single;
-import me.devsaki.hentoid.json.sources.EHentaiGalleriesMetadata;
-import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery;
 import me.devsaki.hentoid.json.sources.LusciousBookMetadata;
 import me.devsaki.hentoid.json.sources.LusciousGalleryMetadata;
 import me.devsaki.hentoid.util.OkHttpClientSingleton;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.moshi.MoshiConverterFactory;
-import retrofit2.http.Body;
 import retrofit2.http.GET;
-import retrofit2.http.POST;
 import retrofit2.http.QueryMap;
 
 public class LusciousServer {
