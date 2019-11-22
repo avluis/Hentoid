@@ -19,7 +19,7 @@ public class LogUtil {
         throw new IllegalStateException("Utility class");
     }
 
-    private final static String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     public static class LogInfo {
         private String fileName;

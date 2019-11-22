@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -13,10 +12,8 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Build;
 import android.util.DisplayMetrics;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -34,7 +31,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
-import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
