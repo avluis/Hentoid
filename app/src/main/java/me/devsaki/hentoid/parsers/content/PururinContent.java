@@ -20,7 +20,7 @@ public class PururinContent implements ContentParser {
     private String galleryUrl;
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
-    @Selector("div.title")
+    @Selector(value = "div.title", defValue = "")
     private List<String> title;
     @Selector("table.table-gallery-info tr td")
     private List<String> pages;
