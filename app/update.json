@@ -9,7 +9,6 @@
   "sourceAlerts.beta":[
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" },
 	  {"sourceName":"TSUMINO", "status":"ORANGE" },
-      {"sourceName":"PURURIN", "status":"BLACK" },
 	  {"sourceName":"FAKKU2", "status":"RED", "fixedByBuild":"162" }
   ]
 }
