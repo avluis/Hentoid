@@ -176,8 +176,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         if (theContent != null) {
             int indexToSet = index;
             // Reset the memorized page index if it represents the last page
-            List<ImageFile> images = getImages().getValue();
-            if (images != null && index == images.size() - 1) indexToSet = 0;
+            List<ImageFile> theImages = getImages().getValue();
+            if (theImages != null && index == theImages.size() - 1) indexToSet = 0;
 
             theContent.setLastReadPageIndex(indexToSet);
             db.insertContent(theContent);
