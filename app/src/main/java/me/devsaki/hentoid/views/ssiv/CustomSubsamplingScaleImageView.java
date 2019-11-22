@@ -771,7 +771,7 @@ public class CustomSubsamplingScaleImageView extends View {
         return handled || super.onTouchEvent(event);
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private boolean onTouchEventInternal(@NonNull MotionEvent event) {
         int touchCount = event.getPointerCount();
         switch (event.getAction()) {

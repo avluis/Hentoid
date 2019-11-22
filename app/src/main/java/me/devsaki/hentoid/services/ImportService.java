@@ -325,7 +325,6 @@ public class ImportService extends IntentService {
         try {
             DoujinBuilder doujinBuilder =
                     JsonHelper.jsonToObject(json, DoujinBuilder.class);
-            //noinspection deprecation
             ContentV1 content = new ContentV1();
             content.setUrl(doujinBuilder.getId());
             content.setHtmlDescription(doujinBuilder.getDescription());
@@ -371,9 +370,9 @@ public class ImportService extends IntentService {
     }
 
     @CheckResult
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private static Content importJsonV1(File json) throws JSONParseException {
         try {
-            //noinspection deprecation
             ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
             if (content.getStatus() != StatusContent.DOWNLOADED
                     && content.getStatus() != StatusContent.ERROR) {
