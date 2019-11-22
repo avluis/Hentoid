@@ -31,6 +31,7 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
 
         changelogRecycler.setHasFixedSize(true)
 
+        // TODO - observe update availability through event bus instead of parsing changelog
         viewModel.successValueLive.observe(this) { releasesInfo ->
             val releases: MutableList<GitHubRelease> = ArrayList()
             var latestTagName = ""
