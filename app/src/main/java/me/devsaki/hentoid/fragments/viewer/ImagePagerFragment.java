@@ -33,9 +33,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.views.ZoomableFrame;
 import me.devsaki.hentoid.views.ZoomableRecyclerView;
@@ -75,8 +73,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     // == CONTROLS OVERLAY ==
     private View controlsOverlay;
 
-    // Top bar controls
-    private Toolbar toolbar;
     private MenuItem favoritePageButton;
     private MenuItem shuffleButton;
 
@@ -106,7 +102,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         onUpdateSwipeToFling();
         onUpdatePageNumDisplay();
 
-        toolbar = requireViewById(rootView, R.id.viewer_pager_toolbar);
+        // Top bar controls
+        Toolbar toolbar = requireViewById(rootView, R.id.viewer_pager_toolbar);
         toolbar.inflateMenu(R.menu.viewer_pager_menu);
 
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
@@ -123,7 +120,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 case R.id.action_shuffle:
                     onShuffleClick();
                     break;
-                default :
+                default:
                     // Nothing to do here
             }
             return true;
@@ -290,12 +287,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         favouritesGalleryBtn.setOnClickListener(v -> displayGallery(true));
     }
 
-    private boolean onBookTitleLongClick(Content content) {
-        boolean result = Helper.copyPlainTextToClipboard(requireActivity(), content.getGalleryUrl());
-        if (result) ToastUtil.toast("Book URL copied to clipboard");
-        return result;
-    }
-
     @Override
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(listener);
@@ -383,7 +374,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      */
     private void onContentChanged(Content content) {
         if (null == content) return;
-        //updateBookInfo(content);
         updateBookNavigation(content);
     }
 
@@ -488,18 +478,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             favoritePageButton.setIcon(R.drawable.ic_fav_empty);
             favoritePageButton.setTitle(R.string.viewer_favourite_off);
         }
-    }
-
-    /**
-     * Update the book title and author on the top bar
-     *
-     * @param content Current content whose information to display
-     */
-    private void updateBookInfo(@Nonnull Content content) {
-        String title = content.getTitle();
-        if (!content.getAuthor().isEmpty()) title += "\nby " + content.getAuthor();
-        toolbar.setTitle(title);
-        toolbar.setOnLongClickListener(v -> onBookTitleLongClick(content));
     }
 
     /**
