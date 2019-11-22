@@ -137,7 +137,10 @@ public class ContentDownloadService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Timber.d("New intent processed");
+        iterateQueue();
+    }
 
+    private void iterateQueue() {
         // Process these here to avoid initializing notifications for downloads that will never start
         if (ContentQueueManager.getInstance().isQueuePaused()) {
             Timber.w("Queue is paused. Aborting download.");
@@ -483,7 +486,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Download next content
-        downloadFirstInQueue();
+        iterateQueue();
     }
 
     /**
