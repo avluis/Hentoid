@@ -152,10 +152,10 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         List<String> log = new ArrayList<>();
 
         LogUtil.LogInfo errorLogInfo = new LogUtil.LogInfo();
-        errorLogInfo.logName = "Error";
-        errorLogInfo.fileName = "error_log" + content.getId();
-        errorLogInfo.noDataMessage = "No error detected.";
-        errorLogInfo.log = log;
+        errorLogInfo.setLogName("Error");
+        errorLogInfo.setFileName("error_log" + content.getId());
+        errorLogInfo.setNoDataMessage("No error detected.");
+        errorLogInfo.setLog(log);
 
         List<ErrorRecord> errorLog = content.getErrorLog();
         if (errorLog != null) {

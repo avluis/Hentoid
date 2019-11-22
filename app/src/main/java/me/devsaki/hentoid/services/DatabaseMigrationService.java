@@ -172,10 +172,10 @@ public class DatabaseMigrationService extends IntentService {
 
     private LogUtil.LogInfo buildLogInfo(@NonNull List<String> log) {
         LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
-        logInfo.logName = "Migration";
-        logInfo.fileName = "migration_log";
-        logInfo.noDataMessage = "No migrable content detected on existing database.";
-        logInfo.log = log;
+        logInfo.setLogName("Migration");
+        logInfo.setFileName("migration_log");
+        logInfo.setNoDataMessage("No migrable content detected on existing database.");
+        logInfo.setLog(log);
         return logInfo;
     }
 }

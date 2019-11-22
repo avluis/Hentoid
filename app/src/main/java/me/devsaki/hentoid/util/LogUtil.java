@@ -20,10 +20,26 @@ public class LogUtil {
     }
 
     public static class LogInfo {
-        public String fileName;
-        public String logName;
-        public String noDataMessage;
-        public List<String> log = Collections.emptyList();
+        private String fileName;
+        private String logName;
+        private String noDataMessage;
+        private List<String> log = Collections.emptyList();
+
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public void setLogName(String logName) {
+            this.logName = logName;
+        }
+
+        public void setNoDataMessage(String noDataMessage) {
+            this.noDataMessage = noDataMessage;
+        }
+
+        public void setLog(List<String> log) {
+            this.log = log;
+        }
     }
 
     public static String buildLog(@Nonnull LogInfo info) {

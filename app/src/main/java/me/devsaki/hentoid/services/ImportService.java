@@ -261,10 +261,10 @@ public class ImportService extends IntentService {
 
     private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<String> log) {
         LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
-        logInfo.logName = cleanup ? "Cleanup" : "Import";
-        logInfo.fileName = cleanup ? "cleanup_log" : "import_log";
-        logInfo.noDataMessage = "No content detected.";
-        logInfo.log = log;
+        logInfo.setLogName(cleanup ? "Cleanup" : "Import");
+        logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
+        logInfo.setNoDataMessage("No content detected.");
+        logInfo.setLog(log);
         return logInfo;
     }
 
