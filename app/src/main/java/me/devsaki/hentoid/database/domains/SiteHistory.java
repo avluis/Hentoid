@@ -15,15 +15,26 @@ public class SiteHistory {
     @Id
     public long id;
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
-    public Site site;
-    public String url; // Last
-
+    private Site site;
+    private String url; // Last
 
     public SiteHistory() {
-    }
+    }  // Required for ObjectBox to work
 
     public SiteHistory(Site site, String url) {
         this.site = site;
+        this.url = url;
+    }
+
+    public Site getSite() {
+        return site;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
         this.url = url;
     }
 }

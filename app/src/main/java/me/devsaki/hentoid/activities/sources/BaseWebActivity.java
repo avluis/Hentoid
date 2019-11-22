@@ -283,7 +283,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         // Priority 2 : Last viewed position, if option activated
         if (Preferences.isBrowserResumeLast()) {
             SiteHistory siteHistory = db.getHistory(getStartSite());
-            if (siteHistory != null && !siteHistory.url.isEmpty()) return siteHistory.url;
+            if (siteHistory != null && !siteHistory.getUrl().isEmpty()) return siteHistory.getUrl();
         }
 
         // Default site URL

@@ -20,14 +20,23 @@ public class ErrorRecord {
     public long id;
     public ToOne<Content> content;
     @Convert(converter = ErrorType.ErrorTypeConverter.class, dbType = Integer.class)
-    public ErrorType type;
-    public String url;
-    public String contentPart;
-    public String description;
+    private ErrorType type;
+    private String url;
+    private String contentPart;
+    private String description;
     @Convert(converter = InstantConverter.class, dbType = Long.class)
-    public Instant timestamp;
+    private Instant timestamp;
+
 
     public ErrorRecord() {
+    } // Required for ObjectBox to work
+
+    public ErrorRecord(ErrorType type, String url, String contentPart, String description, Instant timestamp) {
+        this.type = type;
+        this.url = url;
+        this.contentPart = contentPart;
+        this.description = description;
+        this.timestamp = timestamp;
     }
 
     public ErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description, Instant timestamp) {
@@ -48,5 +57,25 @@ public class ErrorRecord {
             timeStr = timestamp.atZone(ZoneId.systemDefault()).format(formatter) + " ";
         }
         return String.format("%s%s - [%s] : %s @ %s", timeStr, contentPart, type.getName(), description, url);
+    }
+
+    public ErrorType getType() {
+        return type;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getContentPart() {
+        return contentPart;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
     }
 }

@@ -704,7 +704,7 @@ public class ObjectBoxDB {
     public void insertSiteHistory(Site site, String url) {
         SiteHistory siteHistory = getHistory(site);
         if (siteHistory != null) {
-            siteHistory.url = url;
+            siteHistory.setUrl(url);
             store.boxFor(SiteHistory.class).put(siteHistory);
         } else {
             store.boxFor(SiteHistory.class).put(new SiteHistory(site, url));

@@ -103,12 +103,12 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         Map<ErrorType, Integer> errorsByType = new HashMap<>();
 
         for (ErrorRecord error : errors) {
-            if (errorsByType.containsKey(error.type)) {
-                Integer nbErrorsObj = errorsByType.get(error.type);
+            if (errorsByType.containsKey(error.getType())) {
+                Integer nbErrorsObj = errorsByType.get(error.getType());
                 int nbErrors = (null == nbErrorsObj) ? 0 : nbErrorsObj;
-                errorsByType.put(error.type, ++nbErrors);
+                errorsByType.put(error.getType(), ++nbErrors);
             } else {
-                errorsByType.put(error.type, 1);
+                errorsByType.put(error.getType(), 1);
             }
         }
 

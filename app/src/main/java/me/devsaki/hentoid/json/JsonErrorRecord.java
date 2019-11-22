@@ -18,22 +18,15 @@ class JsonErrorRecord {
 
     static JsonErrorRecord fromEntity(ErrorRecord er) {
         JsonErrorRecord result = new JsonErrorRecord();
-        result.type = er.type;
-        result.url = er.url;
-        result.contentPart = er.contentPart;
-        result.description = er.description;
-        result.timestamp = er.timestamp.toEpochMilli();
+        result.type = er.getType();
+        result.url = er.getUrl();
+        result.contentPart = er.getContentPart();
+        result.description = er.getDescription();
+        result.timestamp = er.getTimestamp().toEpochMilli();
         return result;
     }
 
     ErrorRecord toEntity() {
-        ErrorRecord result = new ErrorRecord();
-        result.type = type;
-        result.url = url;
-        result.contentPart = contentPart;
-        result.description = description;
-        result.timestamp = Instant.ofEpochMilli(timestamp);
-
-        return result;
+        return new ErrorRecord(type, url, contentPart, description, Instant.ofEpochMilli(timestamp));
     }
 }
