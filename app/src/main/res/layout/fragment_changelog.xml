@@ -6,13 +6,15 @@
     android:background="?android:colorBackground">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/changelog_toolbar"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?colorPrimary"
         android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="Changelog"
         tools:targetApi="lollipop" />
 
     <ImageView
@@ -28,7 +30,7 @@
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/changelogDownloadLatestText"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/changelog_toolbar"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -46,12 +48,12 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/changelog_toolbar"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         tools:ignore="ContentDescription"
         tools:text="Get the latest version (x.xx.x)" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/changelogList"
+        android:id="@+id/changelogRecycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="8dp"
