@@ -7,11 +7,8 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.fragments.library.LibraryFragment;
 import me.devsaki.hentoid.util.Preferences;
 
 public class LibraryActivity extends AppCompatActivity {
