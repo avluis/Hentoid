@@ -18,29 +18,9 @@
             android:elevation="@dimen/toolbar_layout_elevation"
             android:gravity="center_vertical"
             app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/ActionBarPopup">
+            app:navigationIcon="@drawable/ic_close"
+            tools:targetApi="lollipop" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <androidx.appcompat.widget.ActionMenuView
-                    android:id="@+id/toolbar_action_left"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="start"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <androidx.appcompat.widget.ActionMenuView
-                    android:id="@+id/toolbar_action_right"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="end"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

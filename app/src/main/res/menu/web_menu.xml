@@ -10,8 +10,23 @@
         android:title="@string/web_refresh_stop"
         app:showAsAction="always" />
     <item
+        android:id="@+id/web_menu_gallery"
+        android:icon="@drawable/selector_gallery_icon"
+        android:title="@string/web_gallery"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/web_menu_back"
+        android:icon="@drawable/selector_back_icon"
+        android:title="@string/web_back"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/web_menu_forward"
+        android:icon="@drawable/selector_forward_action"
+        android:title="@string/web_forward"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/web_menu_copy"
         android:icon="@drawable/ic_action_copy"
         android:title="@string/web_copy_url"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 </menu>

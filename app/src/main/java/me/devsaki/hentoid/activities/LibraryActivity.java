@@ -25,18 +25,6 @@ public class LibraryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_hentoid);
-
-        FragmentManager manager = getSupportFragmentManager();
-        Fragment fragment = manager.findFragmentById(R.id.fragment_library);
-
-        if (fragment == null) {
-            fragment = new LibraryFragment();
-
-            manager.beginTransaction()
-                    .add(android.R.id.content, fragment)
-                    .commit();
-        }
-
         drawerLayout = findViewById(R.id.drawer_layout);
 
         callback = new OnBackPressedCallback(false) {

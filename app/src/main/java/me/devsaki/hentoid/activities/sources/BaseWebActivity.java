@@ -227,31 +227,15 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         }
 
         // Toolbar
-        /*
-         Design makes it so we have :
-           - Navigation icons aligned to the left
-           - Action icons aligned to the right
-
-         To achieve that, the toolbar is divided into two action menus (left and right)
-         See https://stackoverflow.com/questions/29807744/how-can-i-align-android-toolbar-menu-icons-to-the-left-like-in-google-maps-app
-         */
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_close);
         toolbar.setNavigationOnClickListener(v -> goHome());
+        toolbar.inflateMenu(R.menu.web_menu);
+        toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
 
-        ActionMenuView actionMenuLeft = toolbar.findViewById(R.id.toolbar_action_left);
-        ActionMenuView actionMenuRight = toolbar.findViewById(R.id.toolbar_action_right);
-        actionMenuLeft.setOnMenuItemClickListener(this::onMenuItemSelected);
-        actionMenuRight.setOnMenuItemClickListener(this::onMenuItemSelected);
-
-        SupportMenuInflater inflater = new SupportMenuInflater(this);
-        inflater.inflate(R.menu.web_menu_left, actionMenuLeft.getMenu());
-        inflater.inflate(R.menu.web_menu_right, actionMenuRight.getMenu());
-
-        refreshStopMenu = actionMenuRight.getMenu().findItem(R.id.web_menu_refresh_stop);
-        backMenu = actionMenuLeft.getMenu().findItem(R.id.web_menu_back);
-        forwardMenu = actionMenuLeft.getMenu().findItem(R.id.web_menu_forward);
-        galleryMenu = actionMenuLeft.getMenu().findItem(R.id.web_menu_gallery);
+        refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
+        backMenu = toolbar.getMenu().findItem(R.id.web_menu_back);
+        forwardMenu = toolbar.getMenu().findItem(R.id.web_menu_forward);
+        galleryMenu = toolbar.getMenu().findItem(R.id.web_menu_gallery);
 
         fabAction = findViewById(R.id.fabAction);
         fabActionEnabled = false;
@@ -508,9 +492,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     }
 
     private void refreshNavigationMenu() {
-        backMenu.setVisible(webView.canGoBack());
-        forwardMenu.setVisible(webView.canGoForward());
-        galleryMenu.setVisible(backListContainsGallery(webView.copyBackForwardList()) > -1);
+        backMenu.setEnabled(webView.canGoBack());
+        forwardMenu.setEnabled(webView.canGoForward());
+        galleryMenu.setEnabled(backListContainsGallery(webView.copyBackForwardList()) > -1);
     }
 
     private void onBackClick() {

@@ -102,12 +102,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private final LibraryPager pager = new LibraryPager(this::handleNewPage);
     // Text that displays in the background when the list is empty
     private TextView emptyText;
-    // "Search" button on top menu
-    private MenuItem searchMenu;
-    // "Toggle favourites" button on top menu
-    private MenuItem favsMenu;
-    // "Sort" button on top menu
-    private MenuItem orderMenu;
     // Action view associated with search menu button
     private SearchView mainSearchView;
     // Bar with group that has the advancedSearchButton and its background View
@@ -141,6 +135,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     // === TOOLBAR
     private Toolbar toolbar;
+    // "Search" button on top menu
+    private MenuItem searchMenu;
+    // "Toggle favourites" button on top menu
+    private MenuItem favsMenu;
+    // "Sort" button on top menu
+    private MenuItem orderMenu;
     // === SELECTION TOOLBAR
     private Toolbar selectionToolbar;
     private MenuItem itemDelete;
@@ -165,7 +165,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         super.onCreate(savedInstanceState);
 
         setRetainInstance(true);
-        setHasOptionsMenu(true);
     }
 
     @Override
