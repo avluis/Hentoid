@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_queue"
     android:layout_width="match_parent"
@@ -11,6 +12,7 @@
         android:layout_height="?android:attr/actionBarSize"
         android:background="?colorPrimary"
         android:elevation="@dimen/toolbar_layout_elevation"
+        app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
 
     <ListView

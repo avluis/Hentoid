@@ -22,8 +22,6 @@ public class LicensesFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_licenses, container, false);
 
         Toolbar toolbar = requireViewById(rootView, R.id.licenses_toolbar);
-        toolbar.setTitle("Licenses");
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         WebView webView = requireViewById(rootView, R.id.licenses_web_view);

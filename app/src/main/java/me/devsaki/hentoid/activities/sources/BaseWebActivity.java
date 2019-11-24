@@ -227,7 +227,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> goHome());
-        toolbar.inflateMenu(R.menu.web_menu);
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
 
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);

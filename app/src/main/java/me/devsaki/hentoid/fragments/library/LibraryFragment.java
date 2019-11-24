@@ -74,22 +74,6 @@ import static com.annimon.stream.Collectors.toCollection;
 
 public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent {
 
-    private final PagedContentAdapter endlessAdapter = new PagedContentAdapter.Builder()
-            .setBookClickListener(this::onBookClick)
-            .setSourceClickListener(this::onBookSourceClick)
-            .setFavClickListener(this::onBookFavouriteClick)
-            .setErrorClickListener(this::onBookErrorClick)
-            .setSelectionChangedListener(this::onSelectionChanged)
-            .build();
-
-    private final ContentAdapter pagerAdapter = new ContentAdapter.Builder()
-            .setBookClickListener(this::onBookClick)
-            .setSourceClickListener(this::onBookSourceClick)
-            .setFavClickListener(this::onBookFavouriteClick)
-            .setErrorClickListener(this::onBookErrorClick)
-            .setSelectionChangedListener(this::onSelectionChanged)
-            .build();
-
     // ======== COMMUNICATION
     private OnBackPressedCallback callback;
     // Viewmodel
@@ -147,6 +131,51 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem itemShare;
     private MenuItem itemArchive;
     private MenuItem itemDeleteSwipe;
+
+    private final PagedContentAdapter endlessAdapter = new PagedContentAdapter.Builder()
+            .setBookClickListener(this::onBookClick)
+            .setSourceClickListener(this::onBookSourceClick)
+            .setFavClickListener(this::onBookFavouriteClick)
+            .setErrorClickListener(this::onBookErrorClick)
+            .setSelectionChangedListener(this::onSelectionChanged)
+            .build();
+    private final ContentAdapter pagerAdapter = new ContentAdapter.Builder()
+            .setBookClickListener(this::onBookClick)
+            .setSourceClickListener(this::onBookSourceClick)
+            .setFavClickListener(this::onBookFavouriteClick)
+            .setErrorClickListener(this::onBookErrorClick)
+            .setSelectionChangedListener(this::onSelectionChanged)
+            .build();
+
+    /**
+     * Get the icon resource ID according to the sort order code
+     */
+    private static int getIconFromSortOrder(int sortOrder) {
+        switch (sortOrder) {
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
+                return R.drawable.ic_menu_sort_321;
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
+                return R.drawable.ic_menu_sort_123;
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
+                return R.drawable.ic_menu_sort_az;
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
+                return R.drawable.ic_menu_sort_za;
+            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
+                return R.drawable.ic_menu_sort_unread;
+            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
+                return R.drawable.ic_menu_sort_read;
+            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
+                return R.drawable.ic_menu_sort_last_read;
+            case Preferences.Constant.ORDER_CONTENT_PAGES_DESC:
+                return R.drawable.ic_menu_sort_pages_desc;
+            case Preferences.Constant.ORDER_CONTENT_PAGES_ASC:
+                return R.drawable.ic_menu_sort_pages_asc;
+            case Preferences.Constant.ORDER_CONTENT_RANDOM:
+                return R.drawable.ic_menu_sort_random;
+            default:
+                return R.drawable.ic_error;
+        }
+    }
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -227,10 +256,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     private void initToolbar(@NonNull View rootView) {
         toolbar = requireViewById(rootView, R.id.library_toolbar);
-        toolbar.setNavigationIcon(R.drawable.ic_drawer);
         Activity activity = requireActivity();
         toolbar.setNavigationOnClickListener(v -> ((LibraryActivity) activity).openNavigationDrawer());
-        toolbar.inflateMenu(R.menu.library_menu);
 
         orderMenu = toolbar.getMenu().findItem(R.id.action_order);
         searchMenu = toolbar.getMenu().findItem(R.id.action_search);
@@ -360,12 +387,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     private void initSelectionToolbar(@NonNull View rootView) {
         selectionToolbar = requireViewById(rootView, R.id.library_selection_toolbar);
-        selectionToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         selectionToolbar.setNavigationOnClickListener(v -> {
             getAdapter().clearSelection();
             selectionToolbar.setVisibility(View.GONE);
         });
-        selectionToolbar.inflateMenu(R.menu.library_selection_menu);
 
         itemDelete = selectionToolbar.getMenu().findItem(R.id.action_delete);
         itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
@@ -510,36 +535,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private void updateFavouriteFilter() {
         favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
-    }
-
-    /**
-     * Get the icon resource ID according to the sort order code
-     */
-    private static int getIconFromSortOrder(int sortOrder) {
-        switch (sortOrder) {
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
-                return R.drawable.ic_menu_sort_321;
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
-                return R.drawable.ic_menu_sort_123;
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
-                return R.drawable.ic_menu_sort_az;
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
-                return R.drawable.ic_menu_sort_za;
-            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
-                return R.drawable.ic_menu_sort_unread;
-            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
-                return R.drawable.ic_menu_sort_read;
-            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
-                return R.drawable.ic_menu_sort_last_read;
-            case Preferences.Constant.ORDER_CONTENT_PAGES_DESC:
-                return R.drawable.ic_menu_sort_pages_desc;
-            case Preferences.Constant.ORDER_CONTENT_PAGES_ASC:
-                return R.drawable.ic_menu_sort_pages_asc;
-            case Preferences.Constant.ORDER_CONTENT_RANDOM:
-                return R.drawable.ic_menu_sort_random;
-            default:
-                return R.drawable.ic_error;
-        }
     }
 
     /**

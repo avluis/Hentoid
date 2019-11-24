@@ -159,6 +159,8 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:longClickable="true"
         app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/viewer_pager_menu"
+        app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

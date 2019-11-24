@@ -18,6 +18,7 @@
             android:elevation="@dimen/toolbar_layout_elevation"
             android:gravity="center_vertical"
             app:layout_scrollFlags="scroll|enterAlways"
+            app:menu="@menu/web_menu"
             app:navigationIcon="@drawable/ic_close"
             tools:targetApi="lollipop" />
 

@@ -13,6 +13,8 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/library_menu"
+        app:navigationIcon="@drawable/ic_drawer"
         tools:targetApi="lollipop" />
 
     <androidx.appcompat.widget.Toolbar
@@ -24,6 +26,8 @@
         android:minHeight="?android:attr/actionBarSize"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/library_selection_menu"
+        app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
 
     <include layout="@layout/include_library_advanced_search" />

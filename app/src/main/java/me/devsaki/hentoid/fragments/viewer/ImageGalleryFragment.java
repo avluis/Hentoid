@@ -63,9 +63,6 @@ public class ImageGalleryFragment extends Fragment {
         recyclerView.setAdapter(galleryImagesAdapter);
 
         Toolbar toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
-        toolbar.inflateMenu(R.menu.viewer_gallery_menu);
-        toolbar.setTitle("Gallery");
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {

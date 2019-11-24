@@ -104,9 +104,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         // Top bar controls
         Toolbar toolbar = requireViewById(rootView, R.id.viewer_pager_toolbar);
-        toolbar.inflateMenu(R.menu.viewer_pager_menu);
-
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(v -> onBackClick());
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {

@@ -13,6 +13,8 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="Licenses"
         tools:targetApi="lollipop" />
 
     <WebView

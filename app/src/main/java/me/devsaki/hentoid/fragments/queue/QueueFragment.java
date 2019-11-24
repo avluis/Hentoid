@@ -106,7 +106,6 @@ public class QueueFragment extends Fragment {
 
         toolbar = requireViewById(rootView, R.id.queue_toolbar);
         toolbar.setTitle(getResources().getQuantityString(R.plurals.queue_book_count, mAdapter.getCount(), mAdapter.getCount()));
-        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         return rootView;
