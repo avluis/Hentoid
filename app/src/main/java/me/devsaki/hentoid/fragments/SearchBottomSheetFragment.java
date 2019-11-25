@@ -214,7 +214,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         if (!isInitiated) return;
 
         if (!results.success) {
-            onAttributesFailed(results.message);
+            Timber.w(results.message);
+            Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), results.message, BaseTransientBottomBar.LENGTH_SHORT);
+            bar.show();
+            tagWaitPanel.setVisibility(View.GONE);
             return;
         }
 
@@ -239,14 +242,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             attributeAdapter.setFormatWithNamespace(selectedAttributeTypes.size() > 1);
             attributeAdapter.add(results.attributes);
         }
-    }
-
-    private void onAttributesFailed(String message) {
-        Timber.w(message);
-        Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), message, BaseTransientBottomBar.LENGTH_SHORT);
-        bar.show();
-
-        tagWaitPanel.setVisibility(View.GONE);
     }
 
     /**

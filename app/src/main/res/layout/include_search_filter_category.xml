@@ -1,66 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingTop="8dp"
-    android:paddingEnd="16dp"
-    android:theme="@style/BottomSheetDialogTheme"
-    tools:context=".activities.SearchActivity">
+    android:theme="@style/BottomSheetDialogTheme">
 
-    <LinearLayout
-        android:id="@+id/tag_wait_panel"
+    <TextView
+        android:id="@+id/tag_wait_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/app_intro"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/tag_wait_image"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/tag_wait_image"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_action_pause"
+        app:layout_constraintBottom_toTopOf="@+id/tag_wait_description"
+        app:layout_constraintTop_toBottomOf="@+id/tag_wait_title"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/tag_wait_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone"
-        tools:visibility="visible">
-
-        <TextView
-            android:id="@+id/tag_wait_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/app_intro"
-            android:textSize="24sp" />
-
-        <ImageView
-            android:id="@+id/tag_wait_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minWidth="110dp"
-            android:minHeight="110dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_pause"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            android:id="@+id/tag_wait_description"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="@string/app_intro"
-            android:textSize="18sp" />
-
-    </LinearLayout>
+        android:text="@string/app_intro"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/tag_suggestion"
+        app:layout_constraintTop_toBottomOf="@+id/tag_wait_image" />
 
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/tag_suggestion"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:textIsSelectable="false"
+        app:layout_constraintBottom_toTopOf="@+id/tag_filter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tag_wait_description"
         app:maxHeight="200dp" />
 
     <androidx.appcompat.widget.SearchView
         android:id="@+id/tag_filter"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        android:minWidth="120dp"
-        app:iconifiedByDefault="false" />
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        app:iconifiedByDefault="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tag_suggestion" />
 
-</LinearLayout>
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/tag_wait_panel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="tag_wait_title,tag_wait_image,tag_wait_description"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

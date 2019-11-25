@@ -8,6 +8,7 @@ import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -26,6 +27,9 @@ public final class ActivatedPinPreferenceFragment extends Fragment
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_pin_preference_on, container, false);
 
+        Toolbar toolbar = requireViewById(rootView, R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> requireActivity().finish());
+
         offSwitch = requireViewById(rootView, R.id.switch_off);
         offSwitch.setOnClickListener(v -> onOffClick());
 
@@ -41,7 +45,7 @@ public final class ActivatedPinPreferenceFragment extends Fragment
 
         requireFragmentManager()
                 .beginTransaction()
-                .replace(R.id.frame_fragment, new DeactivatedPinPreferenceFragment(), null)
+                .replace(android.R.id.content, new DeactivatedPinPreferenceFragment())
                 .commit();
     }
 
