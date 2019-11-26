@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -21,4 +22,8 @@ fun Context.startBrowserActivity(url: String) {
         Timber.e(e, "No activity found to open $url")
         ToastUtil.toast(this, R.string.error_browser, Toast.LENGTH_LONG)
     }
+}
+
+inline fun <reified T : Activity> Context.startLocalActivity() {
+    startActivity(Intent(this, T::class.java))
 }
