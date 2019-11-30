@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.about
 
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -59,11 +58,7 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
         // Equivalent to "check for updates" preferences menu
         if (!UpdateDownloadService.isRunning()) {
             val intent = UpdateCheckService.makeIntent(requireContext(), true)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                requireContext().startForegroundService(intent)
-            } else {
-                requireContext().startService(intent)
-            }
+            requireContext().startService(intent)
         }
     }
 }

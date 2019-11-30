@@ -98,7 +98,8 @@ public class HentoidApp extends Application {
         Preferences.performHousekeeping();
 
         // Init version number on first run
-        if (0 == Preferences.getLastKnownAppVersionCode()) Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+        if (0 == Preferences.getLastKnownAppVersionCode())
+            Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
 
         // Firebase
         boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
@@ -122,11 +123,7 @@ public class HentoidApp extends Application {
         // Run app update checks
         if (Preferences.isAutomaticUpdateEnabled()) {
             Intent intent = UpdateCheckService.makeIntent(this, false);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent);
-            } else {
-                startService(intent);
-            }
+            startService(intent);
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
@@ -161,11 +158,7 @@ public class HentoidApp extends Application {
 
         // Launch a service that will perform non-structural DB housekeeping tasks
         Intent intent = DatabaseMaintenanceService.makeIntent(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent);
-        } else {
-            startService(intent);
-        }
+        startService(intent);
     }
 
     public static int darkModeFromPrefs(int prefsMode) {

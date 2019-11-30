@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments
 
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.commit
@@ -23,47 +22,47 @@ class MyPreferenceFragment : PreferenceFragmentCompat() {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
         findPreference<Preference>(Preferences.Key.DARK_MODE)?.onPreferenceChangeListener =
-            Preference.OnPreferenceChangeListener { _, newValue ->
-                onPrefDarkModeChanged(newValue)
-            }
+                Preference.OnPreferenceChangeListener { _, newValue ->
+                    onPrefDarkModeChanged(newValue)
+                }
         findPreference<Preference>(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)?.onPreferenceChangeListener =
-            Preference.OnPreferenceChangeListener { _, _ ->
-                onPrefRequiringRestartChanged()
-            }
+                Preference.OnPreferenceChangeListener { _, _ ->
+                    onPrefRequiringRestartChanged()
+                }
         findPreference<Preference>(Preferences.Key.PREF_APP_PREVIEW)?.onPreferenceChangeListener =
-            Preference.OnPreferenceChangeListener { _, _ ->
-                onPrefRequiringRestartChanged()
-            }
+                Preference.OnPreferenceChangeListener { _, _ ->
+                    onPrefRequiringRestartChanged()
+                }
         findPreference<Preference>(Preferences.Key.PREF_ANALYTICS_PREFERENCE)?.onPreferenceChangeListener =
-            Preference.OnPreferenceChangeListener { _, _ ->
-                onPrefRequiringRestartChanged()
-            }
+                Preference.OnPreferenceChangeListener { _, _ ->
+                    onPrefRequiringRestartChanged()
+                }
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
-        when (preference.key) {
-            Preferences.Key.PREF_ADD_NO_MEDIA_FILE -> {
-                FileHelper.createNoMedia()
-                true
-            }
-            Preferences.Key.PREF_CHECK_UPDATE_MANUAL -> {
-                onCheckUpdatePrefClick()
-                true
-            }
-            Preferences.Key.PREF_REFRESH_LIBRARY -> {
-                if (ImportService.isRunning()) {
-                    ToastUtil.toast("Import is already running")
-                } else {
-                    LibRefreshDialogFragment.invoke(requireFragmentManager())
+            when (preference.key) {
+                Preferences.Key.PREF_ADD_NO_MEDIA_FILE -> {
+                    FileHelper.createNoMedia()
+                    true
                 }
-                true
+                Preferences.Key.PREF_CHECK_UPDATE_MANUAL -> {
+                    onCheckUpdatePrefClick()
+                    true
+                }
+                Preferences.Key.PREF_REFRESH_LIBRARY -> {
+                    if (ImportService.isRunning()) {
+                        ToastUtil.toast("Import is already running")
+                    } else {
+                        LibRefreshDialogFragment.invoke(requireFragmentManager())
+                    }
+                    true
+                }
+                Preferences.Key.PREF_APP_LOCK -> {
+                    requireContext().startLocalActivity<PinPreferenceActivity>()
+                    true
+                }
+                else -> super.onPreferenceTreeClick(preference)
             }
-            Preferences.Key.PREF_APP_LOCK -> {
-                requireContext().startLocalActivity<PinPreferenceActivity>()
-                true
-            }
-            else -> super.onPreferenceTreeClick(preference)
-        }
 
     override fun onNavigateToScreen(preferenceScreen: PreferenceScreen) {
         val preferenceFragment = MyPreferenceFragment().withArguments {
@@ -79,11 +78,7 @@ class MyPreferenceFragment : PreferenceFragmentCompat() {
     private fun onCheckUpdatePrefClick() {
         if (!UpdateDownloadService.isRunning()) {
             val intent = UpdateCheckService.makeIntent(requireContext(), true)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                requireContext().startForegroundService(intent)
-            } else {
-                requireContext().startService(intent)
-            }
+            requireContext().startService(intent)
         }
     }
 
