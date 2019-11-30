@@ -361,7 +361,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param startingIndex Book's starting image index
      */
     private void onStartingIndexChanged(Integer startingIndex) {
-        recyclerView.scrollToPosition(startingIndex);
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+            recyclerView.scrollToPosition(startingIndex);
+        else
+            llm.scrollToPositionWithOffset(startingIndex, 0);
     }
 
     /**
