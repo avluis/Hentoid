@@ -321,10 +321,12 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         super.onActivityResult(requestCode, resultCode, data);
 
         // Return from the SAF picker
-        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) { // TODO - what happens when resultCode is _not_ RESULT_OK ?
+        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
             if (treeUri != null) onSelectSAFRootFolder(treeUri);
+        } else if (resultCode == RESULT_CANCELED) {
+            exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
         }
     }
 

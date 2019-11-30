@@ -128,9 +128,7 @@ public class IntroActivity extends AppIntro2 {
 
         if (requestCode == ConstsImport.RQST_IMPORT_RESULTS) {
             Timber.d("REQUEST RESULT RECEIVED");
-            if (data == null || data.getStringExtra(RESULT_KEY) == null) {
-                throw new NullPointerException("No data received");
-            } else {
+            if (data != null && data.getStringExtra(RESULT_KEY) != null) {
                 String result = data.getStringExtra(RESULT_KEY);
                 resultHandler(resultCode, result);
             }
