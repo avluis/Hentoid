@@ -228,6 +228,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         BottomNavigationView bottomToolbar = findViewById(R.id.bottom_navigation);
         bottomToolbar.setOnNavigationItemSelectedListener(this::onMenuItemSelected);
+        bottomToolbar.setItemIconTintList(null); // Hack to make selector resource work
         refreshStopMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
         backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
         forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
@@ -551,7 +552,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     private void changeFabActionMode(int mode) {
         @DrawableRes int resId = R.drawable.ic_info;
         if (MODE_DL == mode) {
-            resId = R.drawable.ic_action_download;
+            resId = R.drawable.selector_download_action;
         } else if (MODE_QUEUE == mode) {
             resId = R.drawable.ic_action_queue;
         } else if (MODE_READ == mode) {
@@ -788,7 +789,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             refreshStopMenu.setIcon(R.drawable.ic_close);
             isPageLoading = true;
             if (!isHtmlLoaded) {
-                actionMenu.setIcon(R.drawable.ic_action_download);
+                actionMenu.setIcon(R.drawable.selector_download_action);
                 actionMenu.setEnabled(false);
             }
         }

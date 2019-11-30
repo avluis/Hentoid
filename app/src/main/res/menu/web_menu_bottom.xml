@@ -16,7 +16,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/web_menu_back"
-        android:icon="@drawable/selector_back_icon"
+        android:icon="@drawable/selector_back_action"
         android:title="@string/web_back"
         app:showAsAction="always" />
     <item
@@ -26,7 +26,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/web_menu_download"
-        android:icon="@drawable/ic_action_download"
+        android:icon="@drawable/selector_download_action"
         android:title="@string/web_download"
         android:enabled="false"
         app:showAsAction="always" />
