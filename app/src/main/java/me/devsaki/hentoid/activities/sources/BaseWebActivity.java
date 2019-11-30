@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,7 +38,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -132,8 +131,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     private MenuItem forwardMenu;
     private MenuItem galleryMenu;
     private MenuItem refreshStopMenu;
-    // Action buttons
-    private FloatingActionButton fabAction;
+    private MenuItem actionMenu;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
     // Alert message panel and text
@@ -146,9 +144,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     private Content currentContent;
     // Database
     private ObjectBoxDB db;
-    // Indicates which mode the download FAB is in
-    protected int fabActionMode;
-    private boolean fabActionEnabled;
+    // Indicates which mode the download button is in
+    protected int actionButtonMode;
     private CustomWebViewClient webClient;
     // Version iof installed Chrome client
     private int chromeVersion;
@@ -229,13 +226,13 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         toolbar.setNavigationOnClickListener(v -> goHome());
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
 
-        refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
-        backMenu = toolbar.getMenu().findItem(R.id.web_menu_back);
-        forwardMenu = toolbar.getMenu().findItem(R.id.web_menu_forward);
-        galleryMenu = toolbar.getMenu().findItem(R.id.web_menu_gallery);
-
-        fabAction = findViewById(R.id.fabAction);
-        fabActionEnabled = false;
+        BottomNavigationView bottomToolbar = findViewById(R.id.bottom_navigation);
+        bottomToolbar.setOnNavigationItemSelectedListener(this::onMenuItemSelected);
+        refreshStopMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
+        backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
+        forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
+        galleryMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_gallery);
+        actionMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_download);
 
         initWebView();
         initSwipeLayout();
@@ -286,6 +283,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
                 break;
             case R.id.web_menu_copy:
                 this.onCopyClick();
+                break;
+            case R.id.web_menu_download:
+                this.onActionFabClick();
                 break;
             default:
                 return false;
@@ -374,15 +374,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
                     swipeLayout.post(() -> swipeLayout.setRefreshing(false));
                 } else {
                     swipeLayout.post(() -> swipeLayout.setRefreshing(true));
-                }
-            }
-        });
-        webView.setOnScrollChangedCallback((deltaX, deltaY) -> {
-            if (!webClient.isLoading()) {
-                if (deltaY <= 0) {
-                    if (fabActionEnabled && Preferences.isBrowserShowFab()) fabAction.show();
-                } else {
-                    fabAction.hide();
                 }
             }
         });
@@ -543,23 +534,17 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     /**
      * Listener for Action floating action button : download content, view queue or read content
-     *
-     * @param view Calling view (part of the mandatory signature)
      */
-    public void onActionFabClick(View view) {
-        if (MODE_DL == fabActionMode) processDownload();
-        else if (MODE_QUEUE == fabActionMode) goToQueue();
-        else if (MODE_READ == fabActionMode && currentContent != null) {
+    public void onActionFabClick() {
+        if (MODE_DL == actionButtonMode) processDownload();
+        else if (MODE_QUEUE == actionButtonMode) goToQueue();
+        else if (MODE_READ == actionButtonMode && currentContent != null) {
             currentContent = db.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
-            if (currentContent != null) {
-                if (StatusContent.DOWNLOADED == currentContent.getStatus()
-                        || StatusContent.ERROR == currentContent.getStatus()
-                        || StatusContent.MIGRATED == currentContent.getStatus()) {
-                    ContentHelper.openHentoidViewer(this, currentContent, null);
-                } else {
-                    fabAction.hide();
-                }
-            }
+            if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
+                    || StatusContent.ERROR == currentContent.getStatus()
+                    || StatusContent.MIGRATED == currentContent.getStatus()))
+                ContentHelper.openHentoidViewer(this, currentContent, null);
+            else actionMenu.setEnabled(false);
         }
     }
 
@@ -572,10 +557,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         } else if (MODE_READ == mode) {
             resId = R.drawable.ic_action_play;
         }
-        fabActionMode = mode;
-        setFabIcon(fabAction, resId);
-        fabActionEnabled = true;
-        if (Preferences.isBrowserShowFab()) fabAction.show();
+        actionButtonMode = mode;
+        actionMenu.setIcon(resId);
+        actionMenu.setEnabled(true);
     }
 
     /**
@@ -731,11 +715,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             compositeDisposable.clear();
         }
 
-        private void hideActionFab() {
-            fabAction.hide();
-            fabActionEnabled = false;
-        }
-
         void restrictTo(String s) {
             restrictedDomainName = s;
         }
@@ -808,7 +787,10 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             refreshStopMenu.setIcon(R.drawable.ic_close);
             isPageLoading = true;
-            if (!isHtmlLoaded) hideActionFab();
+            if (!isHtmlLoaded) {
+                actionMenu.setIcon(R.drawable.ic_action_download);
+                actionMenu.setEnabled(false);
+            }
         }
 
         @Override
@@ -990,6 +972,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
                 return stream;
             }
         }
+
     }
 
     private int backListContainsGallery(WebBackForwardList backForwardList) {
@@ -998,12 +981,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             if (webClient.isPageFiltered(item.getUrl())) return i;
         }
         return -1;
-    }
-
-    // Workaround for https://issuetracker.google.com/issues/111316656
-    private void setFabIcon(@Nonnull FloatingActionButton btn, @DrawableRes int resId) {
-        btn.setImageResource(resId);
-        btn.setImageMatrix(new Matrix());
     }
 
     private String formatAlertMessage(@NonNull UpdateInfo.SourceAlert alert) {

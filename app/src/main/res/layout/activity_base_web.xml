@@ -18,7 +18,7 @@
             android:elevation="@dimen/toolbar_layout_elevation"
             android:gravity="center_vertical"
             app:layout_scrollFlags="scroll|enterAlways"
-            app:menu="@menu/web_menu"
+            app:menu="@menu/web_menu_top"
             app:navigationIcon="@drawable/ic_close"
             tools:targetApi="lollipop" />
 
@@ -87,20 +87,18 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAction"
-        android:layout_width="wrap_content"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/download_fab_margin"
-        android:onClick="onActionFabClick"
-        android:src="@drawable/ic_action_download"
-        android:visibility="gone"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="@dimen/fab_default_elevation"
-        app:rippleColor="@color/ripple"
-        app:tint="?attr/colorOnPrimary"
-        tools:ignore="RelativeOverlap"
-        tools:visibility="visible" />
+        android:layout_gravity="bottom"
+        android:background="?colorPrimary"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
+        app:menu="@menu/web_menu_bottom"
+        app:labelVisibilityMode="unlabeled"
+        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"
+        app:layout_scrollFlags="scroll|enterAlways"
+        />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

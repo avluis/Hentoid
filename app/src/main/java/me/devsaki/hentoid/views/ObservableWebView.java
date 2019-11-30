@@ -2,44 +2,152 @@ package me.devsaki.hentoid.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.webkit.WebView;
 
-import com.tobiasrohloff.view.NestedScrollWebView;
+import androidx.core.view.MotionEventCompat;
+import androidx.core.view.NestedScrollingChildHelper;
+import androidx.core.view.ViewCompat;
 
 /**
  * WebView implementation with scroll listener
- * Ref: http://stackoverflow.com/questions/14752523/
+ * <p>
+ * Refs:
+ * 1/ http://stackoverflow.com/questions/14752523/
+ * 2/ https://github.com/tobiasrohloff/NestedScrollWebView
  */
-public class ObservableWebView extends NestedScrollWebView {
-    private OnScrollChangedCallback mOnScrollChangedCallback;
+public class ObservableWebView extends WebView {
+    private int mLastMotionY;
+
+    private final int[] mScrollOffset = new int[2];
+    private final int[] mScrollConsumed = new int[2];
+
+    private int mNestedYOffset;
+
+    private NestedScrollingChildHelper mChildHelper;
 
     public ObservableWebView(final Context context) {
         super(context);
+        init();
     }
 
     public ObservableWebView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public ObservableWebView(final Context context, final AttributeSet attrs, final int defStyle) {
         super(context, attrs, defStyle);
+        init();
+    }
+
+    private void init() {
+        mChildHelper = new NestedScrollingChildHelper(this);
+        setNestedScrollingEnabled(true);
     }
 
     @Override
-    protected void onScrollChanged(final int l, final int t, final int oldl, final int oldt) {
-        super.onScrollChanged(l, t, oldl, oldt);
-        int deltaX = l - oldl;
-        int deltaY = t - oldt;
-        if (mOnScrollChangedCallback != null) mOnScrollChangedCallback.onScroll(deltaX, deltaY);
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean result = false;
+
+        MotionEvent trackedEvent = MotionEvent.obtain(event);
+
+        final int action = MotionEventCompat.getActionMasked(event);
+
+        if (action == MotionEvent.ACTION_DOWN) {
+            mNestedYOffset = 0;
+        }
+
+        int y = (int) event.getY();
+
+        event.offsetLocation(0, mNestedYOffset);
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                mLastMotionY = y;
+                startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL);
+                result = super.onTouchEvent(event);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                int deltaY = mLastMotionY - y;
+
+                if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mScrollOffset)) {
+                    deltaY -= mScrollConsumed[1];
+                    trackedEvent.offsetLocation(0, mScrollOffset[1]);
+                    mNestedYOffset += mScrollOffset[1];
+                }
+
+                mLastMotionY = y - mScrollOffset[1];
+
+                int oldY = getScrollY();
+                int newScrollY = Math.max(0, oldY + deltaY);
+                int dyConsumed = newScrollY - oldY;
+                int dyUnconsumed = deltaY - dyConsumed;
+
+                if (dispatchNestedScroll(0, dyConsumed, 0, dyUnconsumed, mScrollOffset)) {
+                    mLastMotionY -= mScrollOffset[1];
+                    trackedEvent.offsetLocation(0, mScrollOffset[1]);
+                    mNestedYOffset += mScrollOffset[1];
+                }
+
+                result = super.onTouchEvent(trackedEvent);
+                trackedEvent.recycle();
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                stopNestedScroll();
+                result = super.onTouchEvent(event);
+                break;
+        }
+        return result;
     }
 
-    public void setOnScrollChangedCallback(final OnScrollChangedCallback onScrollChangedCallback) {
-        mOnScrollChangedCallback = onScrollChangedCallback;
+    // NestedScrollingChild
+
+    @Override
+    public void setNestedScrollingEnabled(boolean enabled) {
+        mChildHelper.setNestedScrollingEnabled(enabled);
     }
 
-    /**
-     * Implement in the activity/fragment/view that you want to listen to the WebView
-     */
-    public interface OnScrollChangedCallback {
-        void onScroll(int deltaX, int deltaY);
+    @Override
+    public boolean isNestedScrollingEnabled() {
+        return mChildHelper.isNestedScrollingEnabled();
+    }
+
+    @Override
+    public boolean startNestedScroll(int axes) {
+        return mChildHelper.startNestedScroll(axes);
+    }
+
+    @Override
+    public void stopNestedScroll() {
+        mChildHelper.stopNestedScroll();
+    }
+
+    @Override
+    public boolean hasNestedScrollingParent() {
+        return mChildHelper.hasNestedScrollingParent();
+    }
+
+    @Override
+    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int[] offsetInWindow) {
+        return mChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
+        return mChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
+        return mChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
+        return mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
     }
 }

@@ -25,8 +25,9 @@
         android:title="@string/web_forward"
         app:showAsAction="always" />
     <item
-        android:id="@+id/web_menu_copy"
-        android:icon="@drawable/ic_action_copy"
-        android:title="@string/web_copy_url"
-        app:showAsAction="never" />
+        android:id="@+id/web_menu_download"
+        android:icon="@drawable/ic_action_download"
+        android:title="@string/web_download"
+        android:enabled="false"
+        app:showAsAction="always" />
 </menu>

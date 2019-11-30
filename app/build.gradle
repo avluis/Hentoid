@@ -178,9 +178,6 @@ dependencies {
 
     // Cleaner date manipulation
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
-
-    // Webview usable with CoordinatorLayout
-    implementation 'com.github.rhlff:NestedScrollWebView:v1.0.2'
 }
 
 sonarqube {

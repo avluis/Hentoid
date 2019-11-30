@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.graphics.Bitmap;
-import android.view.View;
 import android.webkit.WebView;
 
 import me.devsaki.hentoid.enums.Site;
@@ -34,8 +33,8 @@ public class TsuminoActivity extends BaseWebActivity {
     }
 
     @Override
-    public void onActionFabClick(View view) {
-        if (MODE_DL == fabActionMode) {
+    public void onActionFabClick() {
+        if (MODE_DL == actionButtonMode) {
             downloadFabPressed = true;
             historyIndex = webView.copyBackForwardList().getCurrentIndex();
 
@@ -43,7 +42,7 @@ public class TsuminoActivity extends BaseWebActivity {
             String newUrl = webView.getUrl().replace("entry", "Read/Index");
             webView.loadUrl(newUrl);
         } else {
-            super.onActionFabClick(view);
+            super.onActionFabClick();
         }
     }
 

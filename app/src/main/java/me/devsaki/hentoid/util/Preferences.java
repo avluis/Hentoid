@@ -186,10 +186,6 @@ public final class Preferences {
                 Default.PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT);
     }
 
-    public static boolean isBrowserShowFab() {
-        return sharedPreferences.getBoolean(Key.PREF_BROWSER_SHOW_FAB, Default.PREF_BROWSER_SHOW_FAB_DEFAULT);
-    }
-
     public static boolean isBrowserResumeLast() {
         return sharedPreferences.getBoolean(Key.PREF_BROWSER_RESUME_LAST, Default.PREF_BROWSER_RESUME_LAST_DEFAULT);
     }
@@ -374,7 +370,6 @@ public final class Preferences {
         static final String PREF_SETTINGS_FOLDER = "folder";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
-        static final String PREF_BROWSER_SHOW_FAB = "pref_browser_show_fab";
         static final String PREF_BROWSER_RESUME_LAST = "pref_browser_resume_last";
         public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         static final String PREF_FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
@@ -416,7 +411,6 @@ public final class Preferences {
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
-        static final boolean PREF_BROWSER_SHOW_FAB_DEFAULT = true;
         static final boolean PREF_BROWSER_RESUME_LAST_DEFAULT = false;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
