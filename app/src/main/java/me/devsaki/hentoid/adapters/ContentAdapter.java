@@ -56,7 +56,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     @Override
     public long getItemId(int position) {
-        return shelf.get(position).getId();
+        Content c = shelf.get(position);
+        if (c != null) return c.getId();
+        else return super.getItemId(position);
     }
 
     /**
