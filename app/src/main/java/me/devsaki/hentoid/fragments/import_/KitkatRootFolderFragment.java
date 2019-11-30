@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.import_;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
@@ -179,7 +180,15 @@ public class KitkatRootFolderFragment extends DialogFragment {
         dismiss();
     }
 
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        callbackActivity.onKitKatCancel();
+
+        super.onDismiss(dialog);
+    }
+
     public interface Parent {
         void onSelectKitKatRootFolder(File targetFolder);
+        void onKitKatCancel();
     }
 }

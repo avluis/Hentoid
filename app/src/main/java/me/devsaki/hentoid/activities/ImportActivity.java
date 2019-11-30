@@ -333,6 +333,11 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         finalizeSelectRootFolder(targetFolder);
     }
 
+    // Cancel Kitkat picker
+    public void onKitKatCancel() {
+        finish();
+    }
+
     // Return from SAF picker
     public void onSelectSAFRootFolder(@NonNull Uri treeUri) {
         String treePath = treeUri.getPath();
