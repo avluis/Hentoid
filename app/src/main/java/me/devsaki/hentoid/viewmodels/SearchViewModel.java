@@ -7,6 +7,7 @@ import android.util.SparseIntArray;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.util.ArrayList;
@@ -28,8 +29,10 @@ public class SearchViewModel extends AndroidViewModel {
 
     private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
     private final MutableLiveData<AttributeSearchResult> proposedAttributes = new MutableLiveData<>();
-    private final MutableLiveData<ContentSearchResult> selectedContent = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
+
+    private LiveData<Integer> currentCountSource = null;
+    private final MediatorLiveData<Integer> selectedContentCount = new MediatorLiveData<>();
 
     private CollectionDAO collectionDAO;
 
@@ -57,23 +60,6 @@ public class SearchViewModel extends AndroidViewModel {
             list.postValue(result);
         }
     }
-
-    private PagedResultListener<Content> contentResultListener = new PagedResultListener<Content>() {
-        @Override
-        public void onPagedResultReady(List<Content> results, long totalSelected, long total) {
-            ContentSearchResult result = new ContentSearchResult();
-            result.totalSelected = totalSelected;
-            selectedContent.postValue(result);
-        }
-
-        @Override
-        public void onPagedResultFailed(Content result, String message) {
-            ContentSearchResult res = new ContentSearchResult();
-            res.success = false;
-            res.message = message;
-            selectedContent.postValue(res);
-        }
-    };
 
     private ResultListener<SparseIntArray> countPerTypeResultListener = new ResultListener<SparseIntArray>() {
         @Override
@@ -123,8 +109,8 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<ContentSearchResult> getSelectedContentData() {
-        return selectedContent;
+    public LiveData<Integer> getSelectedContentCount() {
+        return selectedContentCount;
     }
 
     // === VERB METHODS
@@ -179,7 +165,9 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     private void updateSelectionResult() {
-        collectionDAO.countBooks("", selectedAttributes.getValue(), false, contentResultListener);
+        if (currentCountSource != null) selectedContentCount.removeSource(currentCountSource);
+        currentCountSource = collectionDAO.countBooks("", selectedAttributes.getValue(), false);
+        selectedContentCount.addSource(currentCountSource, selectedContentCount::setValue);
     }
 
     // === HELPER RESULT STRUCTURES

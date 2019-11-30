@@ -55,15 +55,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         long totalSelectedContent;
     }
 
-    public static class ContentQueryResult {
-        List<Content> pagedContents;
-        long totalContent;
-        long totalSelectedContent;
-
-        ContentQueryResult() {
-        }
-    }
-
     static class AttributeQueryResult {
         final List<Attribute> pagedAttributes = new ArrayList<>();
         long totalSelectedAttributes;
@@ -110,18 +101,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, PagedResultListener<Content> listener) {
-        compositeDisposable.add(
-                Single.fromCallable(
-                        () -> pagedContentSearch(Mode.SEARCH_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly)
-                )
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
-        );
-    }
-
-    @Override
     public void searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
@@ -161,7 +140,19 @@ public class ObjectBoxDAO implements CollectionDAO {
     public LiveData<Integer> countAllBooks() {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
+        // See https://github.com/objectbox/objectbox-java/issues/776
         ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.getVisibleContentQ());
+
+        MediatorLiveData<Integer> result = new MediatorLiveData<>();
+        result.addSource(livedata, v -> result.setValue(v.size()));
+        return result;
+    }
+
+    public LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly) {
+        // This is not optimal because it fetches all the content and returns its size only
+        // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
+        // See https://github.com/objectbox/objectbox-java/issues/776
+        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.queryContentSearchContent(query, metadata, favouritesOnly, Preferences.Constant.ORDER_CONTENT_NONE));
 
         MediatorLiveData<Integer> result = new MediatorLiveData<>();
         result.addSource(livedata, v -> result.setValue(v.size()));
@@ -221,39 +212,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         if (!queue.isEmpty())
             lastIndex = queue.get(queue.size() - 1).rank + 1;
         db.insertQueue(content.getId(), lastIndex);
-    }
-
-    private ContentQueryResult pagedContentSearch(@Mode int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
-
-// StringBuilder sb = new StringBuilder();
-// for (Attribute a : metadata) sb.append(a.getName()).append(";");
-// timber.log.Timber.i("pagedContentSearch mode=" + mode +",filter=" + filter +",meta=" + sb.toString() + ",p=" + page +",bpp=" +  booksPerPage +",os=" +  orderStyle +",fav=" + favouritesOnly);
-
-        ContentQueryResult result = new ContentQueryResult();
-
-        if (Mode.SEARCH_CONTENT_MODULAR == mode) {
-            result.pagedContents = db.selectContentSearch(filter, page, booksPerPage, metadata, favouritesOnly, orderStyle);
-        } else if (Mode.SEARCH_CONTENT_UNIVERSAL == mode) {
-            result.pagedContents = db.selectContentUniversal(filter, page, booksPerPage, favouritesOnly, orderStyle);
-        } else {
-            result.pagedContents = Collections.emptyList();
-        }
-        // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages)
-        if (Mode.SEARCH_CONTENT_MODULAR == mode || Mode.COUNT_CONTENT_MODULAR == mode) {
-            result.totalSelectedContent = db.countContentSearch(filter, metadata, favouritesOnly);
-        } else if (Mode.SEARCH_CONTENT_UNIVERSAL == mode || Mode.COUNT_CONTENT_UNIVERSAL == mode) {
-            result.totalSelectedContent = db.countContentUniversal(filter, favouritesOnly);
-        } else {
-            result.totalSelectedContent = 0;
-        }
-        // Fetch total book count (i.e. total number of books in all the collection, regardless of filter)
-        result.totalContent = db.countVisibleContent();
-
-// sb = new StringBuilder();
-//  for (Content c : result.pagedContents) sb.append(c.getId()).append(";");
-//  timber.log.Timber.i("pagedContentSearch result [%s] : %s", result.totalSelectedContent, sb.toString());
-
-        return result;
     }
 
     private ContentIdQueryResult contentIdSearch(@Mode int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {

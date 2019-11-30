@@ -33,8 +33,6 @@ public interface CollectionDAO {
 
     void searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
 
-    void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, PagedResultListener<Content> listener);
-
     void searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
 
 
@@ -43,6 +41,8 @@ public interface CollectionDAO {
     LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
 
     LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly);
+
+    LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly);
 
 
     // Other stuff

@@ -381,21 +381,6 @@ public class ObjectBoxDB {
         return query.count();
     }
 
-    private static List<Content> shuffleRandomSort(Query<Content> query, int start, int booksPerPage) {
-        LazyList<Content> lazyList = query.findLazy();
-        List<Integer> order = new ArrayList<>();
-        for (int i = 0; i < lazyList.size(); i++) order.add(i);
-        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed()));
-
-        int maxPage = Math.min(start + booksPerPage, order.size());
-
-        List<Content> result = new ArrayList<>();
-        for (int i = start; i < maxPage; i++) {
-            result.add(lazyList.get(order.get(i)));
-        }
-        return result;
-    }
-
     private static long[] shuffleRandomSortId(Query<Content> query) {
         LazyList<Content> lazyList = query.findLazy();
         List<Integer> order = new ArrayList<>();
@@ -409,22 +394,6 @@ public class ObjectBoxDB {
         return Helper.getPrimitiveLongArrayFromList(result);
     }
 
-    List<Content> selectContentSearch(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
-        if (booksPerPage <= 0)
-            throw new UnsupportedOperationException("BookPerPage needs to be > 0");
-
-        List<Content> result;
-        int start = (page - 1) * booksPerPage;
-        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, orderStyle);
-
-        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
-            result = query.find(start, booksPerPage);
-        } else {
-            result = shuffleRandomSort(query, start, booksPerPage);
-        }
-        return result;
-    }
-
     long[] selectContentSearchId(String title, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
         long[] result;
         Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, orderStyle);
@@ -433,25 +402,6 @@ public class ObjectBoxDB {
             result = query.findIds();
         } else {
             result = shuffleRandomSortId(query);
-        }
-        return result;
-    }
-
-    List<Content> selectContentUniversal(String queryStr, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
-        if (booksPerPage <= 0)
-            throw new UnsupportedOperationException("BookPerPage needs to be > 0");
-
-        List<Content> result;
-        int start = (page - 1) * booksPerPage;
-        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
-        // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
-        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
-
-        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
-            result = query.find(start, booksPerPage);
-        } else {
-            result = shuffleRandomSort(query, start, booksPerPage);
         }
         return result;
     }

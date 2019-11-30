@@ -15,8 +15,6 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -29,7 +27,6 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static java.lang.String.format;
 
 /**
@@ -141,7 +138,7 @@ public class SearchActivity extends AppCompatActivity {
         viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
         viewModel.getAttributesCountData().observe(this, this::onQueryUpdated);
         viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
-        viewModel.getSelectedContentData().observe(this, this::onBooksReady);
+        viewModel.getSelectedContentCount().observe(this, this::onBooksCounted);
         if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
         else viewModel.emptyStart();
     }
@@ -188,13 +185,12 @@ public class SearchActivity extends AppCompatActivity {
         if (a != null) viewModel.onAttributeUnselected(a);
     }
 
-    private void onBooksReady(SearchViewModel.ContentSearchResult result) {
-        if (result.success && selectedAttributeAdapter.getItemCount() > 0) {
-            searchButton.setText(getString(R.string.search_button).replace("%1", result.totalSelected + "").replace("%2", 1 == result.totalSelected ? "" : "s"));
+    private void onBooksCounted(int count) {
+        if (count > 0) {
+            searchButton.setText(getString(R.string.search_button).replace("%1", count + "").replace("%2", 1 == count ? "" : "s"));
             searchButton.setVisibility(View.VISIBLE);
         } else {
             searchButton.setVisibility(View.GONE);
-            Snackbar.make(startCaption, result.message, LENGTH_LONG);
         }
     }
 
