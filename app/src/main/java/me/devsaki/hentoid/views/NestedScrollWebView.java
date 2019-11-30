@@ -10,13 +10,11 @@ import androidx.core.view.NestedScrollingChildHelper;
 import androidx.core.view.ViewCompat;
 
 /**
- * WebView implementation with scroll listener
+ * WebView implementation with nested scroll, to work within a CoordinatorLayout
  * <p>
- * Refs:
- * 1/ http://stackoverflow.com/questions/14752523/
- * 2/ https://github.com/tobiasrohloff/NestedScrollWebView
+ * Refs: https://github.com/tobiasrohloff/NestedScrollWebView
  */
-public class ObservableWebView extends WebView {
+public class NestedScrollWebView extends WebView {
     private int mLastMotionY;
 
     private final int[] mScrollOffset = new int[2];
@@ -26,17 +24,17 @@ public class ObservableWebView extends WebView {
 
     private NestedScrollingChildHelper mChildHelper;
 
-    public ObservableWebView(final Context context) {
+    public NestedScrollWebView(final Context context) {
         super(context);
         init();
     }
 
-    public ObservableWebView(final Context context, final AttributeSet attrs) {
+    public NestedScrollWebView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public ObservableWebView(final Context context, final AttributeSet attrs, final int defStyle) {
+    public NestedScrollWebView(final Context context, final AttributeSet attrs, final int defStyle) {
         super(context, attrs, defStyle);
         init();
     }

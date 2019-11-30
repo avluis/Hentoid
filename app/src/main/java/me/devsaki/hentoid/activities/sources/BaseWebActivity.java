@@ -95,7 +95,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
-import me.devsaki.hentoid.views.ObservableWebView;
+import me.devsaki.hentoid.views.NestedScrollWebView;
 import okhttp3.Response;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
@@ -125,7 +125,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     // === UI
     // Associated webview
-    protected ObservableWebView webView;
+    protected NestedScrollWebView webView;
     // Toolbar buttons
     private MenuItem backMenu;
     private MenuItem forwardMenu;
@@ -359,11 +359,11 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     private void initWebView() {
 
         try {
-            webView = new ObservableWebView(this);
+            webView = new NestedScrollWebView(this);
         } catch (Resources.NotFoundException e) {
             // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
             // Creating with the application Context fixes this, but is not generally recommended for view creation
-            webView = new ObservableWebView(getFixedContext(this));
+            webView = new NestedScrollWebView(getFixedContext(this));
         }
 
         webView.setHapticFeedbackEnabled(false);
