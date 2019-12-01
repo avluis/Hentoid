@@ -82,6 +82,7 @@ import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
@@ -681,6 +682,13 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     public void onResultFailed() {
         runOnUiThread(() -> ToastUtil.toast(HentoidApp.getInstance(), R.string.web_unparsable));
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDownloadEvent(DownloadEvent event) {
+        if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.getId() == currentContent.getId()) {
+            changeFabActionMode(MODE_READ);
+        }
     }
 
     /**
