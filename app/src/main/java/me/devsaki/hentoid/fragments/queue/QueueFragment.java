@@ -84,7 +84,7 @@ public class QueueFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
         // Book list container
-        ListView mListView = requireViewById(rootView, android.R.id.list);
+        ListView mListView = requireViewById(rootView, R.id.listView);
         mEmptyText = requireViewById(rootView,R.id.queue_empty_txt);
 
         btnStart = requireViewById(rootView, R.id.btnStart);

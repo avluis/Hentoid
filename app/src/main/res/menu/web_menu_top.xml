@@ -8,5 +8,5 @@
         android:id="@+id/web_menu_copy"
         android:icon="@drawable/ic_action_copy"
         android:title="@string/web_copy_url"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
 </menu>

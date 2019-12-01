@@ -91,11 +91,4 @@
         app:layout_constraintTop_toBottomOf="@id/divider"
         tools:text="@string/book_tags" />
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="ivCover,tvTags" />
-
 </merge>
