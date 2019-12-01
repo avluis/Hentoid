@@ -36,14 +36,14 @@ public abstract class BaseParser implements ImageListParser {
     }
 
     void progressStart(int maxSteps) {
-        progress.progressStart(maxSteps);
+        progress.start(maxSteps);
     }
 
     void progressPlus() {
-        progress.progressPlus();
+        progress.advance();
     }
 
     void progressComplete() {
-        progress.progressComplete();
+        progress.complete();
     }
 }

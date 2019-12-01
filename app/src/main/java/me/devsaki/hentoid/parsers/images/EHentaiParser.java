@@ -63,7 +63,7 @@ public class EHentaiParser implements ImageListParser {
             int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
             int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
-            progress.progressStart(nbGalleryPages + content.getQtyPages());
+            progress.start(nbGalleryPages + content.getQtyPages());
 
             // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
             List<String> pageUrls = new ArrayList<>();
@@ -74,7 +74,7 @@ public class EHentaiParser implements ImageListParser {
                 for (int i = 1; i < nbGalleryPages && !processHalted; i++) {
                     doc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent);
                     if (doc != null) fetchPageUrls(doc, pageUrls);
-                    progress.progressPlus();
+                    progress.advance();
                 }
             }
 
@@ -118,10 +118,10 @@ public class EHentaiParser implements ImageListParser {
                         }
                     }
                 }
-                progress.progressPlus();
+                progress.advance();
             }
         }
-        progress.progressComplete();
+        progress.complete();
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted) throw new PreparationInterruptedException();

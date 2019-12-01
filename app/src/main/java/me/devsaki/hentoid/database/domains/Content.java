@@ -138,6 +138,8 @@ public class Content implements Serializable {
     private String computeUniqueSiteId() {
         String[] paths;
 
+        if (null == url) return "";
+
         switch (site) {
             case FAKKU:
                 return url.substring(url.lastIndexOf('/') + 1);
@@ -296,7 +298,7 @@ public class Content implements Serializable {
                 galleryConst = "/view";
                 break;
             case LUSCIOUS:
-                return site.getUrl().replace("/manga/","") + url;
+                return site.getUrl().replace("/manga/", "") + url;
             case FAKKU:
             case HENTAICAFE:
             case PANDA:

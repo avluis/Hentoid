@@ -20,6 +20,7 @@ import me.devsaki.hentoid.parsers.images.FakkuParser;
 import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
+import me.devsaki.hentoid.parsers.images.LusciousParser;
 import me.devsaki.hentoid.parsers.images.NexusParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
 import me.devsaki.hentoid.parsers.images.TsuminoParser;
@@ -89,10 +90,11 @@ public class ContentParserFactory {
                 return new FakkuParser();
             case NEXUS:
                 return new NexusParser();
+            case LUSCIOUS:
+                return new LusciousParser();
             case MUSES: // No image parser; images are fetched by ContentParser
             case NHENTAI:
             case DOUJINS:
-            case LUSCIOUS:
             default:
                 return new DummyParser();
         }

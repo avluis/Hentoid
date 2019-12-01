@@ -6,18 +6,24 @@ class ParseProgress {
 
     private int currentStep;
     private int maxSteps;
+    private boolean hasStarted = false;
 
-    void progressStart(int maxSteps) {
+    void start(int maxSteps) {
         currentStep = 0;
         this.maxSteps = maxSteps;
         ParseHelper.signalProgress(currentStep, maxSteps);
+        hasStarted = true;
     }
 
-    void progressPlus() {
+    boolean hasStarted() {
+        return hasStarted;
+    }
+
+    void advance() {
         ParseHelper.signalProgress(++currentStep, maxSteps);
     }
 
-    void progressComplete() {
+    void complete() {
         ParseHelper.signalProgress(maxSteps, maxSteps);
     }
 }

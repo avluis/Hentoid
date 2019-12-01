@@ -67,7 +67,7 @@ public class FakkuParser implements ImageListParser {
             return result;
         }
 
-        progress.progressStart(info.getPages().keySet().size() + 1);
+        progress.start(info.getPages().keySet().size() + 1);
 
         // Add referer information to downloadParams for future image download
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl());
@@ -93,7 +93,7 @@ public class FakkuParser implements ImageListParser {
         List<PageInfo> pageInfo = null;
         if (info.getKeyData() != null)
             pageInfo = FakkuDecode.getBookPageData(info.getKeyHash(), Helper.decode64(info.getKeyData()), pid, BuildConfig.FK_TOKEN);
-        progress.progressPlus();
+        progress.advance();
 
         result = new ArrayList<>();
         for (String p : info.getPages().keySet()) {
@@ -112,12 +112,12 @@ public class FakkuParser implements ImageListParser {
 
                 img.setDownloadParams(downloadParamsStr);
                 result.add(img);
-                progress.progressPlus();
+                progress.advance();
             }
         }
         Timber.d("%s", result);
 
-        progress.progressComplete();
+        progress.complete();
 
         return result;
     }

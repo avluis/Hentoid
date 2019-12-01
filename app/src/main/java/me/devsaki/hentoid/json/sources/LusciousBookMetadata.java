@@ -6,6 +6,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 
@@ -48,10 +49,11 @@ public class LusciousBookMetadata {
 
     public Content toContent() {
         Content result = new Content();
+        result.setSite(Site.LUSCIOUS);
 
         AlbumInfo info = data.album.get;
+        if (null == info.url || null == info.title) return result.setStatus(StatusContent.IGNORED);
 
-        result.setSite(Site.LUSCIOUS);
         result.setUrl(info.url);
 
         result.setTitle(Helper.removeNonPrintableChars(info.title));
