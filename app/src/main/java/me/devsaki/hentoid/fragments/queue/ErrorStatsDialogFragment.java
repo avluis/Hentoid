@@ -33,7 +33,6 @@ import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.ToastUtil;
 
@@ -94,8 +93,8 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         View openLogButton = requireViewById(rootView, R.id.open_log_btn);
         openLogButton.setOnClickListener(v -> this.showErrorLog());
 
-        View copyLogButton = requireViewById(rootView, R.id.copy_log_btn);
-        copyLogButton.setOnClickListener(v -> this.copyErrorLog());
+        View shareLogButton = requireViewById(rootView, R.id.share_log_btn);
+        shareLogButton.setOnClickListener(v -> this.shareErrorLog());
     }
 
     private void updateStats(long contentId) {
@@ -174,12 +173,11 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         if (logFile != null) FileHelper.openFile(requireContext(), logFile);
     }
 
-    private void copyErrorLog() {
+    private void shareErrorLog() {
         LogUtil.LogInfo logInfo = createLog();
-        if (Helper.copyPlainTextToClipboard(requireActivity(), LogUtil.buildLog(logInfo))) {
-            Snackbar snackbar = Snackbar.make(rootView, R.string.redownload_log_clipboard, BaseTransientBottomBar.LENGTH_LONG);
-            snackbar.show();
-        }
+        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        if (logFile != null)
+            FileHelper.shareFile(requireContext(), logFile, "Error log for queue");
     }
 
     @Override

@@ -12,9 +12,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +24,6 @@ import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.ToastUtil;
 
@@ -86,8 +82,8 @@ public class ErrorsDialogFragment extends DialogFragment {
         View openLogButton = view.findViewById(R.id.open_log_btn);
         openLogButton.setOnClickListener(v -> showErrorLog(content));
 
-        View copyLogButton = view.findViewById(R.id.copy_log_btn);
-        copyLogButton.setOnClickListener(v -> copyErrorLog(content));
+        View shareLogButton = view.findViewById(R.id.share_log_btn);
+        shareLogButton.setOnClickListener(v -> shareErrorLog(content));
     }
 
     private void updateStats(@NonNull final Content content) {
@@ -134,12 +130,11 @@ public class ErrorsDialogFragment extends DialogFragment {
         if (logFile != null) FileHelper.openFile(requireContext(), logFile);
     }
 
-    private void copyErrorLog(@NonNull final Content content) {
+    private void shareErrorLog(@NonNull final Content content) {
         LogUtil.LogInfo logInfo = createLog(content);
-        if (Helper.copyPlainTextToClipboard(requireActivity(), LogUtil.buildLog(logInfo))) {
-            Snackbar snackbar = Snackbar.make(rootView, R.string.redownload_log_clipboard, BaseTransientBottomBar.LENGTH_LONG);
-            snackbar.show();
-        }
+        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        if (logFile != null)
+            FileHelper.shareFile(requireContext(), logFile, "Error log for book ID " + content.getUniqueSiteId());
     }
 
     private void redownload(@NonNull final Content content) {

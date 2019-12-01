@@ -608,6 +608,14 @@ public class FileHelper {
         return FileUtil.getDocumentFile(file, isDirectory);
     }
 
+    public static void shareFile(final @NonNull Context context, final @NonNull File f, final @NonNull String title) {
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("text/*");
+        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(context, FileHelper.AUTHORITY, f));
+        context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
+    }
+
     public static class MemoryUsageFigures {
         private final long freeMemBytes;
         private final long totalMemBytes;

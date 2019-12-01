@@ -42,13 +42,13 @@
         app:layout_constraintTop_toBottomOf="@id/redownload_detail" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/copy_log_btn"
+        android:id="@+id/share_log_btn"
         style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/redownload_copy_log"
+        android:text="@string/redownload_share_log"
         android:textSize="@dimen/text_body_1"
-        app:icon="@drawable/ic_action_copy"
+        app:icon="@drawable/ic_action_share"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/open_log_btn" />
 
@@ -60,9 +60,9 @@
         android:text="@string/redownload_action"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_download"
-        app:layout_constraintEnd_toEndOf="@id/copy_log_btn"
+        app:layout_constraintEnd_toEndOf="@id/share_log_btn"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/copy_log_btn" />
+        app:layout_constraintTop_toBottomOf="@id/share_log_btn" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
