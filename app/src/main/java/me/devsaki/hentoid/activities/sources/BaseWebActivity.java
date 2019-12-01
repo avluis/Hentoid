@@ -537,7 +537,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
      * Listener for Action floating action button : download content, view queue or read content
      */
     public void onActionFabClick() {
-        if (MODE_DL == actionButtonMode) processDownload();
+        if (MODE_DL == actionButtonMode) processDownload(false);
         else if (MODE_QUEUE == actionButtonMode) goToQueue();
         else if (MODE_READ == actionButtonMode && currentContent != null) {
             currentContent = db.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
@@ -566,7 +566,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     /**
      * Add current content (i.e. content of the currently viewed book) to the download queue
      */
-    void processDownload() {
+    void processDownload(boolean quickDownload) {
         if (null == currentContent) return;
 
         if (currentContent.getId() > 0)
@@ -576,7 +576,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastUtil.toast(this, R.string.already_downloaded);
-            changeFabActionMode(MODE_READ);
+            if (!quickDownload) changeFabActionMode(MODE_READ);
             return;
         }
         ToastUtil.toast(this, R.string.add_to_queue);
@@ -593,7 +593,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         ContentQueueManager.getInstance().resumeQueue(this);
 
-        changeFabActionMode(MODE_QUEUE);
+        if (!quickDownload) changeFabActionMode(MODE_QUEUE);
     }
 
     private void goToQueue() {
@@ -633,9 +633,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
      *
      * @param content Currently displayed content
      */
-    private int processContent(Content content) {
+    private int processContent(@NonNull Content content, boolean quickDownload) {
         int result = STATUS_UNKNOWN;
-        if (null == content || null == content.getUrl()) return result;
+        if (null == content.getUrl()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
         Content contentDB = db.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
@@ -658,15 +658,15 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             } else {
                 content = contentDB;
             }
-            changeFabActionMode(MODE_DL);
+            if (!quickDownload) changeFabActionMode(MODE_DL);
         }
 
         if (isInCollection) {
-            changeFabActionMode(MODE_READ);
+            if (!quickDownload) changeFabActionMode(MODE_READ);
             result = STATUS_IN_COLLECTION;
         }
         if (isInQueue) {
-            changeFabActionMode(MODE_QUEUE);
+            if (!quickDownload) changeFabActionMode(MODE_QUEUE);
             result = STATUS_IN_QUEUE;
         }
 
@@ -674,9 +674,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         return result;
     }
 
-    public void onResultReady(Content results, boolean downloadImmediately) {
-        int status = processContent(results);
-        if (downloadImmediately && STATUS_UNKNOWN == status) processDownload();
+    public void onResultReady(@NonNull Content results, boolean quickDownload) {
+        int status = processContent(results, quickDownload);
+        if (quickDownload && STATUS_UNKNOWN == status) processDownload(quickDownload);
     }
 
     public void onResultFailed() {
@@ -846,7 +846,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         }
 
         @SuppressLint("NewApi")
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean downloadImmediately) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
             if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
@@ -917,7 +917,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
                                     .subscribeOn(Schedulers.computation())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
-                                            content -> processContent(content, requestHeadersList, downloadImmediately),
+                                            content -> processContent(content, requestHeadersList, quickDownload),
                                             throwable -> {
                                                 Timber.e(throwable, "Error parsing content.");
                                                 isHtmlLoaded = true;
@@ -934,7 +934,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             return null;
         }
 
-        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList, boolean downloadImmediately) {
+        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList, boolean quickDownload) {
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
 
@@ -947,7 +947,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
             isHtmlLoaded = true;
 
-            listener.onResultReady(content, downloadImmediately);
+            listener.onResultReady(content, quickDownload);
         }
 
         /**

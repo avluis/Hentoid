@@ -40,7 +40,7 @@ public class LusciousActivity extends BaseWebActivity {
 
         // Call the API without using BaseWebActivity.parseResponse
         @Override
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean downloadImmediately) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             String bookId;
 
             if (urlStr.contains(GALLERY_FILTER[0])) { // Triggered by a graphQL request
@@ -74,7 +74,7 @@ public class LusciousActivity extends BaseWebActivity {
                     .subscribe(
                             metadata -> {
                                 isHtmlLoaded = true;
-                                listener.onResultReady(metadata.toContent(), downloadImmediately);
+                                listener.onResultReady(metadata.toContent(), quickDownload);
                             },
                             throwable -> {
                                 Timber.e(throwable, "Error parsing content.");
