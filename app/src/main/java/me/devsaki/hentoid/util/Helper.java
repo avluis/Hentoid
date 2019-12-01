@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.HentoidApp;
 import timber.log.Timber;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
@@ -46,7 +47,10 @@ public final class Helper {
         throw new IllegalStateException("Utility class");
     }
 
-    private static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private final static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+
+    private static int DENSITY_DPI = HentoidApp.getInstance().getResources().getDisplayMetrics().densityDpi;
+
 
     public static void doRestart(@NonNull Context context) {
         try {
@@ -138,11 +142,8 @@ public final class Helper {
         return new String(decodedBytes);
     }
 
-    public static int dpToPixel(Context context, int dp) {
-        float scaleFactor =
-                (1.0f / DisplayMetrics.DENSITY_DEFAULT)
-                        * context.getResources().getDisplayMetrics().densityDpi;
-
+    public static int dpToPixel(int dp) {
+        float scaleFactor = (1.0f / DisplayMetrics.DENSITY_DEFAULT) * DENSITY_DPI;
         return (int) (dp * scaleFactor);
     }
 
