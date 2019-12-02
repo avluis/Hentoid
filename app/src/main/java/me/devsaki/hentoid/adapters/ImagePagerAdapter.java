@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
@@ -38,7 +39,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     private static final int TYPE_OTHER = 0;
     private static final int TYPE_GIF = 1;
 
-    private static final int PX_600_DP = Helper.dpToPixel(600);
+    private static final int PX_600_DP = Helper.dpToPixel(HentoidApp.getInstance(), 600);
 
     private static final Executor executor = new ImageLoaderThreadExecutor();
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
