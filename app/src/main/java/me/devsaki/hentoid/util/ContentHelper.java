@@ -211,7 +211,7 @@ public final class ContentHelper {
         int folderNamingPreference = Preferences.getFolderNameFormat();
 
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
-            result += content.getAuthor().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
+            result += content.getAuthor().toLowerCase().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
             result += content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
