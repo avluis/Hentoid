@@ -53,7 +53,7 @@ public class GitHubReleaseDescItem extends AbstractItem<GitHubReleaseDescItem.Re
         return R.id.github_release_description;
     }
 
-    class ReleaseDescriptionViewHolder extends FastAdapter.ViewHolder<GitHubReleaseDescItem> {
+    static class ReleaseDescriptionViewHolder extends FastAdapter.ViewHolder<GitHubReleaseDescItem> {
 
         private final int DP_8;
         private final TextView title;
@@ -67,8 +67,8 @@ public class GitHubReleaseDescItem extends AbstractItem<GitHubReleaseDescItem.Re
 
         @Override
         public void bindView(@NotNull GitHubReleaseDescItem item, @NotNull List<Object> list) {
-            if (type == Type.DESCRIPTION) setDescContent(text);
-            else if (type == Type.LIST_ITEM) setListContent(text);
+            if (item.type == Type.DESCRIPTION) setDescContent(item.text);
+            else if (item.type == Type.LIST_ITEM) setListContent(item.text);
         }
 
         void setDescContent(String text) {

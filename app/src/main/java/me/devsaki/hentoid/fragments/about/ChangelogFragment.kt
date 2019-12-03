@@ -5,13 +5,14 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import eu.davidea.flexibleadapter.FlexibleAdapter
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.adapters.ItemAdapter
 import kotlinx.android.synthetic.main.fragment_changelog.*
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.services.UpdateDownloadService
-import me.devsaki.hentoid.viewholders.GitHubRelease
+import me.devsaki.hentoid.viewholders.GitHubReleaseItem
 import me.devsaki.hentoid.viewmodels.ChangelogViewModel
 import timber.log.Timber
 import java.util.*
@@ -32,14 +33,16 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
 
         // TODO - observe update availability through event bus instead of parsing changelog
         viewModel.successValueLive.observe(this) { releasesInfo ->
-            val releases: MutableList<GitHubRelease> = ArrayList()
+            val releases: MutableList<GitHubReleaseItem> = ArrayList()
             var latestTagName = ""
             for (r in releasesInfo) {
-                val release = GitHubRelease(r)
+                val release = GitHubReleaseItem(r)
                 if (release.isTagPrior(BuildConfig.VERSION_NAME)) releases.add(release)
                 if (latestTagName.isEmpty()) latestTagName = release.tagName
             }
-            changelogRecycler.adapter = FlexibleAdapter(releases)
+            val itemAdapter = ItemAdapter<GitHubReleaseItem>()
+            itemAdapter.add(releases)
+            changelogRecycler.adapter = FastAdapter.with(itemAdapter)
             if (releasesInfo.size > releases.size) {
                 changelogDownloadLatestText.text = getString(R.string.get_latest, latestTagName)
                 changelogDownloadLatestText.visibility = View.VISIBLE

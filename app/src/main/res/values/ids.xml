@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Unique IDs for FastAdapter -->
     <item name="github_release_description" type="id"/>
+    <item name="github_release" type="id"/>
 </resources>
