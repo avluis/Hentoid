@@ -39,8 +39,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -507,10 +505,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     }
 
     private void onCopyClick() {
-        if (Helper.copyPlainTextToClipboard(this, webView.getUrl())) {
-            Snackbar snackbar = Snackbar.make(webView, R.string.web_url_clipboard, BaseTransientBottomBar.LENGTH_LONG);
-            snackbar.show();
-        }
+        if (Helper.copyPlainTextToClipboard(this, webView.getUrl()))
+            ToastUtil.toast(R.string.web_url_clipboard);
     }
 
     private void goHome() {
