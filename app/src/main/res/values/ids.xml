@@ -5,4 +5,5 @@
     <item name="github_release" type="id"/>
     <item name="drawer" type="id"/>
     <item name="drawer_edit" type="id"/>
+    <item name="gallery_image" type="id"/>
 </resources>
