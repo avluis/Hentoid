@@ -181,6 +181,13 @@ dependencies {
 
     // https://github.com/mikepenz/FastAdapter
     implementation "com.mikepenz:fastadapter:4.1.1"
+    implementation "com.mikepenz:fastadapter-extensions-drag:4.1.1" // drag support
+
+    implementation "com.mikepenz:fastadapter-extensions-expandable:4.1.1"
+    implementation "com.mikepenz:fastadapter-extensions-scroll:4.1.1" // scroll helpers
+
+    implementation "com.mikepenz:fastadapter-extensions-utils:4.1.1" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:materialize:1.2.0"
 }
 
 sonarqube {

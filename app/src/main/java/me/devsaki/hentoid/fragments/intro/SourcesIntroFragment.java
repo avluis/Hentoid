@@ -10,17 +10,19 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import eu.davidea.flexibleadapter.FlexibleAdapter;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.viewholders.SiteFlex;
+import me.devsaki.hentoid.viewholders.SiteItem;
 
 public class SourcesIntroFragment extends Fragment {
 
-    private FlexibleAdapter<SiteFlex> siteAdapter;
+    private final ItemAdapter<SiteItem> itemAdapter = new ItemAdapter<>();
 
     @Nullable
     @Override
@@ -28,25 +30,26 @@ public class SourcesIntroFragment extends Fragment {
         View view = inflater.inflate(R.layout.intro_slide_06, container, false);
 
         // Recycler
-        List<SiteFlex> items = new ArrayList<>();
+        List<SiteItem> items = new ArrayList<>();
         for (Site s : Site.values())
             // We don't want to show these
             if (s != Site.FAKKU                     // Old Fakku; kept for retrocompatibility
                     && s != Site.ASMHENTAI_COMICS   // Does not work directly
                     && s != Site.PANDA              // Dropped; kept for retrocompatibility
                     && s != Site.NONE               // Technical fallback
-            ) items.add(new SiteFlex(s, true, false));
+            ) items.add(new SiteItem(s, true, false));
+        itemAdapter.add(items);
 
-        siteAdapter = new FlexibleAdapter<>(items, null, true);
+        FastAdapter<SiteItem> fastAdapter = FastAdapter.with(itemAdapter);
         RecyclerView recyclerView = view.findViewById(R.id.intro6_list);
-        recyclerView.setAdapter(siteAdapter);
+        recyclerView.setAdapter(fastAdapter);
 
         return view;
     }
 
     public List<Site> getSelection() {
         List<Site> result = new ArrayList<>();
-        for (SiteFlex s : siteAdapter.getCurrentItems())
+        for (SiteItem s : itemAdapter.getAdapterItems())
             if (s.isSelected()) result.add(s.getSite());
         return result;
     }
