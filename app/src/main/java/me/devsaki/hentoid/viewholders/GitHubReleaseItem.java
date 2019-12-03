@@ -30,7 +30,7 @@ public class GitHubReleaseItem extends AbstractItem<GitHubReleaseItem.ReleaseVie
     private final String description;
     private final Date creationDate;
 
-    public GitHubReleaseItem(GitHubRelease.Struct releaseStruct) {
+    public GitHubReleaseItem(Struct releaseStruct) {
         tagName = releaseStruct.tagName.replace("v", "");
         name = releaseStruct.name;
         description = releaseStruct.body;

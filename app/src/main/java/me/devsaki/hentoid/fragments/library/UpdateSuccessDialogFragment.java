@@ -19,8 +19,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.retrofit.GithubServer;
-import me.devsaki.hentoid.viewholders.GitHubRelease;
 import me.devsaki.hentoid.viewholders.GitHubReleaseDescItem;
+import me.devsaki.hentoid.viewholders.GitHubReleaseItem;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -76,7 +76,7 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
         );
     }
 
-    private void onCheckSuccess(GitHubRelease.Struct latestReleaseInfo) {
+    private void onCheckSuccess(GitHubReleaseItem.Struct latestReleaseInfo) {
         releaseName.setText(latestReleaseInfo.getName());
         // Parse content and add lines to the description
         for (String s : latestReleaseInfo.getBody().split("\\r\\n")) { // TODO - refactor this code with its copy in GitHubRelease

@@ -4,11 +4,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers.mainThread
 import me.devsaki.hentoid.retrofit.GithubServer
-import me.devsaki.hentoid.viewholders.GitHubRelease
+import me.devsaki.hentoid.viewholders.GitHubReleaseItem
 
 class ChangelogViewModel : ViewModel() {
 
-    val successValueLive = MutableLiveData<List<GitHubRelease.Struct>>()
+    val successValueLive = MutableLiveData<List<GitHubReleaseItem.Struct>>()
 
     val errorValueLive = MutableLiveData<Throwable>()
 
