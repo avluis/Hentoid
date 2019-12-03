@@ -12,14 +12,15 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import eu.davidea.flexibleadapter.FlexibleAdapter;
-import eu.davidea.flexibleadapter.items.IFlexible;
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.retrofit.GithubServer;
 import me.devsaki.hentoid.viewholders.GitHubRelease;
-import me.devsaki.hentoid.viewholders.GitHubReleaseDescription;
+import me.devsaki.hentoid.viewholders.GitHubReleaseDescItem;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -33,7 +34,7 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private TextView releaseName;
-    private FlexibleAdapter<IFlexible> releaseDescriptionAdapter;
+    private ItemAdapter<GitHubReleaseDescItem> itemAdapter = new ItemAdapter<>();
 
     public static void invoke(FragmentManager fragmentManager) {
         UpdateSuccessDialogFragment fragment = new UpdateSuccessDialogFragment();
@@ -48,7 +49,7 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
 
         releaseName = requireViewById(rootView, R.id.changelogReleaseTitle);
 
-        releaseDescriptionAdapter = new FlexibleAdapter<>(null);
+        FastAdapter<GitHubReleaseDescItem> releaseDescriptionAdapter = FastAdapter.with(itemAdapter);
         RecyclerView releaseDescription = requireViewById(rootView, R.id.changelogReleaseDescription);
         releaseDescription.setAdapter(releaseDescriptionAdapter);
 
@@ -90,10 +91,10 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     }
 
     private void addDescContent(String text) {
-        releaseDescriptionAdapter.addItem(new GitHubReleaseDescription(text, GitHubReleaseDescription.Type.DESCRIPTION));
+        itemAdapter.add(new GitHubReleaseDescItem(text, GitHubReleaseDescItem.Type.DESCRIPTION));
     }
 
     private void addListContent(String text) {
-        releaseDescriptionAdapter.addItem(new GitHubReleaseDescription(text, GitHubReleaseDescription.Type.LIST_ITEM));
+        itemAdapter.add(new GitHubReleaseDescItem(text, GitHubReleaseDescItem.Type.LIST_ITEM));
     }
 }

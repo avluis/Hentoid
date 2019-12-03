@@ -178,6 +178,9 @@ dependencies {
 
     // Cleaner date manipulation
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
+
+    // https://github.com/mikepenz/FastAdapter
+    implementation "com.mikepenz:fastadapter:4.1.1"
 }
 
 sonarqube {
