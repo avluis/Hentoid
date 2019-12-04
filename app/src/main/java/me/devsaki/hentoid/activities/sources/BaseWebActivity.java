@@ -418,11 +418,10 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
             if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
                 webClient.parseResponse(url, null, true, true);
-            } else {
                 return true;
+            } else {
+                return false;
             }
-
-            return false;
         });
 
 
