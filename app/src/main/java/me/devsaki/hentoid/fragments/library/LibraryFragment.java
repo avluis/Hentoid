@@ -39,6 +39,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
+import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
@@ -46,6 +47,7 @@ import com.mikepenz.fastadapter.select.SelectExtensionFactory;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -708,12 +710,67 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             pagedItemAdapter = null;
         }
 
+        // Item click listener
+        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i.getContent()));
+
+        // Favourite button click listener
+        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
+            @Override
+            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                onBookFavouriteClick(item.getContent(), i);
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof ContentItem.ContentViewHolder) {
+                    return ((ContentItem.ContentViewHolder) viewHolder).getFavouriteButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
+        // Site button click listener
+        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
+            @Override
+            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                onBookSourceClick(item.getContent());
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof ContentItem.ContentViewHolder) {
+                    return ((ContentItem.ContentViewHolder) viewHolder).getSiteButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
+        // Site button click listener
+        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
+            @Override
+            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                onBookErrorClick(item.getContent());
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof ContentItem.ContentViewHolder) {
+                    return ((ContentItem.ContentViewHolder) viewHolder).getErrorButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
         // configure as needed
         selectExtension.setSelectable(true);
         selectExtension.setMultiSelect(true);
         selectExtension.setSelectOnLongClick(true);
+        selectExtension.setSelectionListener((item, b) -> LibraryFragment.this.onSelectionChanged());
 
         recyclerView.setAdapter(fastAdapter);
     }
@@ -841,8 +898,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content that has been clicked on
      */
-    private void onBookClick(Content content) {
-        ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
+    private boolean onBookClick(Content content) {
+        if (selectExtension.getSelectedItems().size() == 0)
+            ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
+        return true;
     }
 
     /**
@@ -859,8 +918,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content whose "favourite" button has been clicked on
      */
-    private void onBookFavouriteClick(Content content) {
+    private void onBookFavouriteClick(Content content, int position) {
         viewModel.toggleContentFavourite(content);
+        new Handler().postDelayed(() -> fastAdapter.notifyItemChanged(position), 100);
     }
 
     /**
@@ -902,10 +962,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     /**
      * Callback for any selection change (item added to or removed from selection)
-     *
-     * @param selectedCount Number of currently selected items
      */
-    private void onSelectionChanged(long selectedCount) {
+    private void onSelectionChanged() {
+
+        int selectedCount = selectExtension.getSelectedItems().size();
 
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);

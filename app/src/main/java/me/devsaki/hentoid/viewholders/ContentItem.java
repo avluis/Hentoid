@@ -22,6 +22,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 
@@ -40,7 +41,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     // (binding only happens when the content is different / see DiffUtil)
     private Content content;
 
-    public ContentItem() { content = null; }
+    public ContentItem() {
+        content = null;
+    }
 
     public ContentItem(@NonNull Content content) {
         this.content = content;
@@ -69,7 +72,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     }
 
 
-    static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> {
+    public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> {
 
         private final View baseLayout;
         private final TextView tvTitle;
@@ -110,8 +113,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             attachArtist(item.content);
             attachPages(item.content);
             attachTags(item.content);
-//            attachButtons(item.content);
-//            attachOnClickListeners();
+            attachButtons(item.content);
         }
 
         private void updateLayoutVisibility(Content content) {
@@ -215,19 +217,15 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 tvTags.setText(tags);
             }
         }
-/*
+
         private void attachButtons(final Content content) {
             // Source icon
             if (content.getSite() != null) {
                 int img = content.getSite().getIco();
                 ivSite.setImageResource(img);
-                ivSite.setOnClickListener(v -> onSourceClicked());
             } else {
                 ivSite.setImageResource(R.drawable.ic_stat_hentoid);
             }
-
-            // Favourite icon
-            ivFavourite.setOnClickListener(v -> onFavouriteClicked());
 
             // When transitioning to the other state, button blinks with its target state
             if (content.isBeingFavourited()) {
@@ -247,7 +245,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
 
             // Error icon
-            ivError.setOnClickListener(v -> onErrorClicked());
             if (content.getStatus() != null) {
                 StatusContent status = content.getStatus();
                 if (status == StatusContent.ERROR) {
@@ -258,23 +255,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
         }
 
- */
 /*
-        // NB : There's only one listener instantiated in the fragment and consuming the corresponding Content
-
-        private void onSourceClicked() {
-            adapter.getOnSourceClickListener().accept(content);
-        }
 
         private void onFavouriteClicked() {
             adapter.getFavClickListener().accept(content);
             // Hack to make fav icon blink with PagedListAdapter by force-rebinding the holder
             // Call is delayed to give time for the adapter list to be updated by LiveData
             new Handler().postDelayed(() -> adapter.notifyItemChanged(getLayoutPosition()), 100);
-        }
-
-        private void onErrorClicked() {
-            adapter.getErrorClickListener().accept(content);
         }
 
         private void attachOnClickListeners() {
@@ -310,6 +297,18 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             });
         }
  */
+
+        public View getFavouriteButton() {
+            return ivFavourite;
+        }
+
+        public View getSiteButton() {
+            return ivSite;
+        }
+
+        public View getErrorButton() {
+            return ivError;
+        }
 
         @Override
         public void unbindView(@NotNull ContentItem item) {
