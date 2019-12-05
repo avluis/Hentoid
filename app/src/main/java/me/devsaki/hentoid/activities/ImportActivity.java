@@ -199,7 +199,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
                 )
         );
 
-        if (hentoidDirs.length > 0) return hentoidDirs[0];
+        if (hentoidDirs != null && hentoidDirs.length > 0) return hentoidDirs[0];
         else return root;
     }
 
