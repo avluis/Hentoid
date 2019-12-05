@@ -45,6 +45,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     public ContentItem(@NonNull Content content) {
         this.content = content;
         setIdentifier(content.getId());
+        setSelectable(true);
     }
 
     public Content getContent() {
@@ -312,9 +313,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
         @Override
         public void unbindView(@NotNull ContentItem item) {
-            item.content = null;
-            Glide.with(ivCover).clear(ivCover);
-            baseLayout.setVisibility(View.GONE);
+            // Nothing to do here
         }
     }
 }
