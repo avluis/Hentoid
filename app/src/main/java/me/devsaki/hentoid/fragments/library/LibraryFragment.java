@@ -26,6 +26,8 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
@@ -34,6 +36,12 @@ import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
+import com.mikepenz.fastadapter.paged.PagedModelAdapter;
+import com.mikepenz.fastadapter.select.SelectExtension;
+import com.mikepenz.fastadapter.select.SelectExtensionFactory;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -43,6 +51,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
@@ -50,9 +59,6 @@ import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
-import me.devsaki.hentoid.adapters.ContentAdapter;
-import me.devsaki.hentoid.adapters.LibraryAdapter;
-import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -65,6 +71,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.widget.LibraryPager;
 import timber.log.Timber;
@@ -132,6 +139,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem itemArchive;
     private MenuItem itemDeleteSwipe;
 
+    private ItemAdapter<ContentItem> itemAdapter;
+    private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
+    private FastAdapter<ContentItem> fastAdapter;
+    private SelectExtension<ContentItem> selectExtension;
+
+    /*
     private final PagedContentAdapter endlessAdapter = new PagedContentAdapter.Builder()
             .setBookClickListener(this::onBookClick)
             .setSourceClickListener(this::onBookSourceClick)
@@ -146,6 +159,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             .setErrorClickListener(this::onBookErrorClick)
             .setSelectionChangedListener(this::onSelectionChanged)
             .build();
+     */
 
     /**
      * Get the icon resource ID according to the sort order code
@@ -193,6 +207,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ExtensionsFactories.INSTANCE.register(new SelectExtensionFactory());
         setRetainInstance(true);
     }
 
@@ -388,7 +403,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private void initSelectionToolbar(@NonNull View rootView) {
         selectionToolbar = requireViewById(rootView, R.id.library_selection_toolbar);
         selectionToolbar.setNavigationOnClickListener(v -> {
-            getAdapter().clearSelection();
+            selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
         });
 
@@ -419,8 +434,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     private void updateSelectionToolbar(long selectedCount) {
-        LibraryAdapter adapter = getAdapter();
-        boolean isMultipleSelection = adapter.getSelectedItemsCount() > 1;
+        boolean isMultipleSelection = selectExtension.getSelectedItems().size() > 1;
 
         itemDelete.setVisible(!isMultipleSelection);
         itemShare.setVisible(!isMultipleSelection);
@@ -434,29 +448,35 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * Callback for the "share item" action button
      */
     private void shareSelectedItems() {
-        List<Content> selectedItems = getAdapter().getSelectedItems();
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         Context context = getActivity();
-        if (1 == selectedItems.size() && context != null)
-            ContentHelper.shareContent(context, selectedItems.get(0));
+        if (1 == selectedItems.size() && context != null) {
+            Content c = Stream.of(selectedItems).findFirst().get().getContent();
+            ContentHelper.shareContent(context, c);
+        }
     }
 
     /**
      * Callback for the "delete item" action button
      */
     private void purgeSelectedItems() {
-        List<Content> selectedItems = getAdapter().getSelectedItems();
-        if (!selectedItems.isEmpty()) askDeleteItems(selectedItems);
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        if (!selectedItems.isEmpty()) {
+            List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).toList();
+            askDeleteItems(selectedContent);
+        }
     }
 
     /**
      * Callback for the "archive item" action button
      */
     private void archiveSelectedItems() {
-        List<Content> selectedItems = getAdapter().getSelectedItems();
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         Context context = getActivity();
         if (1 == selectedItems.size() && context != null) {
             ToastUtil.toast(R.string.packaging_content);
-            viewModel.archiveContent(selectedItems.get(0), this::onContentArchiveSuccess);
+            Content c = Stream.of(selectedItems).findFirst().get().getContent();
+            viewModel.archiveContent(c, this::onContentArchiveSuccess);
         }
     }
 
@@ -498,11 +518,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         builder.setMessage(title)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
-                            getAdapter().clearSelection();
+                            selectExtension.deselect();
                             viewModel.deleteItems(items, this::onDeleteSuccess, this::onDeleteError);
                         })
                 .setNegativeButton(android.R.string.no,
-                        (dialog, which) -> getAdapter().clearSelection())
+                        (dialog, which) -> selectExtension.deselect())
                 .create().show();
     }
 
@@ -593,10 +613,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     private void customBackPress() {
-        LibraryAdapter adapter = getAdapter();
         // If content is selected, deselect it
-        if (adapter.getSelectedItemsCount() > 0) {
-            adapter.clearSelection();
+        if (selectExtension.getSelectedItems().size() > 0) {
+            selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
             backButtonPressed = 0;
         } else if (searchMenu.isActionViewExpanded()) {
@@ -652,17 +671,51 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private void initPagingMethod(boolean isEndless) {
         if (isEndless) {
             pager.hide();
-            recyclerView.setAdapter(endlessAdapter);
-            if (library != null) endlessAdapter.submitList(library);
+
+            AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
+                @Override
+                public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
+                    return oldItem.getId() == newItem.getId();
+                }
+
+                @Override
+                public boolean areContentsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
+                    return oldItem.equals(newItem)
+                            && oldItem.getLastReadDate() == newItem.getLastReadDate()
+                            && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
+                            && oldItem.isFavourite() == newItem.isFavourite();
+                }
+            }).build();
+
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, ContentItem::new);
+            fastAdapter = FastAdapter.with(pagedItemAdapter);
+            fastAdapter.setHasStableIds(true);
+            fastAdapter.registerTypeInstance(new ContentItem());
+            if (library != null) pagedItemAdapter.submitList(library);
+
+            itemAdapter = null;
         } else {
-            recyclerView.setAdapter(pagerAdapter);
+            itemAdapter = new ItemAdapter<>();
+            fastAdapter = FastAdapter.with(itemAdapter);
+            fastAdapter.setHasStableIds(true);
             pager.setCurrentPage(1);
             pager.show();
             if (library != null) {
                 pager.setPageCount((int) Math.ceil(library.size() * 1.0 / Preferences.getContentPageQuantity()));
                 loadBookshelf(library);
             }
+
+            pagedItemAdapter = null;
         }
+
+        // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
+        selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
+        // configure as needed
+        selectExtension.setSelectable(true);
+        selectExtension.setMultiSelect(true);
+        selectExtension.setSelectOnLongClick(true);
+
+        recyclerView.setAdapter(fastAdapter);
     }
 
     /**
@@ -673,7 +726,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param library Library to extract the shelf from
      */
     private void loadBookshelf(PagedList<Content> library) {
-        if (library.isEmpty()) pagerAdapter.setShelf(Collections.emptyList());
+        if (library.isEmpty()) itemAdapter.set(Collections.emptyList());
         else {
             int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
             int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size());
@@ -684,9 +737,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return;
             }
 
-            pagerAdapter.setShelf(library.subList(minIndex, maxIndex));
+            List<ContentItem> contentItems = Stream.of(library.subList(minIndex, maxIndex)).map(ContentItem::new).toList();
+            itemAdapter.set(contentItems);
         }
-        pagerAdapter.notifyDataSetChanged();
+        fastAdapter.notifyDataSetChanged();
     }
 
     /**
@@ -743,7 +797,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
 
         // Update displayed books
-        if (Preferences.getEndlessScroll()) endlessAdapter.submitList(result);
+        if (Preferences.getEndlessScroll()) pagedItemAdapter.submitList(result);
         else {
             if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
@@ -838,10 +892,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @return Currently active adapter
      */
+/*
     private LibraryAdapter getAdapter() {
         if (Preferences.getEndlessScroll()) return endlessAdapter;
         else return pagerAdapter;
     }
+
+ */
 
     /**
      * Callback for any selection change (item added to or removed from selection)
