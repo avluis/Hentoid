@@ -86,12 +86,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     @Override
     public long getSelectedItemsCount() {
-        return Stream.of(shelf).filter(Content::isSelected).count();
+        return 0;//Stream.of(shelf).filter(Content::isSelected).count();
     }
 
     @Override
     public List<Content> getSelectedItems() {
-        return Stream.of(shelf).filter(Content::isSelected).toList();
+        return null;//Stream.of(shelf).filter(Content::isSelected).toList();
     }
 
     /**
@@ -102,7 +102,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         for (int i = 0; i < getItemCount(); i++) {
             Content c = shelf.get(i);
             if (c != null) {
-                c.setSelected(false);
+                //c.setSelected(false);
                 notifyItemChanged(i);
             }
         }

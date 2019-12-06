@@ -88,7 +88,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     // Viewmodel
     private LibraryViewModel viewModel;
     // Settings listener
-    private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = this::onSharedPreferenceChanged;
+    private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = (p, k) -> onSharedPreferenceChanged(k);
 
     // ======== UI
     // Wrapper for the bottom pager
@@ -110,6 +110,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private long backButtonPressed;
     // Used to ignore native calls to onQueryTextChange
     private boolean invalidateNextQueryTextChange = false;
+    // Used to ignore native calls to onBookClick right after that book has been deselected
+    private boolean invalidateNextBookClick = false;
     // Total number of books in the whole unfiltered library
     private int totalContentCount;
     // True when a new search has been performed and its results have not been handled yet
@@ -141,27 +143,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem itemArchive;
     private MenuItem itemDeleteSwipe;
 
+    // FastAdapter components and helpers
     private ItemAdapter<ContentItem> itemAdapter;
     private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
     private FastAdapter<ContentItem> fastAdapter;
     private SelectExtension<ContentItem> selectExtension;
-
-    /*
-    private final PagedContentAdapter endlessAdapter = new PagedContentAdapter.Builder()
-            .setBookClickListener(this::onBookClick)
-            .setSourceClickListener(this::onBookSourceClick)
-            .setFavClickListener(this::onBookFavouriteClick)
-            .setErrorClickListener(this::onBookErrorClick)
-            .setSelectionChangedListener(this::onSelectionChanged)
-            .build();
-    private final ContentAdapter pagerAdapter = new ContentAdapter.Builder()
-            .setBookClickListener(this::onBookClick)
-            .setSourceClickListener(this::onBookSourceClick)
-            .setFavClickListener(this::onBookFavouriteClick)
-            .setErrorClickListener(this::onBookErrorClick)
-            .setSelectionChangedListener(this::onSelectionChanged)
-            .build();
-     */
 
     /**
      * Get the icon resource ID according to the sort order code
@@ -642,7 +628,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     /**
      * Callback for any change in Preferences
      */
-    private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+    private void onSharedPreferenceChanged(String key) {
         Timber.i("Prefs change detected : %s", key);
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
             initPagingMethod(Preferences.getEndlessScroll());
@@ -711,7 +697,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
 
         // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i.getContent()));
+        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
 
         // Favourite button click listener
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
@@ -766,11 +752,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
-        // configure as needed
-        selectExtension.setSelectable(true);
-        selectExtension.setMultiSelect(true);
-        selectExtension.setSelectOnLongClick(true);
-        selectExtension.setSelectionListener((item, b) -> LibraryFragment.this.onSelectionChanged());
+        if (selectExtension != null) {
+            selectExtension.setSelectable(true);
+            selectExtension.setMultiSelect(true);
+            selectExtension.setSelectOnLongClick(true);
+            selectExtension.setSelectionListener((item, b) -> LibraryFragment.this.onSelectionChanged());
+        }
 
         recyclerView.setAdapter(fastAdapter);
     }
@@ -896,12 +883,19 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     /**
      * Callback for the book holder itself
      *
-     * @param content Content that has been clicked on
+     * @param item ContentItem that has been clicked on
      */
-    private boolean onBookClick(Content content) {
-        if (selectExtension.getSelectedItems().size() == 0)
-            ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
-        return true;
+    private boolean onBookClick(ContentItem item) {
+        if (0 == selectExtension.getSelectedItems().size()) {
+            if (!invalidateNextBookClick)
+                ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
+            else invalidateNextBookClick = false;
+
+            return true;
+        } else {
+            selectExtension.setSelectOnLongClick(false);
+        }
+        return false;
     }
 
     /**
@@ -948,27 +942,15 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     /**
-     * Get the currently active adapter (according to current mode : endless or paged)
-     *
-     * @return Currently active adapter
-     */
-/*
-    private LibraryAdapter getAdapter() {
-        if (Preferences.getEndlessScroll()) return endlessAdapter;
-        else return pagerAdapter;
-    }
-
- */
-
-    /**
      * Callback for any selection change (item added to or removed from selection)
      */
     private void onSelectionChanged() {
-
         int selectedCount = selectExtension.getSelectedItems().size();
 
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
+            selectExtension.setSelectOnLongClick(true);
+            invalidateNextBookClick = true;
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);

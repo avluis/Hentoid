@@ -71,18 +71,20 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
 
     @Override
     public long getSelectedItemsCount() {
-        if (getCurrentList() != null)
+//        if (getCurrentList() != null)
             //noinspection Convert2MethodRef need API24
-            return Stream.of(getCurrentList()).filter(c -> c != null).filter(Content::isSelected).count();
-        else return 0;
+  //          return Stream.of(getCurrentList()).filter(c -> c != null).filter(Content::isSelected).count();
+//        else return 0;
+            return 0;
     }
 
     @Override
     public List<Content> getSelectedItems() {
-        if (getCurrentList() != null)
+//        if (getCurrentList() != null)
             //noinspection Convert2MethodRef need API24
-            return Stream.of(getCurrentList()).filter(c -> c != null).filter(Content::isSelected).toList();
-        else return Collections.emptyList();
+        //return Stream.of(getCurrentList()).filter(c -> c != null).filter(Content::isSelected).toList();
+        //else return Collections.emptyList();
+            return Collections.emptyList();
     }
 
     /**
@@ -93,7 +95,7 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
         for (int i = 0; i < getItemCount(); i++) {
             Content c = getItem(i);
             if (c != null) {
-                c.setSelected(false);
+//                c.setSelected(false);
                 notifyItemChanged(i);
             }
         }

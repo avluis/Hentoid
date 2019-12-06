@@ -120,11 +120,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             baseLayout.setVisibility(View.VISIBLE);
             ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
 
-            itemView.setSelected(content.isSelected());
+//            itemView.setSelected(content.isSelected());
 
-            ivError.setEnabled(!content.isSelected());
-            ivFavourite.setEnabled(!content.isSelected());
-            ivSite.setEnabled(!content.isSelected());
+//            ivError.setEnabled(!content.isSelected());
+//            ivFavourite.setEnabled(!content.isSelected());
+//            ivSite.setEnabled(!content.isSelected());
 
             if (content.isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));

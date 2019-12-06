@@ -84,8 +84,6 @@ public class Content implements Serializable {
     @Transient
     private boolean isLast;     // True if current content is the last of its set in the DB query
     @Transient
-    private boolean selected = false; // True if current content is selected (library view)
-    @Transient
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
 
 
@@ -503,14 +501,6 @@ public class Content implements Serializable {
 
     public void setFirst(boolean first) {
         this.isFirst = first;
-    }
-
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
     }
 
     public long getReads() {

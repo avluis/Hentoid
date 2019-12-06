@@ -98,11 +98,11 @@ public class ContentHolder extends RecyclerView.ViewHolder {
         baseLayout.setVisibility(View.VISIBLE);
         ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
 
-        itemView.setSelected(content.isSelected());
+        //itemView.setSelected(content.isSelected());
 
-        ivError.setEnabled(!content.isSelected());
-        ivFavourite.setEnabled(!content.isSelected());
-        ivSite.setEnabled(!content.isSelected());
+        //ivError.setEnabled(!content.isSelected());
+        //ivFavourite.setEnabled(!content.isSelected());
+        //ivSite.setEnabled(!content.isSelected());
 
         if (content.isBeingDeleted())
             baseLayout.startAnimation(new BlinkAnimation(500, 250));
@@ -264,7 +264,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
                 if (itemPos > -1) {
                     Content c = adapter.getItemAtPosition(itemPos); // Get the freshest content from the adapter
                     if (c != null) {
-                        c.setSelected(!c.isSelected());
+//                        c.setSelected(!c.isSelected());
                         adapter.getSelectionChangedListener().accept(adapter.getSelectedItemsCount());
                         adapter.notifyItemChanged(itemPos);
                     }
@@ -279,7 +279,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
             Content c = adapter.getItemAtPosition(itemPos); // Get the freshest content from the adapter
 
             if (c != null && itemPos > -1 && !c.isBeingDeleted()) {
-                c.setSelected(!c.isSelected());
+//                c.setSelected(!c.isSelected());
                 adapter.getSelectionChangedListener().accept(adapter.getSelectedItemsCount());
                 adapter.notifyItemChanged(itemPos);
             }
