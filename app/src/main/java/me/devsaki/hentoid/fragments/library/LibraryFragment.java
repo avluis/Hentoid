@@ -871,7 +871,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         // If the update is the result of a new search, let the items be sorted
         // and get back to the top of the list
-        if (newSearch) new Handler().postDelayed(() -> recyclerView.scrollToPosition(0), 300);
+        if (newSearch) new Handler().postDelayed(() -> recyclerView.scrollToPosition(0), 300); // TODO use a loading callback instead
 
         newSearch = false;
         library = result;
