@@ -686,6 +686,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                     if (oldItem.isBeingFavourited() != newItem.isBeingFavourited()) {
                         diffBundleBuilder.setIsBeingFavourited(newItem.isBeingFavourited());
                     }
+                    if (oldItem.getReads() != newItem.getReads()) {
+                        diffBundleBuilder.setReads(newItem.getReads());
+                    }
 
                     if (diffBundleBuilder.isEmpty()) return null;
                     else return diffBundleBuilder.getBundle();

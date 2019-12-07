@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 public class ContentItemBundle {
     private static final String KEY_FAV_PROCESSING = "is_being_favourited";
     private static final String KEY_FAV_STATE = "favourite";
+    private static final String KEY_READS = "reads";
 
     private ContentItemBundle() {
         throw new UnsupportedOperationException();
@@ -23,6 +24,10 @@ public class ContentItemBundle {
 
         public void setIsFavourite(boolean isFavourite) {
             bundle.putBoolean(KEY_FAV_STATE, isFavourite);
+        }
+
+        public void setReads(long reads) {
+            bundle.putLong(KEY_READS, reads);
         }
 
         public boolean isEmpty() {
@@ -52,6 +57,12 @@ public class ContentItemBundle {
         @Nullable
         public Boolean isFavourite() {
             if (bundle.containsKey(KEY_FAV_STATE)) return bundle.getBoolean(KEY_FAV_STATE);
+            else return null;
+        }
+
+        @Nullable
+        public Long getReads() {
+            if (bundle.containsKey(KEY_READS)) return bundle.getLong(KEY_READS);
             else return null;
         }
     }

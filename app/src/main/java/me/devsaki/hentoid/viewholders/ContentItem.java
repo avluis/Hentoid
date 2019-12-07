@@ -108,10 +108,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 Bundle bundle = (Bundle) payloads.get(0);
                 ContentItemBundle.Parser bundleParser = new ContentItemBundle.Parser(bundle);
 
-                Boolean value = bundleParser.isBeingFavourited();
-                if (value != null) item.content.setIsBeingFavourited(value);
-                value = bundleParser.isFavourite();
-                if (value != null) item.content.setFavourite(value);
+                Boolean boolValue = bundleParser.isBeingFavourited();
+                if (boolValue != null) item.content.setIsBeingFavourited(boolValue);
+                boolValue = bundleParser.isFavourite();
+                if (boolValue != null) item.content.setFavourite(boolValue);
+                Long longValue = bundleParser.getReads();
+                if (longValue != null) item.content.setReads(longValue);
             }
 
             updateLayoutVisibility(item.content);
@@ -127,13 +129,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         private void updateLayoutVisibility(Content content) {
             baseLayout.setVisibility(View.VISIBLE);
             ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
-
-//            itemView.setSelected(content.isSelected());
-
-//            ivError.setEnabled(!content.isSelected());
-//            ivFavourite.setEnabled(!content.isSelected());
-//            ivSite.setEnabled(!content.isSelected());
-
             if (content.isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
