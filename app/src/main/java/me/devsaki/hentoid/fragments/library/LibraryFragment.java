@@ -803,7 +803,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             }
 
             List<ContentItem> contentItems = Stream.of(library.subList(minIndex, maxIndex)).map(ContentItem::new).toList();
-            itemAdapter.set(contentItems);
+            itemAdapter.setNewList(contentItems, false);
         }
         fastAdapter.notifyDataSetChanged();
     }
