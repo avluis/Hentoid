@@ -1,8 +1,8 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.9.3/hentoid193157.apk",
-  "versionCode": "157",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.9.4/hentoid194162.apk",
+  "versionCode": "162",
   "updateURL.beta": "https://cdn.discordapp.com/attachments/418817277383671808/647791824500686848/hentoid1100163-beta2.apk",
-  "versionCode.beta": "114",
+  "versionCode.beta": "163",
   "sourceAlerts":[
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" }
   ],
