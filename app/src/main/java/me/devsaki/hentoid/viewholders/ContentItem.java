@@ -2,6 +2,7 @@ package me.devsaki.hentoid.viewholders;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -34,11 +36,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             .centerInside()
             .error(R.drawable.ic_placeholder);
 
-    // Corresponding content
-    // NB : When using PagedListAdapter, this does _not_ always match the freshest instance
-    // of the object stored in the adapter since it is constantly updated as data evolves,
-    // and does not trigger binding for each of these updates
-    // (binding only happens when the content is different / see DiffUtil)
     private Content content;
 
     public ContentItem() {
@@ -103,8 +100,19 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
 
         @Override
-        public void bindView(@NotNull ContentItem item, @NotNull List<Object> list) {
-            if (null == item.content) return; // Placeholders in paging mode
+        public void bindView(@NotNull ContentItem item, @NotNull List<Object> payloads) {
+            if (null == item.content) return; // Ignore placeholders in paging mode
+
+            // Payloads are set when the content stays the same but some properties alone change
+            if (!payloads.isEmpty()) {
+                Bundle bundle = (Bundle) payloads.get(0);
+                ContentItemBundle.Parser bundleParser = new ContentItemBundle.Parser(bundle);
+
+                Boolean value = bundleParser.isBeingFavourited();
+                if (value != null) item.content.setIsBeingFavourited(value);
+                value = bundleParser.isFavourite();
+                if (value != null) item.content.setFavourite(value);
+            }
 
             updateLayoutVisibility(item.content);
             attachCover(item.content);
@@ -254,49 +262,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 }
             }
         }
-
-/*
-
-        private void onFavouriteClicked() {
-            adapter.getFavClickListener().accept(content);
-            // Hack to make fav icon blink with PagedListAdapter by force-rebinding the holder
-            // Call is delayed to give time for the adapter list to be updated by LiveData
-            new Handler().postDelayed(() -> adapter.notifyItemChanged(getLayoutPosition()), 100);
-        }
-
-        private void attachOnClickListeners() {
-
-            // Simple click
-            itemView.setOnClickListener(v -> {
-                if (adapter.getSelectedItemsCount() > 0) { // Selection mode is on -> select more
-                    int itemPos = getLayoutPosition();
-                    if (itemPos > -1) {
-                        Content c = adapter.getItemAtPosition(itemPos); // Get the freshest content from the adapter
-                        if (c != null) {
-                            c.setSelected(!c.isSelected());
-                            adapter.getSelectionChangedListener().accept(adapter.getSelectedItemsCount());
-                            adapter.notifyItemChanged(itemPos);
-                        }
-                    }
-                } else adapter.getOpenBookListener().accept(content); // Open book
-            });
-
-            // Long click = select item
-            itemView.setOnLongClickListener(v -> {
-
-                int itemPos = getLayoutPosition();
-                Content c = adapter.getItemAtPosition(itemPos); // Get the freshest content from the adapter
-
-                if (c != null && itemPos > -1 && !c.isBeingDeleted()) {
-                    c.setSelected(!c.isSelected());
-                    adapter.getSelectionChangedListener().accept(adapter.getSelectedItemsCount());
-                    adapter.notifyItemChanged(itemPos);
-                }
-
-                return true;
-            });
-        }
- */
 
         public View getFavouriteButton() {
             return ivFavourite;

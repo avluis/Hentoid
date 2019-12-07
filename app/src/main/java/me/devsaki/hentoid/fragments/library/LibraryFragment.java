@@ -60,6 +60,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
+import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -673,6 +674,23 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                             && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
                             && oldItem.isFavourite() == newItem.isFavourite();
                 }
+
+                @Nullable
+                @Override
+                public Object getChangePayload(@NonNull Content oldItem, @NonNull Content newItem) {
+                    ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
+
+                    if (oldItem.isFavourite() != newItem.isFavourite()) {
+                        diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+                    }
+                    if (oldItem.isBeingFavourited() != newItem.isBeingFavourited()) {
+                        diffBundleBuilder.setIsBeingFavourited(newItem.isBeingFavourited());
+                    }
+
+                    if (diffBundleBuilder.isEmpty()) return null;
+                    else return diffBundleBuilder.getBundle();
+                }
+
             }).build();
 
             pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, ContentItem::new);
@@ -703,7 +721,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                onBookFavouriteClick(item.getContent(), i);
+                onBookFavouriteClick(item.getContent());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -912,9 +930,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content whose "favourite" button has been clicked on
      */
-    private void onBookFavouriteClick(Content content, int position) {
+    private void onBookFavouriteClick(Content content) {
         viewModel.toggleContentFavourite(content);
-        new Handler().postDelayed(() -> fastAdapter.notifyItemChanged(position), 100);
     }
 
     /**
