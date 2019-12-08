@@ -9,7 +9,7 @@
     android:background="?colorSurface"
     android:orientation="vertical"
     android:padding="16dp"
-    android:theme="@style/AppTheme">
+    android:theme="@style/Theme.Base">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

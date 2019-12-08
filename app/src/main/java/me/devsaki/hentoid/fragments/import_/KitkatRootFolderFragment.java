@@ -48,7 +48,6 @@ public class KitkatRootFolderFragment extends DialogFragment {
 
     public static void invoke(FragmentManager fragmentManager) {
         KitkatRootFolderFragment fragment = new KitkatRootFolderFragment();
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
         fragment.show(fragmentManager, null);
     }
 
@@ -189,6 +188,7 @@ public class KitkatRootFolderFragment extends DialogFragment {
 
     public interface Parent {
         void onSelectKitKatRootFolder(File targetFolder);
+
         void onKitKatCancel();
     }
 }
