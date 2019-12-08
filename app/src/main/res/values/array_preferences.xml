@@ -25,7 +25,7 @@
     </string-array>
 
     <string-array name="pref_read_content_entries">
-        <item>Hentoid image viewer</item>
+        <item>Built-in image viewer</item>
         <item>Phone default image viewer</item>
     </string-array>
     <string-array name="pref_read_content_entry_values">

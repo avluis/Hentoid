@@ -1,10 +1,14 @@
 package me.devsaki.hentoid.util;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.webkit.MimeTypeMap;
+import android.os.Build;
+import android.os.storage.StorageManager;
+import android.provider.DocumentsContract;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,6 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -45,7 +51,11 @@ public class FileHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
+    public static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
+
+    public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
+
+    private static final String PRIMARY_VOLUME_NAME = "primary";
 
 
     public static String getFileProviderAuthority() {
@@ -82,7 +92,7 @@ public class FileHelper {
      * @return The main folder of the external SD card containing this file,
      * if the file is on an SD card. Otherwise, null is returned.
      */
-    public static String getExtSdCardFolder(final File file) {
+    static String getExtSdCardFolder(final File file) {
         String[] extSdPaths = getExtSdCardPaths();
         try {
             for (String extSdPath : extSdPaths) {
@@ -103,7 +113,7 @@ public class FileHelper {
      * @return A list of external SD card paths.
      */
     public static String[] getExtSdCardPaths() {
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         List<String> paths = new ArrayList<>();
         for (File file : ContextCompat.getExternalFilesDirs(context, "external")) {
             if (file != null && !file.equals(context.getExternalFilesDir("external"))) {
@@ -123,6 +133,78 @@ public class FileHelper {
         }
 
         return paths.toArray(new String[0]);
+    }
+
+    // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
+    @Nullable
+    public static String getFullPathFromTreeUri(@Nullable final Uri treeUri, Context con) {
+        if (treeUri == null) return null;
+        String volumePath = getVolumePath(getVolumeIdFromTreeUri(treeUri), con);
+        if (volumePath == null) return File.separator;
+        if (volumePath.endsWith(File.separator))
+            volumePath = volumePath.substring(0, volumePath.length() - 1);
+
+        String documentPath = getDocumentPathFromTreeUri(treeUri);
+        if (documentPath.endsWith(File.separator))
+            documentPath = documentPath.substring(0, documentPath.length() - 1);
+
+        if (documentPath.length() > 0) {
+            if (documentPath.startsWith(File.separator))
+                return volumePath + documentPath;
+            else
+                return volumePath + File.separator + documentPath;
+        } else return volumePath;
+    }
+
+
+    @SuppressLint("ObsoleteSdkInt")
+    private static String getVolumePath(final String volumeId, Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return null;
+        try {
+            StorageManager mStorageManager =
+                    (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+            Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
+            Method getVolumeList = mStorageManager.getClass().getMethod("getVolumeList");
+            Method getUuid = storageVolumeClazz.getMethod("getUuid");
+            Method getPath = storageVolumeClazz.getMethod("getPath");
+            Method isPrimary = storageVolumeClazz.getMethod("isPrimary");
+            Object result = getVolumeList.invoke(mStorageManager);
+
+            final int length = Array.getLength(result);
+            for (int i = 0; i < length; i++) {
+                Object storageVolumeElement = Array.get(result, i);
+                String uuid = (String) getUuid.invoke(storageVolumeElement);
+                Boolean primary = (Boolean) isPrimary.invoke(storageVolumeElement);
+
+                // primary volume?
+                if (primary && PRIMARY_VOLUME_NAME.equals(volumeId))
+                    return (String) getPath.invoke(storageVolumeElement);
+
+                // other volumes?
+                if (uuid != null && uuid.equals(volumeId))
+                    return (String) getPath.invoke(storageVolumeElement);
+            }
+            // not found.
+            return null;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static String getVolumeIdFromTreeUri(final Uri treeUri) {
+        final String docId = DocumentsContract.getTreeDocumentId(treeUri);
+        final String[] split = docId.split(":");
+        if (split.length > 0) return split[0];
+        else return null;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static String getDocumentPathFromTreeUri(final Uri treeUri) {
+        final String docId = DocumentsContract.getTreeDocumentId(treeUri);
+        final String[] split = docId.split(":");
+        if ((split.length >= 2) && (split[1] != null)) return split[1];
+        else return File.separator;
     }
 
     /**
@@ -253,36 +335,13 @@ public class FileHelper {
      * @param target The folder.
      * @return true if cleaned successfully.
      */
-    static boolean cleanDirectory(@NonNull File target) {
+    public static boolean cleanDirectory(@NonNull File target) {
         try {
-            return tryCleanDirectory(target);
+            return FileUtil.tryCleanDirectory(target);
         } catch (Exception e) {
             Timber.e(e, "Failed to clean directory");
             return false;
         }
-    }
-
-    /**
-     * Cleans a directory without deleting it.
-     * <p>
-     * Custom substitute for commons.io.FileUtils.cleanDirectory that supports devices without File.toPath
-     *
-     * @param directory directory to clean
-     * @return true if directory has been successfully cleaned
-     * @throws IOException in case cleaning is unsuccessful
-     */
-    private static boolean tryCleanDirectory(@NonNull File directory) throws IOException {
-        File[] files = directory.listFiles();
-        if (files == null) throw new IOException("Failed to list content of " + directory);
-
-        boolean isSuccess = true;
-
-        for (File file : files) {
-            if (file.isDirectory() && !tryCleanDirectory(file)) isSuccess = false;
-            if (!file.delete() && file.exists()) isSuccess = false;
-        }
-
-        return isSuccess;
     }
 
     public static boolean checkAndSetRootFolder(String folder) {
@@ -290,7 +349,7 @@ public class FileHelper {
     }
 
     public static boolean checkAndSetRootFolder(String folder, boolean notify) {
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
 
         // Validate folder
         File file = new File(folder);
@@ -405,7 +464,7 @@ public class FileHelper {
         try {
             context.startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
-            Timber.e(e, "Activity not found to open %s", aFile.getAbsolutePath());
+            Timber.e(e, "No activity found to open %s", aFile.getAbsolutePath());
             ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
@@ -416,11 +475,11 @@ public class FileHelper {
      * @param fileName Filename
      * @return Extension of the given filename
      */
-    public static String getExtension(String fileName) {
+    public static String getExtension(@NonNull final String fileName) {
         return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.US) : "";
     }
 
-    public static String getFileNameWithoutExtension(String fileName) {
+    public static String getFileNameWithoutExtension(@NonNull final String fileName) {
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
@@ -447,39 +506,6 @@ public class FileHelper {
         }
     }
 
-    /**
-     * Deletes a file, never throwing an exception. If file is a directory, delete it and all sub-directories.
-     * <p>
-     * The difference between File.delete() and this method are:
-     * <ul>
-     * <li>A directory to be deleted does not have to be empty.</li>
-     * <li>No exceptions are thrown when a file or directory cannot be deleted.</li>
-     * </ul>
-     * <p>
-     * Custom substitute for commons.io.FileUtils.deleteQuietly that works with devices that doesn't support File.toPath
-     *
-     * @param file file or directory to delete, can be {@code null}
-     * @return {@code true} if the file or directory was deleted, otherwise
-     * {@code false}
-     */
-    static boolean deleteQuietly(final File file) {
-        if (file == null) {
-            return false;
-        }
-        try {
-            if (file.isDirectory()) {
-                tryCleanDirectory(file);
-            }
-        } catch (final Exception ignored) {
-        }
-
-        try {
-            return file.delete();
-        } catch (final Exception ignored) {
-            return false;
-        }
-    }
-
     public static boolean renameDirectory(File srcDir, File destDir) {
         try {
             FileUtils.moveDirectory(srcDir, destDir);
@@ -492,34 +518,30 @@ public class FileHelper {
         return false;
     }
 
-    static class AsyncUnzip extends ZipUtil.ZipTask {
-        final Context context; // TODO - omg leak !
-        final File dest;
+    public static String getImageExtensionFromPictureHeader(byte[] header) {
+        if (header.length < 12) return "";
 
-        AsyncUnzip(Context context, File dest) {
-            this.context = context;
-            this.dest = dest;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            Intent sendIntent = new Intent();
-            sendIntent.setAction(Intent.ACTION_SEND);
-            // Hentoid is FileProvider ready!!
-            sendIntent.putExtra(Intent.EXTRA_STREAM,
-                    FileProvider.getUriForFile(context, AUTHORITY, dest));
-            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(dest.getName()));
-            sendIntent.setType(mimeType);
-
-            context.startActivity(sendIntent);
-        }
+        // In Java, byte type is signed !
+        // => Converting all raw values to byte to be sure they are evaluated as expected
+        if ((byte) 0xFF == header[0] && (byte) 0xD8 == header[1] && (byte) 0xFF == header[2])
+            return "jpg";
+        else if ((byte) 0x89 == header[0] && (byte) 0x50 == header[1] && (byte) 0x4E == header[2])
+            return "png";
+        else if ((byte) 0x47 == header[0] && (byte) 0x49 == header[1] && (byte) 0x46 == header[2])
+            return "gif";
+        else if ((byte) 0x52 == header[0] && (byte) 0x49 == header[1] && (byte) 0x46 == header[2] && (byte) 0x46 == header[3]
+                && (byte) 0x57 == header[8] && (byte) 0x45 == header[9] && (byte) 0x42 == header[10] && (byte) 0x50 == header[11])
+            return "webp";
+        else if ((byte) 0x42 == header[0] && (byte) 0x4D == header[1]) return "bmp";
+        else return "";
     }
 
-    // Please don't delete that method !
+    // Please don't delete this method!
     // I need some way to trace actions when working with SD card features - Robb
     public static void createFileWithMsg(@Nonnull String file, String msg) {
         try {
-            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getAppContext(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
+            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
+            Timber.i(">>file %s -> %s", file, msg);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -528,6 +550,14 @@ public class FileHelper {
     @Nullable
     public static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
         return FileUtil.getDocumentFile(file, isDirectory);
+    }
+
+    public static void shareFile(final @NonNull Context context, final @NonNull File f, final @NonNull String title) {
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("text/*");
+        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(context, FileHelper.AUTHORITY, f));
+        context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
     public static class MemoryUsageFigures {

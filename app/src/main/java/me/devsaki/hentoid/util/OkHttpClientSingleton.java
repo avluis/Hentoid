@@ -40,7 +40,7 @@ public class OkHttpClientSingleton {
                             .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                             .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                             .writeTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                            .cache(new Cache(HentoidApp.getAppContext().getCacheDir(), CACHE_SIZE));
+                            .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE));
 
 
                     OkHttpClientSingleton.instance.put(timeoutMs, clientBuilder.build());

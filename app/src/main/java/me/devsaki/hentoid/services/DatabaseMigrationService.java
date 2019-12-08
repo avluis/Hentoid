@@ -8,6 +8,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
@@ -92,7 +93,7 @@ public class DatabaseMigrationService extends IntentService {
 
     private void cleanUpDB() {
         Timber.d("Cleaning up DB.");
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.deleteAllBooks();
         db.deleteAllQueue();
@@ -161,7 +162,7 @@ public class DatabaseMigrationService extends IntentService {
         this.getApplicationContext().deleteDatabase(Consts.DATABASE_NAME);
 
         // Write log in root folder
-        File importLogFile = LogUtil.writeLog(this, log, buildLogInfo());
+        File importLogFile = LogUtil.writeLog(this, buildLogInfo(log));
 
         eventComplete(bookIds.size(), booksOK, booksKO, importLogFile);
 
@@ -169,11 +170,12 @@ public class DatabaseMigrationService extends IntentService {
         stopSelf();
     }
 
-    private LogUtil.LogInfo buildLogInfo() {
+    private LogUtil.LogInfo buildLogInfo(@NonNull List<String> log) {
         LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
-        logInfo.logName = "Migration";
-        logInfo.fileName = "migration_log";
-        logInfo.noDataMessage = "No migrable content detected on existing database.";
+        logInfo.setLogName("Migration");
+        logInfo.setFileName("migration_log");
+        logInfo.setNoDataMessage("No migrable content detected on existing database.");
+        logInfo.setLog(log);
         return logInfo;
     }
 }

@@ -42,10 +42,6 @@
         <item name="android:windowBackground">@color/cod_gray</item>
     </style>
 
-    <style name="AppTheme.NoActionBar.Overlay">
-        <item name="windowActionModeOverlay">true</item>
-    </style>
-
     <!-- Splash Activity -->
     <style name="AppTheme.NoActionBar.Splash">
         <item name="android:windowBackground">@drawable/bg_splash</item>

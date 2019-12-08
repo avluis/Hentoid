@@ -9,7 +9,7 @@ import me.devsaki.hentoid.enums.Site;
 public class ASMHentaiActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "asmhentai.com";
-    private static final String GALLERY_FILTER = "asmhentai.com/g/";
+    private static final String[] GALLERY_FILTER = {"asmhentai.com/g/"};
     private static final String[] blockedContent = {"f.js"};
 
     Site getStartSite() {

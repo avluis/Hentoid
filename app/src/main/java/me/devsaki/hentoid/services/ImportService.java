@@ -11,13 +11,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
+import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -152,11 +153,13 @@ public class ImportService extends IntentService {
         }
 
         // 2nd pass : scan every folder for a JSON file or subdirectories
+        String enabled = getApplication().getResources().getString(R.string.enabled);
+        String disabled = getApplication().getResources().getString(R.string.disabled);
         trace(Log.DEBUG, log, "Import books starting - initial detected count : %s", files.size() + "");
-        trace(Log.INFO, log, "Rename folders %s", (rename ? "ENABLED" : "DISABLED"));
-        trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? "ENABLED" : "DISABLED"));
-        trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? "ENABLED" : "DISABLED"));
-        trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? "ENABLED" : "DISABLED"));
+        trace(Log.INFO, log, "Rename folders %s", (rename ? enabled : disabled));
+        trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
+        trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
+        trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
         for (int i = 0; i < files.size(); i++) {
             File folder = files.get(i);
 
@@ -247,7 +250,7 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
 
         // Write cleanup log in root folder
-        File cleanupLogFile = LogUtil.writeLog(this, log, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON));
+        File cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
 
         eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -256,11 +259,12 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
-    private LogUtil.LogInfo buildLogInfo(boolean cleanup) {
+    private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<String> log) {
         LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
-        logInfo.logName = cleanup ? "Cleanup" : "Import";
-        logInfo.fileName = cleanup ? "cleanup_log" : "import_log";
-        logInfo.noDataMessage = "No content detected.";
+        logInfo.setLogName(cleanup ? "Cleanup" : "Import");
+        logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
+        logInfo.setNoDataMessage("No content detected.");
+        logInfo.setLog(log);
         return logInfo;
     }
 
@@ -321,7 +325,6 @@ public class ImportService extends IntentService {
         try {
             DoujinBuilder doujinBuilder =
                     JsonHelper.jsonToObject(json, DoujinBuilder.class);
-            //noinspection deprecation
             ContentV1 content = new ContentV1();
             content.setUrl(doujinBuilder.getId());
             content.setHtmlDescription(doujinBuilder.getDescription());
@@ -339,19 +342,12 @@ public class ImportService extends IntentService {
             content.setArtists(artists);
             content.setCoverImageUrl(doujinBuilder.getUrlImageTitle());
             content.setQtyPages(doujinBuilder.getQtyPages());
-            Attribute translator = from(doujinBuilder.getTranslator(),
-                    AttributeType.TRANSLATOR, content.getSite());
-            List<Attribute> translators = null;
-            if (translator != null) {
-                translators = new ArrayList<>(1);
-                translators.add(translator);
-            }
-            content.setTranslators(translators);
+
             content.setTags(from(doujinBuilder.getLstTags(), content.getSite()));
             content.setLanguage(from(doujinBuilder.getLanguage(), AttributeType.LANGUAGE, content.getSite()));
 
             content.setMigratedStatus();
-            content.setDownloadDate(new Date().getTime());
+            content.setDownloadDate(Instant.now().toEpochMilli());
             Content contentV2 = content.toV2Content();
 
             String fileRoot = Preferences.getRootFolderName();
@@ -367,9 +363,9 @@ public class ImportService extends IntentService {
     }
 
     @CheckResult
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private static Content importJsonV1(File json) throws JSONParseException {
         try {
-            //noinspection deprecation
             ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
             if (content.getStatus() != StatusContent.DOWNLOADED
                     && content.getStatus() != StatusContent.ERROR) {
@@ -406,7 +402,7 @@ public class ImportService extends IntentService {
             return result;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v2) file");
-            throw new JSONParseException("Error reading JSON (v2) file : " + e.getMessage());
+            throw new JSONParseException("Error reading JSON (v2) file : " + e.getMessage(), e);
         }
     }
 }

@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.import_;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
@@ -32,12 +33,10 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 public class KitkatRootFolderFragment extends DialogFragment {
 
-    // Parent activity to use for callback
-    private Parent callbackActivity;
-
     // List of detected external private folders
     private final List<String> extFoldersList = new ArrayList<>();
-
+    // Parent activity to use for callback
+    private Parent callbackActivity;
     // UI elements
     private EditText subfolderEdit;
     private RadioGroup radioGroup;
@@ -66,22 +65,22 @@ public class KitkatRootFolderFragment extends DialogFragment {
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(rootView, savedInstanceState);
 
-        publicTxt = requireViewById(view, R.id.kitkat_root_folder_public_txt);
-        privateImg = requireViewById(view, R.id.kitkat_root_folder_private_img);
-        privateTxt = requireViewById(view, R.id.kitkat_root_folder_private_txt);
-        subfolderEdit = requireViewById(view, R.id.kitkat_root_folder_subfolder);
+        publicTxt = requireViewById(rootView, R.id.kitkat_root_folder_public_txt);
+        privateImg = requireViewById(rootView, R.id.kitkat_root_folder_private_img);
+        privateTxt = requireViewById(rootView, R.id.kitkat_root_folder_private_txt);
+        subfolderEdit = requireViewById(rootView, R.id.kitkat_root_folder_subfolder);
 
 
         String currentFolder = Preferences.getRootFolderName();
         String currentRoot = "";
 
-        radioGroup = requireViewById(view, R.id.kitkat_root_folder_radioGroup);
+        radioGroup = requireViewById(rootView, R.id.kitkat_root_folder_radioGroup);
         radioGroup.setOnCheckedChangeListener((v, w) -> updateDisplayText());
 
-        RadioButton defaultRootBtn = requireViewById(view, R.id.kitkat_btn_default_root);
+        RadioButton defaultRootBtn = requireViewById(rootView, R.id.kitkat_btn_default_root);
         File root = Environment.getExternalStorageDirectory();
         defaultRootBtn.setText(formatDirLabel(root, true));
         if (currentFolder.startsWith(root.getAbsolutePath())) {
@@ -120,7 +119,7 @@ public class KitkatRootFolderFragment extends DialogFragment {
             subfolderEdit.setText(currentFolder);
         }
 
-        View okBtn = requireViewById(view, R.id.kitkat_root_folder_ok);
+        View okBtn = requireViewById(rootView, R.id.kitkat_root_folder_ok);
         okBtn.setOnClickListener(v -> onOkClick());
 
         updateDisplayText();
@@ -181,7 +180,15 @@ public class KitkatRootFolderFragment extends DialogFragment {
         dismiss();
     }
 
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        callbackActivity.onKitKatCancel();
+
+        super.onDismiss(dialog);
+    }
+
     public interface Parent {
         void onSelectKitKatRootFolder(File targetFolder);
+        void onKitKatCancel();
     }
 }

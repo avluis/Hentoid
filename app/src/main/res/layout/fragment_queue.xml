@@ -1,35 +1,50 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_queue"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.QueueActivity">
 
-    <ListView
-        android:id="@android:id/list"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/queue_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/queue_toolbar"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        tools:targetApi="lollipop" />
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:clipToPadding="false"
         android:divider="@color/transparent"
-        android:dividerHeight="10dp"
+        android:dividerHeight="8dp"
         android:scrollbars="none"
-        tools:background="?colorSurface" />
+        app:layout_constraintBottom_toTopOf="@id/horizontal_barrier"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/queue_toolbar"
+        tools:listitem="@layout/item_queue" />
 
     <TextView
-        android:id="@android:id/empty"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/queue_toolbar"
-        android:gravity="center"
+        android:id="@+id/queue_empty_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="@string/queue_empty"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:visibility="gone" />
-    <include
-        android:id="@+id/queue_toolbar"
-        layout="@layout/include_queue_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" />
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/queue_toolbar" />
 
-</RelativeLayout>
+    <include layout="@layout/include_queue_bottom_bar" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

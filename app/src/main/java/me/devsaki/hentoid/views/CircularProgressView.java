@@ -9,6 +9,8 @@ import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.R;
@@ -28,12 +30,12 @@ public class CircularProgressView extends View {
 
         totalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         totalPaint.setStyle(Paint.Style.STROKE);
-        totalPaint.setColor(getResources().getColor(R.color.transparent));
+        totalPaint.setColor(ContextCompat.getColor(context, R.color.transparent));
         totalPaint.setStrokeWidth(strokeWidth);
 
         progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         progressPaint.setStyle(Paint.Style.STROKE);
-        progressPaint.setColor(getResources().getColor(R.color.secondary));
+        progressPaint.setColor(ContextCompat.getColor(context, R.color.secondary));
         progressPaint.setStrokeWidth(strokeWidth);
     }
 
@@ -51,6 +53,7 @@ public class CircularProgressView extends View {
     }
 
     private void drawProgress(Canvas canvas, int total, Paint paint) {
+        //noinspection SuspiciousNameCombination
         canvas.drawArc(new RectF(strokeWidth, strokeWidth, getWidth() - strokeWidth, getHeight() - strokeWidth), -90, total, false, paint);
     }
 

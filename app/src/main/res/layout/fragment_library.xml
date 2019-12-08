@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/library_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:minHeight="?android:attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/library_menu"
+        app:navigationIcon="@drawable/ic_drawer"
+        tools:targetApi="lollipop" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/library_selection_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:minHeight="?android:attr/actionBarSize"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/library_selection_menu"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        tools:targetApi="lollipop" />
+
+    <include layout="@layout/include_library_advanced_search" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/library_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/default_cardview_margin"
+        android:paddingTop="@dimen/default_cardview_margin"
+        android:paddingEnd="@dimen/default_cardview_margin"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@id/pager_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/advanced_search_background"
+        tools:listitem="@layout/item_download" />
+
+    <include layout="@layout/include_library_pager" />
+
+    <TextView
+        android:id="@+id/library_empty_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="150dp"
+        android:gravity="center"
+        android:text="@string/downloads_empty_library"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

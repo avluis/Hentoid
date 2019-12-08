@@ -8,18 +8,23 @@ import android.provider.Settings;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro2;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.List;
+
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.fragments.intro.BaseSlide;
-import me.devsaki.hentoid.fragments.intro.DoneIntroFragment;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.fragments.intro.EndIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ImportIntroFragment;
 import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment;
+import me.devsaki.hentoid.fragments.intro.PreImportIntroFragment;
+import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment;
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -49,10 +54,11 @@ public class IntroActivity extends AppIntro2 {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addSlide(new PermissionIntroFragment());
         }
-        addSlide(BaseSlide.newInstance(R.layout.intro_slide_03));
+        addSlide(new PreImportIntroFragment());
         addSlide(new ImportIntroFragment());
         addSlide(new ThemeIntroFragment());
-        addSlide(new DoneIntroFragment());
+        addSlide(new SourcesIntroFragment());
+        addSlide(new EndIntroFragment());
 
         setTitle(R.string.app_name);
         showSkipButton(false);
@@ -60,12 +66,14 @@ public class IntroActivity extends AppIntro2 {
         showPagerIndicator(false);
         setSwipeLock(true);
 
-        backgroundFrame.setBackgroundColor(getResources().getColor(R.color.window_background));
+        backgroundFrame.setBackgroundColor(ContextCompat.getColor(this, R.color.window_background));
     }
 
     @Override
     public void onSlideChanged(@Nullable Fragment oldFragment, @Nullable Fragment newFragment) {
         super.onSlideChanged(oldFragment, newFragment);
+        if (oldFragment instanceof SourcesIntroFragment)
+            setSourcePrefs(((SourcesIntroFragment) oldFragment).getSelection());
         boolean isProgressButtonEnabled = !(newFragment instanceof ImportIntroFragment);
         setProgressButtonEnabled(isProgressButtonEnabled);
     }
@@ -97,10 +105,14 @@ public class IntroActivity extends AppIntro2 {
         getPager().goToNextSlide();
     }
 
+    public void setSourcePrefs(List<Site> sources) {
+        Preferences.setActiveSites(sources);
+    }
+
     @Override
     public void onDonePressed(Fragment currentFragment) {
         Preferences.setIsFirstRun(false);
-        Intent intent = new Intent(this, DownloadsActivity.class);
+        Intent intent = new Intent(this, LibraryActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -109,15 +121,14 @@ public class IntroActivity extends AppIntro2 {
         finish();
     }
 
+    // Callback from the directory chooser
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == ConstsImport.RQST_IMPORT_RESULTS) {
             Timber.d("REQUEST RESULT RECEIVED");
-            if (data == null || data.getStringExtra(RESULT_KEY) == null) {
-                throw new NullPointerException("No data received");
-            } else {
+            if (data != null && data.getStringExtra(RESULT_KEY) != null) {
                 String result = data.getStringExtra(RESULT_KEY);
                 resultHandler(resultCode, result);
             }

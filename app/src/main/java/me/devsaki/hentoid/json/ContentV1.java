@@ -89,9 +89,9 @@ public class ContentV1 {
     }
 
     public Site getSite() {
-        // to keep compatibility, if null return FAKKU
+        // to keep compatibility, if null return HITOMI
         if (site == null) {
-            return Site.FAKKU;
+            return Site.HITOMI;
         }
 
         return site;

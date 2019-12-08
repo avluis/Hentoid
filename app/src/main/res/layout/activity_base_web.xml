@@ -1,85 +1,105 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activities.sources.BaseWebActivity">
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_container"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <!-- webview inserted here programmatically -->
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        android:layout_height="wrap_content">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAction"
-        android:layout_width="wrap_content"
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?android:attr/actionBarSize"
+            android:background="?colorPrimary"
+            android:elevation="@dimen/toolbar_layout_elevation"
+            android:gravity="center_vertical"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:menu="@menu/web_menu_top"
+            app:navigationIcon="@drawable/ic_close"
+            tools:targetApi="lollipop" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <TextView
+            android:id="@+id/web_alert_txt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/secondary"
+            android:minHeight="64dp"
+            android:paddingStart="64dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="64dp"
+            android:paddingBottom="8dp"
+            android:text=""
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/please_wait" />
+
+        <ImageView
+            android:id="@+id/web_alert_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_nuclear"
+            android:tint="@color/white_opacity_66"
+            app:layout_constraintStart_toStartOf="@id/web_alert_txt"
+            app:layout_constraintTop_toTopOf="@id/web_alert_txt"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/web_alert_close_btn"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_margin="8dp"
+            android:onClick="onAlertCloseClick"
+            android:src="@drawable/ic_cancel"
+            app:layout_constraintEnd_toEndOf="@id/web_alert_txt"
+            app:layout_constraintTop_toTopOf="@id/web_alert_txt"
+            tools:ignore="ContentDescription" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/web_alert_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:constraint_referenced_ids="web_alert_icon,web_alert_txt,web_alert_close_btn"
+            tools:visibility="visible" />
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/web_alert_txt">
+            <!-- webview inserted here programmatically -->
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="@dimen/download_fab_margin"
-        android:onClick="onActionFabClick"
-        android:src="@drawable/ic_action_download"
-        android:visibility="gone"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="@dimen/fab_default_elevation"
-        app:rippleColor="@color/ripple"
-        app:tint="?attr/colorOnPrimary"
-        tools:ignore="RelativeOverlap" />
+        android:layout_gravity="bottom"
+        android:background="?colorPrimary"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
+        app:menu="@menu/web_menu_bottom"
+        app:labelVisibilityMode="unlabeled"
+        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"
+        app:layout_scrollFlags="scroll|enterAlways"
+        />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabRefreshStop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/fabHome"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="@dimen/refresh_fab_margin_left"
-        android:layout_marginTop="@dimen/refresh_fab_margin_top"
-        android:layout_marginEnd="@dimen/refresh_fab_margin_right"
-        android:layout_marginBottom="@dimen/refresh_fab_margin_bottom"
-        android:onClick="onRefreshStopFabClick"
-        android:src="@drawable/ic_action_refresh"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="@dimen/fab_default_elevation"
-        app:fabSize="mini"
-        app:rippleColor="@color/ripple"
-        app:tint="?attr/colorOnPrimary" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabOpenBrowser"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/fabRefreshStop"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="@dimen/refresh_fab_margin_left"
-        android:layout_marginTop="@dimen/refresh_fab_margin_top"
-        android:layout_marginEnd="@dimen/refresh_fab_margin_right"
-        android:layout_marginBottom="@dimen/refresh_fab_margin_bottom"
-        android:onClick="onOpenBrowserClick"
-        android:src="@drawable/ic_open_in_browser"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="@dimen/fab_default_elevation"
-        app:fabSize="mini"
-        app:rippleColor="@color/ripple"
-        app:tint="?attr/colorOnPrimary" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabHome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="@dimen/home_fab_margin_left"
-        android:layout_marginTop="@dimen/home_fab_margin_top"
-        android:layout_marginEnd="@dimen/home_fab_margin_right"
-        android:layout_marginBottom="@dimen/home_fab_margin_bottom"
-        android:onClick="onHomeFabClick"
-        android:src="@drawable/ic_action_sd_storage"
-        app:backgroundTint="?attr/colorPrimary"
-        app:elevation="@dimen/fab_default_elevation"
-        app:fabSize="mini"
-        app:rippleColor="@color/ripple"
-        app:tint="?attr/colorOnPrimary" />
-
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

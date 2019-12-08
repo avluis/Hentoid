@@ -15,7 +15,9 @@ import android.provider.DocumentsContract;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.documentfile.provider.DocumentFile;
 
@@ -31,7 +33,6 @@ import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.enums.Site;
@@ -57,7 +58,7 @@ import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
  */
-public class ImportActivity extends BaseActivity implements KitkatRootFolderFragment.Parent {
+public class ImportActivity extends AppCompatActivity implements KitkatRootFolderFragment.Parent {
 
     // Instance state keys
     private static final String CURRENT_DIR = "currentDir";
@@ -70,6 +71,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
 
     private File currentRootDir;
     private File prevRootDir;
+    private OnBackPressedCallback callback;
     private boolean restartOnExit = false;              // True if app has to be restarted when exiting the activity
     private boolean calledByPrefs = false;              // True if activity has been called by PrefsActivity
     private boolean useDefaultFolder = false;           // True if activity has been called by IntroActivity and user has selected default storage
@@ -88,6 +90,14 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
 
         View contentView = new View(this, null, R.style.ImportTheme);
         setContentView(contentView);
+
+        callback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                customBackPress();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, callback);
 
         Intent intent = getIntent();
         if (intent != null) {
@@ -122,8 +132,8 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
         prepImport(savedInstanceState);
     }
 
-    @Override
-    public void onBackPressed() {
+
+    public void customBackPress() {
         exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
     }
 
@@ -304,21 +314,30 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
     }
 
     // Return from SAF picker
+    // TODO - check if the processing can be done on a separate thread to avoid freezing while displaying the SAF dialog
+    // TODO - just after a successful import, when the SAF dialog is reopened and another folder is chosen, that method is never called
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         // Return from the SAF picker
-        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) { // TODO - what happens when resultCode is _not_ RESULT_OK ?
+        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
             if (treeUri != null) onSelectSAFRootFolder(treeUri);
+        } else if (resultCode == RESULT_CANCELED) {
+            exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
         }
     }
 
     // Return from Kitkat picker
     public void onSelectKitKatRootFolder(@NonNull File targetFolder) {
         finalizeSelectRootFolder(targetFolder);
+    }
+
+    // Cancel Kitkat picker
+    public void onKitKatCancel() {
+        finish();
     }
 
     // Return from SAF picker
@@ -337,10 +356,21 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
         getContentResolver().takePersistableUriPermission(treeUri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-//                String folderPath = null;
+
+        // Determine whether the designated file is
+        // - on a removable media (e.g. SD card, OTG)
+        // or
+        // - on the internal phone memory
+
         File selectedFolder = null;
-        // Is the selected folder on a removable media ?
         String[] removableMediaFolderRoots = FileHelper.getExtSdCardPaths();
+        /* First test is to compare root names with known roots of removable media
+
+         In many cases, the SD card root name is shared between pre-SAF (File) and SAF (DocumentFile) frameworks
+         (e.g. /storage/3437-3934 vs. /tree/3437-3934)
+
+         This is what the following block is trying to do
+         */
         for (String s : removableMediaFolderRoots) {
             String sRoot = s.substring(s.lastIndexOf(File.separatorChar));
             String treeRoot = treePath.substring(0, treePathSeparator);
@@ -354,7 +384,23 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
             }
         }
 
-        // Try with phone memory
+        /* In some other cases, there is no common name (e.g. /storage/sdcard1 vs. /tree/3437-3934)
+
+            We can use a slower method to translate the Uri obtained with SAF into a pre-SAF path
+            and compare it to the known removable media volume names */
+        if (null == selectedFolder) {
+            for (String s : removableMediaFolderRoots) {
+                String treeRoot = FileHelper.getFullPathFromTreeUri(treeUri, this);
+                if (treeRoot != null && treeRoot.startsWith(s)) {
+                    // Persist selected folder URI in shared preferences
+                    FileHelper.saveUri(treeUri);
+                    selectedFolder = new File(treeRoot);
+                    break;
+                }
+            }
+        }
+
+        // Finally, try with (or fall back to) phone memory
         if (null == selectedFolder) {
             FileHelper.clearUri();
             selectedFolder = new File(Environment.getExternalStorageDirectory(), folderName);
@@ -381,7 +427,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
             } else message = getResources().getString(R.string.kitkat_dialog_return_2);
 
             message = message.replace("$s", folder.getAbsolutePath());
-            ToastUtil.toast(HentoidApp.getAppContext(), message, Toast.LENGTH_LONG);
+            ToastUtil.toast(HentoidApp.getInstance(), message, Toast.LENGTH_LONG);
         } else success = true;
 
         if (success) importFolder(folder);
@@ -511,7 +557,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
 
     private void cleanUpDB() {
         Timber.d("Cleaning up DB.");
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.deleteAllBooks();
     }
@@ -519,6 +565,7 @@ public class ImportActivity extends BaseActivity implements KitkatRootFolderFrag
     private void exit(int resultCode, String data) {
         Timber.d("Import activity exit - Data : %s, Restart needed: %s", data, restartOnExit);
 
+        callback.remove();
         Intent returnIntent = new Intent();
         returnIntent.putExtra(ConstsImport.RESULT_KEY, data);
         setResult(resultCode, returnIntent);

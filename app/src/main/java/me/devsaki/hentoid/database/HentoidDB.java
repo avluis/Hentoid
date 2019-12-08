@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Pair;
 import android.util.SparseIntArray;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -211,8 +213,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
                 .setReads(cursorContent.getLong(ContentTable.IDX_READS - 1))
                 .setLastReadDate(cursorContent.getLong(ContentTable.IDX_LAST_READ_DATE - 1))
-                .setDownloadParams(cursorContent.getString(ContentTable.IDX_DOWNLOAD_PARAMS - 1))
-                .setQueryOrder(cursorContent.getPosition());
+                .setDownloadParams(cursorContent.getString(ContentTable.IDX_DOWNLOAD_PARAMS - 1));
 
         long id = cursorContent.getLong(ContentTable.IDX_INTERNALID - 1);
 
@@ -247,14 +248,14 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    @NonNull
     private AttributeMap selectAttributesByContentId(SQLiteDatabase db, long id, Site site) {
-        AttributeMap result = null;
+        AttributeMap result = new AttributeMap();
         try (Cursor cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_CONTENT_ID,
                 new String[]{id + ""})) {
 
             // looping through all rows and adding to list
             if (cursorAttributes.moveToFirst()) {
-                result = new AttributeMap();
                 do {
                     result.add(
                             new Attribute(

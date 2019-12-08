@@ -11,10 +11,8 @@ import androidx.annotation.Nullable;
 import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.parsers.content.EHentaiGalleryQuery;
+import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery;
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer;
 import timber.log.Timber;
 
@@ -25,7 +23,7 @@ import timber.log.Timber;
 public class EHentaiActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "e-hentai.org";
-    private static final String GALLERY_FILTER = "e-hentai.org/g/[0-9]+/[A-Za-z0-9\\-_]+";
+    private static final String[] GALLERY_FILTER = {"e-hentai.org/g/[0-9]+/[A-Za-z0-9\\-_]+"};
 
     Site getStartSite() {
         return Site.EHENTAI;
@@ -44,13 +42,13 @@ public class EHentaiActivity extends BaseWebActivity {
 
     private class EHentaiWebClient extends CustomWebViewClient {
 
-        EHentaiWebClient(String filter, ResultListener<Content> listener) {
+        EHentaiWebClient(String[] filter, WebContentListener listener) {
             super(filter, listener);
         }
 
         // We keep calling the API without using BaseWebActivity.parseResponse
         @Override
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             String[] galleryUrlParts = urlStr.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
             compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
@@ -59,12 +57,12 @@ public class EHentaiActivity extends BaseWebActivity {
                             metadata ->
                             {
                                 isHtmlLoaded = true;
-                                listener.onResultReady(metadata.toContent(urlStr), 1);
+                                listener.onResultReady(metadata.toContent(urlStr), quickDownload);
                             },
                             throwable -> {
                                 Timber.e(throwable, "Error parsing content.");
                                 isHtmlLoaded = true;
-                                listener.onResultFailed("");
+                                listener.onResultFailed();
                             })
             );
             return null;

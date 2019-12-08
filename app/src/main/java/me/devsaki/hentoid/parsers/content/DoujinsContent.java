@@ -14,6 +14,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class DoujinsContent implements ContentParser {
@@ -37,7 +38,7 @@ public class DoujinsContent implements ContentParser {
 
         if (breadcrumbs != null && !breadcrumbs.isEmpty()) {
             Element e = breadcrumbs.get(breadcrumbs.size() - 1);
-            result.setTitle(e.text());
+            result.setTitle(Helper.removeNonPrintableChars(e.text()));
         }
 
         if (images != null && !images.isEmpty()) {
@@ -51,7 +52,7 @@ public class DoujinsContent implements ContentParser {
             int index = 1;
             List<ImageFile> imgs = new ArrayList<>();
             for (Element e : images)
-                imgs.add(new ImageFile(index++, e.attr("data-file"), StatusContent.SAVED));
+                imgs.add(new ImageFile(index++, e.attr("data-file"), StatusContent.SAVED, images.size()));
             result.setImageFiles(imgs);
         }
 

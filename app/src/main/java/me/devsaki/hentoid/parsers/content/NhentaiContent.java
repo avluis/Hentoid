@@ -15,6 +15,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 // NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
@@ -29,7 +30,7 @@ public class NhentaiContent implements ContentParser {
 
     @Selector(value = "#info a[href*='/artist']")
     private List<Element> artists;
-    @Selector(value = "#info a[href*='/group']")
+    @Selector(value = "#info a[href^='/group/']")
     private List<Element> circles;
     @Selector(value = "#info a[href*='/tag']")
     private List<Element> tags;
@@ -54,11 +55,12 @@ public class NhentaiContent implements ContentParser {
 
         if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
         if (null == thumbs || thumbs.isEmpty()) return result.setStatus(StatusContent.IGNORED);
-        if (theUrl.endsWith("favorite")) return result.setStatus(StatusContent.IGNORED); // Fav button
+        if (theUrl.endsWith("favorite"))
+            return result.setStatus(StatusContent.IGNORED); // Fav button
 
         result.setUrl(theUrl.replace("/g", "").replaceFirst("/1/$", "/"));
         result.setCoverImageUrl(coverUrl);
-        result.setTitle(title);
+        result.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.NHENTAI);
@@ -77,7 +79,7 @@ public class NhentaiContent implements ContentParser {
         int index = 1;
         List<ImageFile> images = new ArrayList<>();
         for (String s : thumbs) {
-            images.add(new ImageFile(index, serverUrl + index + "." + FileHelper.getExtension(s), StatusContent.SAVED)); // We infer actual book page images have the same format as their thumbs
+            images.add(new ImageFile(index, serverUrl + index + "." + FileHelper.getExtension(s), StatusContent.SAVED, thumbs.size())); // We infer actual book page images have the same format as their thumbs
             index++;
         }
         result.setImageFiles(images);

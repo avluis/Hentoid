@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent"
+    android:fitsSystemWindows="true">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="?colorPrimaryVariant"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/viewer_current_page_text" />
+
+    <ImageButton
+        android:id="@+id/viewer_prev_book_btn"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_action_previous_item"
+        android:tint="?colorOnPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/viewer_current_page_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:minWidth="48dp"
+        android:padding="8dp"
+        android:textAlignment="center"
+        android:textColor="?colorOnPrimary"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/viewer_prev_book_btn"
+        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        tools:text="28" />
+
+    <SeekBar
+        android:id="@+id/viewer_seekbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:colorControlActivated="?colorSecondary"
+        android:padding="8dp"
+        android:progressBackgroundTint="?colorOnPrimary"
+        android:progressTint="?colorSecondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_max_page_text"
+        app:layout_constraintStart_toEndOf="@id/viewer_current_page_text"
+        tools:targetApi="lollipop" />
+
+    <TextView
+        android:id="@+id/viewer_max_page_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:minWidth="48dp"
+        android:padding="8dp"
+        android:textAlignment="center"
+        android:textColor="?colorOnPrimary"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_gallery_btn"
+        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        tools:text="255" />
+
+    <ImageButton
+        android:id="@+id/viewer_gallery_btn"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_action_gallery"
+        android:tint="?colorOnPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_favourites_btn"
+        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        tools:ignore="ContentDescription" />
+
+    <ImageButton
+        android:id="@+id/viewer_favourites_btn"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_fav_full"
+        android:tint="@color/secondary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_next_book_btn"
+        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        tools:ignore="ContentDescription" />
+
+    <ImageButton
+        android:id="@+id/viewer_next_book_btn"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_action_next_item"
+        android:tint="?colorOnPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        tools:ignore="ContentDescription" />
+
+    <!-- Image previews used when tracking -->
+
+    <ImageView
+        android:id="@+id/viewer_image_preview1"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
+        app:layout_constraintEnd_toStartOf="@id/viewer_image_preview2"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/viewer_image_preview2"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
+        app:layout_constraintEnd_toStartOf="@id/viewer_image_preview3"
+        app:layout_constraintStart_toEndOf="@id/viewer_image_preview1"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/viewer_image_preview3"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/viewer_image_preview2"
+        tools:ignore="ContentDescription" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/viewer_pager_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="?colorPrimaryVariant"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:longClickable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/viewer_pager_menu"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        tools:targetApi="lollipop" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

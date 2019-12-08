@@ -3,13 +3,13 @@ package me.devsaki.hentoid.json;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 
-public class JsonImageFile {
+class JsonImageFile {
 
-    public Integer order;
-    public String url;
-    public String name;
-    public boolean favourite;
-    public StatusContent status;
+    private Integer order;
+    private String url;
+    private String name;
+    private boolean favourite;
+    private StatusContent status;
 
     private JsonImageFile() {}
 
@@ -23,8 +23,8 @@ public class JsonImageFile {
         return result;
     }
 
-    ImageFile toEntity() {
-        ImageFile result = new ImageFile(order, url, status);
+    ImageFile toEntity(int maxPages) {
+        ImageFile result = new ImageFile(order, url, status, maxPages);
         result.setName(name);
         result.setFavourite(favourite);
         return result;

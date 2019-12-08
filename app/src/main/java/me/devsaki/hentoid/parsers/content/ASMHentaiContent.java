@@ -12,6 +12,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class ASMHentaiContent implements ContentParser {
@@ -49,7 +50,7 @@ public class ASMHentaiContent implements ContentParser {
         result.setUrl(galleryUrl.substring(0, galleryUrl.length() - 2).replace("/gallery", ""));
         result.setCoverImageUrl("https:" + coverUrl);
 
-        result.setTitle(title);
+        result.setTitle(Helper.removeNonPrintableChars(title));
         result.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
 
         AttributeMap attributes = new AttributeMap();

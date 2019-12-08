@@ -19,8 +19,10 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
         super.onScrolled(recyclerView, dx, dy);
 
         LinearLayoutManager llm = (LinearLayoutManager) recyclerView.getLayoutManager();
-        int firstVisibleItemPosition = llm.findFirstVisibleItemPosition();
-        int lastCompletelyVisibleItemPosition = llm.findLastCompletelyVisibleItemPosition();
-        onPositionChangeListener.accept(Math.max(firstVisibleItemPosition, lastCompletelyVisibleItemPosition));
+        if (llm != null) {
+            int firstVisibleItemPosition = llm.findFirstVisibleItemPosition();
+            int lastCompletelyVisibleItemPosition = llm.findLastCompletelyVisibleItemPosition();
+            onPositionChangeListener.accept(Math.max(firstVisibleItemPosition, lastCompletelyVisibleItemPosition));
+        }
     }
 }

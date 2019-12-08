@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import android.os.Build;
+import android.text.TextUtils;
 import android.util.Pair;
 import android.webkit.WebResourceResponse;
 
@@ -10,7 +12,9 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -45,11 +49,6 @@ public class HttpHelper {
     }
 
     @Nullable
-    public static <T> T getOnlineJson(String url, Class<T> type) throws IOException {
-        return getOnlineJson(url, null, true, type);
-    }
-
-    @Nullable
     public static <T> T getOnlineJson(String url, List<Pair<String, String>> headers, boolean useHentoidAgent, Class<T> type) throws IOException {
         ResponseBody resource = getOnlineResource(url, headers, useHentoidAgent).body();
         if (resource != null) {
@@ -77,15 +76,44 @@ public class HttpHelper {
      * @param resp The OkHttp {@link Response}
      * @return The {@link WebResourceResponse}
      */
-    public static WebResourceResponse okHttpResponseToWebResourceResponse(Response resp, InputStream is) {
+    public static WebResourceResponse okHttpResponseToWebResourceResponse(@NonNull final Response resp, @NonNull final InputStream is) {
         final String contentTypeValue = resp.header(HEADER_CONTENT_TYPE);
 
+        WebResourceResponse result;
         if (contentTypeValue != null) {
             Pair<String, String> details = cleanContentType(contentTypeValue);
-            return new WebResourceResponse(details.first, details.second, is);
+            result = new WebResourceResponse(details.first, details.second, is);
         } else {
-            return new WebResourceResponse("application/octet-stream", null, is);
+            result = new WebResourceResponse("application/octet-stream", null, is);
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            result.setResponseHeaders(okHttpHeadersToWebResourceHeaders(resp.headers().toMultimap()));
+        }
+
+        return result;
+    }
+
+    private static Map<String, String> okHttpHeadersToWebResourceHeaders(@NonNull final Map<String, List<String>> okHttpHeaders) {
+        Map<String, String> result = new HashMap<>();
+
+        for (String key : okHttpHeaders.keySet()) {
+            List<String> values = okHttpHeaders.get(key);
+            if (values != null)
+                result.put(key, TextUtils.join(getValuesSeparatorFromHttpHeader(key), values));
+        }
+
+        return result;
+    }
+
+    private static String getValuesSeparatorFromHttpHeader(@NonNull final String header) {
+
+        String separator = ", "; // HTTP spec
+
+        if (header.equalsIgnoreCase("set-cookie") || header.equalsIgnoreCase("www-authenticate") || header.equalsIgnoreCase("proxy-authenticate"))
+            separator = "\n"; // Special case : commas may appear in these headers => use a newline delimiter
+
+        return separator;
     }
 
     /**
@@ -105,15 +133,19 @@ public class HttpHelper {
         } else return new Pair<>(rawContentType, null);
     }
 
-
     public static String getExtensionFromUri(String uri) {
         String theUri = uri.toLowerCase();
-        int extIndex = theUri.indexOf('.', theUri.lastIndexOf('/'));
-        if (extIndex < 0) return ""; // No extension at all
+        String uriNoParams = theUri;
 
         int paramsIndex = theUri.lastIndexOf('?');
+        if (paramsIndex > -1) uriNoParams = theUri.substring(0, paramsIndex);
 
-        if (paramsIndex > -1) return theUri.substring(extIndex + 1, paramsIndex);
-        else return theUri.substring(extIndex + 1);
+        int pathIndex = uriNoParams.lastIndexOf('/');
+        int extIndex = uriNoParams.lastIndexOf('.');
+
+        // No extensions detected
+        if (extIndex < 0 || extIndex < pathIndex) return "";
+
+        return uriNoParams.substring(extIndex + 1);
     }
 }

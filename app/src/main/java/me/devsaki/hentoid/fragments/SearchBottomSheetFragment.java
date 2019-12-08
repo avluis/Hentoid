@@ -38,16 +38,15 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
+import static androidx.core.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
-import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
 
 /**
  * TODO: look into recyclerview.extensions.ListAdapter for a RecyclerView.Adapter that can issue
- *  appropriate notify commands based on list diff
+ * appropriate notify commands based on list diff
  */
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
@@ -74,9 +73,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private int currentPage;
     private long mTotalSelectedCount;
 
-    // Mode : show library or show Mikan search
-    private int mode;
-
     // Selected attribute types (selection done in the activity view)
     private List<AttributeType> selectedAttributeTypes = new ArrayList<>();
 
@@ -90,16 +86,15 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private static final int ATTRS_PER_PAGE = 40;
 
 
-    public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types) {
+    public static void show(FragmentManager fragmentManager, AttributeType[] types) {
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
 
-        builder.setMode(mode);
         builder.setAttributeTypes(types);
 
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
         searchBottomSheetFragment.setArguments(builder.getBundle());
         searchBottomSheetFragment.setStyle(STYLE_NORMAL, R.style.BottomSheetDialogTheme);
-        searchBottomSheetFragment.show(fragmentManager, null);
+        searchBottomSheetFragment.show(fragmentManager, "searchBottomSheetFragment");
     }
 
     @Override
@@ -109,36 +104,34 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         Bundle bundle = getArguments();
         if (bundle != null) {
             SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(bundle);
-            mode = parser.getMode();
             selectedAttributeTypes = parser.getAttributeTypes();
             currentPage = 1;
 
-            if (-1 == mode || selectedAttributeTypes.isEmpty()) {
+            if (selectedAttributeTypes.isEmpty()) {
                 throw new IllegalArgumentException("Initialization failed");
             }
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
-            viewModel.setMode(mode);
             viewModel.onCategoryChanged(selectedAttributeTypes);
         }
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.include_search_filter_category, container, false);
+        View rootView = inflater.inflate(R.layout.include_search_filter_category, container, false);
         AttributeType mainAttr = selectedAttributeTypes.get(0);
 
         // Image that displays current metadata type icon (e.g. face icon for character)
-        ImageView tagWaitImage = view.findViewById(R.id.tag_wait_image);
+        ImageView tagWaitImage = requireViewById(rootView, R.id.tag_wait_image);
         tagWaitImage.setImageResource(mainAttr.getIcon());
 
         // Image that displays current metadata type title (e.g. "Character search")
-        TextView tagWaitTitle = view.findViewById(R.id.tag_wait_title);
+        TextView tagWaitTitle = requireViewById(rootView, R.id.tag_wait_title);
         tagWaitTitle.setText(format("%s search", Helper.capitalizeString(mainAttr.name())));
 
-        tagWaitPanel = view.findViewById(R.id.tag_wait_panel);
-        tagWaitMessage = view.findViewById(R.id.tag_wait_description);
-        RecyclerView attributeMosaic = view.findViewById(R.id.tag_suggestion);
+        tagWaitPanel = requireViewById(rootView, R.id.tag_wait_panel);
+        tagWaitMessage = requireViewById(rootView, R.id.tag_wait_description);
+        RecyclerView attributeMosaic = requireViewById(rootView, R.id.tag_suggestion);
         FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this.getContext());
 //        layoutManager.setAlignContent(AlignContent.FLEX_START); <-- not possible
         layoutManager.setFlexWrap(FlexWrap.WRAP);
@@ -148,18 +141,14 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         attributeAdapter.setOnClickListener(this::onAttributeChosen);
         attributeMosaic.setAdapter(attributeAdapter);
 
-        tagSearchView = view.findViewById(R.id.tag_filter);
+        tagSearchView = requireViewById(rootView, R.id.tag_filter);
         tagSearchView.setSearchableInfo(getSearchableInfo(requireActivity())); // Associate searchable configuration with the SearchView
-        tagSearchView.setQueryHint("Search " + Helper.buildListAsString(selectedAttributeTypes));
+        tagSearchView.setQueryHint("Search " + android.text.TextUtils.join(", ", selectedAttributeTypes));
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
 
-                if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(view, R.string.masterdata_illegal_tag, BaseTransientBottomBar.LENGTH_LONG).show();
-                } else if (!s.isEmpty()) {
-                    searchMasterData(s);
-                }
+                if (!s.isEmpty()) searchMasterData(s);
                 tagSearchView.clearFocus();
 
                 return true;
@@ -167,18 +156,13 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(view, R.string.masterdata_illegal_tag, BaseTransientBottomBar.LENGTH_LONG).show();
-                    searchMasterDataDebouncer.clear();
-                } else {
-                    searchMasterDataDebouncer.submit(s);
-                }
+                searchMasterDataDebouncer.submit(s);
 
                 return true;
             }
         });
 
-        return view;
+        return rootView;
     }
 
     @Override
@@ -230,7 +214,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         if (!isInitiated) return;
 
         if (!results.success) {
-            onAttributesFailed(results.message);
+            Timber.w(results.message);
+            Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), results.message, BaseTransientBottomBar.LENGTH_SHORT);
+            bar.show();
+            tagWaitPanel.setVisibility(View.GONE);
             return;
         }
 
@@ -252,21 +239,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             else tagWaitMessage.setText(R.string.masterdata_no_result);
         } else {
             tagWaitPanel.setVisibility(View.GONE);
+            attributeAdapter.setFormatWithNamespace(selectedAttributeTypes.size() > 1);
             attributeAdapter.add(results.attributes);
         }
-    }
-
-    private void onAttributesFailed(String message) {
-        Timber.w(message);
-        Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), message, BaseTransientBottomBar.LENGTH_SHORT);
-        // Set retry button if Mikan mode on
-        if (MODE_MIKAN == mode) {
-            bar.setAction("RETRY", v -> viewModel.onCategoryFilterChanged(tagSearchView.getQuery().toString(), currentPage, ATTRS_PER_PAGE));
-            bar.setDuration(BaseTransientBottomBar.LENGTH_LONG);
-        }
-        bar.show();
-
-        tagWaitPanel.setVisibility(View.GONE);
     }
 
     /**

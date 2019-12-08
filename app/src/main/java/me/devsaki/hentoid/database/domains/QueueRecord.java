@@ -13,7 +13,7 @@ public class QueueRecord {
     public int rank;
 
     public QueueRecord() {
-    }
+    }  // Required for ObjectBox to work
 
     public QueueRecord(long id, int order) {
         content.setTargetId(id);

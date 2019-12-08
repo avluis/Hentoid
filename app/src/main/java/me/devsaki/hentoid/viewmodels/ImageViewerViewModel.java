@@ -31,7 +31,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -117,11 +117,11 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     public void loadFromSearchParams(long contentId, @Nonnull Bundle bundle) {
         loadedContentId = contentId;
         Context ctx = getApplication().getApplicationContext();
-        searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
+        searchManager = new ContentSearchManager(new ObjectBoxDAO(ctx));
         searchManager.loadFromBundle(bundle);
-        int contentIndex = bundle.getInt("contentIndex", -1);
-        if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);
-        searchManager.searchLibraryForId(-1, this);
+//        int contentIndex = bundle.getInt("contentIndex", -1);
+//        if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);
+        searchManager.searchLibraryForId(this);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         startingIndex.setValue(index);
     }
 
-    public void setImages(List<ImageFile> imgs) {
+    private void setImages(List<ImageFile> imgs) {
         List<ImageFile> list = new ArrayList<>(imgs);
         sortAndSetImages(list, isShuffled);
     }
@@ -174,7 +174,12 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
         Content theContent = content.getValue();
         if (theContent != null) {
-            theContent.setLastReadPageIndex(index);
+            int indexToSet = index;
+            // Reset the memorized page index if it represents the last page
+            List<ImageFile> theImages = getImages().getValue();
+            if (theImages != null && index == theImages.size() - 1) indexToSet = 0;
+
+            theContent.setLastReadPageIndex(indexToSet);
             db.insertContent(theContent);
         }
     }
@@ -244,14 +249,10 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
     private void processContent(Content theContent) {
         currentContentIndex = contentIds.indexOf(theContent.getId());
-
-        if (-1 == currentContentIndex) {
-            Timber.w("Content index %s not found in results", theContent.getId()); // TODO - that does not help when the list is empty !
-            currentContentIndex = 0;
-        }
+        if (-1 == currentContentIndex) currentContentIndex = 0;
 
         theContent.setFirst(0 == currentContentIndex);
-        theContent.setLast(currentContentIndex == contentIds.size() - 1);
+        theContent.setLast(currentContentIndex >= contentIds.size() - 1);
         content.setValue(theContent);
 
         // Load new content
@@ -295,7 +296,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             boolean matchFound = false;
             for (File f : files) {
                 // Image and file name match => store absolute path
-                if (FileHelper.getFileNameWithoutExtension(images.get(i).getName()).equals(FileHelper.getFileNameWithoutExtension(f.getName()))) {
+                if (fileNamesMatch(images.get(i).getName(), f.getName())) {
                     matchFound = true;
                     images.get(i).setAbsolutePath(f.getAbsolutePath());
                     break;
@@ -305,6 +306,19 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             if (!matchFound) {
                 images.remove(i);
             } else i++;
+        }
+    }
+
+    // Match when the names are exactly the same, or when their value is
+    private static boolean fileNamesMatch(@NonNull String name1, @NonNull String name2) {
+        name1 = FileHelper.getFileNameWithoutExtension(name1);
+        name2 = FileHelper.getFileNameWithoutExtension(name2);
+        if (name1.equalsIgnoreCase(name2)) return true;
+
+        try {
+            return (Integer.parseInt(name1) == Integer.parseInt(name2));
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 
@@ -320,14 +334,13 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             images.add(img);
         }
         content.setImageFiles(images);
-        ObjectBoxDB.getInstance(HentoidApp.getAppContext()).insertContent(content);
+        ObjectBoxDB.getInstance(HentoidApp.getInstance()).insertContent(content);
     }
 
     @WorkerThread
-    @Nullable
     private static Content postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
         cacheJson(context, content);
-        return ContentHelper.updateContentReads(context, content.getId());
+        return ContentHelper.updateContentReads(context, content);
     }
 
     // Cache JSON URI in the database to speed up favouriting

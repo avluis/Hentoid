@@ -25,11 +25,11 @@ public class ToastUtil {
     }
 
     public static void toast(@StringRes int resource) {
-        toast(HentoidApp.getAppContext(), resource);
+        toast(HentoidApp.getInstance(), resource);
     }
 
     public static void toast(@NonNull String message) {
-        toast(HentoidApp.getAppContext(), message);
+        toast(HentoidApp.getInstance(), message);
     }
 
     public static void toast(@NonNull Context context, @StringRes int resource) {

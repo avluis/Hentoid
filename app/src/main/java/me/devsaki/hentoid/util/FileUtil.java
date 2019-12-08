@@ -138,7 +138,7 @@ class FileUtil {
                                                           String relativePath, boolean isDirectory,
                                                           boolean canCreate) {
         // start with root and then parse through document tree.
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         DocumentFile document = DocumentFile.fromTreeUri(context, rootURI);
 
         if (null == document) return null;
@@ -147,7 +147,7 @@ class FileUtil {
         String[] parts = relativePath.split(File.separator);
         for (int i = 0; i < parts.length; i++) {
             DocumentFile nextDocument = document.findFile(parts[i]);
-            // The folder might exist in its capitalized version (might happen with legacy installs from the FakkuDroid era)
+            // The folder might exist in its capitalized version (might happen with legacy installs
             if (null == nextDocument)
                 nextDocument = document.findFile(Helper.capitalizeString(parts[i]));
 
@@ -195,7 +195,7 @@ class FileUtil {
                 // Storage Access Framework
                 DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
                 if (targetDocument != null) {
-                    Context context = HentoidApp.getAppContext();
+                    Context context = HentoidApp.getInstance();
                     return context.getContentResolver().openOutputStream(
                             targetDocument.getUri());
                 }
@@ -209,7 +209,7 @@ class FileUtil {
     }
 
     static OutputStream getOutputStream(@NonNull final DocumentFile target) throws FileNotFoundException {
-        Context context = HentoidApp.getAppContext();
+        Context context = HentoidApp.getInstance();
         return context.getContentResolver().openOutputStream(target.getUri());
     }
 
@@ -225,7 +225,7 @@ class FileUtil {
                 // Storage Access Framework
                 DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
                 if (targetDocument != null) {
-                    Context context = HentoidApp.getAppContext();
+                    Context context = HentoidApp.getInstance();
                     return context.getContentResolver().openInputStream(
                             targetDocument.getUri());
                 }
@@ -241,7 +241,7 @@ class FileUtil {
     /**
      * Create a file.
      *
-     * @param file The file to be created.
+     * @param file       The file to be created.
      * @param forceWrite Force writing operation even if an existing file is found (useful for I/O tests)
      * @return true if creation was successful.
      */
@@ -320,7 +320,63 @@ class FileUtil {
      * @return true if successfully deleted or if the file does not exist.
      */
     static boolean deleteFile(@NonNull final File file) {
-        return !file.exists() || FileUtils.deleteQuietly(file) || deleteWithSAF(file);
+        return !file.exists() || deleteQuietly(file) || deleteWithSAF(file);
+    }
+
+    /**
+     * Deletes a file, never throwing an exception. If file is a directory, delete it and all sub-directories.
+     * <p>
+     * The difference between File.delete() and this method are:
+     * <ul>
+     * <li>A directory to be deleted does not have to be empty.</li>
+     * <li>No exceptions are thrown when a file or directory cannot be deleted.</li>
+     * </ul>
+     * <p>
+     * Custom substitute for commons.io.FileUtils.deleteQuietly that works with devices that doesn't support File.toPath
+     *
+     * @param file file or directory to delete, can be {@code null}
+     * @return {@code true} if the file or directory was deleted, otherwise
+     * {@code false}
+     */
+    static boolean deleteQuietly(final File file) {
+        if (file == null) {
+            return false;
+        }
+        try {
+            if (file.isDirectory()) {
+                tryCleanDirectory(file);
+            }
+        } catch (final Exception ignored) {
+        }
+
+        try {
+            return file.delete();
+        } catch (final Exception ignored) {
+            return false;
+        }
+    }
+
+    /**
+     * Cleans a directory without deleting it.
+     * <p>
+     * Custom substitute for commons.io.FileUtils.cleanDirectory that supports devices without File.toPath
+     *
+     * @param directory directory to clean
+     * @return true if directory has been successfully cleaned
+     * @throws IOException in case cleaning is unsuccessful
+     */
+    static boolean tryCleanDirectory(@NonNull File directory) throws IOException {
+        File[] files = directory.listFiles();
+        if (files == null) throw new IOException("Failed to list content of " + directory);
+
+        boolean isSuccess = true;
+
+        for (File file : files) {
+            if (file.isDirectory() && !tryCleanDirectory(file)) isSuccess = false;
+            if (!file.delete() && file.exists()) isSuccess = false;
+        }
+
+        return isSuccess;
     }
 
     static boolean deleteWithSAF(File file) {

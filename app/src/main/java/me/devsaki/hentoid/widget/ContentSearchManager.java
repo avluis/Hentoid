@@ -3,17 +3,18 @@ package me.devsaki.hentoid.widget;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.lifecycle.LiveData;
+import androidx.paging.PagedList;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
-import me.devsaki.hentoid.collection.CollectionAccessor;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.Language;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Preferences;
 
@@ -26,7 +27,7 @@ public class ContentSearchManager {
     private static final String KEY_SORT_ORDER = "sort_order";
     private static final String KEY_CURRENT_PAGE = "current_page";
 
-    private final CollectionAccessor accessor;
+    private final CollectionDAO collectionDAO;
 
     // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
     private int currentPage = 1;
@@ -40,8 +41,8 @@ public class ContentSearchManager {
     private int contentSortOrder = Preferences.getContentSortOrder();
 
 
-    public ContentSearchManager(CollectionAccessor accessor) {
-        this.accessor = accessor;
+    public ContentSearchManager(CollectionDAO collectionDAO) {
+        this.collectionDAO = collectionDAO;
     }
 
     public void setFilterFavourites(boolean filterFavourites) {
@@ -73,28 +74,8 @@ public class ContentSearchManager {
         if (tags != null) tags.clear();
     }
 
-    public int getContentSortOrder() {
-        return contentSortOrder;
-    }
-
     public void setContentSortOrder(int contentSortOrder) {
         this.contentSortOrder = contentSortOrder;
-    }
-
-    public int getCurrentPage() {
-        return currentPage;
-    }
-
-    public void setCurrentPage(int currentPage) {
-        this.currentPage = currentPage;
-    }
-
-    public void increaseCurrentPage() {
-        currentPage++;
-    }
-
-    public void decreaseCurrentPage() {
-        currentPage--;
     }
 
     public void saveToBundle(@Nonnull Bundle outState) {
@@ -116,27 +97,25 @@ public class ContentSearchManager {
         tags = SearchActivityBundle.Parser.parseSearchUri(Uri.parse(searchUri));
     }
 
-    public void searchLibraryForContent(int booksPerPage, PagedResultListener<Content> listener) {
+    public LiveData<PagedList<Content>> getLibrary() {
         if (!getQuery().isEmpty())
-            accessor.searchBooksUniversalPaged(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Universal search
+            return collectionDAO.searchBooksUniversal(getQuery(), contentSortOrder, filterFavourites); // Universal search
         else if (!tags.isEmpty())
-            accessor.searchBooksPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
+            return collectionDAO.searchBooks("", tags, contentSortOrder, filterFavourites); // Advanced search
         else
-            accessor.getRecentBooksPaged(Site.HITOMI, Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
-        // TODO : do something about these ridiculous default 1st arguments
+            return collectionDAO.getRecentBooks(contentSortOrder, filterFavourites); // Default search (display recent)
     }
 
-    public void searchLibraryForId(int booksPerPage, PagedResultListener<Long> listener) {
+    public void searchLibraryForId(PagedResultListener<Long> listener) {
         if (!getQuery().isEmpty())
-            accessor.searchBookIdsUniversalPaged(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Universal search
+            collectionDAO.searchBookIdsUniversal(getQuery(), contentSortOrder, filterFavourites, listener); // Universal search
         else if (!tags.isEmpty())
-            accessor.searchBookIdsPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
+            collectionDAO.searchBookIds("", tags, contentSortOrder, filterFavourites, listener); // Advanced search
         else
-            accessor.getRecentBookIdsPaged(Site.HITOMI, Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
-        // TODO : do something about these ridiculous default 1st arguments
+            collectionDAO.getRecentBookIds(contentSortOrder, filterFavourites, listener); // Default search (display recent)
     }
 
     public void dispose() {
-        accessor.dispose();
+        collectionDAO.dispose();
     }
 }

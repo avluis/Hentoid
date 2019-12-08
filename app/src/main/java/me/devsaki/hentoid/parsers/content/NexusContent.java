@@ -13,6 +13,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class NexusContent implements ContentParser {
@@ -45,7 +46,7 @@ public class NexusContent implements ContentParser {
 
         result.setUrl(theUrl.replace(Site.NEXUS.getUrl() + "/view", ""));
         result.setCoverImageUrl(coverUrl);
-        result.setTitle(title);
+        result.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
 

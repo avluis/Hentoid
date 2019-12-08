@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
-import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,10 +12,8 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Build;
 import android.util.DisplayMetrics;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -32,9 +31,9 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
-import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
+import static android.content.Context.CLIPBOARD_SERVICE;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
 /**
@@ -47,7 +46,10 @@ public final class Helper {
         throw new IllegalStateException("Utility class");
     }
 
-    static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private final static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+
+    private static int DENSITY_DPI = -1;
+
 
     public static void doRestart(@NonNull Context context) {
         try {
@@ -74,6 +76,7 @@ public final class Helper {
         }
     }
 
+    //Currently only nhentai source uses this method
     static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);
 
@@ -130,25 +133,6 @@ public final class Helper {
         return result;
     }
 
-    public static String buildListAsString(List<?> list) {
-        return buildListAsString(list, "");
-    }
-
-    private static String buildListAsString(List<?> list, String valueDelimiter) {
-
-        StringBuilder str = new StringBuilder();
-        if (list != null) {
-            boolean first = true;
-            for (Object o : list) {
-                if (!first) str.append(",");
-                else first = false;
-                str.append(valueDelimiter).append(o.toString().toLowerCase()).append(valueDelimiter);
-            }
-        }
-
-        return str.toString();
-    }
-
     public static String decode64(String encodedString) {
         // Pure Java
         //byte[] decodedBytes = org.apache.commons.codec.binary.Base64.decodeBase64(encodedString);
@@ -157,11 +141,9 @@ public final class Helper {
         return new String(decodedBytes);
     }
 
-    public static int dpToPixel(Context context, int dp) {
-        float scaleFactor =
-                (1.0f / DisplayMetrics.DENSITY_DEFAULT)
-                        * context.getResources().getDisplayMetrics().densityDpi;
-
+    public static int dpToPixel(@NonNull final Context context, int dp) {
+        if (-1 == DENSITY_DPI) DENSITY_DPI = context.getResources().getDisplayMetrics().densityDpi;
+        float scaleFactor = (1.0f / DisplayMetrics.DENSITY_DEFAULT) * DENSITY_DPI;
         return (int) (dp * scaleFactor);
     }
 
@@ -169,12 +151,6 @@ public final class Helper {
     public static List<Long> getListFromPrimitiveArray(long[] input) {
         List<Long> list = new ArrayList<>(input.length);
         for (long n : input) list.add(n);
-        return list;
-    }
-
-    public static List<Integer> getListFromPrimitiveArray(int[] input) {
-        List<Integer> list = new ArrayList<>(input.length);
-        for (int n : input) list.add(n);
         return list;
     }
 
@@ -191,22 +167,6 @@ public final class Helper {
     public static boolean isNumeric(String str) {
         Matcher m = NUMERIC_PATTERN.matcher(str);
         return m.matches();
-    }
-
-    /**
-     * Open the given url using the device's app(s) of choice
-     *
-     * @param context Context
-     * @param url     Url to be opened
-     */
-    public static void openUrl(Context context, String url) {
-        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        try {
-            context.startActivity(myIntent);
-        } catch (ActivityNotFoundException e) {
-            Timber.e(e, "Activity not found to open %s", url);
-            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
-        }
     }
 
     public static float coerceIn(float value, float min, float max) {
@@ -231,12 +191,44 @@ public final class Helper {
         return result;
     }
 
-    public static boolean isImageExtensionSupported(String extension)
-    {
+    public static boolean copyPlainTextToClipboard(@NonNull Context context, @NonNull String text) {
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
+        if (clipboard != null) {
+            ClipData clip = ClipData.newPlainText("book URL", text);
+            clipboard.setPrimaryClip(clip);
+            return true;
+        } else return false;
+    }
+
+    public static boolean isImageExtensionSupported(String extension) {
         return extension.equalsIgnoreCase("jpg")
                 || extension.equalsIgnoreCase("jpeg")
                 || extension.equalsIgnoreCase("gif")
                 || extension.equalsIgnoreCase("png")
                 || extension.equalsIgnoreCase("webp");
+    }
+
+    // https://stackoverflow.com/a/18603020/8374722
+    public static String removeNonPrintableChars(@NonNull final String s) {
+        StringBuilder newString = new StringBuilder(s.length());
+        for (int offset = 0; offset < s.length(); ) {
+            int codePoint = s.codePointAt(offset);
+            offset += Character.charCount(codePoint);
+
+            // Replace invisible control characters and unused code points
+            switch (Character.getType(codePoint)) {
+                case Character.CONTROL:     // \p{Cc}
+                case Character.FORMAT:      // \p{Cf}
+                case Character.PRIVATE_USE: // \p{Co}
+                case Character.SURROGATE:   // \p{Cs}
+                case Character.UNASSIGNED:  // \p{Cn}
+                    // Don't do anything; these are characters we don't want in the new string
+                    break;
+                default:
+                    newString.append(Character.toChars(codePoint));
+                    break;
+            }
+        }
+        return newString.toString();
     }
 }

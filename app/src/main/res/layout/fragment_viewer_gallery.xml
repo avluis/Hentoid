@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:theme="@style/AppTheme"
     tools:context=".activities.ImageViewerActivity">
 
@@ -13,15 +12,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/viewer_gallery_menu"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:title="Gallery"
+        tools:targetApi="lollipop" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/viewer_gallery_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_gallery_toolbar"
         app:spanCount="4"
         tools:listitem="@layout/item_viewer_gallery_image" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -20,6 +20,8 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImageGalleryAdapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileViewHolder> implements IFilterable<Boolean> {
 
     private final ImageFile item;
@@ -77,7 +79,8 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
         return item.isFavourite();
     }
 
-    class ImageFileViewHolder extends FlexibleViewHolder {
+
+    static final class ImageFileViewHolder extends FlexibleViewHolder {
 
         private final TextView pageNumberTxt;
         private final ImageView image;
@@ -86,9 +89,9 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
 
         ImageFileViewHolder(View view, ImageGalleryAdapter adapter) {
             super(view, adapter);
-            pageNumberTxt = view.findViewById(R.id.viewer_gallery_pagenumber_text);
-            image = view.findViewById(R.id.viewer_gallery_image);
-            favouriteBtn = view.findViewById(R.id.viewer_gallery_favourite_btn);
+            pageNumberTxt = requireViewById(view, R.id.viewer_gallery_pagenumber_text);
+            image = requireViewById(view, R.id.viewer_gallery_image);
+            favouriteBtn = requireViewById(view, R.id.viewer_gallery_favourite_btn);
             favouriteBtn.setOnClickListener(v -> onFavouriteClicked());
         }
 

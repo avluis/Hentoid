@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.sources.BaseWebActivity"
+    tools:ignore="AlwaysShowAction">
+    <item
+        android:id="@+id/web_menu_refresh_stop"
+        android:icon="@drawable/ic_action_refresh"
+        android:title="@string/web_refresh_stop"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/web_menu_gallery"
+        android:icon="@drawable/selector_gallery_icon"
+        android:title="@string/web_gallery"
+        android:enabled="false"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/web_menu_back"
+        android:icon="@drawable/selector_back_action"
+        android:title="@string/web_back"
+        android:enabled="false"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/web_menu_forward"
+        android:icon="@drawable/selector_forward_action"
+        android:title="@string/web_forward"
+        android:enabled="false"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/web_menu_download"
+        android:icon="@drawable/selector_download_action"
+        android:title="@string/web_download"
+        android:enabled="false"
+        app:showAsAction="always" />
+</menu>

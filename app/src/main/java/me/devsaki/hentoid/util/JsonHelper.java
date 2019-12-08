@@ -28,8 +28,12 @@ import timber.log.Timber;
  */
 public class JsonHelper {
 
-    public final static Type MAP_STRINGS = Types.newParameterizedType(Map.class, String.class, String.class);
-    private final static Moshi MOSHI = new Moshi.Builder()
+    private JsonHelper() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static final Type MAP_STRINGS = Types.newParameterizedType(Map.class, String.class, String.class);
+    private static final Moshi MOSHI = new Moshi.Builder()
             .add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new AttributeType.AttributeTypeAdapter())
             .build();
@@ -96,8 +100,15 @@ public class JsonHelper {
     public static <T> T jsonToObject(File f, Class<T> type) throws IOException {
         StringBuilder json = new StringBuilder();
         String sCurrentLine;
+        boolean isFirst = true;
         try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             while ((sCurrentLine = br.readLine()) != null) {
+                if (isFirst) {
+                    // Strip UTF-8 BOMs if any
+                    if (sCurrentLine.charAt(0) == '\uFEFF')
+                        sCurrentLine = sCurrentLine.substring(1);
+                    isFirst = false;
+                }
                 json.append(sCurrentLine);
             }
         }
@@ -107,12 +118,12 @@ public class JsonHelper {
     public static <T> T jsonToObject(String s, Class<T> type) throws IOException {
         JsonAdapter<T> jsonAdapter = MOSHI.adapter(type);
 
-        return jsonAdapter.fromJson(s);
+        return jsonAdapter.lenient().fromJson(s);
     }
 
     public static <T> T jsonToObject(String s, Type type) throws IOException {
         JsonAdapter<T> jsonAdapter = MOSHI.adapter(type);
 
-        return jsonAdapter.fromJson(s);
+        return jsonAdapter.lenient().fromJson(s);
     }
 }

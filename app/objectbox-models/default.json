@@ -10,107 +10,150 @@
       "properties": [
         {
           "id": "1:5108740755096578000",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "3:6218026218593161392",
+          "name": "name",
           "indexId": "6:3376665178160538616",
-          "name": "name"
+          "type": 9,
+          "flags": 2048
         },
         {
           "id": "4:9136188553462176700",
+          "name": "type",
           "indexId": "7:689427048355118025",
-          "name": "type"
+          "type": 5,
+          "flags": 10
         }
       ],
       "relations": []
     },
     {
       "id": "2:5880334030341287801",
-      "lastPropertyId": "19:326862264253525250",
+      "lastPropertyId": "20:753426778229264571",
       "name": "Content",
       "properties": [
         {
           "id": "1:1481988948624328056",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:5800889076602216395",
-          "name": "url"
+          "name": "url",
+          "type": 9
         },
         {
           "id": "3:1869970397575581249",
-          "name": "title"
+          "name": "title",
+          "type": 9
         },
         {
           "id": "4:2417271458982667075",
-          "name": "author"
+          "name": "author",
+          "type": 9
         },
         {
           "id": "5:674677213140156811",
-          "name": "coverImageUrl"
+          "name": "coverImageUrl",
+          "type": 9
         },
         {
           "id": "6:7062308019963509495",
-          "name": "qtyPages"
+          "name": "qtyPages",
+          "type": 5,
+          "flags": 2
         },
         {
           "id": "7:7301578355206155477",
-          "name": "uploadDate"
+          "name": "uploadDate",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "8:1827842303404521643",
-          "name": "downloadDate"
+          "name": "downloadDate",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "9:2429762886376715363",
-          "name": "status"
+          "name": "status",
+          "type": 5,
+          "flags": 2
         },
         {
           "id": "10:5174313231174202310",
-          "name": "site"
+          "name": "site",
+          "type": 6,
+          "flags": 2
         },
         {
           "id": "11:6249972361468615650",
-          "name": "storageFolder"
+          "name": "storageFolder",
+          "type": 9
         },
         {
           "id": "12:3838124773804113972",
-          "name": "favourite"
+          "name": "favourite",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "13:4211894395290313595",
-          "name": "reads"
+          "name": "reads",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "14:4722516447694741314",
-          "name": "lastReadDate"
+          "name": "lastReadDate",
+          "type": 6,
+          "flags": 4
         },
         {
           "id": "15:7783986187434244415",
-          "name": "uniqueSiteId"
+          "name": "uniqueSiteId",
+          "type": 9
         },
         {
           "id": "16:4321603102287256155",
-          "name": "downloadParams"
+          "name": "downloadParams",
+          "type": 9
         },
         {
           "id": "17:903347587815260256",
-          "name": "lastReadPageIndex"
+          "name": "lastReadPageIndex",
+          "type": 5,
+          "flags": 4
         },
         {
           "id": "18:9117635469382092615",
-          "name": "isBeingDeleted"
+          "name": "isBeingDeleted",
+          "type": 1,
+          "flags": 4
         },
         {
           "id": "19:326862264253525250",
-          "name": "jsonUri"
+          "name": "jsonUri",
+          "type": 9
+        },
+        {
+          "id": "20:753426778229264571",
+          "name": "isBeingFavourited",
+          "type": 1,
+          "flags": 4
         }
       ],
       "relations": [
         {
           "id": "1:4430709372206389603",
-          "name": "attributes"
+          "name": "attributes",
+          "targetId": "1:6281760634329431587"
         }
       ]
     },
@@ -121,36 +164,50 @@
       "properties": [
         {
           "id": "1:3113966914893868320",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:4786164809804019689",
-          "name": "order"
+          "name": "order",
+          "type": 5,
+          "flags": 2
         },
         {
           "id": "3:8847017078500757224",
-          "name": "url"
+          "name": "url",
+          "type": 9
         },
         {
           "id": "4:8890585972764734377",
-          "name": "name"
+          "name": "name",
+          "type": 9
         },
         {
           "id": "5:7613843228223628057",
-          "name": "status"
+          "name": "status",
+          "type": 5,
+          "flags": 2
         },
         {
           "id": "6:6745828261307358394",
+          "name": "contentId",
           "indexId": "4:7771600038559568217",
-          "name": "contentId"
+          "type": 11,
+          "flags": 1548,
+          "relationTarget": "Content"
         },
         {
           "id": "7:8627441942081468691",
-          "name": "downloadParams"
+          "name": "downloadParams",
+          "type": 9
         },
         {
           "id": "9:3938664550318760597",
-          "name": "favourite"
+          "name": "favourite",
+          "type": 1,
+          "flags": 4
         }
       ],
       "relations": []
@@ -162,16 +219,23 @@
       "properties": [
         {
           "id": "1:2024523736113657395",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:1320640807096340636",
-          "name": "rank"
+          "name": "rank",
+          "type": 5,
+          "flags": 4
         },
         {
           "id": "3:5421570333026902379",
+          "name": "contentId",
           "indexId": "3:6276640449349847797",
-          "name": "contentId"
+          "type": 11,
+          "flags": 1548,
+          "relationTarget": "Content"
         }
       ],
       "relations": []
@@ -183,64 +247,113 @@
       "properties": [
         {
           "id": "1:7498338443352299457",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:4100011129763730697",
-          "name": "site"
+          "name": "site",
+          "type": 6,
+          "flags": 2
         },
         {
           "id": "3:1589781357027616630",
-          "name": "url"
+          "name": "url",
+          "type": 9
         },
         {
           "id": "4:4617716480765519668",
+          "name": "attributeId",
           "indexId": "8:5756463807096430367",
-          "name": "attributeId"
+          "type": 11,
+          "flags": 1548,
+          "relationTarget": "Attribute"
         }
       ],
       "relations": []
     },
     {
       "id": "8:2761588808510077107",
-      "lastPropertyId": "6:6859233072010087049",
+      "lastPropertyId": "7:4722768682213725119",
       "name": "ErrorRecord",
       "properties": [
         {
           "id": "1:5654464950513562356",
-          "name": "id"
+          "name": "id",
+          "type": 6,
+          "flags": 1
         },
         {
           "id": "2:97618489394466159",
-          "name": "type"
+          "name": "type",
+          "type": 5,
+          "flags": 2
         },
         {
           "id": "3:5266874309167836641",
-          "name": "url"
+          "name": "url",
+          "type": 9
         },
         {
           "id": "4:2374260660208047890",
-          "name": "contentPart"
+          "name": "contentPart",
+          "type": 9
         },
         {
           "id": "5:5938637064174550118",
-          "name": "description"
+          "name": "description",
+          "type": 9
         },
         {
           "id": "6:6859233072010087049",
+          "name": "contentId",
           "indexId": "9:6133215885572986701",
-          "name": "contentId"
+          "type": 11,
+          "flags": 1548,
+          "relationTarget": "Content"
+        },
+        {
+          "id": "7:4722768682213725119",
+          "name": "timestamp",
+          "type": 6,
+          "flags": 2
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "9:2854716855695893043",
+      "lastPropertyId": "3:4569323833343490328",
+      "name": "SiteHistory",
+      "properties": [
+        {
+          "id": "1:3959853759284796367",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2830371251693076427",
+          "name": "site",
+          "type": 6,
+          "flags": 2
+        },
+        {
+          "id": "3:4569323833343490328",
+          "name": "url",
+          "type": 9
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "8:2761588808510077107",
+  "lastEntityId": "9:2854716855695893043",
   "lastIndexId": "9:6133215885572986701",
   "lastRelationId": "3:1412032361666532056",
   "lastSequenceId": "0:0",
-  "modelVersion": 4,
-  "modelVersionParserMinimum": 4,
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
   "retiredEntityUids": [
     4536601977896522985,
     1507624453077224648

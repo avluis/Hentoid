@@ -1,0 +1,43 @@
+New
+
+Support for Luscious.net
+Left menu sources are now dynamic : they can be added, removed and ordered as you want !
+Hentoid warns you when a site has a known issue (e.g. downloads failing or download button broken)
++Number of pages is displayed and can be used to sort books
++The web browser now has a toolbar with useful commands
+Back / forward / stop / reload
+Back to latest gallery page
+Copy current URL to clipboard
++Web browser : Option to remember the last visited page on every site
++Web browser : Long-tapping on a book link immediately adds it to the queue ("quick download")
+Error logs can now be shared
+Changed
+
+Library screen is automatically updated at all times. No need to refresh anything manually~
+Left menu : Preferences is now an icon on the top right of the menu
+Queue screen displays the number of items in the queue
+Advanced search : namespaces are displayed when the context is unclear (e.g. "Any" button, selected tags)
+Nhentai, Tsumino : Empty ad spaces on the top of pages have been removed
++Picture filenames are now formatted according to the maximum number of pages (e.g. 5 pages => 1,2,3... / 1000 pages => 0001,0002,0003...)
+Settings screens have been reordered
+Error log dialog is more user-friendly
++Image viewer : "Resume reading" option resets to the beginning of the book when user exits at last page
+Web screen : Navigation and download button are now in a bottom bar
+Web screen : "Go to queue" button becomes "Read" button as soon as the book is downloaded
+Fixed
+
+Android 5.1.1 : Saving the library in the SD card is now possible again
+Library screen : Unread status now disappears when a book is opened
+Library screen : Books won't blink indefinitely anymore if an error happened during their removal
+Gallery screen doesn't crash anymore when changing the orientation of the device
+Hitomi : "Open with..." works again
+Nhentai : The "group" tag is not recognized as an artist anymore
+App won't automatically check for updates when update checking is disabled in Preferences
+Hentai Cafe : No more books with max page = -1 (needs a reimport)
+Tsumino : Fixed "unsupported format 'bin'" issue
+Doujins.com : Thumbnails now load again when the phone is offline
+Image viewer : In vertical mode, leaving the viewer at page number (max - 1) won't restore it at page number (max - 2) anymore
+Screen is now responsive after leaving the "select download folder" dialog without selecting any folder
+Technical
+
+Library screen has been rewritten and upgraded to the latest Android tech !

@@ -9,7 +9,8 @@ import me.devsaki.hentoid.enums.Site;
 public class NhentaiActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "nhentai.net";
-    private static final String GALLERY_FILTER = "nhentai.net/g/";
+    private static final String[] GALLERY_FILTER = {"nhentai.net/g/"};
+    private static final String[] DIRTY_ELEMENTS = {"section.advertisement"};
 
     Site getStartSite() {
         return Site.NHENTAI;
@@ -18,6 +19,7 @@ public class NhentaiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
+        addDirtyElements(DIRTY_ELEMENTS);
         CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;

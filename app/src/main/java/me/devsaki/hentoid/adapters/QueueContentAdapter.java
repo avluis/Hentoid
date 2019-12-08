@@ -37,6 +37,8 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 /**
  * Created by neko on 11/05/2015.
  * Builds and assigns content from db into adapter for display in queue fragment
@@ -54,27 +56,27 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     @NonNull
     @Override
-    public View getView(int pos, View view, @NonNull ViewGroup parent) {
-        View v = view;
+    public View getView(int pos, View rootView, @NonNull ViewGroup parent) {
         ViewHolder holder;
         if (null == container) container = (ListView) parent;
         // Check if an existing view is being reused, otherwise inflate the view
-        if (v == null) {
+        if (rootView == null) {
             holder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(context);
-            v = inflater.inflate(R.layout.item_queue, parent, false);
+            rootView = inflater.inflate(R.layout.item_queue, parent, false);
 
-            holder.progressBar = v.findViewById(R.id.pbDownload);
-            holder.tvTitle = v.findViewById(R.id.tvTitle);
-            holder.ivCover = v.findViewById(R.id.ivCover);
-            holder.tvSeries = v.findViewById(R.id.tvSeries);
-            holder.tvArtist = v.findViewById(R.id.tvArtist);
-            holder.tvTags = v.findViewById(R.id.tvTags);
-            holder.ivSource = v.findViewById(R.id.ivSite);
+            holder.progressBar = requireViewById(rootView, R.id.pbDownload);
+            holder.tvTitle = requireViewById(rootView, R.id.tvTitle);
+            holder.ivCover = requireViewById(rootView, R.id.ivCover);
+            holder.tvSeries = requireViewById(rootView, R.id.tvSeries);
+            holder.tvArtist = requireViewById(rootView, R.id.tvArtist);
+            holder.tvPages = requireViewById(rootView, R.id.tvPages);
+            holder.tvTags = requireViewById(rootView, R.id.tvTags);
+            holder.ivSource = requireViewById(rootView, R.id.ivSite);
 
-            v.setTag(holder);
+            rootView.setTag(holder);
         } else {
-            holder = (ViewHolder) v.getTag();
+            holder = (ViewHolder) rootView.getTag();
         }
 
         // Populate the data into the template view using the data object
@@ -82,11 +84,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         final Content content = getItem(pos);
         if (content != null) {
             populateLayout(holder, content);
-            attachButtons(v, content, (0 == pos), (getCount() - 1 == pos), getCount());
+            attachButtons(rootView, content, (0 == pos), (getCount() - 1 == pos), getCount());
             updateProgress(holder.progressBar, content, 0 == pos, false);
         }
         // Return the completed view to render on screen
-        return v;
+        return rootView;
     }
 
     /**
@@ -100,6 +102,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         attachCover(holder, content);
         attachSeries(holder, content);
         attachArtist(holder, content);
+        attachPages(holder);
         attachTags(holder, content);
         attachSource(holder, content);
     }
@@ -188,9 +191,22 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             for (Attribute attribute : attributes) {
                 allArtists.add(attribute.getName());
             }
-            String artists = android.text.TextUtils.join(",", allArtists);
+            String artists = android.text.TextUtils.join(", ", allArtists);
             holder.tvArtist.setText(templateArtist.replace("@artist@", artists));
         }
+    }
+
+    /**
+     * Build the pages layout of the book viewholder using the designated Content properties
+     * <p>
+     * NB : depending on the source, the number of pages is not always known
+     * at the very beginning of the download. To avoid displaying an invalid number and having to
+     * refresh it afterwards, queue cards won't have any number of pages displayed
+     *
+     * @param holder Holder to populate
+     */
+    private void attachPages(ViewHolder holder) {
+        holder.tvPages.setVisibility(View.GONE);
     }
 
     /**
@@ -235,28 +251,28 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Build the buttons of the book viewholder using the designated Content properties
      *
-     * @param view        View to populate
+     * @param rootView    View to populate
      * @param content     Designated content
      * @param isFirstItem True if designated Content is the first item of the queue; false if not
      * @param isLastItem  True if designated Content is the last item of the queue; false if not
      */
-    private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem, int itemCount) {
-        View btnUp = view.findViewById(R.id.queueUpBtn);
+    private void attachButtons(@NonNull View rootView, final Content content, boolean isFirstItem, boolean isLastItem, int itemCount) {
+        View btnUp = requireViewById(rootView, R.id.queueUpBtn);
         ((ImageView) btnUp).setImageResource(R.drawable.ic_arrow_up);
         btnUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
         btnUp.setOnClickListener(v -> moveUp(content.getId()));
 
-        View btnTop = view.findViewById(R.id.queueTopBtn);
+        View btnTop = requireViewById(rootView, R.id.queueTopBtn);
         ((ImageView) btnTop).setImageResource(R.drawable.ic_doublearrowup);
         btnTop.setVisibility((isFirstItem || itemCount < 3) ? View.INVISIBLE : View.VISIBLE);
         btnTop.setOnClickListener(v -> moveTop(content.getId()));
 
-        View btnDown = view.findViewById(R.id.queueDownBtn);
+        View btnDown = requireViewById(rootView, R.id.queueDownBtn);
         ((ImageView) btnDown).setImageResource(R.drawable.ic_arrow_down);
         btnDown.setVisibility(isLastItem ? View.INVISIBLE : View.VISIBLE);
         btnDown.setOnClickListener(v -> moveDown(content.getId()));
 
-        View btnCancel = view.findViewById(R.id.btnCancel);
+        View btnCancel = requireViewById(rootView, R.id.btnCancel);
         btnCancel.setOnClickListener(v -> cancel(content));
     }
 
@@ -285,13 +301,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     public void updateProgress(int index, boolean isPausedevent) {
         if (null == container) return;
 
-        View view = container.getChildAt(index - container.getFirstVisiblePosition());
-        if (view == null) return;
+        View rootView = container.getChildAt(index - container.getFirstVisiblePosition());
+        if (rootView == null) return;
 
         Content content = getItem(index);
         if (null == content) return;
 
-        updateProgress(view.findViewById(R.id.pbDownload), content, 0 == index, isPausedevent);
+        updateProgress(requireViewById(rootView, R.id.pbDownload), content, 0 == index, isPausedevent);
     }
 
     private void swap(int firstPosition, int secondPosition) {
@@ -466,6 +482,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         ImageView ivCover;
         TextView tvSeries;
         TextView tvArtist;
+        View tvPages;
         TextView tvTags;
         ImageView ivSource;
     }

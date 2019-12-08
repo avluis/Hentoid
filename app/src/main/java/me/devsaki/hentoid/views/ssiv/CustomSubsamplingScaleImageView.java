@@ -771,7 +771,7 @@ public class CustomSubsamplingScaleImageView extends View {
         return handled || super.onTouchEvent(event);
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private boolean onTouchEventInternal(@NonNull MotionEvent event) {
         int touchCount = event.getPointerCount();
         switch (event.getAction()) {
@@ -1160,7 +1160,9 @@ public class CustomSubsamplingScaleImageView extends View {
 
         } else if (bitmap != null) {
 
-            float xScale = scale, yScale = scale;
+            float xScale = scale;
+            float yScale = scale;
+
             if (bitmapIsPreview) {
                 xScale = scale * ((float) sWidth / bitmap.getWidth());
                 yScale = scale * ((float) sHeight / bitmap.getHeight());
@@ -1418,11 +1420,15 @@ public class CustomSubsamplingScaleImageView extends View {
      * Determine whether tile is visible.
      */
     private boolean tileVisible(Tile tile) {
-        float sVisLeft = viewToSourceX(0),
-                sVisRight = viewToSourceX(getWidthInternal()),
-                sVisTop = viewToSourceY(0),
-                sVisBottom = viewToSourceY(getHeightInternal());
-        return !(sVisLeft > tile.sRect.right || tile.sRect.left > sVisRight || sVisTop > tile.sRect.bottom || tile.sRect.top > sVisBottom);
+        float sVisLeft = viewToSourceX(0);
+        float sVisRight = viewToSourceX(getWidthInternal());
+        float sVisTop = viewToSourceY(0);
+        float sVisBottom = viewToSourceY(getHeightInternal());
+
+        return !(sVisLeft > tile.sRect.right ||
+                 tile.sRect.left > sVisRight ||
+                 sVisTop > tile.sRect.bottom ||
+                 tile.sRect.top > sVisBottom);
     }
 
     /**
@@ -1926,7 +1932,7 @@ public class CustomSubsamplingScaleImageView extends View {
         if (sourceUri.startsWith(ContentResolver.SCHEME_CONTENT)) {
             Cursor cursor = null;
             try {
-                String[] columns = {MediaStore.Images.Media.ORIENTATION};
+                String[] columns = {MediaStore.Images.ImageColumns.ORIENTATION};
                 cursor = context.getContentResolver().query(Uri.parse(sourceUri), columns, null, null, null);
                 if (cursor != null && cursor.moveToFirst()) {
                     int orientation = cursor.getInt(0);
@@ -2352,21 +2358,6 @@ public class CustomSubsamplingScaleImageView extends View {
         satTemp.vTranslate.set(vxCenter - (sCenterX * scale), vyCenter - (sCenterY * scale));
         fitToBounds(true, satTemp);
         return satTemp.vTranslate;
-    }
-
-    /**
-     * Given a requested source center and scale, calculate what the actual center will have to be to keep the image in
-     * pan limits, keeping the requested center as near to the middle of the screen as allowed.
-     */
-    @NonNull
-    private PointF limitedSCenter(float sCenterX, float sCenterY, float scale, @NonNull PointF sTarget) {
-        PointF vTranslate = vTranslateForSCenter(sCenterX, sCenterY, scale);
-        int vxCenter = getPaddingLeft() + (getWidthInternal() - getPaddingRight() - getPaddingLeft()) / 2;
-        int vyCenter = getPaddingTop() + (getHeightInternal() - getPaddingBottom() - getPaddingTop()) / 2;
-        float sx = (vxCenter - vTranslate.x) / scale;
-        float sy = (vyCenter - vTranslate.y) / scale;
-        sTarget.set(sx, sy);
-        return sTarget;
     }
 
     /**
@@ -3243,6 +3234,20 @@ public class CustomSubsamplingScaleImageView extends View {
             invalidate();
         }
 
+        /**
+         * Given a requested source center and scale, calculate what the actual center will have to be to keep the image in
+         * pan limits, keeping the requested center as near to the middle of the screen as allowed.
+         */
+        @NonNull
+        private PointF limitedSCenter(float sCenterX, float sCenterY, float scale, @NonNull PointF sTarget) {
+            PointF vTranslate = vTranslateForSCenter(sCenterX, sCenterY, scale);
+            int vxCenter = getPaddingLeft() + (getWidthInternal() - getPaddingRight() - getPaddingLeft()) / 2;
+            int vyCenter = getPaddingTop() + (getHeightInternal() - getPaddingBottom() - getPaddingTop()) / 2;
+            float sx = (vxCenter - vTranslate.x) / scale;
+            float sy = (vyCenter - vTranslate.y) / scale;
+            sTarget.set(sx, sy);
+            return sTarget;
+        }
     }
 
     /**

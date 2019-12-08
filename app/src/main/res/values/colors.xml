@@ -45,4 +45,8 @@
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
     <color name="transparent">#00000000</color>
     <color name="item_highlight">#28FFFFFF</color>
+
+    <!-- Alert colors -->
+    <color name="orange">@android:color/holo_orange_dark</color>
+    <color name="red">@android:color/holo_red_dark</color>
 </resources>

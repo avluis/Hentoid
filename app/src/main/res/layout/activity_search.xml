@@ -9,14 +9,14 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/search_toolbar"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="?attr/colorPrimary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:elevation="@dimen/toolbar_layout_elevation"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_close"
-        app:title="Advanced search" />
+        app:title="Advanced search"
+        tools:targetApi="lollipop" />
 
     <TextView
         android:id="@+id/startCaption"

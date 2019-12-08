@@ -5,7 +5,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ASMHentaiContent;
 import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
-import me.devsaki.hentoid.parsers.content.FakkuContent;
 import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
 import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
@@ -13,6 +12,16 @@ import me.devsaki.hentoid.parsers.content.NexusContent;
 import me.devsaki.hentoid.parsers.content.NhentaiContent;
 import me.devsaki.hentoid.parsers.content.PururinContent;
 import me.devsaki.hentoid.parsers.content.TsuminoContent;
+import me.devsaki.hentoid.parsers.images.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.images.DummyParser;
+import me.devsaki.hentoid.parsers.images.EHentaiParser;
+import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
+import me.devsaki.hentoid.parsers.images.HitomiParser;
+import me.devsaki.hentoid.parsers.images.ImageListParser;
+import me.devsaki.hentoid.parsers.images.LusciousParser;
+import me.devsaki.hentoid.parsers.images.NexusParser;
+import me.devsaki.hentoid.parsers.images.PururinParser;
+import me.devsaki.hentoid.parsers.images.TsuminoParser;
 
 public class ContentParserFactory {
 
@@ -41,15 +50,14 @@ public class ContentParserFactory {
                 return TsuminoContent.class;
             case PURURIN:
                 return PururinContent.class;
-            case FAKKU2:
-                return FakkuContent.class;
             case NEXUS:
                 return NexusContent.class;
             case MUSES:
                 return MusesContent.class;
             case DOUJINS:
                 return DoujinsContent.class;
-            case EHENTAI: // E-H uses the API of the site -> no HTML parser
+            case EHENTAI: // Uses the API of the site -> no HTML parser
+            case LUSCIOUS: // Uses the API of the site -> no HTML parser
             default:
                 return DummyContent.class;
         }
@@ -74,12 +82,13 @@ public class ContentParserFactory {
                 return new PururinParser();
             case EHENTAI:
                 return new EHentaiParser();
-            case FAKKU2:
-                return new FakkuParser();
             case NEXUS:
                 return new NexusParser();
+            case LUSCIOUS:
+                return new LusciousParser();
             case MUSES: // No image parser; images are fetched by ContentParser
             case NHENTAI:
+            case DOUJINS:
             default:
                 return new DummyParser();
         }

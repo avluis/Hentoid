@@ -21,6 +21,7 @@ public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeVie
     private final List<Attribute> dataset = new ArrayList<>();
     private Runnable onScrollToEndListener = null;
     private View.OnClickListener onClickListener = null;
+    private boolean formatWithNamespace = false;
 
     @NonNull
     @Override
@@ -37,12 +38,16 @@ public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeVie
         this.onClickListener = listener;
     }
 
+    public void setFormatWithNamespace(boolean formatWithNamespace) {
+        this.formatWithNamespace = formatWithNamespace;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull AttributeViewHolder holder, int position) {
         if (position == getItemCount() - VISIBLE_THRESHOLD && onScrollToEndListener != null) {
             onScrollToEndListener.run();
         }
-        holder.bindTo(dataset.get(position));
+        holder.bindTo(dataset.get(position), formatWithNamespace);
         holder.itemView.setOnClickListener(onClickListener);
     }
 

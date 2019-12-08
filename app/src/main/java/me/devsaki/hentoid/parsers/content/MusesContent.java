@@ -107,7 +107,7 @@ public class MusesContent implements ContentParser {
                     }
                 }
             }
-            result.setTitle(bookTitle);
+            result.setTitle(Helper.removeNonPrintableChars(bookTitle));
         }
 
 
@@ -121,7 +121,7 @@ public class MusesContent implements ContentParser {
             if (thumbParts.length > 3) {
                 thumbParts[2] = "fl"; // Large dimensions; there's also a medium variant available (fm)
                 String imgUrl = Site.MUSES.getUrl() + "/" + thumbParts[1] + "/" + thumbParts[2] + "/" + thumbParts[3];
-                images.add(new ImageFile(index, imgUrl, StatusContent.SAVED)); // We infer actual book page images have the same format as their thumbs
+                images.add(new ImageFile(index, imgUrl, StatusContent.SAVED, thumbs.size())); // We infer actual book page images have the same format as their thumbs
                 index++;
             }
         }

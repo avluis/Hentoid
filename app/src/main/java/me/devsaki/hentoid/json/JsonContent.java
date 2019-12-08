@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json;
 
+import com.annimon.stream.Stream;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,29 +9,32 @@ import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.Helper;
 
 public class JsonContent {
 
-    public String url;
-    public String title;
-    public String author;
-    public String coverImageUrl;
-    public Integer qtyPages;
-    public long uploadDate;
-    public long downloadDate;
-    public StatusContent status;
-    public Site site;
-    public boolean favourite;
-    public long reads;
-    public long lastReadDate;
-    public int lastReadPageIndex;
+    private String url;
+    private String title;
+    private String author;
+    private String coverImageUrl;
+    private Integer qtyPages;
+    private long uploadDate;
+    private long downloadDate;
+    private StatusContent status;
+    private Site site;
+    private boolean favourite;
+    private long reads;
+    private long lastReadDate;
+    private int lastReadPageIndex;
 
-    public Map<AttributeType, List<JsonAttribute>> attributes;
-    public List<JsonImageFile> imageFiles = new ArrayList<>();
+    private Map<AttributeType, List<JsonAttribute>> attributes;
+    private List<JsonImageFile> imageFiles = new ArrayList<>();
+    private List<JsonErrorRecord> errorRecords = new ArrayList<>();
 
     private JsonContent() {
     }
@@ -39,7 +44,7 @@ public class JsonContent {
         if (null == attributeItem) return;
 
         List<JsonAttribute> list;
-        AttributeType type = attributeItem.type;
+        AttributeType type = attributeItem.getType();
 
         if (attributes.containsKey(type)) {
             list = attributes.get(type);
@@ -53,7 +58,7 @@ public class JsonContent {
     public static JsonContent fromEntity(Content c) {
         JsonContent result = new JsonContent();
         result.url = c.getUrl();
-        result.title = c.getTitle();
+        result.title = Helper.removeNonPrintableChars(c.getTitle());
         result.author = c.getAuthor();
         result.coverImageUrl = c.getCoverImageUrl();
         result.qtyPages = c.getQtyPages();
@@ -66,15 +71,20 @@ public class JsonContent {
         result.lastReadDate = c.getLastReadDate();
         result.lastReadPageIndex = c.getLastReadPageIndex();
 
-        if (c.getImageFiles() != null)
-            for (ImageFile img : c.getImageFiles())
-                result.imageFiles.add(JsonImageFile.fromEntity(img));
-
         result.attributes = new HashMap<>();
         for (Attribute a : c.getAttributes()) {
             JsonAttribute attr = JsonAttribute.fromEntity(a, c.getSite());
             result.addAttribute(attr);
         }
+
+        if (c.getImageFiles() != null)
+            for (ImageFile img : c.getImageFiles())
+                result.imageFiles.add(JsonImageFile.fromEntity(img));
+
+        if (c.getErrorLog() != null)
+            for (ErrorRecord err : c.getErrorLog())
+                result.errorRecords.add(JsonErrorRecord.fromEntity(err));
+
         return result;
     }
 
@@ -84,7 +94,7 @@ public class JsonContent {
         if (null == site) site = Site.NONE;
         result.setSite(site);
         result.setUrl(url);
-        result.setTitle(title);
+        result.setTitle(Helper.removeNonPrintableChars(title));
         result.setAuthor(author);
         result.setCoverImageUrl(coverImageUrl);
         result.setQtyPages(qtyPages);
@@ -99,6 +109,8 @@ public class JsonContent {
         if (attributes != null) {
             result.clearAttributes();
             for (List<JsonAttribute> jsonAttrList : attributes.values()) {
+                // Remove duplicates that may exist in old JSONs (cause weird single tags to appear in the DB)
+                jsonAttrList = Stream.of(jsonAttrList).distinct().toList();
                 List<Attribute> attrList = new ArrayList<>();
                 for (JsonAttribute attr : jsonAttrList) attrList.add(attr.toEntity(site));
                 result.addAttributes(attrList);
@@ -106,8 +118,16 @@ public class JsonContent {
         }
         if (imageFiles != null) {
             List<ImageFile> imgs = new ArrayList<>();
-            for (JsonImageFile img : imageFiles) imgs.add(img.toEntity());
+            for (JsonImageFile img : imageFiles) imgs.add(img.toEntity(imageFiles.size()));
             result.setImageFiles(imgs);
+
+            // Fix books with incorrect QtyPages that may exist in old JSONs
+            if (qtyPages <= 0) result.setQtyPages(imageFiles.size());
+        }
+        if (errorRecords != null) {
+            List<ErrorRecord> errs = new ArrayList<>();
+            for (JsonErrorRecord err : errorRecords) errs.add(err.toEntity());
+            result.setErrorLog(errs);
         }
 
         result.populateAuthor();

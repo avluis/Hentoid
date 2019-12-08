@@ -2,11 +2,11 @@ package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.annimon.stream.Stream;
 
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,9 +20,9 @@ import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
 import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
-import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
+import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
@@ -67,9 +67,10 @@ public class Content implements Serializable {
     // Temporary during ERROR state only; no need to expose them for JSON persistence
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
-    // Needs to be in the DB to keep the information when deletion takes a long time and user navigates
-    // No need to save that into JSON
+    // Needs to be in the DB to keep the information when deletion/favouriting takes a long time
+    // and user navigates away; no need to save that into JSON
     private boolean isBeingDeleted = false;
+    private boolean isBeingFavourited = false;
     // Needs to be in the DB to optimize I/O
     // No need to save that into the JSON file itself, obviously
     private String jsonUri;
@@ -77,8 +78,6 @@ public class Content implements Serializable {
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
     private double percent;     // % progress to display the progress bar on the queue screen
-    @Transient
-    private int queryOrder;     // Order of current content in the DB query that creates it
     @Transient
     private boolean isFirst;    // True if current content is the first of its set in the DB query
     @Transient
@@ -138,9 +137,9 @@ public class Content implements Serializable {
     private String computeUniqueSiteId() {
         String[] paths;
 
+        if (null == url) return "";
+
         switch (site) {
-            case FAKKU:
-                return url.substring(url.lastIndexOf('/') + 1);
             case EHENTAI:
             case PURURIN:
                 paths = url.split("/");
@@ -158,9 +157,6 @@ public class Content implements Serializable {
                 return url.replace("/", "");
             case HENTAICAFE:
                 return url.replace("/?p=", "");
-            case FAKKU2:
-                paths = url.split("/");
-                return paths[paths.length - 1];
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
             case DOUJINS:
@@ -168,6 +164,11 @@ public class Content implements Serializable {
                 // e.g. lewd-title-ch-1-3-42116 -> 42116 is the ID
                 int lastIndex = url.lastIndexOf('-');
                 return url.substring(lastIndex + 1);
+            case LUSCIOUS:
+                // ID is the last numeric part of the URL
+                // e.g. /albums/lewd_title_ch_1_3_42116/ -> 42116 is the ID
+                lastIndex = url.lastIndexOf('_');
+                return url.substring(lastIndex + 1, url.length() - 1);
             default:
                 return "";
         }
@@ -182,8 +183,6 @@ public class Content implements Serializable {
     public String getOldUniqueSiteId() {
         String[] paths;
         switch (site) {
-            case FAKKU:
-                return url.substring(url.lastIndexOf('/') + 1);
             case PURURIN:
                 paths = url.split("/");
                 return paths[2].replace(".html", "") + "-" + paths[1];
@@ -205,11 +204,11 @@ public class Content implements Serializable {
         }
     }
 
-    public Class<?> getWebActivityClass() {
+    public Class<? extends AppCompatActivity> getWebActivityClass() {
         return getWebActivityClass(this.site);
     }
 
-    public static Class<?> getWebActivityClass(Site site) {
+    public static Class<? extends AppCompatActivity> getWebActivityClass(Site site) {
         switch (site) {
             case HITOMI:
                 return HitomiActivity.class;
@@ -226,30 +225,28 @@ public class Content implements Serializable {
                 return PururinActivity.class;
             case EHENTAI:
                 return EHentaiActivity.class;
-            case FAKKU2:
-                return FakkuActivity.class;
             case NEXUS:
                 return NexusActivity.class;
             case MUSES:
                 return MusesActivity.class;
             case DOUJINS:
                 return DoujinsActivity.class;
+            case LUSCIOUS:
+                return LusciousActivity.class;
             default:
                 return BaseWebActivity.class;
         }
     }
 
     public String getCategory() {
-        if (site == Site.FAKKU) {
-            return url.substring(1, url.lastIndexOf('/'));
-        } else {
-            if (attributes != null) {
-                List<Attribute> attributesList = getAttributeMap().get(AttributeType.CATEGORY);
-                if (attributesList != null && !attributesList.isEmpty()) {
-                    return attributesList.get(0).getName();
-                }
+
+        if (attributes != null) {
+            List<Attribute> attributesList = getAttributeMap().get(AttributeType.CATEGORY);
+            if (attributesList != null && !attributesList.isEmpty()) {
+                return attributesList.get(0).getName();
             }
         }
+
 
         return null;
     }
@@ -282,13 +279,11 @@ public class Content implements Serializable {
             case TSUMINO:
                 galleryConst = "/entry";
                 break;
-            case FAKKU2:
-                galleryConst = "/hentai/";
-                break;
             case NEXUS:
                 galleryConst = "/view";
                 break;
-            case FAKKU:
+            case LUSCIOUS:
+                return site.getUrl().replace("/manga/", "") + url;
             case HENTAICAFE:
             case PANDA:
             case MUSES:
@@ -319,12 +314,12 @@ public class Content implements Serializable {
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
             case PURURIN:
                 return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
-            case FAKKU2:
-                return getGalleryUrl() + "/read/page/1";
             case NEXUS:
                 return site.getUrl() + "/read" + url + "/001";
             case MUSES:
                 return site.getUrl().replace("album", "picture") + "/1";
+            case LUSCIOUS:
+                return getGalleryUrl() + "read/";
             default:
                 return null;
         }
@@ -427,6 +422,13 @@ public class Content implements Serializable {
         return errorLog;
     }
 
+    public void setErrorLog(List<ErrorRecord> errorLog) {
+        if (errorLog != null && !errorLog.equals(this.errorLog)) {
+            this.errorLog.clear();
+            this.errorLog.addAll(errorLog);
+        }
+    }
+
     public double getPercent() {
         return percent;
     }
@@ -466,15 +468,6 @@ public class Content implements Serializable {
 
     public Content setFavourite(boolean favourite) {
         this.favourite = favourite;
-        return this;
-    }
-
-    private int getQueryOrder() {
-        return queryOrder;
-    }
-
-    public Content setQueryOrder(int order) {
-        queryOrder = order;
         return this;
     }
 
@@ -550,6 +543,14 @@ public class Content implements Serializable {
         this.isBeingDeleted = isBeingDeleted;
     }
 
+    public boolean isBeingFavourited() {
+        return isBeingFavourited;
+    }
+
+    public void setIsBeingFavourited(boolean isBeingFavourited) {
+        this.isBeingFavourited = isBeingFavourited;
+    }
+
     public String getJsonUri() {
         return (null == jsonUri) ? "" : jsonUri;
     }
@@ -566,28 +567,17 @@ public class Content implements Serializable {
         this.numberDownloadRetries++;
     }
 
-
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Content)) {
-            return false;
-        }
-
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-
-        return this == o || (Objects.equals(content.url, url) && Objects.equals(content.site, site));
+        return Objects.equals(url, content.url) &&
+                site == content.site;
     }
 
     @Override
     public int hashCode() {
-        int result = url != null ? url.hashCode() : 0;
-        result = 31 * result + (site != null ? site.hashCode() : 0);
-        return result;
+        return Objects.hash(url, site);
     }
-
-    public static Comparator<Content> getComparator() {
-        return QUERY_ORDER_COMPARATOR;
-    }
-
-    private static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
 }

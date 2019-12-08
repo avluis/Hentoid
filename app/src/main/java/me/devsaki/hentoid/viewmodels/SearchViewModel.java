@@ -7,14 +7,14 @@ import android.util.SparseIntArray;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
-import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -23,20 +23,18 @@ import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.util.Preferences;
 
 import static java.util.Objects.requireNonNull;
-import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 
 
 public class SearchViewModel extends AndroidViewModel {
 
     private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
     private final MutableLiveData<AttributeSearchResult> proposedAttributes = new MutableLiveData<>();
-    private final MutableLiveData<ContentSearchResult> selectedContent = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
 
-    /**
-     * @see #setMode(int)
-     */
-    private CollectionAccessor collectionAccessor;
+    private LiveData<Integer> currentCountSource = null;
+    private final MediatorLiveData<Integer> selectedContentCount = new MediatorLiveData<>();
+
+    private CollectionDAO collectionDAO;
 
     private List<AttributeType> category;
 
@@ -62,23 +60,6 @@ public class SearchViewModel extends AndroidViewModel {
             list.postValue(result);
         }
     }
-
-    private PagedResultListener<Content> contentResultListener = new PagedResultListener<Content>() {
-        @Override
-        public void onPagedResultReady(List<Content> results, long totalSelected, long total) {
-            ContentSearchResult result = new ContentSearchResult();
-            result.totalSelected = totalSelected;
-            selectedContent.postValue(result);
-        }
-
-        @Override
-        public void onPagedResultFailed(Content result, String message) {
-            ContentSearchResult res = new ContentSearchResult();
-            res.success = false;
-            res.message = message;
-            selectedContent.postValue(res);
-        }
-    };
 
     private ResultListener<SparseIntArray> countPerTypeResultListener = new ResultListener<SparseIntArray>() {
         @Override
@@ -107,13 +88,9 @@ public class SearchViewModel extends AndroidViewModel {
 
     public SearchViewModel(@NonNull Application application) {
         super(application);
+        Context ctx = application.getApplicationContext();
+        collectionDAO = new ObjectBoxDAO(ctx);
         selectedAttributes.setValue(new ArrayList<>());
-    }
-
-    public void setMode(int mode) {
-        Context ctx = getApplication().getApplicationContext();
-        collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(ctx) : new MikanCollectionAccessor(ctx);
-        countAttributesPerType();
     }
 
     @NonNull
@@ -132,8 +109,8 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<ContentSearchResult> getSelectedContentData() {
-        return selectedContent;
+    public LiveData<Integer> getSelectedContentCount() {
+        return selectedContentCount;
     }
 
     // === VERB METHODS
@@ -143,17 +120,7 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
-        if (collectionAccessor.supportsAttributesPaging()) {
-            if (collectionAccessor.supportsAvailabilityFilter())
-                collectionAccessor.getAttributeMasterDataPaged(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
-            else
-                collectionAccessor.getAttributeMasterDataPaged(category, query, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
-        } else {
-            if (collectionAccessor.supportsAvailabilityFilter())
-                collectionAccessor.getAttributeMasterData(category, query, selectedAttributes.getValue(), false, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
-            else
-                collectionAccessor.getAttributeMasterData(category, query, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
-        }
+        collectionDAO.getAttributeMasterDataPaged(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
     }
 
     public void onAttributeSelected(Attribute a) {
@@ -168,7 +135,12 @@ public class SearchViewModel extends AndroidViewModel {
         updateSelectionResult();
     }
 
-    public void setSelectedAttributes(List<Attribute> attrs) {
+    public void emptyStart() {
+        countAttributesPerType();
+        updateSelectionResult();
+    }
+
+    public void setSelectedAttributes(@NonNull List<Attribute> attrs) {
         selectedAttributes.setValue(attrs);
 
         // Indirect impact on attributesPerType
@@ -189,11 +161,13 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     private void countAttributesPerType() {
-        collectionAccessor.countAttributesPerType(selectedAttributes.getValue(), countPerTypeResultListener);
+        collectionDAO.countAttributesPerType(selectedAttributes.getValue(), countPerTypeResultListener);
     }
 
     private void updateSelectionResult() {
-        collectionAccessor.countBooks("", selectedAttributes.getValue(), false, contentResultListener);
+        if (currentCountSource != null) selectedContentCount.removeSource(currentCountSource);
+        currentCountSource = collectionDAO.countBooks("", selectedAttributes.getValue(), false);
+        selectedContentCount.addSource(currentCountSource, selectedContentCount::setValue);
     }
 
     // === HELPER RESULT STRUCTURES
@@ -223,7 +197,7 @@ public class SearchViewModel extends AndroidViewModel {
 
     @Override
     protected void onCleared() {
-        if (collectionAccessor != null) collectionAccessor.dispose();
+        if (collectionDAO != null) collectionDAO.dispose();
         super.onCleared();
     }
 }

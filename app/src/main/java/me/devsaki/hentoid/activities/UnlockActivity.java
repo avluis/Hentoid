@@ -5,9 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.fragments.pin.UnlockPinDialogFragment;
@@ -16,7 +17,7 @@ import me.devsaki.hentoid.util.Preferences;
 /**
  * This activity asks for a 4 digit pin if it is set and then transitions to another activity
  */
-public class UnlockActivity extends BaseActivity implements UnlockPinDialogFragment.Parent {
+public class UnlockActivity extends AppCompatActivity implements UnlockPinDialogFragment.Parent {
 
     private static final String EXTRA_INTENT = "intent";
     private static final String EXTRA_SITE_CODE = "siteCode";
@@ -95,7 +96,7 @@ public class UnlockActivity extends BaseActivity implements UnlockPinDialogFragm
         else {
             int siteCode = getIntent().getIntExtra(EXTRA_SITE_CODE, Site.NONE.getCode());
             Class c = Content.getWebActivityClass(Site.searchByCode(siteCode));
-            targetIntent = new Intent(HentoidApp.getAppContext(), c);
+            targetIntent = new Intent(HentoidApp.getInstance(), c);
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             targetIntent.setAction(Intent.ACTION_VIEW);
         }

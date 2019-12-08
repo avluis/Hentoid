@@ -9,15 +9,14 @@
     <string name="off">Off</string>
 
     <!-- Activities -->
-    <string name="title_activity_downloads">Downloads</string>
+    <string name="title_activity_downloads">Library</string>
     <string name="title_activity_queue">Queue</string>
-    <string name="title_activity_mikan">Mikan Search</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
 
-    <!-- Menu -->
+    <!-- Library screen toolbar -->
     <string name="menu_tags">Tags</string>
     <string name="menu_search">Search</string>
     <string name="menu_order">order books</string>
@@ -28,15 +27,17 @@
     <string name="menu_order_unread">by reads (unread 1st)</string>
     <string name="menu_order_read">by reads (most read 1st)</string>
     <string name="menu_order_last_read">by read date (latest read 1st)</string>
+    <string name="menu_order_pages_desc">by pages (most first)</string>
+    <string name="menu_order_pages_asc">by pages (least first)</string>
     <string name="menu_order_random">random order</string>
     <string name="menu_fav">Toggle favourite filter</string>
     <string name="menu_delete_single">Delete</string>
     <string name="menu_delete_multi">Delete Items</string>
     <string name="menu_share">Share</string>
     <string name="menu_archive">Archive</string>
-    <string name="menu_about_mikan">About Mikan</string>
     <string name="search_hint">Search title</string>
     <string name="send_to">Share with:</string>
+    <string name="open_settings">Open settings</string>
 
     <!-- Queue -->
     <string name="cancel">Cancel</string>
@@ -49,11 +50,16 @@
     <string name="queue_preparing">Preparing download</string>
     <string name="queue_dl">Downloading {0}</string>
     <string name="err_stats_title">Error stats</string>
+    <plurals name="queue_book_count">
+        <item quantity="one">Queue has %s book</item>
+        <item quantity="other">Queue has %s books</item>
+    </plurals>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: @series@</string>
     <string name="work_artist">Artist: @artist@</string>
+    <string name="work_pages">Pages: @pages@</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
@@ -73,7 +79,8 @@
     <string name="permissioncomplaint_snackbar_manual">You must manually grant permissions before you can continue</string>
     <string name="import_canceled">Import canceled</string>
     <string name="existing_library_error">Please select a custom location.</string>
-    <string name="cleanup_done">Task complete - see details in the log</string>
+    <string name="task_done">Task complete - see details in the log</string>
+    <string name="content_not_found">Error - content not found</string>
     <string name="contents_detected">Hendroid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="import_dialog">Importing Library</string>
     <string name="add_dialog">Adding files to DB</string>
@@ -82,6 +89,8 @@
     <string name="adding_to_db">Adding files to database…</string>
     <string name="kitkat_rationale">Unable to modify contents of the SD Card. This is caused by the external storage policy by Google in Android 4.4.\nTo bypass this limitation, you can try using one of the \'sd fix\' tools available in the Google Play Store (Root Required).</string>
     <string name="no_sd_support">Your device is not currently supported.\nPlease join our Discord Server if you wish to help us add support for your device.</string>
+    <string name="enabled">ENABLED</string>
+    <string name="disabled">DISABLED</string>
 
     <!-- Import / Kitkat folder dialog -->
     <string name="kitkat_dialog_title">Choose Hendroid folder</string>
@@ -98,18 +107,26 @@
     <string name="error_creating_folder">Folder is not valid.</string>
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
     <string name="error_open">Error opening image : no image viewer found.</string>
+    <string name="error_browser">Error opening link: no browser found</string>
+    <string name="error_send">Error sending archive : no relevant application found.</string>
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
     <string name="redownload_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
-    <string name="redownload_view_log">View detailed error log</string>
-    <string name="redownload_log_saved">Log saved</string>
+    <string name="redownload_action">REDOWNLOAD</string>
+    <string name="redownload_open_log">Open error log</string>
+    <string name="redownload_share_log">Share error log</string>
+    <string name="redownload_get_log">Get error log</string>
+    <string name="redownload_generating_log_file">Generating log file…</string>
+    <string name="redownload_log_clipboard">Log copied to clipboard</string>
 
-    <!-- Downloads fragment -->
+    <!-- Library fragment -->
     <string name="ask_delete">Are you sure you wish to delete this?</string>
-    <string name="ask_delete_multiple">Are you sure you wish to delete the selected items?</string>
+    <plurals name="ask_delete_multiple">
+        <item quantity="one">Are you sure you wish to delete the selected item ?</item>
+        <item quantity="other">Are you sure you wish to delete the selected items ?</item>
+    </plurals>
     <string name="deleted">\@content deleted.</string>
-    <string name="new_content">New Content!</string>
     <string name="not_previous_page">First page - can\'t proceed any further.</string>
     <string name="not_next_page">Last page - download more!</string>
     <string name="on_first_page">Already on the first page.</string>
@@ -118,44 +135,39 @@
 
     <string name="queue_empty">Why am I empty?</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
-    <string name="downloads_empty_mikan">Uh oh… how come there\'s nothing there ?!</string>
-    <string name="mikan_unsupported">Not implemented with Mikan</string>
     <string name="downloads_loading">Loading up~</string>
     <string name="masterdata_no_result">No result found :(</string>
-    <string name="masterdata_too_many_results_query">Too many results for « %1 »\nPlease be more specific</string>
-    <string name="masterdata_too_many_results_noquery">Too many results\nPlease use the search bar above to narrow your search</string>
-    <string name="masterdata_illegal_tag">Search is disabled for the tag you\'re looking for because it points to content that is illegal in many countries</string>
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="sd_access_error">SD Access Error!\nPlease check or replace SD Card!!</string>
     <string name="sd_access_fatal_error">Hendroid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
-    <string name="downloads_filter_book_count">%d result</string>
-    <string name="downloads_filter_book_count_plural">%d results</string>
-    <plurals name="downloads_filter_book_count_plural">
-        <item quantity="one">@string/downloads_filter_book_count</item>
-        <item quantity="other">@string/downloads_filter_book_count_plural</item>
-    </plurals>
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="book_title">"This is a rather long title, just because we need it to be."</string>
-    <string name="book_artist">"Artist: Name"</string>
     <string name="book_series">"Series: Name"</string>
+    <string name="book_artist">"Artist: Name"</string>
+    <string name="book_pages">"Pages: 1234"</string>
     <string name="book_tags">""tag1, tag2, tag3, etc.</string>
+    <plurals name="number_of_book_search_results">
+        <item quantity="one">%d/%d result</item>
+        <item quantity="other">%d/%d results</item>
+    </plurals>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hendroid is restarted"</string>
 
-    <!-- Updates -->
-    <!--
-    <string name="download_update">An update is available!\nTap to start downloading.</string>
-    <string name="update_available">An update is available!</string>
-    <string name="downloading_update">Downloading update:</string>
-    <string name="install_update">Tap to install the update!</string>
-    <string name="error_dependency">Error parsing update dependency.\nPlease try again later.</string>
-    <string name="error_network_summary">Network error, please try again later.</string>
-    <string name="error_file">Cannot find update file on server.</string>
-    <string name="update_check_no_update">Update Check: No new updates.</string>
-    -->
+    <!-- Library fragment -->
+    <string name="no_more_load_retry">No more items to load. Refresh to retry</string>
+    <string name="endless_disabled">Loading has been disabled</string>
+    <string name="endless_cancel">Loading has been canceled</string>
+    <string name="endless_error">Error while loading</string>
+
+    <!-- Alerts -->
+    <string name="alert_orange">Be aware that downloads may fail on this site.\n%s</string>
+    <string name="alert_red">The download button is currently broken for this site.\n%s</string>
+    <string name="alert_black">This site is currently unavailable for real. The app has nothing to do about it. Please try again later.</string>
+    <string name="alert_wip">The Hentoid dev team is working on a fix. You will be notified by the app when a new version is ready.</string>
+    <string name="alert_fix_available">A fix is available on the latest version of the app. Please update.</string>
 
     <!-- Image Viewer -->
     <string name="no_images">Could not load the book : No image found</string>
@@ -175,17 +187,22 @@
     <string name="pin_explanation">App Lock prevents unauthorized use of this app by requiring a 4-digit PIN when launched</string>
 
     <!-- About Activity -->
-    <string name="about1"><b>Hendroid</b> is a Doujinshi &amp; H-Manga archiving app. Hendroid was originally created by <b>Cesar Arasaki</b>.</string>
+    <string name="about1"><b>Hendroid</b> is a Doujinshi &amp; H-Manga archiving app. Hendroid is a fork of the app <b>Hentoid</b>, which was originally created by <b>Cesar Arasaki</b>.</string>
     <string name="about2">In regards to Tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
     <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHendroid is a free and open-source software maintained by the Hendroid Community</string>
     <string name="personalDataStatement2">No personal data is collected nor sent to any party.</string>
-    <string name="about_github" translatable="false"><u>GitHub</u></string>
-    <string name="about_discord" translatable="false"></string>
-    <string name="about_reddit" translatable="false"></string>
     <string name="about_licenses">Display Licenses</string>
+    <string name="about_version">Hendroid ver: %1$s (%2$d)</string>
 
     <!-- Web viewer -->
+    <string name="web_gallery">Back to gallery page</string>
+    <string name="web_back">Back</string>
+    <string name="web_forward">Forward</string>
+    <string name="web_refresh_stop">Refresh/stop</string>
+    <string name="web_open_browser">Open in browser</string>
+    <string name="web_download">Download</string>
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
+    <string name="web_url_clipboard">URL copied to clipboard</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
@@ -214,7 +231,7 @@
     <string name="viewer_order_123">Reorder pages</string>
     <string name="viewer_favourite_off">Mark page as favourite</string>
     <string name="viewer_favourite_on">Unmark page as favourite</string>
-    <string name="pref_viewer_resume_last_left">Resume reading at last left page</string>
+    <string name="pref_viewer_resume_last_left">Resume reading when reopening books (except last page)</string>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
     <string name="pref_viewer_display_pagenum">Always display page number</string>
@@ -230,6 +247,10 @@
     <string name="view_changelog">View changelog</string>
     <string name="view_changelog_flagged">View changelog*</string>
     <string name="changelog">Changelog</string>
-    <string name="get_latest">Get the latest version (@v)</string>
+    <string name="get_latest">Get the latest version (%1$s)</string>
     <string name="update_success">Update successful !</string>
+    <string name="starting_download">Starting download</string>
+
+    <!-- Edit drawer -->
+    <string name="title_activity_drawer_edit">Edit menu</string>
 </resources>

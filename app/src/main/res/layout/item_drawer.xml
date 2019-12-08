@@ -3,34 +3,56 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp">
+    android:background="?attr/selectableItemBackground">
 
     <ImageView
         android:id="@+id/drawer_item_icon"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center"
+        android:layout_marginStart="8dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_info"
+        app:layout_constraintBottom_toBottomOf="@id/drawer_item_txt"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/drawer_item_txt"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/drawer_item_alert"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
         android:layout_gravity="center"
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_menu_about"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/drawer_item_txt"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
+        android:src="@drawable/ic_circle"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/drawer_item_icon"
+        app:layout_constraintEnd_toEndOf="@id/drawer_item_icon"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/drawer_item_txt"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:background="?attr/selectableItemBackground"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:gravity="center_vertical"
         android:minHeight="@dimen/drawer_item_height"
         android:textSize="@dimen/text_body_1"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/drawer_item_icon"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="@string/app_name" />
+
+    <View
+        android:id="@+id/divider"
+        style="@style/Divider"
+        android:layout_width="match_parent"
+        app:layout_constraintTop_toBottomOf="@id/drawer_item_txt" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
