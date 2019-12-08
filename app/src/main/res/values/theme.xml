@@ -17,7 +17,6 @@
         <item name="materialAlertDialogTheme">@style/App.Dialog</item>
         <item name="dialogTheme">@style/App.DialogFragment</item>
         <item name="android:dialogTheme">@style/App.DialogFragment</item>
-        <item name="actionBarTheme">@style/ActionBar</item>
         <!-- Toolbar as ActionBar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -34,7 +33,6 @@
     <!-- Splash Activity -->
     <style name="Theme.Base.Splash">
         <item name="android:windowBackground">@drawable/bg_splash</item>
-        <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
@@ -43,6 +41,7 @@
         <!-- Display action bar -->
         <item name="windowActionBar">true</item>
         <item name="windowNoTitle">false</item>
+        <item name="actionBarTheme">@style/ActionBar</item>
         <item name="android:divider">@color/secondary</item>
         <item name="android:textColor">@color/primary_text_color_selector</item>
         <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
@@ -57,7 +56,6 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">false</item>
         <item name="android:editTextColor">@android:color/black</item>
@@ -67,7 +65,6 @@
     <!-- Browser Activity -->
     <style name="Theme.Base.Browser">
         <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowNoTitle">true</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
         <item name="android:editTextColor">@android:color/black</item>
@@ -90,6 +87,7 @@
         <item name="android:textColorPrimary">@color/on_primary</item>
         <item name="android:textColorSecondary">@color/on_secondary</item>
         <item name="android:editTextColor">@color/on_primary</item>
+        <item name="android:textColorHint">@color/on_primary</item>
         <item name="textColorAlertDialogListItem">@color/on_primary</item>
         <item name="android:checkboxStyle">@style/DialogCheckbox</item>
     </style>
