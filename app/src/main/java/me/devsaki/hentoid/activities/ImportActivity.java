@@ -88,7 +88,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        View contentView = new View(this, null, R.style.Theme_Base_NoActionBar_Import);
+        View contentView = new View(this, null);
         setContentView(contentView);
 
         callback = new OnBackPressedCallback(false) {

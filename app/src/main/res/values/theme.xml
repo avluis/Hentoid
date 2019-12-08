@@ -18,16 +18,13 @@
         <item name="dialogTheme">@style/App.DialogFragment</item>
         <item name="android:dialogTheme">@style/App.DialogFragment</item>
         <item name="actionBarTheme">@style/ActionBar</item>
-    </style>
-
-    <!-- Activities with Toolbar as ActionBar -->
-    <style name="Theme.Base.NoActionBar">
+        <!-- Toolbar as ActionBar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
     <!-- Picture viewer -->
-    <style name="Theme.Base.NoActionBar.Monochrome">
+    <style name="Theme.Base.Monochrome">
         <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryVariant">@color/black_opacity_50</item>
         <item name="colorOnPrimary">@color/light_gray</item>
@@ -35,7 +32,7 @@
     </style>
 
     <!-- Splash Activity -->
-    <style name="Theme.Base.NoActionBar.Splash">
+    <style name="Theme.Base.Splash">
         <item name="android:windowBackground">@drawable/bg_splash</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -43,18 +40,20 @@
 
     <!-- Prefs Activity -->
     <style name="Theme.Base.Prefs">
+        <!-- Display action bar -->
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
         <item name="android:divider">@color/secondary</item>
         <item name="android:textColor">@color/primary_text_color_selector</item>
         <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
         <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
         <item name="android:textColorHint">@color/light_gray</item>
-        <item name="materialAlertDialogTheme">@style/App.Dialog</item>
         <!-- alertDialogTheme is the actual theme used by PreferenceFragmentCompat -->
         <item name="alertDialogTheme">@style/App.Dialog</item>
     </style>
 
     <!-- Import Activity -->
-    <style name="Theme.Base.NoActionBar.Import">
+    <style name="Theme.Base.Import">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -66,7 +65,7 @@
     </style>
 
     <!-- Browser Activity -->
-    <style name="Theme.Base.NoActionBar.Browser">
+    <style name="Theme.Base.Browser">
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
