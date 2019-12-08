@@ -29,10 +29,10 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.JsonContent;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.FileHelper.deleteQuietly;
 import static me.devsaki.hentoid.util.FileHelper.getDefaultDir;
 import static me.devsaki.hentoid.util.FileHelper.getExtSdCardFolder;
 import static me.devsaki.hentoid.util.FileHelper.isSAF;
+import static me.devsaki.hentoid.util.FileUtil.deleteQuietly;
 
 /**
  * Utility class for Content-related operations
