@@ -337,34 +337,11 @@ public class FileHelper {
      */
     public static boolean cleanDirectory(@NonNull File target) {
         try {
-            return tryCleanDirectory(target);
+            return FileUtil.tryCleanDirectory(target);
         } catch (Exception e) {
             Timber.e(e, "Failed to clean directory");
             return false;
         }
-    }
-
-    /**
-     * Cleans a directory without deleting it.
-     * <p>
-     * Custom substitute for commons.io.FileUtils.cleanDirectory that supports devices without File.toPath
-     *
-     * @param directory directory to clean
-     * @return true if directory has been successfully cleaned
-     * @throws IOException in case cleaning is unsuccessful
-     */
-    private static boolean tryCleanDirectory(@NonNull File directory) throws IOException {
-        File[] files = directory.listFiles();
-        if (files == null) throw new IOException("Failed to list content of " + directory);
-
-        boolean isSuccess = true;
-
-        for (File file : files) {
-            if (file.isDirectory() && !tryCleanDirectory(file)) isSuccess = false;
-            if (!file.delete() && file.exists()) isSuccess = false;
-        }
-
-        return isSuccess;
     }
 
     public static boolean checkAndSetRootFolder(String folder) {
@@ -526,39 +503,6 @@ public class FileHelper {
 
                 output.flush();
             }
-        }
-    }
-
-    /**
-     * Deletes a file, never throwing an exception. If file is a directory, delete it and all sub-directories.
-     * <p>
-     * The difference between File.delete() and this method are:
-     * <ul>
-     * <li>A directory to be deleted does not have to be empty.</li>
-     * <li>No exceptions are thrown when a file or directory cannot be deleted.</li>
-     * </ul>
-     * <p>
-     * Custom substitute for commons.io.FileUtils.deleteQuietly that works with devices that doesn't support File.toPath
-     *
-     * @param file file or directory to delete, can be {@code null}
-     * @return {@code true} if the file or directory was deleted, otherwise
-     * {@code false}
-     */
-    static boolean deleteQuietly(final File file) {
-        if (file == null) {
-            return false;
-        }
-        try {
-            if (file.isDirectory()) {
-                tryCleanDirectory(file);
-            }
-        } catch (final Exception ignored) {
-        }
-
-        try {
-            return file.delete();
-        } catch (final Exception ignored) {
-            return false;
         }
     }
 
