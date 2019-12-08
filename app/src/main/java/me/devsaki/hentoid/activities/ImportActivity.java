@@ -337,7 +337,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
 
     // Cancel Kitkat picker
     public void onKitKatCancel() {
-        finish();
+        exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
     }
 
     // Return from SAF picker
