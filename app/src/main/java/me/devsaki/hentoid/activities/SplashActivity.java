@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,7 +28,9 @@ import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.services.DatabaseMigrationService;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.views.NestedScrollWebView;
 import timber.log.Timber;
 
 /**
@@ -134,7 +137,14 @@ public class SplashActivity extends AppCompatActivity {
         Timber.d("Splash / Clearing webview cache");
         Handler h = new Handler(Looper.getMainLooper());
         h.post(() -> {
-            WebView webView = new WebView(this);
+            WebView webView;
+            try {
+                webView = new NestedScrollWebView(this);
+            } catch (Resources.NotFoundException e) {
+                // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
+                // Creating with the application Context fixes this, but is not generally recommended for view creation
+                webView = new NestedScrollWebView(Helper.getFixedContext(this));
+            }
             webView.clearCache(true);
         });
 
