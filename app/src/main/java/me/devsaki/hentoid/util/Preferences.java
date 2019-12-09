@@ -318,6 +318,11 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isDarkModeAmoled() {
+        int darkMode = getDarkMode();
+        return (Constant.DARK_MODE_AMOLED_ON == darkMode || Constant.DARK_MODE_AMOLED_BATTERY == darkMode || Constant.DARK_MODE_AMOLED_DEVICE == darkMode);
+    }
+
     public static boolean isDlRetriesActive() {
         return sharedPreferences.getBoolean(Key.PREF_DL_RETRIES_ACTIVE, Default.PREF_DL_RETRIES_ACTIVE);
     }
@@ -474,5 +479,8 @@ public final class Preferences {
         public static final int DARK_MODE_ON = 1;
         public static final int DARK_MODE_BATTERY = 2;
         static final int DARK_MODE_DEVICE = 3;
+        public static final int DARK_MODE_AMOLED_ON = 4;
+        public static final int DARK_MODE_AMOLED_BATTERY = 5;
+        static final int DARK_MODE_AMOLED_DEVICE = 6;
     }
 }

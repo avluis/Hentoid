@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
-    android:background="@drawable/bg_book_card"
     android:elevation="6dp"
     android:longClickable="true"
     tools:targetApi="lollipop">

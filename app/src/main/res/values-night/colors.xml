@@ -17,4 +17,9 @@
     <color name="card_selected">@color/taupe_elevated_2</color>
     <color name="card_pressed">@color/taupe_elevated_3</color>
     <color name="card_tags">@color/white_opacity_66</color>
+
+    <color name="card_surface_amoled">@color/cod_gray</color>
+    <color name="card_selected_amoled">@color/cod_gray</color>
+    <color name="card_pressed_amoled">@color/black</color>
+    <color name="card_tags_amoled">@color/medium_gray</color>
 </resources>

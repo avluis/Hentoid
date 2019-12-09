@@ -82,15 +82,21 @@
 
     <string-array name="pref_dark_mode_entries">
         <item>Off</item>
-        <item>On</item>
+        <item>Always on</item>
         <item>On when battery low</item>
         <item>Device settings (Android Q)</item>
+        <item>AMOLED</item>
+        <item>AMOLED when battery low</item>
+        <item>AMOLED with device settings</item>
     </string-array>
     <string-array name="pref_dark_mode_values">
         <item>0</item>
         <item>1</item>
         <item>2</item>
         <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
     </string-array>
 
     <string-array name="pref_dl_retries_number_entries">

@@ -171,11 +171,13 @@ public class HentoidApp extends Application {
 
     public static int darkModeFromPrefs(int prefsMode) {
         switch (prefsMode) {
-            case Preferences.Constant.DARK_MODE_ON:
-                return AppCompatDelegate.MODE_NIGHT_YES;
             case Preferences.Constant.DARK_MODE_OFF:
                 return AppCompatDelegate.MODE_NIGHT_NO;
+            case Preferences.Constant.DARK_MODE_ON:
+            case Preferences.Constant.DARK_MODE_AMOLED_ON:
+                return AppCompatDelegate.MODE_NIGHT_YES;
             case Preferences.Constant.DARK_MODE_BATTERY:
+            case Preferences.Constant.DARK_MODE_AMOLED_BATTERY:
                 return AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY;
             default:
                 return AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
