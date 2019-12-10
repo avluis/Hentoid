@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <style name="Theme.Amoled" parent="Theme.MaterialComponents">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="colorPrimary">@color/primary_amoled</item>
+        <item name="colorPrimaryVariant">@color/primary_variant_amoled</item>
+        <item name="colorOnPrimary">@color/on_primary_amoled</item>
+        <item name="colorSecondary">@color/secondary_amoled</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant_amoled</item>
+        <item name="colorOnSecondary">@color/on_secondary_amoled</item>
+        <item name="colorSurface">@color/window_background_amoled</item>
+        <item name="colorOnSurface">@color/on_surface_amoled</item>
+        <item name="android:windowBackground">@color/window_background_amoled</item>
+        <item name="android:colorBackground">@color/window_background_amoled</item>
+        <item name="colorOnBackground">@color/on_background_amoled</item>
+        <item name="materialAlertDialogTheme">@style/Theme.Amoled.Dialog</item>
+        <item name="dialogTheme">@style/Theme.Amoled.DialogFragment</item>
+        <item name="android:dialogTheme">@style/Theme.Amoled.DialogFragment</item>
+        <!-- Toolbar as ActionBar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Dialog themes -->
+
+    <style name="Theme.Amoled.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/secondary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <!-- colorSurface is the actual dialog background -->
+        <item name="colorSurface">@color/window_background</item>
+        <item name="colorOnSurface">@color/on_primary</item>
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:colorBackground">@color/window_background</item>
+        <item name="android:textColor">@color/on_primary</item>
+        <item name="android:textColorPrimary">@color/on_primary</item>
+        <item name="android:textColorSecondary">@color/on_secondary</item>
+        <item name="android:editTextColor">@color/on_primary</item>
+        <item name="android:textColorHint">@color/on_primary</item>
+        <item name="textColorAlertDialogListItem">@color/on_primary</item>
+        <item name="android:checkboxStyle">@style/Theme.Base.DialogCheckbox</item>
+    </style>
+
+    <style name="Theme.Amoled.DialogFragment" parent="Theme.Amoled.Dialog">
+        <!-- Equivalent to DialogFragment.STYLE_NO_FRAME -->
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
+    <!-- Search Activity -->
+    <style name="Theme.Amoled.BottomSheetDialog" parent="Theme.Design.BottomSheetDialog">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="android:colorBackground">@color/window_background</item>
+    </style>
+
+    <!-- PIN screens -->
+    <style name="Theme.Amoled.PinEntryDialog" parent="Theme.MaterialComponents.Dialog">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="android:windowBackground">@drawable/bg_pin_dialog</item>
+        <item name="actionMenuTextColor">@color/on_primary</item>
+    </style>
+
+
+    <!-- Themes for subcomponents -->
+    <style name="Theme.Amoled.ActionBar">
+        <item name="colorSurface">@color/primary</item>
+        <item name="colorOnSurface">@color/on_primary</item>
+    </style>
+</resources>

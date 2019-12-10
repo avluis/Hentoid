@@ -1,16 +1,11 @@
 package me.devsaki.hentoid.adapters;
 
-import android.content.Context;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.StateListDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
@@ -21,11 +16,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.ContentHolder;
 
 /**
@@ -37,8 +30,6 @@ import me.devsaki.hentoid.viewholders.ContentHolder;
  * - an PagedListAdapter (for endless mode) <-- PagedContentAdapter
  */
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements LibraryAdapter {
-
-    private static final int PX_4_DP = Helper.dpToPixel(HentoidApp.getInstance(), 4);
 
     // Listeners for holder click events
     private final Consumer<Content> onSourceClickListener;
@@ -84,7 +75,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_download, parent, false);
-        view.setBackground(makeSelector(parent.getContext()));
+        view.setBackground(ThemeHelper.makeSelector(parent.getContext()));
         return new ContentHolder(view, this);
     }
 
@@ -145,34 +136,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     public LongConsumer getSelectionChangedListener() {
         return onSelectionChangedListener;
-    }
-
-
-    static StateListDrawable makeSelector(Context context) {
-        // TODO factorize (in an themeHelper ?)
-        boolean isAmoled = Preferences.isDarkModeAmoled();
-        int colorBaseRes = isAmoled ? R.color.card_surface_amoled : R.color.card_surface;
-        int colorBase = ContextCompat.getColor(context, colorBaseRes);
-        int colorPressedRes = isAmoled ? R.color.card_pressed_amoled : R.color.card_pressed;
-        int colorPressed = ContextCompat.getColor(context, colorPressedRes);
-        int colorSelectedRes = isAmoled ? R.color.card_selected_amoled : R.color.card_selected;
-        int colorSelected = ContextCompat.getColor(context, colorSelectedRes);
-        int colorSecondary = ContextCompat.getColor(context, R.color.secondary);
-
-        StateListDrawable res = new StateListDrawable();
-        res.addState(new int[]{-android.R.attr.state_selected}, makeSelectorShape(colorBase, false, 0));
-        res.addState(new int[]{android.R.attr.state_pressed}, makeSelectorShape(colorPressed, false, 0));
-        res.addState(new int[]{-android.R.attr.state_pressed, android.R.attr.state_selected}, makeSelectorShape(colorSelected, true, colorSecondary));
-        return res;
-    }
-
-    private static GradientDrawable makeSelectorShape(@ColorInt int bgColor, boolean stroke, @ColorInt int strokeColor) {
-        GradientDrawable shape = new GradientDrawable();
-        shape.setShape(GradientDrawable.RECTANGLE);
-        shape.setCornerRadius(PX_4_DP);
-        shape.setColor(bgColor);
-        if (stroke) shape.setStroke(PX_4_DP, strokeColor);
-        return shape;
     }
 
 

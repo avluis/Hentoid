@@ -33,7 +33,7 @@ public abstract class PinDialogFragment extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(STYLE_NORMAL, R.style.PinEntryDialogTheme);
+        setStyle(STYLE_NORMAL, R.style.Theme_Base_PinEntryDialog);
     }
 
     @Nullable

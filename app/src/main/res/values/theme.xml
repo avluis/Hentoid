@@ -14,9 +14,9 @@
         <item name="android:windowBackground">@color/window_background</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/on_background</item>
-        <item name="materialAlertDialogTheme">@style/App.Dialog</item>
-        <item name="dialogTheme">@style/App.DialogFragment</item>
-        <item name="android:dialogTheme">@style/App.DialogFragment</item>
+        <item name="materialAlertDialogTheme">@style/Theme.Base.Dialog</item>
+        <item name="dialogTheme">@style/Theme.Base.DialogFragment</item>
+        <item name="android:dialogTheme">@style/Theme.Base.DialogFragment</item>
         <!-- Toolbar as ActionBar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -48,19 +48,19 @@
         <!-- Display action bar -->
         <item name="windowActionBar">true</item>
         <item name="windowNoTitle">false</item>
-        <item name="actionBarTheme">@style/ActionBar</item>
+        <item name="actionBarTheme">@style/Theme.Base.ActionBar</item>
         <item name="android:divider">@color/secondary</item>
         <item name="android:textColor">@color/primary_text_color_selector</item>
         <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
         <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
         <item name="android:textColorHint">@color/light_gray</item>
         <!-- alertDialogTheme is the actual theme used by PreferenceFragmentCompat -->
-        <item name="alertDialogTheme">@style/App.Dialog</item>
+        <item name="alertDialogTheme">@style/Theme.Base.Dialog</item>
     </style>
 
     <!-- Dialog themes -->
 
-    <style name="App.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+    <style name="Theme.Base.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="colorPrimary">@color/secondary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
@@ -75,10 +75,10 @@
         <item name="android:editTextColor">@color/on_primary</item>
         <item name="android:textColorHint">@color/on_primary</item>
         <item name="textColorAlertDialogListItem">@color/on_primary</item>
-        <item name="android:checkboxStyle">@style/DialogCheckbox</item>
+        <item name="android:checkboxStyle">@style/Theme.Base.DialogCheckbox</item>
     </style>
 
-    <style name="App.DialogFragment" parent="App.Dialog">
+    <style name="Theme.Base.DialogFragment" parent="Theme.Base.Dialog">
         <!-- Equivalent to DialogFragment.STYLE_NO_FRAME -->
         <item name="android:windowFrame">@null</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -88,7 +88,7 @@
     </style>
 
     <!-- Search Activity -->
-    <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
+    <style name="Theme.Base.BottomSheetDialog" parent="Theme.Design.BottomSheetDialog">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
@@ -96,7 +96,7 @@
     </style>
 
     <!-- PIN screens -->
-    <style name="PinEntryDialogTheme" parent="Theme.MaterialComponents.Dialog">
+    <style name="Theme.Base.PinEntryDialog" parent="Theme.MaterialComponents.Dialog">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
@@ -106,12 +106,12 @@
 
 
     <!-- Themes for subcomponents -->
-    <style name="ActionBar">
+    <style name="Theme.Base.ActionBar">
         <item name="colorSurface">@color/primary</item>
         <item name="colorOnSurface">@color/on_primary</item>
     </style>
 
-    <style name="DialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+    <style name="Theme.Base.DialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
         <item name="android:textColor">@color/on_primary</item>
     </style>
 </resources>

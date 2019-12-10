@@ -26,10 +26,9 @@ import java.util.concurrent.Executor;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.ContentHolder;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.adapters.ContentAdapter.makeSelector;
 
 /**
  * Adapter for the library screen's endless mode
@@ -100,7 +99,7 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_download, parent, false);
-        view.setBackground(makeSelector(parent.getContext()));
+        view.setBackground(ThemeHelper.makeSelector(parent.getContext()));
         return new ContentHolder(view, this);
     }
 
