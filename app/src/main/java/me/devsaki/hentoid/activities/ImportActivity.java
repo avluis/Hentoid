@@ -88,7 +88,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        View contentView = new View(this, null, R.style.ImportTheme);
+        View contentView = new View(this, null);
         setContentView(contentView);
 
         callback = new OnBackPressedCallback(false) {
@@ -337,7 +337,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
 
     // Cancel Kitkat picker
     public void onKitKatCancel() {
-        finish();
+        exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
     }
 
     // Return from SAF picker

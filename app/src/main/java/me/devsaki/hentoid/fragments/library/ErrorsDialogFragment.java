@@ -45,7 +45,6 @@ public class ErrorsDialogFragment extends DialogFragment {
         args.putLong(ID, id);
         fragment.setArguments(args);
 
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
         fragment.show(parent.getChildFragmentManager(), null);
     }
 

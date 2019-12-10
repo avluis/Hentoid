@@ -802,6 +802,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return;
             }
 
+            library.loadAround(maxIndex - 1);
             List<ContentItem> contentItems = Stream.of(library.subList(minIndex, maxIndex)).map(ContentItem::new).toList();
             itemAdapter.setNewList(contentItems, false);
         }

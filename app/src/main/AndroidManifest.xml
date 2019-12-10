@@ -25,7 +25,7 @@
         <activity
             android:name=".activities.SplashActivity"
             android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar.Splash">
+            android:theme="@style/Theme.Base.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -35,61 +35,61 @@
         <activity
             android:name=".activities.IntroActivity"
             android:label="@string/app_intro"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/Theme.Base" />
         <activity
             android:name=".activities.sources.HitomiActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.NhentaiActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.TsuminoActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.ASMHentaiActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.HentaiCafeActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.PururinActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.EHentaiActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.FakkuActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.NexusActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.MusesActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.DoujinsActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.sources.LusciousActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
+            android:theme="@style/Theme.Base.Browser" />
         <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/Theme.Base">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -99,7 +99,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_queue"
             android:parentActivityName=".activities.LibraryActivity"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/Theme.Base"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -110,7 +110,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:parentActivityName=".activities.LibraryActivity"
-            android:theme="@style/PrefsTheme"
+            android:theme="@style/Theme.Base.Prefs"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -120,7 +120,7 @@
             android:name=".activities.AboutActivity"
             android:label="@string/title_activity_about"
             android:parentActivityName=".activities.LibraryActivity"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/Theme.Base"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -129,33 +129,33 @@
         <activity
             android:name=".activities.DrawerEditActivity"
             android:label="@string/title_activity_drawer_edit"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/Theme.Base"
             tools:ignore="UnusedAttribute">
         </activity>
         <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/Theme.Base"
             tools:ignore="UnusedAttribute">
         </activity>
         <activity
             android:name=".activities.ImportActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/ImportTheme" />
+            android:theme="@style/Theme.Base.Import" />
         <activity
             android:name=".activities.UnlockActivity"
             android:noHistory="true"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/Theme.Base" />
         <activity
             android:name=".activities.PinPreferenceActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/Theme.Base" />
         <activity
             android:name=".activities.IntentActivity"
-            android:theme="@style/BrowserTheme">
+            android:theme="@style/Theme.Base.Browser">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -304,7 +304,7 @@
         <activity
             android:name=".activities.ImageViewerActivity"
             android:label="Image Viewer"
-            android:theme="@style/AppTheme.NoActionBar.Monochrome">
+            android:theme="@style/Theme.Base.Monochrome">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.LibraryActivity" />

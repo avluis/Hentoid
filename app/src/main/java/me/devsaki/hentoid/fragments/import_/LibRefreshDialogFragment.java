@@ -26,7 +26,6 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     public static void invoke(FragmentManager fragmentManager) {
         LibRefreshDialogFragment fragment = new LibRefreshDialogFragment();
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
         fragment.show(fragmentManager, null);
     }
 

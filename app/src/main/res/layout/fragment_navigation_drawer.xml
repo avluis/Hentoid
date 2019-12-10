@@ -10,6 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@drawable/nav_header_bg"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="@id/app_logo"
         app:layout_constraintTop_toTopOf="@id/app_logo" />
 

@@ -8,8 +8,7 @@
     android:layout_marginEnd="16dp"
     android:background="?colorSurface"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:theme="@style/AppTheme">
+    android:padding="16dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
