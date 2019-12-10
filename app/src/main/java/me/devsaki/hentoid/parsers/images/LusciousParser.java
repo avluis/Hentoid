@@ -15,8 +15,6 @@ import me.devsaki.hentoid.retrofit.sources.LusciousServer;
 import retrofit2.Response;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
-
 public class LusciousParser implements ImageListParser {
 
     private final ParseProgress progress = new ParseProgress();
