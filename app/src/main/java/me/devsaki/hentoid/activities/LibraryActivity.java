@@ -21,6 +21,8 @@ public class LibraryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (Preferences.isDarkModeAmoled()) setTheme(R.style.Theme_Amoled); else setTheme(R.style.Theme_Base);
+
         setContentView(R.layout.activity_hentoid);
         drawerLayout = findViewById(R.id.drawer_layout);
 
