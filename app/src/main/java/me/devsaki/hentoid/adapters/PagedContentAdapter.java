@@ -1,11 +1,15 @@
 package me.devsaki.hentoid.adapters;
 
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.paging.AsyncPagedListDiffer;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,12 +18,16 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 import com.annimon.stream.function.LongConsumer;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.viewholders.ContentHolder;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.adapters.ContentAdapter.makeSelector;
 
@@ -40,8 +48,46 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
     private final Consumer<Content> onErrorClickListener;
     private final LongConsumer onSelectionChangedListener;
 
+    private Handler createAsync(Looper looper) {
+        if (Build.VERSION.SDK_INT >= 28) return Handler.createAsync(looper);
+
+        try {
+            return Handler.class.getDeclaredConstructor(Looper.class, Handler.Callback.class, boolean.class).newInstance(looper, null, true);
+        } catch (IllegalAccessException | NoSuchMethodException | InstantiationException | InvocationTargetException e) {
+            return new Handler(looper);
+        }
+    }
+
     private PagedContentAdapter(Builder builder) {
         super(DIFF_CALLBACK);
+
+        // Fix DiffUtil crash on certain devices - see https://stackoverflow.com/a/56873666/8374722
+        try {
+            Field mDiffer = PagedListAdapter.class.getDeclaredField("mDiffer");
+            Field excecuter = AsyncPagedListDiffer.class.getDeclaredField("mMainThreadExecutor");
+            mDiffer.setAccessible(true);
+            excecuter.setAccessible(true);
+
+            AsyncPagedListDiffer<?> myDiffer = (AsyncPagedListDiffer<?>) mDiffer.get(this);
+            Handler mHandler = createAsync(Looper.getMainLooper());
+            Executor foreGround = command -> {
+                try {
+                    mHandler.post(() -> {
+                        try {
+                            if (command != null) command.run();
+                        } catch (Exception e) {
+                            Timber.e(e);
+                        }
+                    });
+                } catch (Exception e) {
+                    Timber.e(e);
+                }
+            };
+            excecuter.set(myDiffer, foreGround);
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+
         this.onSourceClickListener = builder.onSourceClickListener;
         this.onBookClickListener = builder.onBookClickListener;
         this.onFavClickListener = builder.onFavClickListener;

@@ -181,9 +181,12 @@ public class ObjectBoxDAO implements CollectionDAO {
             query = db.queryContentUniversal(filter, favouritesOnly, orderStyle);
         }
 
+        int nbPages = Preferences.getContentPageQuantity();
+        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(nbPages * 2).setPageSize(nbPages).build();
+
         return new LivePagedListBuilder<>(
                 isRandom ? new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query) : new ObjectBoxDataSource.Factory<>(query),
-                20
+                cfg
         ).build();
     }
 

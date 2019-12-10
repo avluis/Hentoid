@@ -2,9 +2,7 @@ package me.devsaki.hentoid.activities.sources;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -347,13 +345,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         HentoidApp.reset(this);
     }
 
-    // Fix for a crash on 5.1.1
-    // https://stackoverflow.com/questions/41025200/android-view-inflateexception-error-inflating-class-android-webkit-webview
-    // As fallback solution _only_ since it breaks other stuff in the webview (choice in SELECT tags for instance)
-    public static Context getFixedContext(Context context) {
-        return context.createConfigurationContext(new Configuration());
-    }
-
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
 
@@ -362,7 +353,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         } catch (Resources.NotFoundException e) {
             // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
             // Creating with the application Context fixes this, but is not generally recommended for view creation
-            webView = new NestedScrollWebView(getFixedContext(this));
+            webView = new NestedScrollWebView(Helper.getFixedContext(this));
         }
 
         webView.setHapticFeedbackEnabled(false);
