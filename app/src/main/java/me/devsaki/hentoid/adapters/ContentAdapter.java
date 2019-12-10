@@ -39,7 +39,6 @@ import me.devsaki.hentoid.viewholders.ContentHolder;
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements LibraryAdapter {
 
     private static final int PX_4_DP = Helper.dpToPixel(HentoidApp.getInstance(), 4);
-    private static StateListDrawable CARD_SELECTOR = null;
 
     // Listeners for holder click events
     private final Consumer<Content> onSourceClickListener;
@@ -85,8 +84,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_download, parent, false);
-        if (null == CARD_SELECTOR) CARD_SELECTOR = makeSelector(parent.getContext());
-        view.setBackground(CARD_SELECTOR);
+        view.setBackground(makeSelector(parent.getContext()));
         return new ContentHolder(view, this);
     }
 

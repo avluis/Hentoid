@@ -9,23 +9,23 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Required to run keep-alive service when targeting API 28 or higher -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- Required to install update packages when targeting API 25 or higher -->
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:name=".HentoidApp"
         android:allowBackup="false"
+        android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="false"
-        android:extractNativeLibs="true"
+        android:theme="@style/Theme.Base"
         android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.SplashActivity"
-            android:noHistory="true"
-            android:theme="@style/Theme.Base.Splash">
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -34,62 +34,48 @@
         </activity>
         <activity
             android:name=".activities.IntroActivity"
-            android:label="@string/app_intro"
-            android:theme="@style/Theme.Base" />
+            android:label="@string/app_intro" />
         <activity
             android:name=".activities.sources.HitomiActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.NhentaiActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.TsuminoActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.ASMHentaiActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.HentaiCafeActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.PururinActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.EHentaiActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.FakkuActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.NexusActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.MusesActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.DoujinsActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.LusciousActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Browser" />
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
-            android:launchMode="singleTop"
-            android:theme="@style/Theme.Base">
+            android:launchMode="singleTop">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -99,7 +85,6 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_queue"
             android:parentActivityName=".activities.LibraryActivity"
-            android:theme="@style/Theme.Base"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -120,7 +105,6 @@
             android:name=".activities.AboutActivity"
             android:label="@string/title_activity_about"
             android:parentActivityName=".activities.LibraryActivity"
-            android:theme="@style/Theme.Base"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -129,33 +113,27 @@
         <activity
             android:name=".activities.DrawerEditActivity"
             android:label="@string/title_activity_drawer_edit"
-            android:theme="@style/Theme.Base"
-            tools:ignore="UnusedAttribute">
-        </activity>
+            tools:ignore="UnusedAttribute"/>
         <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
-            android:theme="@style/Theme.Base"
-            tools:ignore="UnusedAttribute">
-        </activity>
+            tools:ignore="UnusedAttribute"/>
         <activity
             android:name=".activities.ImportActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Base.Import" />
+            android:theme="@style/Theme.Invisible" />
         <activity
             android:name=".activities.UnlockActivity"
             android:noHistory="true"
             android:resizeableActivity="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Base" />
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activities.PinPreferenceActivity"
             android:resizeableActivity="false"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.Base" />
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activities.IntentActivity"
-            android:theme="@style/Theme.Base.Browser">
+            android:theme="@style/Theme.Invisible">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -254,6 +232,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="fakku.net"
                     android:pathPrefix="/hentai/"
@@ -264,6 +243,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="hentainexus.com"
                     android:pathPrefix="/view/"
@@ -274,6 +254,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="8muses.com"
                     android:pathPrefix="/comics/album/"
@@ -284,6 +265,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="doujins.com"
                     android:pathPattern="..*/..*"
@@ -294,6 +276,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="luscious.net"
                     android:pathPattern="..*/..*"

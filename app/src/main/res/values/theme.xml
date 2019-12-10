@@ -22,6 +22,14 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="Theme.Invisible" parent="Theme.Base">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
     <!-- Picture viewer -->
     <style name="Theme.Base.Monochrome">
         <item name="colorPrimary">@color/white</item>
@@ -33,7 +41,6 @@
     <!-- Splash Activity -->
     <style name="Theme.Base.Splash">
         <item name="android:windowBackground">@drawable/bg_splash</item>
-        <item name="android:windowContentOverlay">@null</item>
     </style>
 
     <!-- Prefs Activity -->
@@ -50,27 +57,6 @@
         <!-- alertDialogTheme is the actual theme used by PreferenceFragmentCompat -->
         <item name="alertDialogTheme">@style/App.Dialog</item>
     </style>
-
-    <!-- Import Activity -->
-    <style name="Theme.Base.Import">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@color/transparent</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowIsFloating">true</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:editTextColor">@android:color/black</item>
-        <item name="android:textColorHint">@android:color/black</item>
-    </style>
-
-    <!-- Browser Activity -->
-    <style name="Theme.Base.Browser">
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:colorBackgroundCacheHint">@null</item>
-        <item name="android:windowAnimationStyle">@android:style/Animation</item>
-        <item name="android:editTextColor">@android:color/black</item>
-        <item name="android:textColorHint">@android:color/black</item>
-    </style>
-
 
     <!-- Dialog themes -->
 
