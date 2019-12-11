@@ -112,9 +112,6 @@ public final class ContentHelper {
      * @param content Content to be displayed
      */
     public static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
-        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
-        ToastUtil.toast("Opening: " + content.getTitle());
-
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
@@ -126,11 +123,7 @@ public final class ContentHelper {
     }
 
     @WorkerThread
-    public static Content updateContentReads(@Nonnull Context context, @NonNull Content content) {
-        //Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
-        //ToastUtil.toast("Opening: " + content.getTitle());
-
-        //openHentoidViewer(context, content, searchParams);
+    public static Content open(@Nonnull Context context, @NonNull Content content, Bundle searchParams) {
 
 
         String rootFolderName = Preferences.getRootFolderName();
@@ -169,8 +162,7 @@ public final class ContentHelper {
             if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER) {
                 openFile(context, imageFile);
             }  else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER) {
-                //openHentoidViewer(context, content, files);
-                openHentoidViewer(context, content, null);
+                openHentoidViewer(context, content, searchParams);
             }
         }
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
@@ -207,7 +199,6 @@ public final class ContentHelper {
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());
 
-        Timber.d("Opening: %s from: %s", content.getTitle(), dir);
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Exiting method.");
             ToastUtil.toast(R.string.sd_access_error);

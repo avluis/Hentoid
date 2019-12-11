@@ -788,7 +788,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param content Content that has been clicked on
      */
     private void onBookClick(Content content) {
-        ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
+        //ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
+        ContentHelper.open(requireContext(), content, viewModel.getSearchManagerBundle());
     }
 
     /**

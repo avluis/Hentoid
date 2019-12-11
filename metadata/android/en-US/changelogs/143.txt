@@ -1,0 +1,1 @@
+Fixed opening with external Gallery app

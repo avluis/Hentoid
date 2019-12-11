@@ -543,7 +543,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()
                     || StatusContent.MIGRATED == currentContent.getStatus()))
-                ContentHelper.openHentoidViewer(this, currentContent, null);
+                //ContentHelper.openHentoidViewer(this, currentContent, null);
+                ContentHelper.open(this, currentContent, null);
             else actionMenu.setEnabled(false);
         }
     }

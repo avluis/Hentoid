@@ -340,7 +340,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     @WorkerThread
     private static Content postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
         cacheJson(context, content);
-        return ContentHelper.updateContentReads(context, content);
+        return ContentHelper.open(context, content, null);
     }
 
     // Cache JSON URI in the database to speed up favouriting
