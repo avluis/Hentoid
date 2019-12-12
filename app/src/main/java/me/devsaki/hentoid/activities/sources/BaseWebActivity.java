@@ -745,7 +745,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
          * Determines if the browser can use one single OkHttp request to serve HTML pages
          * - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
          * https://issuetracker.google.com/issues/36989494
-         * - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes session issues on nHentai)
+         * - Does not work on Chrome 55-71 because sameSite cookies are not published by CookieManager.getCookie (causes session issues on nHentai)
          * https://bugs.chromium.org/p/chromium/issues/detail?id=780491
          *
          * @return true if HTML content can be served by a single OkHttp request,
@@ -753,7 +753,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
          */
         private boolean canUseSingleOkHttpRequest() {
             return (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
-                    && (chromeVersion < 58 || chromeVersion > 71)
+                    && (chromeVersion < 55 || chromeVersion > 71)
             );
         }
 
