@@ -73,6 +73,11 @@
     <string name="pref_dl_retries_mem_limit_title">Mem usage threshold before aborting</string>
     <string name="pref_dl_retries_mem_limit_summary">%s</string>
     <string name="pref_dl_retries_mem_limit_default" translatable="false">100</string>
+    <string name="pref_dl_hitomi">Hitomi.la</string>
+    <string name="pref_dl_hitomi_webp_title">Prefer downloading WEBP</string>
+    <string name="pref_dl_hitomi_webp_summary_off">Download other type of pictures (PNG, JPG)</string>
+    <string name="pref_dl_hitomi_webp_summary_on">Download WEBP pictures whenever they are available</string>
+    <string name="pref_dl_hitomi_webp_default" translatable="false">true</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously.\nCurrently: %s.</string>
     <string name="pref_dl_threads_quantity_default" translatable="false">0</string>

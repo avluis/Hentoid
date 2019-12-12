@@ -23,6 +23,7 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import okhttp3.Response;
 import timber.log.Timber;
 
@@ -68,10 +69,12 @@ public class HitomiParser implements ImageListParser {
 
         ImageFile img;
         int order = 1;
+        boolean isHashAvailable;
         for (HitomiGalleryPage page : gallery) {
-            if (1 == page.getHaswebp())
+            isHashAvailable = (page.getHash() != null && !page.getHash().isEmpty());
+            if (1 == page.getHaswebp() && isHashAvailable && Preferences.isDlHitomiWebp())
                 img = buildWebpPicture(content, page, order++, gallery.size());
-            else if (page.getHash() != null && !page.getHash().isEmpty())
+            else if (isHashAvailable)
                 img = buildHashPicture(page, order++, gallery.size());
             else img = buildSimplePicture(content, page, order++, gallery.size());
             img.setDownloadParams(downloadParamsStr);
