@@ -1,10 +1,13 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -18,6 +21,22 @@ public class ThemeHelper {
         throw new IllegalStateException("Utility class");
     }
 
+
+    public static void applyTheme(Context context) {
+        String currentThemeName = getThemeName(context);
+        boolean isAmoled = Preferences.isDarkModeAmoled();
+    }
+
+    private static String getThemeName(@NonNull Context context) {
+        PackageInfo packageInfo;
+        try {
+            packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+            int themeResId = packageInfo.applicationInfo.theme;
+            return context.getResources().getResourceEntryName(themeResId);
+        } catch (PackageManager.NameNotFoundException e) {
+            return "";
+        }
+    }
 
     public static int getColor(Context context, String resourceName, boolean isAmoled) {
         if (isAmoled) resourceName += "_amoled";
