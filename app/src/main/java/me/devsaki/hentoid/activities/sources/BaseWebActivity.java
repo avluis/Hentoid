@@ -2,9 +2,7 @@ package me.devsaki.hentoid.activities.sources;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -100,6 +98,7 @@ import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.util.Helper.getChromeVersion;
 import static me.devsaki.hentoid.util.HttpHelper.HEADER_CONTENT_TYPE;
 
 /**
@@ -347,13 +346,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         HentoidApp.reset(this);
     }
 
-    // Fix for a crash on 5.1.1
-    // https://stackoverflow.com/questions/41025200/android-view-inflateexception-error-inflating-class-android-webkit-webview
-    // As fallback solution _only_ since it breaks other stuff in the webview (choice in SELECT tags for instance)
-    public static Context getFixedContext(Context context) {
-        return context.createConfigurationContext(new Configuration());
-    }
-
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
 
@@ -362,7 +354,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         } catch (Resources.NotFoundException e) {
             // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
             // Creating with the application Context fixes this, but is not generally recommended for view creation
-            webView = new NestedScrollWebView(getFixedContext(this));
+            webView = new NestedScrollWebView(Helper.getFixedContext(this));
         }
 
         webView.setHapticFeedbackEnabled(false);
@@ -426,7 +418,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
 
         Timber.i("Using agent %s", webView.getSettings().getUserAgentString());
-        chromeVersion = getChromeVersion();
+        chromeVersion = getChromeVersion(this);
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setBuiltInZoomControls(true);
@@ -451,17 +443,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             alertMessage.setText(formatAlertMessage(alert));
             alertBanner.setVisibility(View.VISIBLE);
         }
-    }
-
-    private int getChromeVersion() {
-        String chromeString = "Chrome/";
-        String defaultUserAgent = webView.getSettings().getUserAgentString();
-        if (defaultUserAgent.contains(chromeString)) {
-            int chromeIndex = defaultUserAgent.indexOf(chromeString);
-            int dotIndex = defaultUserAgent.indexOf('.', chromeIndex);
-            String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
-            return Integer.parseInt(version);
-        } else return -1;
     }
 
     private void initSwipeLayout() {
@@ -754,15 +735,16 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
          * Determines if the browser can use one single OkHttp request to serve HTML pages
          * - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
          * https://issuetracker.google.com/issues/36989494
-         * - Does not work on Chrome 58-71 because sameSite cookies are not published by CookieManager.getCookie (causes session issues on nHentai)
+         * - Does not work on Chrome 55-71 because sameSite cookies are not published by CookieManager.getCookie (causes session issues on nHentai)
          * https://bugs.chromium.org/p/chromium/issues/detail?id=780491
          *
          * @return true if HTML content can be served by a single OkHttp request,
          * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
          */
         private boolean canUseSingleOkHttpRequest() {
-            return (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
-                    && (chromeVersion < 58 || chromeVersion > 71)
+            return (Preferences.isBrowserAugmented()
+                    && Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
+                    && (chromeVersion < 55 || chromeVersion > 71)
             );
         }
 
