@@ -63,6 +63,13 @@
                 android:key="pref_webview_initial_zoom_lists"
                 android:summary="@string/pref_browser_initial_zoom_summary"
                 android:title="@string/pref_browser_initial_zoom_title" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_augmented_default"
+                app:iconSpaceReserved="false"
+                android:key="pref_browser_augmented"
+                android:summaryOff="@string/pref_browser_augmented_off"
+                android:summaryOn="@string/pref_browser_augmented_on"
+                android:title="@string/pref_browser_augmented_title" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_theme"

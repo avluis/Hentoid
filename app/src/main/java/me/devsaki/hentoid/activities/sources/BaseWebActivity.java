@@ -742,7 +742,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
          * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
          */
         private boolean canUseSingleOkHttpRequest() {
-            return (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
+            return (Preferences.isBrowserAugmented()
+                    && Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
                     && (chromeVersion < 55 || chromeVersion > 71)
             );
         }
