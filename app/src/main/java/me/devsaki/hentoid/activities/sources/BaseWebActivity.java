@@ -98,6 +98,7 @@ import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.util.Helper.getChromeVersion;
 import static me.devsaki.hentoid.util.HttpHelper.HEADER_CONTENT_TYPE;
 
 /**
@@ -417,7 +418,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
 
         Timber.i("Using agent %s", webView.getSettings().getUserAgentString());
-        chromeVersion = getChromeVersion();
+        chromeVersion = getChromeVersion(this);
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setBuiltInZoomControls(true);
@@ -442,17 +443,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             alertMessage.setText(formatAlertMessage(alert));
             alertBanner.setVisibility(View.VISIBLE);
         }
-    }
-
-    private int getChromeVersion() {
-        String chromeString = "Chrome/";
-        String defaultUserAgent = webView.getSettings().getUserAgentString();
-        if (defaultUserAgent.contains(chromeString)) {
-            int chromeIndex = defaultUserAgent.indexOf(chromeString);
-            int dotIndex = defaultUserAgent.indexOf('.', chromeIndex);
-            String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
-            return Integer.parseInt(version);
-        } else return -1;
     }
 
     private void initSwipeLayout() {
