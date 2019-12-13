@@ -684,6 +684,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return;
             }
 
+            library.loadAround(maxIndex - 1);
             pagerAdapter.setShelf(library.subList(minIndex, maxIndex));
         }
         pagerAdapter.notifyDataSetChanged();

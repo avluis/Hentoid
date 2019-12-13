@@ -206,6 +206,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_BROWSER_RESUME_LAST, Default.PREF_BROWSER_RESUME_LAST_DEFAULT);
     }
 
+    public static boolean isBrowserAugmented() {
+        return sharedPreferences.getBoolean(Key.PREF_BROWSER_AUGMENTED, Default.PREF_BROWSER_AUGMENTED_DEFAULT);
+    }
+
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS,
                 Default.PREF_DL_THREADS_QUANTITY_DEFAULT + "") + "");
@@ -346,6 +350,10 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_RETRIES_MEM_LIMIT, Integer.toString(Default.PREF_DL_RETRIES_MEM_LIMIT)) + "");
     }
 
+    public static boolean isDlHitomiWebp() {
+        return sharedPreferences.getBoolean(Key.PREF_DL_HITOMI_WEBP, Default.PREF_DL_HITOMI_WEBP);
+    }
+
     public static List<Site> getActiveSites() {
         String siteCodesStr = sharedPreferences.getString(Key.ACTIVE_SITES, Default.ACTIVE_SITES) + "";
         if (siteCodesStr.isEmpty()) return Collections.emptyList();
@@ -388,7 +396,7 @@ public final class Preferences {
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String PREF_BROWSER_RESUME_LAST = "pref_browser_resume_last";
-        public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
+        static final String PREF_BROWSER_AUGMENTED = "pref_browser_augmented";
         static final String PREF_FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String PREF_VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
         public static final String PREF_VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
@@ -404,15 +412,17 @@ public final class Preferences {
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
-        static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
-        static final String PREF_READ_CONTENT_LISTS = "pref_read_content_lists";
+        static final String PREF_DL_HITOMI_WEBP = "pref_dl_hitomi_webp";
+        public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
 
         //Keys that were removed from the app, kept for housekeeping
-        static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
+        //static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         static final String PREF_HIDE_RECENT = "pref_hide_recent";
         static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
         static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
+
+        static final String PREF_READ_CONTENT_LISTS = "pref_read_content_lists";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -431,6 +441,7 @@ public final class Preferences {
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final boolean PREF_BROWSER_RESUME_LAST_DEFAULT = false;
+        static final boolean PREF_BROWSER_AUGMENTED_DEFAULT = true;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
         static final boolean PREF_VIEWER_RESUME_LAST_LEFT = true;
@@ -446,13 +457,15 @@ public final class Preferences {
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
-        static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
+        static final boolean PREF_DL_HITOMI_WEBP = true;
         static final boolean PREF_APP_PREVIEW = true;
 
         static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         // Default menu in v1.9.x
         static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HENTAICAFE, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, Site.NEXUS, Site.MUSES, Site.DOUJINS};
         static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
+
+        static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

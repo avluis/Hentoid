@@ -10,6 +10,7 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.fragments.about.LicensesFragment
+import me.devsaki.hentoid.util.Helper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -21,7 +22,8 @@ class AboutActivity : AppCompatActivity(R.layout.activity_about) {
 
         toolbar.setNavigationOnClickListener { onBackPressed() }
 
-        tv_version_name.text = getString(R.string.about_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+        tv_version_name.text = getString(R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+        tv_chrome_version_name.text = getString(R.string.about_chrome_version, Helper.getChromeVersion(this))
 
         licensesButton.setOnClickListener { showFragment(LicensesFragment()) }
 

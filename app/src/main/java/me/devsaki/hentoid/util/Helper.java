@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -14,6 +15,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.webkit.WebSettings;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -230,5 +232,23 @@ public final class Helper {
             }
         }
         return newString.toString();
+    }
+
+    // Fix for a crash on 5.1.1
+    // https://stackoverflow.com/questions/41025200/android-view-inflateexception-error-inflating-class-android-webkit-webview
+    // As fallback solution _only_ since it breaks other stuff in the webview (choice in SELECT tags for instance)
+    public static Context getFixedContext(Context context) {
+        return context.createConfigurationContext(new Configuration());
+    }
+
+    public static int getChromeVersion(Context context) {
+        String chromeString = "Chrome/";
+        String defaultUserAgent = WebSettings.getDefaultUserAgent(context);
+        if (defaultUserAgent.contains(chromeString)) {
+            int chromeIndex = defaultUserAgent.indexOf(chromeString);
+            int dotIndex = defaultUserAgent.indexOf('.', chromeIndex);
+            String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
+            return Integer.parseInt(version);
+        } else return -1;
     }
 }

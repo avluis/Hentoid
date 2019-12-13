@@ -59,6 +59,8 @@
 -keep class me.devsaki.hentoid.** { *; }
 -keep class com.bumptech.glide.integration.okhttp3.OkHttpGlideModule
 
+-keep class androidx.paging.PagedListAdapter.** { *; }
+-keep class androidx.paging.AsyncPagedListDiffer.** { *; }
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
 -keep public class * extends android.app.Service
