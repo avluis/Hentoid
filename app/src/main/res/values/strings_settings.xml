@@ -29,6 +29,10 @@
     <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
     <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
     <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
+    <string name="pref_browser_augmented_title">Augmented browser</string>
+    <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
+    <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
+    <string name="pref_browser_augmented_default" translatable="false">true</string>
 
     <string name="pref_cat_theme">App theme</string>
     <string name="pref_dark_mode_title">Dark mode</string>
@@ -69,6 +73,11 @@
     <string name="pref_dl_retries_mem_limit_title">Mem usage threshold before aborting</string>
     <string name="pref_dl_retries_mem_limit_summary">%s</string>
     <string name="pref_dl_retries_mem_limit_default" translatable="false">100</string>
+    <string name="pref_dl_hitomi">Hitomi.la</string>
+    <string name="pref_dl_hitomi_webp_title">Prefer downloading WEBP</string>
+    <string name="pref_dl_hitomi_webp_summary_off">Download other type of pictures (PNG, JPG)</string>
+    <string name="pref_dl_hitomi_webp_summary_on">Download WEBP pictures whenever they are available</string>
+    <string name="pref_dl_hitomi_webp_default" translatable="false">true</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously.\nCurrently: %s.</string>
     <string name="pref_dl_threads_quantity_default" translatable="false">0</string>

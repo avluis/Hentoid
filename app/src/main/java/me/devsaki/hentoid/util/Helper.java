@@ -15,6 +15,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.webkit.WebSettings;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -238,5 +239,16 @@ public final class Helper {
     // As fallback solution _only_ since it breaks other stuff in the webview (choice in SELECT tags for instance)
     public static Context getFixedContext(Context context) {
         return context.createConfigurationContext(new Configuration());
+    }
+
+    public static int getChromeVersion(Context context) {
+        String chromeString = "Chrome/";
+        String defaultUserAgent = WebSettings.getDefaultUserAgent(context);
+        if (defaultUserAgent.contains(chromeString)) {
+            int chromeIndex = defaultUserAgent.indexOf(chromeString);
+            int dotIndex = defaultUserAgent.indexOf('.', chromeIndex);
+            String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
+            return Integer.parseInt(version);
+        } else return -1;
     }
 }
