@@ -9,8 +9,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 
-import androidx.appcompat.app.AppCompatDelegate;
-
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -134,10 +132,7 @@ public class HentoidApp extends Application {
             ShortcutHelper.buildShortcuts(this);
         }
 
-        // Set Night mode
-        int darkMode = Preferences.getDarkMode();
-        AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(darkMode));
-        FirebaseAnalytics.getInstance(this).setUserProperty("night_mode", Integer.toString(darkMode));
+        FirebaseAnalytics.getInstance(this).setUserProperty("color_theme", Integer.toString(Preferences.getColorTheme()));
     }
 
     // We have asked for permissions, but still denied.
@@ -166,21 +161,6 @@ public class HentoidApp extends Application {
             startForegroundService(intent);
         } else {
             startService(intent);
-        }
-    }
-
-    public static int darkModeFromPrefs(int prefsMode) {
-        switch (prefsMode) {
-            case Preferences.Constant.DARK_MODE_OFF:
-                return AppCompatDelegate.MODE_NIGHT_NO;
-            case Preferences.Constant.DARK_MODE_ON:
-            case Preferences.Constant.DARK_MODE_AMOLED_ON:
-                return AppCompatDelegate.MODE_NIGHT_YES;
-            case Preferences.Constant.DARK_MODE_BATTERY:
-            case Preferences.Constant.DARK_MODE_AMOLED_BATTERY:
-                return AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY;
-            default:
-                return AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
         }
     }
 }

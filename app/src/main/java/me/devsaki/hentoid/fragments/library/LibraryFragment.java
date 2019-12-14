@@ -20,6 +20,7 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
@@ -63,6 +64,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
@@ -625,6 +627,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Timber.i("Prefs change detected : %s", key);
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
             initPagingMethod(Preferences.getEndlessScroll());
+        } else if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
+            ThemeHelper.applyTheme((AppCompatActivity) requireActivity());
         }
     }
 

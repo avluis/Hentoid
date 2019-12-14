@@ -10,6 +10,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 public class LibraryActivity extends AppCompatActivity {
 
@@ -21,7 +22,7 @@ public class LibraryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Preferences.isDarkModeAmoled()) setTheme(R.style.Theme_Amoled); else setTheme(R.style.Theme_Base);
+        ThemeHelper.applyTheme(this);
 
         setContentView(R.layout.activity_hentoid);
         drawerLayout = findViewById(R.id.drawer_layout);

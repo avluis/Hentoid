@@ -93,7 +93,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
         searchBottomSheetFragment.setArguments(builder.getBundle());
-        searchBottomSheetFragment.setStyle(STYLE_NORMAL, R.style.Theme_Base_BottomSheetDialog);
+        searchBottomSheetFragment.setStyle(STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         searchBottomSheetFragment.show(fragmentManager, "searchBottomSheetFragment");
     }
 

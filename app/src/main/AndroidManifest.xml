@@ -20,7 +20,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="false"
-        android:theme="@style/Theme.Base"
+        android:theme="@style/Theme.Light"
         android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
@@ -95,7 +95,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:parentActivityName=".activities.LibraryActivity"
-            android:theme="@style/Theme.Base.Prefs"
+            android:theme="@style/Theme.Light.Prefs"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -287,7 +287,7 @@
         <activity
             android:name=".activities.ImageViewerActivity"
             android:label="Image Viewer"
-            android:theme="@style/Theme.Base.Monochrome">
+            android:theme="@style/Theme.Monochrome">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.LibraryActivity" />

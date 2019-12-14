@@ -94,6 +94,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.0'
     implementation "androidx.fragment:fragment-ktx:1.1.0"
+    implementation "androidx.lifecycle:lifecycle-runtime:2.1.0"
 
     // Image loader: github.com/bumptech/glide
     implementation 'com.github.bumptech.glide:glide:4.10.0'

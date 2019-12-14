@@ -78,7 +78,7 @@
         android:focusable="true"
         android:padding="4dp"
         android:src="@drawable/ic_exclamation"
-        android:tint="@color/card_surface"
+        android:tint="@color/card_surface_light"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/ivSite"
         app:layout_constraintTop_toBottomOf="@id/tvTags"
