@@ -23,6 +23,7 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import okhttp3.Response;
 import timber.log.Timber;
 
@@ -68,10 +69,12 @@ public class HitomiParser implements ImageListParser {
 
         ImageFile img;
         int order = 1;
+        boolean isHashAvailable;
         for (HitomiGalleryPage page : gallery) {
-            if (1 == page.getHaswebp())
+            isHashAvailable = (page.getHash() != null && !page.getHash().isEmpty());
+            if (1 == page.getHaswebp() && isHashAvailable && Preferences.isDlHitomiWebp())
                 img = buildWebpPicture(content, page, order++, gallery.size());
-            else if (page.getHash() != null && !page.getHash().isEmpty())
+            else if (isHashAvailable)
                 img = buildHashPicture(page, order++, gallery.size());
             else img = buildSimplePicture(content, page, order++, gallery.size());
             img.setDownloadParams(downloadParamsStr);
@@ -82,22 +85,20 @@ public class HitomiParser implements ImageListParser {
     }
 
     private ImageFile buildWebpPicture(@NonNull Content content, @NonNull HitomiGalleryPage page, int order, int maxPages) {
-        // New Hitomi image URLs starting from june 2018
-        //  If book ID is even, starts with 'aa'; else starts with 'ba'
-        int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
-        String imageSubdomain = subdomainFromGalleryId(referenceId);
-        String pageUrl = "https://" + imageSubdomain + ".hitomi.la/webp/" + content.getUniqueSiteId() + "/" + page.getName() + ".webp";
-
-        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
+        return buildHashPicture(page, order, maxPages, "webp", "webp");
     }
 
     private ImageFile buildHashPicture(@NonNull HitomiGalleryPage page, int order, int maxPages) {
+        return buildHashPicture(page, order, maxPages, "images", FileHelper.getExtension(page.getName()));
+    }
+
+    private ImageFile buildHashPicture(@NonNull HitomiGalleryPage page, int order, int maxPages, String folder, String extension) {
         String hash = page.getHash();
         String componentA = hash.substring(hash.length() - 1);
         String componentB = hash.substring(hash.length() - 3, hash.length() - 1);
 
         String imageSubdomain = subdomainFromGalleryId(Integer.valueOf(componentB, 16));
-        String pageUrl = "https://" + imageSubdomain + ".hitomi.la/images/" + componentA + "/" + componentB + "/" + hash + "." + FileHelper.getExtension(page.getName());
+        String pageUrl = "https://" + imageSubdomain + ".hitomi.la/" + folder + "/" + componentA + "/" + componentB + "/" + hash + "." + extension;
 
         return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
     }

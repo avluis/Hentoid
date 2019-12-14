@@ -11,6 +11,7 @@ import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.fragments.about.ChangelogFragment
 import me.devsaki.hentoid.fragments.about.LicensesFragment
 import me.devsaki.hentoid.util.Consts
+import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.startBrowserActivity
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -28,7 +29,8 @@ class AboutActivity : AppCompatActivity(R.layout.activity_about) {
         discordText.setOnClickListener { startBrowserActivity(Consts.URL_DISCORD) }
         redditText.setOnClickListener { startBrowserActivity(Consts.URL_REDDIT) }
 
-        tv_version_name.text = getString(R.string.about_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+        tv_version_name.text = getString(R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+        tv_chrome_version_name.text = getString(R.string.about_chrome_version, Helper.getChromeVersion(this))
 
         changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
 
