@@ -119,9 +119,9 @@ public class ThemeHelper {
         }
 
         String colorName = renameColorToCurrentTheme(getColorName(context, colorId));
-        int resourceId = getColorId(context, colorName);
-        COLOR_CACHE.put(key, resourceId);
-        return ContextCompat.getColor(context, resourceId);
+        int result = ContextCompat.getColor(context, getColorId(context, colorName));
+        COLOR_CACHE.put(key, result);
+        return result;
     }
 
     /**
