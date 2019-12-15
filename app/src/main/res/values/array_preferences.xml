@@ -80,17 +80,15 @@
         <item>1</item>
     </string-array>
 
-    <string-array name="pref_dark_mode_entries">
-        <item>Off</item>
-        <item>On</item>
-        <item>On when battery low</item>
-        <item>Device settings (Android Q)</item>
+    <string-array name="pref_color_theme_entries">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Black</item>
     </string-array>
-    <string-array name="pref_dark_mode_values">
+    <string-array name="pref_color_theme_values">
         <item>0</item>
         <item>1</item>
         <item>2</item>
-        <item>3</item>
     </string-array>
 
     <string-array name="pref_dl_retries_number_entries">

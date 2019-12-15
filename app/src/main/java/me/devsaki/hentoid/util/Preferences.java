@@ -2,7 +2,6 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
@@ -14,9 +13,8 @@ import java.util.List;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.Theme;
 import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.P;
 
 /**
  * Created by Shiro on 2/21/2018.
@@ -71,6 +69,13 @@ public final class Preferences {
             boolean checkUpdates = sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES_LISTS, Default.PREF_CHECK_UPDATES_DEFAULT);
             sharedPreferences.edit().putBoolean(Key.PREF_CHECK_UPDATES, checkUpdates).apply();
             sharedPreferences.edit().remove(Key.PREF_CHECK_UPDATES_LISTS).apply();
+        }
+
+        if (sharedPreferences.contains(Key.DARK_MODE)) {
+            int darkMode = Integer.parseInt(sharedPreferences.getString(Key.DARK_MODE, "0") + "");
+            int colorTheme = (0 == darkMode) ? Constant.COLOR_THEME_LIGHT : Constant.COLOR_THEME_DARK;
+            sharedPreferences.edit().putString(Key.PREF_COLOR_THEME, colorTheme + "").apply();
+            sharedPreferences.edit().remove(Key.DARK_MODE).apply();
         }
     }
 
@@ -312,16 +317,6 @@ public final class Preferences {
                 .apply();
     }
 
-    public static int getDarkMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DARK_MODE, Integer.toString(Default.PREF_DARK_MODE)) + "");
-    }
-
-    public static void setDarkMode(int darkMode) {
-        sharedPreferences.edit()
-                .putString(Key.DARK_MODE, Integer.toString(darkMode))
-                .apply();
-    }
-
     public static boolean isDlRetriesActive() {
         return sharedPreferences.getBoolean(Key.PREF_DL_RETRIES_ACTIVE, Default.PREF_DL_RETRIES_ACTIVE);
     }
@@ -350,6 +345,16 @@ public final class Preferences {
         List<Integer> siteCodes = Stream.of(activeSites).map(Site::getCode).toList();
         sharedPreferences.edit()
                 .putString(Key.ACTIVE_SITES, android.text.TextUtils.join(",", siteCodes))
+                .apply();
+    }
+
+    public static int getColorTheme() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_COLOR_THEME, Integer.toString(Default.PREF_COLOR_THEME)) + "");
+    }
+
+    public static void setColorTheme(int colorTheme) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_COLOR_THEME, Integer.toString(colorTheme))
                 .apply();
     }
 
@@ -391,7 +396,7 @@ public final class Preferences {
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
-        public static final String DARK_MODE = "pref_dark_mode";
+        public static final String PREF_COLOR_THEME = "pref_color_theme";
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
@@ -404,6 +409,7 @@ public final class Preferences {
         static final String PREF_HIDE_RECENT = "pref_hide_recent";
         static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
         static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
+        static final String DARK_MODE = "pref_dark_mode";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -434,7 +440,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
         static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
-        static final int PREF_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_OFF;
+        static final int PREF_COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
@@ -482,9 +488,8 @@ public final class Preferences {
         public static final int PREF_VIEWER_DIRECTION_RTL = 1;
         public static final int PREF_VIEWER_ORIENTATION_HORIZONTAL = 0;
         public static final int PREF_VIEWER_ORIENTATION_VERTICAL = 1;
-        public static final int DARK_MODE_OFF = 0;
-        public static final int DARK_MODE_ON = 1;
-        public static final int DARK_MODE_BATTERY = 2;
-        static final int DARK_MODE_DEVICE = 3;
+        public static final int COLOR_THEME_LIGHT = Theme.LIGHT.getId();
+        public static final int COLOR_THEME_DARK = Theme.DARK.getId();
+        public static final int COLOR_THEME_BLACK = Theme.BLACK.getId();
     }
 }

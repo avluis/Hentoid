@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_light">@color/dark_red</color>
+    <color name="primary_variant_light">@color/very_dark_red</color>
+    <color name="on_primary_light">@color/white_opacity_87</color>
+    <color name="secondary_light">@color/accent_red</color>
+    <color name="secondary_variant_light">@color/light_red</color>
+    <color name="on_secondary_light">@color/white_opacity_87</color>
+    <color name="surface_light">@color/white</color>
+    <color name="on_surface_light">@color/white_opacity_87</color>
+    <color name="window_background_light">@color/taupe_elevated_2</color>
+    <color name="on_background_light">@color/white_opacity_87</color>
+    <color name="ripple_light">@color/light_red</color>
+
+    <!-- Drawer header -->
+    <color name="drawer_header_diagonal_light">@color/very_dark_pink</color>
+
+    <!-- Content cards -->
+    <color name="card_title_light">@color/secondary_light</color>
+    <color name="card_surface_light">@color/white</color>
+    <color name="card_selected_light">@color/light_red</color>
+    <color name="card_pressed_light">@color/light_gray</color>
+    <color name="card_tags_light">@color/medium_gray</color>
+</resources>

@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 public class CircularProgressView extends View {
     private final float strokeWidth;
@@ -35,7 +36,7 @@ public class CircularProgressView extends View {
 
         progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         progressPaint.setStyle(Paint.Style.STROKE);
-        progressPaint.setColor(ContextCompat.getColor(context, R.color.secondary));
+        progressPaint.setColor(ThemeHelper.getColor(context, R.color.secondary_light));
         progressPaint.setStrokeWidth(strokeWidth);
     }
 

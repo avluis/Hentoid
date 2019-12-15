@@ -33,7 +33,7 @@
             android:id="@+id/web_alert_txt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/secondary"
+            android:background="?colorSecondary"
             android:minHeight="64dp"
             android:paddingStart="64dp"
             android:paddingTop="8dp"

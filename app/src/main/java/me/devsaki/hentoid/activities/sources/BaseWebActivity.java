@@ -91,6 +91,7 @@ import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import okhttp3.Response;
@@ -207,6 +208,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ThemeHelper.applyTheme(this);
+
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         setContentView(R.layout.activity_base_web);

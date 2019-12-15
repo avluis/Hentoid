@@ -9,12 +9,15 @@ import androidx.fragment.app.Fragment;
 import me.devsaki.hentoid.fragments.pin.ActivatedPinPreferenceFragment;
 import me.devsaki.hentoid.fragments.pin.DeactivatedPinPreferenceFragment;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 public class PinPreferenceActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ThemeHelper.applyTheme(this);
 
         if (savedInstanceState == null) {
             boolean isLockOn = !Preferences.getAppLockPin().isEmpty();

@@ -9,9 +9,9 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.UnlockActivity;
@@ -21,32 +21,36 @@ import me.devsaki.hentoid.enums.Site;
  * Created by avluis on 11/04/2016.
  */
 
+@RequiresApi(api = Build.VERSION_CODES.N_MR1)
 public final class ShortcutHelper {
 
     private ShortcutHelper() {
         throw new IllegalStateException("Utility class");
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N_MR1)
     public static void buildShortcuts(Context context) {
         // TODO: Loop across all activities
-        int tint_color = ContextCompat.getColor(context, R.color.secondary);
-
-        Bitmap nhentaiBitmap = Helper.getBitmapFromVectorDrawable(context, R.drawable.ic_menu_nhentai);
-        nhentaiBitmap = Helper.tintBitmap(nhentaiBitmap, tint_color);
-        Icon nhentaiIcon = Icon.createWithBitmap(nhentaiBitmap);
-
-        Intent nhentaiIntent = UnlockActivity.wrapIntent(context, Site.NHENTAI);
-
-        ShortcutInfo nhentai = new ShortcutInfo.Builder(context, "nhentai")
-                .setShortLabel("nhentai")
-                .setLongLabel("Open nhentai")
-                .setIcon(nhentaiIcon)
-                .setIntent(nhentaiIntent)
-                .build();
+        List<ShortcutInfo> shortcuts = new ArrayList<>();
+        shortcuts.add(buildShortcut(context, Site.NHENTAI));
 
         ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
         if (shortcutManager != null)
-            shortcutManager.setDynamicShortcuts(Arrays.asList(nhentai));
+            shortcutManager.setDynamicShortcuts(shortcuts);
+    }
+
+    private static ShortcutInfo buildShortcut(Context context, Site s) {
+        int tint_color = ThemeHelper.getColor(context, R.color.secondary_light);
+        Bitmap siteBitmap = Helper.getBitmapFromVectorDrawable(context, s.getIco());
+        siteBitmap = Helper.tintBitmap(siteBitmap, tint_color);
+        Icon siteIcon = Icon.createWithBitmap(siteBitmap);
+
+        Intent siteIntent = UnlockActivity.wrapIntent(context, s);
+
+        return new ShortcutInfo.Builder(context, s.getDescription().toLowerCase())
+                .setShortLabel(s.getDescription().toLowerCase())
+                .setLongLabel("Open " + s.getDescription().toLowerCase())
+                .setIcon(siteIcon)
+                .setIntent(siteIntent)
+                .build();
     }
 }

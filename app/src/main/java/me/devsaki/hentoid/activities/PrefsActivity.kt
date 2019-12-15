@@ -9,8 +9,9 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.events.ImportEvent
-import me.devsaki.hentoid.fragments.MyPreferenceFragment
+import me.devsaki.hentoid.fragments.PreferenceFragment
 import me.devsaki.hentoid.util.FileHelper
+import me.devsaki.hentoid.util.ThemeHelper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -20,8 +21,10 @@ class PrefsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        ThemeHelper.applyTheme(this)
+
         supportFragmentManager.commit {
-            replace(android.R.id.content, MyPreferenceFragment())
+            replace(android.R.id.content, PreferenceFragment())
         }
 
         EventBus.getDefault().register(this)

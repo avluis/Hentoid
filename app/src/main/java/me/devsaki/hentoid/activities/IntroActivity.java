@@ -7,8 +7,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro2;
@@ -29,12 +27,12 @@ import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment;
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import timber.log.Timber;
 
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT;
-import static me.devsaki.hentoid.HentoidApp.darkModeFromPrefs;
 import static me.devsaki.hentoid.util.ConstsImport.RESULT_KEY;
 
 /**
@@ -66,7 +64,7 @@ public class IntroActivity extends AppIntro2 {
         showPagerIndicator(false);
         setSwipeLock(true);
 
-        backgroundFrame.setBackgroundColor(ContextCompat.getColor(this, R.color.window_background));
+        backgroundFrame.setBackgroundColor(ThemeHelper.getColor(this, R.color.window_background_light));
     }
 
     @Override
@@ -100,8 +98,8 @@ public class IntroActivity extends AppIntro2 {
     }
 
     public void setThemePrefs(int pref) {
-        Preferences.setDarkMode(pref);
-        AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(Preferences.getDarkMode()));
+        Preferences.setColorTheme(pref);
+        ThemeHelper.applyTheme(this);
         getPager().goToNextSlide();
     }
 

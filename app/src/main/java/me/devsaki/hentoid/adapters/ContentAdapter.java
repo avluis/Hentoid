@@ -18,6 +18,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.ContentHolder;
 
 /**
@@ -74,6 +75,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_download, parent, false);
+        view.setBackground(ThemeHelper.makeCardSelector(parent.getContext()));
         return new ContentHolder(view, this);
     }
 
@@ -135,6 +137,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     public LongConsumer getSelectionChangedListener() {
         return onSelectionChangedListener;
     }
+
 
     public static class Builder {
         private Consumer<Content> onSourceClickListener;

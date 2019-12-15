@@ -59,7 +59,7 @@
         android:id="@+id/drawer_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/window_background"
+        android:background="?android:windowBackground"
         android:fastScrollEnabled="false"
         android:scrollbars="none"
         android:textIsSelectable="false"

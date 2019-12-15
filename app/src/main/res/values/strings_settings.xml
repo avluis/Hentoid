@@ -35,9 +35,9 @@
     <string name="pref_browser_augmented_default" translatable="false">true</string>
 
     <string name="pref_cat_theme">App theme</string>
-    <string name="pref_dark_mode_title">Dark mode</string>
-    <string name="pref_dark_mode_summary">Set the display theme</string>
-    <string name="pref_dark_mode_default" translatable="false">0</string>
+    <string name="pref_color_theme_title">Color theme</string>
+    <string name="pref_color_theme_summary">Current theme : %s</string>
+    <string name="pref_color_theme_default" translatable="false">0</string>
 
     <!-- Storage -->
     <string name="pref_screen_storage">Storage</string>

@@ -39,7 +39,7 @@
         android:id="@+id/drawer_edit_ok_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/secondary"
+        android:background="?colorSecondary"
         android:gravity="center"
         android:padding="8dp"
         android:text="@android:string/ok"

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.viewholders;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Handler;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.widget.ImageViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -24,6 +26,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -127,6 +130,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
             title = content.getTitle();
         }
         tvTitle.setText(title);
+        tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
     }
 
     private void attachSeries(Content content) {
@@ -194,6 +198,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
             String tags = android.text.TextUtils.join(", ", allTags);
             tvTags.setText(tags);
         }
+        tvTags.setTextColor(ThemeHelper.getColor(tvTags.getContext(), R.color.card_tags_light));
     }
 
     private void attachButtons(final Content content) {
@@ -236,6 +241,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
                 ivError.setVisibility(View.GONE);
             }
         }
+        ImageViewCompat.setImageTintList(ivError, ColorStateList.valueOf(ThemeHelper.getColor(ivError.getContext(), R.color.card_surface_light)));
     }
 
     // NB : There's only one listener instantiated in the fragment and consuming the corresponding Content

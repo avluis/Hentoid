@@ -4,9 +4,9 @@
 
     <corners android:radius="4dp" />
 
-    <solid android:color="@color/card_selected" />
+    <solid android:color="@color/card_selected_light" />
 
     <stroke
         android:width="4dp"
-        android:color="@color/secondary" />
+        android:color="@color/secondary_light" />
 </shape>

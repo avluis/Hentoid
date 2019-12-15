@@ -1,29 +1,29 @@
 package me.devsaki.hentoid.fragments
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
-import me.devsaki.hentoid.HentoidApp
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PinPreferenceActivity
+import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.fragments.import_.LibRefreshDialogFragment
 import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.services.UpdateDownloadService
 import me.devsaki.hentoid.util.*
 
-class MyPreferenceFragment : PreferenceFragmentCompat() {
+class PreferenceFragment : PreferenceFragmentCompat() {
 
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        findPreference<Preference>(Preferences.Key.DARK_MODE)?.onPreferenceChangeListener =
+        findPreference<Preference>(Preferences.Key.PREF_COLOR_THEME)?.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { _, newValue ->
-                    onPrefDarkModeChanged(newValue)
+                    onPrefColorThemeChanged(newValue)
                 }
         findPreference<Preference>(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)?.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { _, _ ->
@@ -65,7 +65,7 @@ class MyPreferenceFragment : PreferenceFragmentCompat() {
             }
 
     override fun onNavigateToScreen(preferenceScreen: PreferenceScreen) {
-        val preferenceFragment = MyPreferenceFragment().withArguments {
+        val preferenceFragment = PreferenceFragment().withArguments {
             putString(ARG_PREFERENCE_ROOT, preferenceScreen.key)
         }
 
@@ -87,8 +87,8 @@ class MyPreferenceFragment : PreferenceFragmentCompat() {
         return true
     }
 
-    private fun onPrefDarkModeChanged(value: Any): Boolean {
-        AppCompatDelegate.setDefaultNightMode(HentoidApp.darkModeFromPrefs(value.toString().toInt()))
+    private fun onPrefColorThemeChanged(value: Any): Boolean {
+        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Integer.parseInt(value.toString())))
         return true
     }
 }

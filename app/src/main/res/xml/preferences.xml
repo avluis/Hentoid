@@ -76,12 +76,12 @@
             android:title="@string/pref_cat_theme"
             app:iconSpaceReserved="false">
             <ListPreference
-                android:defaultValue="@string/pref_dark_mode_default"
-                android:entries="@array/pref_dark_mode_entries"
-                android:entryValues="@array/pref_dark_mode_values"
-                android:key="pref_dark_mode"
-                android:summary="@string/pref_dark_mode_summary"
-                android:title="@string/pref_dark_mode_title"
+                android:defaultValue="@string/pref_color_theme_default"
+                android:entries="@array/pref_color_theme_entries"
+                android:entryValues="@array/pref_color_theme_values"
+                android:key="pref_color_theme"
+                android:summary="@string/pref_color_theme_summary"
+                android:title="@string/pref_color_theme_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
