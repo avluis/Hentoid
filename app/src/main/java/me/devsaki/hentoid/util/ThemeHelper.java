@@ -39,7 +39,7 @@ public class ThemeHelper {
     }
 
     public static void applyTheme(@NonNull AppCompatActivity activity, Theme targetTheme) {
-        String themeName = renameThemeToCurrentTheme(getThemeName(activity), targetTheme);
+        String themeName = renameTheme(getThemeName(activity), targetTheme);
         if (themeName.equals(targetTheme.getName())) return; // Nothing to do
 
         activity.setTheme(getThemeId(activity, themeName));
@@ -81,10 +81,10 @@ public class ThemeHelper {
 
     private static String renameThemeToCurrentTheme(@NonNull String themeName) {
         Theme targetTheme = Theme.searchById(Preferences.getColorTheme());
-        return renameThemeToCurrentTheme(themeName, targetTheme);
+        return renameTheme(themeName, targetTheme);
     }
 
-    private static String renameThemeToCurrentTheme(@NonNull String themeName, @NonNull Theme targetTheme) {
+    private static String renameTheme(@NonNull String themeName, @NonNull Theme targetTheme) {
         for (Theme t : Theme.values())
             if (themeName.contains(t.getName())) {
                 if (t.equals(targetTheme))
