@@ -64,7 +64,7 @@ public class IntroActivity extends AppIntro2 {
         showPagerIndicator(false);
         setSwipeLock(true);
 
-        backgroundFrame.setBackgroundColor(ThemeHelper.getColor(this, "window_background"));
+        backgroundFrame.setBackgroundColor(ThemeHelper.getColor(this, R.color.window_background_light));
     }
 
     @Override

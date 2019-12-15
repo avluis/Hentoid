@@ -288,7 +288,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
                 int color;
                 if (isFirst && isQueueReady)
-                    color = ThemeHelper.getColor(context, "secondary");
+                    color = ThemeHelper.getColor(context, R.color.secondary_light);
                 else color = ContextCompat.getColor(context, R.color.medium_gray);
                 pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
             } else {

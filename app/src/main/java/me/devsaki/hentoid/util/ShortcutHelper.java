@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.enums.Site;
 
@@ -38,7 +39,7 @@ public final class ShortcutHelper {
     }
 
     private static ShortcutInfo buildShortcut(Context context, Site s) {
-        int tint_color = ThemeHelper.getColor(context, "secondary");
+        int tint_color = ThemeHelper.getColor(context, R.color.secondary_light);
         Bitmap siteBitmap = Helper.getBitmapFromVectorDrawable(context, s.getIco());
         siteBitmap = Helper.tintBitmap(siteBitmap, tint_color);
         Icon siteIcon = Icon.createWithBitmap(siteBitmap);

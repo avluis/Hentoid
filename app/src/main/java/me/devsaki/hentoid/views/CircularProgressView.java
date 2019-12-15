@@ -36,7 +36,7 @@ public class CircularProgressView extends View {
 
         progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         progressPaint.setStyle(Paint.Style.STROKE);
-        progressPaint.setColor(ThemeHelper.getColor(context, "secondary"));
+        progressPaint.setColor(ThemeHelper.getColor(context, R.color.secondary_light));
         progressPaint.setStrokeWidth(strokeWidth);
     }
 

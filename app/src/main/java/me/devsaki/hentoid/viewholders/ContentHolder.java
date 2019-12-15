@@ -241,7 +241,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
                 ivError.setVisibility(View.GONE);
             }
         }
-        ImageViewCompat.setImageTintList(ivError, ColorStateList.valueOf(ThemeHelper.getColor(ivError.getContext(), "card_surface")));
+        ImageViewCompat.setImageTintList(ivError, ColorStateList.valueOf(ThemeHelper.getColor(ivError.getContext(), R.color.card_surface_light)));
     }
 
     // NB : There's only one listener instantiated in the fragment and consuming the corresponding Content

@@ -14,7 +14,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Theme;
 
 import static androidx.lifecycle.Lifecycle.State.CREATED;
@@ -22,6 +26,7 @@ import static androidx.lifecycle.Lifecycle.State.CREATED;
 public class ThemeHelper {
 
     private static final int PX_4_DP = Helper.dpToPixel(HentoidApp.getInstance(), 4);
+    private static final Map<String, Integer> COLOR_CACHE = new HashMap<>();
 
     private ThemeHelper() {
         throw new IllegalStateException("Utility class");
@@ -92,10 +97,10 @@ public class ThemeHelper {
 
     private static String renameColorToCurrentTheme(@NonNull String colorName) {
         Theme targetTheme = Theme.searchById(Preferences.getColorTheme());
-        return renameColorToCurrentTheme(colorName, targetTheme);
+        return renameColorToTheme(colorName, targetTheme);
     }
 
-    private static String renameColorToCurrentTheme(@NonNull String colorName, @NonNull Theme targetTheme) {
+    private static String renameColorToTheme(@NonNull String colorName, @NonNull Theme targetTheme) {
         for (Theme t : Theme.values())
             if (colorName.contains("_" + t.getName().toLowerCase())) {
                 if (t.equals(targetTheme))
@@ -106,16 +111,16 @@ public class ThemeHelper {
         return colorName;
     }
 
-    public static int getColor(Context context, String resourceName) {
-        int currentThemeId = Preferences.getColorTheme();
-        resourceName += "_" + Theme.searchById(currentThemeId).getName().toLowerCase();
-        int resourceId = getColorId(context, resourceName); // TODO cache ?
-        return ContextCompat.getColor(context, resourceId);
-    }
-
     public static int getColor(Context context, @ColorRes int colorId) {
+        String key = Preferences.getColorTheme() + "." + colorId;
+        if (COLOR_CACHE.containsKey(key)) {
+            Integer result = COLOR_CACHE.get(key);
+            return (null == result) ? 0 : result;
+        }
+
         String colorName = renameColorToCurrentTheme(getColorName(context, colorId));
-        int resourceId = getColorId(context, colorName); // TODO cache ?
+        int resourceId = getColorId(context, colorName);
+        COLOR_CACHE.put(key, resourceId);
         return ContextCompat.getColor(context, resourceId);
     }
 
@@ -130,9 +135,9 @@ public class ThemeHelper {
         GradientDrawable shape = new GradientDrawable(
                 GradientDrawable.Orientation.TL_BR,
                 new int[]{
-                        getColor(context, "primary"),
-                        getColor(context, "drawer_header_diagonal"),
-                        getColor(context, "primary")
+                        getColor(context, R.color.primary_light),
+                        getColor(context, R.color.drawer_header_diagonal_light),
+                        getColor(context, R.color.primary_light)
                 }
         );
         shape.setShape(GradientDrawable.RECTANGLE);
@@ -141,10 +146,10 @@ public class ThemeHelper {
     }
 
     public static StateListDrawable makeCardSelector(Context context) {
-        int colorBase = getColor(context, "card_surface");
-        int colorPressed = getColor(context, "card_pressed");
-        int colorSelected = getColor(context, "card_selected");
-        int colorSecondary = getColor(context, "secondary");
+        int colorBase = getColor(context, R.color.card_surface_light);
+        int colorPressed = getColor(context, R.color.card_pressed_light);
+        int colorSelected = getColor(context, R.color.card_selected_light);
+        int colorSecondary = getColor(context, R.color.secondary_light);
 
         StateListDrawable res = new StateListDrawable();
         res.addState(new int[]{-android.R.attr.state_selected}, makeCardSelectorShape(colorBase, false, 0));

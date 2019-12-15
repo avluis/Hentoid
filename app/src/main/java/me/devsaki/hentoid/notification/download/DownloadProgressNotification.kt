@@ -25,7 +25,7 @@ class DownloadProgressNotification(
                 .setContentText(title)
                 .setContentInfo(progressString)
                 .setProgress(max, progress, false)
-                .setColor(ThemeHelper.getColor(context, "secondary"))
+                .setColor(ThemeHelper.getColor(context, R.color.secondary_light))
                 .setContentIntent(getDefaultIntent(context))
                 .setLocalOnly(true)
                 .setOngoing(true)

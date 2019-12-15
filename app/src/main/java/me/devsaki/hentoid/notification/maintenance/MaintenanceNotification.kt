@@ -13,7 +13,7 @@ class MaintenanceNotification(private val title: String) : Notification {
                     .setSmallIcon(R.drawable.ic_stat_hentoid)
                     .setContentTitle(context.getString(R.string.maintenance))
                     .setContentText(title)
-                    .setColor(ThemeHelper.getColor(context, "secondary"))
+                    .setColor(ThemeHelper.getColor(context, R.color.secondary_light))
                     .setLocalOnly(true)
                     .setOngoing(true)
                     .build()
