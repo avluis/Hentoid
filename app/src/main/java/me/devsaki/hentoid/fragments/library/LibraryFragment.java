@@ -628,7 +628,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
             initPagingMethod(Preferences.getEndlessScroll());
         } else if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
-            ThemeHelper.applyTheme((AppCompatActivity) requireActivity());
+            // Restart the app with the library activity on top
+            Intent intent = requireActivity().getIntent();
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            requireActivity().finish();
+            startActivity(intent);
         }
     }
 

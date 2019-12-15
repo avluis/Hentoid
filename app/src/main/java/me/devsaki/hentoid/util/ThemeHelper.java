@@ -21,8 +21,6 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Theme;
 
-import static androidx.lifecycle.Lifecycle.State.CREATED;
-
 public class ThemeHelper {
 
     private static final int PX_4_DP = Helper.dpToPixel(HentoidApp.getInstance(), 4);
@@ -43,8 +41,6 @@ public class ThemeHelper {
         if (themeName.equals(targetTheme.getName())) return; // Nothing to do
 
         activity.setTheme(getThemeId(activity, themeName));
-        if (activity.getLifecycle().getCurrentState().isAtLeast(CREATED))
-            activity.recreate();
     }
 
     public static void setStyle(@NonNull Context context, @NonNull DialogFragment dialog, int style, @StyleRes int themeResourceId) {
