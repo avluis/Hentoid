@@ -22,11 +22,6 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <!-- Splash Activity -->
-    <style name="Theme.Dark.Splash">
-        <item name="android:windowBackground">@drawable/bg_splash</item>
-    </style>
-
     <!-- Picture viewer -->
     <style name="Theme.Dark.Monochrome">
         <item name="colorPrimary">@color/white</item>

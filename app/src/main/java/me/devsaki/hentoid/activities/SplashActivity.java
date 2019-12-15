@@ -50,7 +50,6 @@ public class SplashActivity extends AppCompatActivity {
 
         Timber.d("Splash / Init");
 
-        ThemeHelper.applyTheme(this);
         EventBus.getDefault().register(this);
 
         // Pre-processing on app update
