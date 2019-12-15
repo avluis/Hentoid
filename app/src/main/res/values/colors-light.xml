@@ -16,6 +16,7 @@
     <color name="drawer_header_diagonal_light">@color/very_dark_pink</color>
 
     <!-- Content cards -->
+    <color name="card_title_light">@color/secondary_light</color>
     <color name="card_surface_light">@color/white</color>
     <color name="card_selected_light">@color/light_red</color>
     <color name="card_pressed_light">@color/light_gray</color>

@@ -16,6 +16,7 @@
     <color name="drawer_header_diagonal_black">@color/cod_gray</color>
 
     <!-- Content cards -->
+    <color name="card_title_black">@color/white_opacity_87</color>
     <color name="card_surface_black">@color/cod_gray</color>
     <color name="card_selected_black">@color/cod_gray</color>
     <color name="card_pressed_black">@color/black</color>

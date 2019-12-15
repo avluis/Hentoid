@@ -130,6 +130,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
             title = content.getTitle();
         }
         tvTitle.setText(title);
+        tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
     }
 
     private void attachSeries(Content content) {
@@ -197,6 +198,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
             String tags = android.text.TextUtils.join(", ", allTags);
             tvTags.setText(tags);
         }
+        tvTags.setTextColor(ThemeHelper.getColor(tvTags.getContext(), R.color.card_tags_light));
     }
 
     private void attachButtons(final Content content) {

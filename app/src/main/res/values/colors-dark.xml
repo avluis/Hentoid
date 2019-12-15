@@ -16,6 +16,7 @@
     <color name="drawer_header_diagonal_dark">@color/very_dark_pink</color>
 
     <!-- Content cards -->
+    <color name="card_title_dark">@color/secondary_dark</color>
     <color name="card_surface_dark">@color/taupe_elevated_1</color>
     <color name="card_selected_dark">@color/taupe_elevated_2</color>
     <color name="card_pressed_dark">@color/taupe_elevated_3</color>
