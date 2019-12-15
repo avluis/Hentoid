@@ -27,6 +27,14 @@
         <item name="android:windowBackground">@drawable/bg_splash</item>
     </style>
 
+    <!-- Picture viewer -->
+    <style name="Theme.Dark.Monochrome">
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/black_opacity_50</item>
+        <item name="colorOnPrimary">@color/light_gray</item>
+        <item name="android:windowBackground">@color/cod_gray</item>
+    </style>
+
     <!-- Prefs Activity -->
     <style name="Theme.Dark.Prefs">
         <!-- Display action bar -->

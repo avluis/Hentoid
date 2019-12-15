@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 /**
  * Handles hosting of QueueFragment for a single screen.
@@ -19,6 +20,8 @@ public class QueueActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ThemeHelper.applyTheme(this);
 
         FragmentManager manager = getSupportFragmentManager();
         Fragment fragment = manager.findFragmentById(R.id.fragment_queue);

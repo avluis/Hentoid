@@ -26,6 +26,7 @@ import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 

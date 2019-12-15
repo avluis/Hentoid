@@ -99,7 +99,7 @@ public class PagedContentAdapter extends PagedListAdapter<Content, ContentHolder
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_download, parent, false);
-        view.setBackground(ThemeHelper.makeSelector(parent.getContext()));
+        view.setBackground(ThemeHelper.makeCardSelector(parent.getContext()));
         return new ContentHolder(view, this);
     }
 

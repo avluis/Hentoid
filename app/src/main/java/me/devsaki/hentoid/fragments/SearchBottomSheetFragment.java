@@ -38,6 +38,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
@@ -86,14 +87,14 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private static final int ATTRS_PER_PAGE = 40;
 
 
-    public static void show(FragmentManager fragmentManager, AttributeType[] types) {
+    public static void show(Context context, FragmentManager fragmentManager, AttributeType[] types) {
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
 
         builder.setAttributeTypes(types);
 
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
         searchBottomSheetFragment.setArguments(builder.getBundle());
-        searchBottomSheetFragment.setStyle(STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
+        ThemeHelper.setStyle(context, searchBottomSheetFragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         searchBottomSheetFragment.show(fragmentManager, "searchBottomSheetFragment");
     }
 

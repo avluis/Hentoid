@@ -75,7 +75,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_download, parent, false);
-        view.setBackground(ThemeHelper.makeSelector(parent.getContext()));
+        view.setBackground(ThemeHelper.makeCardSelector(parent.getContext()));
         return new ContentHolder(view, this);
     }
 

@@ -22,6 +22,14 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <!-- Picture viewer -->
+    <style name="Theme.Black.Monochrome">
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/black_opacity_50</item>
+        <item name="colorOnPrimary">@color/light_gray</item>
+        <item name="android:windowBackground">@color/cod_gray</item>
+    </style>
+
     <!-- Prefs Activity -->
     <style name="Theme.Black.Prefs">
         <!-- Display action bar -->
@@ -71,7 +79,7 @@
         <item name="colorPrimary">@color/primary_black</item>
         <item name="colorPrimaryVariant">@color/primary_variant_black</item>
         <item name="colorSecondary">@color/secondary_black</item>
-        <item name="android:colorBackground">@color/window_background_black</item>
+        <item name="android:colorBackground">@color/surface_black</item>
     </style>
 
     <!-- PIN screens -->

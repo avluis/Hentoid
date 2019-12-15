@@ -30,6 +30,7 @@ import me.devsaki.hentoid.services.DatabaseMigrationService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import timber.log.Timber;
 
@@ -46,7 +47,10 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         Timber.d("Splash / Init");
+
+        ThemeHelper.applyTheme(this);
         EventBus.getDefault().register(this);
 
         // Pre-processing on app update

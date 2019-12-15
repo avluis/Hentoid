@@ -14,6 +14,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.SiteFlex;
 
 /**
@@ -26,6 +27,8 @@ public class DrawerEditActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ThemeHelper.applyTheme(this);
 
         setContentView(R.layout.activity_drawer_edit);
 

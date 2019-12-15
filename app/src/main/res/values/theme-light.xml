@@ -31,7 +31,7 @@
     </style>
 
     <!-- Picture viewer -->
-    <style name="Theme.Monochrome" parent="Theme.Light">
+    <style name="Theme.Light.Monochrome">
         <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryVariant">@color/black_opacity_50</item>
         <item name="colorOnPrimary">@color/light_gray</item>
