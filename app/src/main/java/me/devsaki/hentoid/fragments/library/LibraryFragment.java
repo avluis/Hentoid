@@ -696,7 +696,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
             }).build();
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, ContentItem::new);
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, ContentItem::new, ContentItem::new);
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
             fastAdapter.registerTypeInstance(new ContentItem());
@@ -803,7 +803,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             }
 
             library.loadAround(maxIndex - 1);
-            List<ContentItem> contentItems = Stream.of(library.subList(minIndex, maxIndex)).map(ContentItem::new).toList();
+            //noinspection Convert2MethodRef need API24
+            List<ContentItem> contentItems = Stream.of(library.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
             itemAdapter.setNewList(contentItems, false);
         }
         fastAdapter.notifyDataSetChanged();
@@ -872,7 +873,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         // If the update is the result of a new search, let the items be sorted
         // and get back to the top of the list
-        if (newSearch) new Handler().postDelayed(() -> recyclerView.scrollToPosition(0), 300); // TODO use a loading callback instead
+        if (newSearch)
+            new Handler().postDelayed(() -> recyclerView.scrollToPosition(0), 300); // TODO use a loading callback instead
 
         newSearch = false;
         library = result;

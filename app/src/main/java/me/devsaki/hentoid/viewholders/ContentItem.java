@@ -37,15 +37,26 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             .error(R.drawable.ic_placeholder);
 
     private Content content;
+    private boolean isEmpty;
 
     public ContentItem() {
         content = null;
     }
 
     public ContentItem(@NonNull Content content) {
-        this.content = content;
-        setIdentifier(content.getId());
-        setSelectable(true);
+        if (content != null) {
+            this.content = content;
+            setIdentifier(content.getId());
+            setSelectable(true);
+            isEmpty = false;
+        } else {
+            isEmpty = true;
+        }
+    }
+
+    public ContentItem(@NonNull Integer position) {
+        this.content = null;
+        isEmpty = true;
     }
 
     public Content getContent() {
@@ -116,7 +127,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 if (longValue != null) item.content.setReads(longValue);
             }
 
-            updateLayoutVisibility(item.content);
+            updateLayoutVisibility(item);
             attachCover(item.content);
             attachTitle(item.content);
             attachSeries(item.content);
@@ -126,10 +137,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             attachButtons(item.content);
         }
 
-        private void updateLayoutVisibility(Content content) {
-            baseLayout.setVisibility(View.VISIBLE);
-            ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
-            if (content.isBeingDeleted())
+        private void updateLayoutVisibility(ContentItem item) {
+            baseLayout.setVisibility(item.isEmpty?View.GONE:View.VISIBLE);
+            ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
+            if (item.getContent().isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();

@@ -176,14 +176,13 @@ dependencies {
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
     // https://github.com/mikepenz/FastAdapter
-    implementation "com.mikepenz:fastadapter:4.1.1"
-    implementation "com.mikepenz:fastadapter-extensions-drag:4.1.1" // drag support
-    implementation "com.mikepenz:fastadapter-extensions-expandable:4.1.1"
-    implementation "com.mikepenz:fastadapter-extensions-scroll:4.1.1" // scroll helpers
-    implementation "com.mikepenz:fastadapter-extensions-paged:4.1.1"
-
-    implementation "com.mikepenz:fastadapter-extensions-utils:4.1.1" // needs the `expandable`, `drag` and `scroll` extension.
-    implementation "com.mikepenz:materialize:1.2.0"
+    implementation "com.mikepenz:fastadapter:v4.1.2-rc01" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter-extensions-drag:v4.1.2-rc01" // drag support
+    implementation "com.mikepenz:fastadapter-extensions-expandable:v4.1.2-rc01"
+    implementation "com.mikepenz:fastadapter-extensions-scroll:v4.1.2-rc01" // scroll helpers
+    implementation "com.mikepenz:fastadapter-extensions-paged:v4.1.2-rc01"
+    implementation "com.mikepenz:fastadapter-extensions-utils:v4.1.2-rc01" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:materialize:1.2.1"
 }
 
 sonarqube {
