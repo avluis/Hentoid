@@ -20,6 +20,7 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.SiteItem;
 
 /**
@@ -33,6 +34,8 @@ public class DrawerEditActivity extends AppCompatActivity implements ItemTouchCa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ThemeHelper.applyTheme(this);
 
         setContentView(R.layout.activity_drawer_edit);
 

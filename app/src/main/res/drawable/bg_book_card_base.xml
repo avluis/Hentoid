@@ -4,5 +4,5 @@
 
     <corners android:radius="4dp" />
 
-    <solid android:color="@color/card_surface" />
+    <solid android:color="@color/card_surface_light" />
 </shape>

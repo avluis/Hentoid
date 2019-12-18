@@ -36,6 +36,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -75,6 +76,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             holder.ivSource = requireViewById(rootView, R.id.ivSite);
 
             rootView.setTag(holder);
+            rootView.setBackground(ThemeHelper.makeCardSelector(parent.getContext()));
         } else {
             holder = (ViewHolder) rootView.getTag();
         }
@@ -287,7 +289,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
                 int color;
                 if (isFirst && isQueueReady)
-                    color = ContextCompat.getColor(context, R.color.secondary);
+                    color = ThemeHelper.getColor(context, R.color.secondary_light);
                 else color = ContextCompat.getColor(context, R.color.medium_gray);
                 pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
             } else {

@@ -13,6 +13,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.fragments.pin.UnlockPinDialogFragment;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 /**
  * This activity asks for a 4 digit pin if it is set and then transitions to another activity
@@ -63,6 +64,8 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ThemeHelper.applyTheme(this);
 
         if (Preferences.getAppLockPin().length() != 4) {
             Preferences.setAppLockPin("");

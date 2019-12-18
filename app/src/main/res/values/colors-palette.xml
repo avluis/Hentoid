@@ -1,23 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">@color/dark_red</color>
-    <color name="primary_variant">@color/very_dark_red</color>
-    <color name="on_primary">@color/white_opacity_87</color>
-    <color name="secondary">@color/accent_red</color>
-    <color name="secondary_variant">@color/light_red</color>
-    <color name="on_secondary">@color/white_opacity_87</color>
-    <color name="surface">@color/white</color>
-    <color name="on_surface">@color/white_opacity_87</color>
-    <color name="window_background">@color/taupe_elevated_2</color>
-    <color name="on_background">@color/white_opacity_87</color>
-    <color name="ripple">@color/light_red</color>
-
-    <!-- Content cards -->
-    <color name="card_surface">@color/white</color>
-    <color name="card_selected">@color/light_red</color>
-    <color name="card_pressed">@color/light_gray</color>
-    <color name="card_tags">@color/medium_gray</color>
-
     <!-- App palette -->
     <color name="dark_red">#470000</color>
     <color name="very_dark_red">#3f0000</color>

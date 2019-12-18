@@ -24,6 +24,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
@@ -77,6 +78,8 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        ThemeHelper.applyTheme(this);
 
         Intent intent = getIntent();
         List<Attribute> preSelectedAttributes = null;
@@ -162,7 +165,7 @@ public class SearchActivity extends AppCompatActivity {
 
 
     private void onAttrButtonClick(AttributeType... attributeTypes) {
-        SearchBottomSheetFragment.show(getSupportFragmentManager(), attributeTypes);
+        SearchBottomSheetFragment.show(this, getSupportFragmentManager(), attributeTypes);
     }
 
     /**

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities;
 
 import android.os.Bundle;
+import android.view.View;
 import android.view.WindowManager;
 
 import androidx.activity.OnBackPressedCallback;
@@ -10,6 +11,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 public class LibraryActivity extends AppCompatActivity {
 
@@ -21,7 +23,10 @@ public class LibraryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ThemeHelper.applyTheme(this);
+
         setContentView(R.layout.activity_hentoid);
+        applyDrawerHeaderColor();
         drawerLayout = findViewById(R.id.drawer_layout);
 
         callback = new OnBackPressedCallback(false) {
@@ -43,6 +48,11 @@ public class LibraryActivity extends AppCompatActivity {
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
+    }
+
+    private void applyDrawerHeaderColor() {
+        View header = findViewById(R.id.drawer_header);
+        header.setBackground(ThemeHelper.makeDrawerHeader(this));
     }
 
     public void closeNavigationDrawer() {

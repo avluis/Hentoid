@@ -12,6 +12,7 @@ import me.devsaki.hentoid.fragments.about.ChangelogFragment
 import me.devsaki.hentoid.fragments.about.LicensesFragment
 import me.devsaki.hentoid.util.Consts
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.startBrowserActivity
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -21,6 +22,8 @@ class AboutActivity : AppCompatActivity(R.layout.activity_about) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        ThemeHelper.applyTheme(this)
 
         toolbar.setNavigationOnClickListener { onBackPressed() }
 

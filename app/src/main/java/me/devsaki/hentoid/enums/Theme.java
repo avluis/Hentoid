@@ -1,0 +1,47 @@
+package me.devsaki.hentoid.enums;
+
+import androidx.annotation.NonNull;
+
+/**
+ * Created by Robb on 2019/12
+ */
+public enum Theme {
+
+    LIGHT(0, "Light"),
+    DARK(1, "Dark"),
+    BLACK(2, "Black"),
+    NONE(99, "None");
+
+    private final int id;
+    private final String name;
+
+    Theme(int id, @NonNull String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    // Same as ValueOf with a fallback to NONE
+    // (vital for forward compatibility)
+    public static Theme searchByName(String name) {
+        for (Theme s : values())
+            if (s.name().equalsIgnoreCase(name)) return s;
+
+        return NONE;
+    }
+
+    public static Theme searchById(int id) {
+        for (Theme s : values())
+            if (id == s.id) return s;
+
+        return NONE;
+    }
+}

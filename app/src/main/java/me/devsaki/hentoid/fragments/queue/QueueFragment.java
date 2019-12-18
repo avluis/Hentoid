@@ -31,6 +31,7 @@ import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
 
@@ -96,7 +97,9 @@ public class QueueFragment extends Fragment {
 
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
+        btnStart.setBackground(ThemeHelper.makeQueueButtonSelector(requireContext()));
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
+        btnPause.setBackground(ThemeHelper.makeQueueButtonSelector(requireContext()));
         btnStats.setOnClickListener(v -> showErrorStats());
 
         ObjectBoxDB db = ObjectBoxDB.getInstance(requireActivity());
