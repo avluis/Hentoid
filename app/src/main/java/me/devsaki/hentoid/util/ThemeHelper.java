@@ -141,6 +141,16 @@ public class ThemeHelper {
         return shape;
     }
 
+    public static StateListDrawable makeQueueButtonSelector(Context context) {
+        int colorPrimary = getColor(context, R.color.primary_light);
+        int colorPrimaryVariant = getColor(context, R.color.primary_variant_light);
+
+        StateListDrawable res = new StateListDrawable();
+        res.addState(new int[]{android.R.attr.state_pressed}, makeCardSelectorShape(colorPrimaryVariant, false, 0));
+        res.addState(new int[]{-android.R.attr.state_pressed}, makeCardSelectorShape(colorPrimary, false, 0));
+        return res;
+    }
+
     public static StateListDrawable makeCardSelector(Context context) {
         int colorBase = getColor(context, R.color.card_surface_light);
         int colorPressed = getColor(context, R.color.card_pressed_light);

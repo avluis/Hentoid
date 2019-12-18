@@ -76,6 +76,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             holder.ivSource = requireViewById(rootView, R.id.ivSite);
 
             rootView.setTag(holder);
+            rootView.setBackground(ThemeHelper.makeCardSelector(parent.getContext()));
         } else {
             holder = (ViewHolder) rootView.getTag();
         }
