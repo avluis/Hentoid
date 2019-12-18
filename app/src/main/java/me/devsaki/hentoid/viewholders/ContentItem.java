@@ -27,6 +27,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -44,14 +45,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     }
 
     public ContentItem(@NonNull Content content) {
-        if (content != null) {
-            this.content = content;
-            setIdentifier(content.getId());
-            setSelectable(true);
-            isEmpty = false;
-        } else {
-            isEmpty = true;
-        }
+        this.content = content;
+        setIdentifier(content.getId());
+        setSelectable(true);
+        isEmpty = false;
     }
 
     public ContentItem(@NonNull Integer position) {
@@ -107,6 +104,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             ivSite = requireViewById(itemView, R.id.ivSite);
             ivError = requireViewById(itemView, R.id.ivError);
             ivFavourite = requireViewById(itemView, R.id.ivFavourite);
+            view.setBackground(ThemeHelper.makeCardSelector(view.getContext()));
         }
 
 
@@ -138,7 +136,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         }
 
         private void updateLayoutVisibility(ContentItem item) {
-            baseLayout.setVisibility(item.isEmpty?View.GONE:View.VISIBLE);
+            baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
             ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
             if (item.getContent().isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));

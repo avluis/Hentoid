@@ -18,12 +18,14 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class AboutActivity : AppCompatActivity(R.layout.activity_about) {
+class AboutActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         ThemeHelper.applyTheme(this)
+
+        setContentView(R.layout.activity_about);
 
         toolbar.setNavigationOnClickListener { onBackPressed() }
 
