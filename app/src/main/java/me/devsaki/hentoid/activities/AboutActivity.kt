@@ -25,7 +25,7 @@ class AboutActivity : AppCompatActivity() {
 
         ThemeHelper.applyTheme(this)
 
-        setContentView(R.layout.activity_about);
+        setContentView(R.layout.activity_about)
 
         toolbar.setNavigationOnClickListener { onBackPressed() }
 
