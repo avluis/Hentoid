@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.viewholders;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.widget.ImageViewCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -161,6 +163,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 title = content.getTitle();
             }
             tvTitle.setText(title);
+            tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
         }
 
         private void attachSeries(Content content) {
@@ -227,6 +230,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 }
                 String tags = android.text.TextUtils.join(", ", allTags);
                 tvTags.setText(tags);
+                tvTags.setTextColor(ThemeHelper.getColor(tvTags.getContext(), R.color.card_tags_light));
             }
         }
 
@@ -264,6 +268,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 } else {
                     ivError.setVisibility(View.GONE);
                 }
+                ImageViewCompat.setImageTintList(ivError, ColorStateList.valueOf(ThemeHelper.getColor(ivError.getContext(), R.color.card_surface_light)));
             }
         }
 
