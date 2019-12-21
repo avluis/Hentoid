@@ -16,6 +16,7 @@
         app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
 
+    <!--
     <ListView
         android:id="@+id/listView"
         android:layout_width="0dp"
@@ -27,6 +28,22 @@
         android:divider="@color/transparent"
         android:dividerHeight="8dp"
         android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@id/horizontal_barrier"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/queue_toolbar"
+        tools:listitem="@layout/item_queue" />
+-->
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/queue_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/default_cardview_margin"
+        android:paddingTop="@dimen/default_cardview_margin"
+        android:paddingEnd="@dimen/default_cardview_margin"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/horizontal_barrier"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

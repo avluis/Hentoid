@@ -2,18 +2,22 @@ package me.devsaki.hentoid.viewholders;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +31,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
@@ -40,22 +45,33 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             .error(R.drawable.ic_placeholder);
 
     private Content content;
+    private ItemAdapter adapter = null;
+    private boolean isQueued;
     private boolean isEmpty;
 
+    // Constructor for empty placeholder
     public ContentItem() {
+        isEmpty = true;
         content = null;
     }
 
+    // Contructor for library item
     public ContentItem(@NonNull Content content) {
         this.content = content;
+        this.isQueued = false;
         setIdentifier(content.getId());
-        setSelectable(true);
+        setSelectable(!isQueued);
         isEmpty = false;
     }
 
-    public ContentItem(@NonNull Integer position) {
-        this.content = null;
-        isEmpty = true;
+    // Contructor for queued item
+    public ContentItem(@NonNull Content content, ItemAdapter adapter) {
+        this.content = content;
+        this.isQueued = true;
+        this.adapter = adapter;
+        setIdentifier(content.getId());
+        setSelectable(!isQueued);
+        isEmpty = false;
     }
 
     public Content getContent() {
@@ -65,12 +81,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     @NotNull
     @Override
     public ContentItem.ContentViewHolder getViewHolder(@NotNull View view) {
-        return new ContentViewHolder(view);
+        return new ContentViewHolder(view, isQueued);
     }
 
     @Override
     public int getLayoutRes() {
-        return R.layout.item_download;
+        return isQueued ? R.layout.item_queue : R.layout.item_download;
     }
 
     @Override
@@ -81,32 +97,52 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
     public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> {
 
+        // Common elements
         private final View baseLayout;
         private final TextView tvTitle;
-        private final View ivNew;
         private final ImageView ivCover;
         private final TextView tvSeries;
         private final TextView tvArtist;
         private final TextView tvPages;
         private final TextView tvTags;
         private final ImageView ivSite;
-        private final ImageView ivError;
-        private final ImageView ivFavourite;
 
-        ContentViewHolder(View view) {
+        // Specific to library content
+        private View ivNew;
+        private ImageView ivError;
+        private ImageView ivFavourite;
+
+        // Specific to Queued content
+        private ProgressBar pbDownload;
+        private ImageView ivTop;
+        private ImageView ivUp;
+        private ImageView ivDown;
+        private View ivCancel;
+
+
+        ContentViewHolder(View view, boolean isQueued) {
             super(view);
             baseLayout = requireViewById(itemView, R.id.item);
             tvTitle = requireViewById(itemView, R.id.tvTitle);
-            ivNew = requireViewById(itemView, R.id.lineNew);
             ivCover = requireViewById(itemView, R.id.ivCover);
             tvSeries = requireViewById(itemView, R.id.tvSeries);
             tvArtist = requireViewById(itemView, R.id.tvArtist);
             tvPages = requireViewById(itemView, R.id.tvPages);
             tvTags = requireViewById(itemView, R.id.tvTags);
             ivSite = requireViewById(itemView, R.id.ivSite);
-            ivError = requireViewById(itemView, R.id.ivError);
-            ivFavourite = requireViewById(itemView, R.id.ivFavourite);
             view.setBackground(ThemeHelper.makeCardSelector(view.getContext()));
+
+            if (!isQueued) {
+                ivNew = itemView.findViewById(R.id.lineNew);
+                ivError = itemView.findViewById(R.id.ivError);
+                ivFavourite = itemView.findViewById(R.id.ivFavourite);
+            } else {
+                pbDownload = itemView.findViewById(R.id.pbDownload);
+                ivTop = itemView.findViewById(R.id.queueTopBtn);
+                ivUp = itemView.findViewById(R.id.queueUpBtn);
+                ivDown = itemView.findViewById(R.id.queueDownBtn);
+                ivCancel = itemView.findViewById(R.id.btnCancel);
+            }
         }
 
 
@@ -134,16 +170,18 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             attachArtist(item.content);
             attachPages(item.content);
             attachTags(item.content);
-            attachButtons(item.content);
+            attachButtons(item);
+            if (item.isQueued)
+                updateProgress(item.content, pbDownload, getAdapterPosition(), false);
         }
 
         private void updateLayoutVisibility(ContentItem item) {
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
-            ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
             if (item.getContent().isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();
+            if (!item.isQueued) ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
         }
 
         private void attachCover(Content content) {
@@ -178,7 +216,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                     Attribute attribute = seriesAttributes.get(i);
                     seriesBuilder.append(attribute.getName());
                     if (i != seriesAttributes.size() - 1) {
-                        seriesBuilder.append(", ");
+                        seriesBuilder.append(", "); // TODO use TextUtils.join
                     }
                 }
                 tvSeries.setText(templateSeries.replace("@series@", seriesBuilder));
@@ -234,7 +272,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
         }
 
-        private void attachButtons(final Content content) {
+        private void attachButtons(final ContentItem item) {
+            Content content = item.getContent();
+
             // Source icon
             if (content.getSite() != null) {
                 int img = content.getSite().getIco();
@@ -243,32 +283,72 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 ivSite.setImageResource(R.drawable.ic_stat_hentoid);
             }
 
-            // When transitioning to the other state, button blinks with its target state
-            if (content.isBeingFavourited()) {
-                ivFavourite.startAnimation(new BlinkAnimation(500, 250));
-                if (content.isFavourite()) {
-                    ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                } else {
-                    ivFavourite.setImageResource(R.drawable.ic_fav_full);
-                }
+            if (item.isQueued) {
+                boolean isFirstItem = (0 == getAdapterPosition());
+                int itemCount = item.adapter.getAdapterItemCount();
+                boolean isLastItem = itemCount - 1 == getAdapterPosition();
+
+                ivUp.setImageResource(R.drawable.ic_arrow_up);
+                ivUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
+
+                ivTop.setImageResource(R.drawable.ic_doublearrowup);
+                ivTop.setVisibility((isFirstItem || itemCount < 3) ? View.INVISIBLE : View.VISIBLE);
+
+                ivDown.setImageResource(R.drawable.ic_arrow_down);
+                ivDown.setVisibility(isLastItem ? View.INVISIBLE : View.VISIBLE);
             } else {
-                ivFavourite.clearAnimation();
-                if (content.isFavourite()) {
-                    ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                // When transitioning to the other state, button blinks with its target state
+                if (content.isBeingFavourited()) {
+                    ivFavourite.startAnimation(new BlinkAnimation(500, 250));
+                    if (content.isFavourite()) {
+                        ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                    } else {
+                        ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                    }
                 } else {
-                    ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                    ivFavourite.clearAnimation();
+                    if (content.isFavourite()) {
+                        ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                    } else {
+                        ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                    }
+                }
+
+                // Error icon
+                if (content.getStatus() != null) {
+                    StatusContent status = content.getStatus();
+                    if (status == StatusContent.ERROR) {
+                        ivError.setVisibility(View.VISIBLE);
+                    } else {
+                        ivError.setVisibility(View.GONE);
+                    }
+                    ImageViewCompat.setImageTintList(ivError, ColorStateList.valueOf(ThemeHelper.getColor(ivError.getContext(), R.color.card_surface_light)));
                 }
             }
+        }
 
-            // Error icon
-            if (content.getStatus() != null) {
-                StatusContent status = content.getStatus();
-                if (status == StatusContent.ERROR) {
-                    ivError.setVisibility(View.VISIBLE);
+        public static void updateProgress(@NonNull Content content, @NonNull ProgressBar pb, int position, boolean isPausedEvent) {
+            boolean isQueueReady = ContentQueueManager.getInstance().isQueueActive() && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
+            boolean isFirstItem = (0 == position);
+
+            content.computePercent();
+            if ((isFirstItem && isQueueReady) || content.getPercent() > 0) {
+                pb.setVisibility(View.VISIBLE);
+                if (content.getPercent() > 0) {
+                    pb.setIndeterminate(false);
+                    pb.setProgress((int) content.getPercent());
+
+                    int color;
+                    if (isFirstItem && isQueueReady)
+                        color = ThemeHelper.getColor(pb.getContext(), R.color.secondary_light);
+                    else
+                        color = ContextCompat.getColor(pb.getContext(), R.color.medium_gray);
+                    pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
                 } else {
-                    ivError.setVisibility(View.GONE);
+                    pb.setIndeterminate(true);
                 }
-                ImageViewCompat.setImageTintList(ivError, ColorStateList.valueOf(ThemeHelper.getColor(ivError.getContext(), R.color.card_surface_light)));
+            } else {
+                pb.setVisibility(View.GONE);
             }
         }
 
@@ -282,6 +362,26 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
         public View getErrorButton() {
             return ivError;
+        }
+
+        public View getProgressBar() {
+            return pbDownload;
+        }
+
+        public View getTopButton() {
+            return ivTop;
+        }
+
+        public View getUpButton() {
+            return ivUp;
+        }
+
+        public View getDownButton() {
+            return ivDown;
+        }
+
+        public View getCancelButton() {
+            return ivCancel;
         }
 
         @Override
