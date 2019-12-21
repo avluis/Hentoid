@@ -115,9 +115,11 @@ public final class NavigationDrawerFragment extends Fragment {
     private void showFlagAboutItem() {
         // About is always last
         int aboutItemPos = drawerAdapter.getAdapterItemCount() - 1;
-        DrawerItem item = drawerAdapter.getAdapterItem(aboutItemPos);
-        item.setFlagNew(true);
-        fastAdapter.notifyItemChanged(aboutItemPos);
+        if (aboutItemPos > -1) {
+            DrawerItem item = drawerAdapter.getAdapterItem(aboutItemPos);
+            item.setFlagNew(true);
+            fastAdapter.notifyItemChanged(aboutItemPos);
+        }
     }
 
     private void showFlagAlerts(Map<Site, UpdateInfo.SourceAlert> alerts) {

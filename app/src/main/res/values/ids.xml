@@ -7,4 +7,5 @@
     <item name="drawer_edit" type="id"/>
     <item name="gallery_image" type="id"/>
     <item name="content" type="id"/>
+    <item name="text" type="id"/>
 </resources>
