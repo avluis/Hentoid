@@ -31,6 +31,7 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -61,6 +62,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -413,7 +415,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             }
 
             if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
-                webClient.parseResponse(url, null, true, true);
+                // Launch on a new thread to avoid crashes
+                webClient.parseResponseAsync(url);
                 return true;
             } else {
                 return false;
@@ -834,7 +837,18 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             }
         }
 
+        void parseResponseAsync(@NonNull String urlStr) {
+            compositeDisposable.add(
+                    Completable.fromCallable(() -> parseResponse(urlStr, null, true, true))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(() -> {
+                            }, Timber::e)
+            );
+        }
+
         @SuppressLint("NewApi")
+        @WorkerThread
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
             if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
