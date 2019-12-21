@@ -38,8 +38,6 @@ public class SearchBookIdDialogFragment extends DialogFragment {
     private static final String ID = "ID";
     private static final String FOUND_SITES = "FOUND_SITES";
 
-    private final ItemAdapter<TextItem<Site>> itemAdapter = new ItemAdapter<>();
-    private final FastAdapter<TextItem<Site>> fastAdapter = FastAdapter.with(itemAdapter);
     private String bookId;
 
     public static void invoke(FragmentManager fragmentManager, String id, ArrayList<Integer> siteCodes) {
@@ -82,13 +80,15 @@ public class SearchBookIdDialogFragment extends DialogFragment {
                 if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
                 if (!foundSitesList.contains(Site.LUSCIOUS.getCode())) sites.add(Site.LUSCIOUS);
             }
+            ItemAdapter<TextItem<Site>> itemAdapter = new ItemAdapter<>();
             itemAdapter.set(Stream.of(sites).map(s -> new TextItem<>(s.getDescription(), s, true)).toList());
 
             // Item click listener
+            FastAdapter<TextItem<Site>> fastAdapter = FastAdapter.with(itemAdapter);
             fastAdapter.setOnClickListener((v, a, i, p) -> onItemSelected(i.getTag()));
 
             RecyclerView sitesRecycler = requireViewById(rootView, R.id.select_sites);
-            // Set rpogramatically because ?colorPrimary doesn't work here on kitKat
+            // Set programmatically because ?colorPrimary doesn't work here on kitKat
             sitesRecycler.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.primary_light));
             sitesRecycler.setAdapter(fastAdapter);
         }
