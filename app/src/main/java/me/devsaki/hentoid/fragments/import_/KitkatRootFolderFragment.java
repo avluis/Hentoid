@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.import_;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
@@ -23,6 +24,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -46,8 +48,9 @@ public class KitkatRootFolderFragment extends DialogFragment {
     private View privateTxt;
 
 
-    public static void invoke(FragmentManager fragmentManager) {
+    public static void invoke(Context context, FragmentManager fragmentManager) {
         KitkatRootFolderFragment fragment = new KitkatRootFolderFragment();
+        ThemeHelper.setStyle(context, fragment, DialogFragment.STYLE_NO_FRAME, R.style.Theme_Light_DialogFragment);
         fragment.show(fragmentManager, null);
     }
 

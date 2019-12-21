@@ -50,6 +50,12 @@ public class ThemeHelper {
         dialog.setStyle(style, themeId);
     }
 
+    public static int getIdForCurrentTheme(@NonNull Context context, @StyleRes int themeResourceId) {
+        String themeName = getThemeName(context, themeResourceId);
+        themeName = renameThemeToCurrentTheme(themeName);
+        return getThemeId(context, themeName);
+    }
+
     private static String getThemeName(@NonNull Activity activity) {
         try {
             int themeResourceId = activity.getPackageManager().getActivityInfo(activity.getComponentName(), 0).getThemeResource(); // PackageManager.GET_META_DATA instead of plain 0 ?
