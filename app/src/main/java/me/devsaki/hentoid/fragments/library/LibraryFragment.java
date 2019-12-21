@@ -764,7 +764,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             }
         });
 
-        // Site button click listener
+        // Error button click listener
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
