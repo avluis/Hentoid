@@ -104,6 +104,8 @@ public class HentoidApp extends Application {
         boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
+        // This code has been inherited from the FakkuDroid era; no documentation available
+        // Best guess : allows networking on main thread
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
