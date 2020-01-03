@@ -129,16 +129,11 @@ dependencies {
     // Lightweight Stream : github.com/aNNiMON/Lightweight-Stream-API
     implementation 'com.annimon:stream:1.2.1'
 
-    // LeakCanary: github.com/square/leakcanary -- WAITING FOR V2 TO BE STABILIZED
-/*
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.3'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.3'
-    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
-    testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
-*/
+    // LeakCanary: github.com/square/leakcanary
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.1'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
-    implementation 'com.google.android:flexbox:1.1.0'
+    implementation 'com.google.android:flexbox:2.0.0'
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'
