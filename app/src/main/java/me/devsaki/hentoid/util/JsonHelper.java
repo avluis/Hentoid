@@ -55,18 +55,9 @@ public class JsonHelper {
      */
     public static <K> File createJson(K object, Type type, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
-        String json = serializeToJson(object, type);
         try (OutputStream output = FileHelper.getOutputStream(file)) {
-            if (output != null) {
-                // build
-                byte[] bytes = json.getBytes();
-                // write
-                output.write(bytes);
-                FileHelper.sync(output);
-                output.flush();
-            } else {
-                Timber.w("JSON file creation failed for %s", file.getPath());
-            }
+            if (output != null) updateJson(object, type, output);
+            else Timber.w("JSON file creation failed for %s", file.getPath());
         }
         return file;
     }
@@ -81,20 +72,18 @@ public class JsonHelper {
      */
     static <K> void updateJson(K object, Type type, @Nonnull DocumentFile file) throws IOException {
         try (OutputStream output = FileHelper.getOutputStream(file)) {
-            if (output != null) {
-                String json = serializeToJson(object, type);
-                // build
-                byte[] bytes = json.getBytes();
-                // write
-                output.write(bytes);
-                FileHelper.sync(output);
-                output.flush();
-            } else {
-                Timber.w("JSON file creation failed for %s", file.getUri());
-            }
+            if (output != null) updateJson(object, type, output);
+            else Timber.w("JSON file creation failed for %s", file.getUri());
         } catch (FileNotFoundException e) {
             Timber.e(e);
         }
+    }
+
+    private static <K> void updateJson(K object, Type type, @Nonnull OutputStream output) throws IOException {
+        byte[] bytes = serializeToJson(object, type).getBytes();
+        output.write(bytes);
+        FileHelper.sync(output);
+        output.flush();
     }
 
     public static <T> T jsonToObject(File f, Class<T> type) throws IOException {

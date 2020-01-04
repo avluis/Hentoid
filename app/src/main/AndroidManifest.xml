@@ -8,10 +8,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <!-- Required to run keep-alive service when targeting API 28 or higher -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- Required to install update packages when targeting API 25 or higher -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- Required to run keep-alive service when targeting API 28 or higher -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Required to install update packages when targeting API 29 or higher -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:name=".HentoidApp"

@@ -19,6 +19,8 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
+import com.google.android.flexbox.AlignContent;
+import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -134,7 +136,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         tagWaitMessage = requireViewById(rootView, R.id.tag_wait_description);
         RecyclerView attributeMosaic = requireViewById(rootView, R.id.tag_suggestion);
         FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this.getContext());
-//        layoutManager.setAlignContent(AlignContent.FLEX_START); <-- not possible
+//        layoutManager.setAlignContent(AlignContent.FLEX_START); <-- not supported
+        layoutManager.setAlignItems(AlignItems.STRETCH);
         layoutManager.setFlexWrap(FlexWrap.WRAP);
         attributeMosaic.setLayoutManager(layoutManager);
         attributeAdapter = new AvailableAttributeAdapter();

@@ -78,16 +78,6 @@ public class HentoidApp extends Application {
         // Init datetime
         AndroidThreeTen.init(this);
 
-/*
-        // LeakCanary
-        if (LeakCanary.isInAnalyzerProcess(this)) {
-            // This process is dedicated to LeakCanary for heap analysis.
-            // You should not init your app in this process.
-            return;
-        }
-        LeakCanary.install(this);
-*/
-
         // Timber
         if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());
         Timber.plant(new CrashlyticsTree());

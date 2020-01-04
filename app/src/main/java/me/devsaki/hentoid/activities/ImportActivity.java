@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.UriPermission;
@@ -22,6 +21,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.lmntrx.android.library.livin.missme.ProgressDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -47,6 +47,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
@@ -81,7 +82,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     private boolean isCleanNoImages = false;            // True if user has asked for the cleanup of folders with no images
     private boolean isCleanUnreadable = false;          // True if user has asked for the cleanup of folders with unreadable JSONs
 
-    private ProgressDialog progressDialog; // TODO - to replace because it's deprecated
+    private ProgressDialog progressDialog;
 
 
     @Override
@@ -209,7 +210,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
                 )
         );
 
-        if (hentoidDirs.length > 0) return hentoidDirs[0];
+        if (hentoidDirs != null && hentoidDirs.length > 0) return hentoidDirs[0];
         else return root;
     }
 
@@ -309,13 +310,13 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
 
             startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
         } else { // Kitkat : display the specific dialog for kitkat
-            KitkatRootFolderFragment.invoke(getSupportFragmentManager());
+            KitkatRootFolderFragment.invoke(this, getSupportFragmentManager());
         }
     }
 
     // Return from SAF picker
     // TODO - check if the processing can be done on a separate thread to avoid freezing while displaying the SAF dialog
-    // TODO - just after a successful import, when the SAF dialog is reopened and another folder is chosen, that method is never called
+    // TODO - just after a successful import, when the SAF dialog is reopened and another folder is chosen, that method is never called <-- fixed recently ?
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -491,7 +492,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         if (hasBooks()) {
             if (isRefresh)
                 runImport(); // Do not ask if the user wants to import if he has asked for a refresh
-            else new MaterialAlertDialogBuilder(this)
+            else new MaterialAlertDialogBuilder(this, ThemeHelper.getIdForCurrentTheme(this, R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setCancelable(false)
                     .setTitle(R.string.app_name)
@@ -529,11 +530,13 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         cleanUpDB();
         // Send results to scan
         progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle(R.string.import_dialog);
-        progressDialog.setMessage(this.getText(R.string.please_wait));
+        progressDialog.setMessage(this.getString(R.string.please_wait));
         progressDialog.setIndeterminate(false);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setMax(0);
+        progressDialog.setCancelable(false);
+        progressDialog.setColor(ThemeHelper.getColor(this, R.color.secondary_light));
+        progressDialog.setTextColor(R.color.white_opacity_87);
         progressDialog.show();
 
         ImportNotificationChannel.init(this);
