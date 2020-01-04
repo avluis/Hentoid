@@ -119,8 +119,10 @@ public class LibraryPager {
      * @param newPageNumber Selected page number
      */
     private void pageChanged(int newPageNumber) {
-        setCurrentPage(newPageNumber);
-        onPageChangeListener.run();
+        if (currentPageNumber != newPageNumber) {
+            currentPageNumber = newPageNumber; // Don't call setCurrentPage or else it will create a loop with the CarouselDecorator
+            onPageChangeListener.run();
+        }
     }
 
     /**
