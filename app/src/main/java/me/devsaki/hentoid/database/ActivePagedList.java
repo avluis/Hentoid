@@ -45,12 +45,12 @@ public class ActivePagedList<T> extends PagedList.BoundaryCallback<T> {
     @Override
     public void onItemAtFrontLoaded(@NonNull T itemAtFront) {
         Timber.d(">> item loaded at front : %s", itemAtFront.toString());
-        onItemAtFrontLoaded.accept(itemAtFront);
+        if (onItemAtFrontLoaded != null) onItemAtFrontLoaded.accept(itemAtFront);
     }
 
     @Override
     public void onItemAtEndLoaded(@NonNull T itemAtEnd) {
         Timber.d(">> item loaded at end : %s", itemAtEnd.toString());
-        onItemAtEndLoaded.accept(itemAtEnd);
+        if (onItemAtEndLoaded != null) onItemAtEndLoaded.accept(itemAtEnd);
     }
 }
