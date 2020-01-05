@@ -4,7 +4,6 @@ import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
-import androidx.paging.PagedList;
 
 import java.util.List;
 
@@ -36,11 +35,11 @@ public interface CollectionDAO {
     void searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
 
 
-    LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly);
+    ActivePagedList<Content> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly);
 
-    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
+    ActivePagedList<Content> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
 
-    LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly);
+    ActivePagedList<Content> getRecentBooks(int orderStyle, boolean favouritesOnly);
 
     LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly);
 

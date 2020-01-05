@@ -25,6 +25,7 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.database.ActivePagedList;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -49,7 +50,7 @@ public class LibraryViewModel extends AndroidViewModel {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Collection data
-    private LiveData<PagedList<Content>> currentSource;
+    private ActivePagedList<Content> currentSource;
     private LiveData<Integer> totalContent = collectionDao.countAllBooks();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
 
@@ -83,6 +84,14 @@ public class LibraryViewModel extends AndroidViewModel {
         return libraryPaged;
     }
 
+    public void setLibraryFrontLoadCallback(Consumer<Content> consumer) {
+        currentSource.setOnItemAtFrontLoaded(consumer);
+    }
+
+    public void setLibraryEndLoadCallback(Consumer<Content> consumer) {
+        currentSource.setOnItemAtEndLoaded(consumer);
+    }
+
     @NonNull
     public LiveData<Integer> getTotalContent() {
         return totalContent;
@@ -108,10 +117,21 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void performSearch() {
         newSearch.setValue(true);
-        libraryPaged.removeSource(currentSource);
+        Consumer<Content> frontConsumer = null;
+        Consumer<Content> endConsumer = null;
+
+        if (currentSource != null) {
+            libraryPaged.removeSource(currentSource.getPagedList());
+            frontConsumer = currentSource.getOnItemAtFrontLoaded();
+            endConsumer = currentSource.getOnItemAtEndLoaded();
+        }
+
         searchManager.setContentSortOrder(Preferences.getContentSortOrder());
         currentSource = searchManager.getLibrary();
-        libraryPaged.addSource(currentSource, libraryPaged::setValue);
+        if (frontConsumer != null) currentSource.setOnItemAtFrontLoaded(frontConsumer);
+        if (endConsumer != null) currentSource.setOnItemAtEndLoaded(endConsumer);
+
+        libraryPaged.addSource(currentSource.getPagedList(), libraryPaged::setValue);
     }
 
     /**

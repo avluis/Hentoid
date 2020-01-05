@@ -159,19 +159,19 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
-    public LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly) {
+    public ActivePagedList<Content> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly) {
         return getPagedContent(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderStyle, favouritesOnly);
     }
 
-    public LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
+    public ActivePagedList<Content> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
         return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, query, metadata, orderStyle, favouritesOnly);
     }
 
-    public LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly) {
+    public ActivePagedList<Content> getRecentBooks(int orderStyle, boolean favouritesOnly) {
         return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly);
     }
 
-    private LiveData<PagedList<Content>> getPagedContent(int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
+    private ActivePagedList<Content> getPagedContent(int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
         boolean isRandom = (orderStyle == Preferences.Constant.ORDER_CONTENT_RANDOM);
 
         Query<Content> query;
@@ -184,10 +184,15 @@ public class ObjectBoxDAO implements CollectionDAO {
         int nbPages = Preferences.getContentPageQuantity();
         PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(nbPages * 2).setPageSize(nbPages).build();
 
-        return new LivePagedListBuilder<>(
+        ActivePagedList<Content> result = new ActivePagedList<>();
+
+        LiveData<PagedList<Content>> pagedList = new LivePagedListBuilder<>(
                 isRandom ? new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query) : new ObjectBoxDataSource.Factory<>(query),
                 cfg
-        ).build();
+        ).setBoundaryCallback(result).build();
+
+        result.setPagedList(pagedList);
+        return result;
     }
 
     public Content selectContent(long id) {

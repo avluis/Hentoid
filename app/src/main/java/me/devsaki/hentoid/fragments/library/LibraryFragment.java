@@ -666,7 +666,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param isEndless True if endless mode has to be set; false if paged mode has to be set
      */
     private void initPagingMethod(boolean isEndless) {
-        if (isEndless) {
+        if (isEndless) { // Endless mode
             pager.hide();
 
             AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
@@ -711,7 +711,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             if (library != null) pagedItemAdapter.submitList(library);
 
             itemAdapter = null;
-        } else {
+        } else { // Paged mode
             itemAdapter = new ItemAdapter<>();
             fastAdapter = FastAdapter.with(itemAdapter);
             fastAdapter.setHasStableIds(true);
@@ -721,6 +721,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 pager.setPageCount((int) Math.ceil(library.size() * 1.0 / Preferences.getContentPageQuantity()));
                 loadBookshelf(library);
             }
+            viewModel.setLibraryEndLoadCallback(c -> populateBookshelf());
+            viewModel.setLibraryFrontLoadCallback(c -> populateBookshelf());
 
             pagedItemAdapter = null;
         }
@@ -799,8 +801,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param library Library to extract the shelf from
      */
     private void loadBookshelf(PagedList<Content> library) {
-        if (library.isEmpty()) itemAdapter.set(Collections.emptyList());
-        else {
+        if (library.isEmpty()) {
+            itemAdapter.set(Collections.emptyList());
+            fastAdapter.notifyDataSetChanged();
+        } else {
             int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
             int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size());
 
@@ -810,11 +814,46 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return;
             }
 
-            library.loadAround(maxIndex - 1);
+            // Is there unloaded data in the target dataset ?
+            //noinspection Convert2MethodRef need API24
+            long nbPlaceholders = Stream.of(library.subList(minIndex, maxIndex)).filter(c -> c == null).count();
+            Timber.d(">> nb placeholders : %s", nbPlaceholders);
+
+            /* TODO ISSUE
+                1/ Load data at the beginning of the library
+                2/ Load data at the end of the library
+                3/ Load data in the middle of the library
+                -> when using loadAround to load an "empty patch" in the middle of the library, the callback doesn't fire (by design)
+                because data has already been loaded on lower and higher indexes
+             */
+            if (nbPlaceholders > 0) library.loadAround(minIndex);
+            else populateBookshelf(library);
+
+//            library.loadAround(maxIndex - 1);
+            /*
             //noinspection Convert2MethodRef need API24
             List<ContentItem> contentItems = Stream.of(library.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
             itemAdapter.setNewList(contentItems, false);
+             */
         }
+        //fastAdapter.notifyDataSetChanged();
+    }
+
+    // TODO doc
+    private void populateBookshelf() {
+        populateBookshelf(library);
+    }
+
+    private void populateBookshelf(PagedList<Content> library) {
+        if (Preferences.getEndlessScroll()) return;
+
+        // TODO factorize this somewhere
+        int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
+        int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size());
+
+        //noinspection Convert2MethodRef need API24
+        List<ContentItem> contentItems = Stream.of(library.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
+        itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }
 

@@ -3,15 +3,13 @@ package me.devsaki.hentoid.widget;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.lifecycle.LiveData;
-import androidx.paging.PagedList;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
+import me.devsaki.hentoid.database.ActivePagedList;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -97,7 +95,7 @@ public class ContentSearchManager {
         tags = SearchActivityBundle.Parser.parseSearchUri(Uri.parse(searchUri));
     }
 
-    public LiveData<PagedList<Content>> getLibrary() {
+    public ActivePagedList<Content> getLibrary() {
         if (!getQuery().isEmpty())
             return collectionDAO.searchBooksUniversal(getQuery(), contentSortOrder, filterFavourites); // Universal search
         else if (!tags.isEmpty())
