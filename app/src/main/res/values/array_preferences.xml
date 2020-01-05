@@ -36,11 +36,13 @@
         <item>ID</item>
         <item>Title - ID</item>
         <item>Author - Title - ID</item>
+        <item>Title - Author - ID</item>
     </string-array>
     <string-array name="pref_folder_naming_content_entry_values">
         <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>3</item>
     </string-array>
 
     <string-array name="pref_folder_trunc_content_entries">

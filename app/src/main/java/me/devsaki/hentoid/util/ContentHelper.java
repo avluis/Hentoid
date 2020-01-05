@@ -39,7 +39,7 @@ import static me.devsaki.hentoid.util.FileUtil.deleteQuietly;
  */
 public final class ContentHelper {
 
-    private static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
+    private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
 
     private ContentHelper() {
@@ -208,14 +208,22 @@ public final class ContentHelper {
     public static String formatDirPath(Content content) {
         String siteFolder = content.getSite().getFolder();
         String result = siteFolder;
-        int folderNamingPreference = Preferences.getFolderNameFormat();
 
-        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
-            result += content.getAuthor().toLowerCase().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
+        String title = content.getTitle().replaceAll(UNAUTHORIZED_CHARS, "_");
+        String author = content.getAuthor().toLowerCase().replaceAll(UNAUTHORIZED_CHARS, "_");
+
+        switch (Preferences.getFolderNameFormat()) {
+            case Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID:
+                result += title;
+                break;
+            case Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID:
+                result += author + " - " + title;
+                break;
+            case Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_AUTH_ID:
+                result += title + " - " + author;
+                break;
         }
-        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
-            result += content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
-        }
+        result += " - ";
 
         // Unique content ID
         String suffix = formatBookId(content);
