@@ -23,6 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
@@ -91,6 +92,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     // Settings listener
     private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = (p, k) -> onSharedPreferenceChanged(k);
 
+
     // ======== UI
     // Wrapper for the bottom pager
     private final LibraryPager pager = new LibraryPager(this::handleNewPage);
@@ -104,6 +106,27 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private TextView searchClearButton;
     // Main view where books are displayed
     private RecyclerView recyclerView;
+
+    // === TOOLBAR
+    private Toolbar toolbar;
+    // "Search" button on top menu
+    private MenuItem searchMenu;
+    // "Toggle favourites" button on top menu
+    private MenuItem favsMenu;
+    // "Sort" button on top menu
+    private MenuItem orderMenu;
+    // === SELECTION TOOLBAR
+    private Toolbar selectionToolbar;
+    private MenuItem itemDelete;
+    private MenuItem itemShare;
+    private MenuItem itemArchive;
+    private MenuItem itemDeleteSwipe;
+
+    // === FASTADAPTER COMPONENTS AND HELPERS
+    private ItemAdapter<ContentItem> itemAdapter;
+    private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
+    private FastAdapter<ContentItem> fastAdapter;
+    private SelectExtension<ContentItem> selectExtension;
 
 
     // ======== VARIABLES
@@ -121,34 +144,18 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     // Collection of books according to current filters
     private PagedList<Content> library;
 
-
     // === SEARCH PARAMETERS
     // Current text search query
     private String query = "";
     // Current metadata search query
     private List<Attribute> metadata = Collections.emptyList();
 
+    // === SPECIFICS FOR PAGED MODE
+    // Minimum bound of loaded data
+    private int minLoadedBound;
+    // Maximum bound of loaded data
+    private int maxLoadedBound;
 
-    // === TOOLBAR
-    private Toolbar toolbar;
-    // "Search" button on top menu
-    private MenuItem searchMenu;
-    // "Toggle favourites" button on top menu
-    private MenuItem favsMenu;
-    // "Sort" button on top menu
-    private MenuItem orderMenu;
-    // === SELECTION TOOLBAR
-    private Toolbar selectionToolbar;
-    private MenuItem itemDelete;
-    private MenuItem itemShare;
-    private MenuItem itemArchive;
-    private MenuItem itemDeleteSwipe;
-
-    // FastAdapter components and helpers
-    private ItemAdapter<ContentItem> itemAdapter;
-    private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
-    private FastAdapter<ContentItem> fastAdapter;
-    private SelectExtension<ContentItem> selectExtension;
 
     /**
      * Get the icon resource ID according to the sort order code
@@ -793,50 +800,65 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         recyclerView.setAdapter(fastAdapter);
     }
 
+    private Pair<Integer, Integer> getPagerBounds(int pageNumber, int librarySize) {
+        int minIndex = (pageNumber - 1) * Preferences.getContentPageQuantity();
+        int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), librarySize);
+        return new Pair<>(minIndex, maxIndex);
+    }
+
     /**
      * Loads current shelf of books to into the paged mode adapter
      * NB : A bookshelf is the portion of the collection that is displayed on screen by the paged mode
      * The width of the shelf is determined by the "Quantity per page" setting
      *
-     * @param library Library to extract the shelf from
+     * @param iLibrary Library to extract the shelf from
      */
-    private void loadBookshelf(PagedList<Content> library) {
-        if (library.isEmpty()) {
+    private void loadBookshelf(PagedList<Content> iLibrary) {
+        if (iLibrary.isEmpty()) {
             itemAdapter.set(Collections.emptyList());
             fastAdapter.notifyDataSetChanged();
         } else {
-            int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
-            int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size());
+            Pair<Integer, Integer> bounds = getPagerBounds(pager.getCurrentPageNumber(), iLibrary.size());
+            int minIndex = bounds.first; // TODO use non nullable pair (see Apache Commons ?)
+            int maxIndex = bounds.second;
 
             if (minIndex >= maxIndex) { // We just deleted the last item of the last page => Go back one page
                 pager.setCurrentPage(pager.getCurrentPageNumber() - 1);
-                loadBookshelf(library);
+                loadBookshelf(iLibrary);
                 return;
             }
 
-            // Is there unloaded data in the target dataset ?
+            /* We're using PagedList v2.1.1 against the use case it has been designed for (endless lists loaded linearly).
+            Doing it right requires the following algorithm :
+
+            Check if there is unloaded data in the working dataset (iLibrary)
+                - Case A : All required data is already loaded
+                    -> Immediately populate the library screen
+                - Case B : There is missing data outside of the bounds of already loaded data
+                    -> use loadAround to load beyond these bounds and let the BoundaryCallback populate the screen once data is loaded
+                - Case C : There is missing data inside of the bounds of already loaded data (BoundaryCallback is useless for that case)
+                    -> use loadAround to load data and populate the screen after a reasonable delay (150 ms)
+
+                NB : Case C implementation  _is_ quick and hacky (no discussion about that).
+                The alternative would be to implement a whole alternate data source for Hentoid paged mode, which is massively more complex
+             */
+
             //noinspection Convert2MethodRef need API24
-            long nbPlaceholders = Stream.of(library.subList(minIndex, maxIndex)).filter(c -> c == null).count();
+            long nbPlaceholders = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c == null).count();
             Timber.d(">> nb placeholders : %s", nbPlaceholders);
+            Timber.d(">> min/max  minBound/maxBound : %s/%s  %s/%s", minIndex, maxIndex, minLoadedBound, maxLoadedBound);
 
-            /* TODO ISSUE
-                1/ Load data at the beginning of the library
-                2/ Load data at the end of the library
-                3/ Load data in the middle of the library
-                -> when using loadAround to load an "empty patch" in the middle of the library, the callback doesn't fire (by design)
-                because data has already been loaded on lower and higher indexes
-             */
-            if (nbPlaceholders > 0) library.loadAround(minIndex);
-            else populateBookshelf(library);
+            if (0 == nbPlaceholders) populateBookshelf(iLibrary); // Case A
+            else if (minIndex < minLoadedBound || maxIndex > maxLoadedBound)
+                iLibrary.loadAround(minIndex); // Case B
+            else { // Case C
+                iLibrary.loadAround(minIndex);
+                new Handler().postDelayed(() -> populateBookshelf(iLibrary), 150);
+            }
 
-//            library.loadAround(maxIndex - 1);
-            /*
-            //noinspection Convert2MethodRef need API24
-            List<ContentItem> contentItems = Stream.of(library.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
-            itemAdapter.setNewList(contentItems, false);
-             */
+            minLoadedBound = Math.min(minLoadedBound, minIndex);
+            maxLoadedBound = Math.max(maxLoadedBound, maxIndex);
         }
-        //fastAdapter.notifyDataSetChanged();
     }
 
     // TODO doc
@@ -844,15 +866,15 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         populateBookshelf(library);
     }
 
-    private void populateBookshelf(PagedList<Content> library) {
+    private void populateBookshelf(PagedList<Content> iLibrary) {
         if (Preferences.getEndlessScroll()) return;
 
-        // TODO factorize this somewhere
-        int minIndex = (pager.getCurrentPageNumber() - 1) * Preferences.getContentPageQuantity();
-        int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), library.size());
+        Pair<Integer, Integer> bounds = getPagerBounds(pager.getCurrentPageNumber(), iLibrary.size());
+        int minIndex = bounds.first;
+        int maxIndex = bounds.second;
 
         //noinspection Convert2MethodRef need API24
-        List<ContentItem> contentItems = Stream.of(library.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }
@@ -915,6 +937,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         else {
             if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
+            minLoadedBound = Integer.MAX_VALUE;
+            maxLoadedBound = Integer.MIN_VALUE;
             loadBookshelf(result);
         }
 
