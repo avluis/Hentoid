@@ -20,7 +20,6 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
@@ -57,6 +56,7 @@ import me.devsaki.hentoid.adapters.PagedContentAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -64,7 +64,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
@@ -412,6 +411,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             case R.id.action_archive:
                 archiveSelectedItems();
                 break;
+            case R.id.action_redownload:
+                redownloadSelectedItems();
+                break;
             default:
                 selectionToolbar.setVisibility(View.GONE);
                 return false;
@@ -460,6 +462,16 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             ToastUtil.toast(R.string.packaging_content);
             viewModel.archiveContent(selectedItems.get(0), this::onContentArchiveSuccess);
         }
+    }
+
+    /**
+     * Callback for the "redownload from scratch" action button
+     */
+    private void redownloadSelectedItems() {
+        List<Content> selectedItems = getAdapter().getSelectedItems();
+        for (Content c : selectedItems)
+            c.setStatus(StatusContent.ONLINE); // Mark the book for a redownload
+        downloadContent(selectedItems);
     }
 
     /**
@@ -835,7 +847,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param content Content to add back to the download queue
      */
     public void downloadContent(@NonNull final Content content) {
-        viewModel.addContentToQueue(content);
+        List<Content> contentList = new ArrayList<>();
+        contentList.add(content);
+        downloadContent(contentList);
+    }
+
+    private void downloadContent(@NonNull final List<Content> contentList) {
+        for (Content c : contentList) viewModel.addContentToQueue(c);
 
         ContentQueueManager.getInstance().resumeQueue(getContext());
 
