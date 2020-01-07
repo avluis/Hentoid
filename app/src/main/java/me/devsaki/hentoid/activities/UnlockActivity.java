@@ -24,11 +24,6 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
     private static final String EXTRA_SITE_CODE = "siteCode";
 
     /**
-     * This is reset to false at an undefined time, usually due to process death.
-     */
-    private static boolean isUnlocked = false;
-
-    /**
      * Creates an intent that launches this activity before launching the given wrapped intent
      *
      * @param context           used for creating the return intent
@@ -71,25 +66,26 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
             Preferences.setAppLockPin("");
         }
 
-        if (Preferences.getAppLockPin().isEmpty() || isUnlocked) {
+        if (Preferences.getAppLockPin().isEmpty() || HentoidApp.isUnlocked()) {
             goToNextActivity();
             return;
         }
 
         if (savedInstanceState == null) {
-            new UnlockPinDialogFragment().show(getSupportFragmentManager(), null);
+            UnlockPinDialogFragment.invoke(getSupportFragmentManager());
         }
     }
 
     @Override
     public void onPinSuccess() {
-        isUnlocked = true;
+        HentoidApp.setUnlocked(true);
         goToNextActivity();
     }
 
     @Override
-    public void onPinCancel() {
-        finish();
+    public void onBackPressed() {
+        // We don't want the back button to remove the unlock screen displayed upon app restore
+        moveTaskToBack(true);
     }
 
     private void goToNextActivity() {
@@ -98,6 +94,10 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
         if (parcelableExtra != null) targetIntent = (Intent) parcelableExtra;
         else {
             int siteCode = getIntent().getIntExtra(EXTRA_SITE_CODE, Site.NONE.getCode());
+            if (siteCode == Site.NONE.getCode()) {
+                finish();
+                return;
+            }
             Class c = Content.getWebActivityClass(Site.searchByCode(siteCode));
             targetIntent = new Intent(HentoidApp.getInstance(), c);
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

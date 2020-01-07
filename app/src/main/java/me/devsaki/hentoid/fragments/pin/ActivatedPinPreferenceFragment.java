@@ -15,6 +15,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.Preferences;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -32,6 +33,10 @@ public final class ActivatedPinPreferenceFragment extends Fragment
 
         offSwitch = requireViewById(rootView, R.id.switch_off);
         offSwitch.setOnClickListener(v -> onOffClick());
+
+        Switch lockOnAppRestored = requireViewById(rootView, R.id.switch_lock_on_restore);
+        lockOnAppRestored.setChecked(Preferences.isLockOnAppRestore());
+        lockOnAppRestored.setOnCheckedChangeListener((b, v) -> onRestoreClick(v));
 
         View resetButton = requireViewById(rootView, R.id.text_reset_pin);
         resetButton.setOnClickListener(v -> onResetClick());
@@ -62,6 +67,10 @@ public final class ActivatedPinPreferenceFragment extends Fragment
     private void onOffClick() {
         DeactivatePinDialogFragment fragment = new DeactivatePinDialogFragment();
         fragment.show(getChildFragmentManager(), null);
+    }
+
+    private void onRestoreClick(boolean newValue) {
+        Preferences.setLockOnAppRestore(newValue);
     }
 
     private void onResetClick() {

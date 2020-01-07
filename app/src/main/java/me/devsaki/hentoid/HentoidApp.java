@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 
+import androidx.lifecycle.ProcessLifecycleOwner;
+
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -24,9 +26,9 @@ import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.DatabaseMaintenanceService;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
+import me.devsaki.hentoid.util.AppLifeCycleListener;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
@@ -37,7 +39,7 @@ import timber.log.Timber;
  */
 public class HentoidApp extends Application {
 
-    private static boolean beginImport;
+    // == APP INSTANCE
 
     private static Application instance;
 
@@ -45,12 +47,26 @@ public class HentoidApp extends Application {
         return instance;
     }
 
+
+    // == GLOBAL VARIABLES
+
+    private static boolean beginImport;
+    private static boolean isUnlocked = false;
+
     public static boolean isImportComplete() {
         return !beginImport;
     }
 
     public static void setBeginImport(boolean started) {
-        HentoidApp.beginImport = started;
+        beginImport = started;
+    }
+
+    public static boolean isUnlocked() {
+        return isUnlocked;
+    }
+
+    public static void setUnlocked(boolean unlocked) {
+        isUnlocked = unlocked;
     }
 
 
@@ -124,6 +140,9 @@ public class HentoidApp extends Application {
         }
 
         FirebaseAnalytics.getInstance(this).setUserProperty("color_theme", Integer.toString(Preferences.getColorTheme()));
+        FirebaseAnalytics.getInstance(this).setUserProperty("endless", Boolean.toString(Preferences.getEndlessScroll()));
+
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(new AppLifeCycleListener());
     }
 
     // We have asked for permissions, but still denied.

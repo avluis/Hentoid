@@ -195,6 +195,7 @@
     <string name="pin_new">Enter New PIN</string>
     <string name="pin_new_confirm">Confirm New PIN</string>
     <string name="pin_explanation">App Lock prevents unauthorized use of this app by requiring a 4-digit PIN when launched</string>
+    <string name="pin_lock_on_restore">Lock when restored\nfrom background</string>
 
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>

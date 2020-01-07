@@ -21,7 +21,7 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
 
-public class ImageViewerActivity extends AppCompatActivity {
+public class ImageViewerActivity extends BaseActivity {
 
     private ImageViewerViewModel viewModel;
     private Bundle searchParams = null;
@@ -30,8 +30,6 @@ public class ImageViewerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ThemeHelper.applyTheme(this);
 
         if (Preferences.isViewerKeepScreenOn())
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

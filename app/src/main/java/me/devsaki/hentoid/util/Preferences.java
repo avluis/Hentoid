@@ -66,7 +66,7 @@ public final class Preferences {
         }
 
         if (sharedPreferences.contains(Key.PREF_CHECK_UPDATES_LISTS)) {
-            boolean checkUpdates = sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES_LISTS, Default.PREF_CHECK_UPDATES_DEFAULT);
+            boolean checkUpdates = sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES_LISTS, Default.PREF_CHECK_UPDATES);
             sharedPreferences.edit().putBoolean(Key.PREF_CHECK_UPDATES, checkUpdates).apply();
             sharedPreferences.edit().remove(Key.PREF_CHECK_UPDATES_LISTS).apply();
         }
@@ -102,7 +102,7 @@ public final class Preferences {
     }
 
     public static boolean isAutomaticUpdateEnabled() {
-        return sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES, Default.PREF_CHECK_UPDATES_DEFAULT);
+        return sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES, Default.PREF_CHECK_UPDATES);
     }
 
     public static boolean isFirstRun() {
@@ -358,6 +358,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isLockOnAppRestore() {
+        return sharedPreferences.getBoolean(Key.PREF_LOCK_ON_APP_RESTORE, Default.PREF_LOCK_ON_APP_RESTORE);
+    }
+
+    public static void setLockOnAppRestore(boolean lockOnAppRestore) {
+        sharedPreferences.edit()
+                .putBoolean(Key.PREF_LOCK_ON_APP_RESTORE, lockOnAppRestore)
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -403,6 +413,7 @@ public final class Preferences {
         static final String PREF_DL_HITOMI_WEBP = "pref_dl_hitomi_webp";
         public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
+        public static final String PREF_LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
 
         //Keys that were removed from the app, kept for housekeeping
         static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -445,10 +456,11 @@ public final class Preferences {
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
         static final boolean PREF_DL_HITOMI_WEBP = true;
-        static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
+        static final boolean PREF_CHECK_UPDATES = true;
         // Default menu in v1.9.x
         static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HENTAICAFE, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, Site.FAKKU2, Site.NEXUS, Site.MUSES, Site.DOUJINS};
         static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
+        static final boolean PREF_LOCK_ON_APP_RESTORE = false;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

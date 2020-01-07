@@ -13,7 +13,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 
-public class LibraryActivity extends AppCompatActivity {
+public class LibraryActivity extends BaseActivity {
 
     private DrawerLayout drawerLayout;
 
@@ -22,8 +22,6 @@ public class LibraryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ThemeHelper.applyTheme(this);
 
         setContentView(R.layout.activity_hentoid);
         applyDrawerHeaderColor();
