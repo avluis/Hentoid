@@ -750,7 +750,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             searchClearButton.setVisibility(View.VISIBLE);
             if (result.size() > 0 && searchMenu != null) searchMenu.collapseActionView();
         } else {
-            advancedSearchBar.setVisibility(View.GONE);
+            searchClearButton.setVisibility(View.GONE);
         }
 
         // User searches a book ID
