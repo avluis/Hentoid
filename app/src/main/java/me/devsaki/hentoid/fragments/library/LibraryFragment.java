@@ -194,6 +194,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        EventBus.getDefault().register(this);
         setRetainInstance(true);
     }
 
@@ -603,6 +604,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     @Override
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 
