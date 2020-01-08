@@ -15,13 +15,11 @@ import me.devsaki.hentoid.util.ThemeHelper;
 /**
  * Handles hosting of QueueFragment for a single screen.
  */
-public class QueueActivity extends AppCompatActivity {
+public class QueueActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ThemeHelper.applyTheme(this);
 
         FragmentManager manager = getSupportFragmentManager();
         Fragment fragment = manager.findFragmentById(R.id.fragment_queue);

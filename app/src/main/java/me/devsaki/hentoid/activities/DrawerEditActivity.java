@@ -20,15 +20,13 @@ import me.devsaki.hentoid.viewholders.SiteFlex;
 /**
  * Created by Robb on 10/2019
  */
-public class DrawerEditActivity extends AppCompatActivity {
+public class DrawerEditActivity extends BaseActivity {
 
     private FlexibleAdapter<SiteFlex> siteAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ThemeHelper.applyTheme(this);
 
         setContentView(R.layout.activity_drawer_edit);
 

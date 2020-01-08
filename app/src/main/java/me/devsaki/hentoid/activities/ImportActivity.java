@@ -44,7 +44,6 @@ import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
@@ -58,13 +57,14 @@ import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
 /**
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
+ * <p>
+ * NB : This activity is transparent and not lockable; it should _not_ be a child of BaseActivity
  */
 public class ImportActivity extends AppCompatActivity implements KitkatRootFolderFragment.Parent {
 
     // Instance state keys
     private static final String CURRENT_DIR = "currentDir";
     private static final String PREV_DIR = "prevDir";
-    private static final String RESTART_ON_EXIT = "restartOnExit";
     private static final String CALLED_BY_PREFS = "calledByPrefs";
     private static final String USE_DEFAULT_FOLDER = "useDefaultFolder";
     private static final String REFRESH_OPTIONS = "refreshOptions";
@@ -73,7 +73,6 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     private File currentRootDir;
     private File prevRootDir;
     private OnBackPressedCallback callback;
-    private boolean restartOnExit = false;              // True if app has to be restarted when exiting the activity
     private boolean calledByPrefs = false;              // True if activity has been called by PrefsActivity
     private boolean useDefaultFolder = false;           // True if activity has been called by IntroActivity and user has selected default storage
     private boolean isRefresh = false;                  // True if user has asked for a collection refresh
@@ -148,7 +147,6 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         if (savedState != null) {
             currentRootDir = (File) savedState.getSerializable(CURRENT_DIR);
             prevRootDir = (File) savedState.getSerializable(PREV_DIR);
-            restartOnExit = savedState.getBoolean(RESTART_ON_EXIT);
             calledByPrefs = savedState.getBoolean(CALLED_BY_PREFS);
             useDefaultFolder = savedState.getBoolean(USE_DEFAULT_FOLDER);
 
@@ -218,7 +216,6 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     protected void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(CURRENT_DIR, currentRootDir);
         outState.putSerializable(PREV_DIR, prevRootDir);
-        outState.putBoolean(RESTART_ON_EXIT, restartOnExit);
         outState.putBoolean(CALLED_BY_PREFS, calledByPrefs);
         outState.putBoolean(USE_DEFAULT_FOLDER, useDefaultFolder);
 
@@ -308,6 +305,8 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
                     intent.putExtra(EXTRA_INITIAL_URI, file.getUri());
             }
 
+            HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
+
             startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
         } else { // Kitkat : display the specific dialog for kitkat
             KitkatRootFolderFragment.invoke(this, getSupportFragmentManager());
@@ -320,6 +319,8 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
 
         // Return from the SAF picker
         if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) {
@@ -492,31 +493,31 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         if (hasBooks()) {
             if (isRefresh)
                 runImport(); // Do not ask if the user wants to import if he has asked for a refresh
-            else new MaterialAlertDialogBuilder(this, ThemeHelper.getIdForCurrentTheme(this, R.style.Theme_Light_Dialog))
-                    .setIcon(R.drawable.ic_dialog_warning)
-                    .setCancelable(false)
-                    .setTitle(R.string.app_name)
-                    .setMessage(R.string.contents_detected)
-                    .setPositiveButton(android.R.string.yes,
-                            (dialog1, which) -> {
-                                dialog1.dismiss();
-                                runImport();
-                            })
-                    .setNegativeButton(android.R.string.no,
-                            (dialog12, which) -> {
-                                dialog12.dismiss();
-                                // Prior Library found, but user chose to cancel
-                                restartOnExit = false;
-                                if (prevRootDir != null) {
-                                    currentRootDir = prevRootDir;
-                                }
-                                if (currentRootDir != null) {
-                                    FileHelper.checkAndSetRootFolder(currentRootDir.getAbsolutePath());
-                                }
-                                exit(RESULT_CANCELED, ConstsImport.EXISTING_LIBRARY_FOUND);
-                            })
-                    .create()
-                    .show();
+            else
+                new MaterialAlertDialogBuilder(this, ThemeHelper.getIdForCurrentTheme(this, R.style.Theme_Light_Dialog))
+                        .setIcon(R.drawable.ic_dialog_warning)
+                        .setCancelable(false)
+                        .setTitle(R.string.app_name)
+                        .setMessage(R.string.contents_detected)
+                        .setPositiveButton(android.R.string.yes,
+                                (dialog1, which) -> {
+                                    dialog1.dismiss();
+                                    runImport();
+                                })
+                        .setNegativeButton(android.R.string.no,
+                                (dialog12, which) -> {
+                                    dialog12.dismiss();
+                                    // Prior Library found, but user chose to cancel
+                                    if (prevRootDir != null) {
+                                        currentRootDir = prevRootDir;
+                                    }
+                                    if (currentRootDir != null) {
+                                        FileHelper.checkAndSetRootFolder(currentRootDir.getAbsolutePath());
+                                    }
+                                    exit(RESULT_CANCELED, ConstsImport.EXISTING_LIBRARY_FOUND);
+                                })
+                        .create()
+                        .show();
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
             cleanUpDB();
@@ -565,16 +566,12 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     }
 
     private void exit(int resultCode, String data) {
-        Timber.d("Import activity exit - Data : %s, Restart needed: %s", data, restartOnExit);
+        Timber.d("Import activity exit - Data : %s", data);
 
         callback.remove();
         Intent returnIntent = new Intent();
         returnIntent.putExtra(ConstsImport.RESULT_KEY, data);
         setResult(resultCode, returnIntent);
         finish();
-
-        if (restartOnExit && calledByPrefs) {
-            Helper.doRestart(this);
-        }
     }
 }

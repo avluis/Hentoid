@@ -3,6 +3,8 @@ package me.devsaki.hentoid.activities;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.ContentView;
+import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -11,15 +13,18 @@ import me.devsaki.hentoid.util.ThemeHelper;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
+    public BaseActivity() { super(); }
+
+    @ContentView
+    public BaseActivity(@LayoutRes int contentLayoutId) {
+        super(contentLayoutId);
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ThemeHelper.applyTheme(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop(); // TODO prevent Android from taking a screenshot of the screen ?
     }
 
     @Override

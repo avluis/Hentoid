@@ -33,7 +33,7 @@ import static java.lang.String.format;
 /**
  * Created by Robb on 2018/11
  */
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends BaseActivity {
 
     private TextView tagCategoryText;
     private TextView artistCategoryText;
@@ -78,8 +78,6 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ThemeHelper.applyTheme(this);
 
         Intent intent = getIntent();
         List<Attribute> preSelectedAttributes = null;
