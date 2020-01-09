@@ -250,12 +250,12 @@
     <string name="viewer_favourite_on">Unmark page as favourite</string>
     <string name="pref_viewer_resume_last_left">Resume reading when reopening books (except last page)</string>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
-    <string name="pref_viewer_keep_screen_on">Keep screen on</string>
+
     <string name="pref_viewer_display_pagenum">Always display page number</string>
     <string name="pref_viewer_tap_transitions">Transition effects for left/right tap</string>
     <string name="pref_viewer_image_display">Image display mode</string>
-    <string name="pref_viewer_browse_mode">Browse mode</string>
-    <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
+
+
     <string name="pref_viewer_invert_volume">Invert volume buttons</string>
     <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
     <string name="gallery_menu_favourite">Toggle favourite filter</string>

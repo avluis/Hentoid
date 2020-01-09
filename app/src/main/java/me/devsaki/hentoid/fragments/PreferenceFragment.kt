@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceScreen
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PinPreferenceActivity
@@ -15,11 +16,24 @@ import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.services.UpdateDownloadService
 import me.devsaki.hentoid.util.*
 
+
 class PreferenceFragment : PreferenceFragmentCompat() {
 
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.preferences, rootKey)
+        if (null == rootKey) { // Display general menu and root the viewer menu under the "viewer" group
+            setPreferencesFromResource(R.xml.preferences, rootKey)
+
+            val viewerGroup = preferenceScreen.findPreference("viewer") as PreferenceGroup?
+            addPreferencesFromResource(R.xml.preferences_viewer, viewerGroup)
+        } else if (rootKey.startsWith("viewer")) { // Display viewer group submenu
+            if (rootKey.equals("viewer"))
+                addPreferencesFromResource(R.xml.preferences_viewer) // Root of the viewer submenu
+            else
+                setPreferencesFromResource(R.xml.preferences_viewer, rootKey) // One of the screens of the viewer submenu
+        } else {
+            setPreferencesFromResource(R.xml.preferences, rootKey) // Display one of the submenus of the general pref screen
+        }
 
         findPreference<Preference>(Preferences.Key.PREF_COLOR_THEME)?.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { _, newValue ->
@@ -90,5 +104,16 @@ class PreferenceFragment : PreferenceFragmentCompat() {
     private fun onPrefColorThemeChanged(value: Any): Boolean {
         ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Integer.parseInt(value.toString())))
         return true
+    }
+
+    private fun addPreferencesFromResource(id: Int, newParent: PreferenceGroup?) {
+        val screen = preferenceScreen
+        val last = screen.preferenceCount
+        addPreferencesFromResource(id)
+        while (screen.preferenceCount > last) {
+            val p = screen.getPreference(last)
+            screen.removePreference(p) // decreases the preference count
+            newParent?.addPreference(p)
+        }
     }
 }

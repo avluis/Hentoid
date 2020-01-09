@@ -225,6 +225,12 @@
     </PreferenceScreen>
 
     <PreferenceScreen
+        android:icon="@drawable/ic_images"
+        android:key="viewer"
+        android:title="@string/pref_screen_viewer">
+    </PreferenceScreen>
+
+    <PreferenceScreen
         android:icon="@drawable/ic_action_refresh"
         android:key="updates"
         android:title="@string/pref_screen_updates">

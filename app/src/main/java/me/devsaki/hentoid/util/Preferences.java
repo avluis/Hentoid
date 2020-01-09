@@ -405,6 +405,7 @@ public final class Preferences {
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
+        public static final String PREF_VIEWER_PAGE_TURN = "pref_viewer_page_turn";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
         public static final String PREF_COLOR_THEME = "pref_color_theme";
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
@@ -451,6 +452,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
         static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
+        static final CharSequence[] PREF_VIEWER_PAGE_TURN = new String[]{Integer.toString(Constant.PREF_VIEWER_PAGE_TURN_SWIPE), Integer.toString(Constant.PREF_VIEWER_PAGE_TURN_TAP), Integer.toString(Constant.PREF_VIEWER_PAGE_TURN_VOLUME)};
         static final int PREF_COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
@@ -501,6 +503,9 @@ public final class Preferences {
         public static final int PREF_VIEWER_DIRECTION_RTL = 1;
         public static final int PREF_VIEWER_ORIENTATION_HORIZONTAL = 0;
         public static final int PREF_VIEWER_ORIENTATION_VERTICAL = 1;
+        public static final int PREF_VIEWER_PAGE_TURN_SWIPE = 0;
+        public static final int PREF_VIEWER_PAGE_TURN_TAP = 1;
+        public static final int PREF_VIEWER_PAGE_TURN_VOLUME = 2;
         public static final int COLOR_THEME_LIGHT = Theme.LIGHT.getId();
         public static final int COLOR_THEME_DARK = Theme.DARK.getId();
         public static final int COLOR_THEME_BLACK = Theme.BLACK.getId();
