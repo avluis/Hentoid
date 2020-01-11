@@ -19,6 +19,27 @@ import me.devsaki.hentoid.util.*
 
 class PreferenceFragment : PreferenceFragmentCompat() {
 
+    companion object {
+        private val KEY_ROOT = "root"
+
+        fun newInstance(rootKey: String): PreferenceFragment {
+            val fragment = PreferenceFragment()
+            val args = Bundle()
+            args.putCharSequence(KEY_ROOT, rootKey)
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val arguments = arguments
+        if (arguments != null && arguments.containsKey(KEY_ROOT)) {
+            val root = arguments.getCharSequence(KEY_ROOT)
+            if (root != null) preferenceScreen = findPreference(root)
+        }
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         if (null == rootKey) { // Display general menu and root the viewer menu under the "viewer" group

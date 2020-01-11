@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -33,7 +34,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.fragments.PreferenceFragment;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.views.ZoomableFrame;
 import me.devsaki.hentoid.views.ZoomableRecyclerView;
@@ -151,7 +154,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (controlsOverlay!= null) outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
+        if (controlsOverlay != null)
+            outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         viewModel.setStartingIndex(imageIndex); // Memorize the current page
         viewModel.onSaveState(outState);
@@ -302,7 +306,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Show the viewer settings dialog
      */
     private void onSettingsClick() {
-        ViewerPrefsDialogFragment.invoke(this);
+        requireActivity().setTheme(ThemeHelper.getIdForCurrentTheme(requireActivity(), R.style.Theme_Light_Prefs));
+        FragmentManager manager = requireActivity().getSupportFragmentManager();
+        manager.beginTransaction()
+                .replace(android.R.id.content, PreferenceFragment.Companion.newInstance("viewer"))
+                .addToBackStack("viewerPrefs")
+                .commit();
     }
 
     /**
