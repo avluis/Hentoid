@@ -36,11 +36,13 @@
         <item>ID</item>
         <item>Title - ID</item>
         <item>Author - Title - ID</item>
+        <item>Title - Author - ID</item>
     </string-array>
     <string-array name="pref_folder_naming_content_entry_values">
         <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>3</item>
     </string-array>
 
     <string-array name="pref_folder_trunc_content_entries">
@@ -110,5 +112,32 @@
         <item>95</item>
         <item>98</item>
         <item>100</item>
+    </string-array>
+
+    <string-array name="pref_viewer_browse_mode_entries">
+        <item>Left to Right</item>
+        <item>Right to Left</item>
+        <item>Top to Bottom</item>
+    </string-array>
+    <string-array name="pref_viewer_browse_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+    <string-array name="pref_viewer_page_turn_entries">
+        <item>Swipe screen</item>
+        <item>Tap screen</item>
+        <item>Volume button</item>
+    </string-array>
+    <string-array name="pref_viewer_page_turn_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="pref_viewer_page_turn_default_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
     </string-array>
 </resources>

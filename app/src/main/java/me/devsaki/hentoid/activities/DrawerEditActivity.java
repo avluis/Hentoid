@@ -26,7 +26,7 @@ import me.devsaki.hentoid.viewholders.SiteItem;
 /**
  * Created by Robb on 10/2019
  */
-public class DrawerEditActivity extends AppCompatActivity implements ItemTouchCallback {
+public class DrawerEditActivity extends BaseActivity implements ItemTouchCallback {
 
     private final ItemAdapter<SiteItem> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<SiteItem> fastAdapter = FastAdapter.with(itemAdapter);
@@ -34,8 +34,6 @@ public class DrawerEditActivity extends AppCompatActivity implements ItemTouchCa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ThemeHelper.applyTheme(this);
 
         setContentView(R.layout.activity_drawer_edit);
 

@@ -33,6 +33,7 @@
     <string name="menu_fav">Toggle favourite filter</string>
     <string name="menu_delete_single">Delete</string>
     <string name="menu_delete_multi">Delete Items</string>
+    <string name="menu_redownload">Redownload from scratch</string>
     <string name="menu_share">Share</string>
     <string name="menu_archive">Archive</string>
     <string name="search_hint">Title, author, tag or book ID</string>
@@ -195,6 +196,7 @@
     <string name="pin_new">Enter New PIN</string>
     <string name="pin_new_confirm">Confirm New PIN</string>
     <string name="pin_explanation">App Lock prevents unauthorized use of this app by requiring a 4-digit PIN when launched</string>
+    <string name="pin_lock_on_restore">Lock when restored\nfrom background</string>
 
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
@@ -248,12 +250,12 @@
     <string name="viewer_favourite_on">Unmark page as favourite</string>
     <string name="pref_viewer_resume_last_left">Resume reading when reopening books (except last page)</string>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
-    <string name="pref_viewer_keep_screen_on">Keep screen on</string>
+
     <string name="pref_viewer_display_pagenum">Always display page number</string>
     <string name="pref_viewer_tap_transitions">Transition effects for left/right tap</string>
     <string name="pref_viewer_image_display">Image display mode</string>
-    <string name="pref_viewer_browse_mode">Browse mode</string>
-    <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
+
+
     <string name="pref_viewer_invert_volume">Invert volume buttons</string>
     <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
     <string name="gallery_menu_favourite">Toggle favourite filter</string>

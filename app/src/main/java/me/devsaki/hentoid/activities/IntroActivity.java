@@ -15,7 +15,6 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.List;
 
 import me.devsaki.hentoid.BuildConfig;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.fragments.intro.EndIntroFragment;
@@ -81,20 +80,14 @@ public class IntroActivity extends AppIntro2 {
     }
 
     public void onDefaultStorageSelected() {
-        if (HentoidApp.isImportComplete()) {
-            Intent defaultDir = new Intent(this, ImportActivity.class);
-            defaultDir.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
-        }
-        HentoidApp.setBeginImport(true);
+        Intent defaultDir = new Intent(this, ImportActivity.class);
+        defaultDir.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
     }
 
     public void onCustomStorageSelected() {
-        if (HentoidApp.isImportComplete()) {
-            Intent customDir = new Intent(this, ImportActivity.class);
-            startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
-        }
-        HentoidApp.setBeginImport(true);
+        Intent customDir = new Intent(this, ImportActivity.class);
+        startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
     }
 
     public void setThemePrefs(int pref) {
@@ -130,9 +123,6 @@ public class IntroActivity extends AppIntro2 {
                 String result = data.getStringExtra(RESULT_KEY);
                 resultHandler(resultCode, result);
             }
-        } else if (requestCode == ConstsImport.RQST_APP_SETTINGS) {
-            // Back from app settings
-            HentoidApp.setBeginImport(false);
         }
     }
 
@@ -142,7 +132,6 @@ public class IntroActivity extends AppIntro2 {
 
             if (result.equals(ConstsImport.PERMISSION_GRANTED)) {
                 Timber.d("Permission Allowed, resetting.");
-                HentoidApp.setBeginImport(false);
                 Snackbar.make(pager, R.string.permission_granted, LENGTH_SHORT).show();
             } else {
                 // If result passes validation, then we move to next slide
@@ -168,7 +157,6 @@ public class IntroActivity extends AppIntro2 {
                 default:
                     // Other cases should fail silently
             }
-            HentoidApp.setBeginImport(false);
         }
     }
 

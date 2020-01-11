@@ -44,7 +44,7 @@ public class LogUtil {
         }
     }
 
-    public static String buildLog(@Nonnull LogInfo info) {
+    private static String buildLog(@Nonnull LogInfo info) {
         StringBuilder logStr = new StringBuilder();
         logStr.append(info.logName).append(" log : begin").append(LINE_SEPARATOR);
         logStr.append(String.format("Hentoid ver: %s (%s)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)).append(LINE_SEPARATOR);

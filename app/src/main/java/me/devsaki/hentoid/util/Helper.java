@@ -52,32 +52,6 @@ public final class Helper {
 
     private static int DENSITY_DPI = -1;
 
-
-    public static void doRestart(@NonNull Context context) {
-        try {
-            PackageManager pm = context.getPackageManager();
-            if (pm != null) {
-                Intent intent = pm.getLaunchIntentForPackage(context.getPackageName());
-                if (intent != null) {
-                    ComponentName componentName = intent.getComponent();
-                    Intent mainIntent = Intent.makeRestartActivityTask(componentName);
-                    mainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            | Intent.FLAG_ACTIVITY_NEW_TASK
-                            | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    context.startActivity(mainIntent);
-
-                    Runtime.getRuntime().exit(0);
-                } else {
-                    Timber.d("Was not able to restart application, intent null");
-                }
-            } else {
-                Timber.d("Was not able to restart application, PM null");
-            }
-        } catch (Exception e) {
-            Timber.e(e, "Was not able to restart application");
-        }
-    }
-
     //Currently only nhentai source uses this method
     static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);

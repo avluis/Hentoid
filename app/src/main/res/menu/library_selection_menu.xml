@@ -24,4 +24,9 @@
         android:icon="@drawable/ic_delete_sweep"
         android:title="@string/menu_delete_multi"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_redownload"
+        android:icon="@drawable/ic_action_download"
+        android:title="@string/menu_redownload"
+        app:showAsAction="ifRoom" />
 </menu>

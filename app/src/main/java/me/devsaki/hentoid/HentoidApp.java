@@ -9,6 +9,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ProcessLifecycleOwner;
+
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -26,7 +31,6 @@ import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
@@ -37,7 +41,7 @@ import timber.log.Timber;
  */
 public class HentoidApp extends Application {
 
-    private static boolean beginImport;
+    // == APP INSTANCE
 
     private static Application instance;
 
@@ -45,12 +49,18 @@ public class HentoidApp extends Application {
         return instance;
     }
 
-    public static boolean isImportComplete() {
-        return !beginImport;
+
+    // == GLOBAL VARIABLES
+
+    // When PIN lock is activated, indicates whether the app has been unlocked or not
+    private static boolean isUnlocked = false;
+
+    public static boolean isUnlocked() {
+        return isUnlocked;
     }
 
-    public static void setBeginImport(boolean started) {
-        HentoidApp.beginImport = started;
+    public static void setUnlocked(boolean unlocked) {
+        isUnlocked = unlocked;
     }
 
 
@@ -126,6 +136,9 @@ public class HentoidApp extends Application {
         }
 
         FirebaseAnalytics.getInstance(this).setUserProperty("color_theme", Integer.toString(Preferences.getColorTheme()));
+        FirebaseAnalytics.getInstance(this).setUserProperty("endless", Boolean.toString(Preferences.getEndlessScroll()));
+
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
     }
 
     // We have asked for permissions, but still denied.
@@ -155,5 +168,31 @@ public class HentoidApp extends Application {
         } else {
             startService(intent);
         }
+    }
+
+    /**
+     * Listener used to auto-lock the app when it goes to background
+     * and the PIN lock is enabled
+     */
+    public static class LifeCycleListener implements LifecycleObserver {
+
+        private static boolean enabled = true;
+
+        public static void enable() {
+            enabled = true;
+        }
+
+        public static void disable() {
+            enabled = false;
+        }
+
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+        private void onMoveToBackground() {
+            Timber.d("Moving to background");
+            if (enabled && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore())
+                HentoidApp.setUnlocked(false);
+        }
+
     }
 }

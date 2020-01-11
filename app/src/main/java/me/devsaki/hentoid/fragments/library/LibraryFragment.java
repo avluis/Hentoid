@@ -66,6 +66,7 @@ import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -204,6 +205,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         super.onCreate(savedInstanceState);
 
         ExtensionsFactories.INSTANCE.register(new SelectExtensionFactory());
+        EventBus.getDefault().register(this);
         setRetainInstance(true);
     }
 
@@ -421,6 +423,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             case R.id.action_archive:
                 archiveSelectedItems();
                 break;
+            case R.id.action_redownload:
+                redownloadSelectedItems();
+                break;
             default:
                 selectionToolbar.setVisibility(View.GONE);
                 return false;
@@ -474,6 +479,16 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
             viewModel.archiveContent(c, this::onContentArchiveSuccess);
         }
+    }
+
+    /**
+     * Callback for the "redownload from scratch" action button
+     */
+    private void redownloadSelectedItems() {
+        List<Content> selectedItems = getAdapter().getSelectedItems();
+        for (Content c : selectedItems)
+            c.setStatus(StatusContent.ONLINE); // Mark the book for a redownload
+        downloadContent(selectedItems);
     }
 
     /**
@@ -605,6 +620,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     @Override
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 
@@ -917,7 +933,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             searchClearButton.setVisibility(View.VISIBLE);
             if (result.size() > 0 && searchMenu != null) searchMenu.collapseActionView();
         } else {
-            advancedSearchBar.setVisibility(View.GONE);
+            searchClearButton.setVisibility(View.GONE);
         }
 
         // User searches a book ID
@@ -1026,7 +1042,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param content Content to add back to the download queue
      */
     public void downloadContent(@NonNull final Content content) {
-        viewModel.addContentToQueue(content);
+        List<Content> contentList = new ArrayList<>();
+        contentList.add(content);
+        downloadContent(contentList);
+    }
+
+    private void downloadContent(@NonNull final List<Content> contentList) {
+        for (Content c : contentList) viewModel.addContentToQueue(c);
 
         ContentQueueManager.getInstance().resumeQueue(getContext());
 

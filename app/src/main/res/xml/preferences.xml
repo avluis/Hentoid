@@ -154,6 +154,7 @@
                 app:iconSpaceReserved="false" />
             <ListPreference
                 android:defaultValue="@string/pref_dl_retries_number_default"
+                android:dependency="pref_dl_retries_active"
                 android:entries="@array/pref_dl_retries_number_entries"
                 android:entryValues="@array/pref_dl_retries_number_entries"
                 android:key="pref_dl_retries_number"
@@ -162,6 +163,7 @@
                 app:iconSpaceReserved="false" />
             <ListPreference
                 android:defaultValue="@string/pref_dl_retries_mem_limit_default"
+                android:dependency="pref_dl_retries_active"
                 android:entries="@array/pref_dl_retries_mem_limit_entries"
                 android:entryValues="@array/pref_dl_retries_mem_limit_values"
                 android:key="pref_dl_retries_mem_limit"
@@ -220,6 +222,12 @@
                 android:title="@string/pref_analytics_preference_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
+    </PreferenceScreen>
+
+    <PreferenceScreen
+        android:icon="@drawable/ic_images"
+        android:key="viewer"
+        android:title="@string/pref_screen_viewer">
     </PreferenceScreen>
 
     <PreferenceScreen
