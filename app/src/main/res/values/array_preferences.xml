@@ -140,4 +140,43 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+
+    <string-array name="pref_viewer_separating_bars_entries">
+        <item>Off (default)</item>
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+    </string-array>
+    <string-array name="pref_viewer_separating_bars_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="pref_viewer_read_threshold_entries">
+        <item>1 (default)</item>
+        <item>2</item>
+        <item>5</item>
+        <item>All</item>
+    </string-array>
+    <string-array name="pref_viewer_read_threshold_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
+    <string-array name="pref_viewer_slideshow_delay_entries">
+        <item>2s (default)</item>
+        <item>4s</item>
+        <item>8s</item>
+        <item>16s</item>
+    </string-array>
+    <string-array name="pref_viewer_slideshow_delay_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
 </resources>
