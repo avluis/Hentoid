@@ -96,9 +96,9 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:1.1.0"
 
     // Image loader: github.com/bumptech/glide
-    implementation 'com.github.bumptech.glide:glide:4.10.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
-    implementation 'com.github.bumptech.glide:okhttp3-integration:4.9.0'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.11.0'
 
     // Intro screens or slides: github.com/apl-devs/AppIntro
     implementation 'com.github.paolorotolo:appintro:v5.1.0'
