@@ -21,11 +21,13 @@ class PreferenceFragment : PreferenceFragmentCompat() {
     companion object {
         private const val KEY_ROOT = "root"
 
-        fun newInstance(rootKey: String): PreferenceFragment {
+        fun newInstance(rootKey: String?): PreferenceFragment {
             val fragment = PreferenceFragment()
-            val args = Bundle()
-            args.putCharSequence(KEY_ROOT, rootKey)
-            fragment.arguments = args
+            if (rootKey != null) {
+                val args = Bundle()
+                args.putCharSequence(KEY_ROOT, rootKey)
+                fragment.arguments = args
+            }
             return fragment
         }
     }

@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.viewer;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -19,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -31,12 +31,12 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.PrefsActivity;
+import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.fragments.PreferenceFragment;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.views.ZoomableFrame;
 import me.devsaki.hentoid.views.ZoomableRecyclerView;
@@ -306,12 +306,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Show the viewer settings dialog
      */
     private void onSettingsClick() {
-        requireActivity().setTheme(ThemeHelper.getIdForCurrentTheme(requireActivity(), R.style.Theme_Light_Prefs));
-        FragmentManager manager = requireActivity().getSupportFragmentManager();
-        manager.beginTransaction()
-                .replace(android.R.id.content, PreferenceFragment.Companion.newInstance("viewer"))
-                .addToBackStack("viewerPrefs")
-                .commit();
+        Intent intent = new Intent(requireActivity(), PrefsActivity.class);
+
+        PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
+        builder.setIsViewerPrefs(true);
+        intent.putExtras(builder.getBundle());
+
+        requireContext().startActivity(intent);
     }
 
     /**
