@@ -118,4 +118,10 @@
     <string name="pref_viewer_visuals">Visuals</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
     <string name="pref_viewer_keep_screen_on_default" translatable="false">true</string>
+    <string name="pref_viewer_display_pagenum">Always display page number</string>
+    <string name="pref_viewer_display_pagenum_default" translatable="false">false</string>
+    <string name="pref_viewer_tap_transitions">Enable page turn animation</string>
+    <string name="pref_viewer_tap_transitions_default" translatable="false">true</string>
+    <string name="pref_viewer_zoom_transitions">Enable zoom animation</string>
+    <string name="pref_viewer_zoom_transitions_default" translatable="false">true</string>
 </resources>

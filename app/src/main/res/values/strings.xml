@@ -251,8 +251,8 @@
     <string name="pref_viewer_resume_last_left">Resume reading when reopening books (except last page)</string>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
 
-    <string name="pref_viewer_display_pagenum">Always display page number</string>
-    <string name="pref_viewer_tap_transitions">Transition effects for left/right tap</string>
+
+
     <string name="pref_viewer_image_display">Image display mode</string>
 
 

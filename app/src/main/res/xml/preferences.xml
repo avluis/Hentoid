@@ -245,7 +245,8 @@
                 android:summary="@string/pref_generic_summary"
                 android:entries="@array/pref_viewer_page_turn_entries"
                 android:entryValues="@array/pref_viewer_page_turn_values"
-                android:defaultValue="@array/pref_viewer_page_turn_default_values" />
+                android:defaultValue="@array/pref_viewer_page_turn_default_values"
+                app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:key="pref_viewer_swipe_to_fling"
                 android:defaultValue="@string/pref_viewer_swipe_to_fling_default"
@@ -267,6 +268,24 @@
                 android:key="pref_viewer_keep_screen_on"
                 android:defaultValue="@string/pref_viewer_keep_screen_on_default"
                 android:title="@string/pref_viewer_keep_screen_on"
+                app:iconSpaceReserved="false" />
+
+            <CheckBoxPreference
+                android:key="pref_viewer_display_pagenum"
+                android:defaultValue="@string/pref_viewer_display_pagenum_default"
+                android:title="@string/pref_viewer_display_pagenum"
+                app:iconSpaceReserved="false" />
+
+            <CheckBoxPreference
+                android:key="pref_viewer_tap_transitions"
+                android:defaultValue="@string/pref_viewer_tap_transitions_default"
+                android:title="@string/pref_viewer_tap_transitions"
+                app:iconSpaceReserved="false" />
+
+            <CheckBoxPreference
+                android:key="pref_viewer_zoom_transitions"
+                android:defaultValue="@string/pref_viewer_zoom_transitions_default"
+                android:title="@string/pref_viewer_zoom_transitions"
                 app:iconSpaceReserved="false" />
         </PreferenceScreen>
 

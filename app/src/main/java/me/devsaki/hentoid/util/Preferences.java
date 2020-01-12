@@ -213,30 +213,12 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_RESUME_LAST_LEFT, Default.PREF_VIEWER_RESUME_LAST_LEFT);
     }
 
-    public static void setViewerResumeLastLeft(boolean resumeLastLeft) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_RESUME_LAST_LEFT, resumeLastLeft)
-                .apply();
-    }
-
     public static boolean isViewerKeepScreenOn() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_KEEP_SCREEN_ON, Default.PREF_VIEWER_KEEP_SCREEN_ON);
     }
 
-    public static void setViewerKeepScreenOn(boolean keepScreenOn) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_KEEP_SCREEN_ON, keepScreenOn)
-                .apply();
-    }
-
     public static int getViewerResizeMode() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)) + "");
-    }
-
-    public static void setViewerResizeMode(int resizeMode) {
-        sharedPreferences.edit()
-                .putString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(resizeMode))
-                .apply();
     }
 
     public static int getViewerBrowseMode() {
@@ -261,50 +243,24 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_DISPLAY_PAGENUM, Default.PREF_VIEWER_DISPLAY_PAGENUM);
     }
 
-    public static void setViewerDisplayPageNum(boolean displayPageNum) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_DISPLAY_PAGENUM, displayPageNum)
-                .apply();
-    }
-
     public static boolean isViewerTapTransitions() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_TAP_TRANSITIONS, Default.PREF_VIEWER_TAP_TRANSITIONS);
     }
 
-    public static void setViewerTapTransitions(boolean tapTransitions) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_TAP_TRANSITIONS, tapTransitions)
-                .apply();
+    public static boolean isViewerZoomTransitions() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_ZOOM_TRANSITIONS, Default.PREF_VIEWER_ZOOM_TRANSITIONS);
     }
 
     public static boolean isViewerSwipeToFling() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, Default.PREF_VIEWER_SWIPE_TO_FLING);
     }
 
-    public static void setViewerSwipeToFling(boolean swipeToFling) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, swipeToFling)
-                .apply();
-    }
-
     public static boolean isViewerInvertVolumeRocker() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, Default.PREF_VIEWER_INVERT_VOLUME_ROCKER);
     }
 
-    public static void setViewerInvertVolumeRocker(boolean invertVolumeRocker) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, invertVolumeRocker)
-                .apply();
-    }
-
     public static boolean isOpenBookInGalleryMode() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_OPEN_GALLERY, Default.PREF_VIEWER_OPEN_GALLERY);
-    }
-
-    public static void setOpenBookInGalleryMode(boolean openBookInGalleryMode) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_OPEN_GALLERY, openBookInGalleryMode)
-                .apply();
     }
 
     public static int getLastKnownAppVersionCode() {
@@ -403,6 +359,7 @@ public final class Preferences {
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         public static final String PREF_VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling";
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
+        static final String PREF_VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
         public static final String PREF_VIEWER_PAGE_TURN = "pref_viewer_page_turn";
@@ -449,6 +406,7 @@ public final class Preferences {
         static final int PREF_VIEWER_BROWSE_MODE = Constant.PREF_VIEWER_BROWSE_NONE;
         static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
+        static final boolean PREF_VIEWER_ZOOM_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
         static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
