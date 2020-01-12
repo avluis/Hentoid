@@ -36,7 +36,7 @@
     <string name="menu_redownload">Redownload from scratch</string>
     <string name="menu_share">Share</string>
     <string name="menu_archive">Archive</string>
-    <string name="search_hint">Search title</string>
+    <string name="search_hint">Search title, tag or code</string>
     <string name="send_to">Share with:</string>
     <string name="open_settings">Open settings</string>
 
