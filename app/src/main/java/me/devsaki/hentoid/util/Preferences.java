@@ -263,6 +263,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_OPEN_GALLERY, Default.PREF_VIEWER_OPEN_GALLERY);
     }
 
+    public static int getViewerReadThreshold() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS, Integer.toString(Default.PREF_VIEWER_READ_THRESHOLD)) + "");
+    }
+
     public static int getLastKnownAppVersionCode() {
         return Integer.parseInt(sharedPreferences.getString(Key.LAST_KNOWN_APP_VERSION_CODE, "0") + "");
     }
