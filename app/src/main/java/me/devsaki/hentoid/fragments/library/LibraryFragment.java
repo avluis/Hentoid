@@ -485,10 +485,14 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * Callback for the "redownload from scratch" action button
      */
     private void redownloadSelectedItems() {
-        List<Content> selectedItems = getAdapter().getSelectedItems();
-        for (Content c : selectedItems)
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        List<Content> contents = new ArrayList<>();
+        for (ContentItem ci : selectedItems) {
+            Content c = ci.getContent();
             c.setStatus(StatusContent.ONLINE); // Mark the book for a redownload
-        downloadContent(selectedItems);
+            contents.add(c);
+        }
+        downloadContent(contents);
     }
 
     /**
