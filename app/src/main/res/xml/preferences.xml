@@ -232,31 +232,58 @@
             android:key="viewer_controls"
             android:title="@string/pref_viewer_controls"
             app:iconSpaceReserved="false">
-            <ListPreference
-                android:key="pref_viewer_browse_mode"
-                android:entries="@array/pref_viewer_browse_mode_entries"
-                android:entryValues="@array/pref_viewer_browse_mode_values"
-                android:defaultValue="@string/pref_viewer_browse_mode_default"
+            <PreferenceCategory
                 android:title="@string/pref_viewer_browse_mode"
-                android:summary="@string/pref_generic_summary"
-                app:iconSpaceReserved="false" />
-            <MultiSelectListPreference
-                android:key="pref_viewer_page_turn"
+                app:iconSpaceReserved="false">
+                <ListPreference
+                    android:defaultValue="@string/pref_viewer_browse_mode_default"
+                    android:entries="@array/pref_viewer_browse_mode_entries"
+                    android:entryValues="@array/pref_viewer_browse_mode_values"
+                    android:key="pref_viewer_browse_mode"
+                    android:summary="@string/pref_generic_summary"
+                    android:title="@string/pref_viewer_browse_mode"
+                    app:iconSpaceReserved="false" />
+            </PreferenceCategory>
+            <PreferenceCategory
                 android:title="@string/pref_viewer_page_turn"
-                android:entries="@array/pref_viewer_page_turn_entries"
-                android:entryValues="@array/pref_viewer_page_turn_values"
-                android:defaultValue="@array/pref_viewer_page_turn_default_values"
-                app:iconSpaceReserved="false" />
+                app:iconSpaceReserved="false">
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_page_turn_swipe_default"
+                    android:key="pref_viewer_page_turn_swipe"
+                    android:title="@string/pref_viewer_page_turn_swipe"
+                    app:iconSpaceReserved="false" />
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_page_turn_tap_default"
+                    android:key="pref_viewer_page_turn_tap"
+                    android:title="@string/pref_viewer_page_turn_tap"
+                    app:iconSpaceReserved="false" />
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_page_turn_volume_default"
+                    android:key="pref_viewer_page_turn_volume"
+                    android:title="@string/pref_viewer_page_turn_volume"
+                    app:iconSpaceReserved="false" />
+            </PreferenceCategory>
             <CheckBoxPreference
-                android:key="pref_viewer_swipe_to_fling"
                 android:defaultValue="@bool/pref_viewer_swipe_to_fling_default"
+                android:dependency="pref_viewer_page_turn_swipe"
+                android:key="pref_viewer_swipe_to_fling"
                 android:title="@string/pref_viewer_swipe_to_fling"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
-                android:key="pref_viewer_zoom_holding"
-                android:defaultValue="@bool/pref_viewer_zoom_holding_default"
-                android:title="@string/pref_viewer_zoom_holding"
+                android:defaultValue="@bool/pref_viewer_invert_volume_default"
+                android:dependency="pref_viewer_page_turn_volume"
+                android:key="pref_viewer_invert_volume_rocker"
+                android:title="@string/pref_viewer_invert_volume"
                 app:iconSpaceReserved="false" />
+            <PreferenceCategory
+                android:title="@string/pref_viewer_zoom"
+                app:iconSpaceReserved="false">
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_zoom_holding_default"
+                    android:key="pref_viewer_zoom_holding"
+                    android:title="@string/pref_viewer_zoom_holding"
+                    app:iconSpaceReserved="false" />
+            </PreferenceCategory>
         </PreferenceScreen>
 
         <PreferenceScreen
@@ -264,32 +291,32 @@
             android:title="@string/pref_viewer_visuals"
             app:iconSpaceReserved="false">
             <CheckBoxPreference
-                android:key="pref_viewer_keep_screen_on"
                 android:defaultValue="@bool/pref_viewer_keep_screen_on_default"
+                android:key="pref_viewer_keep_screen_on"
                 android:title="@string/pref_viewer_keep_screen_on"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
-                android:key="pref_viewer_display_pagenum"
                 android:defaultValue="@bool/pref_viewer_display_pagenum_default"
+                android:key="pref_viewer_display_pagenum"
                 android:title="@string/pref_viewer_display_pagenum"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
-                android:key="pref_viewer_tap_transitions"
                 android:defaultValue="@bool/pref_viewer_tap_transitions_default"
+                android:key="pref_viewer_tap_transitions"
                 android:title="@string/pref_viewer_tap_transitions"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
-                android:key="pref_viewer_zoom_transitions"
                 android:defaultValue="@bool/pref_viewer_zoom_transitions_default"
+                android:key="pref_viewer_zoom_transitions"
                 android:title="@string/pref_viewer_zoom_transitions"
                 app:iconSpaceReserved="false" />
             <ListPreference
-                android:key="pref_viewer_separating_bars"
+                android:defaultValue="@string/pref_viewer_separating_bars_default"
                 android:entries="@array/pref_viewer_separating_bars_entries"
                 android:entryValues="@array/pref_viewer_separating_bars_values"
-                android:defaultValue="@string/pref_viewer_separating_bars_default"
-                android:title="@string/pref_viewer_separating_bars"
+                android:key="pref_viewer_separating_bars"
                 android:summary="@string/pref_generic_summary"
+                android:title="@string/pref_viewer_separating_bars"
                 app:iconSpaceReserved="false" />
         </PreferenceScreen>
 
@@ -298,30 +325,30 @@
             android:title="@string/pref_viewer_navigation"
             app:iconSpaceReserved="false">
             <CheckBoxPreference
-                android:key="pref_viewer_resume_last_left"
                 android:defaultValue="@bool/pref_viewer_zoom_transitions_default"
+                android:key="pref_viewer_resume_last_left"
                 android:title="@string/pref_viewer_resume_last_left"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
-                android:key="pref_viewer_open_gallery"
                 android:defaultValue="@bool/pref_viewer_open_gallery_default"
+                android:key="pref_viewer_open_gallery"
                 android:title="@string/pref_viewer_open_gallery"
                 app:iconSpaceReserved="false" />
             <ListPreference
-                android:key="pref_viewer_read_threshold"
+                android:defaultValue="@string/pref_viewer_read_threshold_default"
                 android:entries="@array/pref_viewer_read_threshold_entries"
                 android:entryValues="@array/pref_viewer_read_threshold_values"
-                android:defaultValue="@string/pref_viewer_read_threshold_default"
-                android:title="@string/pref_viewer_read_threshold"
+                android:key="pref_viewer_read_threshold"
                 android:summary="@string/pref_generic_summary"
+                android:title="@string/pref_viewer_read_threshold"
                 app:iconSpaceReserved="false" />
             <ListPreference
-                android:key="pref_viewer_slideshow_delay"
+                android:defaultValue="@string/pref_viewer_slideshow_delay_default"
                 android:entries="@array/pref_viewer_slideshow_delay_entries"
                 android:entryValues="@array/pref_viewer_slideshow_delay_values"
-                android:defaultValue="@string/pref_viewer_slideshow_delay_default"
-                android:title="@string/pref_viewer_slideshow_delay"
+                android:key="pref_viewer_slideshow_delay"
                 android:summary="@string/pref_generic_summary"
+                android:title="@string/pref_viewer_slideshow_delay"
                 app:iconSpaceReserved="false" />
         </PreferenceScreen>
 

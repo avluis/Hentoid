@@ -125,22 +125,6 @@
         <item>2</item>
     </string-array>
 
-    <string-array name="pref_viewer_page_turn_entries">
-        <item>Swipe screen</item>
-        <item>Tap screen</item>
-        <item>Volume button</item>
-    </string-array>
-    <string-array name="pref_viewer_page_turn_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string-array name="pref_viewer_page_turn_default_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
     <string-array name="pref_viewer_separating_bars_entries">
         <item>Off (default)</item>
         <item>Small</item>

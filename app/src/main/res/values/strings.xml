@@ -249,7 +249,6 @@
     <string name="viewer_favourite_off">Mark page as favourite</string>
     <string name="viewer_favourite_on">Unmark page as favourite</string>
     <string name="pref_viewer_image_display">Image display mode</string>
-    <string name="pref_viewer_invert_volume">Invert volume buttons</string>
     <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
     <string name="gallery_menu_favourite">Toggle favourite filter</string>
 

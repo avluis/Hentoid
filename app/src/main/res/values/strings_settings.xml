@@ -111,8 +111,20 @@
     <string name="pref_viewer_browse_mode">Browse mode</string>
     <string name="pref_viewer_browse_mode_default" translatable="false">0</string>
     <string name="pref_viewer_page_turn">Page turn control (WIP)</string>
+
+    <string name="pref_viewer_page_turn_swipe">Swipe</string>
+    <bool name="pref_viewer_page_turn_swipe_default" translatable="false">true</bool>
+    <string name="pref_viewer_page_turn_tap">Border tap</string>
+    <bool name="pref_viewer_page_turn_tap_default" translatable="false">true</bool>
+    <string name="pref_viewer_page_turn_volume">Volume button</string>
+    <bool name="pref_viewer_page_turn_volume_default" translatable="false">true</bool>
+
     <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
     <bool name="pref_viewer_swipe_to_fling_default" translatable="false">false</bool>
+    <string name="pref_viewer_invert_volume">Invert volume buttons</string>
+    <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
+
+    <string name="pref_viewer_zoom">Zoom</string>
     <string name="pref_viewer_zoom_holding">Temp zoom while holding (WIP)</string>
     <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
 

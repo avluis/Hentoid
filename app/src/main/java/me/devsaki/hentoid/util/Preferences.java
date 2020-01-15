@@ -366,7 +366,9 @@ public final class Preferences {
         static final String PREF_VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
-        public static final String PREF_VIEWER_PAGE_TURN = "pref_viewer_page_turn";
+        public static final String PREF_VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
+        public static final String PREF_VIEWER_PAGE_TURN_TAP = "pref_viewer_page_turn_tap";
+        public static final String PREF_VIEWER_PAGE_TURN_VOLUME = "pref_viewer_page_turn_volume";
         public static final String PREF_VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars";
         public static final String PREF_VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
         public static final String PREF_VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
@@ -415,9 +417,11 @@ public final class Preferences {
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final boolean PREF_VIEWER_ZOOM_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
+        static final boolean PREF_VIEWER_PAGE_TURN_SWIPE = true;
+        static final boolean PREF_VIEWER_PAGE_TURN_TAP = true;
+        static final boolean PREF_VIEWER_PAGE_TURN_VOLUME = true;
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
         static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
-        static final CharSequence[] PREF_VIEWER_PAGE_TURN = new String[]{Integer.toString(Constant.PREF_VIEWER_PAGE_TURN_SWIPE), Integer.toString(Constant.PREF_VIEWER_PAGE_TURN_TAP), Integer.toString(Constant.PREF_VIEWER_PAGE_TURN_VOLUME)};
         static final int PREF_VIEWER_SEPARATING_BARS = Constant.PREF_VIEWER_SEPARATING_BARS_OFF;
         static final int PREF_VIEWER_READ_THRESHOLD = Constant.PREF_VIEWER_READ_THRESHOLD_1;
         static final int PREF_VIEWER_SLIDESHOW_DELAY = Constant.PREF_VIEWER_SLIDESHOW_DELAY_2;
@@ -471,9 +475,6 @@ public final class Preferences {
         public static final int PREF_VIEWER_DIRECTION_RTL = 1;
         public static final int PREF_VIEWER_ORIENTATION_HORIZONTAL = 0;
         public static final int PREF_VIEWER_ORIENTATION_VERTICAL = 1;
-        public static final int PREF_VIEWER_PAGE_TURN_SWIPE = 0;
-        public static final int PREF_VIEWER_PAGE_TURN_TAP = 1;
-        public static final int PREF_VIEWER_PAGE_TURN_VOLUME = 2;
         public static final int PREF_VIEWER_SEPARATING_BARS_OFF = 0;
         public static final int PREF_VIEWER_SEPARATING_BARS_SMALL = 1;
         public static final int PREF_VIEWER_SEPARATING_BARS_MEDIUM = 2;
