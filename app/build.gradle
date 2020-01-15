@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'io.fabric'
 apply plugin: 'org.sonarqube'
 
@@ -97,7 +98,7 @@ dependencies {
 
     // Image loader: github.com/bumptech/glide
     implementation 'com.github.bumptech.glide:glide:4.11.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+    kapt('com.github.bumptech.glide:compiler:4.11.0')
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.11.0'
 
     // Intro screens or slides: github.com/apl-devs/AppIntro
@@ -155,7 +156,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel:2.1.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.1.0'
-    annotationProcessor 'androidx.lifecycle:lifecycle-common-java8:2.1.0'
+    kapt('androidx.lifecycle:lifecycle-common-java8:2.1.0')
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
@@ -166,7 +167,6 @@ dependencies {
 
     // https://github.com/davemorrissey/subsampling-scale-image-view
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
-    //implementation 'com.github.hereisderek:subsampling-scale-image-view:v3.10.2' // Compatible with AndroidX; crashes at resetScaleAndCenter
 
     // https://github.com/davideas/FlexibleAdapter
     implementation 'eu.davidea:flexible-adapter:5.1.0'
