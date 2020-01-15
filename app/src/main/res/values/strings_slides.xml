@@ -5,7 +5,7 @@
     <string name="slide_01_text">Hentoid is a Doujinshi\n&amp; H-Manga archiving app.</string>
     <!-- Slide 02 -->
     <string name="slide_02_header">Permissions</string>
-    <string name="slide_02_text">Got Marshmallows?\nWe need to ask you for permission to device storage.</string>
+    <string name="slide_02_text">We need to ask for your permission to store files on your device.</string>
     <!-- Slide 03 -->
     <string name="slide_03_header">Importing</string>
     <string name="slide_03_text">Do you have an existing library?\nMake sure to set that as your storage folder.</string>

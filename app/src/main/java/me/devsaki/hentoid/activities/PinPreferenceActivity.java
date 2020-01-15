@@ -3,13 +3,11 @@ package me.devsaki.hentoid.activities;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import me.devsaki.hentoid.fragments.pin.ActivatedPinPreferenceFragment;
 import me.devsaki.hentoid.fragments.pin.DeactivatedPinPreferenceFragment;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 
 public class PinPreferenceActivity extends BaseActivity {
 

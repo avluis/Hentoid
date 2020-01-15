@@ -109,13 +109,44 @@
 
     <string name="pref_viewer_controls">Controls</string>
     <string name="pref_viewer_browse_mode">Browse mode</string>
-    <string name="pref_viewer_page_turn">Page turn control</string>
+    <string name="pref_viewer_browse_mode_default" translatable="false">0</string>
+    <string name="pref_viewer_page_turn">Page turn control (WIP)</string>
+
+    <string name="pref_viewer_page_turn_swipe">Swipe</string>
+    <bool name="pref_viewer_page_turn_swipe_default" translatable="false">true</bool>
+    <string name="pref_viewer_page_turn_tap">Border tap</string>
+    <bool name="pref_viewer_page_turn_tap_default" translatable="false">true</bool>
+    <string name="pref_viewer_page_turn_volume">Volume button</string>
+    <bool name="pref_viewer_page_turn_volume_default" translatable="false">true</bool>
+
     <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
-    <string name="pref_viewer_swipe_to_fling_default" translatable="false">false</string>
-    <string name="pref_viewer_zoom_holding">Temp zoom while holding</string>
-    <string name="pref_viewer_zoom_holding_default" translatable="false">false</string>
+    <bool name="pref_viewer_swipe_to_fling_default" translatable="false">false</bool>
+    <string name="pref_viewer_invert_volume">Invert volume buttons</string>
+    <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
+
+    <string name="pref_viewer_zoom">Zoom</string>
+    <string name="pref_viewer_zoom_holding">Temp zoom while holding (WIP)</string>
+    <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
 
     <string name="pref_viewer_visuals">Visuals</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
-    <string name="pref_viewer_keep_screen_on_default" translatable="false">true</string>
+    <bool name="pref_viewer_keep_screen_on_default" translatable="false">true</bool>
+    <string name="pref_viewer_display_pagenum">Always display page number</string>
+    <bool name="pref_viewer_display_pagenum_default" translatable="false">false</bool>
+    <string name="pref_viewer_tap_transitions">Enable page turn animation</string>
+    <bool name="pref_viewer_tap_transitions_default" translatable="false">true</bool>
+    <string name="pref_viewer_zoom_transitions">Enable zoom animation (WIP)</string>
+    <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
+    <string name="pref_viewer_separating_bars">Separating bars in vertical mode (WIP)</string>
+    <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
+
+    <string name="pref_viewer_navigation">Navigation &amp; behaviour</string>
+    <string name="pref_viewer_resume_last_left">Resume reading when reopening books (except last page)</string>
+    <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
+    <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
+    <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
+    <string name="pref_viewer_read_threshold">Mark book as read after N pages (WIP)</string>
+    <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
+    <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page (WIP)</string>
+    <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
 </resources>

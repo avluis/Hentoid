@@ -213,30 +213,12 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_RESUME_LAST_LEFT, Default.PREF_VIEWER_RESUME_LAST_LEFT);
     }
 
-    public static void setViewerResumeLastLeft(boolean resumeLastLeft) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_RESUME_LAST_LEFT, resumeLastLeft)
-                .apply();
-    }
-
     public static boolean isViewerKeepScreenOn() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_KEEP_SCREEN_ON, Default.PREF_VIEWER_KEEP_SCREEN_ON);
     }
 
-    public static void setViewerKeepScreenOn(boolean keepScreenOn) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_KEEP_SCREEN_ON, keepScreenOn)
-                .apply();
-    }
-
     public static int getViewerResizeMode() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)) + "");
-    }
-
-    public static void setViewerResizeMode(int resizeMode) {
-        sharedPreferences.edit()
-                .putString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(resizeMode))
-                .apply();
     }
 
     public static int getViewerBrowseMode() {
@@ -261,50 +243,28 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_DISPLAY_PAGENUM, Default.PREF_VIEWER_DISPLAY_PAGENUM);
     }
 
-    public static void setViewerDisplayPageNum(boolean displayPageNum) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_DISPLAY_PAGENUM, displayPageNum)
-                .apply();
-    }
-
     public static boolean isViewerTapTransitions() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_TAP_TRANSITIONS, Default.PREF_VIEWER_TAP_TRANSITIONS);
     }
 
-    public static void setViewerTapTransitions(boolean tapTransitions) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_TAP_TRANSITIONS, tapTransitions)
-                .apply();
+    public static boolean isViewerZoomTransitions() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_ZOOM_TRANSITIONS, Default.PREF_VIEWER_ZOOM_TRANSITIONS);
     }
 
     public static boolean isViewerSwipeToFling() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, Default.PREF_VIEWER_SWIPE_TO_FLING);
     }
 
-    public static void setViewerSwipeToFling(boolean swipeToFling) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, swipeToFling)
-                .apply();
-    }
-
     public static boolean isViewerInvertVolumeRocker() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, Default.PREF_VIEWER_INVERT_VOLUME_ROCKER);
-    }
-
-    public static void setViewerInvertVolumeRocker(boolean invertVolumeRocker) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, invertVolumeRocker)
-                .apply();
     }
 
     public static boolean isOpenBookInGalleryMode() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_OPEN_GALLERY, Default.PREF_VIEWER_OPEN_GALLERY);
     }
 
-    public static void setOpenBookInGalleryMode(boolean openBookInGalleryMode) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_OPEN_GALLERY, openBookInGalleryMode)
-                .apply();
+    public static int getViewerReadThreshold() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS, Integer.toString(Default.PREF_VIEWER_READ_THRESHOLD)) + "");
     }
 
     public static int getLastKnownAppVersionCode() {
@@ -403,9 +363,15 @@ public final class Preferences {
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         public static final String PREF_VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling";
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
+        static final String PREF_VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
-        public static final String PREF_VIEWER_PAGE_TURN = "pref_viewer_page_turn";
+        public static final String PREF_VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
+        public static final String PREF_VIEWER_PAGE_TURN_TAP = "pref_viewer_page_turn_tap";
+        public static final String PREF_VIEWER_PAGE_TURN_VOLUME = "pref_viewer_page_turn_volume";
+        public static final String PREF_VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars";
+        public static final String PREF_VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
+        public static final String PREF_VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
         public static final String PREF_COLOR_THEME = "pref_color_theme";
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
@@ -449,10 +415,16 @@ public final class Preferences {
         static final int PREF_VIEWER_BROWSE_MODE = Constant.PREF_VIEWER_BROWSE_NONE;
         static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
+        static final boolean PREF_VIEWER_ZOOM_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
+        static final boolean PREF_VIEWER_PAGE_TURN_SWIPE = true;
+        static final boolean PREF_VIEWER_PAGE_TURN_TAP = true;
+        static final boolean PREF_VIEWER_PAGE_TURN_VOLUME = true;
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
         static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
-        static final CharSequence[] PREF_VIEWER_PAGE_TURN = new String[]{Integer.toString(Constant.PREF_VIEWER_PAGE_TURN_SWIPE), Integer.toString(Constant.PREF_VIEWER_PAGE_TURN_TAP), Integer.toString(Constant.PREF_VIEWER_PAGE_TURN_VOLUME)};
+        static final int PREF_VIEWER_SEPARATING_BARS = Constant.PREF_VIEWER_SEPARATING_BARS_OFF;
+        static final int PREF_VIEWER_READ_THRESHOLD = Constant.PREF_VIEWER_READ_THRESHOLD_1;
+        static final int PREF_VIEWER_SLIDESHOW_DELAY = Constant.PREF_VIEWER_SLIDESHOW_DELAY_2;
         static final int PREF_COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
@@ -503,9 +475,18 @@ public final class Preferences {
         public static final int PREF_VIEWER_DIRECTION_RTL = 1;
         public static final int PREF_VIEWER_ORIENTATION_HORIZONTAL = 0;
         public static final int PREF_VIEWER_ORIENTATION_VERTICAL = 1;
-        public static final int PREF_VIEWER_PAGE_TURN_SWIPE = 0;
-        public static final int PREF_VIEWER_PAGE_TURN_TAP = 1;
-        public static final int PREF_VIEWER_PAGE_TURN_VOLUME = 2;
+        public static final int PREF_VIEWER_SEPARATING_BARS_OFF = 0;
+        public static final int PREF_VIEWER_SEPARATING_BARS_SMALL = 1;
+        public static final int PREF_VIEWER_SEPARATING_BARS_MEDIUM = 2;
+        public static final int PREF_VIEWER_SEPARATING_BARS_LARGE = 3;
+        public static final int PREF_VIEWER_READ_THRESHOLD_1 = 0;
+        public static final int PREF_VIEWER_READ_THRESHOLD_2 = 1;
+        public static final int PREF_VIEWER_READ_THRESHOLD_5 = 2;
+        public static final int PREF_VIEWER_READ_THRESHOLD_ALL = 3;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_2 = 0;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_4 = 1;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_8 = 2;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_16 = 3;
         public static final int COLOR_THEME_LIGHT = Theme.LIGHT.getId();
         public static final int COLOR_THEME_DARK = Theme.DARK.getId();
         public static final int COLOR_THEME_BLACK = Theme.BLACK.getId();

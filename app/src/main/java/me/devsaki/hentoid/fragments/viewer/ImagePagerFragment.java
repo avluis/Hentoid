@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.viewer;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -30,6 +31,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.PrefsActivity;
+import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -151,7 +154,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (controlsOverlay!= null) outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
+        if (controlsOverlay != null)
+            outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         viewModel.setStartingIndex(imageIndex); // Memorize the current page
         viewModel.onSaveState(outState);
@@ -302,7 +306,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Show the viewer settings dialog
      */
     private void onSettingsClick() {
-        ViewerPrefsDialogFragment.invoke(this);
+        Intent intent = new Intent(requireActivity(), PrefsActivity.class);
+
+        PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
+        builder.setIsViewerPrefs(true);
+        intent.putExtras(builder.getBundle());
+
+        requireContext().startActivity(intent);
     }
 
     /**

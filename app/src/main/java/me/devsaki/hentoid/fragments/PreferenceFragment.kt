@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceScreen
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PinPreferenceActivity
@@ -19,21 +18,32 @@ import me.devsaki.hentoid.util.*
 
 class PreferenceFragment : PreferenceFragmentCompat() {
 
+    companion object {
+        private const val KEY_ROOT = "root"
+
+        fun newInstance(rootKey: String?): PreferenceFragment {
+            val fragment = PreferenceFragment()
+            if (rootKey != null) {
+                val args = Bundle()
+                args.putCharSequence(KEY_ROOT, rootKey)
+                fragment.arguments = args
+            }
+            return fragment
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val arguments = arguments
+        if (arguments != null && arguments.containsKey(KEY_ROOT)) {
+            val root = arguments.getCharSequence(KEY_ROOT)
+            if (root != null) preferenceScreen = findPreference(root)
+        }
+    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        if (null == rootKey) { // Display general menu and root the viewer menu under the "viewer" group
-            setPreferencesFromResource(R.xml.preferences, rootKey)
-
-            val viewerGroup = preferenceScreen.findPreference("viewer") as PreferenceGroup?
-            addPreferencesFromResource(R.xml.preferences_viewer, viewerGroup)
-        } else if (rootKey.startsWith("viewer")) { // Display viewer group submenu
-            if (rootKey.equals("viewer"))
-                addPreferencesFromResource(R.xml.preferences_viewer) // Root of the viewer submenu
-            else
-                setPreferencesFromResource(R.xml.preferences_viewer, rootKey) // One of the screens of the viewer submenu
-        } else {
-            setPreferencesFromResource(R.xml.preferences, rootKey) // Display one of the submenus of the general pref screen
-        }
+        setPreferencesFromResource(R.xml.preferences, rootKey)
 
         findPreference<Preference>(Preferences.Key.PREF_COLOR_THEME)?.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { _, newValue ->
@@ -104,16 +114,5 @@ class PreferenceFragment : PreferenceFragmentCompat() {
     private fun onPrefColorThemeChanged(value: Any): Boolean {
         ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Integer.parseInt(value.toString())))
         return true
-    }
-
-    private fun addPreferencesFromResource(id: Int, newParent: PreferenceGroup?) {
-        val screen = preferenceScreen
-        val last = screen.preferenceCount
-        addPreferencesFromResource(id)
-        while (screen.preferenceCount > last) {
-            val p = screen.getPreference(last)
-            screen.removePreference(p) // decreases the preference count
-            newParent?.addPreference(p)
-        }
     }
 }

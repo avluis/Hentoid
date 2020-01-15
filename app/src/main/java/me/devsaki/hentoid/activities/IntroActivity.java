@@ -20,7 +20,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.fragments.intro.EndIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ImportIntroFragment;
 import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment;
-import me.devsaki.hentoid.fragments.intro.PreImportIntroFragment;
 import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment;
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment;
@@ -51,7 +50,6 @@ public class IntroActivity extends AppIntro2 {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addSlide(new PermissionIntroFragment());
         }
-        addSlide(new PreImportIntroFragment());
         addSlide(new ImportIntroFragment());
         addSlide(new ThemeIntroFragment());
         addSlide(new SourcesIntroFragment());
