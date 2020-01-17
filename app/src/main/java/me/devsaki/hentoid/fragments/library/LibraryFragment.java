@@ -84,7 +84,10 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent {
+public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent, PagedList.LoadStateListener {
+
+    private static final String KEY_LAST_LIST_POSITION = "last_list_position";
+
 
     // ======== COMMUNICATION
     private OnBackPressedCallback callback;
@@ -144,6 +147,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private boolean newSearch = false;
     // Collection of books according to current filters
     private PagedList<Content> library;
+    // Position of top item to memorize or restore
+    private int topItemPosition = -1;
 
     // === SEARCH PARAMETERS
     // Current text search query
@@ -392,7 +397,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         } else { // Update the order menu icon and run a new search
             orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
             Preferences.setContentSortOrder(contentSortOrder);
-            viewModel.performSearch();
+            viewModel.updateOrder();
         }
 
         return true;
@@ -581,17 +586,32 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         return (!query.isEmpty() || !metadata.isEmpty());
     }
 
-
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (viewModel != null) viewModel.onSaveState(outState);
+        if (fastAdapter != null) fastAdapter.saveInstanceState(outState);
+        // Remember current position in the sorted list
+        LinearLayoutManager mgr = (LinearLayoutManager) recyclerView.getLayoutManager();
+        if (mgr != null) {
+            int targetPosition = Math.max(mgr.findFirstVisibleItemPosition(), mgr.findFirstCompletelyVisibleItemPosition());
+            if (0 == targetPosition && topItemPosition > -1) targetPosition = topItemPosition;
+            Timber.i(">> memorize position %s", targetPosition);
+            outState.putInt(KEY_LAST_LIST_POSITION, targetPosition);
+        }
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
+
+        topItemPosition = 0;
+        if (null == savedInstanceState) return;
+
         if (viewModel != null) viewModel.onRestoreState(savedInstanceState);
+        if (fastAdapter != null) fastAdapter.withSavedInstanceState(savedInstanceState);
+        // Mark last position in the list to be the one it will come back to
+        topItemPosition = savedInstanceState.getInt(KEY_LAST_LIST_POSITION, 0);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -755,7 +775,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
 
         // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
+        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i, p));
 
         // Favourite button click listener
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
@@ -916,7 +936,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param result Current library according to active filters
      */
     private void onLibraryChanged(PagedList<Content> result) {
-        Timber.d(">>Library changed ! Size=%s", result.size());
+        Timber.i(">>Library changed ! Size=%s", result.size());
 
         // Don't passive-refresh the list if the order is random
         if (!newSearch && Preferences.Constant.ORDER_CONTENT_RANDOM == Preferences.getContentSortOrder())
@@ -952,20 +972,22 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             SearchBookIdDialogFragment.invoke(requireFragmentManager(), query, siteCodes);
         }
 
+        // If the update is the result of a new search, get back on top of the list
+        if (newSearch) topItemPosition = 0;
+
         // Update displayed books
-        if (Preferences.getEndlessScroll()) pagedItemAdapter.submitList(result);
-        else {
+        if (Preferences.getEndlessScroll()) {
+            result.removeWeakLoadStateListener(this);
+            result.addWeakLoadStateListener(this);
+
+            pagedItemAdapter.submitList(result);
+        } else {
             if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
             minLoadedBound = Integer.MAX_VALUE;
             maxLoadedBound = Integer.MIN_VALUE;
             loadBookshelf(result);
         }
-
-        // If the update is the result of a new search, let the items be sorted
-        // and get back to the top of the list
-        if (newSearch)
-            new Handler().postDelayed(() -> recyclerView.scrollToPosition(0), 300); // TODO use a loading callback instead
 
         newSearch = false;
         library = result;
@@ -1000,11 +1022,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param item ContentItem that has been clicked on
      */
-    private boolean onBookClick(ContentItem item) {
+    private boolean onBookClick(ContentItem item, int position) {
         if (0 == selectExtension.getSelectedItems().size()) {
-            if (!invalidateNextBookClick)
+            if (!invalidateNextBookClick) {
+                topItemPosition = position;
                 ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
-            else invalidateNextBookClick = false;
+            } else invalidateNextBookClick = false;
 
             return true;
         } else {
@@ -1091,5 +1114,23 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private void viewQueue() {
         Intent intent = new Intent(requireContext(), QueueActivity.class);
         requireContext().startActivity(intent);
+    }
+
+    @Override
+    public void onLoadStateChanged(@NonNull PagedList.LoadType type, @NonNull PagedList.LoadState state, @Nullable Throwable error) {
+        Timber.i(">>> loadState %s %s", type, state);
+
+        if (type == PagedList.LoadType.END && state == PagedList.LoadState.IDLE && topItemPosition > -1) {
+            LinearLayoutManager mgr = (LinearLayoutManager) recyclerView.getLayoutManager();
+            if (mgr != null) {
+                // Wait a little until sorting has been performed by AsyncPagedListDiffer
+                // TODO - is there a way to avoid doing that and only scroll when the differ's job is completely done ?
+                new Handler().postDelayed(() -> {
+                    Timber.i(">> scrolling to last memorized position : %s", topItemPosition);
+                    mgr.scrollToPositionWithOffset(topItemPosition, 0);
+                    topItemPosition = -1;
+                }, 150);
+            }
+        }
     }
 }

@@ -115,8 +115,8 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Perform a new library search
      */
-    public void performSearch() {
-        newSearch.setValue(true);
+    private void performSearch() {
+//        newSearch.setValue(true);
         Consumer<Content> frontConsumer = null;
         Consumer<Content> endConsumer = null;
 
@@ -142,6 +142,7 @@ public class LibraryViewModel extends AndroidViewModel {
     public void searchUniversal(@NonNull String query) {
         searchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
         searchManager.setQuery(query);
+        newSearch.setValue(true);
         performSearch();
     }
 
@@ -154,6 +155,7 @@ public class LibraryViewModel extends AndroidViewModel {
     public void search(@NonNull String query, @NonNull List<Attribute> metadata) {
         searchManager.setQuery(query);
         searchManager.setTags(metadata);
+        newSearch.setValue(true);
         performSearch();
     }
 
@@ -162,6 +164,15 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void toggleFavouriteFilter() {
         searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
+        newSearch.setValue(true);
+        performSearch();
+    }
+
+    /**
+     * Update the order of the list
+     */
+    public void updateOrder() {
+        newSearch.setValue(true);
         performSearch();
     }
 
