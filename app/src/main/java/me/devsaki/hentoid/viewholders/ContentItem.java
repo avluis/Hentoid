@@ -55,7 +55,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         content = null;
     }
 
-    // Contructor for library item
+    // Constructor for library item
     public ContentItem(@NonNull Content content) {
         this.content = content;
         this.isQueued = false;
@@ -64,7 +64,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         isEmpty = false;
     }
 
-    // Contructor for queued item
+    // Constructor for queued item
     public ContentItem(@NonNull Content content, ItemAdapter adapter) {
         this.content = content;
         this.isQueued = true;
@@ -362,10 +362,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
         public View getErrorButton() {
             return ivError;
-        }
-
-        public View getProgressBar() {
-            return pbDownload;
         }
 
         public View getTopButton() {
