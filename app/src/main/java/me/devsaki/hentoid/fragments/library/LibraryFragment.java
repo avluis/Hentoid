@@ -23,7 +23,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
-import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.paging.PagedList;
@@ -45,6 +44,7 @@ import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -84,7 +84,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent, PagedList.LoadStateListener {
+public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -110,6 +110,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private TextView searchClearButton;
     // Main view where books are displayed
     private RecyclerView recyclerView;
+    // LayoutManager of the recyclerView
+    private LinearLayoutManager llm;
 
     // === TOOLBAR
     private Toolbar toolbar;
@@ -161,6 +163,42 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private int minLoadedBound;
     // Maximum bound of loaded data
     private int maxLoadedBound;
+
+
+    private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
+            return oldItem.equals(newItem)
+                    && oldItem.getLastReadDate() == newItem.getLastReadDate()
+                    && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
+                    && oldItem.isFavourite() == newItem.isFavourite();
+        }
+
+        @Nullable
+        @Override
+        public Object getChangePayload(@NonNull Content oldItem, @NonNull Content newItem) {
+            ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
+
+            if (oldItem.isFavourite() != newItem.isFavourite()) {
+                diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+            }
+            if (oldItem.isBeingFavourited() != newItem.isBeingFavourited()) {
+                diffBundleBuilder.setIsBeingFavourited(newItem.isBeingFavourited());
+            }
+            if (oldItem.getReads() != newItem.getReads()) {
+                diffBundleBuilder.setReads(newItem.getReads());
+            }
+
+            if (diffBundleBuilder.isEmpty()) return null;
+            else return diffBundleBuilder.getBundle();
+        }
+
+    }).build();
 
 
     /**
@@ -231,10 +269,16 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         return rootView;
     }
 
+    /*
+        @Override
+        public void onStart() {
+            super.onStart();
+            observeAll();
+        }
+    */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         viewModel.getNewSearch().observe(this, this::onNewSearch);
         viewModel.getLibraryPaged().observe(this, this::onLibraryChanged);
         viewModel.getTotalContent().observe(this, this::onTotalContentChanged);
@@ -247,8 +291,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private void initUI(@NonNull View rootView) {
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
+
+        // Search bar
         advancedSearchBar = requireViewById(rootView, R.id.advanced_search_group);
-        // TextView used as advanced search button
+
         TextView advancedSearchButton = requireViewById(rootView, R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
@@ -261,7 +307,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             viewModel.searchUniversal("");
         });
 
+        // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
+        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
+
         // Disable blink animation on card change (bind holder)
         RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator)
@@ -591,14 +640,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         super.onSaveInstanceState(outState);
         if (viewModel != null) viewModel.onSaveState(outState);
         if (fastAdapter != null) fastAdapter.saveInstanceState(outState);
+
         // Remember current position in the sorted list
-        LinearLayoutManager mgr = (LinearLayoutManager) recyclerView.getLayoutManager();
-        if (mgr != null) {
-            int targetPosition = Math.max(mgr.findFirstVisibleItemPosition(), mgr.findFirstCompletelyVisibleItemPosition());
-            if (0 == targetPosition && topItemPosition > -1) targetPosition = topItemPosition;
-            Timber.i(">> memorize position %s", targetPosition);
-            outState.putInt(KEY_LAST_LIST_POSITION, targetPosition);
-        }
+        int currentPosition = getTopItemPosition();
+        if (currentPosition > 0 || -1 == topItemPosition) topItemPosition = currentPosition;
+
+        Timber.i(">> memorize position %s", topItemPosition);
+        outState.putInt(KEY_LAST_LIST_POSITION, topItemPosition);
     }
 
     @Override
@@ -612,6 +660,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (fastAdapter != null) fastAdapter.withSavedInstanceState(savedInstanceState);
         // Mark last position in the list to be the one it will come back to
         topItemPosition = savedInstanceState.getInt(KEY_LAST_LIST_POSITION, 0);
+        Timber.i(">> position loaded from memory %s", topItemPosition);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -668,8 +717,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             Context c = getContext();
             if (c != null) ToastUtil.toast(getContext(), R.string.press_back_again);
 
-            if (recyclerView.getLayoutManager() != null)
-                ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(0, 0);
+            llm.scrollToPositionWithOffset(0, 0);
         }
     }
 
@@ -716,46 +764,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isEndless) { // Endless mode
             pager.hide();
 
-            AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
-                @Override
-                public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-                    return oldItem.getId() == newItem.getId();
-                }
-
-                @Override
-                public boolean areContentsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-                    return oldItem.equals(newItem)
-                            && oldItem.getLastReadDate() == newItem.getLastReadDate()
-                            && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
-                            && oldItem.isFavourite() == newItem.isFavourite();
-                }
-
-                @Nullable
-                @Override
-                public Object getChangePayload(@NonNull Content oldItem, @NonNull Content newItem) {
-                    ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
-
-                    if (oldItem.isFavourite() != newItem.isFavourite()) {
-                        diffBundleBuilder.setIsFavourite(newItem.isFavourite());
-                    }
-                    if (oldItem.isBeingFavourited() != newItem.isBeingFavourited()) {
-                        diffBundleBuilder.setIsBeingFavourited(newItem.isBeingFavourited());
-                    }
-                    if (oldItem.getReads() != newItem.getReads()) {
-                        diffBundleBuilder.setReads(newItem.getReads());
-                    }
-
-                    if (diffBundleBuilder.isEmpty()) return null;
-                    else return diffBundleBuilder.getBundle();
-                }
-
-            }).build();
-
             pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(), ContentItem::new);
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
             fastAdapter.registerTypeInstance(new ContentItem());
-            if (library != null) pagedItemAdapter.submitList(library);
+            if (library != null) pagedItemAdapter.submitList(library, this::differEndCallback);
 
             itemAdapter = null;
         } else { // Paged mode
@@ -840,10 +853,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         recyclerView.setAdapter(fastAdapter);
     }
 
-    private Pair<Integer, Integer> getPagerBounds(int pageNumber, int librarySize) {
+    private ImmutablePair<Integer, Integer> getPagerBounds(int pageNumber, int librarySize) {
         int minIndex = (pageNumber - 1) * Preferences.getContentPageQuantity();
         int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), librarySize);
-        return new Pair<>(minIndex, maxIndex);
+        return new ImmutablePair<>(minIndex, maxIndex);
     }
 
     /**
@@ -858,9 +871,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             itemAdapter.set(Collections.emptyList());
             fastAdapter.notifyDataSetChanged();
         } else {
-            Pair<Integer, Integer> bounds = getPagerBounds(pager.getCurrentPageNumber(), iLibrary.size());
-            int minIndex = bounds.first; // TODO use non nullable pair (see Apache Commons ?)
-            int maxIndex = bounds.second;
+            ImmutablePair<Integer, Integer> bounds = getPagerBounds(pager.getCurrentPageNumber(), iLibrary.size());
+            int minIndex = bounds.getLeft();
+            int maxIndex = bounds.getRight();
 
             if (minIndex >= maxIndex) { // We just deleted the last item of the last page => Go back one page
                 pager.setCurrentPage(pager.getCurrentPageNumber() - 1);
@@ -868,6 +881,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return;
             }
 
+            // TODO explore using PagedList.Callback instead
             /* We're using PagedList v2.1.1 against the use case it has been designed for (endless lists loaded linearly).
             Doing it right requires the following algorithm :
 
@@ -909,9 +923,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private void populateBookshelf(PagedList<Content> iLibrary) {
         if (Preferences.getEndlessScroll()) return;
 
-        Pair<Integer, Integer> bounds = getPagerBounds(pager.getCurrentPageNumber(), iLibrary.size());
-        int minIndex = bounds.first;
-        int maxIndex = bounds.second;
+        ImmutablePair<Integer, Integer> bounds = getPagerBounds(pager.getCurrentPageNumber(), iLibrary.size());
+        int minIndex = bounds.getLeft();
+        int maxIndex = bounds.getRight();
 
         //noinspection Convert2MethodRef need API24
         List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
@@ -973,14 +987,14 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
 
         // If the update is the result of a new search, get back on top of the list
-        if (newSearch) topItemPosition = 0;
+        if (newSearch) {
+            Timber.i(">> new search; position reset to 0");
+            topItemPosition = 0;
+        }
 
         // Update displayed books
         if (Preferences.getEndlessScroll()) {
-            result.removeWeakLoadStateListener(this);
-            result.addWeakLoadStateListener(this);
-
-            pagedItemAdapter.submitList(result);
+            pagedItemAdapter.submitList(result, this::differEndCallback);
         } else {
             if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
@@ -1026,6 +1040,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (0 == selectExtension.getSelectedItems().size()) {
             if (!invalidateNextBookClick) {
                 topItemPosition = position;
+//                unObserveAll();
                 ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
             } else invalidateNextBookClick = false;
 
@@ -1116,21 +1131,21 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         requireContext().startActivity(intent);
     }
 
-    @Override
-    public void onLoadStateChanged(@NonNull PagedList.LoadType type, @NonNull PagedList.LoadState state, @Nullable Throwable error) {
-        Timber.i(">>> loadState %s %s", type, state);
-
-        if (type == PagedList.LoadType.END && state == PagedList.LoadState.IDLE && topItemPosition > -1) {
-            LinearLayoutManager mgr = (LinearLayoutManager) recyclerView.getLayoutManager();
-            if (mgr != null) {
-                // Wait a little until sorting has been performed by AsyncPagedListDiffer
-                // TODO - is there a way to avoid doing that and only scroll when the differ's job is completely done ?
-                new Handler().postDelayed(() -> {
-                    Timber.i(">> scrolling to last memorized position : %s", topItemPosition);
-                    mgr.scrollToPositionWithOffset(topItemPosition, 0);
-                    topItemPosition = -1;
-                }, 150);
+    private void differEndCallback() {
+        Timber.i(">> differEnd::topItem = %s", topItemPosition);
+        if (topItemPosition > -1) {
+            int currentPosition = getTopItemPosition();
+            Timber.i(">> differEnd::current vs. memorized %s / %s", currentPosition, topItemPosition);
+            if (currentPosition != topItemPosition) {
+                Timber.i(">> differEnd::scrolling to last memorized position : %s", topItemPosition);
+//                llm.scrollToPositionWithOffset(topItemPosition, 0);
+                topItemPosition = -1;
             }
         }
+    }
+
+    private int getTopItemPosition() {
+        Timber.i(">> [gettopitem %s %s]", llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
+        return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
     }
 }
