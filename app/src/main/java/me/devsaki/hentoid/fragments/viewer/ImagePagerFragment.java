@@ -70,6 +70,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private int maxPosition; // For navigation
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
+    private boolean savedPositionWithBack = false;
+
     // Controls
     private TextView pageNumberOverlay;
     private ZoomableRecyclerView recyclerView;
@@ -183,10 +185,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         updateFavouriteDisplay();
     }
 
+    // Make sure position is saved when app is closed by the user
     @Override
     public void onStop() {
         super.onStop();
-        viewModel.savePosition(imageIndex);
+        if (!savedPositionWithBack) viewModel.savePosition(imageIndex);
     }
 
 
@@ -299,6 +302,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      */
     private void onBackClick() {
         viewModel.savePosition(imageIndex);
+        savedPositionWithBack = true;
         requireActivity().onBackPressed();
     }
 
