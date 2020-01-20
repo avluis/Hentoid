@@ -175,12 +175,12 @@ dependencies {
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
     // https://github.com/mikepenz/FastAdapter
-    implementation "com.mikepenz:fastadapter:4.1.2" // needs the `expandable`, `drag` and `scroll` extension.
-    implementation "com.mikepenz:fastadapter-extensions-drag:4.1.2" // drag support
-    implementation "com.mikepenz:fastadapter-extensions-expandable:4.1.2"
-    implementation "com.mikepenz:fastadapter-extensions-scroll:4.1.2" // scroll helpers
-    implementation "com.mikepenz:fastadapter-extensions-paged:4.1.2"
-    implementation "com.mikepenz:fastadapter-extensions-utils:4.1.2" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter:5.0.0-a03" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter-extensions-drag:5.0.0-a03" // drag support
+    implementation "com.mikepenz:fastadapter-extensions-expandable:5.0.0-a03"
+    implementation "com.mikepenz:fastadapter-extensions-scroll:5.0.0-a03" // scroll helpers
+    implementation "com.mikepenz:fastadapter-extensions-paged:5.0.0-a03"
+    implementation "com.mikepenz:fastadapter-extensions-utils:5.0.0-a03" // needs the `expandable`, `drag` and `scroll` extension.
     implementation "com.mikepenz:materialize:1.2.1"
 
     // ProgressDialog alternative - https://github.com/Livin21/MissMe

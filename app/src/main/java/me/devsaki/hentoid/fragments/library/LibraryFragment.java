@@ -881,7 +881,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return;
             }
 
-            // TODO explore using PagedList.Callback instead
             /* We're using PagedList v2.1.1 against the use case it has been designed for (endless lists loaded linearly).
             Doing it right requires the following algorithm :
 
@@ -896,7 +895,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 NB : Case C implementation  _is_ quick and hacky (no discussion about that).
                 The alternative would be to implement a whole alternate data source for Hentoid paged mode, which is massively more complex
              */
-
             //noinspection Convert2MethodRef need API24
             long nbPlaceholders = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c == null).count();
             Timber.d(">> nb placeholders : %s", nbPlaceholders);
@@ -996,6 +994,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (Preferences.getEndlessScroll()) {
             pagedItemAdapter.submitList(result, this::differEndCallback);
         } else {
+
             if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
             minLoadedBound = Integer.MAX_VALUE;
@@ -1039,8 +1038,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private boolean onBookClick(ContentItem item, int position) {
         if (0 == selectExtension.getSelectedItems().size()) {
             if (!invalidateNextBookClick) {
-                topItemPosition = position;
-//                unObserveAll();
+                topItemPosition = position; // TODO - still useful ?
                 ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
             } else invalidateNextBookClick = false;
 
@@ -1138,7 +1136,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             Timber.i(">> differEnd::current vs. memorized %s / %s", currentPosition, topItemPosition);
             if (currentPosition != topItemPosition) {
                 Timber.i(">> differEnd::scrolling to last memorized position : %s", topItemPosition);
-//                llm.scrollToPositionWithOffset(topItemPosition, 0);
+//                llm.scrollToPositionWithOffset(topItemPosition, 0); // TODO - enable or delete the whole method
                 topItemPosition = -1;
             }
         }
