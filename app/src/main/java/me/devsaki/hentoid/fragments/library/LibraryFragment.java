@@ -149,7 +149,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private boolean newSearch = false;
     // Collection of books according to current filters
     private PagedList<Content> library;
-    // Position of top item to memorize or restore
+    // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
 
     // === SEARCH PARAMETERS
@@ -165,6 +165,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private int maxLoadedBound;
 
 
+    /**
+     * Diff calculation rules for list items
+     * <p>
+     * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
+     */
     private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
         @Override
         public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
@@ -269,13 +274,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         return rootView;
     }
 
-    /*
-        @Override
-        public void onStart() {
-            super.onStart();
-            observeAll();
-        }
-    */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -782,8 +780,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 pager.setPageCount((int) Math.ceil(library.size() * 1.0 / Preferences.getContentPageQuantity()));
                 loadBookshelf(library);
             }
-            viewModel.setLibraryEndLoadCallback(c -> populateBookshelf());
-            viewModel.setLibraryFrontLoadCallback(c -> populateBookshelf());
+            viewModel.setLibraryEndLoadCallback(c -> onBoundLoad());
+            viewModel.setLibraryFrontLoadCallback(c -> onBoundLoad());
 
             pagedItemAdapter = null;
         }
@@ -854,8 +852,26 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         recyclerView.setAdapter(fastAdapter);
     }
 
-    private ImmutablePair<Integer, Integer> getPagerBounds(int pageNumber, int librarySize) {
-        int minIndex = (pageNumber - 1) * Preferences.getContentPageQuantity();
+    /**
+     * Callback when items are loaded (in replacement of placeholders)
+     * at the beginning or the end of the current PagedList
+     * <p>
+     * Used in paged mode only
+     */
+    private void onBoundLoad() {
+        populateBookshelf(library, pager.getCurrentPageNumber());
+    }
+
+    /**
+     * Returns the index bounds of the list to be displayed according to the given shelf number
+     * Used for paged mode only
+     *
+     * @param shelfNumber Number of the shelf to display
+     * @param librarySize Size of the library
+     * @return Min and max index of the books to display on the given page
+     */
+    private ImmutablePair<Integer, Integer> getShelfBound(int shelfNumber, int librarySize) {
+        int minIndex = (shelfNumber - 1) * Preferences.getContentPageQuantity();
         int maxIndex = Math.min(minIndex + Preferences.getContentPageQuantity(), librarySize);
         return new ImmutablePair<>(minIndex, maxIndex);
     }
@@ -872,7 +888,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             itemAdapter.set(Collections.emptyList());
             fastAdapter.notifyDataSetChanged();
         } else {
-            ImmutablePair<Integer, Integer> bounds = getPagerBounds(pager.getCurrentPageNumber(), iLibrary.size());
+            ImmutablePair<Integer, Integer> bounds = getShelfBound(pager.getCurrentPageNumber(), iLibrary.size());
             int minIndex = bounds.getLeft();
             int maxIndex = bounds.getRight();
 
@@ -901,12 +917,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             Timber.d(">> nb placeholders : %s", nbPlaceholders);
             Timber.d(">> min/max  minBound/maxBound : %s/%s  %s/%s", minIndex, maxIndex, minLoadedBound, maxLoadedBound);
 
-            if (0 == nbPlaceholders) populateBookshelf(iLibrary); // Case A
+            if (0 == nbPlaceholders)
+                populateBookshelf(iLibrary, pager.getCurrentPageNumber()); // Case A
             else if (minIndex < minLoadedBound || maxIndex > maxLoadedBound)
                 iLibrary.loadAround(minIndex); // Case B
             else { // Case C
                 iLibrary.loadAround(minIndex);
-                new Handler().postDelayed(() -> populateBookshelf(iLibrary), 150);
+                new Handler().postDelayed(() -> populateBookshelf(iLibrary, pager.getCurrentPageNumber()), 150);
             }
 
             minLoadedBound = Math.min(minLoadedBound, minIndex);
@@ -914,15 +931,19 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
     }
 
-    // TODO doc
-    private void populateBookshelf() {
-        populateBookshelf(library);
-    }
-
-    private void populateBookshelf(PagedList<Content> iLibrary) {
+    /**
+     * Displays the current "bookshelf" (section of the list corresponding to the selected page)
+     * A shelf contains as many books as the user has set in Preferences
+     * <p>
+     * Used in paged mode only
+     *
+     * @param iLibrary    Library to display books from
+     * @param shelfNumber Number of the shelf to display
+     */
+    private void populateBookshelf(PagedList<Content> iLibrary, int shelfNumber) {
         if (Preferences.getEndlessScroll()) return;
 
-        ImmutablePair<Integer, Integer> bounds = getPagerBounds(pager.getCurrentPageNumber(), iLibrary.size());
+        ImmutablePair<Integer, Integer> bounds = getShelfBound(shelfNumber, iLibrary.size());
         int minIndex = bounds.getLeft();
         int maxIndex = bounds.getRight();
 
@@ -1130,6 +1151,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         requireContext().startActivity(intent);
     }
 
+    /**
+     * Callback for the end of item diff calculations
+     * Activated when all displayed items are placed on their definitive position
+     */
     private void differEndCallback() {
         if (topItemPosition > -1) {
             int currentPosition = getTopItemPosition();
@@ -1139,6 +1164,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
     }
 
+    /**
+     * Calculate the position of the top visible item of the book list
+     *
+     * @return position of the top visible item of the book list
+     */
     private int getTopItemPosition() {
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
     }
