@@ -647,6 +647,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         Timber.i(">> memorize position %s", topItemPosition);
         outState.putInt(KEY_LAST_LIST_POSITION, topItemPosition);
+        topItemPosition = -1;
     }
 
     @Override
@@ -1038,7 +1039,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private boolean onBookClick(ContentItem item, int position) {
         if (0 == selectExtension.getSelectedItems().size()) {
             if (!invalidateNextBookClick) {
-                topItemPosition = position; // TODO - still useful ?
+                topItemPosition = position;
                 ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
             } else invalidateNextBookClick = false;
 
@@ -1130,20 +1131,15 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     private void differEndCallback() {
-        Timber.i(">> differEnd::topItem = %s", topItemPosition);
         if (topItemPosition > -1) {
             int currentPosition = getTopItemPosition();
-            Timber.i(">> differEnd::current vs. memorized %s / %s", currentPosition, topItemPosition);
-            if (currentPosition != topItemPosition) {
-                Timber.i(">> differEnd::scrolling to last memorized position : %s", topItemPosition);
-//                llm.scrollToPositionWithOffset(topItemPosition, 0); // TODO - enable or delete the whole method
-                topItemPosition = -1;
-            }
+            if (currentPosition != topItemPosition)
+                llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
+            topItemPosition = -1;
         }
     }
 
     private int getTopItemPosition() {
-        Timber.i(">> [gettopitem %s %s]", llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
     }
 }
