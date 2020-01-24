@@ -518,7 +518,7 @@ public class Content implements Serializable {
     }
 
     public long getLastReadDate() {
-        return (0 == lastReadDate) ? downloadDate : lastReadDate;
+        return lastReadDate;
     }
 
     public Content setLastReadDate(long lastReadDate) {
