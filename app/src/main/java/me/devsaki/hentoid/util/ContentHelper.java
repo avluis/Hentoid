@@ -89,7 +89,6 @@ public final class ContentHelper {
      */
     public static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
-        ToastUtil.toast("Opening: " + content.getTitle());
 
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
