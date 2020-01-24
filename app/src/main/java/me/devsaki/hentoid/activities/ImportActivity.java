@@ -128,10 +128,8 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         }
 
         EventBus.getDefault().register(this);
-
         prepImport(savedInstanceState);
     }
-
 
     public void customBackPress() {
         exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
@@ -164,7 +162,8 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     }
 
     private void checkForDefaultDirectory() {
-        if (PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
+        // Check if user can read and write folders before beginning
+        if (PermissionUtil.requestExternalStorageReadWritePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             Timber.d("Storage permission allowed!");
             String settingDir = Preferences.getRootFolderName();
             Timber.d(settingDir);
@@ -232,21 +231,24 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         super.onSaveInstanceState(outState);
     }
 
+    // Callback after user has granted I/O permissions
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (grantResults.length <= 0) return;
-
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            exit(RESULT_OK, ConstsImport.PERMISSION_GRANTED);
-        } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-            // Permission Denied
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                exit(RESULT_CANCELED, ConstsImport.PERMISSION_DENIED);
+        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permissions granted
+                exit(RESULT_OK, ConstsImport.PERMISSION_GRANTED);
             } else {
-                exit(RESULT_CANCELED, ConstsImport.PERMISSION_DENIED_FORCED);
+                // Permissions denied
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    exit(RESULT_CANCELED, ConstsImport.PERMISSION_DENIED);
+                } else {
+                    exit(RESULT_CANCELED, ConstsImport.PERMISSION_DENIED_FORCED);
+                }
             }
         }
     }

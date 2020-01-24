@@ -154,7 +154,7 @@
         <item quantity="other">%d/%d results</item>
     </plurals>
 
-    <string name="reset">Permissions has been reset.\nResetting app.</string>
+    <string name="reset">Permissions have been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
 
     <!-- Library fragment -->

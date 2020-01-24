@@ -344,12 +344,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             Timber.d("Storage permission allowed!");
         } else {
             Timber.d("Storage permission denied!");
-            reset();
+            HentoidApp.reset(this);
         }
-    }
-
-    private void reset() {
-        HentoidApp.reset(this);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
