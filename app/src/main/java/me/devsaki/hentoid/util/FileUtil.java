@@ -138,10 +138,9 @@ class FileUtil {
                                                           String relativePath, boolean isDirectory,
                                                           boolean canCreate) {
         // start with root and then parse through document tree.
-        Context context = HentoidApp.getInstance();
-        DocumentFile document = DocumentFile.fromTreeUri(context, rootURI);
-
+        DocumentFile document = DocumentFile.fromTreeUri(HentoidApp.getInstance(), rootURI);
         if (null == document) return null;
+
         if (returnRoot || null == relativePath || relativePath.isEmpty()) return document;
 
         String[] parts = relativePath.split(File.separator);
@@ -259,7 +258,7 @@ class FileUtil {
         }
 
         // Try with Storage Access Framework.
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= LOLLIPOP && file.getParentFile() != null) {
             DocumentFile folder = getOrCreateDocumentFile(file.getParentFile(), true);
             // getOrCreateDocumentFile implicitly creates the directory.
             try {
@@ -381,18 +380,15 @@ class FileUtil {
 
     static boolean deleteWithSAF(File file) {
         if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile document = getOrCreateDocumentFile(file, true);
-            if (document != null) {
-                return document.delete();
-            }
+            DocumentFile document = getDocumentFile(file, true);
+            if (document != null) return document.delete();
         }
-
         return false;
     }
 
     static boolean renameWithSAF(File srcDir, String newName) {
         if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile srcDocument = getOrCreateDocumentFile(srcDir, true);
+            DocumentFile srcDocument = getDocumentFile(srcDir, true);
             if (srcDocument != null) return srcDocument.renameTo(newName);
         }
         return false;

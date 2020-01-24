@@ -36,6 +36,7 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
@@ -166,15 +167,10 @@ public class ImportService extends IntentService {
             // Detect the presence of images if the corresponding cleanup option has been enabled
             if (cleanNoImages) {
                 File[] images = folder.listFiles(
-                        file -> (file.isDirectory()
-                                || file.getName().toLowerCase().endsWith(".jpg")
-                                || file.getName().toLowerCase().endsWith(".jpeg")
-                                || file.getName().toLowerCase().endsWith(".png")
-                                || file.getName().toLowerCase().endsWith(".gif")
-                        )
+                        file -> (file.isDirectory() || Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName())))
                 );
 
-                if (0 == images.length) { // No images nor subfolders
+                if (images != null && 0 == images.length) { // No images nor subfolders
                     booksKO++;
                     boolean success = FileHelper.removeFile(folder);
                     trace(Log.INFO, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
@@ -192,11 +188,10 @@ public class ImportService extends IntentService {
                         String[] currentPathParts = folder.getAbsolutePath().split(File.separator);
                         String currentBookDir = File.separator + currentPathParts[currentPathParts.length - 2] + File.separator + currentPathParts[currentPathParts.length - 1];
 
-                        if (!canonicalBookDir.equals(currentBookDir)) {
+                        if (!canonicalBookDir.equalsIgnoreCase(currentBookDir)) {
                             String settingDir = Preferences.getRootFolderName();
-                            if (settingDir.isEmpty()) {
+                            if (settingDir.isEmpty())
                                 settingDir = FileHelper.getDefaultDir(this, canonicalBookDir).getAbsolutePath();
-                            }
 
                             if (FileHelper.renameDirectory(folder, new File(settingDir, canonicalBookDir))) {
                                 content.setStorageFolder(canonicalBookDir);
