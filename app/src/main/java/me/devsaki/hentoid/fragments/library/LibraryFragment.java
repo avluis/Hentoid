@@ -597,8 +597,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * Callback for the success of the "delete item" action
      */
     private void onDeleteSuccess() {
-        Context context = getActivity();
-        if (context != null) ToastUtil.toast(context, "Selected items have been deleted.");
+        ToastUtil.toast("Selected items have been deleted.");
     }
 
     /**
@@ -713,8 +712,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         } else {
             backButtonPressed = SystemClock.elapsedRealtime();
-            Context c = getContext();
-            if (c != null) ToastUtil.toast(getContext(), R.string.press_back_again);
+            ToastUtil.toast(R.string.press_back_again);
 
             llm.scrollToPositionWithOffset(0, 0);
         }

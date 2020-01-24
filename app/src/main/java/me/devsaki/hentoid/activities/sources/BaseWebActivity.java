@@ -559,11 +559,11 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         if (null == currentContent) return;
 
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
-            ToastUtil.toast(this, R.string.already_downloaded);
+            ToastUtil.toast(R.string.already_downloaded);
             if (!quickDownload) changeFabActionMode(MODE_READ);
             return;
         }
-        ToastUtil.toast(this, R.string.add_to_queue);
+        ToastUtil.toast(R.string.add_to_queue);
 
         currentContent.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(currentContent);
@@ -664,7 +664,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     }
 
     public void onResultFailed() {
-        runOnUiThread(() -> ToastUtil.toast(HentoidApp.getInstance(), R.string.web_unparsable));
+        runOnUiThread(() -> ToastUtil.toast(R.string.web_unparsable));
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

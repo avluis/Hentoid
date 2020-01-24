@@ -15,15 +15,6 @@ import timber.log.Timber;
 
 public class ToastUtil {
 
-    private static Toast toast;
-
-    public static void cancelToast() {
-        if (toast != null) {
-            toast.cancel();
-            toast = null;
-        }
-    }
-
     public static void toast(@StringRes int resource) {
         toast(HentoidApp.getInstance(), resource);
     }
@@ -50,8 +41,7 @@ public class ToastUtil {
             return;
         }
 
-        cancelToast();
-        toast = Toast.makeText(context, message, duration);
+        Toast toast = Toast.makeText(context, message, duration);
         toast.show();
     }
 
