@@ -1129,6 +1129,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             selectionToolbar.setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
+            new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
