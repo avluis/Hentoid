@@ -5,7 +5,8 @@
   "versionCode.beta": "163",
   "sourceAlerts":[
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" },
-      {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" }
+      {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
+	  {"sourceName":"NEXUS", "status":"BLACK" }
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" },
