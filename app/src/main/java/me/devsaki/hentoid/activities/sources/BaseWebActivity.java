@@ -991,6 +991,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             result = getResources().getString(R.string.alert_orange);
         } else if (alert.getStatus().equals(AlertStatus.RED)) {
             result = getResources().getString(R.string.alert_red);
+        } else if (alert.getStatus().equals(AlertStatus.GREY)) {
+            result = getResources().getString(R.string.alert_grey);
         } else if (alert.getStatus().equals(AlertStatus.BLACK)) {
             result = getResources().getString(R.string.alert_black);
         }

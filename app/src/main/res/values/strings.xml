@@ -176,6 +176,7 @@
     <!-- Alerts -->
     <string name="alert_orange">Be aware that downloads may fail on this site.\n%s</string>
     <string name="alert_red">The download button is currently broken for this site.\n%s</string>
+    <string name="alert_grey">This site currently has serious stability issues. The app has nothing to do about it. Please try again later.</string>
     <string name="alert_black">This site is currently unavailable for real. The app has nothing to do about it. Please try again later.</string>
     <string name="alert_wip">The Hentoid dev team is working on a fix. You will be notified by the app when a new version is ready.</string>
     <string name="alert_fix_available">A fix is available on the latest version of the app. Please update.</string>

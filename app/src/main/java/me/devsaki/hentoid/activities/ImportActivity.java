@@ -497,7 +497,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
                 runImport(); // Do not ask if the user wants to import if he has asked for a refresh
             else
                 new MaterialAlertDialogBuilder(this, ThemeHelper.getIdForCurrentTheme(this, R.style.Theme_Light_Dialog))
-                        .setIcon(R.drawable.ic_dialog_warning)
+                        .setIcon(R.drawable.ic_warning)
                         .setCancelable(false)
                         .setTitle(R.string.app_name)
                         .setMessage(R.string.contents_detected)
