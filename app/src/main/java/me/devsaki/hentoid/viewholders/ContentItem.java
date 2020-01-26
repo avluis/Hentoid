@@ -17,7 +17,6 @@ import androidx.core.widget.ImageViewCompat;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
-import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +28,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
@@ -45,31 +45,30 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             .error(R.drawable.ic_placeholder);
 
     private Content content;
-    private ItemAdapter adapter = null;
     private boolean isQueued;
     private boolean isEmpty;
 
     // Constructor for empty placeholder
-    public ContentItem() {
+    public ContentItem(boolean isQueued) {
         isEmpty = true;
         content = null;
+        this.isQueued = isQueued;
     }
 
     // Constructor for library item
     public ContentItem(@NonNull Content content) {
         this.content = content;
-        this.isQueued = false;
+        isQueued = false;
         setIdentifier(content.getId());
         setSelectable(!isQueued);
         isEmpty = false;
     }
 
     // Constructor for queued item
-    public ContentItem(@NonNull Content content, ItemAdapter adapter) {
-        this.content = content;
-        this.isQueued = true;
-        this.adapter = adapter;
-        setIdentifier(content.getId());
+    public ContentItem(@NonNull QueueRecord content) {
+        this.content = content.content.getTarget();
+        isQueued = true;
+        setIdentifier(this.content.getId());
         setSelectable(!isQueued);
         isEmpty = false;
     }
@@ -98,14 +97,14 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> {
 
         // Common elements
-        private final View baseLayout;
-        private final TextView tvTitle;
-        private final ImageView ivCover;
-        private final TextView tvSeries;
-        private final TextView tvArtist;
-        private final TextView tvPages;
-        private final TextView tvTags;
-        private final ImageView ivSite;
+        private View baseLayout;
+        private TextView tvTitle;
+        private ImageView ivCover;
+        private TextView tvSeries;
+        private TextView tvArtist;
+        private TextView tvPages;
+        private TextView tvTags;
+        private ImageView ivSite;
 
         // Specific to library content
         private View ivNew;
@@ -122,6 +121,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
         ContentViewHolder(View view, boolean isQueued) {
             super(view);
+
             baseLayout = requireViewById(itemView, R.id.item);
             tvTitle = requireViewById(itemView, R.id.tvTitle);
             ivCover = requireViewById(itemView, R.id.ivCover);
@@ -148,7 +148,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
         @Override
         public void bindView(@NotNull ContentItem item, @NotNull List<Object> payloads) {
-            if (null == item.content) return; // Ignore placeholders in paging mode
+            if (item.isEmpty || null == item.content) return; // Ignore placeholders from PagedList
 
             // Payloads are set when the content stays the same but some properties alone change
             if (!payloads.isEmpty()) {
@@ -163,6 +163,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 if (boolValue != null) item.content.setFavourite(boolValue);
                 Long longValue = bundleParser.getReads();
                 if (longValue != null) item.content.setReads(longValue);
+                /*
+                Integer intValue = bundleParser.getRank();
+                if (intValue != null) item.content.setReads(longValue);
+                 */
             }
 
             updateLayoutVisibility(item);
@@ -183,7 +187,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();
-            if (!item.isQueued) ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
+            if (!item.isQueued)
+                ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
         }
 
         private void attachCover(Content content) {
@@ -287,17 +292,19 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
             if (item.isQueued) {
                 boolean isFirstItem = (0 == getAdapterPosition());
+                /*
                 int itemCount = item.adapter.getAdapterItemCount();
                 boolean isLastItem = itemCount - 1 == getAdapterPosition();
+                 */
 
                 ivUp.setImageResource(R.drawable.ic_arrow_up);
                 ivUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
 
                 ivTop.setImageResource(R.drawable.ic_doublearrowup);
-                ivTop.setVisibility((isFirstItem || itemCount < 3) ? View.INVISIBLE : View.VISIBLE);
+                ivTop.setVisibility((isFirstItem /*|| itemCount < 3*/) ? View.INVISIBLE : View.VISIBLE);
 
                 ivDown.setImageResource(R.drawable.ic_arrow_down);
-                ivDown.setVisibility(isLastItem ? View.INVISIBLE : View.VISIBLE);
+                ivDown.setVisibility(/*isLastItem ? View.INVISIBLE :*/ View.VISIBLE);
             } else {
                 // When transitioning to the other state, button blinks with its target state
                 if (content.isBeingFavourited()) {

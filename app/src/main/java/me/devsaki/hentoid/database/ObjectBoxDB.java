@@ -203,11 +203,15 @@ public class ObjectBoxDB {
         return store.boxFor(QueueRecord.class).query().order(QueueRecord_.rank).build().find();
     }
 
-    public List<Content> selectQueueContents() {
+    List<Content> selectQueueContents() {
         List<Content> result = new ArrayList<>();
         List<QueueRecord> queueRecords = selectQueue();
         for (QueueRecord q : queueRecords) result.add(q.content.getTarget());
         return result;
+    }
+
+    Query<QueueRecord> selectQueueContentsQ() {
+        return store.boxFor(QueueRecord.class).query().order(QueueRecord_.rank).build();
     }
 
     long selectMaxQueueOrder() {
@@ -218,7 +222,7 @@ public class ObjectBoxDB {
         store.boxFor(QueueRecord.class).put(new QueueRecord(id, order));
     }
 
-    public void udpateQueue(long contentId, int newOrder) {
+    void updateQueue(long contentId, int newOrder) {
         Box<QueueRecord> queueRecordBox = store.boxFor(QueueRecord.class);
 
         QueueRecord record = queueRecordBox.query().equal(QueueRecord_.contentId, contentId).order(QueueRecord_.rank).build().findFirst();

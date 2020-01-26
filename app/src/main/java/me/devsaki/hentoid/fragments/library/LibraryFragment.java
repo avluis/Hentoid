@@ -765,10 +765,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isEndless) { // Endless mode
             pager.hide();
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(), ContentItem::new);
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(false), ContentItem::new);
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
-            fastAdapter.registerTypeInstance(new ContentItem());
+            fastAdapter.registerTypeInstance(new ContentItem(false));
             if (library != null) pagedItemAdapter.submitList(library, this::differEndCallback);
 
             itemAdapter = null;

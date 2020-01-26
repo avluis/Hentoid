@@ -11,12 +11,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.paging.PagedList;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.annimon.stream.Stream;
 import com.mikepenz.fastadapter.FastAdapter;
-import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
+import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -24,13 +27,10 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
-import java.util.List;
 
-import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -44,6 +44,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
+import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
 
@@ -55,8 +56,11 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 public class QueueFragment extends Fragment {
 
-    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    // COMMUNICATION
+    // Viewmodel
+    private QueueViewModel viewModel;
 
     // UI ELEMENTS
     private View rootView;
@@ -73,6 +77,40 @@ public class QueueFragment extends Fragment {
     private boolean isPreparingDownload = false;
     private boolean isPaused = false;
     private boolean isEmpty = false;
+
+
+    /**
+     * Diff calculation rules for list items
+     * <p>
+     * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
+     */
+    private final AsyncDifferConfig<QueueRecord> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<QueueRecord>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull QueueRecord oldItem, @NonNull QueueRecord newItem) {
+            return oldItem.id == newItem.id;
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull QueueRecord oldItem, @NonNull QueueRecord newItem) {
+            return oldItem.rank == newItem.rank;
+        }
+
+        @Nullable
+        @Override
+        public Object getChangePayload(@NonNull QueueRecord oldItem, @NonNull QueueRecord newItem) {
+            ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
+
+            if (oldItem.rank != newItem.rank) {
+                diffBundleBuilder.setRank(newItem.rank);
+            }
+
+            if (diffBundleBuilder.isEmpty()) return null;
+            else return diffBundleBuilder.getBundle();
+        }
+    }).build();
+
+    private final PagedModelAdapter<QueueRecord, ContentItem> itemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(true), ContentItem::new);
+
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -99,7 +137,6 @@ public class QueueFragment extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
         toolbar = requireViewById(rootView, R.id.queue_toolbar);
-        toolbar.setTitle(getResources().getQuantityString(R.plurals.queue_book_count, itemAdapter.getAdapterItemCount(), itemAdapter.getAdapterItemCount()));
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         mEmptyText = requireViewById(rootView, R.id.queue_empty_txt);
@@ -118,13 +155,14 @@ public class QueueFragment extends Fragment {
         btnPause.setBackground(ThemeHelper.makeQueueButtonSelector(requireContext()));
         btnStats.setOnClickListener(v -> showErrorStats());
 
-        ObjectBoxDB db = ObjectBoxDB.getInstance(requireActivity());
-        List<Content> contents = db.selectQueueContents();
-        itemAdapter.set(Stream.of(contents).map(c -> new ContentItem(c, itemAdapter)).toList());
+        viewModel = ViewModelProviders.of(requireActivity()).get(QueueViewModel.class);
 
         // Book list container
         RecyclerView recyclerView = requireViewById(rootView, R.id.queue_list);
+
         FastAdapter<ContentItem> fastAdapter = FastAdapter.with(itemAdapter);
+        fastAdapter.setHasStableIds(true);
+        fastAdapter.registerTypeInstance(new ContentItem(true));
         recyclerView.setAdapter(fastAdapter);
 
         // Item click listener
@@ -157,7 +195,7 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                moveUp(item.getContent().getId());
+                viewModel.moveUp(item.getContent().getId());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -174,7 +212,7 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                moveTop(item.getContent().getId());
+                viewModel.moveTop(item.getContent().getId());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -191,7 +229,7 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                moveDown(item.getContent().getId());
+                viewModel.moveDown(item.getContent().getId());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -208,7 +246,7 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                cancel(item.getContent());
+                viewModel.cancel(item.getContent());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -220,6 +258,12 @@ public class QueueFragment extends Fragment {
                 return super.onBind(viewHolder);
             }
         });
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewModel.getQueuePaged().observe(this, this::onQueueChanged);
     }
 
     /**
@@ -255,7 +299,6 @@ public class QueueFragment extends Fragment {
                 dlPreparationProgressBar.setVisibility(View.GONE);
                 break;
             case DownloadEvent.EV_COMPLETE:
-                removeFromQueue(event.content);
                 dlPreparationProgressBar.setVisibility(View.GONE);
                 if (0 == itemAdapter.getAdapterItemCount()) btnStats.setVisibility(View.GONE);
                 update(event.eventType);
@@ -342,6 +385,33 @@ public class QueueFragment extends Fragment {
         int bookDiff = (eventType == DownloadEvent.EV_CANCEL) ? 1 : 0; // Cancel event means a book will be removed very soon from the queue
         isEmpty = (0 == itemAdapter.getAdapterItemCount() - bookDiff);
         isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
+        updateUI();
+    }
+
+    private void onQueueChanged(PagedList<QueueRecord> result) {
+        Timber.i(">>Queue changed ! Size=%s", result.size());
+        isEmpty = (0 == result.size());
+        isPaused = (!isEmpty && (ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
+
+        // Update toolbar
+        toolbar.setTitle(getResources().getQuantityString(R.plurals.queue_book_count, result.size(), result.size()));
+
+        // Update list visibility
+        mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+
+        // Update displayed books
+        itemAdapter.submitList(result);
+
+        // Update control bar
+        if (!isEmpty) {
+            QueueRecord firstContent = result.get(0);
+            if (firstContent != null) updateBookTitle(firstContent.content.getTarget().getTitle());
+        }
+
+        updateUI();
+    }
+
+    private void updateUI() {
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, itemAdapter.getAdapterItemCount());
@@ -352,12 +422,12 @@ public class QueueFragment extends Fragment {
         // Update control bar status
         queueInfo.setText(isPreparingDownload && !isEmpty ? R.string.queue_preparing : R.string.queue_empty2);
 
-        Content firstContent = isEmpty ? null : itemAdapter.getAdapterItem(0).getContent();
+//        Content firstContent = isEmpty ? null : itemAdapter.getAdapterItem(0).getContent();
 
         if (isActive) {
             btnPause.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.GONE);
-            if (firstContent != null) updateBookTitle(firstContent.getTitle());
+//            if (firstContent != null) updateBookTitle(firstContent.getTitle());
 
             // Stop blinking animation, if any
             queueInfo.clearAnimation();
@@ -379,9 +449,6 @@ public class QueueFragment extends Fragment {
                 queueStatus.setText("");
             }
         }
-
-        int nbItems = itemAdapter.getAdapterItemCount();
-        toolbar.setTitle(getResources().getQuantityString(R.plurals.queue_book_count, (nbItems - bookDiff), (nbItems - bookDiff)));
     }
 
     private void showErrorStats() {
@@ -394,184 +461,5 @@ public class QueueFragment extends Fragment {
         if (null == content) return;
 
         ContentItem.ContentViewHolder.updateProgress(content, requireViewById(rootView, R.id.pbDownload), 0, isPausedevent);
-    }
-
-    private void swap(int firstPosition, int secondPosition) {
-
-        int firstPos = firstPosition < secondPosition ? firstPosition : secondPosition;
-        int secondPos = firstPosition < secondPosition ? secondPosition : firstPosition;
-
-        Content first = itemAdapter.getAdapterItem(firstPos).getContent();
-        Content second = itemAdapter.getAdapterItem(secondPos).getContent();
-
-        itemAdapter.remove(firstPos);
-        itemAdapter.remove(secondPos);
-
-        itemAdapter.add(secondPosition - 1, new ContentItem(first, itemAdapter));
-        itemAdapter.add(firstPosition, new ContentItem(second, itemAdapter));
-    }
-
-    /**
-     * Move designated content up in the download queue (= raise its priority)
-     *
-     * @param contentId ID of Content whose priority has to be raised
-     */
-    private void moveUp(long contentId) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
-        List<QueueRecord> queue = db.selectQueue();
-
-        long prevItemId = 0;
-        int prevItemQueuePosition = -1;
-        int prevItemPosition = -1;
-        int loopPosition = 0;
-
-//        setNotifyOnChange(false); // Prevents every update from calling a screen refresh
-
-        for (QueueRecord p : queue) {
-            if (p.content.getTargetId() == contentId && prevItemId != 0) {
-                db.udpateQueue(p.content.getTargetId(), prevItemQueuePosition);
-                db.udpateQueue(prevItemId, p.rank);
-
-                swap(prevItemPosition, loopPosition);
-                if (0 == prevItemPosition)
-                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
-                break;
-            } else {
-                prevItemId = p.content.getTargetId();
-                prevItemQueuePosition = p.rank;
-                prevItemPosition = loopPosition;
-            }
-            loopPosition++;
-        }
-
-//        notifyDataSetChanged(); // Final screen refresh once everything had been updated
-    }
-
-    /**
-     * Move designated content on the top of the download queue (= raise its priority)
-     *
-     * @param contentId ID of Content whose priority has to be raised to the top
-     */
-    private void moveTop(long contentId) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
-        List<QueueRecord> queue = db.selectQueue();
-        QueueRecord p;
-
-        long topItemId = 0;
-        int topItemQueuePosition = -1;
-
-//        setNotifyOnChange(false);  // Prevents every update from calling a screen refresh
-
-        for (int i = 0; i < queue.size(); i++) {
-            p = queue.get(i);
-            if (0 == topItemId) {
-                topItemId = p.content.getTargetId();
-                topItemQueuePosition = p.rank;
-            }
-
-            if (p.content.getTargetId() == contentId) {
-                // Put selected item on top of list in the DB
-                db.udpateQueue(p.content.getTargetId(), topItemQueuePosition);
-
-                // Update the displayed items
-                if (i < itemAdapter.getAdapterItemCount()) { // That should never happen, but we do have rare crashes here, so...
-                    Content c = itemAdapter.getAdapterItem(i).getContent();
-                    itemAdapter.remove(i);
-                    itemAdapter.set(0, new ContentItem(c, itemAdapter));
-                }
-
-                // Skip download for the 1st item of the adapter
-                EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
-
-                break;
-            } else {
-                db.udpateQueue(p.content.getTargetId(), p.rank + 1); // Depriorize every item by 1
-            }
-        }
-
-//        notifyDataSetChanged(); // Final screen refresh once everything had been updated
-    }
-
-    /**
-     * Move designated content down in the download queue (= lower its priority)
-     *
-     * @param contentId ID of Content whose priority has to be lowered
-     */
-    private void moveDown(long contentId) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
-        List<QueueRecord> queue = db.selectQueue();
-
-        long itemId = 0;
-        int itemQueuePosition = -1;
-        int itemPosition = -1;
-        int loopPosition = 0;
-
-//        setNotifyOnChange(false);  // Prevents every update from calling a screen refresh
-
-        for (QueueRecord p : queue) {
-            if (p.content.getTargetId() == contentId) {
-                itemId = p.content.getTargetId();
-                itemQueuePosition = p.rank;
-                itemPosition = loopPosition;
-            } else if (itemId != 0) {
-                db.udpateQueue(p.content.getTargetId(), itemQueuePosition);
-                db.udpateQueue(itemId, p.rank);
-
-                swap(itemPosition, loopPosition);
-
-                if (0 == itemPosition)
-                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
-                break;
-            }
-            loopPosition++;
-        }
-
-//        notifyDataSetChanged(); // Final screen refresh once everything had been updated
-    }
-
-    /**
-     * Cancel download of designated Content
-     * NB : Contrary to Pause command, Cancel removes the Content from the download queue
-     *
-     * @param content Content whose download has to be canceled
-     */
-    private void cancel(Content content) {
-        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
-
-        compositeDisposable.add(
-                Completable.fromRunnable(() -> doCancel(content.getId()))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(() -> remove(content))); // Remove the content from the in-memory list and the UI
-    }
-
-    private void doCancel(long contentId) {
-        // Remove content altogether from the DB (including queue)
-        ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
-        Content content = db.selectContentById(contentId);
-        if (content != null) {
-            db.deleteQueue(content);
-            db.deleteContent(content);
-            // Remove the content from the disk
-            ContentHelper.removeContent(content);
-        }
-    }
-
-    private void removeFromQueue(Content content) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
-        // Remove content from the queue in the DB
-        db.deleteQueue(content);
-        // Remove the content from the in-memory list and the UI
-        remove(content);
-    }
-
-    private void remove(Content content) {
-        for (int i = 0; i < itemAdapter.getAdapterItemCount(); i++) {
-            Content c = itemAdapter.getAdapterItem(i).getContent();
-            if (c.getId() == content.getId()) {
-                itemAdapter.remove(i);
-                break;
-            }
-        }
     }
 }
