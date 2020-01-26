@@ -181,6 +181,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             return oldItem.equals(newItem)
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
                     && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
+                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
                     && oldItem.isFavourite() == newItem.isFavourite();
         }
 
@@ -194,6 +195,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             }
             if (oldItem.isBeingFavourited() != newItem.isBeingFavourited()) {
                 diffBundleBuilder.setIsBeingFavourited(newItem.isBeingFavourited());
+            }
+            if (oldItem.isBeingDeleted() != newItem.isBeingDeleted()) {
+                diffBundleBuilder.setIsBeingDeleted(newItem.isBeingDeleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
@@ -1057,7 +1061,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private boolean onBookClick(ContentItem item, int position) {
         if (0 == selectExtension.getSelectedItems().size()) {
-            if (!invalidateNextBookClick) {
+            if (!invalidateNextBookClick && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
                 ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
             } else invalidateNextBookClick = false;

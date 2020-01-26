@@ -157,6 +157,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
                 Boolean boolValue = bundleParser.isBeingFavourited();
                 if (boolValue != null) item.content.setIsBeingFavourited(boolValue);
+                boolValue = bundleParser.isBeingDeleted();
+                if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
                 boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.content.setFavourite(boolValue);
                 Long longValue = bundleParser.getReads();
