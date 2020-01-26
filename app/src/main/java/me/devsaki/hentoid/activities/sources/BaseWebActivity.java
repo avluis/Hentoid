@@ -571,7 +571,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         }
         db.insertQueue(currentContent.getId(), lastIndex);
 
-        ContentQueueManager.getInstance().resumeQueue(this);
+        if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
 
         if (!quickDownload) changeFabActionMode(MODE_QUEUE);
     }

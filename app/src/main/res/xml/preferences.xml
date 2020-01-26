@@ -142,6 +142,13 @@
         android:icon="@drawable/ic_action_download"
         android:key="downloader"
         android:title="@string/pref_screen_downloader">
+        <CheckBoxPreference
+            android:defaultValue="@string/pref_queue_autostart_default"
+            android:key="pref_queue_autostart"
+            android:summaryOff="@string/pref_queue_autostart_off"
+            android:summaryOn="@string/pref_queue_autostart_on"
+            android:title="@string/pref_queue_autostart_title"
+            app:iconSpaceReserved="false" />
         <PreferenceCategory
             android:title="@string/download_retries_screen_title"
             app:iconSpaceReserved="false">

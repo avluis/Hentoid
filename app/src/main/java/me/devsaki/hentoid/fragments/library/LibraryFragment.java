@@ -1110,7 +1110,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private void downloadContent(@NonNull final List<Content> contentList) {
         for (Content c : contentList) viewModel.addContentToQueue(c);
 
-        ContentQueueManager.getInstance().resumeQueue(getContext());
+        if (Preferences.isQueueAutostart())
+            ContentQueueManager.getInstance().resumeQueue(getContext());
 
         Snackbar snackbar = Snackbar.make(recyclerView, R.string.add_to_queue, BaseTransientBottomBar.LENGTH_LONG);
         snackbar.setAction("VIEW QUEUE", v -> viewQueue());

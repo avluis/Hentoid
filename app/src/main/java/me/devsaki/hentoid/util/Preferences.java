@@ -277,6 +277,10 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isQueueAutostart() {
+        return sharedPreferences.getBoolean(Key.PREF_QUEUE_AUTOSTART, Default.PREF_QUEUE_AUTOSTART);
+    }
+
     public static boolean isDlRetriesActive() {
         return sharedPreferences.getBoolean(Key.PREF_DL_RETRIES_ACTIVE, Default.PREF_DL_RETRIES_ACTIVE);
     }
@@ -374,6 +378,7 @@ public final class Preferences {
         public static final String PREF_VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
         public static final String PREF_COLOR_THEME = "pref_color_theme";
+        static final String PREF_QUEUE_AUTOSTART = "pref_queue_autostart";
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
@@ -426,6 +431,7 @@ public final class Preferences {
         static final int PREF_VIEWER_READ_THRESHOLD = Constant.PREF_VIEWER_READ_THRESHOLD_1;
         static final int PREF_VIEWER_SLIDESHOW_DELAY = Constant.PREF_VIEWER_SLIDESHOW_DELAY_2;
         static final int PREF_COLOR_THEME = Constant.COLOR_THEME_LIGHT;
+        static final boolean PREF_QUEUE_AUTOSTART = true;
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
