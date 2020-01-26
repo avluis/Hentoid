@@ -163,10 +163,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 if (boolValue != null) item.content.setFavourite(boolValue);
                 Long longValue = bundleParser.getReads();
                 if (longValue != null) item.content.setReads(longValue);
-                /*
-                Integer intValue = bundleParser.getRank();
-                if (intValue != null) item.content.setReads(longValue);
-                 */
             }
 
             updateLayoutVisibility(item);

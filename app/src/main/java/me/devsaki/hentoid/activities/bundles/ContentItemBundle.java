@@ -10,7 +10,6 @@ public class ContentItemBundle {
     private static final String KEY_FAV_PROCESSING = "is_being_favourited";
     private static final String KEY_FAV_STATE = "favourite";
     private static final String KEY_READS = "reads";
-    private static final String KEY_RANK = "rank";
 
     private ContentItemBundle() {
         throw new UnsupportedOperationException();
@@ -34,10 +33,6 @@ public class ContentItemBundle {
 
         public void setReads(long reads) {
             bundle.putLong(KEY_READS, reads);
-        }
-
-        public void setRank(int rank) {
-            bundle.putInt(KEY_RANK, rank);
         }
 
         public boolean isEmpty() {
@@ -80,12 +75,6 @@ public class ContentItemBundle {
         @Nullable
         public Long getReads() {
             if (bundle.containsKey(KEY_READS)) return bundle.getLong(KEY_READS);
-            else return null;
-        }
-
-        @Nullable
-        public Integer getRank() {
-            if (bundle.containsKey(KEY_RANK)) return bundle.getInt(KEY_RANK);
             else return null;
         }
     }

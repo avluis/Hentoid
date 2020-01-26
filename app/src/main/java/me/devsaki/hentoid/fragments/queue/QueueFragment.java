@@ -30,7 +30,6 @@ import java.text.MessageFormat;
 
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -93,19 +92,6 @@ public class QueueFragment extends Fragment {
         @Override
         public boolean areContentsTheSame(@NonNull QueueRecord oldItem, @NonNull QueueRecord newItem) {
             return oldItem.rank == newItem.rank;
-        }
-
-        @Nullable
-        @Override
-        public Object getChangePayload(@NonNull QueueRecord oldItem, @NonNull QueueRecord newItem) {
-            ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
-
-            if (oldItem.rank != newItem.rank) {
-                diffBundleBuilder.setRank(newItem.rank);
-            }
-
-            if (diffBundleBuilder.isEmpty()) return null;
-            else return diffBundleBuilder.getBundle();
         }
     }).build();
 
