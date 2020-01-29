@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,6 +27,7 @@ import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
 
 import static java.lang.String.format;
@@ -136,7 +138,8 @@ public class SearchActivity extends BaseActivity {
         searchButton = findViewById(R.id.search_fab);
         searchButton.setOnClickListener(v -> validateForm());
 
-        viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
+        ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
+        viewModel = ViewModelProviders.of(this, vmFactory).get(SearchViewModel.class);
         viewModel.getAttributesCountData().observe(this, this::onQueryUpdated);
         viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
         viewModel.getSelectedContentCount().observe(this, this::onBooksCounted);

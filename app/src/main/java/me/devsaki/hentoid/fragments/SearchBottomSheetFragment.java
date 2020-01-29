@@ -19,7 +19,6 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
-import com.google.android.flexbox.AlignContent;
 import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
@@ -42,6 +41,7 @@ import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -114,7 +114,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 throw new IllegalArgumentException("Initialization failed");
             }
 
-            viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
+            ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
+            viewModel = ViewModelProviders.of(requireActivity(), vmFactory).get(SearchViewModel.class);
             viewModel.onCategoryChanged(selectedAttributeTypes);
         }
     }
@@ -216,14 +217,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void onAttributesReady(SearchViewModel.AttributeSearchResult results) {
         if (!isInitiated) return;
-
-        if (!results.success) {
-            Timber.w(results.message);
-            Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), results.message, BaseTransientBottomBar.LENGTH_SHORT);
-            bar.show();
-            tagWaitPanel.setVisibility(View.GONE);
-            return;
-        }
 
         tagWaitMessage.clearAnimation();
 

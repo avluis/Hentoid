@@ -7,11 +7,11 @@ import androidx.lifecycle.LiveData;
 
 import java.util.List;
 
+import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.listener.PagedResultListener;
-import me.devsaki.hentoid.listener.ResultListener;
 
 public interface CollectionDAO {
 
@@ -51,9 +51,9 @@ public interface CollectionDAO {
 
     // ATTRIBUTES
 
-    void getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener);
+    Single<ObjectBoxDAO.AttributeQueryResult> getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle);
 
-    void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener);
+    Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
 
     void dispose();
 }

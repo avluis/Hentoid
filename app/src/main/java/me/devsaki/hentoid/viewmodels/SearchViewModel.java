@@ -1,29 +1,27 @@
 package me.devsaki.hentoid.viewmodels;
 
-import android.app.Application;
-import android.content.Context;
 import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.Disposables;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.util.Preferences;
 
 import static java.util.Objects.requireNonNull;
 
 
-public class SearchViewModel extends AndroidViewModel {
+public class SearchViewModel extends ViewModel {
 
     private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
     private final MutableLiveData<AttributeSearchResult> proposedAttributes = new MutableLiveData<>();
@@ -36,58 +34,15 @@ public class SearchViewModel extends AndroidViewModel {
 
     private List<AttributeType> category;
 
-    // === LISTENER HELPERS
-    private class AttributesResultListener implements ResultListener<List<Attribute>> {
-        private final MutableLiveData<AttributeSearchResult> list;
+    private Disposable countDisposable = Disposables.empty();
 
-        AttributesResultListener(MutableLiveData<AttributeSearchResult> list) {
-            this.list = list;
-        }
-
-        @Override
-        public void onResultReady(List<Attribute> results, long totalContent) {
-            AttributeSearchResult result = new AttributeSearchResult(results, totalContent);
-            list.postValue(result);
-        }
-
-        @Override
-        public void onResultFailed(String message) {
-            AttributeSearchResult result = new AttributeSearchResult();
-            result.success = false;
-            result.message = message;
-            list.postValue(result);
-        }
-    }
-
-    private ResultListener<SparseIntArray> countPerTypeResultListener = new ResultListener<SparseIntArray>() {
-        @Override
-        public void onResultReady(SparseIntArray results, long totalContent) {
-            // Result has to take into account the number of attributes already selected (hence unavailable)
-            List<Attribute> selectedAttrs = selectedAttributes.getValue();
-            if (selectedAttrs != null) {
-                for (Attribute a : selectedAttrs) {
-                    int countForType = results.get(a.getType().getCode());
-                    if (countForType > 0)
-                        results.put(a.getType().getCode(), --countForType);
-                }
-            }
-
-            attributesPerType.postValue(results);
-        }
-
-        @Override
-        public void onResultFailed(String message) {
-            attributesPerType.postValue(new SparseIntArray());
-        }
-    };
+    private Disposable filterDisposable = Disposables.disposed();
 
 
     // === INIT METHODS
 
-    public SearchViewModel(@NonNull Application application) {
-        super(application);
-        Context ctx = application.getApplicationContext();
-        collectionDAO = new ObjectBoxDAO(ctx);
+    public SearchViewModel(CollectionDAO collectionDAO) {
+        this.collectionDAO = collectionDAO;
         selectedAttributes.setValue(new ArrayList<>());
     }
 
@@ -118,7 +73,23 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
-        collectionDAO.getAttributeMasterDataPaged(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
+        filterDisposable.dispose();
+        filterDisposable = collectionDAO
+            .getAttributeMasterDataPaged(
+                category,
+                query,
+                selectedAttributes.getValue(),
+                false,
+                pageNum,
+                itemsPerPage,
+                Preferences.getAttributesSortOrder()
+            )
+            .subscribe(attributeQueryResult -> {
+                AttributeSearchResult result = new AttributeSearchResult(
+                    attributeQueryResult.pagedAttributes, attributeQueryResult.totalSelectedAttributes
+                );
+                proposedAttributes.postValue(result);
+            });
     }
 
     public void onAttributeSelected(Attribute a) {
@@ -159,7 +130,21 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     private void countAttributesPerType() {
-        collectionDAO.countAttributesPerType(selectedAttributes.getValue(), countPerTypeResultListener);
+        countDisposable.dispose();
+        countDisposable = collectionDAO.countAttributesPerType(selectedAttributes.getValue())
+            .subscribe(results -> {
+                // Result has to take into account the number of attributes already selected (hence unavailable)
+                List<Attribute> selectedAttrs = selectedAttributes.getValue();
+                if (selectedAttrs != null) {
+                    for (Attribute a : selectedAttrs) {
+                        int countForType = results.get(a.getType().getCode());
+                        if (countForType > 0)
+                            results.put(a.getType().getCode(), --countForType);
+                    }
+                }
+
+                attributesPerType.postValue(results);
+            });
     }
 
     private void updateSelectionResult() {
@@ -169,17 +154,10 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     // === HELPER RESULT STRUCTURES
-    public class AttributeSearchResult {
+    // TODO this appears to be a duplicate of ObjectBoxDao.AttributeQueryResult
+    public static class AttributeSearchResult {
         public final List<Attribute> attributes;
         public final long totalContent;
-        public boolean success = true;
-        public String message;
-
-
-        AttributeSearchResult() {
-            this.attributes = new ArrayList<>();
-            this.totalContent = 0;
-        }
 
         AttributeSearchResult(List<Attribute> attributes, long totalContent) {
             this.attributes = new ArrayList<>(attributes);
@@ -189,6 +167,8 @@ public class SearchViewModel extends AndroidViewModel {
 
     @Override
     protected void onCleared() {
+        filterDisposable.dispose();
+        countDisposable.dispose();
         if (collectionDAO != null) collectionDAO.dispose();
         super.onCleared();
     }

@@ -70,6 +70,9 @@ dependencies {
     implementation project(':fakkuLib')
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:2.19.0'
+    testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
+    testImplementation "androidx.arch.core:core-testing:2.1.0"
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
