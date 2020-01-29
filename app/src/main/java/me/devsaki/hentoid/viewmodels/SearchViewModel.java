@@ -187,12 +187,6 @@ public class SearchViewModel extends AndroidViewModel {
         }
     }
 
-    public class ContentSearchResult {
-        public long totalSelected;
-        public boolean success = true;
-        public String message;
-    }
-
     @Override
     protected void onCleared() {
         if (collectionDAO != null) collectionDAO.dispose();
