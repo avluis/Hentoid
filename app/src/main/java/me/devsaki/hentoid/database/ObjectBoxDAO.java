@@ -285,8 +285,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public LiveData<PagedList<QueueRecord>> getQueueContent() {
         Query<QueueRecord> query = db.selectQueueContentsQ();
 
-        int nbPages = Preferences.getContentPageQuantity();
-        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(nbPages * 2).setPageSize(nbPages).build();
+        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(40).setPageSize(20).build();
 
         return new LivePagedListBuilder<>(new ObjectBoxDataSource.Factory<>(query), cfg).build();
     }
