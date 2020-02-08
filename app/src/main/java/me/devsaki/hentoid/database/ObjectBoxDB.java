@@ -147,7 +147,7 @@ public class ObjectBoxDB {
         deleteContentById(deletableContentId);
     }
 
-    public void deleteContent(Content content) {
+    void deleteContent(Content content) {
         deleteContentById(content.getId());
     }
 
