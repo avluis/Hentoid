@@ -646,7 +646,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         int currentPosition = getTopItemPosition();
         if (currentPosition > 0 || -1 == topItemPosition) topItemPosition = currentPosition;
 
-        Timber.i(">> memorize position %s", topItemPosition);
+        Timber.d(">> memorize position %s", topItemPosition);
         outState.putInt(KEY_LAST_LIST_POSITION, topItemPosition);
         topItemPosition = -1;
     }
@@ -662,7 +662,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (fastAdapter != null) fastAdapter.withSavedInstanceState(savedInstanceState);
         // Mark last position in the list to be the one it will come back to
         topItemPosition = savedInstanceState.getInt(KEY_LAST_LIST_POSITION, 0);
-        Timber.i(">> position loaded from memory %s", topItemPosition);
+        Timber.d(">> position loaded from memory %s", topItemPosition);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
