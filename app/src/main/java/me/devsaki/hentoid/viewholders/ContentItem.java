@@ -168,8 +168,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             updateLayoutVisibility(item);
             attachCover(item.content);
             attachTitle(item.content);
-            attachSeries(item.content);
             attachArtist(item.content);
+            attachSeries(item.content);
             attachPages(item.content);
             attachTags(item.content);
             attachButtons(item);
@@ -207,25 +207,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
         }
 
-        private void attachSeries(Content content) {
-            Context context = tvSeries.getContext();
-            String templateSeries = context.getResources().getString(R.string.work_series);
-            List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
-            if (seriesAttributes == null) {
-                tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
-            } else {
-                StringBuilder seriesBuilder = new StringBuilder();
-                for (int i = 0; i < seriesAttributes.size(); i++) {
-                    Attribute attribute = seriesAttributes.get(i);
-                    seriesBuilder.append(attribute.getName());
-                    if (i != seriesAttributes.size() - 1) {
-                        seriesBuilder.append(", "); // TODO use TextUtils.join
-                    }
-                }
-                tvSeries.setText(templateSeries.replace("@series@", seriesBuilder));
-            }
-        }
-
         private void attachArtist(Content content) {
             Context context = tvArtist.getContext();
             String templateArtist = context.getResources().getString(R.string.work_artist);
@@ -247,6 +228,26 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 }
                 String artists = android.text.TextUtils.join(", ", allArtists);
                 tvArtist.setText(templateArtist.replace("@artist@", artists));
+            }
+        }
+
+
+        private void attachSeries(Content content) {
+            Context context = tvSeries.getContext();
+            String templateSeries = context.getResources().getString(R.string.work_series);
+            List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
+            if (seriesAttributes == null) {
+                tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
+            } else {
+                StringBuilder seriesBuilder = new StringBuilder();
+                for (int i = 0; i < seriesAttributes.size(); i++) {
+                    Attribute attribute = seriesAttributes.get(i);
+                    seriesBuilder.append(attribute.getName());
+                    if (i != seriesAttributes.size() - 1) {
+                        seriesBuilder.append(", "); // TODO use TextUtils.join
+                    }
+                }
+                tvSeries.setText(templateSeries.replace("@series@", seriesBuilder));
             }
         }
 
