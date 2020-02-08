@@ -236,18 +236,17 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             Context context = tvSeries.getContext();
             String templateSeries = context.getResources().getString(R.string.work_series);
             List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
-            if (seriesAttributes == null) {
+            if (seriesAttributes == null || seriesAttributes.isEmpty()) {
+                tvSeries.setVisibility(View.GONE);
                 tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
             } else {
-                StringBuilder seriesBuilder = new StringBuilder();
-                for (int i = 0; i < seriesAttributes.size(); i++) {
-                    Attribute attribute = seriesAttributes.get(i);
-                    seriesBuilder.append(attribute.getName());
-                    if (i != seriesAttributes.size() - 1) {
-                        seriesBuilder.append(", "); // TODO use TextUtils.join
-                    }
+                tvSeries.setVisibility(View.VISIBLE);
+                List<String> allSeries = new ArrayList<>();
+                for (Attribute attribute : seriesAttributes) {
+                    allSeries.add(attribute.getName());
                 }
-                tvSeries.setText(templateSeries.replace("@series@", seriesBuilder));
+                String series = android.text.TextUtils.join(", ", allSeries);
+                tvSeries.setText(templateSeries.replace("@series@", series));
             }
         }
 
