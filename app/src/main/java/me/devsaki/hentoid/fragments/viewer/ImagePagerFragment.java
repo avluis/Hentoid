@@ -22,6 +22,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -71,6 +73,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
     private boolean savedPositionWithBack = false;
+    private RecyclerView.SmoothScroller smoothScroller;
 
     // Controls
     private TextView pageNumberOverlay;
@@ -239,6 +242,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.setLayoutManager(llm);
 
         pageSnapWidget = new PageSnapWidget(recyclerView);
+
+        smoothScroller = new LinearSmoothScroller(requireContext()) {
+            @Override
+            protected int getVerticalSnapPreference() {
+                return LinearSmoothScroller.SNAP_TO_START;
+            }
+        };
     }
 
     private void initControlsOverlay(View rootView) {
@@ -591,10 +601,19 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void nextPage() {
         if (imageIndex == maxPosition) return;
 
-        if (Preferences.isViewerTapTransitions())
-            recyclerView.smoothScrollToPosition(imageIndex + 1);
-        else
-            recyclerView.scrollToPosition(imageIndex + 1);
+        if (Preferences.isViewerTapTransitions()) {
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+                recyclerView.smoothScrollToPosition(imageIndex + 1);
+            else {
+                smoothScroller.setTargetPosition(imageIndex + 1);
+                llm.startSmoothScroll(smoothScroller);
+            }
+        } else {
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+                recyclerView.scrollToPosition(imageIndex + 1);
+            else
+                llm.scrollToPositionWithOffset(imageIndex + 1, 0);
+        }
     }
 
     /**
