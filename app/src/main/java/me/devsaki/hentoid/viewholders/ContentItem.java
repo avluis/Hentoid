@@ -170,7 +170,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             attachTitle(item.content);
             attachArtist(item.content);
             attachSeries(item.content);
-            attachPages(item.content);
+            attachPages(item.content, item.isQueued);
             attachTags(item.content);
             attachButtons(item);
             if (item.isQueued)
@@ -250,10 +250,17 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
         }
 
-        private void attachPages(Content content) {
+        private void attachPages(Content content, boolean isQueued) {
             Context context = tvPages.getContext();
             String template = context.getResources().getString(R.string.work_pages);
-            tvPages.setText(template.replace("@pages@", content.getQtyPages() + ""));
+            template = template.replace("@pages@", content.getQtyPages() + "");
+            long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
+            if (nbMissingPages > 0 && !isQueued)
+                template = template.replace("@missing@", " (" + nbMissingPages + " missing)");
+            else
+                template = template.replace("@missing@", "");
+
+            tvPages.setText(template);
         }
 
         private void attachTags(Content content) {

@@ -60,7 +60,7 @@
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: @series@</string>
     <string name="work_artist">Artist: @artist@</string>
-    <string name="work_pages">Pages: @pages@</string>
+    <string name="work_pages">Pages: @pages@@missing@</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>

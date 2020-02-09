@@ -460,6 +460,12 @@ public class Content implements Serializable {
         }
     }
 
+    public long getNbDownloadedPages() {
+        if (imageFiles != null)
+            return Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED).count();
+        else return 0;
+    }
+
     public Site getSite() {
         return site;
     }
