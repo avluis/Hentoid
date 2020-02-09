@@ -393,31 +393,32 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         webView.setWebViewClient(webClient);
 
         // Download immediately on long click on a link / image link
-        webView.setOnLongClickListener(v -> {
-            WebView.HitTestResult result = webView.getHitTestResult();
+        if (Preferences.isBrowserQuickDl())
+            webView.setOnLongClickListener(v -> {
+                WebView.HitTestResult result = webView.getHitTestResult();
 
-            String url = "";
-            // Plain link
-            if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null)
-                url = result.getExtra();
+                String url = "";
+                // Plain link
+                if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null)
+                    url = result.getExtra();
 
-            // Image link (https://stackoverflow.com/a/55299801/8374722)
-            if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
-                Handler handler = new Handler();
-                Message message = handler.obtainMessage();
+                // Image link (https://stackoverflow.com/a/55299801/8374722)
+                if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+                    Handler handler = new Handler();
+                    Message message = handler.obtainMessage();
 
-                webView.requestFocusNodeHref(message);
-                url = message.getData().getString("url");
-            }
+                    webView.requestFocusNodeHref(message);
+                    url = message.getData().getString("url");
+                }
 
-            if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
-                // Launch on a new thread to avoid crashes
-                webClient.parseResponseAsync(url);
-                return true;
-            } else {
-                return false;
-            }
-        });
+                if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
+                    // Launch on a new thread to avoid crashes
+                    webClient.parseResponseAsync(url);
+                    return true;
+                } else {
+                    return false;
+                }
+            });
 
 
         Timber.i("Using agent %s", webView.getSettings().getUserAgentString());

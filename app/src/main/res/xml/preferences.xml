@@ -65,6 +65,12 @@
                 android:title="@string/pref_browser_initial_zoom_title"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_quick_dl_default"
+                android:key="pref_browser_quick_dl"
+                android:summary="@string/pref_browser_quick_dl_summary"
+                android:title="@string/pref_browser_quick_dl_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_augmented_default"
                 android:key="pref_browser_augmented"
                 android:summaryOff="@string/pref_browser_augmented_off"

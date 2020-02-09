@@ -199,6 +199,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_BROWSER_AUGMENTED, Default.PREF_BROWSER_AUGMENTED_DEFAULT);
     }
 
+    public static boolean isBrowserQuickDl() {
+        return sharedPreferences.getBoolean(Key.PREF_BROWSER_QUICK_DL, Default.PREF_BROWSER_QUICK_DL);
+    }
+
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS,
                 Default.PREF_DL_THREADS_QUANTITY_DEFAULT + "") + "");
@@ -381,6 +385,7 @@ public final class Preferences {
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String PREF_BROWSER_RESUME_LAST = "pref_browser_resume_last";
         static final String PREF_BROWSER_AUGMENTED = "pref_browser_augmented";
+        static final String PREF_BROWSER_QUICK_DL = "pref_browser_quick_dl";
         static final String PREF_FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String PREF_VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
         public static final String PREF_VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
@@ -435,6 +440,7 @@ public final class Preferences {
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final boolean PREF_BROWSER_RESUME_LAST_DEFAULT = false;
         static final boolean PREF_BROWSER_AUGMENTED_DEFAULT = true;
+        static final boolean PREF_BROWSER_QUICK_DL = true;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
         static final boolean PREF_VIEWER_RESUME_LAST_LEFT = true;
