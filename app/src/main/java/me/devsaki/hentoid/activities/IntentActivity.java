@@ -23,7 +23,7 @@ import static android.content.Intent.EXTRA_TEXT;
  * Manages how the app receives a "share" intent
  * e.g. Click a link on reddit - it opens in my browser but I wanna download it in Hentoid
  * => tap share in the browser and select hentoid; that's when IntentActivity takes the lead
- *
+ * <p>
  * NB : This activity is transparent and not lockable; it should _not_ be a child of BaseActivity
  */
 public class IntentActivity extends AppCompatActivity {
@@ -75,7 +75,11 @@ public class IntentActivity extends AppCompatActivity {
 
         switch (site) {
             case HITOMI:
-                return "/" + toParse.substring(toParse.lastIndexOf('-') + 1); // Reconstitute old gallery URL
+                int titleIdSeparatorIndex = toParse.lastIndexOf('-');
+                if (-1 == titleIdSeparatorIndex) {
+                    return toParse.substring(toParse.lastIndexOf('/')); // Input uses old gallery URL format
+                } else
+                    return "/" + toParse.substring(toParse.lastIndexOf('-') + 1); // Reconstitute old gallery URL format
             case NHENTAI:
                 return toParse.replace("/g", "");
             case TSUMINO:
