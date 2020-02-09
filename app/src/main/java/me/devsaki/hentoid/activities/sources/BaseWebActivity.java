@@ -896,15 +896,10 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
                     // Manually set cookie if present in response header (won't be set by Android if we don't do this)
                     if (result.getResponseHeaders().containsKey("set-cookie")) {
-                        String cookieStr = result.getResponseHeaders().get("set-cookie");
-                        if (cookieStr != null) {
-                            String[] parts = cookieStr.split(";");
-
-                            String cookie = parts[0].trim();
-                            if (cookie.contains("=")) {
-                                String[] cookieParts = cookie.split("=");
-                                HttpHelper.setDomainCookie(urlStr, cookieParts[0], cookieParts[1]);
-                            }
+                        String cookiesStr = result.getResponseHeaders().get("set-cookie");
+                        if (cookiesStr != null) {
+                            Map<String, String> cookies = HttpHelper.parseCookies(cookiesStr);
+                            HttpHelper.setDomainCookies(urlStr, cookies);
                         }
                     }
                 } else {

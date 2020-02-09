@@ -159,16 +159,52 @@ public class HttpHelper {
         return result;
     }
 
+    public static Map<String, String> parseCookies(@NonNull String cookiesStr) {
+        Map<String, String> result = new HashMap<>();
+
+        String[] cookiesParts = cookiesStr.split(";");
+        for (String cookie : cookiesParts) {
+            String[] cookieParts = cookie.trim().split("=");
+            if (cookieParts.length > 1)
+                result.put(cookieParts[0], cookieParts[1]);
+        }
+
+        return result;
+    }
+
     /**
      * Set a new cookie for the domain of the given url
      * If the cookie already exists, replace it
      *
-     * @param url         Full URL of the cookie
-     * @param cookieName  Name of the cookie
-     * @param cookieValue Value of the cookie
+     * @param url     Full URL of the cookie
+     * @param cookies Cookies to set using key = name and value = value
      */
-    public static void setDomainCookie(String url, String cookieName, String cookieValue) {
+    public static void setDomainCookies(String url, Map<String, String> cookies) {
         CookieManager mgr = CookieManager.getInstance();
-        mgr.setCookie(getDomainFromUri(url), cookieName + "=" + cookieValue);
+        String domain = getDomainFromUri(url);
+
+        /*
+        Check if given cookies are already registered
+
+        Rationale : setting any cookie programmatically will set it as a _session_ cookie.
+        It's not smart to do that if the very same cookie is already set for a longer lifespan.
+         */
+        Map<String, String> cookiesToSet = new HashMap<>();
+
+        String existingCookiesStr = mgr.getCookie(domain);
+        if (existingCookiesStr != null) {
+            Map<String, String> existingCookies = parseCookies(existingCookiesStr);
+            for (String key : cookies.keySet()) {
+                if (!existingCookies.containsKey(key)) cookiesToSet.put(key, cookies.get(key));
+                else {
+                    String val = existingCookies.get(key);
+                    if (val != null && !val.equals(cookies.get(key)))
+                        cookiesToSet.put(key, cookies.get(key));
+                }
+            }
+        }
+
+        for (String key : cookiesToSet.keySet())
+            mgr.setCookie(domain, key + "=" + cookiesToSet.get(key));
     }
 }
