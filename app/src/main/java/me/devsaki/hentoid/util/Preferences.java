@@ -332,6 +332,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getLockTimer() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_LOCK_TIMER, Integer.toString(Default.PREF_LOCK_TIMER)) + "");
+    }
+
+    public static void setLockTimer(int lockTimer) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_LOCK_TIMER, Integer.toString(lockTimer))
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -386,6 +396,7 @@ public final class Preferences {
         public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
         public static final String PREF_LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
+        public static final String PREF_LOCK_TIMER = "pref_lock_timer";
 
         //Keys that were removed from the app, kept for housekeeping
         static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -441,6 +452,7 @@ public final class Preferences {
         static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HENTAICAFE, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, Site.FAKKU2, Site.NEXUS, Site.MUSES, Site.DOUJINS};
         static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
         static final boolean PREF_LOCK_ON_APP_RESTORE = false;
+        static final int PREF_LOCK_TIMER = Constant.PREF_LOCK_TIMER_30S;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -496,5 +508,10 @@ public final class Preferences {
         public static final int COLOR_THEME_LIGHT = Theme.LIGHT.getId();
         public static final int COLOR_THEME_DARK = Theme.DARK.getId();
         public static final int COLOR_THEME_BLACK = Theme.BLACK.getId();
+        public static final int PREF_LOCK_TIMER_OFF = 0;
+        public static final int PREF_LOCK_TIMER_10S = 1;
+        public static final int PREF_LOCK_TIMER_30S = 2;
+        public static final int PREF_LOCK_TIMER_1M = 3;
+        public static final int PREF_LOCK_TIMER_2M = 4;
     }
 }
