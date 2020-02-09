@@ -1,8 +1,10 @@
 package me.devsaki.hentoid.util;
 
+import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
 
 import androidx.annotation.NonNull;
@@ -147,5 +149,26 @@ public class HttpHelper {
         if (extIndex < 0 || extIndex < pathIndex) return "";
 
         return uriNoParams.substring(extIndex + 1);
+    }
+
+    @Nullable
+    private static String getDomainFromUri(@NonNull String uriStr) {
+        Uri uri = Uri.parse(uriStr);
+        String result = uri.getHost();
+        if (result != null && result.startsWith("www")) result = result.substring(3);
+        return result;
+    }
+
+    /**
+     * Set a new cookie for the domain of the given url
+     * If the cookie already exists, replace it
+     *
+     * @param url         Full URL of the cookie
+     * @param cookieName  Name of the cookie
+     * @param cookieValue Value of the cookie
+     */
+    public static void setDomainCookie(String url, String cookieName, String cookieValue) {
+        CookieManager mgr = CookieManager.getInstance();
+        mgr.setCookie(getDomainFromUri(url), cookieName + "=" + cookieValue);
     }
 }

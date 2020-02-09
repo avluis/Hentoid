@@ -901,8 +901,10 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
                             String[] parts = cookieStr.split(";");
 
                             String cookie = parts[0].trim();
-                            if (cookie.contains("="))
-                                CookieManager.getInstance().setCookie(urlStr, cookie);
+                            if (cookie.contains("=")) {
+                                String[] cookieParts = cookie.split("=");
+                                HttpHelper.setDomainCookie(urlStr, cookieParts[0], cookieParts[1]);
+                            }
                         }
                     }
                 } else {
