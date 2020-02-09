@@ -656,7 +656,11 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     public void onResultReady(@NonNull Content results, boolean quickDownload) {
         int status = processContent(results, quickDownload);
-        if (quickDownload && STATUS_UNKNOWN == status) processDownload(quickDownload);
+        if (quickDownload) {
+            if (STATUS_UNKNOWN == status) processDownload(quickDownload);
+            else if (STATUS_IN_COLLECTION == status) ToastUtil.toast(R.string.already_downloaded);
+            else if (STATUS_IN_QUEUE == status) ToastUtil.toast(R.string.already_queued);
+        }
     }
 
     public void onResultFailed() {

@@ -13,4 +13,5 @@
     <string name="downloading">Downloading</string>
     <string name="add_to_queue">Adding to queue</string>
     <string name="already_downloaded">Already downloaded</string>
+    <string name="already_queued">Already queued</string>
 </resources>
