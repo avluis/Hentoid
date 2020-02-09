@@ -112,6 +112,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
                 && TYPE_OTHER == viewHolder.imgType) {
             CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) viewHolder.imgView;
             ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
+            if (!Preferences.isViewerZoomTransitions()) ssView.setDoubleTapZoomDuration(10);
         }
 
         int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
