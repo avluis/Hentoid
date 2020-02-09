@@ -28,6 +28,7 @@ public enum Site {
     MUSES(11, "8Muses", "https://www.8muses.com", "8muses", R.drawable.ic_menu_8muses, true, false, false, false),
     DOUJINS(12, "doujins.com", "https://doujins.com/", "doujins", R.drawable.ic_menu_doujins, true, false, false, false),
     LUSCIOUS(13, "luscious.net", "https://members.luscious.net/manga/", "luscious", R.drawable.ic_menu_luscious, true, false, false, false),
+    EXHENTAI(14, "exhentai", "https://exhentai.org", "exhentai", R.drawable.ic_menu_exhentai, true, false, false, true),
     NONE(98, "none", "", "none", R.drawable.ic_info, true, true, false, false), // Fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true, true, false, false); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 

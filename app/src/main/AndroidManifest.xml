@@ -75,6 +75,9 @@
             android:name=".activities.sources.LusciousActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.ExHentaiActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -227,6 +230,17 @@
                 <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
                 <data
                     android:host="e-hentai.org"
+                    android:pathPrefix="/g/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://exhentai.org/" -->
+                <data
+                    android:host="exhentai.org"
                     android:pathPrefix="/g/"
                     android:scheme="https" />
             </intent-filter>

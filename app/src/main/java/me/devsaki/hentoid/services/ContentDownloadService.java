@@ -320,8 +320,12 @@ public class ContentDownloadService extends IntentService {
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
 
         // == DOWNLOAD PHASE ==
-        // Queue image download requests
+
+        // Forge a request for the book's cover
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
+        cover.setDownloadParams(content.getDownloadParams());
+
+        // Queue image download requests
         Site site = content.getSite();
         requestQueueManager = RequestQueueManager.getInstance(this, site.isAllowParallelDownloads());
         requestQueueManager.queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));

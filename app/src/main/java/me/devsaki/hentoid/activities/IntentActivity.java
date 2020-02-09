@@ -93,6 +93,7 @@ public class IntentActivity extends AppCompatActivity {
             case PURURIN:
                 return toParse.replace("/gallery", "") + "/";
             case EHENTAI:
+            case EXHENTAI:
                 return toParse.replace("g/", "");
             case FAKKU2:
                 return toParse.replace("/hentai", "");

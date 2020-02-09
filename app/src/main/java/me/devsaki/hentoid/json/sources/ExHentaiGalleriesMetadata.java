@@ -11,15 +11,15 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
-public class EHentaiGalleriesMetadata {
-    private List<EHentaiGalleryMetadata> gmetadata;
+public class ExHentaiGalleriesMetadata {
+    private List<ExHentaiGalleryMetadata> gmetadata;
 
     public Content toContent(@Nonnull String url) {
         return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).toContent(url) : new Content();
     }
 
 
-    public static class EHentaiGalleryMetadata {
+    public static class ExHentaiGalleryMetadata {
 
         private String gid;
         private String token;
@@ -41,7 +41,7 @@ public class EHentaiGalleriesMetadata {
         public Content toContent(@Nonnull String url) {
             Content result = new Content();
 
-            result.setSite(Site.EHENTAI);
+            result.setSite(Site.EXHENTAI);
 
             result.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
                     .setCoverImageUrl(thumb)
@@ -81,7 +81,7 @@ public class EHentaiGalleriesMetadata {
                     }
                 }
 
-                attributes.add(new Attribute(type, name, type.name() + "/" + name, Site.EHENTAI));
+                attributes.add(new Attribute(type, name, type.name() + "/" + name, Site.EXHENTAI));
             }
             result.addAttributes(attributes);
 

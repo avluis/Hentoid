@@ -20,6 +20,7 @@ import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
 import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
+import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
@@ -142,6 +143,7 @@ public class Content implements Serializable {
             case FAKKU:
                 return url.substring(url.lastIndexOf('/') + 1);
             case EHENTAI:
+            case EXHENTAI:
             case PURURIN:
                 paths = url.split("/");
                 return (paths.length > 1) ? paths[1] : paths[0];
@@ -201,6 +203,7 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case EHENTAI:
+            case EXHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
             case HENTAICAFE:
@@ -231,6 +234,8 @@ public class Content implements Serializable {
                 return PururinActivity.class;
             case EHENTAI:
                 return EHentaiActivity.class;
+            case EXHENTAI:
+                return ExHentaiActivity.class;
             case FAKKU2:
                 return FakkuActivity.class;
             case NEXUS:
@@ -283,6 +288,7 @@ public class Content implements Serializable {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case EHENTAI:           // Won't work because of the temporary key
+            case EXHENTAI:          // Won't work because of the temporary key
             case NHENTAI:
                 galleryConst = "/g";
                 break;
@@ -320,6 +326,7 @@ public class Content implements Serializable {
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
             case EHENTAI:               // Won't work anyway because of the temporary key
+            case EXHENTAI:              // Won't work anyway because of the temporary key
             case NHENTAI:
             case PANDA:
             case DOUJINS:
