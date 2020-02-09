@@ -259,6 +259,18 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, Default.PREF_VIEWER_INVERT_VOLUME_ROCKER);
     }
 
+    public static boolean isViewerTapToTurn() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_PAGE_TURN_TAP, Default.PREF_VIEWER_PAGE_TURN_TAP);
+    }
+
+    public static boolean isViewerSwipeToTurn() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_PAGE_TURN_SWIPE, Default.PREF_VIEWER_PAGE_TURN_SWIPE);
+    }
+
+    public static boolean isViewerVolumeToTurn() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_PAGE_TURN_VOLUME, Default.PREF_VIEWER_PAGE_TURN_VOLUME);
+    }
+
     public static boolean isOpenBookInGalleryMode() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_OPEN_GALLERY, Default.PREF_VIEWER_OPEN_GALLERY);
     }

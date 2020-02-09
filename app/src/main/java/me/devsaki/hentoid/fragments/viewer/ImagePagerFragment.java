@@ -590,6 +590,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      */
     private void nextPage() {
         if (imageIndex == maxPosition) return;
+
         if (Preferences.isViewerTapTransitions())
             recyclerView.smoothScrollToPosition(imageIndex + 1);
         else
@@ -601,6 +602,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      */
     private void previousPage() {
         if (imageIndex == 0) return;
+
         if (Preferences.isViewerTapTransitions())
             recyclerView.smoothScrollToPosition(imageIndex - 1);
         else
@@ -683,6 +685,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onLeftTap() {
         // Side-tapping disabled when view is zoomed
         if (recyclerView.getCurrentScale() != 1.0) return;
+        // Side-tapping disabled when disabled in preferences
+        if (!Preferences.isViewerTapToTurn()) return;
 
         if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
             previousPage();
@@ -696,6 +700,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onRightTap() {
         // Side-tapping disabled when view is zoomed
         if (recyclerView.getCurrentScale() != 1.0) return;
+        // Side-tapping disabled when disabled in preferences
+        if (!Preferences.isViewerTapToTurn()) return;
 
         if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
             nextPage();
