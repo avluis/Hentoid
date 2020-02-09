@@ -40,7 +40,7 @@ public final class ActivatedPinPreferenceFragment extends Fragment
         boolean lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore();
         Switch lockOnAppRestored = requireViewById(rootView, R.id.switch_lock_on_restore);
         lockOnAppRestored.setChecked(lockOnAppRestoredEnabled);
-        lockOnAppRestored.setOnCheckedChangeListener((b, v) -> onRestoreClick(v));
+        lockOnAppRestored.setOnCheckedChangeListener((b, v) -> onLockOnAppRestoreClick(v));
 
         int lockTimer = Preferences.getLockTimer();
         lockDelaySpinner = requireViewById(rootView, R.id.lock_timer);
@@ -79,7 +79,7 @@ public final class ActivatedPinPreferenceFragment extends Fragment
         fragment.show(getChildFragmentManager(), null);
     }
 
-    private void onRestoreClick(boolean newValue) {
+    private void onLockOnAppRestoreClick(boolean newValue) {
         Preferences.setLockOnAppRestore(newValue);
         lockDelaySpinner.setVisibility(newValue ? View.VISIBLE : View.GONE);
     }
