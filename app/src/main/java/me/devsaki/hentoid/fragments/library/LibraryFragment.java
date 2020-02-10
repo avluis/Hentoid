@@ -74,6 +74,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -542,13 +543,38 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private void redownloadSelectedItems() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+
+        int securedContent = 0;
         List<Content> contents = new ArrayList<>();
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
-            c.setStatus(StatusContent.ONLINE); // Mark the book for a redownload
-            contents.add(c);
+            if (c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)) {
+                securedContent++;
+            } else {
+                contents.add(ci.getContent());
+            }
         }
-        downloadContent(contents, true);
+
+        // TODO make it work for secured sites (Fakku, ExHentai) -> open a browser to fetch the relevant cookies ?
+
+        if (securedContent > 0) {
+            new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                    .setIcon(R.drawable.ic_warning)
+                    .setCancelable(false)
+                    .setTitle(R.string.app_name)
+                    .setMessage(getResources().getQuantityString(R.plurals.secured_content, securedContent))
+                    .setPositiveButton(android.R.string.yes,
+                            (dialog1, which) -> {
+                                dialog1.dismiss();
+                                downloadContent(contents, true);
+                            })
+                    .setNegativeButton(android.R.string.no,
+                            (dialog12, which) -> dialog12.dismiss())
+                    .create()
+                    .show();
+        } else {
+            downloadContent(contents, true);
+        }
     }
 
     /**
