@@ -31,6 +31,11 @@ public class ExHentaiActivity extends BaseWebActivity {
     private static final String DOMAIN_FILTER = "exhentai.org";
     private static final String[] GALLERY_FILTER = {"exhentai.org/g/[0-9]+/[A-Za-z0-9\\-_]+"};
 
+    // Store cookies in a member variable during onPageStarted
+    // to avoid freezing the app when calling CookieManager.getInstance() during parseResponse
+    // under Android 4.4 & 4.4.2
+    private String exhCookiesStr = "";
+
     Site getStartSite() {
         return Site.EXHENTAI;
     }
@@ -40,7 +45,7 @@ public class ExHentaiActivity extends BaseWebActivity {
         CustomWebViewClient client = new ExHentaiWebClient(GALLERY_FILTER, this);
         CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");
 //        client.restrictTo(DOMAIN_FILTER);
-        // E-h serves images through hosts that use http connections, which is detected as "mixed content" by the app
+        // ExH serves images through hosts that use http connections, which is detected as "mixed content" by the app
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         return client;
@@ -53,22 +58,28 @@ public class ExHentaiActivity extends BaseWebActivity {
         }
 
         @Override
-        //public void onPageFinished(WebView view, String url) {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            //super.onPageFinished(view, url);
             super.onPageStarted(view, url, favicon);
 
             if (url.startsWith("https://exhentai.org")) {
                 CookieManager mgr = CookieManager.getInstance();
                 String existingCookiesStr = mgr.getCookie(".exhentai.org");
-                if (!existingCookiesStr.contains("ipb_member_id="))
+                if (existingCookiesStr != null && !existingCookiesStr.contains("ipb_member_id=")) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        mgr.removeAllCookies(null);
+                    } else {
+                        mgr.removeAllCookie();
+                    }
                     webView.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/");
+                } else {
+                    exhCookiesStr = existingCookiesStr;
+                }
             }
 
             if (url.startsWith("https://forums.e-hentai.org/index.php")) {
                 CookieManager mgr = CookieManager.getInstance();
                 String existingCookiesStr = mgr.getCookie(".e-hentai.org");
-                if (existingCookiesStr.contains("ipb_member_id="))
+                if (existingCookiesStr != null && existingCookiesStr.contains("ipb_member_id="))
                     webView.loadUrl("https://exhentai.org/");
             }
         }
@@ -77,14 +88,11 @@ public class ExHentaiActivity extends BaseWebActivity {
         // We keep calling the API without using BaseWebActivity.parseResponse
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-            //ipb_member_id={0}; ipb_pass_hash={1}
-
-            CookieManager mgr = CookieManager.getInstance();
-            String cookiesStr = mgr.getCookie(".exhentai.org");
+            if (exhCookiesStr.isEmpty()) return null;
 
             String[] galleryUrlParts = urlStr.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
-            compositeDisposable.add(ExHentaiServer.API.getGalleryMetadata(query, cookiesStr)
+            compositeDisposable.add(ExHentaiServer.API.getGalleryMetadata(query, exhCookiesStr)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata ->
@@ -92,7 +100,7 @@ public class ExHentaiActivity extends BaseWebActivity {
                                 isHtmlLoaded = true;
                                 Content content = metadata.toContent(urlStr);
                                 Map<String, String> params = new HashMap<>();
-                                params.put(HttpHelper.HEADER_COOKIE_KEY, cookiesStr);
+                                params.put(HttpHelper.HEADER_COOKIE_KEY, exhCookiesStr);
                                 content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
                                 listener.onResultReady(content, quickDownload);
                             },
