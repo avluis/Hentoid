@@ -53,6 +53,8 @@ public class ContentQueueManager {
         return isQueueActive;
     }
 
+    void setInactive() { isQueueActive = false; }
+
     public void resumeQueue(Context context) {
         Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
         context.startService(intent);

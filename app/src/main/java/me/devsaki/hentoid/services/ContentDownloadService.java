@@ -129,6 +129,9 @@ public class ContentDownloadService extends IntentService {
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
+        if (notificationManager != null) notificationManager.cancel();
+        ContentQueueManager.getInstance().setInactive();
+
         Timber.d("Download service destroyed");
 
         super.onDestroy();
