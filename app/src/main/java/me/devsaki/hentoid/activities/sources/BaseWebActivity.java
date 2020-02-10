@@ -73,9 +73,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
@@ -144,7 +144,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     // Currently viewed content
     private Content currentContent;
     // Database
-    private ObjectBoxDB db;
+    private CollectionDAO objectBoxDAO = new ObjectBoxDAO(getApplication().getApplicationContext());
     // Indicates which mode the download button is in
     protected int actionButtonMode;
     private CustomWebViewClient webClient;
@@ -217,8 +217,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         setContentView(R.layout.activity_base_web);
 
-        db = ObjectBoxDB.getInstance(this);
-
         if (getStartSite() == null) {
             Timber.w("Site is null!");
         } else {
@@ -264,7 +262,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         // Priority 2 : Last viewed position, if option activated
         if (Preferences.isBrowserResumeLast()) {
-            SiteHistory siteHistory = db.getHistory(getStartSite());
+            SiteHistory siteHistory = objectBoxDAO.getHistory(getStartSite());
             if (siteHistory != null && !siteHistory.getUrl().isEmpty()) return siteHistory.getUrl();
         }
 
@@ -315,7 +313,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     @Override
     protected void onStop() {
-        db.insertSiteHistory(getStartSite(), webView.getUrl());
+        objectBoxDAO.insertSiteHistory(getStartSite(), webView.getUrl());
         super.onStop();
     }
 
@@ -521,7 +519,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         if (MODE_DL == actionButtonMode) processDownload(false);
         else if (MODE_QUEUE == actionButtonMode) goToQueue();
         else if (MODE_READ == actionButtonMode && currentContent != null) {
-            currentContent = db.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
+            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
             if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()
                     || StatusContent.MIGRATED == currentContent.getStatus()))
@@ -551,7 +549,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         if (null == currentContent) return;
 
         if (currentContent.getId() > 0)
-            currentContent = db.selectContentById(currentContent.getId());
+            currentContent = objectBoxDAO.selectContent(currentContent.getId());
 
         if (null == currentContent) return;
 
@@ -562,15 +560,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         }
         ToastUtil.toast(R.string.add_to_queue);
 
-        currentContent.setStatus(StatusContent.DOWNLOADING);
-        db.insertContent(currentContent);
-
-        List<QueueRecord> queue = db.selectQueue();
-        int lastIndex = 1;
-        if (!queue.isEmpty()) {
-            lastIndex = queue.get(queue.size() - 1).rank + 1;
-        }
-        db.insertQueue(currentContent.getId(), lastIndex);
+        objectBoxDAO.addContentToQueue(currentContent, null);
 
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
 
@@ -619,7 +609,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         if (null == content.getUrl()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
-        Content contentDB = db.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
+        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
 
         boolean isInCollection = (contentDB != null && (
                 contentDB.getStatus().equals(StatusContent.DOWNLOADED)
@@ -635,7 +625,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
                 content.setStatus(StatusContent.SAVED);
                 content.populateAuthor();
-                db.insertContent(content);
+                objectBoxDAO.insertContent(content);
             } else {
                 content = contentDB;
             }

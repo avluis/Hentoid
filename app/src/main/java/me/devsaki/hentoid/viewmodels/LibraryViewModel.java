@@ -26,9 +26,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.ActivePagedList;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -43,7 +45,7 @@ import static me.devsaki.hentoid.util.FileHelper.AUTHORIZED_CHARS;
 public class LibraryViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final ObjectBoxDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
     // Library search manager
     private final ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
     // Cleanup for all RxJava calls
@@ -240,8 +242,8 @@ public class LibraryViewModel extends AndroidViewModel {
      *
      * @param content Content to be added to the download queue
      */
-    public void addContentToQueue(@NonNull final Content content) {
-        collectionDao.addContentToQueue(content);
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
+        collectionDao.addContentToQueue(content, targetImageStatus);
     }
 
     /**

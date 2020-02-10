@@ -548,7 +548,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             c.setStatus(StatusContent.ONLINE); // Mark the book for a redownload
             contents.add(c);
         }
-        downloadContent(contents);
+        downloadContent(contents, true);
     }
 
     /**
@@ -1108,11 +1108,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public void downloadContent(@NonNull final Content content) {
         List<Content> contentList = new ArrayList<>();
         contentList.add(content);
-        downloadContent(contentList);
+        downloadContent(contentList, false);
     }
 
-    private void downloadContent(@NonNull final List<Content> contentList) {
-        for (Content c : contentList) viewModel.addContentToQueue(c);
+    private void downloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
+        StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
+        for (Content c : contentList) viewModel.addContentToQueue(c, targetImageStatus);
 
         if (Preferences.isQueueAutostart())
             ContentQueueManager.getInstance().resumeQueue(getContext());
