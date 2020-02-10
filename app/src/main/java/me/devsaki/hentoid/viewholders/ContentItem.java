@@ -15,14 +15,18 @@ import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
@@ -34,7 +38,10 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.HttpHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
+import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -188,7 +195,38 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         }
 
         private void attachCover(Content content) {
+            String thumbLocation = ContentHelper.getThumb(content);
             Context context = ivCover.getContext();
+
+            // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
+            if (thumbLocation.startsWith("http")
+                    && content.getDownloadParams() != null
+                    && content.getDownloadParams().length() > 2 // Avoid empty and "{}"
+                    && content.getDownloadParams().contains(HttpHelper.HEADER_COOKIE_KEY)) {
+
+                Map<String, String> downloadParams = null;
+                try {
+                    downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
+                } catch (IOException e) {
+                    Timber.w(e);
+                }
+
+                if (downloadParams != null && downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
+                    String cookiesStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                    if (cookiesStr != null) {
+                        LazyHeaders.Builder builder = new LazyHeaders.Builder()
+                                .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookiesStr);
+
+                        GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
+                        Glide.with(context.getApplicationContext())
+                                .load(glideUrl)
+                                .apply(glideRequestOptions)
+                                .into(ivCover);
+                        return;
+                    }
+                }
+            }
+
             Glide.with(context.getApplicationContext())
                     .load(ContentHelper.getThumb(content))
                     .apply(glideRequestOptions)
