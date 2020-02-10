@@ -3,14 +3,12 @@ package me.devsaki.hentoid.activities;
 import android.os.Bundle;
 import android.view.WindowManager;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 
 /**
  * Handles hosting of QueueFragment for a single screen.
