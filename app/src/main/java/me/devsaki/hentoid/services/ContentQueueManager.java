@@ -65,8 +65,8 @@ public class ContentQueueManager {
         return downloadCount;
     }
 
-    public void setDownloadCount(int downloadCount) {
-        this.downloadCount = downloadCount;
+    public void resetDownloadCount() {
+        this.downloadCount = 0;
     }
 
     /**
