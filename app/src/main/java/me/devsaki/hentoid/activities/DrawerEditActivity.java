@@ -3,7 +3,6 @@ package me.devsaki.hentoid.activities;
 import android.os.Bundle;
 import android.view.View;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,7 +19,6 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.SiteItem;
 
 /**
@@ -116,7 +114,7 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
 
     @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
-        DragDropUtil.INSTANCE.onMove(itemAdapter, oldPosition, newPosition); // change position
+        DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
         return true;
     }
 }
