@@ -144,7 +144,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     // Currently viewed content
     private Content currentContent;
     // Database
-    private CollectionDAO objectBoxDAO = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private CollectionDAO objectBoxDAO;
     // Indicates which mode the download button is in
     protected int actionButtonMode;
     private CustomWebViewClient webClient;
@@ -214,6 +214,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         ThemeHelper.applyTheme(this);
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+
+        objectBoxDAO = new ObjectBoxDAO(this);
 
         setContentView(R.layout.activity_base_web);
 
