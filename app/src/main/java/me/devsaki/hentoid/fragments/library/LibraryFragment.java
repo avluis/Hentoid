@@ -727,7 +727,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     private void customBackPress() {
         // If content is selected, deselect it
-        if (selectExtension.getSelectedItems().size() > 0) {
+        if (!selectExtension.getSelectedItems().isEmpty()) {
             selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
             backButtonPressed = 0;
