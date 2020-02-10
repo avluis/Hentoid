@@ -226,8 +226,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
 
-
-        public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
         if (targetImageStatus != null && content.getImageFiles() != null)
             for (ImageFile im : content.getImageFiles())
                 db.updateImageFileStatusAndParams(im.setStatus(targetImageStatus));
