@@ -77,6 +77,13 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        UnlockPinDialogFragment.invoke(getSupportFragmentManager());
+    }
+
+    @Override
     public void onPinSuccess() {
         HentoidApp.setUnlocked(true);
         goToNextActivity();
