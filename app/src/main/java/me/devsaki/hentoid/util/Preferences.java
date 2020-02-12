@@ -5,8 +5,11 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
+import androidx.documentfile.provider.DocumentFile;
+
 import com.annimon.stream.Stream;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -76,6 +79,15 @@ public final class Preferences {
             int colorTheme = (0 == darkMode) ? Constant.COLOR_THEME_LIGHT : Constant.COLOR_THEME_DARK;
             sharedPreferences.edit().putString(Key.PREF_COLOR_THEME, colorTheme + "").apply();
             sharedPreferences.edit().remove(Key.DARK_MODE).apply();
+        }
+
+        if (sharedPreferences.contains(Key.PREF_SETTINGS_FOLDER)) {
+            String folder = sharedPreferences.getString(Key.PREF_SETTINGS_FOLDER, "");
+            DocumentFile docFile = FileHelper.getDocumentFile(new File(folder), true);
+            if (docFile != null) {
+                sharedPreferences.edit().putString(Key.PREF_SD_STORAGE_URI, docFile.getUri().toString()).apply();
+                sharedPreferences.edit().remove(Key.PREF_SETTINGS_FOLDER).apply();
+            }
         }
     }
 
@@ -166,16 +178,6 @@ public final class Preferences {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.PREF_FOLDER_NAMING_CONTENT_LISTS,
                         Default.PREF_FOLDER_NAMING_CONTENT_DEFAULT + "") + "");
-    }
-
-    public static String getRootFolderName() {
-        return sharedPreferences.getString(Key.PREF_SETTINGS_FOLDER, "");
-    }
-
-    static boolean setRootFolderName(String rootFolderName) {
-        return sharedPreferences.edit()
-                .putString(Key.PREF_SETTINGS_FOLDER, rootFolderName)
-                .commit();
     }
 
     public static int getWebViewInitialZoom() {

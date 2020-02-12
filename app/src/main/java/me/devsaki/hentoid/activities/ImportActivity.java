@@ -70,8 +70,8 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     private static final String REFRESH_OPTIONS = "refreshOptions";
 
 
-    private File currentRootDir;
-    private File prevRootDir;
+    private DocumentFile currentRootDir;
+    private DocumentFile prevRootDir;
     private OnBackPressedCallback callback;
     private boolean calledByPrefs = false;              // True if activity has been called by PrefsActivity
     private boolean useDefaultFolder = false;           // True if activity has been called by IntroActivity and user has selected default storage
@@ -143,8 +143,8 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
 
     private void prepImport(Bundle savedState) {
         if (savedState != null) {
-            currentRootDir = (File) savedState.getSerializable(CURRENT_DIR);
-            prevRootDir = (File) savedState.getSerializable(PREV_DIR);
+            currentRootDir = DocumentFile.fromTreeUri(this, Uri.parse(savedState.getString(CURRENT_DIR)));
+            prevRootDir = DocumentFile.fromTreeUri(this, Uri.parse(savedState.getString(PREV_DIR)));
             calledByPrefs = savedState.getBoolean(CALLED_BY_PREFS);
             useDefaultFolder = savedState.getBoolean(USE_DEFAULT_FOLDER);
 
@@ -190,31 +190,32 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     }
 
     // Try and detect any ".Hentoid" or "Hentoid" folder inside the selected folder
-    private static File getExistingHentoidDirFrom(@NonNull File root) {
+    private static DocumentFile getExistingHentoidDirFrom(@NonNull DocumentFile root) {
 
-        if (!root.exists() || !root.isDirectory()) return root;
+        if (!root.exists() || !root.isDirectory() || null == root.getName()) return root;
 
         if (root.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
                 || root.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD))
             return root;
 
-        File[] hentoidDirs = root.listFiles(
+        List<DocumentFile> hentoidDirs = FileHelper.listFiles(root,
                 file -> (file.isDirectory() &&
                         (
-                                file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
-                                        || file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)
+                                file.getName() != null &&
+                                        (file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
+                                                || file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD))
                         )
                 )
         );
 
-        if (hentoidDirs != null && hentoidDirs.length > 0) return hentoidDirs[0];
+        if (!hentoidDirs.isEmpty()) return hentoidDirs.get(0);
         else return root;
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(CURRENT_DIR, currentRootDir);
-        outState.putSerializable(PREV_DIR, prevRootDir);
+        outState.putString(CURRENT_DIR, currentRootDir.getUri().toString());
+        outState.putString(PREV_DIR, prevRootDir.getUri().toString());
         outState.putBoolean(CALLED_BY_PREFS, calledByPrefs);
         outState.putBoolean(USE_DEFAULT_FOLDER, useDefaultFolder);
 
@@ -254,12 +255,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     }
 
     // Present Directory Picker
-    private void pickDownloadDirectory(@NonNull final File dir) {
-        if (FileHelper.isOnExtSdCard(dir) && !FileHelper.isWritable(dir)) {
-            Timber.d("Inaccessible: moving back to default directory.");
-            currentRootDir = new File(Environment.getExternalStorageDirectory() +
-                    File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator);
-        }
+    private void pickDownloadDirectory() {
         if (useDefaultFolder) {
             prevRootDir = currentRootDir;
             initImport();
@@ -269,8 +265,6 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     }
 
     private void initImport() {
-        Timber.d("Clearing SAF");
-        FileHelper.clearUri();
         revokePermission();
 
         Timber.d("Storage Path: %s", currentRootDir);
@@ -346,6 +340,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
 
     // Return from SAF picker
     public void onSelectSAFRootFolder(@NonNull Uri treeUri) {
+        /*
         String treePath = treeUri.getPath();
 
         if (null == treePath) {
@@ -375,6 +370,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
 
          This is what the following block is trying to do
          */
+        /*
         for (String s : removableMediaFolderRoots) {
             String sRoot = s.substring(s.lastIndexOf(File.separatorChar));
             String treeRoot = treePath.substring(0, treePathSeparator);
@@ -387,11 +383,12 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
                 break;
             }
         }
-
+*/
         /* In some other cases, there is no common name (e.g. /storage/sdcard1 vs. /tree/3437-3934)
 
             We can use a slower method to translate the Uri obtained with SAF into a pre-SAF path
             and compare it to the known removable media volume names */
+        /*
         if (null == selectedFolder) {
             for (String s : removableMediaFolderRoots) {
                 String treeRoot = FileHelper.getFullPathFromTreeUri(treeUri, this);
@@ -409,16 +406,25 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
             FileHelper.clearUri();
             selectedFolder = new File(Environment.getExternalStorageDirectory(), folderName);
         }
+         */
 
-        finalizeSelectRootFolder(selectedFolder);
+        DocumentFile docFile = DocumentFile.fromTreeUri(this, treeUri);
+        if (null == docFile) {
+            String message = String.format("Could not find the selected file %s", treeUri.toString());
+            Timber.e(message);
+            exit(RESULT_CANCELED, message);
+            return;
+        }
+
+        finalizeSelectRootFolder(docFile);
     }
 
-    private void finalizeSelectRootFolder(@NonNull final File targetFolder) {
+    private void finalizeSelectRootFolder(@NonNull final DocumentFile targetFolder) {
         String message;
         boolean success = false;
 
         // Add the Hentoid folder at the end of the path, if not present
-        File folder = addHentoidFolder(targetFolder);
+        DocumentFile folder = addHentoidFolder(targetFolder);
 
         if (!folder.exists()) {
             // Try and create directory; test if writable
@@ -437,15 +443,17 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         if (success) importFolder(folder);
     }
 
-    private File addHentoidFolder(@NonNull final File baseFolder) {
+    private DocumentFile addHentoidFolder(@NonNull final DocumentFile baseFolder) {
         String folderName = baseFolder.getName();
+        if (null == folderName) folderName = "";
+
         // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
         if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)) {
-            File targetFolder = getExistingHentoidDirFrom(baseFolder);
+            DocumentFile targetFolder = getExistingHentoidDirFrom(baseFolder);
 
             // If not, create one
-            if (targetFolder.getAbsolutePath().equals(baseFolder.getAbsolutePath()))
-                return new File(targetFolder, Consts.DEFAULT_LOCAL_DIRECTORY);
+            if (targetFolder.getUri().equals(baseFolder.getUri()))
+                return targetFolder.createDirectory(Consts.DEFAULT_LOCAL_DIRECTORY);
             else return targetFolder;
         }
         return baseFolder;
@@ -473,20 +481,20 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     // However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
     // and might cause freezes -> we stick to that approximate method for ImportActivity
     private boolean hasBooks() {
-        List<File> downloadDirs = new ArrayList<>();
+        List<DocumentFile> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDir(this, s));
+            downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDirSaf(this, s));
         }
 
-        for (File downloadDir : downloadDirs) {
-            File[] contentFiles = downloadDir.listFiles();
-            if (contentFiles != null && contentFiles.length > 0) return true;
+        for (DocumentFile downloadDir : downloadDirs) {
+            DocumentFile[] contentFiles = downloadDir.listFiles();
+            if (contentFiles.length > 0) return true;
         }
 
         return false;
     }
 
-    private void importFolder(File folder) {
+    private void importFolder(DocumentFile folder) {
         if (!FileHelper.checkAndSetRootFolder(folder.getAbsolutePath(), true)) {
             prepImport(null);
             return;

@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util;
 
+import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.squareup.moshi.JsonAdapter;
@@ -10,8 +11,8 @@ import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.util.Date;
@@ -32,7 +33,10 @@ public class JsonHelper {
         throw new IllegalStateException("Utility class");
     }
 
+    private static final String JSON_MIME_TYPE = "application/json";
+
     public static final Type MAP_STRINGS = Types.newParameterizedType(Map.class, String.class, String.class);
+
     private static final Moshi MOSHI = new Moshi.Builder()
             .add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new AttributeType.AttributeTypeAdapter())
@@ -62,6 +66,19 @@ public class JsonHelper {
         return file;
     }
 
+    public static <K> DocumentFile createJson(K object, Type type, @NonNull DocumentFile dir) throws IOException {
+        DocumentFile file = dir.createFile(JSON_MIME_TYPE, Consts.JSON_FILE_NAME_V2);
+
+        if (null == file)
+            throw new IOException("Failed creating file " + Consts.JSON_FILE_NAME_V2 + " in " + dir.getUri().getPath());
+
+        try (OutputStream output = FileHelper.getOutputStream(file)) {
+            if (output != null) updateJson(object, type, output);
+            else Timber.w("JSON file creation failed for %s", file.getUri().getPath());
+        }
+        return file;
+    }
+
     /**
      * Serialize and save the object contents to an existing file using the JSON format
      *
@@ -86,11 +103,11 @@ public class JsonHelper {
         output.flush();
     }
 
-    public static <T> T jsonToObject(File f, Class<T> type) throws IOException {
+    public static <T> T jsonToObject(DocumentFile f, Class<T> type) throws IOException {
         StringBuilder json = new StringBuilder();
         String sCurrentLine;
         boolean isFirst = true;
-        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(FileHelper.getInputStream(f)))) {
             while ((sCurrentLine = br.readLine()) != null) {
                 if (isFirst) {
                     // Strip UTF-8 BOMs if any

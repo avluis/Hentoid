@@ -32,8 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -309,6 +307,10 @@ public class FileHelper {
         return FileUtil.getInputStream(target);
     }
 
+    static InputStream getInputStream(@NonNull final DocumentFile target) throws IOException {
+        return FileUtil.getInputStream(target);
+    }
+
     /**
      * Create a folder.
      *
@@ -427,31 +429,6 @@ public class FileHelper {
     }
 
     /**
-     * Recursively search for files of a given type from a base directory
-     *
-     * @param workingDir the base directory
-     * @return list containing all files with matching extension
-     */
-    public static List<File> findFilesRecursively(File workingDir, String extension) {
-        return findFilesRecursively(workingDir, extension, 0);
-    }
-
-    private static List<File> findFilesRecursively(File workingDir, String extension, int depth) {
-        List<File> files = new ArrayList<>();
-        File[] baseDirs = workingDir.listFiles(pathname -> (pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension)));
-
-        for (File entry : baseDirs) {
-            if (entry.isDirectory()) {
-                if (depth < 6)
-                    files.addAll(findFilesRecursively(entry, extension, depth + 1)); // Hard recursive limit to avoid catastrophes
-            } else {
-                files.add(entry);
-            }
-        }
-        return files;
-    }
-
-    /**
      * Open the given file using the device's app(s) of choice
      *
      * @param context Context
@@ -538,7 +515,7 @@ public class FileHelper {
 
     // Please don't delete this method!
     // I need some way to trace actions when working with SD card features - Robb
-    public static void createFileWithMsg(@Nonnull String file, String msg) {
+    public static void createFileWithMsg(@NonNull String file, String msg) {
         try {
             FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
             Timber.i(">>file %s -> %s", file, msg);
@@ -548,7 +525,7 @@ public class FileHelper {
     }
 
     @Nullable
-    public static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
+    public static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
         return FileUtil.getDocumentFile(file, isDirectory);
     }
 
@@ -558,6 +535,16 @@ public class FileHelper {
         sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
         sharingIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(context, FileHelper.AUTHORITY, f));
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
+    }
+
+    public static List<DocumentFile> listFiles(@NonNull DocumentFile parent, FileFilter filter) {
+        List<DocumentFile> result = new ArrayList<>();
+
+        DocumentFile[] files = parent.listFiles();
+        for (DocumentFile file : files)
+            if (filter.accept(file)) result.add(file);
+
+        return result;
     }
 
     public static class MemoryUsageFigures {
@@ -578,4 +565,19 @@ public class FileHelper {
             return Math.round(freeMemBytes / 1e6) + "/" + Math.round(totalMemBytes / 1e6);
         }
     }
+
+    @FunctionalInterface
+    public interface FileFilter {
+
+        /**
+         * Tests whether or not the specified abstract pathname should be
+         * included in a pathname list.
+         *
+         * @param pathname The abstract pathname to be tested
+         * @return <code>true</code> if and only if <code>pathname</code>
+         * should be included
+         */
+        boolean accept(DocumentFile pathname);
+    }
+
 }

@@ -9,13 +9,13 @@ import android.util.Log;
 import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -144,14 +144,17 @@ public class ImportService extends IntentService {
         Content content = null;
         List<String> log = new ArrayList<>();
 
-        File rootFolder = new File(Preferences.getRootFolderName());
+        DocumentFile rootFolder = FileHelper.getDocumentFile(new File(Preferences.getRootFolderName()), true);
+        if (null == rootFolder) {
+            Timber.e("rootFolder is not defined (%s)", Preferences.getRootFolderName());
+            return;
+        }
 
         // 1st pass : count subfolders of every site folder
-        List<File> files = new ArrayList<>();
-        File[] siteFolders = rootFolder.listFiles(File::isDirectory);
-        if (siteFolders != null) {
-            for (File f : siteFolders) files.addAll(Arrays.asList(f.listFiles(File::isDirectory)));
-        }
+        List<DocumentFile> files = new ArrayList<>();
+        List<DocumentFile> siteFolders = FileHelper.listFiles(rootFolder, DocumentFile::isDirectory);
+        for (DocumentFile f : siteFolders)
+            files.addAll(FileHelper.listFiles(f, DocumentFile::isDirectory));
 
         // 2nd pass : scan every folder for a JSON file or subdirectories
         String enabled = getApplication().getResources().getString(R.string.enabled);
@@ -162,18 +165,19 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
         trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
         for (int i = 0; i < files.size(); i++) {
-            File folder = files.get(i);
+            DocumentFile folder = files.get(i);
 
             // Detect the presence of images if the corresponding cleanup option has been enabled
             if (cleanNoImages) {
-                File[] images = folder.listFiles(
+                List<DocumentFile> images = FileHelper.listFiles(
+                        folder,
                         file -> (file.isDirectory() || Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName())))
                 );
 
-                if (images != null && 0 == images.length) { // No images nor subfolders
+                if (images.isEmpty()) { // No images nor subfolders
                     booksKO++;
-                    boolean success = FileHelper.removeFile(folder);
-                    trace(Log.INFO, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
+                    boolean success = folder.delete();
+                    trace(Log.INFO, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", folder.getUri().toString());
                     continue;
                 }
             }
@@ -185,15 +189,19 @@ public class ImportService extends IntentService {
                     if (rename) {
                         String canonicalBookDir = ContentHelper.formatDirPath(content);
 
-                        String[] currentPathParts = folder.getAbsolutePath().split(File.separator);
-                        String currentBookDir = File.separator + currentPathParts[currentPathParts.length - 2] + File.separator + currentPathParts[currentPathParts.length - 1];
+                        //String[] currentPathParts = folder.getAbsolutePath().split(File.separator);
+                        List<String> currentPathParts = folder.getUri().getPathSegments();
+                        String currentBookDir = File.separator + currentPathParts.get(currentPathParts.size() - 2) + File.separator + currentPathParts.get(currentPathParts.size() - 1);
 
                         if (!canonicalBookDir.equalsIgnoreCase(currentBookDir)) {
+                            /*
                             String settingDir = Preferences.getRootFolderName();
                             if (settingDir.isEmpty())
                                 settingDir = FileHelper.getDefaultDir(this, canonicalBookDir).getAbsolutePath();
+                            */
 
-                            if (FileHelper.renameDirectory(folder, new File(settingDir, canonicalBookDir))) {
+                            //if (FileHelper.renameDirectory(folder, new File(settingDir, canonicalBookDir))) {
+                            if (folder.renameTo(canonicalBookDir)) {
                                 content.setStorageFolder(canonicalBookDir);
                                 trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
                             } else {
@@ -203,21 +211,21 @@ public class ImportService extends IntentService {
                     }
                     // TODO : Populate images when data is loaded from old JSONs (DoujinBuilder object)
                     ObjectBoxDB.getInstance(this).insertContent(content);
-                    trace(Log.INFO, log, "Import book OK : %s", folder.getAbsolutePath());
+                    trace(Log.INFO, log, "Import book OK : %s", folder.getUri().toString());
                 } else { // JSON not found
-                    File[] subdirs = folder.listFiles(File::isDirectory);
-                    if (subdirs != null && subdirs.length > 0) // Folder doesn't contain books but contains subdirectories
+                    List<DocumentFile> subdirs = FileHelper.listFiles(folder, DocumentFile::isDirectory);
+                    if (!subdirs.isEmpty()) // Folder doesn't contain books but contains subdirectories
                     {
-                        files.addAll(Arrays.asList(subdirs));
-                        trace(Log.INFO, log, "Subfolders found in : %s", folder.getAbsolutePath());
+                        files.addAll(subdirs);
+                        trace(Log.INFO, log, "Subfolders found in : %s", folder.getUri().toString());
                         nbFolders++;
                         continue;
                     } else { // No JSON nor any subdirectory
-                        trace(Log.WARN, log, "Import book KO! (no JSON found) : %s", folder.getAbsolutePath());
+                        trace(Log.WARN, log, "Import book KO! (no JSON found) : %s", folder.getUri().toString());
                         // Deletes the folder if cleanup is active
                         if (cleanNoJSON) {
-                            boolean success = FileHelper.removeFile(folder);
-                            trace(Log.INFO, log, "[Remove no JSON %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
+                            boolean success = folder.delete();
+                            trace(Log.INFO, log, "[Remove no JSON %s] Folder %s", success ? "OK" : "KO", folder.getUri().toString());
                         }
                     }
                 }
@@ -228,16 +236,16 @@ public class ImportService extends IntentService {
                 if (null == content)
                     content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
-                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", jse.getMessage(), folder.getAbsolutePath());
+                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", jse.getMessage(), folder.getUri().toString());
                 if (cleanUnreadableJSON) {
-                    boolean success = FileHelper.removeFile(folder);
-                    trace(Log.INFO, log, "[Remove unreadable JSON %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
+                    boolean success = folder.delete();
+                    trace(Log.INFO, log, "[Remove unreadable JSON %s] Folder %s", success ? "OK" : "KO", folder.getUri().toString());
                 }
             } catch (Exception e) {
                 if (null == content)
                     content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
-                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", e.getMessage(), folder.getAbsolutePath());
+                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", e.getMessage(), folder.getUri().toString());
             }
 
             eventProgress(content, files.size() - nbFolders, booksOK, booksKO);
@@ -265,15 +273,15 @@ public class ImportService extends IntentService {
 
 
     @Nullable
-    private static Content importJson(File folder) throws JSONParseException {
-        File json = new File(folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
-        if (json.exists()) return importJsonV2(json);
+    private static Content importJson(DocumentFile folder) throws JSONParseException {
+        DocumentFile json = folder.findFile(Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
+        if (json != null && json.exists()) return importJsonV2(json);
 
-        json = new File(folder, Consts.JSON_FILE_NAME); // (v1) JSON file format
-        if (json.exists()) return importJsonV1(json);
+        json = folder.findFile(Consts.JSON_FILE_NAME); // (v1) JSON file format
+        if (json != null && json.exists()) return importJsonV1(json);
 
-        json = new File(folder, Consts.JSON_FILE_NAME_OLD); // (old) JSON file format (legacy and/or FAKKUDroid App)
-        if (json.exists()) return importJsonLegacy(json);
+        json = folder.findFile(Consts.JSON_FILE_NAME); // (old) JSON file format (legacy and/or FAKKUDroid App)
+        if (json != null && json.exists()) return importJsonLegacy(json);
 
         return null;
     }
@@ -316,7 +324,7 @@ public class ImportService extends IntentService {
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private static Content importJsonLegacy(File json) throws JSONParseException {
+    private static Content importJsonLegacy(DocumentFile json) throws JSONParseException {
         try {
             DoujinBuilder doujinBuilder =
                     JsonHelper.jsonToObject(json, DoujinBuilder.class);
@@ -353,9 +361,10 @@ public class ImportService extends IntentService {
             Content contentV2 = content.toV2Content();
 
             String fileRoot = Preferences.getRootFolderName();
-            contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
+            contentV2.setStorageFolder(json.getParentFile().getUri().getPath().substring(fileRoot.length())); // TODO look closer at that
 
-            JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getAbsoluteFile().getParentFile());
+            DocumentFile newJson = JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getParentFile());
+            contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
         } catch (Exception e) {
@@ -366,7 +375,7 @@ public class ImportService extends IntentService {
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private static Content importJsonV1(File json) throws JSONParseException {
+    private static Content importJsonV1(DocumentFile json) throws JSONParseException {
         try {
             ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
             if (content.getStatus() != StatusContent.DOWNLOADED
@@ -376,9 +385,10 @@ public class ImportService extends IntentService {
             Content contentV2 = content.toV2Content();
 
             String fileRoot = Preferences.getRootFolderName();
-            contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
+            contentV2.setStorageFolder(json.getParentFile().getUri().getPath().substring(fileRoot.length())); // TODO look closer at that
 
-            JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getAbsoluteFile().getParentFile());
+            DocumentFile newJson = JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getParentFile());
+            contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
         } catch (Exception e) {
@@ -388,13 +398,14 @@ public class ImportService extends IntentService {
     }
 
     @CheckResult
-    private static Content importJsonV2(File json) throws JSONParseException {
+    private static Content importJsonV2(DocumentFile json) throws JSONParseException {
         try {
             JsonContent content = JsonHelper.jsonToObject(json, JsonContent.class);
             Content result = content.toEntity();
+            result.setJsonUri(json.getUri().toString());
 
             String fileRoot = Preferences.getRootFolderName();
-            result.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
+            result.setStorageFolder(json.getParentFile().getUri().getPath().substring(fileRoot.length())); // TODO look closer at that
 
             if (result.getStatus() != StatusContent.DOWNLOADED
                     && result.getStatus() != StatusContent.ERROR) {

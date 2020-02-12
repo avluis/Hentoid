@@ -67,7 +67,7 @@ class FileUtil {
     }
 
     @Nullable
-    private static DocumentFile getOrCreateDocumentFile(@Nonnull final File file, boolean isDirectory) {
+    static DocumentFile getOrCreateDocumentFile(@Nonnull final File file, boolean isDirectory) {
         return getOrCreateDocumentFile(file, isDirectory, true);
     }
 
@@ -220,20 +220,18 @@ class FileUtil {
         }
 
         try {
-            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-                // Storage Access Framework
-                DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
-                if (targetDocument != null) {
-                    Context context = HentoidApp.getInstance();
-                    return context.getContentResolver().openInputStream(
-                            targetDocument.getUri());
-                }
-            }
+            DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
+            if (targetDocument != null) return getInputStream(targetDocument);
             throw new IOException("Error while attempting to get file : " + target.getAbsolutePath());
         } catch (Exception e) {
             Timber.e(e, "Error while attempting to get file: %s", target.getAbsolutePath());
             throw new IOException(e);
         }
+    }
+
+    static InputStream getInputStream(@NonNull final DocumentFile target) throws IOException {
+        Context context = HentoidApp.getInstance();
+        return context.getContentResolver().openInputStream(target.getUri());
     }
 
 
@@ -290,24 +288,16 @@ class FileUtil {
      * @return true if creation was successful or the folder already exists
      */
     static boolean makeDir(@NonNull final File file) {
-        if (file.exists()) {
-            // nothing to create.
-            return file.isDirectory();
-        }
+        // Nothing to create ?
+        if (file.exists()) return file.isDirectory();
 
         // Try the normal way
-        if (file.mkdirs()) {
-            return true;
-        }
+        if (file.mkdirs()) return true;
 
         // Try with Storage Access Framework.
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile document = getOrCreateDocumentFile(file, true);
-            // getOrCreateDocumentFile implicitly creates the directory.
-            if (document != null) {
-                return document.exists();
-            }
-        }
+        DocumentFile document = getOrCreateDocumentFile(file, true);
+        // getOrCreateDocumentFile implicitly creates the directory.
+        if (document != null) return document.exists();
 
         return false;
     }

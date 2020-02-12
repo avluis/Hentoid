@@ -17,13 +17,10 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
-import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -115,7 +112,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         }
     }
 
-    public void loadFromSearchParams(long contentId, @Nonnull Bundle bundle) {
+    public void loadFromSearchParams(long contentId, @NonNull Bundle bundle) {
         loadedContentId = contentId;
         searchManager = new ContentSearchManager(collectionDao);
         searchManager.loadFromBundle(bundle);
@@ -152,7 +149,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         if (imgs != null) sortAndSetImages(imgs, isShuffled);
     }
 
-    private void sortAndSetImages(@Nonnull List<ImageFile> imgs, boolean shuffle) {
+    private void sortAndSetImages(@NonNull List<ImageFile> imgs, boolean shuffle) {
         if (shuffle) {
             Collections.shuffle(imgs);
         } else {
@@ -287,7 +284,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         }
     }
 
-    private static void matchFilesToImageList(File[] files, @Nonnull List<ImageFile> images) {
+    private static void matchFilesToImageList(File[] files, @NonNull List<ImageFile> images) {
         int i = 0;
         while (i < images.size()) {
             boolean matchFound = false;
@@ -319,7 +316,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         }
     }
 
-    private void saveFilesToImageList(File[] files, @Nonnull List<ImageFile> images, @Nonnull Content content) {
+    private void saveFilesToImageList(File[] files, @NonNull List<ImageFile> images, @NonNull Content content) {
         int order = 0;
         // Sort files by name alpha
         List<File> fileList = Stream.of(files).sortBy(File::getName).collect(toList());
@@ -335,7 +332,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     }
 
     @WorkerThread
-    private Content postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
+    private Content postLoadProcessing(@NonNull Context context, @NonNull Content content) {
         cacheJson(content);
         return ContentHelper.updateContentReads(context, content);
     }
@@ -343,7 +340,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     // Cache JSON URI in the database to speed up favouriting
     // NB : Lollipop only because it must have _full_ support for SAF
     @WorkerThread
-    private void cacheJson(@Nonnull Content content) {
+    private void cacheJson(@NonNull Content content) {
         if (content.getJsonUri().isEmpty() && Build.VERSION.SDK_INT >= LOLLIPOP) {
             File bookFolder = ContentHelper.getContentDownloadDir(content);
             DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);

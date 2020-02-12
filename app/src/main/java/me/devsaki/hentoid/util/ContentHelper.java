@@ -151,6 +151,26 @@ public final class ContentHelper {
         );
     }
 
+    @Nullable
+    public static DocumentFile[] getPictureFilesFromContent(Content content) {
+        String rootFolderName = Preferences.getRootFolderName();
+        File dir = new File(rootFolderName, content.getStorageFolder());
+
+        Timber.d("Opening: %s from: %s", content.getTitle(), dir);
+        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
+            Timber.d("File not found!! Exiting method.");
+            ToastUtil.toast(R.string.sd_access_error);
+            return null;
+        }
+
+        return FileHelper.listFiles(dir,
+                file -> (file.isFile()
+                        && !file.getName().toLowerCase().startsWith("thumb")
+                        && Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName()))
+                )
+        );
+    }
+
 
     @WorkerThread
     public static void removeContent(@NonNull Content content) {
@@ -264,6 +284,29 @@ public final class ContentHelper {
         }
 
         return file;
+    }
+
+    public static DocumentFile getOrCreateSiteDownloadDirSaf(Context context, Site site) {
+        File file;
+        String settingDir = Preferences.getRootFolderName();
+        String folderDir = site.getFolder();
+        if (settingDir.isEmpty()) {
+            return FileUtil.getDocumentFile(getDefaultDir(context, folderDir), true);
+        }
+        file = new File(settingDir, folderDir);
+
+        return FileUtil.getOrCreateDocumentFile(file, true);
+
+        /*
+        if (!file.exists() && !FileUtil.makeDir(file)) {
+            file = new File(settingDir + folderDir);
+            if (!file.exists()) {
+                FileUtil.makeDir(file);
+            }
+        }
+
+                return FileUtil.getDocumentFile(file, true);
+         */
     }
 
     public static void shareContent(final Context context, final Content item) {
