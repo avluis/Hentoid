@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,7 +18,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.retrofit.GithubServer;
-import me.devsaki.hentoid.viewholders.GitHubReleaseDescItem;
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem;
 import timber.log.Timber;
 
@@ -32,9 +30,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 public class UpdateSuccessDialogFragment extends DialogFragment {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-
-    private TextView releaseName;
-    private ItemAdapter<GitHubReleaseDescItem> itemAdapter = new ItemAdapter<>();
+    private ItemAdapter<GitHubReleaseItem> itemAdapter = new ItemAdapter<>();
 
     public static void invoke(FragmentManager fragmentManager) {
         UpdateSuccessDialogFragment fragment = new UpdateSuccessDialogFragment();
@@ -46,11 +42,9 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         View rootView = inflater.inflate(R.layout.dialog_library_update_success, container, false);
 
-        releaseName = requireViewById(rootView, R.id.changelogReleaseTitle);
-
-        FastAdapter<GitHubReleaseDescItem> releaseDescriptionAdapter = FastAdapter.with(itemAdapter);
-        RecyclerView releaseDescription = requireViewById(rootView, R.id.changelogReleaseDescription);
-        releaseDescription.setAdapter(releaseDescriptionAdapter);
+        FastAdapter<GitHubReleaseItem> releaseItemAdapter = FastAdapter.with(itemAdapter);
+        RecyclerView releaseItem = requireViewById(rootView, R.id.changelogReleaseItem);
+        releaseItem.setAdapter(releaseItemAdapter);
 
         return rootView;
     }
@@ -76,24 +70,10 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     }
 
     private void onCheckSuccess(GitHubReleaseItem.Struct latestReleaseInfo) {
-        releaseName.setText(latestReleaseInfo.getName());
-        // Parse content and add lines to the description
-        for (String s : latestReleaseInfo.getBody().split("\\r\\n")) { // TODO - refactor this code with its copy in GitHubRelease
-            s = s.trim();
-            if (s.startsWith("-")) addListContent(s);
-            else addDescContent(s);
-        }
+        itemAdapter.add(new GitHubReleaseItem(latestReleaseInfo));
     }
 
     private void onCheckError(Throwable t) {
         Timber.w(t, "Error fetching GitHub latest release data");
-    }
-
-    private void addDescContent(String text) {
-        itemAdapter.add(new GitHubReleaseDescItem(text, GitHubReleaseDescItem.Type.DESCRIPTION));
-    }
-
-    private void addListContent(String text) {
-        itemAdapter.add(new GitHubReleaseDescItem(text, GitHubReleaseDescItem.Type.LIST_ITEM));
     }
 }
