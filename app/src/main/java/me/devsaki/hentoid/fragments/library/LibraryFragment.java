@@ -266,6 +266,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_library, container, false);
 
+        viewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
         Preferences.registerPrefsChangedListener(prefsListener);
 
         initUI(rootView);
@@ -281,10 +282,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
+
         viewModel.getNewSearch().observe(getViewLifecycleOwner(), this::onNewSearch);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
         viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
+
+        viewModel.updateOrder(); // Blank call to trigger the first search
     }
 
     /**
@@ -888,7 +891,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * Used in paged mode only
      */
     private void onBoundLoad() {
-        populateBookshelf(library, pager.getCurrentPageNumber());
+        if (library != null) populateBookshelf(library, pager.getCurrentPageNumber());
     }
 
     /**
@@ -969,7 +972,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param iLibrary    Library to display books from
      * @param shelfNumber Number of the shelf to display
      */
-    private void populateBookshelf(PagedList<Content> iLibrary, int shelfNumber) {
+    private void populateBookshelf(@NonNull PagedList<Content> iLibrary, int shelfNumber) {
         if (Preferences.getEndlessScroll()) return;
 
         ImmutablePair<Integer, Integer> bounds = getShelfBound(shelfNumber, iLibrary.size());
