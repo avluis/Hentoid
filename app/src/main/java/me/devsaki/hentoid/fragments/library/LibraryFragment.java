@@ -308,6 +308,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             metadata.clear();
             searchClearButton.setVisibility(View.GONE);
             viewModel.searchUniversal("");
+            advancedSearchBar.setVisibility(View.GONE);
         });
 
         // RecyclerView
