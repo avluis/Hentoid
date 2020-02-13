@@ -1086,7 +1086,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param item ContentItem that has been clicked on
      */
-    private boolean onBookClick(ContentItem item, int position) {
+    private boolean onBookClick(@NonNull ContentItem item, int position) {
         if (0 == selectExtension.getSelectedItems().size()) {
             if (!invalidateNextBookClick && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
@@ -1105,7 +1105,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content whose "source" button has been clicked on
      */
-    private void onBookSourceClick(Content content) {
+    private void onBookSourceClick(@NonNull Content content) {
         ContentHelper.viewContent(requireContext(), content);
     }
 
@@ -1114,7 +1114,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content whose "favourite" button has been clicked on
      */
-    private void onBookFavouriteClick(Content content) {
+    private void onBookFavouriteClick(@NonNull Content content) {
         viewModel.toggleContentFavourite(content);
     }
 
@@ -1123,7 +1123,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content whose "error" button has been clicked on
      */
-    private void onBookErrorClick(Content content) {
+    private void onBookErrorClick(@NonNull Content content) {
         ErrorsDialogFragment.invoke(this, content.getId());
     }
 
