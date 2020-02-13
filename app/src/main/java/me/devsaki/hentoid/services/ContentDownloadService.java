@@ -415,6 +415,7 @@ public class ContentDownloadService extends IntentService {
             if (pagesKO > 0 && Preferences.isDlRetriesActive()
                     && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
                     && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
+                    && requestQueueManager != null
             ) {
                 Timber.i("Auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries(), content.getTitle(), freeSpaceRatio);
                 logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
