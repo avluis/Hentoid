@@ -11,7 +11,7 @@ if (file('signing.gradle').exists()) {
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 28
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -23,7 +23,7 @@ android {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 19
         //noinspection ExpiringTargetSdkVersion
-        targetSdkVersion 29
+        targetSdkVersion 28
         versionCode 130 // is updated automatically by BitRise; only used when building locally
         versionName '1.11.0-RC2'
 
