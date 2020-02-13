@@ -288,6 +288,8 @@ public class ContentDownloadService extends IntentService {
         // NB : No log of any sort because this is normal behaviour
         if (downloadCanceled || downloadSkipped) return null;
 
+        requestQueueManager = RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads());
+
         // Create destination folder for images to be downloaded
         File dir = ContentHelper.createContentDownloadDir(this, content);
         // Folder creation failed
@@ -330,7 +332,6 @@ public class ContentDownloadService extends IntentService {
 
         // Queue image download requests
         Site site = content.getSite();
-        requestQueueManager = RequestQueueManager.getInstance(this, site.isAllowParallelDownloads());
         requestQueueManager.queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
