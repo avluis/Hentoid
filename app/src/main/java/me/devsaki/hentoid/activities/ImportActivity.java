@@ -271,7 +271,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     private void initImport() {
         Timber.d("Clearing SAF");
         FileHelper.clearUri();
-        revokePermission();
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) revokePermission();
 
         Timber.d("Storage Path: %s", currentRootDir);
 
