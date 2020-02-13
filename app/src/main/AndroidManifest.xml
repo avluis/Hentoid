@@ -26,7 +26,6 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.Light"
         android:usesCleartextTraffic="true"
-        android:requestLegacyExternalStorage="true"
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.SplashActivity"
