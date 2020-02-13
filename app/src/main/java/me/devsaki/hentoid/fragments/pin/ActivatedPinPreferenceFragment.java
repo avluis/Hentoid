@@ -58,7 +58,7 @@ public final class ActivatedPinPreferenceFragment extends Fragment
     public void onPinDeactivateSuccess() {
         Snackbar.make(offSwitch, R.string.app_lock_disabled, BaseTransientBottomBar.LENGTH_SHORT).show();
 
-        requireFragmentManager()
+        getParentFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, new DeactivatedPinPreferenceFragment())
                 .commit();

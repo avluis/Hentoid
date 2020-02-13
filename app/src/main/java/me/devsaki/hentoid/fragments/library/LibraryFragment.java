@@ -24,7 +24,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
@@ -266,7 +266,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_library, container, false);
 
-        viewModel = ViewModelProviders.of(requireActivity()).get(LibraryViewModel.class);
         Preferences.registerPrefsChangedListener(prefsListener);
 
         initUI(rootView);
@@ -282,9 +281,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel.getNewSearch().observe(this, this::onNewSearch);
-        viewModel.getLibraryPaged().observe(this, this::onLibraryChanged);
-        viewModel.getTotalContent().observe(this, this::onTotalContentChanged);
+        viewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
+        viewModel.getNewSearch().observe(getViewLifecycleOwner(), this::onNewSearch);
+        viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
+        viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
     }
 
     /**
@@ -695,7 +695,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public void onAppUpdated(AppUpdatedEvent event) {
         EventBus.getDefault().removeStickyEvent(event);
         // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(requireFragmentManager());
+        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getParentFragmentManager());
     }
 
     /**
@@ -1031,7 +1031,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                     .map(Site::getCode)
                     .collect(toCollection(ArrayList::new));
 
-            SearchBookIdDialogFragment.invoke(requireFragmentManager(), query, siteCodes);
+            SearchBookIdDialogFragment.invoke(getParentFragmentManager(), query, siteCodes);
         }
 
         // If the update is the result of a new search, get back on top of the list

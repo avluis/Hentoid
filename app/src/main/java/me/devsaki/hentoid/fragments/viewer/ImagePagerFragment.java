@@ -20,7 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
@@ -96,12 +96,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private View galleryBtn;
     private View favouritesGalleryBtn;
 
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_viewer_pager, container, false);
 
         Preferences.registerPrefsChangedListener(listener);
-        viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
 
         initPager(rootView);
         initControlsOverlay(rootView);
@@ -140,20 +140,42 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        /*
         viewModel.onRestoreState(savedInstanceState);
 
         viewModel.getContent()
-                .observe(this, this::onContentChanged);
+                .observe(getViewLifecycleOwner(), this::onContentChanged);
 
         viewModel.getImages()
-                .observe(this, this::onImagesChanged);
+                .observe(getViewLifecycleOwner(), this::onImagesChanged);
 
         viewModel.getStartingIndex()
-                .observe(this, this::onStartingIndexChanged);
+                .observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
 
         viewModel.setOnShuffledChangeListener(this::onShuffleChanged);
+         */
 
         if (Preferences.isOpenBookInGalleryMode() && !hasGalleryBeenShown) displayGallery(false);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        viewModel = new ViewModelProvider(requireActivity()).get(ImageViewerViewModel.class);
+
+        viewModel.onRestoreState(savedInstanceState);
+
+        viewModel.getContent()
+                .observe(getViewLifecycleOwner(), this::onContentChanged);
+
+        viewModel.getImages()
+                .observe(getViewLifecycleOwner(), this::onImagesChanged);
+
+        viewModel.getStartingIndex()
+                .observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
+
+        viewModel.setOnShuffledChangeListener(this::onShuffleChanged);
     }
 
     @Override
@@ -767,7 +789,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void displayGallery(boolean filterFavourites) {
         hasGalleryBeenShown = true;
         viewModel.setStartingIndex(imageIndex); // Memorize the current page
-        requireFragmentManager()
+        getParentFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
                 .addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager

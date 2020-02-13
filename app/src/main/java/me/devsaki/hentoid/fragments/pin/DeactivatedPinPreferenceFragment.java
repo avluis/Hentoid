@@ -40,7 +40,7 @@ public final class DeactivatedPinPreferenceFragment extends Fragment implements 
         Snackbar.make(onSwitch, R.string.app_lock_enable, BaseTransientBottomBar.LENGTH_SHORT).show();
         HentoidApp.setUnlocked(true); // Now that PIN lock is enabled, the app needs to be marked as currently unlocked to avoid showing an unnecessary PIN dialog at next navigation action
 
-        requireFragmentManager()
+        getParentFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, new ActivatedPinPreferenceFragment())
                 .commit();

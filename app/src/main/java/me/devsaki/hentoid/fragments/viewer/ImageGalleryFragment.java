@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mikepenz.fastadapter.FastAdapter;
@@ -62,7 +62,6 @@ public class ImageGalleryFragment extends Fragment {
             filterFavourites = arguments.getBoolean(KEY_FILTER_FAVOURITES, false);
 
         setHasOptionsMenu(true);
-        viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
 
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p));
@@ -107,8 +106,9 @@ public class ImageGalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel.getStartingIndex().observe(this, this::onStartingIndexChanged);
-        viewModel.getImages().observe(this, this::onImagesChanged);
+        viewModel = new ViewModelProvider(requireActivity()).get(ImageViewerViewModel.class);
+        viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
+        viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
     }
 
     private void onImagesChanged(List<ImageFile> images) {
