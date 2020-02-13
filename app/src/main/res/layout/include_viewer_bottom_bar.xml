@@ -29,6 +29,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        android:visibility="gone"
+        tools:visibility="visible"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -117,6 +119,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        android:visibility="gone"
+        tools:visibility="visible"
         tools:ignore="ContentDescription" />
 
     <!-- Image previews used when tracking -->
