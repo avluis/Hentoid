@@ -144,6 +144,18 @@
                 tools:text="Chrome version XX" />
 
             <TextView
+                android:id="@+id/tv_hentoid_path"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:textSize="@dimen/about_textSize"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_chrome_version_name"
+                tools:text="Path : XX" />
+
+            <TextView
                 android:id="@+id/aboutText1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -151,8 +163,8 @@
                 android:text="@string/about1"
                 android:textSize="@dimen/about_textSize"
                 app:layout_constraintEnd_toEndOf="@id/tv_version_name"
-                app:layout_constraintStart_toStartOf="@id/tv_chrome_version_name"
-                app:layout_constraintTop_toBottomOf="@id/tv_chrome_version_name" />
+                app:layout_constraintStart_toStartOf="@id/tv_hentoid_path"
+                app:layout_constraintTop_toBottomOf="@id/tv_hentoid_path" />
 
             <TextView
                 android:id="@+id/aboutText2"
