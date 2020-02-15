@@ -34,6 +34,12 @@ android {
         buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ "objectbox.incremental" : "true" ]
+            }
+        }
     }
     buildTypes {
         debug {
@@ -167,8 +173,8 @@ dependencies {
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
     if (includeObjectBoxBrowser.toBoolean()) {
-        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.5.0"
-        releaseImplementation "io.objectbox:objectbox-android:2.5.0"
+        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.5.1"
+        releaseImplementation "io.objectbox:objectbox-android:2.5.1"
     }
 
     // https://github.com/davemorrissey/subsampling-scale-image-view
