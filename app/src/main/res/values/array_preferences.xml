@@ -163,4 +163,12 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+
+    <string-array name="pref_lock_timer_entries">
+        <item>No delay</item>
+        <item>10s</item>
+        <item>30s (default)</item>
+        <item>1 min</item>
+        <item>2 mins</item>
+    </string-array>
 </resources>

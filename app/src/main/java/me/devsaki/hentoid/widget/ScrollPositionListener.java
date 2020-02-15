@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.function.IntConsumer;
 
+import me.devsaki.hentoid.util.Preferences;
+
 public final class ScrollPositionListener extends RecyclerView.OnScrollListener {
 
     private final IntConsumer onPositionChangeListener;
@@ -23,6 +25,14 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
             int firstVisibleItemPosition = llm.findFirstVisibleItemPosition();
             int lastCompletelyVisibleItemPosition = llm.findLastCompletelyVisibleItemPosition();
             onPositionChangeListener.accept(Math.max(firstVisibleItemPosition, lastCompletelyVisibleItemPosition));
+        }
+    }
+
+    @Override
+    public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+        super.onScrollStateChanged(recyclerView, newState);
+        if (!Preferences.isViewerSwipeToTurn()) {
+            recyclerView.stopScroll();
         }
     }
 }

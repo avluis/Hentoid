@@ -29,10 +29,9 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -52,6 +51,9 @@ import static com.annimon.stream.Collectors.toList;
 public class ImageViewerViewModel extends AndroidViewModel implements PagedResultListener<Long> {
 
     private static final String KEY_IS_SHUFFLED = "is_shuffled";
+
+    // Collection DAO
+    private final CollectionDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
 
     // Settings
     private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
@@ -107,8 +109,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
     public void loadFromContent(long contentId) {
         if (contentId > 0) {
-            ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
-            Content loadedContent = db.selectContentById(contentId);
+            Content loadedContent = collectionDao.selectContent(contentId);
             if (loadedContent != null)
                 processContent(loadedContent);
         }
@@ -116,8 +117,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
     public void loadFromSearchParams(long contentId, @Nonnull Bundle bundle) {
         loadedContentId = contentId;
-        Context ctx = getApplication().getApplicationContext();
-        searchManager = new ContentSearchManager(new ObjectBoxDAO(ctx));
+        searchManager = new ContentSearchManager(collectionDao);
         searchManager.loadFromBundle(bundle);
 //        int contentIndex = bundle.getInt("contentIndex", -1);
 //        if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);
@@ -171,7 +171,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     }
 
     public void savePosition(int index) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
         Content theContent = content.getValue();
         if (theContent != null) {
             int indexToSet = index;
@@ -180,7 +179,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             if (theImages != null && index == theImages.size() - 1) indexToSet = 0;
 
             theContent.setLastReadPageIndex(indexToSet);
-            db.insertContent(theContent);
+            collectionDao.insertContent(theContent);
         }
     }
 
@@ -216,16 +215,14 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
      * @return ImageFile with the new state
      */
     @WorkerThread
-    private static ImageFile togglePageFavourite(Context context, long imageId) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-
-        ImageFile img = db.selectImageFile(imageId);
+    private ImageFile togglePageFavourite(Context context, long imageId) {
+        ImageFile img = collectionDao.selectImageFile(imageId);
 
         if (img != null) {
             img.setFavourite(!img.isFavourite());
 
             // Persist it in DB
-            db.insertImageFile(img);
+            collectionDao.insertImageFile(img);
 
             // Persist in it JSON
             Content content = img.content.getTarget();
@@ -322,7 +319,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         }
     }
 
-    private static void saveFilesToImageList(File[] files, @Nonnull List<ImageFile> images, @Nonnull Content content) {
+    private void saveFilesToImageList(File[] files, @Nonnull List<ImageFile> images, @Nonnull Content content) {
         int order = 0;
         // Sort files by name alpha
         List<File> fileList = Stream.of(files).sortBy(File::getName).collect(toList());
@@ -334,27 +331,26 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             images.add(img);
         }
         content.setImageFiles(images);
-        ObjectBoxDB.getInstance(HentoidApp.getInstance()).insertContent(content);
+        collectionDao.insertContent(content);
     }
 
     @WorkerThread
-    private static Content postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
-        cacheJson(context, content);
+    private Content postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
+        cacheJson(content);
         return ContentHelper.updateContentReads(context, content);
     }
 
     // Cache JSON URI in the database to speed up favouriting
     // NB : Lollipop only because it must have _full_ support for SAF
     @WorkerThread
-    private static void cacheJson(@Nonnull Context context, @Nonnull Content content) {
+    private void cacheJson(@Nonnull Content content) {
         if (content.getJsonUri().isEmpty() && Build.VERSION.SDK_INT >= LOLLIPOP) {
             File bookFolder = ContentHelper.getContentDownloadDir(content);
             DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
             if (file != null) {
                 // Cache the URI of the JSON to the database
-                ObjectBoxDB db = ObjectBoxDB.getInstance(context);
                 content.setJsonUri(file.getUri().toString());
-                db.insertContent(content);
+                collectionDao.insertContent(content);
             } else {
                 Timber.e("File not detected : %s", content.getStorageFolder());
             }

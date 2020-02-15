@@ -271,7 +271,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     private void initImport() {
         Timber.d("Clearing SAF");
         FileHelper.clearUri();
-        revokePermission();
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) revokePermission();
 
         Timber.d("Storage Path: %s", currentRootDir);
 
@@ -348,8 +348,8 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     public void onSelectSAFRootFolder(@NonNull Uri treeUri) {
         String treePath = treeUri.getPath();
 
-        if (null == treePath) {
-            Timber.w("treePath is null");
+        if (null == treePath || !treePath.contains(":")) {
+            Timber.w("Invalid treePath : '%s'", treePath);
             return;
         }
 

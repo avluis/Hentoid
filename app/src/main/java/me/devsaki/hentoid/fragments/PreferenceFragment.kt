@@ -77,7 +77,7 @@ class PreferenceFragment : PreferenceFragmentCompat() {
                     if (ImportService.isRunning()) {
                         ToastUtil.toast("Import is already running")
                     } else {
-                        LibRefreshDialogFragment.invoke(requireFragmentManager())
+                        LibRefreshDialogFragment.invoke(parentFragmentManager)
                     }
                     true
                 }
@@ -93,7 +93,7 @@ class PreferenceFragment : PreferenceFragmentCompat() {
             putString(ARG_PREFERENCE_ROOT, preferenceScreen.key)
         }
 
-        requireFragmentManager().commit {
+        parentFragmentManager.commit {
             replace(android.R.id.content, preferenceFragment)
             addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager
         }

@@ -65,6 +65,12 @@
                 android:title="@string/pref_browser_initial_zoom_title"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_quick_dl_default"
+                android:key="pref_browser_quick_dl"
+                android:summary="@string/pref_browser_quick_dl_summary"
+                android:title="@string/pref_browser_quick_dl_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_augmented_default"
                 android:key="pref_browser_augmented"
                 android:summaryOff="@string/pref_browser_augmented_off"
@@ -282,6 +288,7 @@
                 android:key="pref_viewer_invert_volume_rocker"
                 android:title="@string/pref_viewer_invert_volume"
                 app:iconSpaceReserved="false" />
+            <!--
             <PreferenceCategory
                 android:title="@string/pref_viewer_zoom"
                 app:iconSpaceReserved="false">
@@ -291,6 +298,7 @@
                     android:title="@string/pref_viewer_zoom_holding"
                     app:iconSpaceReserved="false" />
             </PreferenceCategory>
+            -->
         </PreferenceScreen>
 
         <PreferenceScreen
@@ -317,6 +325,7 @@
                 android:key="pref_viewer_zoom_transitions"
                 android:title="@string/pref_viewer_zoom_transitions"
                 app:iconSpaceReserved="false" />
+            <!--
             <ListPreference
                 android:defaultValue="@string/pref_viewer_separating_bars_default"
                 android:entries="@array/pref_viewer_separating_bars_entries"
@@ -325,6 +334,7 @@
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_viewer_separating_bars"
                 app:iconSpaceReserved="false" />
+                -->
         </PreferenceScreen>
 
         <PreferenceScreen
@@ -334,13 +344,16 @@
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_zoom_transitions_default"
                 android:key="pref_viewer_resume_last_left"
-                android:title="@string/pref_viewer_resume_last_left"
+                android:title="@string/pref_viewer_resume_last_left_title"
+                android:summaryOff="@string/pref_viewer_resume_last_left_summary_off"
+                android:summaryOn="@string/pref_viewer_resume_last_left_summary_on"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_open_gallery_default"
                 android:key="pref_viewer_open_gallery"
                 android:title="@string/pref_viewer_open_gallery"
                 app:iconSpaceReserved="false" />
+            <!--
             <ListPreference
                 android:defaultValue="@string/pref_viewer_read_threshold_default"
                 android:entries="@array/pref_viewer_read_threshold_entries"
@@ -349,6 +362,8 @@
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_viewer_read_threshold"
                 app:iconSpaceReserved="false" />
+                -->
+            <!--
             <ListPreference
                 android:defaultValue="@string/pref_viewer_slideshow_delay_default"
                 android:entries="@array/pref_viewer_slideshow_delay_entries"
@@ -357,6 +372,7 @@
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_viewer_slideshow_delay"
                 app:iconSpaceReserved="false" />
+                -->
         </PreferenceScreen>
 
     </PreferenceScreen>

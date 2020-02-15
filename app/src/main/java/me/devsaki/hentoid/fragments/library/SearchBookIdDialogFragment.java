@@ -67,7 +67,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             TextView title = requireViewById(rootView, R.id.search_bookid_title);
             title.setText(getString(R.string.search_bookid_label, bookId));
 
-            // Not possible for Pururin, e-hentai
+            // Not possible for Pururin, e-hentai, exhentai
             List<Site> sites = new ArrayList<>();
             if (foundSitesList != null) {
                 if (!foundSitesList.contains(Site.HITOMI.getCode())) sites.add(Site.HITOMI);

@@ -15,6 +15,8 @@
     <!-- Required to install update packages when targeting API 29 or higher -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
+
+
     <application
         android:name=".HentoidApp"
         android:allowBackup="false"
@@ -73,6 +75,9 @@
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.LusciousActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
+            android:name=".activities.sources.ExHentaiActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.LibraryActivity"
@@ -227,6 +232,17 @@
                 <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
                 <data
                     android:host="e-hentai.org"
+                    android:pathPrefix="/g/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://exhentai.org/" -->
+                <data
+                    android:host="exhentai.org"
                     android:pathPrefix="/g/"
                     android:scheme="https" />
             </intent-filter>

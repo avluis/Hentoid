@@ -60,7 +60,7 @@
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: @series@</string>
     <string name="work_artist">Artist: @artist@</string>
-    <string name="work_pages">Pages: @pages@</string>
+    <string name="work_pages">Pages: @pages@@missing@</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
@@ -133,7 +133,6 @@
     <string name="on_first_page">Already on the first page.</string>
     <string name="moving_to_first_page">Moving to first page.</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
-
     <string name="queue_empty">Why am I empty?</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
     <string name="downloads_loading">Loading up~</string>
@@ -153,9 +152,12 @@
         <item quantity="one">%d/%d result</item>
         <item quantity="other">%d/%d results</item>
     </plurals>
-
     <string name="reset">Permissions have been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
+    <plurals name="secured_content">
+        <item quantity="one">One of the selected books has secured content and cannot be redownloaded\nThis book will be ignored.</item>
+        <item quantity="other">Some of the selected books have secured content and cannot be redownloaded\nThey will be ignored.</item>
+    </plurals>
 
     <!-- Library fragment -->
     <string name="no_more_load_retry">No more items to load. Refresh to retry</string>

@@ -15,14 +15,18 @@ import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
@@ -34,7 +38,10 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.HttpHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
+import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -168,9 +175,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             updateLayoutVisibility(item);
             attachCover(item.content);
             attachTitle(item.content);
-            attachSeries(item.content);
             attachArtist(item.content);
-            attachPages(item.content);
+            attachSeries(item.content);
+            attachPages(item.content, item.isQueued);
             attachTags(item.content);
             attachButtons(item);
             if (item.isQueued)
@@ -188,7 +195,38 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         }
 
         private void attachCover(Content content) {
+            String thumbLocation = ContentHelper.getThumb(content);
             Context context = ivCover.getContext();
+
+            // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
+            if (thumbLocation.startsWith("http")
+                    && content.getDownloadParams() != null
+                    && content.getDownloadParams().length() > 2 // Avoid empty and "{}"
+                    && content.getDownloadParams().contains(HttpHelper.HEADER_COOKIE_KEY)) {
+
+                Map<String, String> downloadParams = null;
+                try {
+                    downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
+                } catch (IOException e) {
+                    Timber.w(e);
+                }
+
+                if (downloadParams != null && downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
+                    String cookiesStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                    if (cookiesStr != null) {
+                        LazyHeaders.Builder builder = new LazyHeaders.Builder()
+                                .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookiesStr);
+
+                        GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
+                        Glide.with(context.getApplicationContext())
+                                .load(glideUrl)
+                                .apply(glideRequestOptions)
+                                .into(ivCover);
+                        return;
+                    }
+                }
+            }
+
             Glide.with(context.getApplicationContext())
                     .load(ContentHelper.getThumb(content))
                     .apply(glideRequestOptions)
@@ -205,25 +243,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
             tvTitle.setText(title);
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
-        }
-
-        private void attachSeries(Content content) {
-            Context context = tvSeries.getContext();
-            String templateSeries = context.getResources().getString(R.string.work_series);
-            List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
-            if (seriesAttributes == null) {
-                tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
-            } else {
-                StringBuilder seriesBuilder = new StringBuilder();
-                for (int i = 0; i < seriesAttributes.size(); i++) {
-                    Attribute attribute = seriesAttributes.get(i);
-                    seriesBuilder.append(attribute.getName());
-                    if (i != seriesAttributes.size() - 1) {
-                        seriesBuilder.append(", "); // TODO use TextUtils.join
-                    }
-                }
-                tvSeries.setText(templateSeries.replace("@series@", seriesBuilder));
-            }
         }
 
         private void attachArtist(Content content) {
@@ -250,10 +269,36 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
         }
 
-        private void attachPages(Content content) {
+
+        private void attachSeries(Content content) {
+            Context context = tvSeries.getContext();
+            String templateSeries = context.getResources().getString(R.string.work_series);
+            List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
+            if (seriesAttributes == null || seriesAttributes.isEmpty()) {
+                tvSeries.setVisibility(View.GONE);
+                tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
+            } else {
+                tvSeries.setVisibility(View.VISIBLE);
+                List<String> allSeries = new ArrayList<>();
+                for (Attribute attribute : seriesAttributes) {
+                    allSeries.add(attribute.getName());
+                }
+                String series = android.text.TextUtils.join(", ", allSeries);
+                tvSeries.setText(templateSeries.replace("@series@", series));
+            }
+        }
+
+        private void attachPages(Content content, boolean isQueued) {
             Context context = tvPages.getContext();
             String template = context.getResources().getString(R.string.work_pages);
-            tvPages.setText(template.replace("@pages@", content.getQtyPages() + ""));
+            template = template.replace("@pages@", content.getQtyPages() + "");
+            long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
+            if (nbMissingPages > 0 && !isQueued)
+                template = template.replace("@missing@", " (" + nbMissingPages + " missing)");
+            else
+                template = template.replace("@missing@", "");
+
+            tvPages.setText(template);
         }
 
         private void attachTags(Content content) {

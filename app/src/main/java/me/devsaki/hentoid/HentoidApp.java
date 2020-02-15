@@ -19,6 +19,8 @@ import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 
+import org.threeten.bp.Instant;
+
 import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
@@ -53,7 +55,10 @@ public class HentoidApp extends Application {
     // == GLOBAL VARIABLES
 
     // When PIN lock is activated, indicates whether the app has been unlocked or not
+    // NB : Using static members to be certain they won't be wiped out
+    // when the app runs out of memory (can happen with singletons)
     private static boolean isUnlocked = false;
+    private static long lockInstant = 0;
 
     public static boolean isUnlocked() {
         return isUnlocked;
@@ -61,6 +66,14 @@ public class HentoidApp extends Application {
 
     public static void setUnlocked(boolean unlocked) {
         isUnlocked = unlocked;
+    }
+
+    public static void setLockInstant(long instant) {
+        lockInstant = instant;
+    }
+
+    public static long getLockInstant() {
+        return lockInstant;
     }
 
 
@@ -106,6 +119,7 @@ public class HentoidApp extends Application {
 
         // This code has been inherited from the FakkuDroid era; no documentation available
         // Best guess : allows networking on main thread
+        // TODO : test and remove during a future beta; networking shouldn't happen on main thread anymore
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -190,8 +204,10 @@ public class HentoidApp extends Application {
         @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
         private void onMoveToBackground() {
             Timber.d("Moving to background");
-            if (enabled && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore())
+            if (enabled && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
                 HentoidApp.setUnlocked(false);
+                HentoidApp.setLockInstant(Instant.now().toEpochMilli());
+            }
         }
 
     }

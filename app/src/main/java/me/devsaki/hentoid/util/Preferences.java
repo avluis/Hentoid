@@ -199,6 +199,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_BROWSER_AUGMENTED, Default.PREF_BROWSER_AUGMENTED_DEFAULT);
     }
 
+    public static boolean isBrowserQuickDl() {
+        return sharedPreferences.getBoolean(Key.PREF_BROWSER_QUICK_DL, Default.PREF_BROWSER_QUICK_DL);
+    }
+
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS,
                 Default.PREF_DL_THREADS_QUANTITY_DEFAULT + "") + "");
@@ -257,6 +261,18 @@ public final class Preferences {
 
     public static boolean isViewerInvertVolumeRocker() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, Default.PREF_VIEWER_INVERT_VOLUME_ROCKER);
+    }
+
+    public static boolean isViewerTapToTurn() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_PAGE_TURN_TAP, Default.PREF_VIEWER_PAGE_TURN_TAP);
+    }
+
+    public static boolean isViewerSwipeToTurn() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_PAGE_TURN_SWIPE, Default.PREF_VIEWER_PAGE_TURN_SWIPE);
+    }
+
+    public static boolean isViewerVolumeToTurn() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_PAGE_TURN_VOLUME, Default.PREF_VIEWER_PAGE_TURN_VOLUME);
     }
 
     public static boolean isOpenBookInGalleryMode() {
@@ -332,6 +348,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getLockTimer() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_LOCK_TIMER, Integer.toString(Default.PREF_LOCK_TIMER)) + "");
+    }
+
+    public static void setLockTimer(int lockTimer) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_LOCK_TIMER, Integer.toString(lockTimer))
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -359,6 +385,7 @@ public final class Preferences {
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String PREF_BROWSER_RESUME_LAST = "pref_browser_resume_last";
         static final String PREF_BROWSER_AUGMENTED = "pref_browser_augmented";
+        static final String PREF_BROWSER_QUICK_DL = "pref_browser_quick_dl";
         static final String PREF_FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String PREF_VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
         public static final String PREF_VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
@@ -386,6 +413,7 @@ public final class Preferences {
         public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
         public static final String PREF_LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
+        public static final String PREF_LOCK_TIMER = "pref_lock_timer";
 
         //Keys that were removed from the app, kept for housekeeping
         static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -412,6 +440,7 @@ public final class Preferences {
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final boolean PREF_BROWSER_RESUME_LAST_DEFAULT = false;
         static final boolean PREF_BROWSER_AUGMENTED_DEFAULT = true;
+        static final boolean PREF_BROWSER_QUICK_DL = true;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
         static final boolean PREF_VIEWER_RESUME_LAST_LEFT = true;
@@ -441,6 +470,7 @@ public final class Preferences {
         static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HENTAICAFE, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, Site.FAKKU2, Site.NEXUS, Site.MUSES, Site.DOUJINS};
         static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
         static final boolean PREF_LOCK_ON_APP_RESTORE = false;
+        static final int PREF_LOCK_TIMER = Constant.PREF_LOCK_TIMER_30S;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -496,5 +526,10 @@ public final class Preferences {
         public static final int COLOR_THEME_LIGHT = Theme.LIGHT.getId();
         public static final int COLOR_THEME_DARK = Theme.DARK.getId();
         public static final int COLOR_THEME_BLACK = Theme.BLACK.getId();
+        public static final int PREF_LOCK_TIMER_OFF = 0;
+        public static final int PREF_LOCK_TIMER_10S = 1;
+        public static final int PREF_LOCK_TIMER_30S = 2;
+        public static final int PREF_LOCK_TIMER_1M = 3;
+        public static final int PREF_LOCK_TIMER_2M = 4;
     }
 }

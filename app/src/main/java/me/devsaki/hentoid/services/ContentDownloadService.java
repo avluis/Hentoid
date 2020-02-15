@@ -129,6 +129,9 @@ public class ContentDownloadService extends IntentService {
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
+        if (notificationManager != null) notificationManager.cancel();
+        ContentQueueManager.getInstance().setInactive();
+
         Timber.d("Download service destroyed");
 
         super.onDestroy();
@@ -285,6 +288,8 @@ public class ContentDownloadService extends IntentService {
         // NB : No log of any sort because this is normal behaviour
         if (downloadCanceled || downloadSkipped) return null;
 
+        requestQueueManager = RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads());
+
         // Create destination folder for images to be downloaded
         File dir = ContentHelper.createContentDownloadDir(this, content);
         // Folder creation failed
@@ -320,10 +325,13 @@ public class ContentDownloadService extends IntentService {
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
 
         // == DOWNLOAD PHASE ==
-        // Queue image download requests
+
+        // Forge a request for the book's cover
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
+        cover.setDownloadParams(content.getDownloadParams());
+
+        // Queue image download requests
         Site site = content.getSite();
-        requestQueueManager = RequestQueueManager.getInstance(this, site.isAllowParallelDownloads());
         requestQueueManager.queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
@@ -407,6 +415,7 @@ public class ContentDownloadService extends IntentService {
             if (pagesKO > 0 && Preferences.isDlRetriesActive()
                     && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
                     && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
+                    && requestQueueManager != null
             ) {
                 Timber.i("Auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries(), content.getTitle(), freeSpaceRatio);
                 logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());

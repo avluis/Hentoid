@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Spinner;
 import android.widget.Switch;
 
 import androidx.annotation.NonNull;
@@ -20,9 +22,10 @@ import me.devsaki.hentoid.util.Preferences;
 import static androidx.core.view.ViewCompat.requireViewById;
 
 public final class ActivatedPinPreferenceFragment extends Fragment
-        implements DeactivatePinDialogFragment.Parent, ResetPinDialogFragment.Parent {
+        implements DeactivatePinDialogFragment.Parent, ResetPinDialogFragment.Parent, AdapterView.OnItemSelectedListener {
 
     private Switch offSwitch;
+    private Spinner lockDelaySpinner;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -34,9 +37,16 @@ public final class ActivatedPinPreferenceFragment extends Fragment
         offSwitch = requireViewById(rootView, R.id.switch_off);
         offSwitch.setOnClickListener(v -> onOffClick());
 
+        boolean lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore();
         Switch lockOnAppRestored = requireViewById(rootView, R.id.switch_lock_on_restore);
-        lockOnAppRestored.setChecked(Preferences.isLockOnAppRestore());
-        lockOnAppRestored.setOnCheckedChangeListener((b, v) -> onRestoreClick(v));
+        lockOnAppRestored.setChecked(lockOnAppRestoredEnabled);
+        lockOnAppRestored.setOnCheckedChangeListener((b, v) -> onLockOnAppRestoreClick(v));
+
+        int lockTimer = Preferences.getLockTimer();
+        lockDelaySpinner = requireViewById(rootView, R.id.lock_timer);
+        lockDelaySpinner.setVisibility(lockOnAppRestoredEnabled ? View.VISIBLE : View.GONE);
+        lockDelaySpinner.setSelection(lockTimer);
+        lockDelaySpinner.setOnItemSelectedListener(this);
 
         View resetButton = requireViewById(rootView, R.id.text_reset_pin);
         resetButton.setOnClickListener(v -> onResetClick());
@@ -48,7 +58,7 @@ public final class ActivatedPinPreferenceFragment extends Fragment
     public void onPinDeactivateSuccess() {
         Snackbar.make(offSwitch, R.string.app_lock_disabled, BaseTransientBottomBar.LENGTH_SHORT).show();
 
-        requireFragmentManager()
+        getParentFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, new DeactivatedPinPreferenceFragment())
                 .commit();
@@ -69,12 +79,23 @@ public final class ActivatedPinPreferenceFragment extends Fragment
         fragment.show(getChildFragmentManager(), null);
     }
 
-    private void onRestoreClick(boolean newValue) {
+    private void onLockOnAppRestoreClick(boolean newValue) {
         Preferences.setLockOnAppRestore(newValue);
+        lockDelaySpinner.setVisibility(newValue ? View.VISIBLE : View.GONE);
     }
 
     private void onResetClick() {
         ResetPinDialogFragment fragment = new ResetPinDialogFragment();
         fragment.show(getChildFragmentManager(), null);
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        Preferences.setLockTimer(position);
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+        // Do nothing
     }
 }

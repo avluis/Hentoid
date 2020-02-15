@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
 import io.objectbox.query.Query;
@@ -27,7 +29,9 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Helper;
@@ -187,6 +191,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectContentById(id);
     }
 
+    public Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url) {
+        return db.selectContentBySourceAndUrl(site, url);
+    }
+
     public void insertContent(@NonNull final Content content) {
         db.insertContent(content);
     }
@@ -195,10 +203,21 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteContent(content);
     }
 
-    public void addContentToQueue(@NonNull final Content content) {
-        if (StatusContent.ONLINE == content.getStatus() && content.getImageFiles() != null)
+
+    public void insertImageFile(@NonNull ImageFile img) {
+        db.insertImageFile(img);
+    }
+
+    @Nullable
+    public ImageFile selectImageFile(long id) {
+        return db.selectImageFile(id);
+    }
+
+
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
+        if (targetImageStatus != null && content.getImageFiles() != null)
             for (ImageFile im : content.getImageFiles())
-                db.updateImageFileStatusAndParams(im.setStatus(StatusContent.SAVED));
+                db.updateImageFileStatusAndParams(im.setStatus(targetImageStatus));
 
         content.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(content);
@@ -274,8 +293,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public LiveData<PagedList<QueueRecord>> getQueueContent() {
         Query<QueueRecord> query = db.selectQueueContentsQ();
 
-        int nbPages = Preferences.getContentPageQuantity();
-        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(nbPages * 2).setPageSize(nbPages).build();
+        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(40).setPageSize(20).build();
 
         return new LivePagedListBuilder<>(new ObjectBoxDataSource.Factory<>(query), cfg).build();
     }
@@ -288,7 +306,15 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.updateQueue(contentId, newOrder);
     }
 
-    public void deleteQueue(Content content) {
+    public void deleteQueue(@NonNull Content content) {
         db.deleteQueue(content);
+    }
+
+    public SiteHistory getHistory(@NonNull Site s) {
+        return db.getHistory(s);
+    }
+
+    public void insertSiteHistory(@NonNull Site site, @NonNull String url) {
+        db.insertSiteHistory(site, url);
     }
 }

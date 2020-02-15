@@ -32,7 +32,7 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
         changelogRecycler.setHasFixedSize(true)
 
         // TODO - observe update availability through event bus instead of parsing changelog
-        viewModel.successValueLive.observe(this) { releasesInfo ->
+        viewModel.successValueLive.observe(viewLifecycleOwner) { releasesInfo ->
             val releases: MutableList<GitHubReleaseItem> = ArrayList()
             var latestTagName = ""
             for (r in releasesInfo) {
@@ -51,7 +51,7 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
             // TODO show RecyclerView
         }
 
-        viewModel.errorValueLive.observe(this) { t ->
+        viewModel.errorValueLive.observe(viewLifecycleOwner) { t ->
             Timber.w(t, "Error fetching GitHub releases data")
             // TODO - don't show recyclerView; show an error message on the entire screen
         }

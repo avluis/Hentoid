@@ -31,6 +31,9 @@
     <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
     <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
     <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
+    <string name="pref_browser_quick_dl_title">Quick download</string>
+    <string name="pref_browser_quick_dl_summary">On the books list page, hold tap to download any book</string>
+    <string name="pref_browser_quick_dl_default" translatable="false">true</string>
     <string name="pref_browser_augmented_title">Augmented browser</string>
     <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
     <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
@@ -114,7 +117,7 @@
     <string name="pref_viewer_controls">Controls</string>
     <string name="pref_viewer_browse_mode">Browse mode</string>
     <string name="pref_viewer_browse_mode_default" translatable="false">0</string>
-    <string name="pref_viewer_page_turn">Page turn control (WIP)</string>
+    <string name="pref_viewer_page_turn">Page turn control</string>
 
     <string name="pref_viewer_page_turn_swipe">Swipe</string>
     <bool name="pref_viewer_page_turn_swipe_default" translatable="false">true</bool>
@@ -139,13 +142,15 @@
     <bool name="pref_viewer_display_pagenum_default" translatable="false">false</bool>
     <string name="pref_viewer_tap_transitions">Enable page turn animation</string>
     <bool name="pref_viewer_tap_transitions_default" translatable="false">true</bool>
-    <string name="pref_viewer_zoom_transitions">Enable zoom animation (WIP)</string>
+    <string name="pref_viewer_zoom_transitions">Enable zoom animation</string>
     <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
     <string name="pref_viewer_separating_bars">Separating bars in vertical mode (WIP)</string>
     <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
 
     <string name="pref_viewer_navigation">Navigation &amp; behaviour</string>
-    <string name="pref_viewer_resume_last_left">Resume reading when reopening books (except last page)</string>
+    <string name="pref_viewer_resume_last_left_title">Resume reading when reopening books</string>
+    <string name="pref_viewer_resume_last_left_summary_off">Reopening a book will always start at page 1</string>
+    <string name="pref_viewer_resume_last_left_summary_on">Reopening a book will resume on last read page, except if the end of the book has been reached</string>
     <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
     <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>

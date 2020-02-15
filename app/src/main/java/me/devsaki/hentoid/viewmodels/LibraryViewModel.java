@@ -26,9 +26,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.ActivePagedList;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -43,7 +45,7 @@ import static me.devsaki.hentoid.util.FileHelper.AUTHORIZED_CHARS;
 public class LibraryViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final ObjectBoxDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
     // Library search manager
     private final ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
     // Cleanup for all RxJava calls
@@ -57,10 +59,13 @@ public class LibraryViewModel extends AndroidViewModel {
     // Updated whenever a new search is performed
     private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
 
+    // Paged mode callbacks
+    private Consumer<Content> frontConsumer;
+    private Consumer<Content> endConsumer;
+
 
     public LibraryViewModel(@NonNull Application application) {
         super(application);
-        performSearch();
     }
 
     public void onSaveState(Bundle outState) {
@@ -85,11 +90,11 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void setLibraryFrontLoadCallback(Consumer<Content> consumer) {
-        currentSource.setOnItemAtFrontLoaded(consumer);
+        frontConsumer = consumer;
     }
 
     public void setLibraryEndLoadCallback(Consumer<Content> consumer) {
-        currentSource.setOnItemAtEndLoaded(consumer);
+        endConsumer = consumer;
     }
 
     @NonNull
@@ -116,15 +121,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * Perform a new library search
      */
     private void performSearch() {
-//        newSearch.setValue(true);
-        Consumer<Content> frontConsumer = null;
-        Consumer<Content> endConsumer = null;
-
-        if (currentSource != null) {
-            libraryPaged.removeSource(currentSource.getPagedList());
-            frontConsumer = currentSource.getOnItemAtFrontLoaded();
-            endConsumer = currentSource.getOnItemAtEndLoaded();
-        }
+        if (currentSource != null) libraryPaged.removeSource(currentSource.getPagedList());
 
         searchManager.setContentSortOrder(Preferences.getContentSortOrder());
         currentSource = searchManager.getLibrary();
@@ -240,8 +237,8 @@ public class LibraryViewModel extends AndroidViewModel {
      *
      * @param content Content to be added to the download queue
      */
-    public void addContentToQueue(@NonNull final Content content) {
-        collectionDao.addContentToQueue(content);
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
+        collectionDao.addContentToQueue(content, targetImageStatus);
     }
 
     /**

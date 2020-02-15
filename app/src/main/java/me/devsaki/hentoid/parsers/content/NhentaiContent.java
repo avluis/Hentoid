@@ -27,6 +27,9 @@ public class NhentaiContent implements ContentParser {
     private String coverUrl;
     @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
     private String title;
+    // Fallback value for title (see #449)
+    @Selector(value = "#info h1", defValue = "")
+    private String titleAlt;
 
     @Selector(value = "#info a[href*='/artist']")
     private List<Element> artists;
@@ -60,7 +63,10 @@ public class NhentaiContent implements ContentParser {
 
         result.setUrl(theUrl.replace("/g", "").replaceFirst("/1/$", "/"));
         result.setCoverImageUrl(coverUrl);
-        result.setTitle(Helper.removeNonPrintableChars(title));
+
+        String titleDef = title.trim();
+        if (titleDef.isEmpty()) titleDef = titleAlt.trim();
+        result.setTitle(Helper.removeNonPrintableChars(titleDef));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.NHENTAI);

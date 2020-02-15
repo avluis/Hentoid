@@ -16,6 +16,7 @@ import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -27,7 +28,7 @@ import timber.log.Timber;
 public class QueueViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final ObjectBoxDAO queueDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO queueDao = new ObjectBoxDAO(getApplication().getApplicationContext());
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 

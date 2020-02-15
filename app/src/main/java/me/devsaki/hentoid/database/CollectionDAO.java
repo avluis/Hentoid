@@ -4,13 +4,19 @@ import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import androidx.paging.PagedList;
 
 import java.util.List;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.PagedResultListener;
 
 public interface CollectionDAO {
@@ -20,6 +26,8 @@ public interface CollectionDAO {
     // Low-level operations
 
     Content selectContent(long id);
+
+    Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url);
 
     void insertContent(@NonNull final Content content);
 
@@ -43,10 +51,27 @@ public interface CollectionDAO {
 
     LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly);
 
+    LiveData<Integer> countAllBooks();
 
-    // Other stuff
 
-    void addContentToQueue(@NonNull final Content content);
+    // IMAGEFILES
+
+    void insertImageFile(@NonNull ImageFile img);
+
+    ImageFile selectImageFile(long id);
+
+
+    // QUEUE
+
+    List<QueueRecord> selectQueue();
+
+    void updateQueue(long contentId, int newOrder);
+
+    void deleteQueue(@NonNull Content content);
+
+    LiveData<PagedList<QueueRecord>> getQueueContent();
+
+    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
 
 
     // ATTRIBUTES
@@ -56,4 +81,11 @@ public interface CollectionDAO {
     Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
 
     void dispose();
+
+
+    // SITE HISTORY
+
+    SiteHistory getHistory(@NonNull Site s);
+
+    void insertSiteHistory(@NonNull Site site, @NonNull String url);
 }

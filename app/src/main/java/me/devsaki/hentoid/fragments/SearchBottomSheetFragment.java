@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
@@ -115,7 +115,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             }
 
             ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
-            viewModel = ViewModelProviders.of(requireActivity(), vmFactory).get(SearchViewModel.class);
+            viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(SearchViewModel.class);
             viewModel.onCategoryChanged(selectedAttributeTypes);
         }
     }
@@ -172,7 +172,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
+        viewModel.getProposedAttributesData().observe(getViewLifecycleOwner(), this::onAttributesReady);
         searchMasterData("");
     }
 

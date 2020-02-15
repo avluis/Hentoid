@@ -73,9 +73,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
@@ -144,7 +144,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     // Currently viewed content
     private Content currentContent;
     // Database
-    private ObjectBoxDB db;
+    private CollectionDAO objectBoxDAO;
     // Indicates which mode the download button is in
     protected int actionButtonMode;
     private CustomWebViewClient webClient;
@@ -215,9 +215,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
-        setContentView(R.layout.activity_base_web);
+        objectBoxDAO = new ObjectBoxDAO(this);
 
-        db = ObjectBoxDB.getInstance(this);
+        setContentView(R.layout.activity_base_web);
 
         if (getStartSite() == null) {
             Timber.w("Site is null!");
@@ -264,7 +264,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         // Priority 2 : Last viewed position, if option activated
         if (Preferences.isBrowserResumeLast()) {
-            SiteHistory siteHistory = db.getHistory(getStartSite());
+            SiteHistory siteHistory = objectBoxDAO.getHistory(getStartSite());
             if (siteHistory != null && !siteHistory.getUrl().isEmpty()) return siteHistory.getUrl();
         }
 
@@ -315,7 +315,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     @Override
     protected void onStop() {
-        db.insertSiteHistory(getStartSite(), webView.getUrl());
+        objectBoxDAO.insertSiteHistory(getStartSite(), webView.getUrl());
         super.onStop();
     }
 
@@ -393,31 +393,32 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         webView.setWebViewClient(webClient);
 
         // Download immediately on long click on a link / image link
-        webView.setOnLongClickListener(v -> {
-            WebView.HitTestResult result = webView.getHitTestResult();
+        if (Preferences.isBrowserQuickDl())
+            webView.setOnLongClickListener(v -> {
+                WebView.HitTestResult result = webView.getHitTestResult();
 
-            String url = "";
-            // Plain link
-            if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null)
-                url = result.getExtra();
+                String url = "";
+                // Plain link
+                if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null)
+                    url = result.getExtra();
 
-            // Image link (https://stackoverflow.com/a/55299801/8374722)
-            if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
-                Handler handler = new Handler();
-                Message message = handler.obtainMessage();
+                // Image link (https://stackoverflow.com/a/55299801/8374722)
+                if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+                    Handler handler = new Handler();
+                    Message message = handler.obtainMessage();
 
-                webView.requestFocusNodeHref(message);
-                url = message.getData().getString("url");
-            }
+                    webView.requestFocusNodeHref(message);
+                    url = message.getData().getString("url");
+                }
 
-            if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
-                // Launch on a new thread to avoid crashes
-                webClient.parseResponseAsync(url);
-                return true;
-            } else {
-                return false;
-            }
-        });
+                if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
+                    // Launch on a new thread to avoid crashes
+                    webClient.parseResponseAsync(url);
+                    return true;
+                } else {
+                    return false;
+                }
+            });
 
 
         Timber.i("Using agent %s", webView.getSettings().getUserAgentString());
@@ -520,7 +521,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         if (MODE_DL == actionButtonMode) processDownload(false);
         else if (MODE_QUEUE == actionButtonMode) goToQueue();
         else if (MODE_READ == actionButtonMode && currentContent != null) {
-            currentContent = db.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
+            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
             if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()
                     || StatusContent.MIGRATED == currentContent.getStatus()))
@@ -550,7 +551,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         if (null == currentContent) return;
 
         if (currentContent.getId() > 0)
-            currentContent = db.selectContentById(currentContent.getId());
+            currentContent = objectBoxDAO.selectContent(currentContent.getId());
 
         if (null == currentContent) return;
 
@@ -561,15 +562,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         }
         ToastUtil.toast(R.string.add_to_queue);
 
-        currentContent.setStatus(StatusContent.DOWNLOADING);
-        db.insertContent(currentContent);
-
-        List<QueueRecord> queue = db.selectQueue();
-        int lastIndex = 1;
-        if (!queue.isEmpty()) {
-            lastIndex = queue.get(queue.size() - 1).rank + 1;
-        }
-        db.insertQueue(currentContent.getId(), lastIndex);
+        objectBoxDAO.addContentToQueue(currentContent, null);
 
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
 
@@ -618,7 +611,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         if (null == content.getUrl()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
-        Content contentDB = db.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
+        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
 
         boolean isInCollection = (contentDB != null && (
                 contentDB.getStatus().equals(StatusContent.DOWNLOADED)
@@ -634,7 +627,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
                 content.setStatus(StatusContent.SAVED);
                 content.populateAuthor();
-                db.insertContent(content);
+                objectBoxDAO.insertContent(content);
             } else {
                 content = contentDB;
             }
@@ -656,7 +649,11 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     public void onResultReady(@NonNull Content results, boolean quickDownload) {
         int status = processContent(results, quickDownload);
-        if (quickDownload && STATUS_UNKNOWN == status) processDownload(quickDownload);
+        if (quickDownload) {
+            if (STATUS_UNKNOWN == status) processDownload(true);
+            else if (STATUS_IN_COLLECTION == status) ToastUtil.toast(R.string.already_downloaded);
+            else if (STATUS_IN_QUEUE == status) ToastUtil.toast(R.string.already_queued);
+        }
     }
 
     public void onResultFailed() {
@@ -736,7 +733,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         /**
          * Determines if the browser can use one single OkHttp request to serve HTML pages
-         * - Does not work on on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
+         * - Does not work on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
          * https://issuetracker.google.com/issues/36989494
          * - Does not work on Chrome 45-71 because sameSite cookies are not published by CookieManager.getCookie (causes session issues on nHentai)
          * https://bugs.chromium.org/p/chromium/issues/detail?id=780491
@@ -896,13 +893,10 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
                     // Manually set cookie if present in response header (won't be set by Android if we don't do this)
                     if (result.getResponseHeaders().containsKey("set-cookie")) {
-                        String cookieStr = result.getResponseHeaders().get("set-cookie");
-                        if (cookieStr != null) {
-                            String[] parts = cookieStr.split(";");
-
-                            String cookie = parts[0].trim();
-                            if (cookie.contains("="))
-                                CookieManager.getInstance().setCookie(urlStr, cookie);
+                        String cookiesStr = result.getResponseHeaders().get("set-cookie");
+                        if (cookiesStr != null) {
+                            Map<String, String> cookies = HttpHelper.parseCookies(cookiesStr);
+                            HttpHelper.setDomainCookies(urlStr, cookies);
                         }
                     }
                 } else {

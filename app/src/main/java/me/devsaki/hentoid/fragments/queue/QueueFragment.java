@@ -11,10 +11,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mikepenz.fastadapter.FastAdapter;
@@ -71,6 +72,8 @@ public class QueueFragment extends Fragment {
     private TextView queueInfo;     // 2nd line of text displayed on the right of the queue pause / play button
     private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
     private Toolbar toolbar;
+
+    private LinearLayoutManager llm;
 
     // State
     private boolean isPreparingDownload = false;
@@ -141,8 +144,6 @@ public class QueueFragment extends Fragment {
         btnPause.setBackground(ThemeHelper.makeQueueButtonSelector(requireContext()));
         btnStats.setOnClickListener(v -> showErrorStats());
 
-        viewModel = ViewModelProviders.of(requireActivity()).get(QueueViewModel.class);
-
         // Book list container
         RecyclerView recyclerView = requireViewById(rootView, R.id.queue_list);
 
@@ -150,6 +151,8 @@ public class QueueFragment extends Fragment {
         fastAdapter.setHasStableIds(true);
         fastAdapter.registerTypeInstance(new ContentItem(true));
         recyclerView.setAdapter(fastAdapter);
+
+        llm = (LinearLayoutManager)recyclerView.getLayoutManager();
 
         // Item click listener
 //        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i)); TODO implement book reading while downloading
@@ -249,7 +252,8 @@ public class QueueFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel.getQueuePaged().observe(this, this::onQueueChanged);
+        viewModel = new ViewModelProvider(this).get(QueueViewModel.class);
+        viewModel.getQueuePaged().observe(getViewLifecycleOwner(), this::onQueueChanged);
     }
 
     /**
@@ -272,16 +276,13 @@ public class QueueFragment extends Fragment {
                 ObjectBoxDB db = ObjectBoxDB.getInstance(requireActivity());
                 db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
                 ContentQueueManager.getInstance().resumeQueue(requireActivity());
-                refreshFirstBook(false);
+                updateProgressFirstItem(false);
                 update(event.eventType);
                 break;
             case DownloadEvent.EV_SKIP:
                 // Books switch / display handled directly by the adapter
-                Content content = itemAdapter.getAdapterItem(0).getContent();
-                if (content != null) {
-                    updateBookTitle(content.getTitle());
-                    queueInfo.setText("");
-                }
+                updateBookTitle();
+                queueInfo.setText("");
                 dlPreparationProgressBar.setVisibility(View.GONE);
                 break;
             case DownloadEvent.EV_COMPLETE:
@@ -291,7 +292,7 @@ public class QueueFragment extends Fragment {
                 break;
             default: // EV_PAUSE, EV_CANCEL events
                 dlPreparationProgressBar.setVisibility(View.GONE);
-                refreshFirstBook(true);
+                updateProgressFirstItem(true);
                 update(event.eventType);
         }
     }
@@ -346,20 +347,15 @@ public class QueueFragment extends Fragment {
         }
     }
 
-    private void refreshFirstBook(boolean isPausedEvent) {
-        if (itemAdapter.getAdapterItemCount() > 0) {
-            // Update book progress bar
-            updateProgressFirstItem(isPausedEvent);
-        }
-    }
-
     /**
      * Update book title in bottom progress panel
-     *
-     * @param bookTitle Book title to display
      */
-    private void updateBookTitle(String bookTitle) {
-        queueStatus.setText(MessageFormat.format(requireActivity().getString(R.string.queue_dl), bookTitle));
+    private void updateBookTitle() {
+        if (0 == itemAdapter.getAdapterItemCount()) return;
+        Content content = itemAdapter.getAdapterItem(0).getContent();
+        if (null == content) return;
+
+        queueStatus.setText(MessageFormat.format(requireActivity().getString(R.string.queue_dl), content.getTitle()));
     }
 
     /**
@@ -388,12 +384,6 @@ public class QueueFragment extends Fragment {
         // Update displayed books
         itemAdapter.submitList(result);
 
-        // Update control bar
-        if (!isEmpty) {
-            QueueRecord firstContent = result.get(0);
-            if (firstContent != null) updateBookTitle(firstContent.content.getTarget().getTitle());
-        }
-
         updateUI();
     }
 
@@ -408,12 +398,10 @@ public class QueueFragment extends Fragment {
         // Update control bar status
         queueInfo.setText(isPreparingDownload && !isEmpty ? R.string.queue_preparing : R.string.queue_empty2);
 
-//        Content firstContent = isEmpty ? null : itemAdapter.getAdapterItem(0).getContent();
-
         if (isActive) {
             btnPause.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.GONE);
-//            if (firstContent != null) updateBookTitle(firstContent.getTitle());
+            updateBookTitle();
 
             // Stop blinking animation, if any
             queueInfo.clearAnimation();
@@ -443,9 +431,12 @@ public class QueueFragment extends Fragment {
     }
 
     private void updateProgressFirstItem(boolean isPausedevent) {
-        Content content = itemAdapter.getAdapterItem(0).getContent();
-        if (null == content) return;
+        if (itemAdapter.getAdapterItemCount() > 0 && llm != null && 0 == llm.findFirstVisibleItemPosition()) {
+            Content content = itemAdapter.getAdapterItem(0).getContent();
+            if (null == content) return;
 
-        ContentItem.ContentViewHolder.updateProgress(content, requireViewById(rootView, R.id.pbDownload), 0, isPausedevent);
+            // Hack to update the progress bar of the 1st visible card even though it is controlled by the PagedList
+            ContentItem.ContentViewHolder.updateProgress(content, requireViewById(rootView, R.id.pbDownload), 0, isPausedevent);
+        }
     }
 }
