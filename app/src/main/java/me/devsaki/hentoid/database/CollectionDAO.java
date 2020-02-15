@@ -80,12 +80,15 @@ public interface CollectionDAO {
 
     Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
 
-    void dispose();
-
 
     // SITE HISTORY
 
     SiteHistory getHistory(@NonNull Site s);
 
     void insertSiteHistory(@NonNull Site site, @NonNull String url);
+
+
+    // MISC
+
+    void dispose();
 }

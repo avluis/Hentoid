@@ -117,8 +117,9 @@ public class Content implements Serializable {
         return this;
     }
 
-    public void addAttributes(@NonNull List<Attribute> attrs) {
+    public Content addAttributes(@NonNull List<Attribute> attrs) {
         if (attributes != null) attributes.addAll(attrs);
+        return this;
     }
 
     public long getId() {
