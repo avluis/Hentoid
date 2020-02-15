@@ -496,7 +496,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     private void updateSelectionToolbar(long selectedCount) {
-        boolean isMultipleSelection = selectExtension.getSelectedItems().size() > 1;
+        boolean isMultipleSelection = selectedCount > 1;
 
         itemDelete.setVisible(!isMultipleSelection);
         itemShare.setVisible(!isMultipleSelection);
