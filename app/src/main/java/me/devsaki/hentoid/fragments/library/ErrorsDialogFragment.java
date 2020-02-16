@@ -98,6 +98,11 @@ public class ErrorsDialogFragment extends DialogFragment {
         for (ImageFile imgFile : content.getImageFiles())
             if (imgFile.getStatus() == StatusContent.ERROR) imgErrors++;
 
+        if (0 == images) {
+            images = content.getQtyPages();
+            imgErrors = images;
+        }
+
         TextView details = rootView.findViewById(R.id.redownload_detail);
         String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
         details.setText(message);
