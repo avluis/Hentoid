@@ -277,8 +277,8 @@ public class CustomSubsamplingScaleImageView extends View {
     // Tile and image decoding
     private ImageRegionDecoder decoder;
     private final ReadWriteLock decoderLock = new ReentrantReadWriteLock(true);
-    private DecoderFactory<? extends ImageDecoder> bitmapDecoderFactory = new CompatDecoderFactory<ImageDecoder>(SkiaImageDecoder.class);
-    private DecoderFactory<? extends ImageRegionDecoder> regionDecoderFactory = new CompatDecoderFactory<ImageRegionDecoder>(SkiaImageRegionDecoder.class);
+    private DecoderFactory<? extends ImageDecoder> bitmapDecoderFactory = new CompatDecoderFactory<>(SkiaImageDecoder.class);
+    private DecoderFactory<? extends ImageRegionDecoder> regionDecoderFactory = new CompatDecoderFactory<>(SkiaImageRegionDecoder.class);
 
     // Debug values
     private PointF vCenterStart;
