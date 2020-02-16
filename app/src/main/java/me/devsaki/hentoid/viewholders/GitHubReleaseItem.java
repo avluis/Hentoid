@@ -25,7 +25,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 
 public class GitHubReleaseItem extends AbstractItem<GitHubReleaseItem.ReleaseViewHolder> {
 
-    private final static String NOT_A_DIGIT = "[^\\d]";
+    private static final String NOT_A_DIGIT = "[^\\d]";
 
     private final String tagName;
     private final String name;

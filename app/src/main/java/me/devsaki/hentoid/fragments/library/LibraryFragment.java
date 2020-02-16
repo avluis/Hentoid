@@ -1021,7 +1021,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isSearchQueryActive()) {
             advancedSearchBar.setVisibility(View.VISIBLE);
             searchClearButton.setVisibility(View.VISIBLE);
-            if (result.size() > 0 && searchMenu != null) searchMenu.collapseActionView();
+            if (!result.isEmpty() && searchMenu != null) searchMenu.collapseActionView();
         } else {
             searchClearButton.setVisibility(View.GONE);
         }
@@ -1090,7 +1090,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param item ContentItem that has been clicked on
      */
     private boolean onBookClick(@NonNull ContentItem item, int position) {
-        if (0 == selectExtension.getSelectedItems().size()) {
+        if (selectExtension.getSelectedItems().isEmpty()) {
             if (!invalidateNextBookClick && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
                 ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());

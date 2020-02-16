@@ -152,7 +152,7 @@ public class QueueFragment extends Fragment {
         fastAdapter.registerTypeInstance(new ContentItem(true));
         recyclerView.setAdapter(fastAdapter);
 
-        llm = (LinearLayoutManager)recyclerView.getLayoutManager();
+        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Item click listener
 //        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i)); TODO implement book reading while downloading
@@ -372,7 +372,7 @@ public class QueueFragment extends Fragment {
 
     private void onQueueChanged(PagedList<QueueRecord> result) {
         Timber.i(">>Queue changed ! Size=%s", result.size());
-        isEmpty = (0 == result.size());
+        isEmpty = (result.isEmpty());
         isPaused = (!isEmpty && (ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
 
         // Update toolbar
