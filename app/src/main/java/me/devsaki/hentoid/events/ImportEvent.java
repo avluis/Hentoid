@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.events;
 
-import java.io.File;
+import androidx.documentfile.provider.DocumentFile;
 
 import me.devsaki.hentoid.database.domains.Content;
 
@@ -17,7 +17,7 @@ public class ImportEvent {
     public final int booksOK;                   // Number of pages that have been downloaded successfully for current book
     public final int booksKO;                   // Number of pages that have been downloaded with errors for current book
     public final int booksTotal;                // Number of pages to download for current book
-    public final File logFile;                  // Log file, if exists (for EV_COMPLETE)
+    public final DocumentFile logFile;                  // Log file, if exists (for EV_COMPLETE)
 
     /**
      * Use for EV_PROGRESS events
@@ -45,7 +45,7 @@ public class ImportEvent {
      * @param booksKO    pages downloaded with errors
      * @param booksTotal total pages to download
      */
-    public ImportEvent(int eventType, int booksOK, int booksKO, int booksTotal, File logFile) {
+    public ImportEvent(int eventType, int booksOK, int booksKO, int booksTotal, DocumentFile logFile) {
         this.content = null;
         this.eventType = eventType;
         this.booksOK = booksOK;

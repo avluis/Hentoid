@@ -3,6 +3,7 @@ package me.devsaki.hentoid.services;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -14,7 +15,6 @@ import androidx.documentfile.provider.DocumentFile;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,7 +118,7 @@ public class ImportService extends IntentService {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, content, booksOK, booksKO, nbBooks));
     }
 
-    private void eventComplete(int nbBooks, int booksOK, int booksKO, File cleanupLogFile) {
+    private void eventComplete(int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
         EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
@@ -144,9 +144,9 @@ public class ImportService extends IntentService {
         Content content = null;
         List<String> log = new ArrayList<>();
 
-        DocumentFile rootFolder = FileHelper.getDocumentFile(new File(Preferences.getRootFolderName()), true);
-        if (null == rootFolder) {
-            Timber.e("rootFolder is not defined (%s)", Preferences.getRootFolderName());
+        DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getSdStorageUri()));
+        if (null == rootFolder || !rootFolder.exists()) {
+            Timber.e("rootFolder is not defined (%s)", Preferences.getSdStorageUri());
             return;
         }
 
@@ -187,11 +187,11 @@ public class ImportService extends IntentService {
                 content = importJson(folder);
                 if (content != null) {
                     if (rename) {
-                        String canonicalBookDir = ContentHelper.formatDirPath(content);
+                        String canonicalBookDir = ContentHelper.formatBookFolderName(content);
 
                         //String[] currentPathParts = folder.getAbsolutePath().split(File.separator);
                         List<String> currentPathParts = folder.getUri().getPathSegments();
-                        String currentBookDir = File.separator + currentPathParts.get(currentPathParts.size() - 2) + File.separator + currentPathParts.get(currentPathParts.size() - 1);
+                        String currentBookDir = currentPathParts.get(currentPathParts.size() - 1); // TODO check if that one's the folder name and not the file name
 
                         if (!canonicalBookDir.equalsIgnoreCase(currentBookDir)) {
                             /*
@@ -253,7 +253,7 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
 
         // Write cleanup log in root folder
-        File cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
+        DocumentFile cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
 
         eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -360,8 +360,7 @@ public class ImportService extends IntentService {
             content.setDownloadDate(Instant.now().toEpochMilli());
             Content contentV2 = content.toV2Content();
 
-            String fileRoot = Preferences.getRootFolderName();
-            contentV2.setStorageFolder(json.getParentFile().getUri().getPath().substring(fileRoot.length())); // TODO look closer at that
+            contentV2.setStorageFolder(json.getParentFile().getUri().toString()); // TODO look closer at that
 
             DocumentFile newJson = JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getParentFile());
             contentV2.setJsonUri(newJson.getUri().toString());
@@ -384,8 +383,7 @@ public class ImportService extends IntentService {
             }
             Content contentV2 = content.toV2Content();
 
-            String fileRoot = Preferences.getRootFolderName();
-            contentV2.setStorageFolder(json.getParentFile().getUri().getPath().substring(fileRoot.length())); // TODO look closer at that
+            contentV2.setStorageFolder(json.getParentFile().getUri().toString()); // TODO look closer at that
 
             DocumentFile newJson = JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getParentFile());
             contentV2.setJsonUri(newJson.getUri().toString());
@@ -404,8 +402,7 @@ public class ImportService extends IntentService {
             Content result = content.toEntity();
             result.setJsonUri(json.getUri().toString());
 
-            String fileRoot = Preferences.getRootFolderName();
-            result.setStorageFolder(json.getParentFile().getUri().getPath().substring(fileRoot.length())); // TODO look closer at that
+            result.setStorageFolder(json.getParentFile().getUri().toString()); // TODO look closer at that
 
             if (result.getStatus() != StatusContent.DOWNLOADED
                     && result.getStatus() != StatusContent.ERROR) {

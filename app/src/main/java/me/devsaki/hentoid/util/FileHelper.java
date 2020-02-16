@@ -35,8 +35,6 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
-import static android.os.Environment.getExternalStorageDirectory;
-
 /**
  * Created by avluis on 08/05/2016.
  * Generic file-related utility class
@@ -67,9 +65,6 @@ public class FileHelper {
         Preferences.setSdStorageUri("");
     }
 
-    public static boolean isSAF() {
-        return !Preferences.getSdStorageUri().isEmpty();
-    }
 
     /**
      * Determine if a file is on external sd card. (Kitkat+)
@@ -394,35 +389,13 @@ public class FileHelper {
         }
     }
 
-
-    public static File getDefaultDir(Context context, String dir) {
-        File file;
-        try {
-            file = new File(getExternalStorageDirectory() + File.separator
-                    + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator + dir);
-        } catch (Exception e) {
-            file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, File.separator + Consts.DEFAULT_LOCAL_DIRECTORY);
-        }
-
-        if (!file.exists() && !FileUtil.makeDir(file)) {
-            file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator + dir);
-            if (!file.exists()) {
-                FileUtil.makeDir(file);
-            }
-        }
-
-        return file;
-    }
-
     /**
      * Open the given file using the device's app(s) of choice
      *
      * @param context Context
      * @param aFile   File to be opened
      */
-    public static void openFile(Context context, File aFile) {
+    public static void openFile(@NonNull Context context, @NonNull File aFile) {
         File file = new File(aFile.getAbsolutePath());
         Intent myIntent = new Intent(Intent.ACTION_VIEW, FileProvider.getUriForFile(context, AUTHORITY, file));
         myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -430,6 +403,17 @@ public class FileHelper {
             context.startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
             Timber.e(e, "No activity found to open %s", aFile.getAbsolutePath());
+            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
+        }
+    }
+
+    public static void openFile(@NonNull Context context, @NonNull DocumentFile aFile) {
+        Intent myIntent = new Intent(Intent.ACTION_VIEW, aFile.getUri());
+        myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try {
+            context.startActivity(myIntent);
+        } catch (ActivityNotFoundException e) {
+            Timber.e(e, "No activity found to open %s", aFile.getUri());
             ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
@@ -456,6 +440,22 @@ public class FileHelper {
      * @throws IOException If any IOException occurs
      */
     public static void saveBinaryInFile(File file, byte[] binaryContent) throws IOException {
+        byte[] buffer = new byte[1024];
+        int count;
+
+        try (InputStream input = new ByteArrayInputStream(binaryContent)) {
+            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
+
+                while ((count = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, count);
+                }
+
+                output.flush();
+            }
+        }
+    }
+
+    public static void saveBinaryInFile(DocumentFile file, byte[] binaryContent) throws IOException {
         byte[] buffer = new byte[1024];
         int count;
 
@@ -501,17 +501,6 @@ public class FileHelper {
         else return "";
     }
 
-    // Please don't delete this method!
-    // I need some way to trace actions when working with SD card features - Robb
-    public static void createFileWithMsg(@NonNull String file, String msg) {
-        try {
-            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
-            Timber.i(">>file %s -> %s", file, msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     @Nullable
     public static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
         return FileUtil.getDocumentFile(file, isDirectory);
@@ -525,14 +514,39 @@ public class FileHelper {
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
+    public static void shareFile(final @NonNull Context context, final @NonNull DocumentFile f, final @NonNull String title) {
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("text/*");
+        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, f.getUri());
+        context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
+    }
+
+    // TODO create specific one to list folders
+    // TODO create specific one to fond a file with a given name
     public static List<DocumentFile> listFiles(@NonNull DocumentFile parent, FileFilter filter) {
         List<DocumentFile> result = new ArrayList<>();
 
         DocumentFile[] files = parent.listFiles();
-        for (DocumentFile file : files)
-            if (filter.accept(file)) result.add(file);
+        if (filter != null)
+            for (DocumentFile file : files)
+                if (filter.accept(file)) result.add(file);
 
         return result;
+    }
+
+    @Nullable
+    public static DocumentFile findFolder(@NonNull DocumentFile parent, @NonNull String subfolderName) {
+        List<DocumentFile> result = listFiles(parent, f -> f.isDirectory() && f.getName() != null && f.getName().equalsIgnoreCase(subfolderName));
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
+    }
+
+    @Nullable
+    public static DocumentFile findFile(@NonNull DocumentFile parent, @NonNull String fileName) {
+        List<DocumentFile> result = listFiles(parent, f -> f.isFile() && f.getName() != null && f.getName().equalsIgnoreCase(fileName));
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
     }
 
     public static class MemoryUsageFigures {

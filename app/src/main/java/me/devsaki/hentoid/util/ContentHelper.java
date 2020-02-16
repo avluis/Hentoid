@@ -12,11 +12,10 @@ import androidx.documentfile.provider.DocumentFile;
 
 import org.threeten.bp.Instant;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
-
-import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
@@ -28,11 +27,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.JsonContent;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.FileHelper.getDefaultDir;
-import static me.devsaki.hentoid.util.FileHelper.getExtSdCardFolder;
-import static me.devsaki.hentoid.util.FileHelper.isSAF;
-import static me.devsaki.hentoid.util.FileUtil.deleteQuietly;
 
 /**
  * Utility class for Content-related operations
@@ -60,7 +54,7 @@ public final class ContentHelper {
         context.startActivity(intent);
     }
 
-    public static void updateJson(@Nonnull Context context, @Nonnull Content content) {
+    public static void updateJson(@NonNull Context context, @NonNull Content content) {
         DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
         if (null == file)
             throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
@@ -72,12 +66,14 @@ public final class ContentHelper {
         }
     }
 
-    public static void createJson(@Nonnull Content content) {
-        File dir = getContentDownloadDir(content);
+    public static void createJson(@NonNull Context context, @NonNull Content content) {
+        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
+        if (null == folder || !folder.exists()) return;
+
         try {
-            JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
+            JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, folder);
         } catch (IOException e) {
-            Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+            Timber.e(e, "Error while writing to %s", content.getStorageUri());
         }
     }
 
@@ -88,7 +84,7 @@ public final class ContentHelper {
      * @param content Content to be displayed
      */
     public static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
-        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
+        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageUri());
 
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
@@ -101,70 +97,31 @@ public final class ContentHelper {
     }
 
     @WorkerThread
-    public static Content updateContentReads(@Nonnull Context context, @NonNull Content content) {
+    public static Content updateContentReads(@NonNull Context context, @NonNull Content content) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         db.insertContent(content);
 
         if (!content.getJsonUri().isEmpty()) updateJson(context, content);
-        else createJson(content);
+        else createJson(context, content);
 
         return content;
     }
 
+    public static List<DocumentFile> getPictureFilesFromContent(Context context, Content content) {
+        String storageUri = content.getStorageUri();
 
-    /**
-     * Method is used by onBindViewHolder(), speed is key
-     */
-    public static String getThumb(Content content) {
-        String coverUrl = content.getCover().getUrl();
-
-        // If trying to access a non-downloaded book cover (e.g. viewing the download queue)
-        if (content.getStorageFolder().equals("")) return coverUrl;
-
-        String extension = HttpHelper.getExtensionFromUri(coverUrl);
-        // Some URLs do not link the image itself (e.g Tsumino) => jpg by default
-        // NB : ideal would be to get the content-type of the resource behind coverUrl, but that's too time-consuming
-        if (extension.isEmpty() || extension.contains("/")) extension = "jpg";
-
-        File f = new File(Preferences.getRootFolderName(), content.getStorageFolder() + File.separator + "thumb." + extension);
-        return f.exists() ? f.getAbsolutePath() : coverUrl;
-    }
-
-    @Nullable
-    public static File[] getPictureFilesFromContent(Content content) {
-        String rootFolderName = Preferences.getRootFolderName();
-        File dir = new File(rootFolderName, content.getStorageFolder());
-
-        Timber.d("Opening: %s from: %s", content.getTitle(), dir);
-        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
+        Timber.d("Opening: %s from: %s", content.getTitle(), storageUri);
+        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(storageUri));
+        if (null == folder || !folder.exists()) {
             Timber.d("File not found!! Exiting method.");
             ToastUtil.toast(R.string.sd_access_error);
-            return null;
+            return new ArrayList<>();
         }
 
-        return dir.listFiles(
+        return FileHelper.listFiles(folder,
                 file -> (file.isFile()
-                        && !file.getName().toLowerCase().startsWith("thumb")
-                        && Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName()))
-                )
-        );
-    }
-
-    @Nullable
-    public static DocumentFile[] getPictureFilesFromContent(Content content) {
-        String rootFolderName = Preferences.getRootFolderName();
-        File dir = new File(rootFolderName, content.getStorageFolder());
-
-        Timber.d("Opening: %s from: %s", content.getTitle(), dir);
-        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
-            Timber.d("File not found!! Exiting method.");
-            ToastUtil.toast(R.string.sd_access_error);
-            return null;
-        }
-
-        return FileHelper.listFiles(dir,
-                file -> (file.isFile()
+                        && file.getName() != null
                         && !file.getName().toLowerCase().startsWith("thumb")
                         && Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName()))
                 )
@@ -173,14 +130,16 @@ public final class ContentHelper {
 
 
     @WorkerThread
-    public static void removeContent(@NonNull Content content) {
+    public static void removeContent(@NonNull Context context, @NonNull Content content) {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
-        if (!content.getStorageFolder().isEmpty()) {
-            File dir = getContentDownloadDir(content);
-            if (deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
-                Timber.i("Directory %s removed.", dir);
+        if (!content.getStorageUri().isEmpty()) {
+            DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
+            if (null == folder || !folder.exists()) return;
+
+            if (folder.delete()) {
+                Timber.i("Directory removed : %s", content.getStorageUri());
             } else {
-                Timber.w("Failed to delete directory: %s", dir);
+                Timber.w("Failed to delete directory : %s", content.getStorageUri());
             }
         }
     }
@@ -192,30 +151,16 @@ public final class ContentHelper {
      * @param content Content for which the directory to create
      * @return Created directory
      */
-    public static File createContentDownloadDir(Context context, Content content) {
-        String folderDir = formatDirPath(content);
+    @Nullable
+    public static DocumentFile createContentDownloadDir(@NonNull Context context, @NonNull Content content) {
+        DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, content.getSite());
+        if (null == siteDownloadDir) return null;
 
-        String settingDir = Preferences.getRootFolderName();
-        if (settingDir.isEmpty()) {
-            settingDir = getDefaultDir(context, folderDir).getAbsolutePath();
-        }
-
-        Timber.d("New book directory %s in %s", folderDir, settingDir);
-
-        File file = new File(settingDir, folderDir);
-        if (!file.exists() && !FileUtil.makeDir(file)) {
-            file = new File(settingDir + folderDir);
-            if (!file.exists()) {
-                FileUtil.makeDir(file);
-            }
-        }
-
-        return file;
-    }
-
-    public static File getContentDownloadDir(Content content) {
-        String rootFolderName = Preferences.getRootFolderName();
-        return new File(rootFolderName, content.getStorageFolder());
+        String bookFolderName = formatBookFolderName(content);
+        DocumentFile bookFolder = FileHelper.findFolder(siteDownloadDir, bookFolderName);
+        if (null == bookFolder) { // Create
+            return siteDownloadDir.createDirectory(bookFolderName);
+        } else return bookFolder;
     }
 
     /**
@@ -224,9 +169,8 @@ public final class ContentHelper {
      * @param content Content to get the path from
      * @return Canonical download directory path of the given content, according to current user preferences
      */
-    public static String formatDirPath(Content content) {
-        String siteFolder = content.getSite().getFolder();
-        String result = siteFolder;
+    public static String formatBookFolderName(Content content) {
+        String result = "";
 
         String title = content.getTitle().replaceAll(UNAUTHORIZED_CHARS, "_");
         String author = content.getAuthor().toLowerCase().replaceAll(UNAUTHORIZED_CHARS, "_");
@@ -250,9 +194,9 @@ public final class ContentHelper {
         // Truncate folder dir to something manageable for Windows
         // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
         int truncLength = Preferences.getFolderTruncationNbChars();
-        int titleLength = result.length() - siteFolder.length();
-        if ((truncLength > 0) && ((titleLength + suffix.length()) > truncLength))
-            result = result.substring(0, siteFolder.length() + truncLength - suffix.length() - 1);
+        int titleLength = result.length();
+        if (truncLength > 0 && titleLength + suffix.length() > truncLength)
+            result = result.substring(0, truncLength - suffix.length() - 1);
 
         result += suffix;
 
@@ -268,45 +212,25 @@ public final class ContentHelper {
         return "[" + id + "]";
     }
 
-    public static File getOrCreateSiteDownloadDir(Context context, Site site) {
-        File file;
-        String settingDir = Preferences.getRootFolderName();
-        String folderDir = site.getFolder();
-        if (settingDir.isEmpty()) {
-            return getDefaultDir(context, folderDir);
-        }
-        file = new File(settingDir, folderDir);
-        if (!file.exists() && !FileUtil.makeDir(file)) {
-            file = new File(settingDir + folderDir);
-            if (!file.exists()) {
-                FileUtil.makeDir(file);
-            }
+    @Nullable
+    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @NonNull Site site) {
+        String appUriStr = Preferences.getSdStorageUri();
+        if (appUriStr.isEmpty()) {
+            Timber.e("No storage URI defined for the app");
+            return null;
         }
 
-        return file;
-    }
-
-    public static DocumentFile getOrCreateSiteDownloadDirSaf(Context context, Site site) {
-        File file;
-        String settingDir = Preferences.getRootFolderName();
-        String folderDir = site.getFolder();
-        if (settingDir.isEmpty()) {
-            return FileUtil.getDocumentFile(getDefaultDir(context, folderDir), true);
-        }
-        file = new File(settingDir, folderDir);
-
-        return FileUtil.getOrCreateDocumentFile(file, true);
-
-        /*
-        if (!file.exists() && !FileUtil.makeDir(file)) {
-            file = new File(settingDir + folderDir);
-            if (!file.exists()) {
-                FileUtil.makeDir(file);
-            }
+        DocumentFile appFolder = DocumentFile.fromTreeUri(context, Uri.parse(appUriStr));
+        if (null == appFolder || !appFolder.exists()) {
+            Timber.e("App folder %s does not exist", appUriStr);
+            return null;
         }
 
-                return FileUtil.getDocumentFile(file, true);
-         */
+        String siteFolderName = site.getFolder();
+        DocumentFile siteFolder = FileHelper.findFolder(appFolder, siteFolderName);
+        if (null == siteFolder) { // Create
+            return appFolder.createDirectory(siteFolderName);
+        } else return siteFolder;
     }
 
     public static void shareContent(final Context context, final Content item) {

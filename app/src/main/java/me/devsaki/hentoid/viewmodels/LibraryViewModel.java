@@ -1,11 +1,13 @@
 package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -16,8 +18,6 @@ import com.annimon.stream.function.Consumer;
 
 import java.io.File;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -221,7 +221,7 @@ public class LibraryViewModel extends AndroidViewModel {
             // Persist in it JSON
             if (!theContent.getJsonUri().isEmpty())
                 ContentHelper.updateJson(getApplication(), theContent);
-            else ContentHelper.createJson(theContent);
+            else ContentHelper.createJson(getApplication(), theContent);
 
             // Persist in it DB
             collectionDao.insertContent(theContent);
@@ -291,7 +291,7 @@ public class LibraryViewModel extends AndroidViewModel {
             Content theContent = collectionDao.selectContent(content.getId());
 
             if (theContent != null) {
-                ContentHelper.removeContent(theContent);
+                ContentHelper.removeContent(getApplication(), theContent);
                 collectionDao.deleteContent(theContent);
                 Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
                 return theContent;
@@ -312,20 +312,12 @@ public class LibraryViewModel extends AndroidViewModel {
     public void archiveContent(@NonNull final Content content, Consumer<File> onSuccess) {
         Timber.d("Building file list for: %s", content.getTitle());
 
-        File dir = ContentHelper.getContentDownloadDir(content);
+        DocumentFile bookFolder = DocumentFile.fromTreeUri(getApplication(), Uri.parse(content.getStorageUri()));
+        if (null == bookFolder || !bookFolder.exists()) return;
 
-        File[] files = dir.listFiles();
-        if (files != null && files.length > 0) {
-            Arrays.sort(files);
-            ArrayList<File> fileList = new ArrayList<>();
-            for (File file : files) {
-                String filename = file.getName();
-                if (filename.endsWith(".json") || filename.contains("thumb")) {
-                    break;
-                }
-                fileList.add(file);
-            }
-
+        List<DocumentFile> files = FileHelper.listFiles(bookFolder, f -> f.getName() != null && !f.getName().endsWith(".json") && !f.getName().contains("thumb"));
+//        files = Stream.of(files).sortBy(DocumentFile::getName).toList();
+        if (!files.isEmpty()) {
             // Create folder to share from
             File sharedDir = new File(getApplication().getExternalCacheDir() + "/shared");
             if (FileHelper.createDirectory(sharedDir)) {
@@ -343,7 +335,7 @@ public class LibraryViewModel extends AndroidViewModel {
             Timber.d("Destination file: %s", dest);
 
             compositeDisposable.add(
-                    Single.fromCallable(() -> ZipUtil.zipFiles(fileList, dest))
+                    Single.fromCallable(() -> ZipUtil.zipFiles(files, dest))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(onSuccess::accept,

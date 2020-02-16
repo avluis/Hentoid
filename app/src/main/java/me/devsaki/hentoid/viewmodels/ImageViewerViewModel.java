@@ -2,7 +2,7 @@ package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
 import android.content.Context;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,7 +17,6 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
-import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -224,7 +223,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             // Persist in it JSON
             Content content = img.content.getTarget();
             if (!content.getJsonUri().isEmpty()) ContentHelper.updateJson(context, content);
-            else ContentHelper.createJson(content);
+            else ContentHelper.createJson(context, content);
 
             return img;
         } else
@@ -250,8 +249,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         content.setValue(theContent);
 
         // Load new content
-        File[] pictureFiles = ContentHelper.getPictureFilesFromContent(theContent);
-        if (pictureFiles != null && pictureFiles.length > 0) {
+        List<DocumentFile> pictureFiles = ContentHelper.getPictureFilesFromContent(getApplication(), theContent);
+        if (!pictureFiles.isEmpty()) {
             List<ImageFile> imageFiles;
             if (null == theContent.getImageFiles() || theContent.getImageFiles().isEmpty()) {
                 imageFiles = new ArrayList<>();
@@ -284,15 +283,16 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         }
     }
 
-    private static void matchFilesToImageList(File[] files, @NonNull List<ImageFile> images) {
+    private static void matchFilesToImageList(List<DocumentFile> files, @NonNull List<ImageFile> images) {
         int i = 0;
         while (i < images.size()) {
             boolean matchFound = false;
-            for (File f : files) {
+            for (DocumentFile f : files) {
+                String fileName = f.getName();
                 // Image and file name match => store absolute path
-                if (fileNamesMatch(images.get(i).getName(), f.getName())) {
+                if (fileName != null && fileNamesMatch(images.get(i).getName(), fileName)) {
                     matchFound = true;
-                    images.get(i).setAbsolutePath(f.getAbsolutePath());
+                    images.get(i).setFileUri(f.getUri().toString());
                     break;
                 }
             }
@@ -316,15 +316,15 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         }
     }
 
-    private void saveFilesToImageList(File[] files, @NonNull List<ImageFile> images, @NonNull Content content) {
+    private void saveFilesToImageList(List<DocumentFile> files, @NonNull List<ImageFile> images, @NonNull Content content) {
         int order = 0;
         // Sort files by name alpha
-        List<File> fileList = Stream.of(files).sortBy(File::getName).collect(toList());
-        for (File f : fileList) {
+        List<DocumentFile> fileList = Stream.of(files).filter(f -> f != null).sortBy(DocumentFile::getName).collect(toList());
+        for (DocumentFile f : fileList) {
             order++;
             ImageFile img = new ImageFile();
             String name = FileHelper.getFileNameWithoutExtension(f.getName());
-            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setAbsolutePath(f.getAbsolutePath());
+            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString());
             images.add(img);
         }
         content.setImageFiles(images);
@@ -333,21 +333,26 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
     @WorkerThread
     private Content postLoadProcessing(@NonNull Context context, @NonNull Content content) {
-        cacheJson(content);
+        cacheJson(context, content);
         return ContentHelper.updateContentReads(context, content);
     }
 
     // Cache JSON URI in the database to speed up favouriting
     @WorkerThread
-    private void cacheJson(@NonNull Content content) {
-        File bookFolder = ContentHelper.getContentDownloadDir(content);
-        DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
-        if (file != null) {
-            // Cache the URI of the JSON to the database
-            content.setJsonUri(file.getUri().toString());
-            collectionDao.insertContent(content);
-        } else {
-            Timber.e("File not detected : %s", content.getStorageFolder());
+    private void cacheJson(@NonNull Context context, @NonNull Content content) {
+        if (!content.getJsonUri().isEmpty()) return;
+
+        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
+        if (null == folder || !folder.exists()) return;
+
+        List<DocumentFile> foundFiles = FileHelper.listFiles(folder, f -> f.getName() != null && f.getName().equals(Consts.JSON_FILE_NAME_V2));
+        if (foundFiles.isEmpty()) {
+            Timber.e("JSON file not detected in %s", content.getStorageUri());
+            return;
         }
+
+        // Cache the URI of the JSON to the database
+        content.setJsonUri(foundFiles.get(0).getUri().toString());
+        collectionDao.insertContent(content);
     }
 }

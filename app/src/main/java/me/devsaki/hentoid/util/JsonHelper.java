@@ -9,7 +9,6 @@ import com.squareup.moshi.Types;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -57,15 +56,6 @@ public class JsonHelper {
      * @param <K>    Type of the object to save
      * @throws IOException If anything happens during file I/O
      */
-    public static <K> File createJson(K object, Type type, File dir) throws IOException {
-        File file = new File(dir, Consts.JSON_FILE_NAME_V2);
-        try (OutputStream output = FileHelper.getOutputStream(file)) {
-            if (output != null) updateJson(object, type, output);
-            else Timber.w("JSON file creation failed for %s", file.getPath());
-        }
-        return file;
-    }
-
     public static <K> DocumentFile createJson(K object, Type type, @NonNull DocumentFile dir) throws IOException {
         DocumentFile file = dir.createFile(JSON_MIME_TYPE, Consts.JSON_FILE_NAME_V2);
 

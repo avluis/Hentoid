@@ -1,10 +1,11 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
+import android.net.Uri;
 
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -59,20 +60,20 @@ public class LogUtil {
     }
 
     @Nullable
-    public static File writeLog(@Nonnull Context context, @Nonnull LogInfo info) {
+    public static DocumentFile writeLog(@Nonnull Context context, @Nonnull LogInfo info) {
         // Create the log
         String log = buildLog(info);
 
         // Save it
-        File rootFolder;
         try {
-            String settingDir = Preferences.getRootFolderName();
-            if (!settingDir.isEmpty() && FileHelper.isWritable(new File(settingDir))) {
-                rootFolder = new File(settingDir); // Use selected and output-tested location (possibly SD card)
-            } else {
-                rootFolder = FileHelper.getDefaultDir(context, ""); // Fallback to default location (phone memory)
-            }
-            File cleanupLogFile = new File(rootFolder, info.fileName + ".txt");
+            String settingDir = Preferences.getSdStorageUri();
+            if (settingDir.isEmpty()) return null;
+
+            DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(settingDir));
+            if (null == folder || !folder.exists()) return null;
+
+            DocumentFile cleanupLogFile = folder.createFile("text/plain", info.fileName + ".txt");
+
             FileHelper.saveBinaryInFile(cleanupLogFile, log.getBytes());
             return cleanupLogFile;
         } catch (Exception e) {

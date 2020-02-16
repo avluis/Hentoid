@@ -280,7 +280,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             db.beginTransaction();
             try {
                 statement.clearBindings();
-                statement.bindString(1, row.getStorageFolder());
+                statement.bindString(1, row.getStorageUri());
                 statement.bindLong(2, row.getId());
                 statement.execute();
                 db.setTransactionSuccessful();

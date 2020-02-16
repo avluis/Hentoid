@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
@@ -18,7 +19,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -168,13 +168,13 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         ToastUtil.toast(R.string.redownload_generating_log_file);
 
         LogUtil.LogInfo logInfo = createLog();
-        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null) FileHelper.openFile(requireContext(), logFile);
     }
 
     private void shareErrorLog() {
         LogUtil.LogInfo logInfo = createLog();
-        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null)
             FileHelper.shareFile(requireContext(), logFile, "Error log for queue");
     }

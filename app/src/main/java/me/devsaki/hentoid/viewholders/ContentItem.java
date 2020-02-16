@@ -3,6 +3,7 @@ package me.devsaki.hentoid.viewholders;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -195,8 +196,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         }
 
         private void attachCover(Content content) {
-            String thumbLocation = ContentHelper.getThumb(content);
-            Context context = ivCover.getContext();
+            String thumbLocation = content.getCover().getFileUri();
+            if (thumbLocation.isEmpty()) thumbLocation = content.getCover().getUrl();
+
+            Context context = ivCover.getContext().getApplicationContext();
 
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")
@@ -218,7 +221,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                                 .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookiesStr);
 
                         GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
-                        Glide.with(context.getApplicationContext())
+                        Glide.with(context)
                                 .load(glideUrl)
                                 .apply(glideRequestOptions)
                                 .into(ivCover);
@@ -227,10 +230,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 }
             }
 
-            Glide.with(context.getApplicationContext())
-                    .load(thumbLocation)
-                    .apply(glideRequestOptions)
-                    .into(ivCover);
+            if (thumbLocation.startsWith("http"))
+                Glide.with(context)
+                        .load(thumbLocation)
+                        .apply(glideRequestOptions)
+                        .into(ivCover);
+            else
+                Glide.with(context)
+                        .load(Uri.parse(thumbLocation))
+                        .apply(glideRequestOptions)
+                        .into(ivCover);
         }
 
         private void attachTitle(Content content) {

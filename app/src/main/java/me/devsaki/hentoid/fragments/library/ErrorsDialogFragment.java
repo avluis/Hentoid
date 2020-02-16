@@ -9,10 +9,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -130,13 +130,13 @@ public class ErrorsDialogFragment extends DialogFragment {
         ToastUtil.toast(R.string.redownload_generating_log_file);
 
         LogUtil.LogInfo logInfo = createLog(content);
-        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null) FileHelper.openFile(requireContext(), logFile);
     }
 
     private void shareErrorLog(@NonNull final Content content) {
         LogUtil.LogInfo logInfo = createLog(content);
-        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null)
             FileHelper.shareFile(requireContext(), logFile, "Error log for book ID " + content.getUniqueSiteId());
     }

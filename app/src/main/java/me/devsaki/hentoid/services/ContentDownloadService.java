@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.util.SparseIntArray;
 import android.webkit.MimeTypeMap;
 
@@ -26,7 +27,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.threeten.bp.Instant;
 
-import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import io.reactivex.Single;
@@ -291,11 +290,11 @@ public class ContentDownloadService extends IntentService {
         requestQueueManager = RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads());
 
         // Create destination folder for images to be downloaded
-        File dir = ContentHelper.createContentDownloadDir(this, content);
+        DocumentFile dir = ContentHelper.createContentDownloadDir(this, content);
         // Folder creation failed
-        if (!dir.exists()) {
+        if (null == dir || !dir.exists()) {
             String title = content.getTitle();
-            String absolutePath = dir.getAbsolutePath();
+            String absolutePath = (null == dir) ? "" : dir.getUri().toString();
 
             String message = String.format("Directory could not be created: %s.", absolutePath);
             Timber.w(message);
@@ -315,8 +314,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Folder creation succeeds -> memorize its path
-        String fileRoot = Preferences.getRootFolderName();
-        content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
+        content.setStorageFolder(dir.getUri().toString());
         if (0 == content.getQtyPages()) content.setQtyPages(images.size());
         content.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(content);
@@ -407,29 +405,31 @@ public class ContentDownloadService extends IntentService {
                 hasError = true;
             }
 
-            File dir = ContentHelper.getContentDownloadDir(content);
-            double freeSpaceRatio = new FileHelper.MemoryUsageFigures(dir).getFreeUsageRatio100();
+            DocumentFile dir = DocumentFile.fromTreeUri(this, Uri.parse(content.getStorageUri()));
+            if (dir != null && dir.exists()) {
+                double freeSpaceRatio = new FileHelper.MemoryUsageFigures(dir).getFreeUsageRatio100();
 
-            // Auto-retry when error pages are remaining and conditions are met
-            // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
-            if (pagesKO > 0 && Preferences.isDlRetriesActive()
-                    && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
-                    && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
-                    && requestQueueManager != null
-            ) {
-                Timber.i("Auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries(), content.getTitle(), freeSpaceRatio);
-                logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
-                content.increaseNumberDownloadRetries();
+                // Auto-retry when error pages are remaining and conditions are met
+                // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
+                if (pagesKO > 0 && Preferences.isDlRetriesActive()
+                        && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
+                        && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
+                        && requestQueueManager != null
+                ) {
+                    Timber.i("Auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries(), content.getTitle(), freeSpaceRatio);
+                    logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
+                    content.increaseNumberDownloadRetries();
 
-                // Re-queue all failed images
-                for (ImageFile img : images)
-                    if (img.getStatus().equals(StatusContent.ERROR)) {
-                        Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
-                        img.setStatus(StatusContent.SAVED);
-                        db.insertImageFile(img);
-                        requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
-                    }
-                return;
+                    // Re-queue all failed images
+                    for (ImageFile img : images)
+                        if (img.getStatus().equals(StatusContent.ERROR)) {
+                            Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
+                            img.setStatus(StatusContent.SAVED);
+                            db.insertImageFile(img);
+                            requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
+                        }
+                    return;
+                }
             }
 
             // Mark content as downloaded
@@ -442,13 +442,12 @@ public class ContentDownloadService extends IntentService {
             db.insertContent(content);
 
             // Save JSON file
-            if (dir.exists()) {
+            if (dir != null && dir.exists()) {
                 try {
-                    File jsonFile = JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
+                    DocumentFile jsonFile = JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
                     // Cache its URI to the newly created content
-                    DocumentFile jsonDocFile = FileHelper.getDocumentFile(jsonFile, false);
-                    if (jsonDocFile != null) {
-                        content.setJsonUri(jsonDocFile.getUri().toString());
+                    if (jsonFile != null) {
+                        content.setJsonUri(jsonFile.getUri().toString());
                         db.insertContent(content);
                     } else {
                         Timber.w("JSON file could not be cached for %s", content.getTitle());
@@ -457,7 +456,7 @@ public class ContentDownloadService extends IntentService {
                     Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
                 }
             } else {
-                Timber.w("completeDownload : Directory %s does not exist - JSON not saved", dir.getAbsolutePath());
+                Timber.w("completeDownload : Directory %s does not exist - JSON not saved", dir.getUri());
             }
 
             Timber.i("Content download finished: %s [%s]", content.getTitle(), content.getId());
@@ -524,8 +523,8 @@ public class ContentDownloadService extends IntentService {
      * @return Volley request and its handler
      */
     private Request<Object> buildDownloadRequest(
-            @Nonnull ImageFile img,
-            @Nonnull File dir,
+            @NonNull ImageFile img,
+            @NonNull DocumentFile dir,
             boolean canKnowHentoidAgent,
             boolean hasImageProcessing) {
 
@@ -562,7 +561,7 @@ public class ContentDownloadService extends IntentService {
                 error -> onRequestError(error, img, dir, backupUrlFinal));
     }
 
-    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, @Nonnull ImageFile img, @Nonnull File dir, boolean hasImageProcessing, @NonNull String backupUrl) {
+    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, @NonNull ImageFile img, @NonNull DocumentFile dir, boolean hasImageProcessing, @NonNull String backupUrl) {
         try {
             if (result != null) {
                 processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey(), hasImageProcessing);
@@ -584,13 +583,13 @@ public class ContentDownloadService extends IntentService {
             updateImageStatus(img, false);
             logErrorRecord(img.content.getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), "Download params : " + img.getDownloadParams());
         } catch (IOException e) {
-            Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
+            Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
             updateImageStatus(img, false);
-            logErrorRecord(img.content.getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getAbsolutePath() + " " + e.getMessage());
+            logErrorRecord(img.content.getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
         }
     }
 
-    private void onRequestError(VolleyError error, @Nonnull ImageFile img, @Nonnull File dir, @Nonnull String backupUrl) {
+    private void onRequestError(VolleyError error, @NonNull ImageFile img, @NonNull DocumentFile dir, @NonNull String backupUrl) {
         // Try with the backup URL, if it exists
         if (!backupUrl.isEmpty()) {
             tryUsingBackupUrl(img, dir, backupUrl);
@@ -622,7 +621,7 @@ public class ContentDownloadService extends IntentService {
         logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
     }
 
-    private void tryUsingBackupUrl(@Nonnull ImageFile img, @Nonnull File dir, @Nonnull String backupUrl) {
+    private void tryUsingBackupUrl(@NonNull ImageFile img, @NonNull DocumentFile dir, @NonNull String backupUrl) {
         Timber.i("Using backup URL %s", backupUrl);
         Content content = img.content.getTarget();
         Site site = content.getSite();
@@ -646,7 +645,7 @@ public class ContentDownloadService extends IntentService {
         );
     }
 
-    private void processBackupImage(ImageFile backupImage, @Nonnull ImageFile originalImage, @Nonnull File dir, Site site) {
+    private void processBackupImage(ImageFile backupImage, @NonNull ImageFile originalImage, @NonNull DocumentFile dir, Site site) {
         if (backupImage != null) {
             Timber.i("Backup URL contains image @ %s; queuing", backupImage.getUrl());
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
@@ -702,13 +701,13 @@ public class ContentDownloadService extends IntentService {
      * @throws IOException IOException if image cannot be saved at given location
      */
     private static void processAndSaveImage(ImageFile img,
-                                            File dir,
+                                            DocumentFile dir,
                                             String contentType,
                                             byte[] binaryContent,
                                             boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
         if (!dir.exists()) {
-            Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getAbsolutePath());
+            Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getUri().toString());
             return;
         }
 
@@ -747,10 +746,13 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Using default extension for %s -> %s", img.getUrl(), fileExt);
         }
 
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt);
+        if (null == mimeType) mimeType = "image/*";
+
         if (!Helper.isImageExtensionSupported(fileExt))
             throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - image not processed", fileExt, img.getUrl()));
         else
-            saveImage(dir, img.getName() + "." + fileExt, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
+            saveImage(dir, img.getName() + "." + fileExt, mimeType, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
     }
 
     /**
@@ -761,8 +763,8 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private static void saveImage(@NonNull File dir, @NonNull String fileName, byte[] binaryContent) throws IOException {
-        File file = new File(dir, fileName);
+    private static void saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
+        DocumentFile file = dir.createFile(mimeType, fileName);
         FileHelper.saveBinaryInFile(file, binaryContent);
     }
 

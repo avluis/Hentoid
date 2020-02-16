@@ -466,7 +466,7 @@ public class ImportActivity extends AppCompatActivity {
     private boolean hasBooks() {
         List<DocumentFile> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDirSaf(this, s));
+            downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDir(this, s));
         }
 
         for (DocumentFile downloadDir : downloadDirs) {

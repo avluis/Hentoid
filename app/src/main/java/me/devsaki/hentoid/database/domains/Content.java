@@ -482,7 +482,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    public String getStorageFolder() {
+    public String getStorageUri() {
         return storageFolder == null ? "" : storageFolder;
     }
 

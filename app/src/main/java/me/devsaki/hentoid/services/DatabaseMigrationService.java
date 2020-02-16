@@ -10,6 +10,7 @@ import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -81,7 +82,7 @@ public class DatabaseMigrationService extends IntentService {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, content, booksOK, booksKO, nbBooks));
     }
 
-    private void eventComplete(int nbBooks, int booksOK, int booksKO, File importLogFile) {
+    private void eventComplete(int nbBooks, int booksOK, int booksKO, DocumentFile importLogFile) {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, importLogFile));
     }
 
@@ -162,7 +163,7 @@ public class DatabaseMigrationService extends IntentService {
         this.getApplicationContext().deleteDatabase(Consts.DATABASE_NAME);
 
         // Write log in root folder
-        File importLogFile = LogUtil.writeLog(this, buildLogInfo(log));
+        DocumentFile importLogFile = LogUtil.writeLog(this, buildLogInfo(log));
 
         eventComplete(bookIds.size(), booksOK, booksKO, importLogFile);
 

@@ -114,11 +114,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     }
 
     private fun onFolderChanged() {
-        var storageUri = Preferences.getSdStorageUri()
-        if (storageUri.isEmpty()) storageUri = Preferences.getRootFolderName()
-
         val storageFolderPref: Preference? = findPreference(Preferences.Key.PREF_SETTINGS_FOLDER) as Preference?
-        storageFolderPref?.summary = storageUri
+        storageFolderPref?.summary = Preferences.getSdStorageUri()
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
