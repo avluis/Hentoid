@@ -116,7 +116,7 @@ public class DrawerItem extends AbstractItem<DrawerItem.DrawerViewHolder> {
 
         @Override
         public void unbindView(@NotNull DrawerItem item) {
-
+            // No specific behaviour to implement
         }
     }
 }

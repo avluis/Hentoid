@@ -72,7 +72,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder> {
 
         @Override
         public void unbindView(@NotNull TextItem item) {
-
+            // No specific behaviour to implement
         }
     }
 }

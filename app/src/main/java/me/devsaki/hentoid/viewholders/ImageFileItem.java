@@ -101,7 +101,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
 
         @Override
         public void unbindView(@NotNull ImageFileItem item) {
-
+            // No specific behaviour to implement
         }
     }
 }

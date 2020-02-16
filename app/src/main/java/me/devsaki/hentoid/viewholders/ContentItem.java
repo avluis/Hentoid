@@ -432,7 +432,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
         @Override
         public void unbindView(@NotNull ContentItem item) {
-            // Nothing to do here
+            // No specific behaviour to implement
         }
     }
 }

@@ -94,7 +94,7 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
 
         @Override
         public void unbindView(@NotNull SiteItem item) {
-
+            // No specific behaviour to implement
         }
     }
 }

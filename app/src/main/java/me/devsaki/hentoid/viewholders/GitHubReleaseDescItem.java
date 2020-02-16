@@ -83,7 +83,7 @@ public class GitHubReleaseDescItem extends AbstractItem<GitHubReleaseDescItem.Re
 
         @Override
         public void unbindView(@NotNull GitHubReleaseDescItem item) {
-
+            // No specific behaviour to implement
         }
     }
 }
