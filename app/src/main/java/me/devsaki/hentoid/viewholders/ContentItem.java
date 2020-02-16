@@ -228,7 +228,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
 
             Glide.with(context.getApplicationContext())
-                    .load(ContentHelper.getThumb(content))
+                    .load(thumbLocation)
                     .apply(glideRequestOptions)
                     .into(ivCover);
         }
