@@ -47,7 +47,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 
 public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
-    private final static RequestOptions glideRequestOptions = new RequestOptions()
+    private static final RequestOptions glideRequestOptions = new RequestOptions()
             .centerInside()
             .error(R.drawable.ic_placeholder);
 
@@ -432,7 +432,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
         @Override
         public void unbindView(@NotNull ContentItem item) {
-            // Nothing to do here
+            // No specific behaviour to implement
         }
     }
 }

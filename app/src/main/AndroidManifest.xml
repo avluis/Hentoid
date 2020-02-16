@@ -16,6 +16,8 @@
     <!-- Required to install update packages when targeting API 29 or higher -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
+
+
     <application
         android:name=".HentoidApp"
         android:allowBackup="false"

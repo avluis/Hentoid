@@ -46,11 +46,11 @@ public final class ContentHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    public static void viewContent(final Context context, Content content) {
+    public static void viewContent(@NonNull final Context context, @NonNull Content content) {
         viewContent(context, content, false);
     }
 
-    public static void viewContent(final Context context, Content content, boolean wrapPin) {
+    public static void viewContent(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         Intent intent = new Intent(context, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();

@@ -39,9 +39,9 @@ public final class ShortcutHelper {
     }
 
     private static ShortcutInfo buildShortcut(Context context, Site s) {
-        int tint_color = ThemeHelper.getColor(context, R.color.secondary_light);
+        int tintColor = ThemeHelper.getColor(context, R.color.secondary_light);
         Bitmap siteBitmap = Helper.getBitmapFromVectorDrawable(context, s.getIco());
-        siteBitmap = Helper.tintBitmap(siteBitmap, tint_color);
+        siteBitmap = Helper.tintBitmap(siteBitmap, tintColor);
         Icon siteIcon = Icon.createWithBitmap(siteBitmap);
 
         Intent siteIntent = UnlockActivity.wrapIntent(context, s);

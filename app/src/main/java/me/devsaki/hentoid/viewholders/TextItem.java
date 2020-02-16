@@ -6,6 +6,7 @@ import android.widget.TextView;
 
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -30,6 +32,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder> {
     }
 
     @Nullable
+    @Override
     public T getTag() {
         return tag;
     }
@@ -57,6 +60,8 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder> {
         TextViewHolder(View view) {
             super(view);
             title = requireViewById(view, R.id.drawer_item_txt);
+            int color = ThemeHelper.getColor(view.getContext(), R.color.secondary_light);
+            view.setBackground(FastAdapterUIUtils.getSelectablePressedBackground(view.getContext(), FastAdapterUIUtils.adjustAlpha(color, 100), 50, true));
         }
 
 
@@ -68,7 +73,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder> {
 
         @Override
         public void unbindView(@NotNull TextItem item) {
-
+            // No specific behaviour to implement
         }
     }
 }

@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:gravity="center"
-    android:maxHeight="500dp">
+    android:layout_gravity="center_horizontal"
+    android:gravity="center">
 
     <TextView
         android:id="@+id/updateSuccessText"
@@ -25,21 +25,21 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
-    <ScrollView
+    <me.devsaki.hentoid.views.MaxHeightRecyclerView
+        android:id="@+id/changelogReleaseItem"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fadeScrollbars="false"
+        android:paddingBottom="16dp"
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
-        android:fadeScrollbars="false"
-        app:layout_constraintTop_toBottomOf="@id/updateSuccessText"
+        android:nestedScrollingEnabled="false"
+        android:isScrollContainer="true"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:paddingBottom="16dp"
-        >
-
-        <include
-            layout="@layout/item_changelog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </ScrollView>
+        app:layout_constraintTop_toBottomOf="@id/updateSuccessText"
+        tools:listitem="@layout/item_changelog"
+        app:maxHeight="450dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

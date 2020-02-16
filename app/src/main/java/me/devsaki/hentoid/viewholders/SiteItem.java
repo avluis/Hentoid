@@ -36,11 +36,11 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
         this.showHandle = showHandle;
     }
 
-    public void setSelected(boolean selected) {
+    public void setItemSelected(boolean selected) {
         this.selected = selected;
     }
 
-    public boolean isSelected() {
+    public boolean isItemSelected() {
         return selected;
     }
 
@@ -94,7 +94,7 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
 
         @Override
         public void unbindView(@NotNull SiteItem item) {
-
+            // No specific behaviour to implement
         }
     }
 }

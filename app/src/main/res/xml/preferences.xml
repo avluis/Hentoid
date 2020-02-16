@@ -344,7 +344,9 @@
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_zoom_transitions_default"
                 android:key="pref_viewer_resume_last_left"
-                android:title="@string/pref_viewer_resume_last_left"
+                android:title="@string/pref_viewer_resume_last_left_title"
+                android:summaryOff="@string/pref_viewer_resume_last_left_summary_off"
+                android:summaryOn="@string/pref_viewer_resume_last_left_summary_on"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_open_gallery_default"

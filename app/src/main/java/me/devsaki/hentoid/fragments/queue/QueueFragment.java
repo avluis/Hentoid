@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
@@ -144,8 +144,6 @@ public class QueueFragment extends Fragment {
         btnPause.setBackground(ThemeHelper.makeQueueButtonSelector(requireContext()));
         btnStats.setOnClickListener(v -> showErrorStats());
 
-        viewModel = ViewModelProviders.of(requireActivity()).get(QueueViewModel.class);
-
         // Book list container
         RecyclerView recyclerView = requireViewById(rootView, R.id.queue_list);
 
@@ -154,7 +152,7 @@ public class QueueFragment extends Fragment {
         fastAdapter.registerTypeInstance(new ContentItem(true));
         recyclerView.setAdapter(fastAdapter);
 
-        llm = (LinearLayoutManager)recyclerView.getLayoutManager();
+        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Item click listener
 //        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i)); TODO implement book reading while downloading
@@ -254,7 +252,8 @@ public class QueueFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel.getQueuePaged().observe(this, this::onQueueChanged);
+        viewModel = new ViewModelProvider(this).get(QueueViewModel.class);
+        viewModel.getQueuePaged().observe(getViewLifecycleOwner(), this::onQueueChanged);
     }
 
     /**
@@ -373,7 +372,7 @@ public class QueueFragment extends Fragment {
 
     private void onQueueChanged(PagedList<QueueRecord> result) {
         Timber.i(">>Queue changed ! Size=%s", result.size());
-        isEmpty = (0 == result.size());
+        isEmpty = (result.isEmpty());
         isPaused = (!isEmpty && (ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
 
         // Update toolbar

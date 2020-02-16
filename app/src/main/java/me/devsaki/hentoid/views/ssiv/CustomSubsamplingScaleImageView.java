@@ -176,6 +176,10 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     public static final int ORIGIN_DOUBLE_TAP_ZOOM = 4;
 
+
+    private static final String ANIMATION_LISTENER_ERROR = "Error thrown by animation listener";
+
+
     // Bitmap (preview or full image)
     private Bitmap bitmap;
 
@@ -273,8 +277,8 @@ public class CustomSubsamplingScaleImageView extends View {
     // Tile and image decoding
     private ImageRegionDecoder decoder;
     private final ReadWriteLock decoderLock = new ReentrantReadWriteLock(true);
-    private DecoderFactory<? extends ImageDecoder> bitmapDecoderFactory = new CompatDecoderFactory<ImageDecoder>(SkiaImageDecoder.class);
-    private DecoderFactory<? extends ImageRegionDecoder> regionDecoderFactory = new CompatDecoderFactory<ImageRegionDecoder>(SkiaImageRegionDecoder.class);
+    private DecoderFactory<? extends ImageDecoder> bitmapDecoderFactory = new CompatDecoderFactory<>(SkiaImageDecoder.class);
+    private DecoderFactory<? extends ImageRegionDecoder> regionDecoderFactory = new CompatDecoderFactory<>(SkiaImageRegionDecoder.class);
 
     // Debug values
     private PointF vCenterStart;
@@ -731,7 +735,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 try {
                     anim.listener.onInterruptedByUser();
                 } catch (Exception e) {
-                    Timber.tag(TAG).w(e, "Error thrown by animation listener");
+                    Timber.tag(TAG).w(e, ANIMATION_LISTENER_ERROR);
                 }
             }
             anim = null;
@@ -1095,7 +1099,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     try {
                         anim.listener.onComplete();
                     } catch (Exception e) {
-                        Timber.tag(TAG).w(e, "Error thrown by animation listener");
+                        Timber.tag(TAG).w(e, ANIMATION_LISTENER_ERROR);
                     }
                 }
                 anim = null;
@@ -1360,11 +1364,13 @@ public class CustomSubsamplingScaleImageView extends View {
             initialiseTileMap(maxTileDimensions);
 
             List<Tile> baseGrid = tileMap.get(fullImageSampleSize);
-            for (Tile baseTile : baseGrid) {
-                TileLoadTask task = new TileLoadTask(this, decoder, baseTile);
-                execute(task);
+            if (baseGrid != null) {
+                for (Tile baseTile : baseGrid) {
+                    TileLoadTask task = new TileLoadTask(this, decoder, baseTile);
+                    execute(task);
+                }
+                refreshRequiredTiles(true);
             }
-            refreshRequiredTiles(true);
 
         }
 
@@ -1426,9 +1432,9 @@ public class CustomSubsamplingScaleImageView extends View {
         float sVisBottom = viewToSourceY(getHeightInternal());
 
         return !(sVisLeft > tile.sRect.right ||
-                 tile.sRect.left > sVisRight ||
-                 sVisTop > tile.sRect.bottom ||
-                 tile.sRect.top > sVisBottom);
+                tile.sRect.left > sVisRight ||
+                sVisTop > tile.sRect.bottom ||
+                tile.sRect.top > sVisBottom);
     }
 
     /**
@@ -3190,7 +3196,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 try {
                     anim.listener.onInterruptedByNewAnim();
                 } catch (Exception e) {
-                    Timber.tag(TAG).w(e, "Error thrown by animation listener");
+                    Timber.tag(TAG).w(e, ANIMATION_LISTENER_ERROR);
                 }
             }
 

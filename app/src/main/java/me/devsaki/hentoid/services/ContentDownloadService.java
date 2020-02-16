@@ -288,6 +288,8 @@ public class ContentDownloadService extends IntentService {
         // NB : No log of any sort because this is normal behaviour
         if (downloadCanceled || downloadSkipped) return null;
 
+        requestQueueManager = RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads());
+
         // Create destination folder for images to be downloaded
         File dir = ContentHelper.createContentDownloadDir(this, content);
         // Folder creation failed
@@ -330,7 +332,6 @@ public class ContentDownloadService extends IntentService {
 
         // Queue image download requests
         Site site = content.getSite();
-        requestQueueManager = RequestQueueManager.getInstance(this, site.isAllowParallelDownloads());
         requestQueueManager.queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
@@ -414,6 +415,7 @@ public class ContentDownloadService extends IntentService {
             if (pagesKO > 0 && Preferences.isDlRetriesActive()
                     && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
                     && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
+                    && requestQueueManager != null
             ) {
                 Timber.i("Auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries(), content.getTitle(), freeSpaceRatio);
                 logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
@@ -654,7 +656,7 @@ public class ContentDownloadService extends IntentService {
         } else Timber.w("Failed to parse backup URL");
     }
 
-    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException, IOException {
+    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws IOException {
         Map<String, String> downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
 
         if (!downloadParams.containsKey("pageInfo"))
@@ -703,7 +705,7 @@ public class ContentDownloadService extends IntentService {
                                             File dir,
                                             String contentType,
                                             byte[] binaryContent,
-                                            boolean hasImageProcessing) throws IOException, InvalidParameterException, UnsupportedContentException {
+                                            boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
         if (!dir.exists()) {
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getAbsolutePath());

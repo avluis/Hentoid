@@ -15,11 +15,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
-import com.google.android.flexbox.AlignContent;
 import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
@@ -114,7 +113,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 throw new IllegalArgumentException("Initialization failed");
             }
 
-            viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
+            viewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
             viewModel.onCategoryChanged(selectedAttributeTypes);
         }
     }
@@ -171,7 +170,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
+        viewModel.getProposedAttributesData().observe(getViewLifecycleOwner(), this::onAttributesReady);
         searchMasterData("");
     }
 

@@ -73,7 +73,7 @@ public class HitomiParser implements ImageListParser {
         for (HitomiGalleryPage page : gallery) {
             isHashAvailable = (page.getHash() != null && !page.getHash().isEmpty());
             if (1 == page.getHaswebp() && isHashAvailable && Preferences.isDlHitomiWebp())
-                img = buildWebpPicture(content, page, order++, gallery.size());
+                img = buildWebpPicture(page, order++, gallery.size());
             else if (isHashAvailable)
                 img = buildHashPicture(page, order++, gallery.size());
             else img = buildSimplePicture(content, page, order++, gallery.size());
@@ -84,7 +84,7 @@ public class HitomiParser implements ImageListParser {
         return result;
     }
 
-    private ImageFile buildWebpPicture(@NonNull Content content, @NonNull HitomiGalleryPage page, int order, int maxPages) {
+    private ImageFile buildWebpPicture(@NonNull HitomiGalleryPage page, int order, int maxPages) {
         return buildHashPicture(page, order, maxPages, "webp", "webp");
     }
 

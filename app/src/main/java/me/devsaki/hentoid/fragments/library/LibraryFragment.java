@@ -24,7 +24,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
@@ -266,7 +266,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_library, container, false);
 
-        viewModel = ViewModelProviders.of(requireActivity()).get(LibraryViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
         Preferences.registerPrefsChangedListener(prefsListener);
 
         initUI(rootView);
@@ -282,9 +282,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel.getNewSearch().observe(this, this::onNewSearch);
-        viewModel.getLibraryPaged().observe(this, this::onLibraryChanged);
-        viewModel.getTotalContent().observe(this, this::onTotalContentChanged);
+
+        viewModel.getNewSearch().observe(getViewLifecycleOwner(), this::onNewSearch);
+        viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
+        viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
+
+        viewModel.updateOrder(); // Blank call to trigger the first search
     }
 
     /**
@@ -308,6 +311,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             metadata.clear();
             searchClearButton.setVisibility(View.GONE);
             viewModel.searchUniversal("");
+            advancedSearchBar.setVisibility(View.GONE);
         });
 
         // RecyclerView
@@ -492,7 +496,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     private void updateSelectionToolbar(long selectedCount) {
-        boolean isMultipleSelection = selectExtension.getSelectedItems().size() > 1;
+        boolean isMultipleSelection = selectedCount > 1;
 
         itemDelete.setVisible(!isMultipleSelection);
         itemShare.setVisible(!isMultipleSelection);
@@ -695,7 +699,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public void onAppUpdated(AppUpdatedEvent event) {
         EventBus.getDefault().removeStickyEvent(event);
         // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(requireFragmentManager());
+        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getParentFragmentManager());
     }
 
     /**
@@ -887,7 +891,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * Used in paged mode only
      */
     private void onBoundLoad() {
-        populateBookshelf(library, pager.getCurrentPageNumber());
+        if (library != null) populateBookshelf(library, pager.getCurrentPageNumber());
     }
 
     /**
@@ -968,7 +972,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param iLibrary    Library to display books from
      * @param shelfNumber Number of the shelf to display
      */
-    private void populateBookshelf(PagedList<Content> iLibrary, int shelfNumber) {
+    private void populateBookshelf(@NonNull PagedList<Content> iLibrary, int shelfNumber) {
         if (Preferences.getEndlessScroll()) return;
 
         ImmutablePair<Integer, Integer> bounds = getShelfBound(shelfNumber, iLibrary.size());
@@ -1017,7 +1021,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isSearchQueryActive()) {
             advancedSearchBar.setVisibility(View.VISIBLE);
             searchClearButton.setVisibility(View.VISIBLE);
-            if (result.size() > 0 && searchMenu != null) searchMenu.collapseActionView();
+            if (!result.isEmpty() && searchMenu != null) searchMenu.collapseActionView();
         } else {
             searchClearButton.setVisibility(View.GONE);
         }
@@ -1031,7 +1035,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                     .map(Site::getCode)
                     .collect(toCollection(ArrayList::new));
 
-            SearchBookIdDialogFragment.invoke(requireFragmentManager(), query, siteCodes);
+            SearchBookIdDialogFragment.invoke(getParentFragmentManager(), query, siteCodes);
         }
 
         // If the update is the result of a new search, get back on top of the list
@@ -1085,8 +1089,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param item ContentItem that has been clicked on
      */
-    private boolean onBookClick(ContentItem item, int position) {
-        if (0 == selectExtension.getSelectedItems().size()) {
+    private boolean onBookClick(@NonNull ContentItem item, int position) {
+        if (selectExtension.getSelectedItems().isEmpty()) {
             if (!invalidateNextBookClick && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
                 ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
@@ -1104,7 +1108,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content whose "source" button has been clicked on
      */
-    private void onBookSourceClick(Content content) {
+    private void onBookSourceClick(@NonNull Content content) {
         ContentHelper.viewContent(requireContext(), content);
     }
 
@@ -1113,7 +1117,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content whose "favourite" button has been clicked on
      */
-    private void onBookFavouriteClick(Content content) {
+    private void onBookFavouriteClick(@NonNull Content content) {
         viewModel.toggleContentFavourite(content);
     }
 
@@ -1122,7 +1126,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content whose "error" button has been clicked on
      */
-    private void onBookErrorClick(Content content) {
+    private void onBookErrorClick(@NonNull Content content) {
         ErrorsDialogFragment.invoke(this, content.getId());
     }
 

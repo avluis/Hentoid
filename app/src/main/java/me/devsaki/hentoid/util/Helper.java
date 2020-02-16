@@ -2,10 +2,7 @@ package me.devsaki.hentoid.util;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -33,8 +30,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
-import timber.log.Timber;
-
 import static android.content.Context.CLIPBOARD_SERVICE;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
@@ -48,7 +43,7 @@ public final class Helper {
         throw new IllegalStateException("Utility class");
     }
 
-    private final static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     private static int DENSITY_DPI = -1;
 

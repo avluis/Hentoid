@@ -25,6 +25,8 @@ import static androidx.core.view.ViewCompat.requireViewById;
 
 public class GitHubReleaseItem extends AbstractItem<GitHubReleaseItem.ReleaseViewHolder> {
 
+    private static final String NOT_A_DIGIT = "[^\\d]";
+
     private final String tagName;
     private final String name;
     private final String description;
@@ -48,9 +50,11 @@ public class GitHubReleaseItem extends AbstractItem<GitHubReleaseItem.ReleaseVie
     private static int getIntFromTagName(@Nonnull String tagName) {
         int result = 0;
         String[] parts = tagName.split("\\.");
-        if (parts.length > 0) result = 10000 * Integer.parseInt(parts[0].replaceAll("[^\\d]", ""));
-        if (parts.length > 1) result += 100 * Integer.parseInt(parts[1].replaceAll("[^\\d]", ""));
-        if (parts.length > 2) result += Integer.parseInt(parts[2].replaceAll("[^\\d]", ""));
+        if (parts.length > 0)
+            result = 10000 * Integer.parseInt(parts[0].replaceAll(NOT_A_DIGIT, ""));
+        if (parts.length > 1)
+            result += 100 * Integer.parseInt(parts[1].replaceAll(NOT_A_DIGIT, ""));
+        if (parts.length > 2) result += Integer.parseInt(parts[2].replaceAll(NOT_A_DIGIT, ""));
 
         return result;
     }
@@ -120,7 +124,7 @@ public class GitHubReleaseItem extends AbstractItem<GitHubReleaseItem.ReleaseVie
 
         @Override
         public void unbindView(@NotNull GitHubReleaseItem item) {
-
+            // No specific behaviour to implement
         }
     }
 

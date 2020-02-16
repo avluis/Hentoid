@@ -59,10 +59,13 @@ public class LibraryViewModel extends AndroidViewModel {
     // Updated whenever a new search is performed
     private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
 
+    // Paged mode callbacks
+    private Consumer<Content> frontConsumer;
+    private Consumer<Content> endConsumer;
+
 
     public LibraryViewModel(@NonNull Application application) {
         super(application);
-        performSearch();
     }
 
     public void onSaveState(Bundle outState) {
@@ -87,11 +90,11 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void setLibraryFrontLoadCallback(Consumer<Content> consumer) {
-        currentSource.setOnItemAtFrontLoaded(consumer);
+        frontConsumer = consumer;
     }
 
     public void setLibraryEndLoadCallback(Consumer<Content> consumer) {
-        currentSource.setOnItemAtEndLoaded(consumer);
+        endConsumer = consumer;
     }
 
     @NonNull
@@ -118,15 +121,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * Perform a new library search
      */
     private void performSearch() {
-//        newSearch.setValue(true);
-        Consumer<Content> frontConsumer = null;
-        Consumer<Content> endConsumer = null;
-
-        if (currentSource != null) {
-            libraryPaged.removeSource(currentSource.getPagedList());
-            frontConsumer = currentSource.getOnItemAtFrontLoaded();
-            endConsumer = currentSource.getOnItemAtEndLoaded();
-        }
+        if (currentSource != null) libraryPaged.removeSource(currentSource.getPagedList());
 
         searchManager.setContentSortOrder(Preferences.getContentSortOrder());
         currentSource = searchManager.getLibrary();

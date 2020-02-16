@@ -5,7 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.WindowManager;
 
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import java.security.AccessControlException;
 
@@ -41,7 +41,7 @@ public class ImageViewerActivity extends BaseActivity {
         if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
 
         searchParams = parser.getSearchParams();
-        viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
+        viewModel = new ViewModelProvider(this).get(ImageViewerViewModel.class);
         viewModel.getContent().observe(this, this::onContentChanged);
 
         if (!PermissionUtil.requestExternalStorageReadPermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
@@ -63,7 +63,7 @@ public class ImageViewerActivity extends BaseActivity {
         }
 
         if (!Preferences.getRecentVisibility()) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
     }
 
