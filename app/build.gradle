@@ -222,6 +222,7 @@ unMock {
     keepStartingWith "android.content.ContentProviderResult"
     keepStartingWith "android.content.UriMatcher"
     keepStartingWith "android.content.Intent"
+    keepStartingWith "android.content.IIntentReceiver"
     keep "android.location.Location"
     keepStartingWith "android.content.res.Configuration"
     keepStartingWith "org."
