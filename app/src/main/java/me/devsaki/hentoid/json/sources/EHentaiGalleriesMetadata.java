@@ -23,18 +23,9 @@ public class EHentaiGalleriesMetadata {
 
         private String gid;
         private String token;
-        private String archiver_key;
         private String title;
-        private String title_jpn;
-        private String category;
         private String thumb;
-        private String uploader;
-        private String posted;
         private String filecount;
-        private String filesize;
-        private boolean expunged;
-        private double rating;
-        private String torrentcount;
         private List<String> tags;
 
 
