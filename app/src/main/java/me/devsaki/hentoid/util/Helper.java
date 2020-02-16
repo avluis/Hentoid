@@ -43,7 +43,7 @@ public final class Helper {
         throw new IllegalStateException("Utility class");
     }
 
-    private final static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     private static int DENSITY_DPI = -1;
 
