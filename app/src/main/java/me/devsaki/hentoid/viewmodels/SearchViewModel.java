@@ -16,7 +16,6 @@ import io.reactivex.disposables.Disposables;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.util.Preferences;
 
 import static java.util.Objects.requireNonNull;
 
@@ -37,6 +36,8 @@ public class SearchViewModel extends ViewModel {
     private Disposable countDisposable = Disposables.empty();
 
     private Disposable filterDisposable = Disposables.disposed();
+
+    private int attributeSortOrder = -1;
 
 
     // === INIT METHODS
@@ -68,31 +69,41 @@ public class SearchViewModel extends ViewModel {
 
     // === VERB METHODS
 
+    public void initAndStart(int attributeSortOrder) {
+        this.attributeSortOrder = attributeSortOrder;
+        countAttributesPerType();
+        updateSelectionResult();
+    }
+
     public void onCategoryChanged(List<AttributeType> category) {
         this.category = category;
     }
 
     public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
+        if (-1 == attributeSortOrder) throw new IllegalStateException("SearchViewModel has to be initialized by calling initAndStart first");
+
         filterDisposable.dispose();
         filterDisposable = collectionDAO
-            .getAttributeMasterDataPaged(
-                category,
-                query,
-                selectedAttributes.getValue(),
-                false,
-                pageNum,
-                itemsPerPage,
-                Preferences.getAttributesSortOrder()
-            )
-            .subscribe(attributeQueryResult -> {
-                AttributeSearchResult result = new AttributeSearchResult(
-                    attributeQueryResult.pagedAttributes, attributeQueryResult.totalSelectedAttributes
-                );
-                proposedAttributes.postValue(result);
-            });
+                .getAttributeMasterDataPaged(
+                        category,
+                        query,
+                        selectedAttributes.getValue(),
+                        false,
+                        pageNum,
+                        itemsPerPage,
+                        attributeSortOrder
+                )
+                .subscribe(attributeQueryResult -> {
+                    AttributeSearchResult result = new AttributeSearchResult(
+                            attributeQueryResult.pagedAttributes, attributeQueryResult.totalSelectedAttributes
+                    );
+                    proposedAttributes.postValue(result);
+                });
     }
 
     public void onAttributeSelected(Attribute a) {
+        if (-1 == attributeSortOrder) throw new IllegalStateException("SearchViewModel has to be initialized by calling initAndStart first");
+
         List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
         // Direct impact on selectedAttributes
@@ -100,11 +111,6 @@ public class SearchViewModel extends ViewModel {
         selectedAttributes.setValue(selectedAttributesList);
 
         // Indirect impact on attributesPerType and availableAttributes
-        countAttributesPerType();
-        updateSelectionResult();
-    }
-
-    public void emptyStart() {
         countAttributesPerType();
         updateSelectionResult();
     }
@@ -118,6 +124,8 @@ public class SearchViewModel extends ViewModel {
     }
 
     public void onAttributeUnselected(Attribute a) {
+        if (-1 == attributeSortOrder) throw new IllegalStateException("SearchViewModel has to be initialized by calling initAndStart first");
+
         List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
         // Direct impact on selectedAttributes
@@ -132,19 +140,19 @@ public class SearchViewModel extends ViewModel {
     private void countAttributesPerType() {
         countDisposable.dispose();
         countDisposable = collectionDAO.countAttributesPerType(selectedAttributes.getValue())
-            .subscribe(results -> {
-                // Result has to take into account the number of attributes already selected (hence unavailable)
-                List<Attribute> selectedAttrs = selectedAttributes.getValue();
-                if (selectedAttrs != null) {
-                    for (Attribute a : selectedAttrs) {
-                        int countForType = results.get(a.getType().getCode());
-                        if (countForType > 0)
-                            results.put(a.getType().getCode(), --countForType);
+                .subscribe(results -> {
+                    // Result has to take into account the number of attributes already selected (hence unavailable)
+                    List<Attribute> selectedAttrs = selectedAttributes.getValue();
+                    if (selectedAttrs != null) {
+                        for (Attribute a : selectedAttrs) {
+                            int countForType = results.get(a.getType().getCode());
+                            if (countForType > 0)
+                                results.put(a.getType().getCode(), --countForType);
+                        }
                     }
-                }
 
-                attributesPerType.postValue(results);
-            });
+                    attributesPerType.postValue(results);
+                });
     }
 
     private void updateSelectionResult() {
