@@ -32,6 +32,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder> {
     }
 
     @Nullable
+    @Override
     public T getTag() {
         return tag;
     }
