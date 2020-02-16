@@ -656,7 +656,7 @@ public class ContentDownloadService extends IntentService {
         } else Timber.w("Failed to parse backup URL");
     }
 
-    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException, IOException {
+    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws IOException {
         Map<String, String> downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
 
         if (!downloadParams.containsKey("pageInfo"))
@@ -705,7 +705,7 @@ public class ContentDownloadService extends IntentService {
                                             File dir,
                                             String contentType,
                                             byte[] binaryContent,
-                                            boolean hasImageProcessing) throws IOException, InvalidParameterException, UnsupportedContentException {
+                                            boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
         if (!dir.exists()) {
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getAbsolutePath());
