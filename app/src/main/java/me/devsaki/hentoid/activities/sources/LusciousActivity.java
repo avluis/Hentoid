@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.enums.Site;
@@ -64,7 +65,7 @@ public class LusciousActivity extends BaseWebActivity {
             }
 
             Map<String, String> query = new HashMap<>();
-            query.put("id", (int) (Math.random() * 10) + "");
+            query.put("id", new Random().nextInt(10) + "");
             query.put("operationName", "AlbumGet");
             query.put("query", " query AlbumGet($id: ID!) { album { get(id: $id) { ... on Album { ...AlbumStandard } ... on MutationError { errors { code message } } } } } fragment AlbumStandard on Album { __typename id title labels description created modified like_status number_of_favorites rating status marked_for_deletion marked_for_processing number_of_pictures number_of_animated_pictures slug is_manga url download_url permissions cover { width height size url } created_by { id url name display_name user_title avatar { url size } } content { id title url } language { id title url } tags { id category text url count } genres { id title slug url } audiences { id title url url } last_viewed_picture { id position url } } "); // Yeah...
             query.put("variables", "{\"id\":\"" + bookId + "\"}");
