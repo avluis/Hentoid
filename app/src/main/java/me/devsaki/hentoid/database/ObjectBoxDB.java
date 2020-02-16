@@ -540,6 +540,8 @@ public class ObjectBoxDB {
             query.contains(Attribute_.name, filter.trim(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (filteredContent.length > 0)
             query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus);
+        else
+            query.link(Attribute_.contents).in(Content_.status, visibleContentStatus);
 
         return query.build();
     }
@@ -591,8 +593,11 @@ public class ObjectBoxDB {
         long[] filteredContent = getFilteredContent(attributeFilter, false);
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
+
         if (filteredContent.length > 0)
             query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus);
+        else
+            query.link(Attribute_.contents).in(Content_.status, visibleContentStatus);
 
         List<Attribute> attributes = query.build().find();
 
