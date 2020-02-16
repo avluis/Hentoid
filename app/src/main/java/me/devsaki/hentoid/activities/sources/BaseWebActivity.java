@@ -384,9 +384,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             webView.getSettings().setLoadWithOverviewMode(true);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && BuildConfig.DEBUG) {
-            WebView.setWebContentsDebuggingEnabled(true);
-        }
+        if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
 
 
         webClient = getWebClient();
@@ -743,7 +741,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
          */
         private boolean canUseSingleOkHttpRequest() {
             return (Preferences.isBrowserAugmented()
-                    && Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT_WATCH
                     && (chromeVersion < 45 || chromeVersion > 71)
             );
         }
@@ -787,19 +784,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             refreshNavigationMenu();
         }
 
-        @Override
-        @Deprecated
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull String url) {
-            // Prevents processing the page twice on Lollipop and above
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                WebResourceResponse result = shouldInterceptRequestInternal(url, null);
-                if (result != null) return result;
-            }
-            return super.shouldInterceptRequest(view, url);
-        }
-
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {

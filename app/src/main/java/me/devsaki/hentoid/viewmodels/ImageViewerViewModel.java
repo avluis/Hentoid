@@ -17,6 +17,7 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
+import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +42,6 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.annimon.stream.Collectors.toList;
 
 
@@ -338,19 +338,16 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     }
 
     // Cache JSON URI in the database to speed up favouriting
-    // NB : Lollipop only because it must have _full_ support for SAF
     @WorkerThread
     private void cacheJson(@NonNull Content content) {
-        if (content.getJsonUri().isEmpty() && Build.VERSION.SDK_INT >= LOLLIPOP) {
-            File bookFolder = ContentHelper.getContentDownloadDir(content);
-            DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
-            if (file != null) {
-                // Cache the URI of the JSON to the database
-                content.setJsonUri(file.getUri().toString());
-                collectionDao.insertContent(content);
-            } else {
-                Timber.e("File not detected : %s", content.getStorageFolder());
-            }
+        File bookFolder = ContentHelper.getContentDownloadDir(content);
+        DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
+        if (file != null) {
+            // Cache the URI of the JSON to the database
+            content.setJsonUri(file.getUri().toString());
+            collectionDao.insertContent(content);
+        } else {
+            Timber.e("File not detected : %s", content.getStorageFolder());
         }
     }
 }

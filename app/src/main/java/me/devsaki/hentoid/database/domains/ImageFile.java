@@ -18,17 +18,19 @@ public class ImageFile {
 
     @Id
     private long id;
-    private Integer order;
-    private String url;
-    private String name;
+    private Integer order = -1;
+    private String url = "";
+    private String name = "";
+    private String fileUri = "";
     private boolean favourite = false;
+    private boolean isCover = false;
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
-    private StatusContent status;
+    private StatusContent status = StatusContent.UNHANDLED_ERROR;
     public ToOne<Content> content;
 
 
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
-    private String downloadParams;
+    private String downloadParams = "";
 
 
     // Runtime attributes; no need to expose them nor to persist them
@@ -36,9 +38,6 @@ public class ImageFile {
     // Display order of the image in the image viewer
     @Transient
     private int displayOrder;
-    // Absolute storage path of the image
-    @Transient
-    private String absolutePath;
     // Has the image been read from a backup URL ?
     @Transient
     private boolean isBackup = false;
@@ -114,6 +113,14 @@ public class ImageFile {
         return this;
     }
 
+    public boolean isCover() {
+        return isCover;
+    }
+
+    public void setIsCover(boolean isCover) {
+        this.isCover = isCover;
+    }
+
     public boolean isFavourite() {
         return favourite;
     }
@@ -122,12 +129,12 @@ public class ImageFile {
         this.favourite = favourite;
     }
 
-    public String getAbsolutePath() {
-        return absolutePath;
+    public String getFileUri() {
+        return fileUri;
     }
 
-    public void setAbsolutePath(String absolutePath) {
-        this.absolutePath = absolutePath;
+    public void setFileUri(String fileUri) {
+        this.fileUri = fileUri;
     }
 
     public int getDisplayOrder() {

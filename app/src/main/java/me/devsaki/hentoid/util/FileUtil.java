@@ -2,7 +2,6 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
@@ -22,8 +21,6 @@ import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.HentoidApp;
 import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 /**
  * Created by avluis on 08/25/2016.
@@ -190,14 +187,12 @@ class FileUtil {
             Timber.d("Could not open file (expected)");
         }
         try {
-            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-                // Storage Access Framework
-                DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
-                if (targetDocument != null) {
-                    Context context = HentoidApp.getInstance();
-                    return context.getContentResolver().openOutputStream(
-                            targetDocument.getUri());
-                }
+            // Storage Access Framework
+            DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
+            if (targetDocument != null) {
+                Context context = HentoidApp.getInstance();
+                return context.getContentResolver().openOutputStream(
+                        targetDocument.getUri());
             }
         } catch (Exception e) {
             Timber.e(e, "Error [%s] while attempting to get file: %s ", e.getMessage(), target.getAbsolutePath());
@@ -256,7 +251,7 @@ class FileUtil {
         }
 
         // Try with Storage Access Framework.
-        if (Build.VERSION.SDK_INT >= LOLLIPOP && file.getParentFile() != null) {
+        if (file.getParentFile() != null) {
             DocumentFile folder = getOrCreateDocumentFile(file.getParentFile(), true);
             // getOrCreateDocumentFile implicitly creates the directory.
             try {
@@ -369,18 +364,14 @@ class FileUtil {
     }
 
     static boolean deleteWithSAF(File file) {
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile document = getDocumentFile(file, true);
-            if (document != null) return document.delete();
-        }
+        DocumentFile document = getDocumentFile(file, true);
+        if (document != null) return document.delete();
         return false;
     }
 
     static boolean renameWithSAF(File srcDir, String newName) {
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile srcDocument = getDocumentFile(srcDir, true);
-            if (srcDocument != null) return srcDocument.renameTo(newName);
-        }
+        DocumentFile srcDocument = getDocumentFile(srcDir, true);
+        if (srcDocument != null) return srcDocument.renameTo(newName);
         return false;
     }
 }

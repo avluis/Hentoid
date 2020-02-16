@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -46,8 +45,7 @@ public class ExHentaiActivity extends BaseWebActivity {
         CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");
 //        client.restrictTo(DOMAIN_FILTER);
         // ExH serves images through hosts that use http connections, which is detected as "mixed content" by the app
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         return client;
     }
 
@@ -65,11 +63,7 @@ public class ExHentaiActivity extends BaseWebActivity {
                 CookieManager mgr = CookieManager.getInstance();
                 String existingCookiesStr = mgr.getCookie(".exhentai.org");
                 if (existingCookiesStr != null && !existingCookiesStr.contains("ipb_member_id=")) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        mgr.removeAllCookies(null);
-                    } else {
-                        mgr.removeAllCookie();
-                    }
+                    mgr.removeAllCookies(null);
                     webView.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/");
                 } else {
                     exhCookiesStr = existingCookiesStr;

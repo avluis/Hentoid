@@ -117,7 +117,7 @@ public final class ContentHelper {
      * Method is used by onBindViewHolder(), speed is key
      */
     public static String getThumb(Content content) {
-        String coverUrl = content.getCoverImageUrl();
+        String coverUrl = content.getCover().getUrl();
 
         // If trying to access a non-downloaded book cover (e.g. viewing the download queue)
         if (content.getStorageFolder().equals("")) return coverUrl;

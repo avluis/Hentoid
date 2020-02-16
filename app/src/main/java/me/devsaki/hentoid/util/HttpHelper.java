@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.util;
 
 import android.net.Uri;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.webkit.CookieManager;
@@ -89,9 +88,7 @@ public class HttpHelper {
             result = new WebResourceResponse("application/octet-stream", null, is);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            result.setResponseHeaders(okHttpHeadersToWebResourceHeaders(resp.headers().toMultimap()));
-        }
+        result.setResponseHeaders(okHttpHeadersToWebResourceHeaders(resp.headers().toMultimap()));
 
         return result;
     }

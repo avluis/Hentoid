@@ -130,7 +130,6 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     public void onScrollStateChanged(int state) {
         super.onScrollStateChanged(state);

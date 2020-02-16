@@ -1,12 +1,10 @@
 package me.devsaki.hentoid.util;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
 import android.widget.Toast;
@@ -157,7 +155,6 @@ public class FileHelper {
 
     @SuppressLint("ObsoleteSdkInt")
     private static String getVolumePath(final String volumeId, Context context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return null;
         try {
             StorageManager mStorageManager =
                     (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
@@ -189,7 +186,6 @@ public class FileHelper {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static String getVolumeIdFromTreeUri(final Uri treeUri) {
         final String docId = DocumentsContract.getTreeDocumentId(treeUri);
         final String[] split = docId.split(":");
@@ -197,7 +193,6 @@ public class FileHelper {
         else return null;
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static String getDocumentPathFromTreeUri(final Uri treeUri) {
         final String docId = DocumentsContract.getTreeDocumentId(treeUri);
         final String[] split = docId.split(":");
@@ -381,14 +376,7 @@ public class FileHelper {
             return false;
         }
 
-        boolean directorySaved = Preferences.setRootFolderName(folder);
-        if (!directorySaved) {
-            if (notify) {
-                ToastUtil.toast(context, R.string.error_creating_folder);
-            }
-            return false;
-        }
-
+        Preferences.setSdStorageUri(folder);
         return true;
     }
 
@@ -396,7 +384,7 @@ public class FileHelper {
      * Create the ".nomedia" file in the app's root folder
      */
     public static void createNoMedia() {
-        String settingDir = Preferences.getRootFolderName();
+        String settingDir = Preferences.getSdStorageUri();
         File noMedia = new File(settingDir, ".nomedia");
 
         if (FileUtil.makeFile(noMedia, false)) {

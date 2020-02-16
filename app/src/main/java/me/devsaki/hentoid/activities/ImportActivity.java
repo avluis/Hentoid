@@ -37,7 +37,6 @@ import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.fragments.import_.KitkatRootFolderFragment;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.Consts;
@@ -50,7 +49,6 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
 
@@ -60,7 +58,7 @@ import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
  * <p>
  * NB : This activity is transparent and not lockable; it should _not_ be a child of BaseActivity
  */
-public class ImportActivity extends AppCompatActivity implements KitkatRootFolderFragment.Parent {
+public class ImportActivity extends AppCompatActivity {
 
     // Instance state keys
     private static final String CURRENT_DIR = "currentDir";
@@ -285,28 +283,23 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
     }
 
     private void openFolderPicker() {
-        // Run SAF directory picker for Lollipop and above
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
-            }
-            // http://stackoverflow.com/a/31334967/1615876
-            intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-
-            // Start the SAF at the specified location
-            if (Build.VERSION.SDK_INT >= O && !Preferences.getSdStorageUri().isEmpty()) {
-                DocumentFile file = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getSdStorageUri()));
-                if (file != null)
-                    intent.putExtra(EXTRA_INITIAL_URI, file.getUri());
-            }
-
-            HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
-
-            startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
-        } else { // Kitkat : display the specific dialog for kitkat
-            KitkatRootFolderFragment.invoke(this, getSupportFragmentManager());
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
         }
+        // http://stackoverflow.com/a/31334967/1615876
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+
+        // Start the SAF at the specified location
+        if (Build.VERSION.SDK_INT >= O && !Preferences.getSdStorageUri().isEmpty()) {
+            DocumentFile file = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getSdStorageUri()));
+            if (file != null)
+                intent.putExtra(EXTRA_INITIAL_URI, file.getUri());
+        }
+
+        HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
+
+        startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
     }
 
     // Return from SAF picker
@@ -326,16 +319,6 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         } else if (resultCode == RESULT_CANCELED) {
             exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
         }
-    }
-
-    // Return from Kitkat picker
-    public void onSelectKitKatRootFolder(@NonNull File targetFolder) {
-        finalizeSelectRootFolder(targetFolder);
-    }
-
-    // Cancel Kitkat picker
-    public void onKitKatCancel() {
-        exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
     }
 
     // Return from SAF picker

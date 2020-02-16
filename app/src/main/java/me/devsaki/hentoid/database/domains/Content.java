@@ -382,13 +382,13 @@ public class Content implements Serializable {
         return this;
     }
 
-    public String getCoverImageUrl() {
-        return coverImageUrl;
-    }
-
-    public Content setCoverImageUrl(String coverImageUrl) {
-        this.coverImageUrl = coverImageUrl;
-        return this;
+    public ImageFile getCover() {
+        List<ImageFile> images = getImageFiles();
+        if (images != null && !images.isEmpty()) {
+            for (ImageFile img : images)
+                if (img.isCover()) return img;
+        }
+        return new ImageFile();
     }
 
     public int getQtyPages() {
