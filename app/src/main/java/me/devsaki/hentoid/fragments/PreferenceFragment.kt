@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
@@ -16,7 +17,8 @@ import me.devsaki.hentoid.services.UpdateDownloadService
 import me.devsaki.hentoid.util.*
 
 
-class PreferenceFragment : PreferenceFragmentCompat() {
+class PreferenceFragment : PreferenceFragmentCompat(),
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     companion object {
         private const val KEY_ROOT = "root"
@@ -42,25 +44,22 @@ class PreferenceFragment : PreferenceFragmentCompat() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        preferenceScreen.sharedPreferences
+                .registerOnSharedPreferenceChangeListener(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        preferenceScreen.sharedPreferences
+                .unregisterOnSharedPreferenceChangeListener(this)
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
 
-        findPreference<Preference>(Preferences.Key.PREF_COLOR_THEME)?.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { _, newValue ->
-                    onPrefColorThemeChanged(newValue)
-                }
-        findPreference<Preference>(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)?.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { _, _ ->
-                    onPrefRequiringRestartChanged()
-                }
-        findPreference<Preference>(Preferences.Key.PREF_APP_PREVIEW)?.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { _, _ ->
-                    onPrefRequiringRestartChanged()
-                }
-        findPreference<Preference>(Preferences.Key.PREF_ANALYTICS_PREFERENCE)?.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { _, _ ->
-                    onPrefRequiringRestartChanged()
-                }
+        onFolderChanged()
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
@@ -106,13 +105,30 @@ class PreferenceFragment : PreferenceFragmentCompat() {
         }
     }
 
-    private fun onPrefRequiringRestartChanged(): Boolean {
+    private fun onPrefRequiringRestartChanged() {
         ToastUtil.toast(R.string.restart_needed)
-        return true
     }
 
-    private fun onPrefColorThemeChanged(value: Any): Boolean {
-        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Integer.parseInt(value.toString())))
-        return true
+    private fun onPrefColorThemeChanged() {
+        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Preferences.getColorTheme()))
+    }
+
+    private fun onFolderChanged() {
+        var storageUri = Preferences.getSdStorageUri()
+        if (storageUri.isEmpty()) storageUri = Preferences.getRootFolderName()
+
+        val storageFolderPref: Preference? = findPreference(Preferences.Key.PREF_SETTINGS_FOLDER) as Preference?
+        storageFolderPref?.summary = storageUri
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+        when (key) {
+            Preferences.Key.PREF_COLOR_THEME -> onPrefColorThemeChanged()
+            Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS,
+            Preferences.Key.PREF_APP_PREVIEW,
+            Preferences.Key.PREF_ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
+            Preferences.Key.PREF_SETTINGS_FOLDER,
+            Preferences.Key.PREF_SD_STORAGE_URI -> onFolderChanged()
+        }
     }
 }
