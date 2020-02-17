@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -664,7 +665,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             ImageFile img = adapter.getImageAt(position - 1);
             if (img != null) {
                 Glide.with(ctx)
-                        .load(img.getAbsolutePath())
+                        .load(Uri.parse(img.getFileUri()))
                         .apply(glideRequestOptions)
                         .into(previewImage1);
                 previewImage1.setVisibility(View.VISIBLE);
@@ -673,14 +674,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             img = adapter.getImageAt(position);
             if (img != null)
                 Glide.with(ctx)
-                        .load(img.getAbsolutePath())
+                        .load(Uri.parse(img.getFileUri()))
                         .apply(glideRequestOptions)
                         .into(previewImage2);
 
             img = adapter.getImageAt(position + 1);
             if (img != null) {
                 Glide.with(ctx)
-                        .load(img.getAbsolutePath())
+                        .load(Uri.parse(img.getFileUri()))
                         .apply(glideRequestOptions)
                         .into(previewImage3);
                 previewImage3.setVisibility(View.VISIBLE);

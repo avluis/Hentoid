@@ -202,7 +202,7 @@ public class ImportService extends IntentService {
 
                             //if (FileHelper.renameDirectory(folder, new File(settingDir, canonicalBookDir))) {
                             if (folder.renameTo(canonicalBookDir)) {
-                                content.setStorageFolder(canonicalBookDir);
+                                content.setStorageUri(canonicalBookDir);
                                 trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
                             } else {
                                 trace(Log.WARN, log, "[Rename KO] Could not rename file %s to %s", currentBookDir, canonicalBookDir);
@@ -360,7 +360,7 @@ public class ImportService extends IntentService {
             content.setDownloadDate(Instant.now().toEpochMilli());
             Content contentV2 = content.toV2Content();
 
-            contentV2.setStorageFolder(json.getParentFile().getUri().toString()); // TODO look closer at that
+            contentV2.setStorageUri(json.getParentFile().getUri().toString()); // TODO look closer at that
 
             DocumentFile newJson = JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getParentFile());
             contentV2.setJsonUri(newJson.getUri().toString());
@@ -383,7 +383,7 @@ public class ImportService extends IntentService {
             }
             Content contentV2 = content.toV2Content();
 
-            contentV2.setStorageFolder(json.getParentFile().getUri().toString()); // TODO look closer at that
+            contentV2.setStorageUri(json.getParentFile().getUri().toString()); // TODO look closer at that
 
             DocumentFile newJson = JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, json.getParentFile());
             contentV2.setJsonUri(newJson.getUri().toString());
@@ -402,7 +402,7 @@ public class ImportService extends IntentService {
             Content result = content.toEntity();
             result.setJsonUri(json.getUri().toString());
 
-            result.setStorageFolder(json.getParentFile().getUri().toString()); // TODO look closer at that
+            result.setStorageUri(json.getParentFile().getUri().toString()); // TODO look closer at that
 
             if (result.getStatus() != StatusContent.DOWNLOADED
                     && result.getStatus() != StatusContent.ERROR) {

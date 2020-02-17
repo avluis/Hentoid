@@ -316,42 +316,32 @@ public class FileHelper {
         }
     }
 
-    public static boolean checkAndSetRootFolder(String folder) {
+    public static boolean checkAndSetRootFolder(DocumentFile folder) {
         return checkAndSetRootFolder(folder, false);
     }
 
-    public static boolean checkAndSetRootFolder(String folder, boolean notify) {
+    public static boolean checkAndSetRootFolder(DocumentFile folder, boolean notify) {
         Context context = HentoidApp.getInstance();
 
         // Validate folder
-        File file = new File(folder);
-        if (!file.exists() && !file.isDirectory() && !FileUtil.makeDir(file)) {
-            if (notify) {
+        if (!folder.exists() && !folder.isDirectory()) {
+            if (notify)
                 ToastUtil.toast(context, R.string.error_creating_folder);
-            }
             return false;
         }
 
-        File nomedia = new File(folder, ".nomedia");
-        boolean hasPermission;
+        DocumentFile nomedia = folder.createFile("application/octet-steam", ".nomedia");
         // Clean up (if any) nomedia file
-        if (nomedia.exists()) {
-            boolean deleted = FileUtil.deleteFile(nomedia);
-            if (deleted) {
-                Timber.d(".nomedia file deleted");
-            }
-        }
-        // Re-create nomedia file to confirm write permissions
-        hasPermission = FileUtil.makeFile(nomedia, true);
-
-        if (!hasPermission) {
-            if (notify) {
+        if (null != nomedia && nomedia.exists()) {
+            boolean deleted = nomedia.delete();
+            if (deleted) Timber.d(".nomedia file deleted");
+        } else {
+            if (notify)
                 ToastUtil.toast(context, R.string.error_write_permission);
-            }
             return false;
         }
 
-        Preferences.setSdStorageUri(folder);
+        Preferences.setSdStorageUri(folder.getUri().toString());
         return true;
     }
 

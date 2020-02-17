@@ -59,7 +59,7 @@ public class Content implements Serializable {
     private ToMany<ImageFile> imageFiles;
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
-    private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
+    private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite;
     private long reads = 0;
     private long lastReadDate;
@@ -382,15 +382,6 @@ public class Content implements Serializable {
         return this;
     }
 
-    public ImageFile getCover() {
-        List<ImageFile> images = getImageFiles();
-        if (images != null && !images.isEmpty()) {
-            for (ImageFile img : images)
-                if (img.isCover()) return img;
-        }
-        return new ImageFile();
-    }
-
     public int getQtyPages() {
         return qtyPages;
     }
@@ -440,6 +431,24 @@ public class Content implements Serializable {
         return this;
     }
 
+    public ImageFile getCover() {
+        List<ImageFile> images = getImageFiles();
+        if (images != null && !images.isEmpty()) {
+            for (ImageFile img : images)
+                if (img.isCover()) return img;
+        }
+        return new ImageFile();
+    }
+
+    public String getCoverImageUrl() {
+        return coverImageUrl;
+    }
+
+    public Content setCoverImageUrl(String coverImageUrl) {
+        this.coverImageUrl = coverImageUrl;
+        return this;
+    }
+
     @Nullable
     public ToMany<ErrorRecord> getErrorLog() {
         return errorLog;
@@ -483,11 +492,11 @@ public class Content implements Serializable {
     }
 
     public String getStorageUri() {
-        return storageFolder == null ? "" : storageFolder;
+        return storageUri == null ? "" : storageUri;
     }
 
-    public Content setStorageFolder(String storageFolder) {
-        this.storageFolder = storageFolder;
+    public Content setStorageUri(String storageFolder) {
+        this.storageUri = storageFolder;
         return this;
     }
 

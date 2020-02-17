@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.adapters;
 
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,7 +83,8 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     public int getItemViewType(int position) {
         ImageFile img = images.get(position);
 
-        if ("gif".equalsIgnoreCase(FileHelper.getExtension(img.getAbsolutePath()))
+        // TODO to check
+        if ("gif".equalsIgnoreCase(FileHelper.getExtension(img.getFileUri()))
                 || img.getMimeType().contains("gif")) {
             return TYPE_GIF;
         }
@@ -170,7 +172,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
         void setImage(ImageFile img) {
             this.img = img;
-            String uri = img.getAbsolutePath();
+            Uri uri = Uri.parse(img.getFileUri());
             Timber.i(">>>>IMG %s %s", imgType, uri);
 
             if (TYPE_GIF == imgType) {

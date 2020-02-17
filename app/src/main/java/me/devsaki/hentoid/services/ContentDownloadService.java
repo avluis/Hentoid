@@ -314,7 +314,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Folder creation succeeds -> memorize its path
-        content.setStorageFolder(dir.getUri().toString());
+        content.setStorageUri(dir.getUri().toString());
         if (0 == content.getQtyPages()) content.setQtyPages(images.size());
         content.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(content);

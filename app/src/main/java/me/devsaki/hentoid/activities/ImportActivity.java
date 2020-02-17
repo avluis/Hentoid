@@ -8,11 +8,9 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.provider.DocumentsContract;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -27,7 +25,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,10 +40,8 @@ import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
-import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.O;
@@ -155,35 +150,6 @@ public class ImportActivity extends AppCompatActivity {
                 isCleanNoImages = parser.getRefreshCleanNoImages();
                 isCleanUnreadable = parser.getRefreshCleanUnreadable();
             }
-        }
-        checkForDefaultDirectory();
-    }
-
-    private void checkForDefaultDirectory() {
-        // Check if user can read and write folders before beginning
-        if (PermissionUtil.requestExternalStorageReadWritePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
-            Timber.d("Storage permission allowed!");
-            String settingDir = Preferences.getRootFolderName();
-            Timber.d(settingDir);
-
-            File file;
-            if (!settingDir.isEmpty())
-                file = new File(settingDir);
-            else {
-                file = getExistingHentoidDirFrom(Environment.getExternalStorageDirectory());
-                if (file.getAbsolutePath().equals(Environment.getExternalStorageDirectory().getAbsolutePath()))
-                    file = new File(Environment.getExternalStorageDirectory(), Consts.DEFAULT_LOCAL_DIRECTORY);
-            }
-
-            if (file.exists() && file.isDirectory()) {
-                currentRootDir = file;
-            } else {
-                currentRootDir = FileHelper.getDefaultDir(this, "");
-                Timber.d("Creating new storage directory.");
-            }
-            pickDownloadDirectory(currentRootDir);
-        } else {
-            Timber.d("Storage permission denied!");
         }
     }
 
@@ -392,38 +358,14 @@ public class ImportActivity extends AppCompatActivity {
          */
 
         DocumentFile docFile = DocumentFile.fromTreeUri(this, treeUri);
-        if (null == docFile) {
+        if (null == docFile || !docFile.exists()) {
             String message = String.format("Could not find the selected file %s", treeUri.toString());
             Timber.e(message);
             exit(RESULT_CANCELED, message);
             return;
         }
 
-        finalizeSelectRootFolder(docFile);
-    }
-
-    private void finalizeSelectRootFolder(@NonNull final DocumentFile targetFolder) {
-        String message;
-        boolean success = false;
-
-        // Add the Hentoid folder at the end of the path, if not present
-        DocumentFile folder = addHentoidFolder(targetFolder);
-
-        if (!folder.exists()) {
-            // Try and create directory; test if writable
-            if (FileHelper.createDirectory(folder)) {
-                Timber.i("Target folder created");
-                if (FileHelper.isWritable(folder)) {
-                    message = getResources().getString(R.string.kitkat_dialog_return_0);
-                    success = true;
-                } else message = getResources().getString(R.string.kitkat_dialog_return_1);
-            } else message = getResources().getString(R.string.kitkat_dialog_return_2);
-
-            message = message.replace("$s", folder.getAbsolutePath());
-            ToastUtil.toast(HentoidApp.getInstance(), message, Toast.LENGTH_LONG);
-        } else success = true;
-
-        if (success) importFolder(folder);
+        importFolder(docFile);
     }
 
     private DocumentFile addHentoidFolder(@NonNull final DocumentFile baseFolder) {
@@ -477,8 +419,9 @@ public class ImportActivity extends AppCompatActivity {
         return false;
     }
 
-    private void importFolder(DocumentFile folder) {
-        if (!FileHelper.checkAndSetRootFolder(folder.getAbsolutePath(), true)) {
+    private void importFolder(@NonNull final DocumentFile targetFolder) {
+        DocumentFile folder = addHentoidFolder(targetFolder);
+        if (!FileHelper.checkAndSetRootFolder(folder, true)) {
             prepImport(null);
             return;
         }
@@ -501,12 +444,9 @@ public class ImportActivity extends AppCompatActivity {
                                 (dialog12, which) -> {
                                     dialog12.dismiss();
                                     // Prior Library found, but user chose to cancel
-                                    if (prevRootDir != null) {
-                                        currentRootDir = prevRootDir;
-                                    }
-                                    if (currentRootDir != null) {
-                                        FileHelper.checkAndSetRootFolder(currentRootDir.getAbsolutePath());
-                                    }
+                                    if (prevRootDir != null) currentRootDir = prevRootDir;
+                                    if (currentRootDir != null)
+                                        FileHelper.checkAndSetRootFolder(currentRootDir);
                                     exit(RESULT_CANCELED, ConstsImport.EXISTING_LIBRARY_FOUND);
                                 })
                         .create()

@@ -23,8 +23,6 @@ import org.threeten.bp.Instant;
 
 import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.activities.IntroActivity;
-import me.devsaki.hentoid.database.DatabaseMaintenance;
-import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
 import me.devsaki.hentoid.notification.maintenance.MaintenanceNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
@@ -170,11 +168,6 @@ public class HentoidApp extends Application {
      */
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private void performDatabaseHousekeeping() {
-        HentoidDB oldDB = HentoidDB.getInstance(this);
-
-        // Perform technical data updates that need to be done before app launches
-        DatabaseMaintenance.performOldDatabaseUpdate(oldDB);
-
         // Launch a service that will perform non-structural DB housekeeping tasks
         Intent intent = DatabaseMaintenanceService.makeIntent(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
