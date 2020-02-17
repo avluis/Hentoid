@@ -57,7 +57,6 @@ public class ImageFile {
 
         this.url = url;
         this.status = status;
-        this.favourite = false;
     }
 
     public long getId() {

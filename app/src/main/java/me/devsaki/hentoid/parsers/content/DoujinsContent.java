@@ -49,8 +49,13 @@ public class DoujinsContent implements ContentParser {
             result.setCoverImageUrl(coverUrl);
 
             // Images
-            int index = 1;
+            int index = 0;
             List<ImageFile> imgs = new ArrayList<>();
+            // Cover
+            ImageFile cover = new ImageFile(index++, result.getCoverImageUrl(), StatusContent.SAVED, images.size());
+            cover.setIsCover(true);
+            imgs.add(cover);
+            // Images
             for (Element e : images)
                 imgs.add(new ImageFile(index++, e.attr("data-file"), StatusContent.SAVED, images.size()));
             result.setImageFiles(imgs);

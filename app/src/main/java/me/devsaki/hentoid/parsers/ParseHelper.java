@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers;
 
+import androidx.annotation.NonNull;
+
 import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
 
@@ -63,10 +65,15 @@ public class ParseHelper {
         return result;
     }
 
-    public static List<ImageFile> urlsToImageFiles(@Nonnull List<String> imgUrls) {
+    public static List<ImageFile> urlsToImageFiles(@Nonnull List<String> imgUrls, @NonNull String coverUrl) {
         List<ImageFile> result = new ArrayList<>();
 
-        int order = 1;
+        int order = 0;
+        // Cover
+        ImageFile cover = new ImageFile(order++, coverUrl, StatusContent.SAVED, imgUrls.size());
+        cover.setIsCover(true);
+        result.add(cover);
+        // Images
         for (String s : imgUrls) result.add(urlToImageFile(s, order++, imgUrls.size()));
 
         return result;

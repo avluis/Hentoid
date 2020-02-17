@@ -82,8 +82,13 @@ public class NhentaiContent implements ContentParser {
         String mediaId = coverParts[coverParts.length - 2];
         String serverUrl = "https://i.nhentai.net/galleries/" + mediaId + "/"; // We infer the whole book is stored on the same server
 
-        int index = 1;
+        int index = 0;
         List<ImageFile> images = new ArrayList<>();
+        // Cover
+        ImageFile cover = new ImageFile(index++, result.getCoverImageUrl(), StatusContent.SAVED, thumbs.size());
+        cover.setIsCover(true);
+        images.add(cover);
+        // Images
         for (String s : thumbs) {
             images.add(new ImageFile(index, serverUrl + index + "." + FileHelper.getExtension(s), StatusContent.SAVED, thumbs.size())); // We infer actual book page images have the same format as their thumbs
             index++;
