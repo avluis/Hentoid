@@ -56,26 +56,6 @@ public class FileHelper {
         return AUTHORITY;
     }
 
-    public static void saveUri(Uri uri) {
-        Timber.d("Saving Uri: %s", uri);
-        Preferences.setSdStorageUri(uri.toString());
-    }
-
-    public static void clearUri() {
-        Preferences.setSdStorageUri("");
-    }
-
-
-    /**
-     * Determine if a file is on external sd card. (Kitkat+)
-     *
-     * @param file The file.
-     * @return true if on external sd card.
-     */
-    public static boolean isOnExtSdCard(final File file) {
-        return getExtSdCardFolder(file) != null;
-    }
-
     /**
      * Determine the main folder of the external SD card containing the given file. (Kitkat+)
      *
@@ -103,7 +83,7 @@ public class FileHelper {
      *
      * @return A list of external SD card paths.
      */
-    public static String[] getExtSdCardPaths() {
+    private static String[] getExtSdCardPaths() {
         Context context = HentoidApp.getInstance();
         List<String> paths = new ArrayList<>();
         for (File file : ContextCompat.getExternalFilesDirs(context, "external")) {
@@ -471,18 +451,6 @@ public class FileHelper {
         }
     }
 
-    public static boolean renameDirectory(File srcDir, File destDir) {
-        try {
-            FileUtils.moveDirectory(srcDir, destDir);
-            return true;
-        } catch (IOException e) {
-            return FileUtil.renameWithSAF(srcDir, destDir.getName());
-        } catch (Exception e) {
-            Timber.e(e);
-        }
-        return false;
-    }
-
     public static String getImageExtensionFromPictureHeader(byte[] header) {
         if (header.length < 12) return "";
 
@@ -502,7 +470,7 @@ public class FileHelper {
     }
 
     @Nullable
-    public static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
+    static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
         return FileUtil.getDocumentFile(file, isDirectory);
     }
 
@@ -557,6 +525,33 @@ public class FileHelper {
         public MemoryUsageFigures(File f) {
             this.freeMemBytes = f.getFreeSpace();
             this.totalMemBytes = f.getTotalSpace();
+        }
+
+        public double getFreeUsageRatio100() {
+            return freeMemBytes * 100.0 / totalMemBytes;
+        }
+
+        public String formatFreeUsageMb() {
+            return Math.round(freeMemBytes / 1e6) + "/" + Math.round(totalMemBytes / 1e6);
+        }
+    }
+
+    public static class MemoryUsageFiguresSaf {
+        private final long freeMemBytes;
+        private final long totalMemBytes;
+
+        // Check https://stackoverflow.com/questions/56663624/how-to-get-free-and-total-size-of-each-storagevolume
+        // to see if a better solution compatible with API21 has been found
+        public MemoryUsageFiguresSaf(@NonNull Context context, @NonNull DocumentFile f) {
+            String fullPath = getFullPathFromTreeUri(f.getUri(), context); // Oh so dirty !!
+            if (fullPath != null) {
+                File file = new File(fullPath);
+                this.freeMemBytes = file.getFreeSpace();
+                this.totalMemBytes = file.getTotalSpace();
+            } else {
+                this.freeMemBytes = 0;
+                this.totalMemBytes = 0;
+            }
         }
 
         public double getFreeUsageRatio100() {

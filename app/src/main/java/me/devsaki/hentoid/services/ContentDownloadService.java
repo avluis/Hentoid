@@ -324,14 +324,10 @@ public class ContentDownloadService extends IntentService {
 
         // == DOWNLOAD PHASE ==
 
-        // Forge a request for the book's cover
-        ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
-        cover.setDownloadParams(content.getDownloadParams());
-
         // Queue image download requests
         Site site = content.getSite();
-        requestQueueManager.queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         for (ImageFile img : images) {
+            if (img.isCover()) img.setDownloadParams(content.getDownloadParams());
             if (img.getStatus().equals(StatusContent.SAVED))
                 requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         }
@@ -407,7 +403,7 @@ public class ContentDownloadService extends IntentService {
 
             DocumentFile dir = DocumentFile.fromTreeUri(this, Uri.parse(content.getStorageUri()));
             if (dir != null && dir.exists()) {
-                double freeSpaceRatio = new FileHelper.MemoryUsageFigures(dir).getFreeUsageRatio100();
+                double freeSpaceRatio = new FileHelper.MemoryUsageFiguresSaf(this, dir).getFreeUsageRatio100();
 
                 // Auto-retry when error pages are remaining and conditions are met
                 // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
@@ -442,21 +438,23 @@ public class ContentDownloadService extends IntentService {
             db.insertContent(content);
 
             // Save JSON file
-            if (dir != null && dir.exists()) {
-                try {
-                    DocumentFile jsonFile = JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
-                    // Cache its URI to the newly created content
-                    if (jsonFile != null) {
-                        content.setJsonUri(jsonFile.getUri().toString());
-                        db.insertContent(content);
-                    } else {
-                        Timber.w("JSON file could not be cached for %s", content.getTitle());
+            if (dir != null) {
+                if (dir.exists()) {
+                    try {
+                        DocumentFile jsonFile = JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
+                        // Cache its URI to the newly created content
+                        if (jsonFile != null) {
+                            content.setJsonUri(jsonFile.getUri().toString());
+                            db.insertContent(content);
+                        } else {
+                            Timber.w("JSON file could not be cached for %s", content.getTitle());
+                        }
+                    } catch (IOException e) {
+                        Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
                     }
-                } catch (IOException e) {
-                    Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
+                } else {
+                    Timber.w("completeDownload : Directory %s does not exist - JSON not saved", dir.getUri());
                 }
-            } else {
-                Timber.w("completeDownload : Directory %s does not exist - JSON not saved", dir.getUri());
             }
 
             Timber.i("Content download finished: %s [%s]", content.getTitle(), content.getId());
