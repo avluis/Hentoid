@@ -144,17 +144,17 @@ public class ImportService extends IntentService {
         Content content = null;
         List<String> log = new ArrayList<>();
 
-        DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getSdStorageUri()));
+        DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
         if (null == rootFolder || !rootFolder.exists()) {
-            Timber.e("rootFolder is not defined (%s)", Preferences.getSdStorageUri());
+            Timber.e("rootFolder is not defined (%s)", Preferences.getStorageUri());
             return;
         }
 
         // 1st pass : count subfolders of every site folder
         List<DocumentFile> files = new ArrayList<>();
-        List<DocumentFile> siteFolders = FileHelper.listFiles(rootFolder, DocumentFile::isDirectory);
+        List<DocumentFile> siteFolders = FileHelper.listFolders(this, rootFolder);
         for (DocumentFile f : siteFolders)
-            files.addAll(FileHelper.listFiles(f, DocumentFile::isDirectory));
+            files.addAll(FileHelper.listFolders(this, f));
 
         // 2nd pass : scan every folder for a JSON file or subdirectories
         String enabled = getApplication().getResources().getString(R.string.enabled);
@@ -184,7 +184,7 @@ public class ImportService extends IntentService {
 
             // Detect JSON and try to parse it
             try {
-                content = importJson(folder);
+                content = importJson(this, folder);
                 if (content != null) {
                     if (rename) {
                         String canonicalBookDir = ContentHelper.formatBookFolderName(content);
@@ -213,7 +213,7 @@ public class ImportService extends IntentService {
                     ObjectBoxDB.getInstance(this).insertContent(content);
                     trace(Log.INFO, log, "Import book OK : %s", folder.getUri().toString());
                 } else { // JSON not found
-                    List<DocumentFile> subdirs = FileHelper.listFiles(folder, DocumentFile::isDirectory);
+                    List<DocumentFile> subdirs = FileHelper.listFolders(this, folder);
                     if (!subdirs.isEmpty()) // Folder doesn't contain books but contains subdirectories
                     {
                         files.addAll(subdirs);
@@ -273,14 +273,17 @@ public class ImportService extends IntentService {
 
 
     @Nullable
-    private static Content importJson(DocumentFile folder) throws JSONParseException {
-        DocumentFile json = folder.findFile(Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
+    private static Content importJson(@NonNull Context context, @NonNull DocumentFile folder) throws JSONParseException {
+        //DocumentFile json = folder.findFile(Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
+        DocumentFile json = FileHelper.findFile(context, folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
         if (json != null && json.exists()) return importJsonV2(json);
 
-        json = folder.findFile(Consts.JSON_FILE_NAME); // (v1) JSON file format
+        //json = folder.findFile(Consts.JSON_FILE_NAME); // (v1) JSON file format
+        json = FileHelper.findFile(context, folder, Consts.JSON_FILE_NAME); // (v1) JSON file format
         if (json != null && json.exists()) return importJsonV1(json);
 
-        json = folder.findFile(Consts.JSON_FILE_NAME); // (old) JSON file format (legacy and/or FAKKUDroid App)
+        //json = folder.findFile(Consts.JSON_FILE_NAME_OLD); // (old) JSON file format (legacy and/or FAKKUDroid App)
+        json = FileHelper.findFile(context, folder, Consts.JSON_FILE_NAME_OLD); // (old) JSON file format (legacy and/or FAKKUDroid App)
         if (json != null && json.exists()) return importJsonLegacy(json);
 
         return null;

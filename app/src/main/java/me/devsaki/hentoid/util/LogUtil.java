@@ -66,7 +66,7 @@ public class LogUtil {
 
         // Save it
         try {
-            String settingDir = Preferences.getSdStorageUri();
+            String settingDir = Preferences.getStorageUri();
             if (settingDir.isEmpty()) return null;
 
             DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(settingDir));

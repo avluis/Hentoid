@@ -65,7 +65,10 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
             when (preference.key) {
                 Preferences.Key.PREF_ADD_NO_MEDIA_FILE -> {
-                    FileHelper.createNoMedia()
+                    if (FileHelper.createNoMedia(requireContext()))
+                        ToastUtil.toast(R.string.nomedia_file_created)
+                    else
+                        ToastUtil.toast(R.string.nomedia_file_failed)
                     true
                 }
                 Preferences.Key.PREF_CHECK_UPDATE_MANUAL -> {
@@ -115,7 +118,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     private fun onFolderChanged() {
         val storageFolderPref: Preference? = findPreference(Preferences.Key.PREF_SETTINGS_FOLDER) as Preference?
-        storageFolderPref?.summary = Preferences.getSdStorageUri()
+        storageFolderPref?.summary = Preferences.getStorageUri()
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {

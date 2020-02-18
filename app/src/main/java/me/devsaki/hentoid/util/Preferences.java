@@ -83,11 +83,14 @@ public final class Preferences {
 
         if (sharedPreferences.contains(Key.PREF_SETTINGS_FOLDER)) {
             String folder = sharedPreferences.getString(Key.PREF_SETTINGS_FOLDER, "");
-            DocumentFile docFile = FileHelper.getDocumentFile(new File(folder), true);
-            if (docFile != null) {
-                sharedPreferences.edit().putString(Key.PREF_SD_STORAGE_URI, docFile.getUri().toString()).apply();
-                sharedPreferences.edit().remove(Key.PREF_SETTINGS_FOLDER).apply();
+            String uri = sharedPreferences.getString(Key.PREF_SD_STORAGE_URI, "");
+            if (!folder.isEmpty() && uri.isEmpty()) {
+                //DocumentFile docFile = FileHelper.getDocumentFile(new File(folder), true);
+                DocumentFile docFile = DocumentFile.fromFile(new File(folder));
+                if (docFile.exists())
+                    sharedPreferences.edit().putString(Key.PREF_SD_STORAGE_URI, docFile.getUri().toString()).apply();
             }
+            sharedPreferences.edit().remove(Key.PREF_SETTINGS_FOLDER).apply();
         }
     }
 
@@ -164,11 +167,11 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_APP_PREVIEW, BuildConfig.DEBUG);
     }
 
-    public static String getSdStorageUri() {
+    public static String getStorageUri() {
         return sharedPreferences.getString(Key.PREF_SD_STORAGE_URI, "");
     }
 
-    static void setSdStorageUri(String uri) {
+    static void setStorageUri(String uri) {
         sharedPreferences.edit()
                 .putString(Key.PREF_SD_STORAGE_URI, uri)
                 .apply();

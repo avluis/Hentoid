@@ -131,6 +131,7 @@ public class FileHelper {
     @SuppressLint("ObsoleteSdkInt")
     private static String getVolumePath(final String volumeId, Context context) {
         try {
+            // StorageVolume exist since API21, but only visible since API24
             StorageManager mStorageManager =
                     (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
             Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
@@ -176,80 +177,6 @@ public class FileHelper {
     }
 
     /**
-     * Check if a file or directory is writable.
-     * Detects write issues on external SD card.
-     *
-     * @param file The file or directory.
-     * @return true if the file or directory is writable.
-     */
-    public static boolean isWritable(@NonNull final File file) {
-
-        if (file.isDirectory()) return isDirectoryWritable(file);
-        else return isFileWritable(file);
-    }
-
-    /**
-     * Check if a directory is writable.
-     * Detects write issues on external SD card.
-     *
-     * @param file The directory.
-     * @return true if the directory is writable.
-     */
-    private static boolean isDirectoryWritable(@NonNull final File file) {
-        File testFile = new File(file, "test.txt");
-
-        boolean hasPermission;
-
-        try {
-            hasPermission = FileUtil.makeFile(testFile, true);
-            if (hasPermission)
-                try (OutputStream output = FileHelper.getOutputStream(testFile)) {
-                    output.write("test".getBytes());
-                    sync(output);
-                    output.flush();
-                } catch (NullPointerException npe) {
-                    Timber.e(npe, "Invalid Stream");
-                    hasPermission = false;
-                } catch (IOException e) {
-                    Timber.e(e, "IOException while checking permissions on %s", file.getAbsolutePath());
-                    hasPermission = false;
-                }
-        } finally {
-            if (testFile.exists()) {
-                removeFile(testFile);
-            }
-        }
-        return hasPermission;
-    }
-
-    /**
-     * Check if a file is writable.
-     * Detects write issues on external SD card.
-     *
-     * @param file The file.
-     * @return true if the file is writable.
-     */
-    private static boolean isFileWritable(@NonNull final File file) {
-        if (!file.canWrite()) return false;
-
-        // Ensure that it is indeed writable by opening an output stream
-        try {
-            FileOutputStream output = FileUtils.openOutputStream(file);
-            output.close();
-        } catch (IOException e) {
-            return false;
-        }
-
-        // Ensure that file is not created during this process.
-        if (file.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            file.delete();
-        }
-
-        return true;
-    }
-
-    /**
      * Method ensures file creation from stream.
      *
      * @param stream - OutputStream
@@ -266,7 +193,7 @@ public class FileHelper {
      * @return FileOutputStream.
      */
     static OutputStream getOutputStream(@NonNull final File target) throws IOException {
-        return FileUtil.getOutputStream(target);
+        return FileUtils.openOutputStream(target);
     }
 
     static OutputStream getOutputStream(@NonNull final DocumentFile target) throws IOException {
@@ -274,7 +201,7 @@ public class FileHelper {
     }
 
     static InputStream getInputStream(@NonNull final File target) throws IOException {
-        return FileUtil.getInputStream(target);
+        return FileUtils.openInputStream(target);
     }
 
     static InputStream getInputStream(@NonNull final DocumentFile target) throws IOException {
@@ -295,10 +222,9 @@ public class FileHelper {
      * Delete a file.
      *
      * @param target The file.
-     * @return true if deleted successfully.
      */
-    public static boolean removeFile(File target) {
-        return FileUtil.deleteFile(target);
+    public static void removeFile(File target) {
+        FileUtil.deleteFile(target);
     }
 
     /**
@@ -341,22 +267,19 @@ public class FileHelper {
             return false;
         }
 
-        Preferences.setSdStorageUri(folder.getUri().toString());
+        Preferences.setStorageUri(folder.getUri().toString());
         return true;
     }
 
     /**
      * Create the ".nomedia" file in the app's root folder
      */
-    public static void createNoMedia() {
-        String settingDir = Preferences.getSdStorageUri();
-        File noMedia = new File(settingDir, ".nomedia");
+    public static boolean createNoMedia(@NonNull Context context) {
+        DocumentFile rootDir = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
+        if (null == rootDir || !rootDir.exists()) return false;
 
-        if (FileUtil.makeFile(noMedia, false)) {
-            ToastUtil.toast(R.string.nomedia_file_created);
-        } else {
-            Timber.d(".nomedia file already exists.");
-        }
+        DocumentFile nomedia = rootDir.createFile("application/octet-steam", ".nomedia");
+        return (null != nomedia && nomedia.exists());
     }
 
     /**
@@ -480,8 +403,6 @@ public class FileHelper {
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
-    // TODO create specific one to list folders
-    // TODO create specific one to fond a file with a given name
     public static List<DocumentFile> listFiles(@NonNull DocumentFile parent, FileFilter filter) {
         List<DocumentFile> result = new ArrayList<>();
 
@@ -493,16 +414,30 @@ public class FileHelper {
         return result;
     }
 
+    public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
+        return FileUtil.listFolders(context, parent, null);
+    }
+
     @Nullable
-    public static DocumentFile findFolder(@NonNull DocumentFile parent, @NonNull String subfolderName) {
-        List<DocumentFile> result = listFiles(parent, f -> f.isDirectory() && f.getName() != null && f.getName().equalsIgnoreCase(subfolderName));
+    public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
+        //List<DocumentFile> result = listFiles(parent, f -> f.isDirectory() && f.getName() != null && f.getName().equalsIgnoreCase(subfolderName));
+        List<DocumentFile> result = FileUtil.listFolders(context, parent, subfolderName);
         if (!result.isEmpty()) return result.get(0);
         else return null;
     }
 
     @Nullable
-    public static DocumentFile findFile(@NonNull DocumentFile parent, @NonNull String fileName) {
-        List<DocumentFile> result = listFiles(parent, f -> f.isFile() && f.getName() != null && f.getName().equalsIgnoreCase(fileName));
+    public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String fileName) {
+        //List<DocumentFile> result = listFiles(parent, f -> f.isFile() && f.getName() != null && f.getName().equalsIgnoreCase(fileName));
+        List<DocumentFile> result = FileUtil.listFiles(context, parent, fileName);
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
+    }
+
+    @Nullable
+    public static DocumentFile findDocumentFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String documentFileName) {
+        //List<DocumentFile> result = listFiles(parent, f -> f.isFile() && f.getName() != null && f.getName().equalsIgnoreCase(fileName));
+        List<DocumentFile> result = FileUtil.listDocumentFiles(context, parent, documentFileName);
         if (!result.isEmpty()) return result.get(0);
         else return null;
     }
@@ -532,6 +467,7 @@ public class FileHelper {
 
         // Check https://stackoverflow.com/questions/56663624/how-to-get-free-and-total-size-of-each-storagevolume
         // to see if a better solution compatible with API21 has been found
+        // TODO - encapsulate the reflection trick used by getVolumePath
         public MemoryUsageFiguresSaf(@NonNull Context context, @NonNull DocumentFile f) {
             String fullPath = getFullPathFromTreeUri(f.getUri(), context); // Oh so dirty !!
             if (fullPath != null) {

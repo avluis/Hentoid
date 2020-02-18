@@ -157,7 +157,7 @@ public final class ContentHelper {
         if (null == siteDownloadDir) return null;
 
         String bookFolderName = formatBookFolderName(content);
-        DocumentFile bookFolder = FileHelper.findFolder(siteDownloadDir, bookFolderName);
+        DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName);
         if (null == bookFolder) { // Create
             return siteDownloadDir.createDirectory(bookFolderName);
         } else return bookFolder;
@@ -214,7 +214,7 @@ public final class ContentHelper {
 
     @Nullable
     public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @NonNull Site site) {
-        String appUriStr = Preferences.getSdStorageUri();
+        String appUriStr = Preferences.getStorageUri();
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for the app");
             return null;
@@ -227,7 +227,7 @@ public final class ContentHelper {
         }
 
         String siteFolderName = site.getFolder();
-        DocumentFile siteFolder = FileHelper.findFolder(appFolder, siteFolderName);
+        DocumentFile siteFolder = FileHelper.findFolder(context, appFolder, siteFolderName);
         if (null == siteFolder) { // Create
             return appFolder.createDirectory(siteFolderName);
         } else return siteFolder;

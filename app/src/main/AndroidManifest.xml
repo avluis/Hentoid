@@ -326,8 +326,6 @@
 
         <service android:name=".services.DatabaseMaintenanceService" />
 
-        <service android:name=".services.DatabaseMigrationService" />
-
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
         <provider

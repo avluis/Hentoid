@@ -257,8 +257,8 @@ public class ImportActivity extends AppCompatActivity {
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
 
         // Start the SAF at the specified location
-        if (Build.VERSION.SDK_INT >= O && !Preferences.getSdStorageUri().isEmpty()) {
-            DocumentFile file = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getSdStorageUri()));
+        if (Build.VERSION.SDK_INT >= O && !Preferences.getStorageUri().isEmpty()) {
+            DocumentFile file = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
             if (file != null)
                 intent.putExtra(EXTRA_INITIAL_URI, file.getUri());
         }

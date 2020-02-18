@@ -345,14 +345,14 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
         if (null == folder || !folder.exists()) return;
 
-        List<DocumentFile> foundFiles = FileHelper.listFiles(folder, f -> f.getName() != null && f.getName().equals(Consts.JSON_FILE_NAME_V2));
-        if (foundFiles.isEmpty()) {
+        DocumentFile foundFile = FileHelper.findFile(getApplication(), folder, Consts.JSON_FILE_NAME_V2);
+        if (null == foundFile) {
             Timber.e("JSON file not detected in %s", content.getStorageUri());
             return;
         }
 
         // Cache the URI of the JSON to the database
-        content.setJsonUri(foundFiles.get(0).getUri().toString());
+        content.setJsonUri(foundFile.getUri().toString());
         collectionDao.insertContent(content);
     }
 }
