@@ -2,8 +2,8 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'io.fabric'
 apply plugin: 'org.sonarqube'
+apply plugin: 'de.mobilej.unmock'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
@@ -25,7 +25,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 29
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.11.0-RC3'
+        versionName '1.11.0'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN")?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -34,6 +34,12 @@ android {
         buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ "objectbox.incremental" : "true" ]
+            }
+        }
     }
     buildTypes {
         debug {
@@ -73,10 +79,13 @@ dependencies {
     implementation project(':fakkuLib')
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:2.19.0'
+    testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
+    testImplementation "androidx.arch.core:core-testing:2.1.0"
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.50"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.61"
 
     // Firebase
     implementation 'com.google.firebase:firebase-analytics:17.2.1'
@@ -167,8 +176,8 @@ dependencies {
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
     if (includeObjectBoxBrowser.toBoolean()) {
-        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.5.0"
-        releaseImplementation "io.objectbox:objectbox-android:2.5.0"
+        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.5.1"
+        releaseImplementation "io.objectbox:objectbox-android:2.5.1"
     }
 
     // https://github.com/davemorrissey/subsampling-scale-image-view
@@ -200,6 +209,35 @@ sonarqube {
         property "sonar.sources", "src/main/"
         property "sonar.login", "3d0dc80792bad95f0193e7ed626cf090ac83e208"
     }
+}
+
+unMock {
+    keep "android.widget.BaseAdapter"
+    keep "android.widget.ArrayAdapter"
+    keep "android.os.Bundle"
+    keepStartingWith "android.database.MatrixCursor"
+    keep "android.database.AbstractCursor"
+    keep "android.database.CrossProcessCursor"
+    keepStartingWith "android.text.TextUtils"
+    keepStartingWith "android.util."
+    keepStartingWith "android.text."
+    keepStartingWith "android.content.ContentValues"
+    keepStartingWith "android.content.ComponentName"
+    keepStartingWith "android.content.ContentUris"
+    keepStartingWith "android.content.ContentProviderOperation"
+    keepStartingWith "android.content.ContentProviderResult"
+    keepStartingWith "android.content.UriMatcher"
+    keepStartingWith "android.content.Intent"
+    keepStartingWith "android.content.IIntentReceiver"
+    keep "android.location.Location"
+    keepStartingWith "android.content.res.Configuration"
+    keepStartingWith "org."
+    keepStartingWith "libcore."
+    keepStartingWith "com.android.internal.R"
+    keepStartingWith "com.android.internal.util."
+    keep "android.net.Uri"
+
+    keepStartingWith "me."
 }
 
 apply plugin: 'com.google.gms.google-services'

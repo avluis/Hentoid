@@ -23,7 +23,9 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
 
 import static java.lang.String.format;
@@ -134,12 +136,13 @@ public class SearchActivity extends BaseActivity {
         searchButton = findViewById(R.id.search_fab);
         searchButton.setOnClickListener(v -> validateForm());
 
-        viewModel = new ViewModelProvider(this).get(SearchViewModel.class);
+        ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
+        viewModel = new ViewModelProvider(this, vmFactory).get(SearchViewModel.class);
         viewModel.getAttributesCountData().observe(this, this::onQueryUpdated);
         viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
         viewModel.getSelectedContentCount().observe(this, this::onBooksCounted);
         if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
-        else viewModel.emptyStart();
+        else viewModel.initAndStart(Preferences.getAttributesSortOrder());
     }
 
     private void onQueryUpdated(SparseIntArray attrCount) {
