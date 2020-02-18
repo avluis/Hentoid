@@ -85,7 +85,6 @@ public final class Preferences {
             String folder = sharedPreferences.getString(Key.PREF_SETTINGS_FOLDER, "");
             String uri = sharedPreferences.getString(Key.PREF_SD_STORAGE_URI, "");
             if (!folder.isEmpty() && uri.isEmpty()) {
-                //DocumentFile docFile = FileHelper.getDocumentFile(new File(folder), true);
                 DocumentFile docFile = DocumentFile.fromFile(new File(folder));
                 if (docFile.exists())
                     sharedPreferences.edit().putString(Key.PREF_SD_STORAGE_URI, docFile.getUri().toString()).apply();

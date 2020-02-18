@@ -382,11 +382,6 @@ public class FileHelper {
         else return "";
     }
 
-    @Nullable
-    static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
-        return FileUtil.getDocumentFile(file, isDirectory);
-    }
-
     public static void shareFile(final @NonNull Context context, final @NonNull File f, final @NonNull String title) {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("text/*");

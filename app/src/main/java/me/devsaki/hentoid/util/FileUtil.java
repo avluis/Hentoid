@@ -20,8 +20,6 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.HentoidApp;
 import timber.log.Timber;
 
@@ -53,129 +51,6 @@ class FileUtil {
         }
 
         return false;
-    }
-
-    /**
-     * Get the DocumentFile corresponding to the given file.
-     * If the file does not exist, null is returned.
-     *
-     * @param file        The file.
-     * @param isDirectory flag indicating if the given file should be a directory.
-     * @return The DocumentFile.
-     */
-    @Nullable
-    static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
-        return getOrCreateDocumentFile(file, isDirectory, false);
-    }
-
-    /**
-     * Get the DocumentFile corresponding to the given file.
-     * If the file does not exist, null is returned.
-     *
-     * @param file        The file.
-     * @param isDirectory flag indicating if the given file should be a directory.
-     * @return The DocumentFile.
-     */
-    @Nullable
-    private static DocumentFile getOrCreateDocumentFile(@Nonnull final File file, boolean isDirectory, boolean canCreate) {
-        String baseFolder = FileHelper.getExtSdCardFolder(file);
-        boolean returnSDRoot = false;
-
-        // File is from phone memory
-        if (baseFolder == null) return DocumentFile.fromFile(file);
-
-        String relativePath = ""; // Path of the file relative to baseFolder
-        try {
-            String fullPath = file.getCanonicalPath();
-
-            if (!baseFolder.equals(fullPath)) { // Selected file _is_ the base folder
-                relativePath = fullPath.substring(baseFolder.length() + 1);
-            } else {
-                returnSDRoot = true;
-            }
-        } catch (IOException e) {
-            return null;
-        } catch (Exception f) {
-            returnSDRoot = true;
-            //continue
-        }
-
-        String sdStorageUriStr = Preferences.getStorageUri();
-        if (sdStorageUriStr.isEmpty()) return null;
-
-        Uri sdStorageUri = Uri.parse(sdStorageUriStr);
-
-        // Shorten relativePath if part of it is already in sdStorageUri
-        String[] uriContents = sdStorageUri.getPath().split(":");
-        if (uriContents.length > 1) {
-            String relativeUriPath = uriContents[1];
-            if (relativePath.equals(relativeUriPath)) {
-                relativePath = "";
-            } else if (relativePath.startsWith(relativeUriPath)) {
-                relativePath = relativePath.substring(relativeUriPath.length() + 1);
-            }
-        }
-
-        return getOrCreateFromComponents(sdStorageUri, returnSDRoot, relativePath, isDirectory, canCreate);
-    }
-
-    /**
-     * Get the DocumentFile corresponding to the given elements.
-     * If it does not exist, it is created.
-     *
-     * @param rootURI      Uri representing root
-     * @param returnRoot   True if method has just to return the DocumentFile representing the given root
-     * @param relativePath Relative path to the Document to be found/created (relative to given root)
-     * @param isDirectory  True if the given elements are supposed to be a directory; false if they are supposed to be a file
-     * @param canCreate    Behaviour when not found : True => creates a new file/folder / False => returns null
-     * @return DocumentFile corresponding to the given file.
-     */
-    @Nullable
-    private static DocumentFile getOrCreateFromComponents(@Nonnull Uri rootURI, boolean returnRoot,
-                                                          String relativePath, boolean isDirectory,
-                                                          boolean canCreate) {
-        // start with root and then parse through document tree.
-        Context context = HentoidApp.getInstance();
-        DocumentFile document = DocumentFile.fromTreeUri(context, rootURI);
-        if (null == document) return null;
-
-        if (returnRoot || null == relativePath || relativePath.isEmpty()) return document;
-
-        String[] parts = relativePath.split(File.separator);
-        for (int i = 0; i < parts.length; i++) {
-            //DocumentFile nextDocument = document.findFile(parts[i]);
-            DocumentFile nextDocument = FileHelper.findDocumentFile(context, document, parts[i]);
-
-            // The folder might exist in its capitalized version (might happen with legacy installs from the FakkuDroid era)
-            if (null == nextDocument)
-                nextDocument = FileHelper.findDocumentFile(context, document, Helper.capitalizeString(parts[i]));
-                //nextDocument = document.findFile(Helper.capitalizeString(parts[i]));
-
-            // The folder definitely doesn't exist at all
-            if (null == nextDocument) {
-                if (canCreate) {
-                    Timber.d("Document %s - part #%s : '%s' not found; creating", document.getName(), String.valueOf(i), parts[i]);
-
-                    if ((i < parts.length - 1) || isDirectory) {
-                        nextDocument = document.createDirectory(parts[i]);
-                        if (null == nextDocument) {
-                            Timber.e("Failed to create subdirectory %s/%s", document.getName(), parts[i]);
-                        }
-                    } else {
-                        nextDocument = document.createFile("image", parts[i]);
-                        if (null == nextDocument) {
-                            Timber.e("Failed to create file %s/image%s", document.getName(), parts[i]);
-                        }
-                    }
-                } else {
-                    return null;
-                }
-            }
-            document = nextDocument;
-            if (null == document) break;
-        }
-
-        return document;
     }
 
     static OutputStream getOutputStream(@NonNull final DocumentFile target) throws FileNotFoundException {
