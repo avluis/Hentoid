@@ -10,7 +10,7 @@ ___
 
 [![](https://discordapp.com/api/guilds/173995475098271746/embed.png?style=banner2)](https://discord.gg/QEZ3qk9)
 
-![Hentoid App Icon](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)
+![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome.png)
 
 ##### `Hentoid` is an ad-free Doujinshi & H-Manga archiving and viewing app.
 ###### `Hentoid` currently supports:
