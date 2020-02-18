@@ -2,7 +2,6 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
@@ -14,9 +13,8 @@ import java.util.List;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.Theme;
 import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.P;
 
 /**
  * Created by Shiro on 2/21/2018.
@@ -70,9 +68,16 @@ public final class Preferences {
         }
 
         if (sharedPreferences.contains(Key.PREF_CHECK_UPDATES_LISTS)) {
-            boolean checkUpdates = sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES_LISTS, Default.PREF_CHECK_UPDATES_DEFAULT);
+            boolean checkUpdates = sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES_LISTS, Default.PREF_CHECK_UPDATES);
             sharedPreferences.edit().putBoolean(Key.PREF_CHECK_UPDATES, checkUpdates).apply();
             sharedPreferences.edit().remove(Key.PREF_CHECK_UPDATES_LISTS).apply();
+        }
+
+        if (sharedPreferences.contains(Key.DARK_MODE)) {
+            int darkMode = Integer.parseInt(sharedPreferences.getString(Key.DARK_MODE, "0") + "");
+            int colorTheme = (0 == darkMode) ? Constant.COLOR_THEME_LIGHT : Constant.COLOR_THEME_DARK;
+            sharedPreferences.edit().putString(Key.PREF_COLOR_THEME, colorTheme + "").apply();
+            sharedPreferences.edit().remove(Key.DARK_MODE).apply();
         }
     }
 
@@ -101,7 +106,7 @@ public final class Preferences {
     */
 
     public static boolean isAutomaticUpdateEnabled() {
-        return sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES, Default.PREF_CHECK_UPDATES_DEFAULT);
+        return sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES, Default.PREF_CHECK_UPDATES);
     }
 
     public static boolean isFirstRun() {
@@ -210,6 +215,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_BROWSER_AUGMENTED, Default.PREF_BROWSER_AUGMENTED_DEFAULT);
     }
 
+    public static boolean isBrowserQuickDl() {
+        return sharedPreferences.getBoolean(Key.PREF_BROWSER_QUICK_DL, Default.PREF_BROWSER_QUICK_DL);
+    }
+
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS,
                 Default.PREF_DL_THREADS_QUANTITY_DEFAULT + "") + "");
@@ -224,30 +233,12 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_RESUME_LAST_LEFT, Default.PREF_VIEWER_RESUME_LAST_LEFT);
     }
 
-    public static void setViewerResumeLastLeft(boolean resumeLastLeft) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_RESUME_LAST_LEFT, resumeLastLeft)
-                .apply();
-    }
-
     public static boolean isViewerKeepScreenOn() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_KEEP_SCREEN_ON, Default.PREF_VIEWER_KEEP_SCREEN_ON);
     }
 
-    public static void setViewerKeepScreenOn(boolean keepScreenOn) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_KEEP_SCREEN_ON, keepScreenOn)
-                .apply();
-    }
-
     public static int getViewerResizeMode() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)) + "");
-    }
-
-    public static void setViewerResizeMode(int resizeMode) {
-        sharedPreferences.edit()
-                .putString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(resizeMode))
-                .apply();
     }
 
     public static int getViewerBrowseMode() {
@@ -272,50 +263,40 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_DISPLAY_PAGENUM, Default.PREF_VIEWER_DISPLAY_PAGENUM);
     }
 
-    public static void setViewerDisplayPageNum(boolean displayPageNum) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_DISPLAY_PAGENUM, displayPageNum)
-                .apply();
-    }
-
     public static boolean isViewerTapTransitions() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_TAP_TRANSITIONS, Default.PREF_VIEWER_TAP_TRANSITIONS);
     }
 
-    public static void setViewerTapTransitions(boolean tapTransitions) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_TAP_TRANSITIONS, tapTransitions)
-                .apply();
+    public static boolean isViewerZoomTransitions() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_ZOOM_TRANSITIONS, Default.PREF_VIEWER_ZOOM_TRANSITIONS);
     }
 
     public static boolean isViewerSwipeToFling() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, Default.PREF_VIEWER_SWIPE_TO_FLING);
     }
 
-    public static void setViewerSwipeToFling(boolean swipeToFling) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_SWIPE_TO_FLING, swipeToFling)
-                .apply();
-    }
-
     public static boolean isViewerInvertVolumeRocker() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, Default.PREF_VIEWER_INVERT_VOLUME_ROCKER);
     }
 
-    public static void setViewerInvertVolumeRocker(boolean invertVolumeRocker) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_INVERT_VOLUME_ROCKER, invertVolumeRocker)
-                .apply();
+    public static boolean isViewerTapToTurn() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_PAGE_TURN_TAP, Default.PREF_VIEWER_PAGE_TURN_TAP);
+    }
+
+    public static boolean isViewerSwipeToTurn() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_PAGE_TURN_SWIPE, Default.PREF_VIEWER_PAGE_TURN_SWIPE);
+    }
+
+    public static boolean isViewerVolumeToTurn() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_PAGE_TURN_VOLUME, Default.PREF_VIEWER_PAGE_TURN_VOLUME);
     }
 
     public static boolean isOpenBookInGalleryMode() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_OPEN_GALLERY, Default.PREF_VIEWER_OPEN_GALLERY);
     }
 
-    public static void setOpenBookInGalleryMode(boolean openBookInGalleryMode) {
-        sharedPreferences.edit()
-                .putBoolean(Key.PREF_VIEWER_OPEN_GALLERY, openBookInGalleryMode)
-                .apply();
+    public static int getViewerReadThreshold() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS, Integer.toString(Default.PREF_VIEWER_READ_THRESHOLD)) + "");
     }
 
     public static int getLastKnownAppVersionCode() {
@@ -328,14 +309,8 @@ public final class Preferences {
                 .apply();
     }
 
-    public static int getDarkMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DARK_MODE, Integer.toString(Default.PREF_DARK_MODE)) + "");
-    }
-
-    public static void setDarkMode(int darkMode) {
-        sharedPreferences.edit()
-                .putString(Key.DARK_MODE, Integer.toString(darkMode))
-                .apply();
+    public static boolean isQueueAutostart() {
+        return sharedPreferences.getBoolean(Key.PREF_QUEUE_AUTOSTART, Default.PREF_QUEUE_AUTOSTART);
     }
 
     public static boolean isDlRetriesActive() {
@@ -369,6 +344,36 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getColorTheme() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_COLOR_THEME, Integer.toString(Default.PREF_COLOR_THEME)) + "");
+    }
+
+    public static void setColorTheme(int colorTheme) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_COLOR_THEME, Integer.toString(colorTheme))
+                .apply();
+    }
+
+    public static boolean isLockOnAppRestore() {
+        return sharedPreferences.getBoolean(Key.PREF_LOCK_ON_APP_RESTORE, Default.PREF_LOCK_ON_APP_RESTORE);
+    }
+
+    public static void setLockOnAppRestore(boolean lockOnAppRestore) {
+        sharedPreferences.edit()
+                .putBoolean(Key.PREF_LOCK_ON_APP_RESTORE, lockOnAppRestore)
+                .apply();
+    }
+
+    public static int getLockTimer() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_LOCK_TIMER, Integer.toString(Default.PREF_LOCK_TIMER)) + "");
+    }
+
+    public static void setLockTimer(int lockTimer) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_LOCK_TIMER, Integer.toString(lockTimer))
+                .apply();
+    }
+
     public static final class Key {
         //public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
         //static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -390,13 +395,14 @@ public final class Preferences {
         static final String PREF_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String PREF_FIRST_RUN = "pref_first_run";
         public static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
-        static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
+        public static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
         static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
-        static final String PREF_SETTINGS_FOLDER = "folder";
+        public static final String PREF_SETTINGS_FOLDER = "folder";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String PREF_BROWSER_RESUME_LAST = "pref_browser_resume_last";
         static final String PREF_BROWSER_AUGMENTED = "pref_browser_augmented";
+        static final String PREF_BROWSER_QUICK_DL = "pref_browser_quick_dl";
         static final String PREF_FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String PREF_VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
         public static final String PREF_VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
@@ -405,23 +411,33 @@ public final class Preferences {
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         public static final String PREF_VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling";
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
+        static final String PREF_VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
+        public static final String PREF_VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
+        public static final String PREF_VIEWER_PAGE_TURN_TAP = "pref_viewer_page_turn_tap";
+        public static final String PREF_VIEWER_PAGE_TURN_VOLUME = "pref_viewer_page_turn_volume";
+        public static final String PREF_VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars";
+        public static final String PREF_VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
+        public static final String PREF_VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
-        public static final String DARK_MODE = "pref_dark_mode";
+        public static final String PREF_COLOR_THEME = "pref_color_theme";
+        static final String PREF_QUEUE_AUTOSTART = "pref_queue_autostart";
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
         static final String PREF_DL_HITOMI_WEBP = "pref_dl_hitomi_webp";
         public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
+        public static final String PREF_LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
+        public static final String PREF_LOCK_TIMER = "pref_lock_timer";
 
         //Keys that were removed from the app, kept for housekeeping
         //static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         static final String PREF_HIDE_RECENT = "pref_hide_recent";
         static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
         static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
-
+        static final String DARK_MODE = "pref_dark_mode";
         static final String PREF_READ_CONTENT_LISTS = "pref_read_content_lists";
     }
 
@@ -442,6 +458,7 @@ public final class Preferences {
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final boolean PREF_BROWSER_RESUME_LAST_DEFAULT = false;
         static final boolean PREF_BROWSER_AUGMENTED_DEFAULT = true;
+        static final boolean PREF_BROWSER_QUICK_DL = true;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
         static final boolean PREF_VIEWER_RESUME_LAST_LEFT = true;
@@ -450,22 +467,34 @@ public final class Preferences {
         static final int PREF_VIEWER_BROWSE_MODE = Constant.PREF_VIEWER_BROWSE_NONE;
         static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
+        static final boolean PREF_VIEWER_ZOOM_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
+        static final boolean PREF_VIEWER_PAGE_TURN_SWIPE = true;
+        static final boolean PREF_VIEWER_PAGE_TURN_TAP = true;
+        static final boolean PREF_VIEWER_PAGE_TURN_VOLUME = true;
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
         static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
-        static final int PREF_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_ON;
+        //static final int PREF_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_ON;
+        static final int PREF_VIEWER_SEPARATING_BARS = Constant.PREF_VIEWER_SEPARATING_BARS_OFF;
+        static final int PREF_VIEWER_READ_THRESHOLD = Constant.PREF_VIEWER_READ_THRESHOLD_1;
+        static final int PREF_VIEWER_SLIDESHOW_DELAY = Constant.PREF_VIEWER_SLIDESHOW_DELAY_2;
+        static final int PREF_COLOR_THEME = Constant.COLOR_THEME_LIGHT;
+        static final boolean PREF_QUEUE_AUTOSTART = true;
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
         static final boolean PREF_DL_HITOMI_WEBP = true;
         static final boolean PREF_APP_PREVIEW = true;
+        static final boolean PREF_CHECK_UPDATES = true;
 
-        static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
+        //static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         // Default menu in v1.9.x
         static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HENTAICAFE, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, Site.NEXUS, Site.MUSES, Site.DOUJINS};
         static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
 
         static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
+        static final boolean PREF_LOCK_ON_APP_RESTORE = false;
+        static final int PREF_LOCK_TIMER = Constant.PREF_LOCK_TIMER_30S;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -494,6 +523,7 @@ public final class Preferences {
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
+        static final int PREF_FOLDER_NAMING_CONTENT_TITLE_AUTH_ID = 3;
         static final int TRUNCATE_FOLDER_NONE = 0;
         public static final int PREF_VIEWER_DISPLAY_FIT = 0;
         public static final int PREF_VIEWER_DISPLAY_FILL = 1;
@@ -505,11 +535,27 @@ public final class Preferences {
         public static final int PREF_VIEWER_DIRECTION_RTL = 1;
         public static final int PREF_VIEWER_ORIENTATION_HORIZONTAL = 0;
         public static final int PREF_VIEWER_ORIENTATION_VERTICAL = 1;
-        public static final int DARK_MODE_OFF = 0;
-        public static final int DARK_MODE_ON = 1;
-        public static final int DARK_MODE_BATTERY = 2;
-        static final int DARK_MODE_DEVICE = 3;
+        public static final int PREF_VIEWER_SEPARATING_BARS_OFF = 0;
+        public static final int PREF_VIEWER_SEPARATING_BARS_SMALL = 1;
+        public static final int PREF_VIEWER_SEPARATING_BARS_MEDIUM = 2;
+        public static final int PREF_VIEWER_SEPARATING_BARS_LARGE = 3;
+        public static final int PREF_VIEWER_READ_THRESHOLD_1 = 0;
+        public static final int PREF_VIEWER_READ_THRESHOLD_2 = 1;
         public static final int PREF_READ_CONTENT_HENTOID_VIEWER = 2;
         static final int PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER = 0;
+        public static final int PREF_VIEWER_READ_THRESHOLD_5 = 2;
+        public static final int PREF_VIEWER_READ_THRESHOLD_ALL = 3;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_2 = 0;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_4 = 1;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_8 = 2;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_16 = 3;
+        public static final int COLOR_THEME_LIGHT = Theme.LIGHT.getId();
+        public static final int COLOR_THEME_DARK = Theme.DARK.getId();
+        public static final int COLOR_THEME_BLACK = Theme.BLACK.getId();
+        public static final int PREF_LOCK_TIMER_OFF = 0;
+        public static final int PREF_LOCK_TIMER_10S = 1;
+        public static final int PREF_LOCK_TIMER_30S = 2;
+        public static final int PREF_LOCK_TIMER_1M = 3;
+        public static final int PREF_LOCK_TIMER_2M = 4;
     }
 }

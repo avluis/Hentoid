@@ -1,8 +1,10 @@
 package me.devsaki.hentoid.util;
 
+import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
 
 import androidx.annotation.NonNull;
@@ -147,5 +149,62 @@ public class HttpHelper {
         if (extIndex < 0 || extIndex < pathIndex) return "";
 
         return uriNoParams.substring(extIndex + 1);
+    }
+
+    @Nullable
+    private static String getDomainFromUri(@NonNull String uriStr) {
+        Uri uri = Uri.parse(uriStr);
+        String result = uri.getHost();
+        if (result != null && result.startsWith("www")) result = result.substring(3);
+        return result;
+    }
+
+    public static Map<String, String> parseCookies(@NonNull String cookiesStr) {
+        Map<String, String> result = new HashMap<>();
+
+        String[] cookiesParts = cookiesStr.split(";");
+        for (String cookie : cookiesParts) {
+            String[] cookieParts = cookie.trim().split("=");
+            if (cookieParts.length > 1)
+                result.put(cookieParts[0], cookieParts[1]);
+        }
+
+        return result;
+    }
+
+    /**
+     * Set a new cookie for the domain of the given url
+     * If the cookie already exists, replace it
+     *
+     * @param url     Full URL of the cookie
+     * @param cookies Cookies to set using key = name and value = value
+     */
+    public static void setDomainCookies(String url, Map<String, String> cookies) {
+        CookieManager mgr = CookieManager.getInstance();
+        String domain = getDomainFromUri(url);
+
+        /*
+        Check if given cookies are already registered
+
+        Rationale : setting any cookie programmatically will set it as a _session_ cookie.
+        It's not smart to do that if the very same cookie is already set for a longer lifespan.
+         */
+        Map<String, String> cookiesToSet = new HashMap<>();
+
+        String existingCookiesStr = mgr.getCookie(domain);
+        if (existingCookiesStr != null) {
+            Map<String, String> existingCookies = parseCookies(existingCookiesStr);
+            for (String key : cookies.keySet()) {
+                if (!existingCookies.containsKey(key)) cookiesToSet.put(key, cookies.get(key));
+                else {
+                    String val = existingCookies.get(key);
+                    if (val != null && !val.equals(cookies.get(key)))
+                        cookiesToSet.put(key, cookies.get(key));
+                }
+            }
+        }
+
+        for (String key : cookiesToSet.keySet())
+            mgr.setCookie(domain, key + "=" + cookiesToSet.get(key));
     }
 }

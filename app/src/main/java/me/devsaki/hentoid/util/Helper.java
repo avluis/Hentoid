@@ -2,10 +2,7 @@ package me.devsaki.hentoid.util;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -33,8 +30,6 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
-import timber.log.Timber;
-
 import static android.content.Context.CLIPBOARD_SERVICE;
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
@@ -48,35 +43,9 @@ public final class Helper {
         throw new IllegalStateException("Utility class");
     }
 
-    private final static Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
 
     private static int DENSITY_DPI = -1;
-
-
-    public static void doRestart(@NonNull Context context) {
-        try {
-            PackageManager pm = context.getPackageManager();
-            if (pm != null) {
-                Intent intent = pm.getLaunchIntentForPackage(context.getPackageName());
-                if (intent != null) {
-                    ComponentName componentName = intent.getComponent();
-                    Intent mainIntent = Intent.makeRestartActivityTask(componentName);
-                    mainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            | Intent.FLAG_ACTIVITY_NEW_TASK
-                            | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    context.startActivity(mainIntent);
-
-                    Runtime.getRuntime().exit(0);
-                } else {
-                    Timber.d("Was not able to restart application, intent null");
-                }
-            } else {
-                Timber.d("Was not able to restart application, PM null");
-            }
-        } catch (Exception e) {
-            Timber.e(e, "Was not able to restart application");
-        }
-    }
 
     //Currently only nhentai source uses this method
     static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {

@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
-    android:background="@drawable/bg_book_card"
     android:elevation="6dp"
     android:longClickable="true"
     tools:targetApi="lollipop">
@@ -79,7 +78,7 @@
         android:focusable="true"
         android:padding="4dp"
         android:src="@drawable/ic_exclamation"
-        android:tint="@color/card_surface"
+        android:tint="@color/card_surface_light"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/ivSite"
         app:layout_constraintTop_toBottomOf="@id/tvTags"

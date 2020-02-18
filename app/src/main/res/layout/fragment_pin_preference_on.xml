@@ -31,6 +31,37 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
+    <Switch
+        android:id="@+id/switch_lock_on_restore"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:background="@color/item_highlight"
+        android:checked="false"
+        android:paddingStart="72dp"
+        android:paddingEnd="16dp"
+        android:text="@string/pin_lock_on_restore"
+        android:textSize="@dimen/text_body_1"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_off" />
+
+    <Spinner
+        android:id="@+id/lock_timer"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:background="@color/item_highlight"
+        android:entries="@array/pref_lock_timer_entries"
+        android:paddingStart="72dp"
+        android:paddingEnd="16dp"
+        android:textSize="@dimen/text_body_1"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_lock_on_restore"
+        tools:visibility="visible"/>
+
     <TextView
         android:id="@+id/text_reset_pin"
         android:layout_width="0dp"
@@ -44,6 +75,6 @@
         android:textColor="?colorSecondary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/switch_off" />
+        app:layout_constraintTop_toBottomOf="@id/lock_timer" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

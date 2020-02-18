@@ -9,14 +9,19 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 
-import androidx.appcompat.app.AppCompatDelegate;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ProcessLifecycleOwner;
 
 //import com.crashlytics.android.Crashlytics;
 //import com.google.android.gms.security.ProviderInstaller;
 //import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 
+import org.threeten.bp.Instant;
 //import io.fabric.sdk.android.Fabric;
+
 import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -38,7 +43,7 @@ import timber.log.Timber;
  */
 public class HentoidApp extends Application {
 
-    private static boolean beginImport;
+    // == APP INSTANCE
 
     private static Application instance;
 
@@ -46,12 +51,29 @@ public class HentoidApp extends Application {
         return instance;
     }
 
-    public static boolean isImportComplete() {
-        return !beginImport;
+
+    // == GLOBAL VARIABLES
+
+    // When PIN lock is activated, indicates whether the app has been unlocked or not
+    // NB : Using static members to be certain they won't be wiped out
+    // when the app runs out of memory (can happen with singletons)
+    private static boolean isUnlocked = false;
+    private static long lockInstant = 0;
+
+    public static boolean isUnlocked() {
+        return isUnlocked;
     }
 
-    public static void setBeginImport(boolean started) {
-        HentoidApp.beginImport = started;
+    public static void setUnlocked(boolean unlocked) {
+        isUnlocked = unlocked;
+    }
+
+    public static void setLockInstant(long instant) {
+        lockInstant = instant;
+    }
+
+    public static long getLockInstant() {
+        return lockInstant;
     }
 
 
@@ -79,16 +101,6 @@ public class HentoidApp extends Application {
         // Init datetime
         AndroidThreeTen.init(this);
 
-/*
-        // LeakCanary
-        if (LeakCanary.isInAnalyzerProcess(this)) {
-            // This process is dedicated to LeakCanary for heap analysis.
-            // You should not init your app in this process.
-            return;
-        }
-        LeakCanary.install(this);
-*/
-
         // Timber
         //if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());
         //Timber.plant(new CrashlyticsTree());
@@ -105,6 +117,9 @@ public class HentoidApp extends Application {
         //boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
         //FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
+        // This code has been inherited from the FakkuDroid era; no documentation available
+        // Best guess : allows networking on main thread
+        // TODO : test and remove during a future beta; networking shouldn't happen on main thread anymore
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -136,9 +151,10 @@ public class HentoidApp extends Application {
         }
 
         // Set Night mode
-        int darkMode = Preferences.getDarkMode();
-        AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(darkMode));
+        //int darkMode = Preferences.getDarkMode();
+        //AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(darkMode));
         //FirebaseAnalytics.getInstance(this).setUserProperty("night_mode", Integer.toString(darkMode));
+        ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
 
         //Workaround FileUriExposedException
         if(Build.VERSION.SDK_INT>=24) {
@@ -176,16 +192,31 @@ public class HentoidApp extends Application {
         }
     }
 
-    public static int darkModeFromPrefs(int prefsMode) {
-        switch (prefsMode) {
-            case Preferences.Constant.DARK_MODE_ON:
-                return AppCompatDelegate.MODE_NIGHT_YES;
-            case Preferences.Constant.DARK_MODE_OFF:
-                return AppCompatDelegate.MODE_NIGHT_NO;
-            case Preferences.Constant.DARK_MODE_BATTERY:
-                return AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY;
-            default:
-                return AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+    /**
+     * Listener used to auto-lock the app when it goes to background
+     * and the PIN lock is enabled
+     */
+    public static class LifeCycleListener implements LifecycleObserver {
+
+        private static boolean enabled = true;
+
+        public static void enable() {
+            enabled = true;
         }
+
+        public static void disable() {
+            enabled = false;
+        }
+
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+        private void onMoveToBackground() {
+            Timber.d("Moving to background");
+            if (enabled && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
+                HentoidApp.setUnlocked(false);
+                HentoidApp.setLockInstant(Instant.now().toEpochMilli());
+            }
+        }
+
     }
 }

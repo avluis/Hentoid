@@ -3,14 +3,13 @@ package me.devsaki.hentoid.activities;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import me.devsaki.hentoid.fragments.pin.ActivatedPinPreferenceFragment;
 import me.devsaki.hentoid.fragments.pin.DeactivatedPinPreferenceFragment;
 import me.devsaki.hentoid.util.Preferences;
 
-public class PinPreferenceActivity extends AppCompatActivity {
+public class PinPreferenceActivity extends BaseActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

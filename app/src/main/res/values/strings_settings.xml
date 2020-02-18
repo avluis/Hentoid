@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="pref_generic_summary">%s</string>
+
     <!-- Interface -->
     <string name="pref_screen_interface">Interface &amp; Navigation</string>
 
@@ -34,15 +36,18 @@
     <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
     <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
     <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
+    <string name="pref_browser_quick_dl_title">Quick download</string>
+    <string name="pref_browser_quick_dl_summary">On the books list page, hold tap to download any book</string>
+    <string name="pref_browser_quick_dl_default" translatable="false">true</string>
     <string name="pref_browser_augmented_title">Augmented browser</string>
     <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
     <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
     <string name="pref_browser_augmented_default" translatable="false">true</string>
 
     <string name="pref_cat_theme">App theme</string>
-    <string name="pref_dark_mode_title">Dark mode</string>
-    <string name="pref_dark_mode_summary">Set the display theme</string>
-    <string name="pref_dark_mode_default" translatable="false">0</string>
+    <string name="pref_color_theme_title">Color theme</string>
+    <string name="pref_color_theme_summary">Current theme : %s</string>
+    <string name="pref_color_theme_default" translatable="false">0</string>
 
     <!-- Storage -->
     <string name="pref_screen_storage">Storage</string>
@@ -67,6 +72,10 @@
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>
 
+    <string name="pref_queue_autostart_title">Auto-start download queue</string>
+    <string name="pref_queue_autostart_default" translatable="false">true</string>
+    <string name="pref_queue_autostart_on">Download queue will start as soon as a download is done</string>
+    <string name="pref_queue_autostart_off">Download queue must be started manually</string>
     <string name="download_retries_screen_title">Automated download retries</string>
     <string name="download_retries_active_title">Retries activated</string>
     <string name="pref_dl_retries_active_default" translatable="false">false</string>
@@ -93,4 +102,52 @@
     <string name="pref_app_preview_summary_off">App preview in Recent Apps disabled.\nEnable if you need to take a screen shot.</string>
     <string name="pref_app_preview_summary_on">App preview in Recent Apps enabled.</string>
     <string name="pref_app_preview_default" translatable="false">false</string>
+
+    <!-- Viewer -->
+    <string name="pref_screen_viewer">Image viewer</string>
+
+    <string name="pref_viewer_controls">Controls</string>
+    <string name="pref_viewer_browse_mode">Browse mode</string>
+    <string name="pref_viewer_browse_mode_default" translatable="false">0</string>
+    <string name="pref_viewer_page_turn">Page turn control</string>
+
+    <string name="pref_viewer_page_turn_swipe">Swipe</string>
+    <bool name="pref_viewer_page_turn_swipe_default" translatable="false">true</bool>
+    <string name="pref_viewer_page_turn_tap">Border tap</string>
+    <bool name="pref_viewer_page_turn_tap_default" translatable="false">true</bool>
+    <string name="pref_viewer_page_turn_volume">Volume button</string>
+    <bool name="pref_viewer_page_turn_volume_default" translatable="false">true</bool>
+
+    <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
+    <bool name="pref_viewer_swipe_to_fling_default" translatable="false">false</bool>
+    <string name="pref_viewer_invert_volume">Invert volume buttons</string>
+    <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
+
+    <string name="pref_viewer_zoom">Zoom</string>
+    <string name="pref_viewer_zoom_holding">Temp zoom while holding (WIP)</string>
+    <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
+
+    <string name="pref_viewer_visuals">Visuals</string>
+    <string name="pref_viewer_keep_screen_on">Keep screen on</string>
+    <bool name="pref_viewer_keep_screen_on_default" translatable="false">true</bool>
+    <string name="pref_viewer_display_pagenum">Always display page number</string>
+    <bool name="pref_viewer_display_pagenum_default" translatable="false">false</bool>
+    <string name="pref_viewer_tap_transitions">Enable page turn animation</string>
+    <bool name="pref_viewer_tap_transitions_default" translatable="false">true</bool>
+    <string name="pref_viewer_zoom_transitions">Enable zoom animation</string>
+    <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
+    <string name="pref_viewer_separating_bars">Separating bars in vertical mode (WIP)</string>
+    <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
+
+    <string name="pref_viewer_navigation">Navigation &amp; behaviour</string>
+    <string name="pref_viewer_resume_last_left_title">Resume reading when reopening books</string>
+    <string name="pref_viewer_resume_last_left_summary_off">Reopening a book will always start at page 1</string>
+    <string name="pref_viewer_resume_last_left_summary_on">Reopening a book will resume on last read page, except if the end of the book has been reached</string>
+    <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
+    <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
+    <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
+    <string name="pref_viewer_read_threshold">Mark book as read after N pages (WIP)</string>
+    <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
+    <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page (WIP)</string>
+    <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
 </resources>

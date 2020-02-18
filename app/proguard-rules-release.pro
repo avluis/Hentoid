@@ -82,6 +82,11 @@
 #RETROFIT END
 
 
+#OBJECTBOX BEGIN
+-keep class com.getkeepsafe.relinker.** { *; }
+#OBJECTBOX END
+
+
 #keep rules
 
 -keep class me.devsaki.hentoid.parsers.content.** { *; }

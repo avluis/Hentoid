@@ -144,6 +144,9 @@ public class ContentDownloadService extends IntentService {
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
+        if (notificationManager != null) notificationManager.cancel();
+        ContentQueueManager.getInstance().setInactive();
+
         Timber.d("Download service destroyed");
 
         //Crashlytics.log("Download service lifespan (s) : " + String.format(Locale.US, "%.2f", lifespan));
@@ -302,6 +305,8 @@ public class ContentDownloadService extends IntentService {
         // NB : No log of any sort because this is normal behaviour
         if (downloadCanceled || downloadSkipped) return null;
 
+        requestQueueManager = RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads());
+
         // Create destination folder for images to be downloaded
         File dir = ContentHelper.createContentDownloadDir(this, content);
         // Folder creation failed
@@ -337,10 +342,13 @@ public class ContentDownloadService extends IntentService {
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
 
         // == DOWNLOAD PHASE ==
-        // Queue image download requests
+
+        // Forge a request for the book's cover
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
+        cover.setDownloadParams(content.getDownloadParams());
+
+        // Queue image download requests
         Site site = content.getSite();
-        requestQueueManager = RequestQueueManager.getInstance(this, site.isAllowParallelDownloads());
         requestQueueManager.queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
@@ -424,6 +432,7 @@ public class ContentDownloadService extends IntentService {
             if (pagesKO > 0 && Preferences.isDlRetriesActive()
                     && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
                     && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
+                    && requestQueueManager != null
             ) {
                 Timber.i("Auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries(), content.getTitle(), freeSpaceRatio);
                 logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
@@ -664,6 +673,45 @@ public class ContentDownloadService extends IntentService {
         } else Timber.w("Failed to parse backup URL");
     }
 
+    /*
+    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws IOException {
+        Map<String, String> downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
+
+        if (!downloadParams.containsKey("pageInfo"))
+            throw new InvalidParameterException("No pageInfo");
+
+        String pageInfoValue = downloadParams.get("pageInfo");
+        if (null == pageInfoValue) throw new InvalidParameterException("PageInfo is null");
+
+        if (pageInfoValue.equals("unprotected"))
+            return binaryContent; // Free content, picture is not protected
+
+//        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
+        Bitmap sourcePicture = BitmapFactory.decodeByteArray(binaryContent, 0, binaryContent.length);
+
+
+        PageInfo page = JsonHelper.jsonToObject(pageInfoValue, PageInfo.class);
+        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
+        Bitmap destPicture = Bitmap.createBitmap(page.width, page.height, conf);
+        Canvas destCanvas = new Canvas(destPicture);
+
+        FakkuDecode.getTranslations(page);
+
+        if (page.translations.isEmpty())
+            throw new InvalidParameterException("No translation found");
+
+        for (PointTranslation t : page.translations) {
+            Rect sourceRect = new Rect(t.sourceX, t.sourceY, t.sourceX + FakkuDecode.TILE_EDGE_LENGTH, t.sourceY + FakkuDecode.TILE_EDGE_LENGTH);
+            Rect destRect = new Rect(t.destX, t.destY, t.destX + FakkuDecode.TILE_EDGE_LENGTH, t.destY + FakkuDecode.TILE_EDGE_LENGTH);
+
+            destCanvas.drawBitmap(sourcePicture, sourceRect, destRect, null);
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+        destPicture.compress(Bitmap.CompressFormat.PNG, 100, out); // Fakku is _always_ PNG
+        return out.toByteArray();
+    }
+     */
+
     /**
      * Create the given file in the given destination folder, and write binary data to it
      *
@@ -677,7 +725,7 @@ public class ContentDownloadService extends IntentService {
                                             File dir,
                                             String contentType,
                                             byte[] binaryContent,
-                                            boolean hasImageProcessing) throws IOException, InvalidParameterException, UnsupportedContentException {
+                                            boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
         if (!dir.exists()) {
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getAbsolutePath());

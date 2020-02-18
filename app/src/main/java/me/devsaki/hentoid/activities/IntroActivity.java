@@ -7,8 +7,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro2;
@@ -17,24 +15,22 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.List;
 
 import me.devsaki.hentoid.BuildConfig;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.fragments.intro.EndIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ImportIntroFragment;
 import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment;
-import me.devsaki.hentoid.fragments.intro.PreImportIntroFragment;
 import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment;
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import timber.log.Timber;
 
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT;
-import static me.devsaki.hentoid.HentoidApp.darkModeFromPrefs;
 import static me.devsaki.hentoid.util.ConstsImport.RESULT_KEY;
 
 /**
@@ -54,7 +50,6 @@ public class IntroActivity extends AppIntro2 {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addSlide(new PermissionIntroFragment());
         }
-        addSlide(new PreImportIntroFragment());
         addSlide(new ImportIntroFragment());
         addSlide(new ThemeIntroFragment());
         addSlide(new SourcesIntroFragment());
@@ -66,7 +61,7 @@ public class IntroActivity extends AppIntro2 {
         showPagerIndicator(false);
         setSwipeLock(true);
 
-        backgroundFrame.setBackgroundColor(ContextCompat.getColor(this, R.color.window_background));
+        backgroundFrame.setBackgroundColor(ThemeHelper.getColor(this, R.color.window_background_light));
     }
 
     @Override
@@ -83,25 +78,19 @@ public class IntroActivity extends AppIntro2 {
     }
 
     public void onDefaultStorageSelected() {
-        if (HentoidApp.isImportComplete()) {
-            Intent defaultDir = new Intent(this, ImportActivity.class);
-            defaultDir.setAction(Intent.ACTION_GET_CONTENT);
-            startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
-        }
-        HentoidApp.setBeginImport(true);
+        Intent defaultDir = new Intent(this, ImportActivity.class);
+        defaultDir.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
     }
 
     public void onCustomStorageSelected() {
-        if (HentoidApp.isImportComplete()) {
-            Intent customDir = new Intent(this, ImportActivity.class);
-            startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
-        }
-        HentoidApp.setBeginImport(true);
+        Intent customDir = new Intent(this, ImportActivity.class);
+        startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
     }
 
     public void setThemePrefs(int pref) {
-        Preferences.setDarkMode(pref);
-        AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(Preferences.getDarkMode()));
+        Preferences.setColorTheme(pref);
+        ThemeHelper.applyTheme(this);
         getPager().goToNextSlide();
     }
 
@@ -132,9 +121,6 @@ public class IntroActivity extends AppIntro2 {
                 String result = data.getStringExtra(RESULT_KEY);
                 resultHandler(resultCode, result);
             }
-        } else if (requestCode == ConstsImport.RQST_APP_SETTINGS) {
-            // Back from app settings
-            HentoidApp.setBeginImport(false);
         }
     }
 
@@ -144,7 +130,6 @@ public class IntroActivity extends AppIntro2 {
 
             if (result.equals(ConstsImport.PERMISSION_GRANTED)) {
                 Timber.d("Permission Allowed, resetting.");
-                HentoidApp.setBeginImport(false);
                 Snackbar.make(pager, R.string.permission_granted, LENGTH_SHORT).show();
             } else {
                 // If result passes validation, then we move to next slide
@@ -170,7 +155,6 @@ public class IntroActivity extends AppIntro2 {
                 default:
                     // Other cases should fail silently
             }
-            HentoidApp.setBeginImport(false);
         }
     }
 

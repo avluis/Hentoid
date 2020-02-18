@@ -12,6 +12,7 @@ public enum AlertStatus {
 
     ORANGE(R.color.orange, R.drawable.ic_exclamation),
     RED(R.color.red, R.drawable.ic_error),
+    GREY(R.color.dark_gray, R.drawable.ic_warning),
     BLACK(R.color.black, R.drawable.ic_nuclear),
     NONE(R.color.white, R.drawable.ic_info);
 

@@ -13,6 +13,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.fragments.pin.UnlockPinDialogFragment;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 
 /**
  * This activity asks for a 4 digit pin if it is set and then transitions to another activity
@@ -21,11 +22,6 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
 
     private static final String EXTRA_INTENT = "intent";
     private static final String EXTRA_SITE_CODE = "siteCode";
-
-    /**
-     * This is reset to false at an undefined time, usually due to process death.
-     */
-    private static boolean isUnlocked = false;
 
     /**
      * Creates an intent that launches this activity before launching the given wrapped intent
@@ -64,29 +60,39 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ThemeHelper.applyTheme(this);
+
         if (Preferences.getAppLockPin().length() != 4) {
             Preferences.setAppLockPin("");
         }
 
-        if (Preferences.getAppLockPin().isEmpty() || isUnlocked) {
+        if (Preferences.getAppLockPin().isEmpty() || HentoidApp.isUnlocked()) {
             goToNextActivity();
             return;
         }
 
         if (savedInstanceState == null) {
-            new UnlockPinDialogFragment().show(getSupportFragmentManager(), null);
+            UnlockPinDialogFragment.invoke(getSupportFragmentManager());
         }
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        UnlockPinDialogFragment.invoke(getSupportFragmentManager());
+    }
+
+    @Override
     public void onPinSuccess() {
-        isUnlocked = true;
+        HentoidApp.setUnlocked(true);
         goToNextActivity();
     }
 
     @Override
-    public void onPinCancel() {
-        finish();
+    public void onBackPressed() {
+        // We don't want the back button to remove the unlock screen displayed upon app restore
+        moveTaskToBack(true);
     }
 
     private void goToNextActivity() {
@@ -95,6 +101,10 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
         if (parcelableExtra != null) targetIntent = (Intent) parcelableExtra;
         else {
             int siteCode = getIntent().getIntExtra(EXTRA_SITE_CODE, Site.NONE.getCode());
+            if (siteCode == Site.NONE.getCode()) {
+                finish();
+                return;
+            }
             Class c = Content.getWebActivityClass(Site.searchByCode(siteCode));
             targetIntent = new Intent(HentoidApp.getInstance(), c);
             targetIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

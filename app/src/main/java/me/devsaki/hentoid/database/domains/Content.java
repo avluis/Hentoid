@@ -20,6 +20,7 @@ import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
 import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
+import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
@@ -83,8 +84,6 @@ public class Content implements Serializable {
     @Transient
     private boolean isLast;     // True if current content is the last of its set in the DB query
     @Transient
-    private boolean selected = false; // True if current content is selected (library view)
-    @Transient
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
 
 
@@ -141,6 +140,7 @@ public class Content implements Serializable {
 
         switch (site) {
             case EHENTAI:
+            case EXHENTAI:
             case PURURIN:
                 paths = url.split("/");
                 return (paths.length > 1) ? paths[1] : paths[0];
@@ -195,6 +195,7 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case EHENTAI:
+            case EXHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
             case HENTAICAFE:
@@ -225,6 +226,8 @@ public class Content implements Serializable {
                 return PururinActivity.class;
             case EHENTAI:
                 return EHentaiActivity.class;
+            case EXHENTAI:
+                return ExHentaiActivity.class;
             case NEXUS:
                 return NexusActivity.class;
             case MUSES:
@@ -273,6 +276,7 @@ public class Content implements Serializable {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case EHENTAI:           // Won't work because of the temporary key
+            case EXHENTAI:          // Won't work because of the temporary key
             case NHENTAI:
                 galleryConst = "/g";
                 break;
@@ -306,6 +310,7 @@ public class Content implements Serializable {
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
             case EHENTAI:               // Won't work anyway because of the temporary key
+            case EXHENTAI:              // Won't work anyway because of the temporary key
             case NHENTAI:
             case PANDA:
             case DOUJINS:
@@ -444,6 +449,12 @@ public class Content implements Serializable {
         }
     }
 
+    public long getNbDownloadedPages() {
+        if (imageFiles != null)
+            return Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED).count();
+        else return 0;
+    }
+
     public Site getSite() {
         return site;
     }
@@ -487,14 +498,6 @@ public class Content implements Serializable {
         this.isFirst = first;
     }
 
-    public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
     public long getReads() {
         return reads;
     }
@@ -510,7 +513,7 @@ public class Content implements Serializable {
     }
 
     public long getLastReadDate() {
-        return (0 == lastReadDate) ? downloadDate : lastReadDate;
+        return lastReadDate;
     }
 
     public Content setLastReadDate(long lastReadDate) {

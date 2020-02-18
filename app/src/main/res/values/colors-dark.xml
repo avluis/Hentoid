@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary_dark">@color/very_dark_red</color>
+    <color name="primary_variant_dark">@color/super_dark_red</color>
+    <color name="on_primary_dark">@color/white_opacity_87</color>
+    <color name="secondary_dark">@color/accent_red</color>
+    <color name="secondary_variant_dark">@color/light_red</color>
+    <color name="on_secondary_dark">@color/white_opacity_87</color>
+    <color name="surface_dark">@color/dark_gray</color>
+    <color name="on_surface_dark">@color/white_opacity_87</color>
+    <color name="window_background_dark">@color/taupe</color>
+    <color name="on_background_dark">@color/white_opacity_87</color>
+    <color name="ripple_dark">@color/medium_gray</color>
+
+    <!-- Drawer header -->
+    <color name="drawer_header_diagonal_dark">@color/very_dark_pink</color>
+
+    <!-- Content cards -->
+    <color name="card_title_dark">@color/secondary_dark</color>
+    <color name="card_surface_dark">@color/taupe_elevated_1</color>
+    <color name="card_selected_dark">@color/taupe_elevated_2</color>
+    <color name="card_pressed_dark">@color/taupe_elevated_3</color>
+    <color name="card_tags_dark">@color/white_opacity_66</color>
+</resources>

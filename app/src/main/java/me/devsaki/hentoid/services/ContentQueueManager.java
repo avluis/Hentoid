@@ -53,6 +53,8 @@ public class ContentQueueManager {
         return isQueueActive;
     }
 
+    void setInactive() { isQueueActive = false; }
+
     public void resumeQueue(Context context) {
         Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
         context.startService(intent);
@@ -65,8 +67,8 @@ public class ContentQueueManager {
         return downloadCount;
     }
 
-    public void setDownloadCount(int downloadCount) {
-        this.downloadCount = downloadCount;
+    public void resetDownloadCount() {
+        this.downloadCount = 0;
     }
 
     /**

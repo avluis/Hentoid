@@ -1,0 +1,55 @@
+Merge with latest Hentoid commits
+
+- New
+
+Support for ExHentai
+NB : no backdoor; please use your regular ExHentai account
+Black "AMOLED" color mode
+PIN lock can now be set to reappear whenever the user leaves the app in the background
+Download queue can be set not to start automatically after queuing a book
+Library screen : New "redownload from scratch" option
+Web browser : New option to disable quick download
+Image viewer : New option to disable zoom animation
+Image viewer : New option to control which input methods (swipe, tap, volume button) are used
+New folder naming option : "Title - Author - ID"
+
+
+- Changed
+
+Web browser : Clearer feedback when quick-downloading a queued / downloaded book
+Library screen : Number of pages now display missing pages
+Library screen : don't display the series when there's none
+Image viewer : Preferences are now using the standard layout
+Hitomi : Prevent tag, artists, series and chatacter list pages to activate the download button
+Preferences : Downloads folder name is displayed under "Select downloads folder" option
+
+
+- Fixed
+
+
+Library screen : Fix pages 4+ not appearing in paged mode
+Library screen : Fix endlessly blinking card after the book has been deleted
+Library screen : Books cannot be opened while being deleted
+Library screen : Advanced search bar does not hide anymore when the search bar is cleared
+Library screen : Latest downloads don't appear at the top anymore when sort order is by last read date
+Web browser : App does not crash anymore when using quick download under Kitkat
+Import / refresh library : Progress dialog is now impossible to hide by mistake.
+Fakku : Fixed bug when app would believe the user is unlogged when displaying a book
+Hitomi : "Open with" now works even with books without titles in their URL
+"Update succeeded" welcome dialog now shows again !
+Fix error display ("0 pages - 0 errors") when no images have been detected at all (e.g. image parser failed)
+Fix a couple rare crashes reported by Firebase
+Image viewer (rare) : Fixed case when images would be caught in an infinite reload loop
+NHentai (rare) : All downloaded books should now have a title
+Refresh library (rare) : Refreshing the library could cause books to be lost under exceptional circumstances. This should not happen anymore
+
+
+- Technical
+
+Switched to an more modern adapter library to display most of the app's lists
+Modernized queue screen list display
+
+
+- Known bug(s)
+
+Sources are always empty after setup

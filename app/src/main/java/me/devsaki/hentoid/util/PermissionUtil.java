@@ -15,7 +15,7 @@ public class PermissionUtil {
         throw new IllegalStateException("Utility class");
     }
 
-    public static boolean requestExternalStoragePermission(Activity activity, int permissionRequestCode) {
+    public static boolean requestExternalStorageReadPermission(Activity activity, int permissionRequestCode) {
         if (ContextCompat.checkSelfPermission(activity,
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
 
@@ -23,6 +23,22 @@ public class PermissionUtil {
         } else {
             ActivityCompat.requestPermissions(activity, new String[]{
                     Manifest.permission.READ_EXTERNAL_STORAGE}, permissionRequestCode);
+
+            return false;
+        }
+    }
+
+    public static boolean requestExternalStorageReadWritePermission(Activity activity, int permissionRequestCode) {
+        if (
+                ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(activity,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) == PERMISSION_GRANTED
+        ) {
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(activity, new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionRequestCode);
 
             return false;
         }

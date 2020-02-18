@@ -5,8 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.WindowManager;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import java.security.AccessControlException;
 
@@ -20,7 +19,7 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
 
-public class ImageViewerActivity extends AppCompatActivity {
+public class ImageViewerActivity extends BaseActivity {
 
     private ImageViewerViewModel viewModel;
     private Bundle searchParams = null;
@@ -42,10 +41,10 @@ public class ImageViewerActivity extends AppCompatActivity {
         if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
 
         searchParams = parser.getSearchParams();
-        viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
+        viewModel = new ViewModelProvider(this).get(ImageViewerViewModel.class);
         viewModel.getContent().observe(this, this::onContentChanged);
 
-        if (!PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
+        if (!PermissionUtil.requestExternalStorageReadPermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             ToastUtil.toast("Storage permission denied - cannot open the viewer");
             throw new AccessControlException("Storage permission denied - cannot open the viewer");
         }
@@ -64,7 +63,7 @@ public class ImageViewerActivity extends AppCompatActivity {
         }
 
         if (!Preferences.getRecentVisibility()) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE,WindowManager.LayoutParams.FLAG_SECURE);
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
     }
 

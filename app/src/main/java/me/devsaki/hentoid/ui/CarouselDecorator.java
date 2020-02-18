@@ -58,8 +58,9 @@ public class CarouselDecorator {
         public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
             if (newState != RecyclerView.SCROLL_STATE_IDLE) return;
 
-            int position = layoutManager.findFirstVisibleItemPosition();
-            onPageChangeListener.onPageChange(position + 1);
+            int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+            int lastCompletelyVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition();
+            onPageChangeListener.onPageChange(Math.max(firstVisibleItemPosition, lastCompletelyVisibleItemPosition) + 1);
         }
     }
 

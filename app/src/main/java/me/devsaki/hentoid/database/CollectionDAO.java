@@ -10,7 +10,12 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
 
@@ -21,6 +26,8 @@ public interface CollectionDAO {
     // Low-level operations
 
     Content selectContent(long id);
+
+    Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url);
 
     void insertContent(@NonNull final Content content);
 
@@ -36,18 +43,35 @@ public interface CollectionDAO {
     void searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
 
 
-    LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly);
+    ActivePagedList<Content> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly);
 
-    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
+    ActivePagedList<Content> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
 
-    LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly);
+    ActivePagedList<Content> getRecentBooks(int orderStyle, boolean favouritesOnly);
 
     LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly);
 
+    LiveData<Integer> countAllBooks();
 
-    // Other stuff
 
-    void addContentToQueue(@NonNull final Content content);
+    // IMAGEFILES
+
+    void insertImageFile(@NonNull ImageFile img);
+
+    ImageFile selectImageFile(long id);
+
+
+    // QUEUE
+
+    List<QueueRecord> selectQueue();
+
+    void updateQueue(long contentId, int newOrder);
+
+    void deleteQueue(@NonNull Content content);
+
+    LiveData<PagedList<QueueRecord>> getQueueContent();
+
+    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
 
 
     // ATTRIBUTES
@@ -57,4 +81,11 @@ public interface CollectionDAO {
     void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener);
 
     void dispose();
+
+
+    // SITE HISTORY
+
+    SiteHistory getHistory(@NonNull Site s);
+
+    void insertSiteHistory(@NonNull Site site, @NonNull String url);
 }

@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Build;
@@ -10,6 +9,8 @@ import android.os.Looper;
 import android.webkit.WebView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.lmntrx.android.library.livin.missme.ProgressDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -30,6 +31,7 @@ import me.devsaki.hentoid.services.DatabaseMigrationService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import timber.log.Timber;
 
@@ -40,13 +42,15 @@ import timber.log.Timber;
  */
 public class SplashActivity extends AppCompatActivity {
 
-    private ProgressDialog progressDialog; // TODO deprecated
+    private ProgressDialog progressDialog;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         Timber.d("Splash / Init");
+
         EventBus.getDefault().register(this);
 
         // Pre-processing on app update
@@ -105,11 +109,13 @@ public class SplashActivity extends AppCompatActivity {
     private void handleDatabaseMigration() {
         // Send results to scan
         progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle(R.string.migrate_db);
-        progressDialog.setMessage(this.getText(R.string.please_wait));
+        progressDialog.setMessage(this.getString(R.string.please_wait));
         progressDialog.setIndeterminate(false);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setMax(0);
+        progressDialog.setCancelable(false);
+        progressDialog.setColor(ThemeHelper.getColor(this, R.color.secondary_light));
+        progressDialog.setTextColor(R.color.white_opacity_87);
         progressDialog.show();
 
         Intent intent = DatabaseMigrationService.makeIntent(this);

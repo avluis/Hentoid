@@ -9,7 +9,7 @@ import me.devsaki.hentoid.enums.Site;
 public class HitomiActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "hitomi.la";
-    private static final String[] GALLERY_FILTER = {"//hitomi.la/[A-Za-z0-9\\-]+/[^/]+-[0-9]+.html$"};
+    private static final String[] GALLERY_FILTER = {"//hitomi.la/[A-Za-z0-9\\-]+/[^/]+-[0-9]{2,}.html$"};
     private static final String[] blockedContent = {"hitomi-horizontal.js", "hitomi-vertical.js"};
 
     Site getStartSite() {

@@ -15,6 +15,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -23,8 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import eu.davidea.flexibleadapter.FlexibleAdapter;
-import eu.davidea.flexibleadapter.SelectableAdapter;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AboutActivity;
 import me.devsaki.hentoid.activities.DrawerEditActivity;
@@ -35,7 +36,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.viewholders.DrawerItemFlex;
+import me.devsaki.hentoid.viewholders.DrawerItem;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -43,7 +44,8 @@ public final class NavigationDrawerFragment extends Fragment {
 
     private LibraryActivity parentActivity;
 
-    private FlexibleAdapter<DrawerItemFlex> drawerAdapter;
+    private final ItemAdapter<DrawerItem> drawerAdapter = new ItemAdapter<>();
+    private final FastAdapter<DrawerItem> fastAdapter = FastAdapter.with(drawerAdapter);
 
     private UpdateEvent updateInfo;
 
@@ -60,11 +62,6 @@ public final class NavigationDrawerFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
-        drawerAdapter = new FlexibleAdapter<>(null);
-        drawerAdapter.setMode(SelectableAdapter.Mode.SINGLE);
-        drawerAdapter.addListener((FlexibleAdapter.OnItemClickListener) (v, p) -> onItemClick(p));
-
         View rootView = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
 
         View btn = requireViewById(rootView, R.id.drawer_prefs_btn);
@@ -73,8 +70,9 @@ public final class NavigationDrawerFragment extends Fragment {
         btn = requireViewById(rootView, R.id.drawer_edit_btn);
         btn.setOnClickListener(v -> onEditClick());
 
+        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p));
         RecyclerView recyclerView = requireViewById(rootView, R.id.drawer_list);
-        recyclerView.setAdapter(drawerAdapter);
+        recyclerView.setAdapter(fastAdapter);
 
         updateItems();
 
@@ -84,22 +82,22 @@ public final class NavigationDrawerFragment extends Fragment {
     }
 
     private void updateItems() {
-        List<DrawerItemFlex> drawerItems = new ArrayList<>();
+        List<DrawerItem> drawerItems = new ArrayList<>();
 
         List<Site> activeSites = Preferences.getActiveSites();
-        for (Site s : activeSites) drawerItems.add(new DrawerItemFlex(s));
+        for (Site s : activeSites) drawerItems.add(new DrawerItem(s));
 
-        drawerItems.add(new DrawerItemFlex("QUEUE", R.drawable.ic_action_download, QueueActivity.class));
-        drawerItems.add(new DrawerItemFlex("ABOUT", R.drawable.ic_info, AboutActivity.class));
+        drawerItems.add(new DrawerItem("QUEUE", R.drawable.ic_action_download, QueueActivity.class));
+        drawerItems.add(new DrawerItem("ABOUT", R.drawable.ic_info, AboutActivity.class));
 
         drawerAdapter.clear();
-        drawerAdapter.addItems(0, drawerItems);
+        drawerAdapter.add(0, drawerItems);
         applyFlagsAndAlerts();
     }
 
     private boolean onItemClick(int position) {
-        DrawerItemFlex item = drawerAdapter.getItem(position);
-        if (item != null) launchActivity(item.getActivityClass());
+        DrawerItem item = drawerAdapter.getAdapterItem(position);
+        launchActivity(item.getActivityClass());
         return true;
     }
 
@@ -115,28 +113,24 @@ public final class NavigationDrawerFragment extends Fragment {
     }
 
     private void showFlagAboutItem() {
-        if (null == drawerAdapter) return;
-
         // About is always last
-        int aboutItemPos = drawerAdapter.getItemCount() - 1;
-        DrawerItemFlex item = drawerAdapter.getItem(aboutItemPos);
-        if (item != null) {
+        int aboutItemPos = drawerAdapter.getAdapterItemCount() - 1;
+        if (aboutItemPos > -1) {
+            DrawerItem item = drawerAdapter.getAdapterItem(aboutItemPos);
             item.setFlagNew(true);
-            drawerAdapter.notifyItemChanged(aboutItemPos);
+            fastAdapter.notifyItemChanged(aboutItemPos);
         }
     }
 
     private void showFlagAlerts(Map<Site, UpdateInfo.SourceAlert> alerts) {
-        if (null == drawerAdapter) return;
-
-        List<DrawerItemFlex> menuItems = drawerAdapter.getCurrentItems();
+        List<DrawerItem> menuItems = drawerAdapter.getAdapterItems();
         int index = 0;
-        for (DrawerItemFlex menuItem : menuItems) {
+        for (DrawerItem menuItem : menuItems) {
             if (menuItem.getSite() != null && alerts.containsKey(menuItem.getSite())) {
                 UpdateInfo.SourceAlert alert = alerts.get(menuItem.getSite());
                 if (alert != null) {
                     menuItem.setAlertStatus(alert.getStatus());
-                    drawerAdapter.notifyItemChanged(index);
+                    fastAdapter.notifyItemChanged(index);
                 }
             }
             index++;

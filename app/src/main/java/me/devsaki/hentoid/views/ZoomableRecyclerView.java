@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.annimon.stream.function.DoubleConsumer;
 
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener.Listener;
@@ -181,7 +182,7 @@ public class ZoomableRecyclerView extends RecyclerView {
         scaleAnimator.addUpdateListener(animation -> setScaleRate((float) animation.getAnimatedValue()));
 
         animatorSet.playTogether(translationXAnimator, translationYAnimator, scaleAnimator);
-        animatorSet.setDuration(ANIMATOR_DURATION_TIME);
+        animatorSet.setDuration(Preferences.isViewerZoomTransitions() ? ANIMATOR_DURATION_TIME : 0);
         animatorSet.setInterpolator(new DecelerateInterpolator());
         animatorSet.start();
         animatorSet.addListener(new Animator.AnimatorListener() {

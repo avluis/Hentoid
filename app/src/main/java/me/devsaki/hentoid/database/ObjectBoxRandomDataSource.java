@@ -46,7 +46,6 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
     }
 
     private List<T> loadRange(int startPosition, int loadCount) {
-        //return this.query.find((long) startPosition, (long) loadCount);
         return shuffleRandomSort(this.query, startPosition, loadCount);
     }
 

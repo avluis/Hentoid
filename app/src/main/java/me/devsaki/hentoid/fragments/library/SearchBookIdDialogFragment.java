@@ -13,14 +13,19 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Stream;
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.adapters.SiteAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.viewholders.TextItem;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -62,7 +67,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             TextView title = requireViewById(rootView, R.id.search_bookid_title);
             title.setText(getString(R.string.search_bookid_label, bookId));
 
-            // Not possible for Pururin, e-hentai
+            // Not possible for Pururin, e-hentai, exhentai
             List<Site> sites = new ArrayList<>();
             if (foundSitesList != null) {
                 if (!foundSitesList.contains(Site.HITOMI.getCode())) sites.add(Site.HITOMI);
@@ -75,13 +80,17 @@ public class SearchBookIdDialogFragment extends DialogFragment {
                 if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
                 if (!foundSitesList.contains(Site.LUSCIOUS.getCode())) sites.add(Site.LUSCIOUS);
             }
+            ItemAdapter<TextItem<Site>> itemAdapter = new ItemAdapter<>();
+            itemAdapter.set(Stream.of(sites).map(s -> new TextItem<>(s.getDescription(), s, true)).toList());
 
-            SiteAdapter siteAdapter = new SiteAdapter();
-            siteAdapter.setOnClickListener(this::onItemSelected);
-            siteAdapter.add(sites);
+            // Item click listener
+            FastAdapter<TextItem<Site>> fastAdapter = FastAdapter.with(itemAdapter);
+            fastAdapter.setOnClickListener((v, a, i, p) -> onItemSelected(i.getTag()));
 
             RecyclerView sitesRecycler = requireViewById(rootView, R.id.select_sites);
-            sitesRecycler.setAdapter(siteAdapter);
+            // Set programmatically because ?colorPrimary doesn't work here on kitKat
+            sitesRecycler.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.primary_light));
+            sitesRecycler.setAdapter(fastAdapter);
         }
     }
 
@@ -106,19 +115,18 @@ public class SearchBookIdDialogFragment extends DialogFragment {
         }
     }
 
-    private void onItemSelected(View view) {
-        Site s = (Site) view.getTag();
+    private boolean onItemSelected(Site s) {
+        if (null == s) return false;
 
-        if (s != null) {
-            Intent intent = new Intent(requireContext(), Content.getWebActivityClass(s));
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Intent intent = new Intent(requireContext(), Content.getWebActivityClass(s));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-            BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-            builder.setUrl(getUrlFromId(s, bookId));
-            intent.putExtras(builder.getBundle());
+        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
+        builder.setUrl(getUrlFromId(s, bookId));
+        intent.putExtras(builder.getBundle());
 
-            requireContext().startActivity(intent);
-            this.dismiss();
-        }
+        requireContext().startActivity(intent);
+        this.dismiss();
+        return true;
     }
 }

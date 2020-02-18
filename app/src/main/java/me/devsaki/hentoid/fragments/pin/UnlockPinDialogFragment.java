@@ -1,12 +1,12 @@
 package me.devsaki.hentoid.fragments.pin;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
@@ -14,6 +14,12 @@ import me.devsaki.hentoid.util.Preferences;
 public final class UnlockPinDialogFragment extends PinDialogFragment {
 
     private Parent parent;
+
+    public static void invoke(FragmentManager mgr) {
+        UnlockPinDialogFragment fragment = new UnlockPinDialogFragment();
+        fragment.setCancelable(false);
+        fragment.show(mgr, null);
+    }
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -37,16 +43,7 @@ public final class UnlockPinDialogFragment extends PinDialogFragment {
         }
     }
 
-    @Override
-    public void onCancel(@NonNull DialogInterface dialog) {
-        super.onCancel(dialog);
-        parent.onPinCancel();
-    }
-
     public interface Parent {
-
         void onPinSuccess();
-
-        void onPinCancel();
     }
 }

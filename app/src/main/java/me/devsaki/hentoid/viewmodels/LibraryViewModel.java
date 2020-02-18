@@ -25,9 +25,12 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.database.ActivePagedList;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -42,24 +45,27 @@ import static me.devsaki.hentoid.util.FileHelper.AUTHORIZED_CHARS;
 public class LibraryViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final ObjectBoxDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
     // Library search manager
     private final ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Collection data
-    private LiveData<PagedList<Content>> currentSource;
+    private ActivePagedList<Content> currentSource;
     private LiveData<Integer> totalContent = collectionDao.countAllBooks();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
 
     // Updated whenever a new search is performed
     private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
 
+    // Paged mode callbacks
+    private Consumer<Content> frontConsumer;
+    private Consumer<Content> endConsumer;
+
 
     public LibraryViewModel(@NonNull Application application) {
         super(application);
-        performSearch();
     }
 
     public void onSaveState(Bundle outState) {
@@ -81,6 +87,14 @@ public class LibraryViewModel extends AndroidViewModel {
     @NonNull
     public LiveData<PagedList<Content>> getLibraryPaged() {
         return libraryPaged;
+    }
+
+    public void setLibraryFrontLoadCallback(Consumer<Content> consumer) {
+        frontConsumer = consumer;
+    }
+
+    public void setLibraryEndLoadCallback(Consumer<Content> consumer) {
+        endConsumer = consumer;
     }
 
     @NonNull
@@ -106,12 +120,15 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Perform a new library search
      */
-    public void performSearch() {
-        newSearch.setValue(true);
-        libraryPaged.removeSource(currentSource);
+    private void performSearch() {
+        if (currentSource != null) libraryPaged.removeSource(currentSource.getPagedList());
+
         searchManager.setContentSortOrder(Preferences.getContentSortOrder());
         currentSource = searchManager.getLibrary();
-        libraryPaged.addSource(currentSource, libraryPaged::setValue);
+        if (frontConsumer != null) currentSource.setOnItemAtFrontLoaded(frontConsumer);
+        if (endConsumer != null) currentSource.setOnItemAtEndLoaded(endConsumer);
+
+        libraryPaged.addSource(currentSource.getPagedList(), libraryPaged::setValue);
     }
 
     /**
@@ -122,6 +139,7 @@ public class LibraryViewModel extends AndroidViewModel {
     public void searchUniversal(@NonNull String query) {
         searchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
         searchManager.setQuery(query);
+        newSearch.setValue(true);
         performSearch();
     }
 
@@ -134,6 +152,7 @@ public class LibraryViewModel extends AndroidViewModel {
     public void search(@NonNull String query, @NonNull List<Attribute> metadata) {
         searchManager.setQuery(query);
         searchManager.setTags(metadata);
+        newSearch.setValue(true);
         performSearch();
     }
 
@@ -142,6 +161,15 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void toggleFavouriteFilter() {
         searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
+        newSearch.setValue(true);
+        performSearch();
+    }
+
+    /**
+     * Update the order of the list
+     */
+    public void updateOrder() {
+        newSearch.setValue(true);
         performSearch();
     }
 
@@ -209,8 +237,8 @@ public class LibraryViewModel extends AndroidViewModel {
      *
      * @param content Content to be added to the download queue
      */
-    public void addContentToQueue(@NonNull final Content content) {
-        collectionDao.addContentToQueue(content);
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
+        collectionDao.addContentToQueue(content, targetImageStatus);
     }
 
     /**

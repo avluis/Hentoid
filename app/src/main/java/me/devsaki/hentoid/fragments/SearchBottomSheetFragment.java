@@ -15,10 +15,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
+import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -38,6 +39,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
@@ -86,14 +88,14 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private static final int ATTRS_PER_PAGE = 40;
 
 
-    public static void show(FragmentManager fragmentManager, AttributeType[] types) {
+    public static void show(Context context, FragmentManager fragmentManager, AttributeType[] types) {
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
 
         builder.setAttributeTypes(types);
 
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
         searchBottomSheetFragment.setArguments(builder.getBundle());
-        searchBottomSheetFragment.setStyle(STYLE_NORMAL, R.style.BottomSheetDialogTheme);
+        ThemeHelper.setStyle(context, searchBottomSheetFragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         searchBottomSheetFragment.show(fragmentManager, "searchBottomSheetFragment");
     }
 
@@ -111,7 +113,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 throw new IllegalArgumentException("Initialization failed");
             }
 
-            viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
+            viewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
             viewModel.onCategoryChanged(selectedAttributeTypes);
         }
     }
@@ -133,7 +135,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         tagWaitMessage = requireViewById(rootView, R.id.tag_wait_description);
         RecyclerView attributeMosaic = requireViewById(rootView, R.id.tag_suggestion);
         FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this.getContext());
-//        layoutManager.setAlignContent(AlignContent.FLEX_START); <-- not possible
+//        layoutManager.setAlignContent(AlignContent.FLEX_START); <-- not supported
+        layoutManager.setAlignItems(AlignItems.STRETCH);
         layoutManager.setFlexWrap(FlexWrap.WRAP);
         attributeMosaic.setLayoutManager(layoutManager);
         attributeAdapter = new AvailableAttributeAdapter();
@@ -167,7 +170,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
+        viewModel.getProposedAttributesData().observe(getViewLifecycleOwner(), this::onAttributesReady);
         searchMasterData("");
     }
 

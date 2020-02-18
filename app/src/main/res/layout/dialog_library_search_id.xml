@@ -22,7 +22,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:background="?android:colorBackground"
+        android:background="?colorPrimary"
         android:fadeScrollbars="false"
         android:overScrollMode="never"
         android:scrollbars="vertical"
@@ -31,6 +31,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_bookid_title"
-        tools:listitem="@layout/item_text_sites" />
+        tools:listitem="@layout/item_text" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

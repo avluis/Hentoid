@@ -55,6 +55,11 @@
 #RETROFIT END
 
 
+#OBJECTBOX BEGIN
+-keep class com.getkeepsafe.relinker.** { *; }
+#OBJECTBOX END
+
+
 # keep all classes in our package
 -keep class me.devsaki.hentoid.** { *; }
 -keep class com.bumptech.glide.integration.okhttp3.OkHttpGlideModule

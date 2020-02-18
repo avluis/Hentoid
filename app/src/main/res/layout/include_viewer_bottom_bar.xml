@@ -29,6 +29,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        android:visibility="invisible"
+        tools:visibility="visible"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -98,7 +100,7 @@
         android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_fav_full"
-        android:tint="@color/secondary"
+        android:tint="?colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_next_book_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
@@ -117,6 +119,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        android:visibility="invisible"
+        tools:visibility="visible"
         tools:ignore="ContentDescription" />
 
     <!-- Image previews used when tracking -->

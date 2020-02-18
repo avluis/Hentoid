@@ -3,7 +3,6 @@ package me.devsaki.hentoid.activities;
 import android.os.Bundle;
 import android.view.WindowManager;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -14,7 +13,7 @@ import me.devsaki.hentoid.util.Preferences;
 /**
  * Handles hosting of QueueFragment for a single screen.
  */
-public class QueueActivity extends AppCompatActivity {
+public class QueueActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

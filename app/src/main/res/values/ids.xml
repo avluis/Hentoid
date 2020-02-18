@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Unique IDs for FastAdapter -->
+    <item name="github_release_description" type="id"/>
+    <item name="github_release" type="id"/>
+    <item name="drawer" type="id"/>
+    <item name="drawer_edit" type="id"/>
+    <item name="gallery_image" type="id"/>
+    <item name="content" type="id"/>
+    <item name="text" type="id"/>
+</resources>

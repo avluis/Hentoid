@@ -40,6 +40,7 @@
         android:paddingStart="@dimen/default_cardview_margin"
         android:paddingTop="@dimen/default_cardview_margin"
         android:paddingEnd="@dimen/default_cardview_margin"
+        android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/pager_background"
         app:layout_constraintEnd_toEndOf="parent"

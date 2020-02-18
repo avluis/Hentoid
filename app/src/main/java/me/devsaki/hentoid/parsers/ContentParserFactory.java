@@ -15,6 +15,7 @@ import me.devsaki.hentoid.parsers.content.TsuminoContent;
 import me.devsaki.hentoid.parsers.images.ASMHentaiParser;
 import me.devsaki.hentoid.parsers.images.DummyParser;
 import me.devsaki.hentoid.parsers.images.EHentaiParser;
+import me.devsaki.hentoid.parsers.images.ExHentaiParser;
 import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
@@ -57,6 +58,7 @@ public class ContentParserFactory {
             case DOUJINS:
                 return DoujinsContent.class;
             case EHENTAI: // Uses the API of the site -> no HTML parser
+            case EXHENTAI: // Uses the API of the site -> no HTML parser
             case LUSCIOUS: // Uses the API of the site -> no HTML parser
             default:
                 return DummyContent.class;
@@ -82,6 +84,8 @@ public class ContentParserFactory {
                 return new PururinParser();
             case EHENTAI:
                 return new EHentaiParser();
+            case EXHENTAI:
+                return new ExHentaiParser();
             case NEXUS:
                 return new NexusParser();
             case LUSCIOUS:

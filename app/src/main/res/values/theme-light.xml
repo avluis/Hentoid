@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <style name="Theme.Light" parent="Theme.MaterialComponents">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="colorPrimary">@color/primary_light</item>
+        <item name="colorPrimaryVariant">@color/primary_variant_light</item>
+        <item name="colorOnPrimary">@color/on_primary_light</item>
+        <item name="colorSecondary">@color/secondary_light</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant_light</item>
+        <item name="colorOnSecondary">@color/on_secondary_light</item>
+        <item name="colorSurface">@color/window_background_light</item>
+        <item name="colorOnSurface">@color/on_surface_light</item>
+        <item name="android:windowBackground">@color/window_background_light</item>
+        <item name="android:colorBackground">@color/window_background_light</item>
+        <item name="colorOnBackground">@color/on_background_light</item>
+        <item name="materialAlertDialogTheme">@style/Theme.Light.Dialog</item>
+        <item name="dialogTheme">@style/Theme.Light.DialogFragment</item>
+        <item name="android:dialogTheme">@style/Theme.Light.DialogFragment</item>
+        <!-- Toolbar as ActionBar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.Invisible" parent="Theme.Light">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <!-- Picture viewer -->
+    <style name="Theme.Light.Monochrome">
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/black_opacity_50</item>
+        <item name="colorOnPrimary">@color/light_gray</item>
+        <item name="android:windowBackground">@color/cod_gray</item>
+    </style>
+
+    <!-- Splash Activity -->
+    <!-- NB : Splash activity theme can't be customized ad it belongs to the app's very first moments -->
+    <style name="Theme.Light.Splash">
+        <item name="android:windowBackground">@drawable/bg_splash</item>
+    </style>
+
+    <!-- Prefs Activity -->
+    <style name="Theme.Light.Prefs">
+        <!-- Display action bar -->
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
+        <item name="actionBarTheme">@style/Theme.Light.ActionBar</item>
+        <item name="android:divider">@color/secondary_light</item>
+        <item name="android:textColor">@color/primary_text_color_selector</item>
+        <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
+        <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
+        <item name="android:textColorHint">@color/light_gray</item>
+        <!-- alertDialogTheme is the actual theme used by PreferenceFragmentCompat -->
+        <item name="alertDialogTheme">@style/Theme.Light.Dialog</item>
+    </style>
+
+    <!-- Dialog themes -->
+
+    <style name="Theme.Light.Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="colorPrimary">@color/secondary_light</item>
+        <item name="colorPrimaryVariant">@color/primary_variant_light</item>
+        <item name="colorSecondary">@color/secondary_light</item>
+        <!-- colorSurface is the actual dialog background -->
+        <item name="colorSurface">@color/window_background_light</item>
+        <item name="colorOnSurface">@color/on_primary_light</item>
+        <item name="android:windowBackground">@color/window_background_light</item>
+        <item name="android:colorBackground">@color/window_background_light</item>
+        <item name="android:textColor">@color/on_primary_light</item>
+        <item name="android:textColorPrimary">@color/on_primary_light</item>
+        <item name="android:textColorSecondary">@color/on_secondary_light</item>
+        <item name="android:editTextColor">@color/on_primary_light</item>
+        <item name="android:textColorHint">@color/on_primary_light</item>
+        <item name="textColorAlertDialogListItem">@color/on_primary_light</item>
+        <item name="android:checkboxStyle">@style/Theme.DialogCheckbox</item>
+    </style>
+
+    <style name="Theme.Light.DialogFragment" parent="Theme.Light.Dialog">
+        <!-- Equivalent to DialogFragment.STYLE_NO_FRAME -->
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
+    <!-- Search Activity -->
+    <style name="Theme.Light.BottomSheetDialog" parent="Theme.Design.BottomSheetDialog">
+        <item name="colorPrimary">@color/primary_light</item>
+        <item name="colorPrimaryVariant">@color/primary_variant_light</item>
+        <item name="colorSecondary">@color/secondary_light</item>
+        <item name="android:colorBackground">@color/window_background_light</item>
+    </style>
+
+    <!-- PIN screens -->
+    <style name="Theme.Light.PinEntryDialog" parent="Theme.MaterialComponents.Dialog">
+        <item name="colorPrimary">@color/primary_light</item>
+        <item name="colorPrimaryVariant">@color/primary_variant_light</item>
+        <item name="colorSecondary">@color/secondary_light</item>
+        <item name="android:windowBackground">@drawable/bg_pin_dialog</item>
+        <item name="actionMenuTextColor">@color/on_primary_light</item>
+    </style>
+
+
+    <!-- Themes for subcomponents -->
+    <style name="Theme.Light.ActionBar">
+        <item name="colorSurface">@color/primary_light</item>
+        <item name="colorOnSurface">@color/on_primary_light</item>
+    </style>
+
+    <style name="Theme.DialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textColor">@color/on_primary_light</item>
+    </style>
+</resources>

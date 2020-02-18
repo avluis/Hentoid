@@ -3,6 +3,8 @@ package me.devsaki.hentoid.widget;
 import android.view.KeyEvent;
 import android.view.View;
 
+import me.devsaki.hentoid.util.Preferences;
+
 public final class VolumeGestureListener implements View.OnKeyListener {
 
     private Runnable onVolumeDownListener;
@@ -59,6 +61,9 @@ public final class VolumeGestureListener implements View.OnKeyListener {
     }
 
     private boolean isVolumeKey(int keyCode, int targetKeyCode) {
+        // Ignore volume keys when disabled in preferences
+        if (!Preferences.isViewerVolumeToTurn()) return false;
+
         if (isButtonsInverted) {
             if (targetKeyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
                 return (keyCode == KeyEvent.KEYCODE_VOLUME_UP);
