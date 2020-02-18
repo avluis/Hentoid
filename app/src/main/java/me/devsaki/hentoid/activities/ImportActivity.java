@@ -289,6 +289,11 @@ public class ImportActivity extends AppCompatActivity {
 
     // Return from SAF picker
     public void onSelectSAFRootFolder(@NonNull Uri treeUri) {
+
+        // Persist access permissions
+        getContentResolver().takePersistableUriPermission(treeUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
         /*
         String treePath = treeUri.getPath();
 
