@@ -249,7 +249,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         content.setValue(theContent);
 
         // Load new content
-        List<DocumentFile> pictureFiles = ContentHelper.getPictureFilesFromContent(getApplication(), theContent);
+        List<DocumentFile> pictureFiles = ContentHelper.getPictureFilesFromContent(getApplication(), theContent); // TODO test performance => only use when no images set, or when no URIs on know images ?
         if (!pictureFiles.isEmpty()) {
             List<ImageFile> imageFiles;
             if (null == theContent.getImageFiles() || theContent.getImageFiles().isEmpty()) {
