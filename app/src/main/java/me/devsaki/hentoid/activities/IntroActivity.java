@@ -78,9 +78,13 @@ public class IntroActivity extends AppIntro2 {
     }
 
     public void onDefaultStorageSelected() {
+        /*
         Intent defaultDir = new Intent(this, ImportActivity.class);
         defaultDir.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
+
+         */
+        // TODO there's no default storage anymore
     }
 
     public void onCustomStorageSelected() {

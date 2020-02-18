@@ -59,7 +59,6 @@ public class ImportActivity extends AppCompatActivity {
     private static final String CURRENT_DIR = "currentDir";
     private static final String PREV_DIR = "prevDir";
     private static final String CALLED_BY_PREFS = "calledByPrefs";
-    private static final String USE_DEFAULT_FOLDER = "useDefaultFolder";
     private static final String REFRESH_OPTIONS = "refreshOptions";
 
 
@@ -67,7 +66,6 @@ public class ImportActivity extends AppCompatActivity {
     private DocumentFile prevRootDir;
     private OnBackPressedCallback callback;
     private boolean calledByPrefs = false;              // True if activity has been called by PrefsActivity
-    private boolean useDefaultFolder = false;           // True if activity has been called by IntroActivity and user has selected default storage
     private boolean isRefresh = false;                  // True if user has asked for a collection refresh
     private boolean isRename = false;                   // True if user has asked for a collection renaming
     private boolean isCleanAbsent = false;              // True if user has asked for the cleanup of folders with no JSONs
@@ -76,6 +74,8 @@ public class ImportActivity extends AppCompatActivity {
 
     private ProgressDialog progressDialog;
 
+
+    // TODO try once more to use the refresh options without selecting anything in the SAF dialog
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,10 +99,6 @@ public class ImportActivity extends AppCompatActivity {
                     case Intent.ACTION_APPLICATION_PREFERENCES:
                         Timber.d("Running from prefs screen.");
                         calledByPrefs = true;
-                        break;
-                    case Intent.ACTION_GET_CONTENT:
-                        Timber.d("Importing default directory.");
-                        useDefaultFolder = true;
                         break;
                     default:
                         Timber.d("Intent: %s Action: %s", intent, intent.getAction());
@@ -139,7 +135,6 @@ public class ImportActivity extends AppCompatActivity {
             currentRootDir = DocumentFile.fromTreeUri(this, Uri.parse(savedState.getString(CURRENT_DIR)));
             prevRootDir = DocumentFile.fromTreeUri(this, Uri.parse(savedState.getString(PREV_DIR)));
             calledByPrefs = savedState.getBoolean(CALLED_BY_PREFS);
-            useDefaultFolder = savedState.getBoolean(USE_DEFAULT_FOLDER);
 
             Bundle bundle = savedState.getBundle(REFRESH_OPTIONS);
             if (bundle != null) {
@@ -151,6 +146,13 @@ public class ImportActivity extends AppCompatActivity {
                 isCleanUnreadable = parser.getRefreshCleanUnreadable();
             }
         }
+
+        String downloadFolderUriStr = Preferences.getStorageUri();
+        Timber.d(downloadFolderUriStr);
+
+        DocumentFile downloadFolder = DocumentFile.fromTreeUri(this, Uri.parse(downloadFolderUriStr));
+        if (downloadFolder != null && downloadFolder.exists()) currentRootDir = downloadFolder;
+        openFolderPicker();
     }
 
     // Try and detect any ".Hentoid" or "Hentoid" folder inside the selected folder
@@ -181,7 +183,6 @@ public class ImportActivity extends AppCompatActivity {
         outState.putString(CURRENT_DIR, currentRootDir.getUri().toString());
         outState.putString(PREV_DIR, prevRootDir.getUri().toString());
         outState.putBoolean(CALLED_BY_PREFS, calledByPrefs);
-        outState.putBoolean(USE_DEFAULT_FOLDER, useDefaultFolder);
 
         ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();
 
@@ -218,24 +219,12 @@ public class ImportActivity extends AppCompatActivity {
         }
     }
 
-    // Present Directory Picker
-    private void pickDownloadDirectory() {
-        if (useDefaultFolder) {
-            prevRootDir = currentRootDir;
-            initImport();
-        } else {
-            openFolderPicker();
-        }
-    }
-
+    // TODO to use when processing known folder without selecting it (again) with SAF picker
     private void initImport() {
-        revokePermission();
-
-        Timber.d("Storage Path: %s", currentRootDir);
-
         importFolder(getExistingHentoidDirFrom(currentRootDir));
     }
 
+    // TODO when to do that ?
     private void revokePermission() {
         for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
             getContentResolver().releasePersistableUriPermission(p.getUri(),
