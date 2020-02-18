@@ -407,13 +407,12 @@ public class ImportActivity extends AppCompatActivity {
     // and might cause freezes -> we stick to that approximate method for ImportActivity
     private boolean hasBooks() {
         List<DocumentFile> downloadDirs = new ArrayList<>();
-        for (Site s : Site.values()) {
+        for (Site s : Site.values())
             downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDir(this, s));
-        }
 
         for (DocumentFile downloadDir : downloadDirs) {
-            DocumentFile[] contentFiles = downloadDir.listFiles();
-            if (contentFiles.length > 0) return true;
+            List<DocumentFile> contentFiles = FileHelper.listFolders(this, downloadDir);
+            if (!contentFiles.isEmpty()) return true;
         }
 
         return false;
