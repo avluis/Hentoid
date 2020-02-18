@@ -442,7 +442,7 @@ public class Content implements Serializable {
     }
 
     public String getCoverImageUrl() {
-        return coverImageUrl;
+        return (null == coverImageUrl) ? "" : coverImageUrl;
     }
 
     public Content setCoverImageUrl(String coverImageUrl) {
