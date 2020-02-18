@@ -562,10 +562,11 @@ public class ContentDownloadService extends IntentService {
     private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, @NonNull ImageFile img, @NonNull DocumentFile dir, boolean hasImageProcessing, @NonNull String backupUrl) {
         try {
             if (result != null) {
-                processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey(), hasImageProcessing);
-                updateImageStatus(img, true);
+                DocumentFile imgFile = processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey(), hasImageProcessing);
+                if (imgFile != null)
+                    updateImageStatusAndUri(img, true, imgFile.getUri().toString());
             } else {
-                updateImageStatus(img, false);
+                updateImageStatusAndUri(img, false, "");
                 logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), "Result null");
             }
         } catch (UnsupportedContentException e) {
@@ -573,16 +574,16 @@ public class ContentDownloadService extends IntentService {
             if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl);
             else {
                 Timber.w("No backup URL found - aborting this image");
-                updateImageStatus(img, false);
+                updateImageStatusAndUri(img, false, "");
                 logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), e.getMessage());
             }
         } catch (InvalidParameterException e) {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
-            updateImageStatus(img, false);
+            updateImageStatusAndUri(img, false, "");
             logErrorRecord(img.content.getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), "Download params : " + img.getDownloadParams());
         } catch (IOException e) {
             Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
-            updateImageStatus(img, false);
+            updateImageStatusAndUri(img, false, "");
             logErrorRecord(img.content.getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
         }
     }
@@ -615,7 +616,7 @@ public class ContentDownloadService extends IntentService {
 
         Timber.w(error);
 
-        updateImageStatus(img, false);
+        updateImageStatusAndUri(img, false, "");
         logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
     }
 
@@ -635,7 +636,7 @@ public class ContentDownloadService extends IntentService {
                                 imageFile -> processBackupImage(imageFile, img, dir, site),
                                 throwable ->
                                 {
-                                    updateImageStatus(img, false);
+                                    updateImageStatusAndUri(img, false, "");
                                     logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
                                     Timber.e(throwable, "Error processing backup image.");
                                 }
@@ -698,15 +699,16 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private static void processAndSaveImage(ImageFile img,
-                                            DocumentFile dir,
-                                            String contentType,
-                                            byte[] binaryContent,
-                                            boolean hasImageProcessing) throws IOException, UnsupportedContentException {
+    @Nullable
+    private static DocumentFile processAndSaveImage(ImageFile img,
+                                                    DocumentFile dir,
+                                                    String contentType,
+                                                    byte[] binaryContent,
+                                                    boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
         if (!dir.exists()) {
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getUri().toString());
-            return;
+            return null;
         }
 
         byte[] finalBinaryContent = null;
@@ -750,7 +752,7 @@ public class ContentDownloadService extends IntentService {
         if (!Helper.isImageExtensionSupported(fileExt))
             throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - image not processed", fileExt, img.getUrl()));
         else
-            saveImage(dir, img.getName() + "." + fileExt, mimeType, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
+            return saveImage(dir, img.getName() + "." + fileExt, mimeType, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
     }
 
     /**
@@ -761,9 +763,10 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private static void saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
+    private static DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
         DocumentFile file = dir.createFile(mimeType, fileName);
         FileHelper.saveBinaryInFile(file, binaryContent);
+        return file;
     }
 
     /**
@@ -772,8 +775,9 @@ public class ContentDownloadService extends IntentService {
      * @param img     Image to update
      * @param success True if download is successful; false if download failed
      */
-    private void updateImageStatus(ImageFile img, boolean success) {
+    private void updateImageStatusAndUri(@NonNull ImageFile img, boolean success, @NonNull String uriStr) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+        img.setFileUri(uriStr);
         if (success) img.setDownloadParams("");
         if (img.getId() > 0)
             db.updateImageFileStatusAndParams(img); // because thumb image isn't in the DB
