@@ -508,7 +508,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Context context = getActivity();
         if (1 == selectedItems.size() && context != null) {
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
-            ContentHelper.shareContent(context, c);
+            if (c != null) ContentHelper.shareContent(context, c);
         }
     }
 
@@ -532,7 +532,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (1 == selectedItems.size() && context != null) {
             ToastUtil.toast(R.string.packaging_content);
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
-            viewModel.archiveContent(c, this::onContentArchiveSuccess);
+            if (c != null) viewModel.archiveContent(c, this::onContentArchiveSuccess);
         }
     }
 
@@ -546,10 +546,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         List<Content> contents = new ArrayList<>();
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
+            if (null == c) continue;
             if (c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)) {
                 securedContent++;
             } else {
-                contents.add(ci.getContent());
+                contents.add(c);
             }
         }
 
@@ -815,7 +816,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                onBookFavouriteClick(item.getContent());
+                if (item.getContent() != null) onBookFavouriteClick(item.getContent());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -832,7 +833,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                onBookSourceClick(item.getContent());
+                if (item.getContent() != null) onBookSourceClick(item.getContent());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -849,7 +850,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                onBookErrorClick(item.getContent());
+                if (item.getContent() != null) onBookErrorClick(item.getContent());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -1039,7 +1040,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private boolean onBookClick(@NonNull ContentItem item, int position) {
         if (selectExtension.getSelectedItems().isEmpty()) {
-            if (!invalidateNextBookClick && !item.getContent().isBeingDeleted()) {
+            if (!invalidateNextBookClick && item.getContent() != null && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
                 ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
             } else invalidateNextBookClick = false;

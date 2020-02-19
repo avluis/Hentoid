@@ -11,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 
@@ -80,6 +81,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         isEmpty = (null == content);
     }
 
+    @Nullable
     public Content getContent() {
         return content;
     }
@@ -186,7 +188,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
         private void updateLayoutVisibility(ContentItem item) {
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
-            if (item.getContent().isBeingDeleted())
+            if (item.getContent() != null && item.getContent().isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();
@@ -322,6 +324,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
         private void attachButtons(final ContentItem item) {
             Content content = item.getContent();
+            if (null == content) return;
 
             // Source icon
             if (content.getSite() != null) {
