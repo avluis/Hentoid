@@ -159,12 +159,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     // Current metadata search query
     private List<Attribute> metadata = Collections.emptyList();
 
-    // === SPECIFICS FOR PAGED MODE
-    // Minimum bound of loaded data
-    private int minLoadedBound;
-    // Maximum bound of loaded data
-    private int maxLoadedBound;
-
 
     /**
      * Diff calculation rules for list items
@@ -287,7 +281,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
         viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
 
-        viewModel.updateOrder(); // Blank call to trigger the first search
+        viewModel.updateOrder(); // Trigger a blank search
     }
 
     /**
@@ -759,6 +753,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Timber.i("Prefs change detected : %s", key);
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
             initPagingMethod(Preferences.getEndlessScroll());
+            viewModel.updateOrder(); // Trigger a blank search
         } else if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
             // Restart the app with the library activity on top
             Intent intent = requireActivity().getIntent();
@@ -792,6 +787,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param isEndless True if endless mode has to be set; false if paged mode has to be set
      */
     private void initPagingMethod(boolean isEndless) {
+        viewModel.setPagingMethod(isEndless);
+
         if (isEndless) { // Endless mode
             pager.hide();
 
@@ -799,7 +796,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
             fastAdapter.registerTypeInstance(new ContentItem(false));
-            if (library != null) pagedItemAdapter.submitList(library, this::differEndCallback);
 
             itemAdapter = null;
         } else { // Paged mode
@@ -808,12 +804,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             fastAdapter.setHasStableIds(true);
             pager.setCurrentPage(1);
             pager.show();
-            if (library != null) {
-                pager.setPageCount((int) Math.ceil(library.size() * 1.0 / Preferences.getContentPageQuantity()));
-                loadBookshelf(library);
-            }
-            viewModel.setLibraryEndLoadCallback(c -> onBoundLoad());
-            viewModel.setLibraryFrontLoadCallback(c -> onBoundLoad());
 
             pagedItemAdapter = null;
         }
@@ -885,16 +875,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     /**
-     * Callback when items are loaded (in replacement of placeholders)
-     * at the beginning or the end of the current PagedList
-     * <p>
-     * Used in paged mode only
-     */
-    private void onBoundLoad() {
-        if (library != null) populateBookshelf(library, pager.getCurrentPageNumber());
-    }
-
-    /**
      * Returns the index bounds of the list to be displayed according to the given shelf number
      * Used for paged mode only
      *
@@ -930,36 +910,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return;
             }
 
-            /* We're using PagedList v2.1.1 against the use case it has been designed for (endless lists loaded linearly).
-            Doing it right requires the following algorithm :
-
-            Check if there is unloaded data in the working dataset (iLibrary)
-                - Case A : All required data is already loaded
-                    -> Immediately populate the library screen
-                - Case B : There is missing data outside of the bounds of already loaded data
-                    -> use loadAround to load beyond these bounds and let the BoundaryCallback populate the screen once data is loaded
-                - Case C : There is missing data inside of the bounds of already loaded data (BoundaryCallback is useless for that case)
-                    -> use loadAround to load data and populate the screen after a reasonable delay (150 ms)
-
-                NB : Case C implementation  _is_ quick and hacky (no discussion about that).
-                The alternative would be to implement a whole alternate data source for Hentoid paged mode, which is massively more complex
-             */
-            //noinspection Convert2MethodRef need API24
-            long nbPlaceholders = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c == null).count();
-            Timber.d(">> nb placeholders : %s", nbPlaceholders);
-            Timber.d(">> min/max  minBound/maxBound : %s/%s  %s/%s", minIndex, maxIndex, minLoadedBound, maxLoadedBound);
-
-            if (0 == nbPlaceholders)
-                populateBookshelf(iLibrary, pager.getCurrentPageNumber()); // Case A
-            else if (minIndex < minLoadedBound || maxIndex > maxLoadedBound)
-                iLibrary.loadAround(minIndex); // Case B
-            else { // Case C
-                iLibrary.loadAround(minIndex);
-                new Handler().postDelayed(() -> populateBookshelf(iLibrary, pager.getCurrentPageNumber()), 150);
-            }
-
-            minLoadedBound = Math.min(minLoadedBound, minIndex);
-            maxLoadedBound = Math.max(maxLoadedBound, maxIndex);
+            populateBookshelf(iLibrary, pager.getCurrentPageNumber());
         }
     }
 
@@ -1048,11 +999,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (Preferences.getEndlessScroll()) {
             pagedItemAdapter.submitList(result, this::differEndCallback);
         } else {
-
             if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
-            minLoadedBound = Integer.MAX_VALUE;
-            maxLoadedBound = Integer.MIN_VALUE;
             loadBookshelf(result);
         }
 
