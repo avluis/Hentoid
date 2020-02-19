@@ -72,12 +72,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     }
 
     // Constructor for queued item
-    public ContentItem(@NonNull QueueRecord content) {
-        this.content = content.content.getTarget();
+    public ContentItem(@NonNull QueueRecord record) {
         isQueued = true;
-        setIdentifier(this.content.getId());
-        setSelectable(!isQueued);
-        isEmpty = false;
+        setSelectable(false);
+        setIdentifier(record.id);
+        content = record.content.getTarget();
+        isEmpty = (null == content);
     }
 
     public Content getContent() {
