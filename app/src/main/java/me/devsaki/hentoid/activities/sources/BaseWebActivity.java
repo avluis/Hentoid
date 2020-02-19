@@ -344,6 +344,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             Timber.d("Storage permission allowed!");
         } else {
             Timber.d("Storage permission denied!");
+            ToastUtil.toast(R.string.reset);
             HentoidApp.reset(this);
         }
     }
