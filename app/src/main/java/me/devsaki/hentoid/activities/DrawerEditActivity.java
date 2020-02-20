@@ -88,19 +88,19 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
     }
 
     private void onCheckAll() {
-        for (SiteItem s : itemAdapter.getAdapterItems()) s.setItemSelected(true);
+        for (SiteItem s : itemAdapter.getAdapterItems()) s.setSelected(true);
         fastAdapter.notifyDataSetChanged();
     }
 
     private void onUncheckAll() {
-        for (SiteItem s : itemAdapter.getAdapterItems()) s.setItemSelected(false);
+        for (SiteItem s : itemAdapter.getAdapterItems()) s.setSelected(false);
         fastAdapter.notifyDataSetChanged();
     }
 
     private void onValidateClick() {
         List<Site> newSites = new ArrayList<>();
         for (SiteItem s : itemAdapter.getAdapterItems())
-            if (s.isItemSelected()) newSites.add(s.getSite());
+            if (s.isSelected()) newSites.add(s.getSite());
 
         Preferences.setActiveSites(newSites);
 

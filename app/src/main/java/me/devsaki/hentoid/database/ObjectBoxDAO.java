@@ -157,19 +157,19 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
-    public ActivePagedList<Content> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly) {
-        return getPagedContent(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderStyle, favouritesOnly);
+    public LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly, boolean loadAll) {
+        return getPagedContent(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderStyle, favouritesOnly, loadAll);
     }
 
-    public ActivePagedList<Content> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
-        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, query, metadata, orderStyle, favouritesOnly);
+    public LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, boolean loadAll) {
+        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, query, metadata, orderStyle, favouritesOnly, loadAll);
     }
 
-    public ActivePagedList<Content> getRecentBooks(int orderStyle, boolean favouritesOnly) {
-        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly);
+    public LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly, boolean loadAll) {
+        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly, loadAll);
     }
 
-    private ActivePagedList<Content> getPagedContent(int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
+    private LiveData<PagedList<Content>> getPagedContent(int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, boolean loadAll) {
         boolean isRandom = (orderStyle == Preferences.Constant.ORDER_CONTENT_RANDOM);
 
         Query<Content> query;
@@ -180,17 +180,14 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
 
         int nbPages = Preferences.getContentPageQuantity();
-        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(nbPages * 2).setPageSize(nbPages).build();
+        int initialLoad = loadAll ? (int) query.count() : nbPages * 2;
 
-        ActivePagedList<Content> result = new ActivePagedList<>();
+        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(!loadAll).setInitialLoadSizeHint(initialLoad).setPageSize(nbPages).build();
 
-        LiveData<PagedList<Content>> pagedList = new LivePagedListBuilder<>(
+        return new LivePagedListBuilder<>(
                 isRandom ? new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query) : new ObjectBoxDataSource.Factory<>(query),
                 cfg
-        ).setBoundaryCallback(result).build();
-
-        result.setPagedList(pagedList);
-        return result;
+        ).build();
     }
 
     public Content selectContent(long id) {

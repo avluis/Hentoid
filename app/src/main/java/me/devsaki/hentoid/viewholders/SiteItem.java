@@ -18,7 +18,6 @@ import me.devsaki.hentoid.enums.Site;
 public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
 
     private final Site site;
-    private boolean selected = false;
     private boolean showHandle = true;
 
     public SiteItem(Site site) {
@@ -27,21 +26,13 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
 
     public SiteItem(Site site, boolean selected) {
         this.site = site;
-        this.selected = selected;
+        this.setSelected(selected);
     }
 
     public SiteItem(Site site, boolean selected, boolean showHandle) {
         this.site = site;
-        this.selected = selected;
         this.showHandle = showHandle;
-    }
-
-    public void setItemSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public boolean isItemSelected() {
-        return selected;
+        this.setSelected(selected);
     }
 
     public Site getSite() {
@@ -88,8 +79,8 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
             dragHandle.setVisibility(item.showHandle ? View.VISIBLE : View.GONE);
             title.setText(item.site.getDescription());
             icon.setImageResource(item.site.getIco());
-            chk.setChecked(item.selected);
-            chk.setOnCheckedChangeListener((v, b) -> item.selected = b);
+            chk.setChecked(item.isSelected());
+            chk.setOnCheckedChangeListener((v, b) -> item.setSelected(b));
         }
 
         @Override
