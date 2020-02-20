@@ -467,6 +467,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
+        boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
             case R.id.action_share:
                 shareSelectedItems();
@@ -480,12 +481,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 break;
             case R.id.action_redownload:
                 redownloadSelectedItems();
+                keepToolbar = true;
                 break;
             default:
                 selectionToolbar.setVisibility(View.GONE);
                 return false;
         }
-        selectionToolbar.setVisibility(View.GONE);
+        if (!keepToolbar) selectionToolbar.setVisibility(View.GONE);
         return true;
     }
 
@@ -554,26 +556,28 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             }
         }
 
+        String message = getResources().getQuantityString(R.plurals.redownload_confirm, securedContent);
+        if (securedContent > 0)
+            message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
+
         // TODO make it work for secured sites (Fakku, ExHentai) -> open a browser to fetch the relevant cookies ?
 
-        if (securedContent > 0) {
-            new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
-                    .setIcon(R.drawable.ic_warning)
-                    .setCancelable(false)
-                    .setTitle(R.string.app_name)
-                    .setMessage(getResources().getQuantityString(R.plurals.secured_content, securedContent))
-                    .setPositiveButton(android.R.string.yes,
-                            (dialog1, which) -> {
-                                dialog1.dismiss();
-                                downloadContent(contents, true);
-                            })
-                    .setNegativeButton(android.R.string.no,
-                            (dialog12, which) -> dialog12.dismiss())
-                    .create()
-                    .show();
-        } else {
-            downloadContent(contents, true);
-        }
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            downloadContent(contents, true);
+                            selectionToolbar.setVisibility(View.GONE);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
+
     }
 
     /**
