@@ -128,7 +128,10 @@ public class ImageGalleryFragment extends Fragment {
     private boolean onItemClick(int position) {
         ImageFileItem imgFile = itemAdapter.getAdapterItem(position);
         viewModel.setStartingIndex(imgFile.getImage().getDisplayOrder());
-        requireActivity().onBackPressed();
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(android.R.id.content, new ImagePagerFragment())
+                .commit();
         return true;
     }
 

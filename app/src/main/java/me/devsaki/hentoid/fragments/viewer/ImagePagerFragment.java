@@ -154,8 +154,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
 
         viewModel.setOnShuffledChangeListener(this::onShuffleChanged);
-
-        if (Preferences.isOpenBookInGalleryMode() && !hasGalleryBeenShown) displayGallery(false);
     }
 
     @Override
@@ -774,7 +772,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         getParentFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
-                .addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager
                 .commit();
     }
 

@@ -5,12 +5,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.WindowManager;
 
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.security.AccessControlException;
 
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.fragments.viewer.ImageGalleryFragment;
 import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.PermissionUtil;
@@ -56,9 +58,13 @@ public class ImageViewerActivity extends BaseActivity {
         }
 
         if (null == savedInstanceState) {
+            Fragment fragment;
+            if (Preferences.isOpenBookInGalleryMode()) fragment = new ImageGalleryFragment();
+            else fragment = new ImagePagerFragment();
+
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(android.R.id.content, new ImagePagerFragment())
+                    .add(android.R.id.content, fragment)
                     .commit();
         }
 
