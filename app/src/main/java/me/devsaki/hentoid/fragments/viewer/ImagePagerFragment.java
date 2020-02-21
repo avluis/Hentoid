@@ -634,6 +634,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      */
     private void nextBook() {
         viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
+        highestImageIndexReached = -1;
         viewModel.loadNextContent();
     }
 
@@ -642,6 +643,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      */
     private void previousBook() {
         viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
+        highestImageIndexReached = -1;
         viewModel.loadPreviousContent();
     }
 
