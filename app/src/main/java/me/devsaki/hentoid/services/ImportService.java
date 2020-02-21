@@ -122,10 +122,10 @@ public class ImportService extends IntentService {
         EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, List<String> memoryLog, String s, String... t) {
+    private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
         s = String.format(s, (Object[]) t);
         Timber.log(priority, s);
-        if (null != memoryLog) memoryLog.add(s);
+        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s));
     }
 
 
@@ -142,7 +142,7 @@ public class ImportService extends IntentService {
         int booksKO = 0;                        // Number of folders found with no valid book inside
         int nbFolders = 0;                      // Number of folders found with no content but subfolders
         Content content = null;
-        List<String> log = new ArrayList<>();
+        List<LogUtil.LogEntry> log = new ArrayList<>();
 
         File rootFolder = new File(Preferences.getRootFolderName());
 
@@ -254,7 +254,7 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
-    private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<String> log) {
+    private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogUtil.LogEntry> log) {
         LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
         logInfo.setLogName(cleanup ? "Cleanup" : "Import");
         logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");

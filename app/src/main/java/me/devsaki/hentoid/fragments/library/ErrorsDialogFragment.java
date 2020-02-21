@@ -109,7 +109,7 @@ public class ErrorsDialogFragment extends DialogFragment {
     }
 
     private LogUtil.LogInfo createLog(@NonNull final Content content) {
-        List<String> log = new ArrayList<>();
+        List<LogUtil.LogEntry> log = new ArrayList<>();
 
         LogUtil.LogInfo errorLogInfo = new LogUtil.LogInfo();
         errorLogInfo.setLogName("Error");
@@ -119,8 +119,9 @@ public class ErrorsDialogFragment extends DialogFragment {
 
         List<ErrorRecord> errorLog = content.getErrorLog();
         if (errorLog != null) {
-            log.add("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
-            for (ErrorRecord e : errorLog) log.add(e.toString());
+            errorLogInfo.setHeader("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
+            for (ErrorRecord e : errorLog)
+                log.add(new LogUtil.LogEntry(e.getTimestamp(), e.toString()));
         }
 
         return errorLogInfo;
