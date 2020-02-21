@@ -119,8 +119,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         loadedContentId = contentId;
         searchManager = new ContentSearchManager(collectionDao);
         searchManager.loadFromBundle(bundle);
-//        int contentIndex = bundle.getInt("contentIndex", -1);
-//        if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);
         searchManager.searchLibraryForId(this);
     }
 

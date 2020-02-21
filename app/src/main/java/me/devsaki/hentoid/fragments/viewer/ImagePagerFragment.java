@@ -72,7 +72,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private int maxPosition; // For navigation
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
-    private boolean savedPositionWithBack = false;
     private RecyclerView.SmoothScroller smoothScroller;
 
     // Controls
@@ -193,8 +192,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     // Make sure position is saved when app is closed by the user
     @Override
     public void onStop() {
+        viewModel.savePosition(imageIndex);
         super.onStop();
-        if (!savedPositionWithBack) viewModel.savePosition(imageIndex);
     }
 
 
@@ -313,8 +312,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Back button handler
      */
     private void onBackClick() {
-        viewModel.savePosition(imageIndex);
-        savedPositionWithBack = true;
         requireActivity().onBackPressed();
     }
 
