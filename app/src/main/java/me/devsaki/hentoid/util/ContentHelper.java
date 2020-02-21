@@ -23,7 +23,7 @@ import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
-import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.JsonContent;
@@ -101,15 +101,12 @@ public final class ContentHelper {
     }
 
     @WorkerThread
-    public static Content updateContentReads(@Nonnull Context context, @NonNull Content content) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+    public static void updateContentReads(@NonNull Context context, @Nonnull CollectionDAO dao, @NonNull Content content) {
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
-        db.insertContent(content);
+        dao.insertContent(content);
 
         if (!content.getJsonUri().isEmpty()) updateJson(context, content);
         else createJson(content);
-
-        return content;
     }
 
 

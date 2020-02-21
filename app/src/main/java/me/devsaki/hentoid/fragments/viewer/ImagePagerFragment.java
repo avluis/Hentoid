@@ -69,6 +69,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private ImageViewerViewModel viewModel;
     private int imageIndex = -1;
+    private int highestImageIndexReached = -1; // To manage "Mark book as read after N pages" pref
     private int maxPosition; // For navigation
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
@@ -192,7 +193,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     // Make sure position is saved when app is closed by the user
     @Override
     public void onStop() {
-        viewModel.savePosition(imageIndex);
+        viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
         super.onStop();
     }
 
@@ -422,8 +423,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param position New position
      */
     private void onCurrentPositionChange(int position) {
-        if (this.imageIndex != position) {
-            this.imageIndex = position;
+        if (imageIndex != position) {
+            imageIndex = position;
+            highestImageIndexReached = Math.max(imageIndex, highestImageIndexReached);
 
             // Resets zoom if we're using horizontal (independent pages) mode
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
@@ -631,7 +633,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Load next book
      */
     private void nextBook() {
-        viewModel.savePosition(imageIndex);
+        viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
         viewModel.loadNextContent();
     }
 
@@ -639,7 +641,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Load previous book
      */
     private void previousBook() {
-        viewModel.savePosition(imageIndex);
+        viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
         viewModel.loadPreviousContent();
     }
 

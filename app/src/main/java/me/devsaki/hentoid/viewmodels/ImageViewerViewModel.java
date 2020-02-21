@@ -168,17 +168,35 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         compositeDisposable.clear();
     }
 
-    public void savePosition(int index) {
+    public void onLeaveBook(int index, int highestImageIndexReached) {
+        List<ImageFile> theImages = images.getValue();
         Content theContent = content.getValue();
-        if (theContent != null) {
-            int indexToSet = index;
-            // Reset the memorized page index if it represents the last page
-            List<ImageFile> theImages = getImages().getValue();
-            if (theImages != null && index == theImages.size() - 1) indexToSet = 0;
+        if (null == theImages || null == theContent) return;
 
-            theContent.setLastReadPageIndex(indexToSet);
-            collectionDao.insertContent(theContent);
+        int readThresholdPref = Preferences.getViewerReadThreshold();
+        int readThresholdPosition;
+        switch (readThresholdPref) {
+            case Preferences.Constant.PREF_VIEWER_READ_THRESHOLD_2:
+                readThresholdPosition = 2;
+                break;
+            case Preferences.Constant.PREF_VIEWER_READ_THRESHOLD_5:
+                readThresholdPosition = 5;
+                break;
+            case Preferences.Constant.PREF_VIEWER_READ_THRESHOLD_ALL:
+                readThresholdPosition = theImages.size() - 1;
+                break;
+            default:
+                readThresholdPosition = 1;
         }
+
+        int indexToSet = index;
+        // Reset the memorized page index if it represents the last page
+        if (index == theImages.size() - 1) indexToSet = 0;
+
+        theContent.setLastReadPageIndex(indexToSet);
+        if (highestImageIndexReached + 1 >= readThresholdPosition)
+            ContentHelper.updateContentReads(getApplication(), collectionDao, theContent);
+        else collectionDao.insertContent(theContent);
     }
 
     public void togglePageFavourite(ImageFile file, Consumer<ImageFile> callback) {
@@ -271,7 +289,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
             // Cache JSON and record 1 more view for the new content
             compositeDisposable.add(
-                    Single.fromCallable(() -> postLoadProcessing(getApplication().getApplicationContext(), theContent))
+                    Single.fromCallable(() -> postLoadProcessing(theContent))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
@@ -333,9 +351,9 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     }
 
     @WorkerThread
-    private Content postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
+    private Content postLoadProcessing(@Nonnull Content content) {
         cacheJson(content);
-        return ContentHelper.updateContentReads(context, content);
+        return content;
     }
 
     // Cache JSON URI in the database to speed up favouriting

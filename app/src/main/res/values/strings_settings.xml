@@ -154,7 +154,7 @@
     <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
     <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
-    <string name="pref_viewer_read_threshold">Mark book as read after N pages (WIP)</string>
+    <string name="pref_viewer_read_threshold">Mark book as read after N pages</string>
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page (WIP)</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>

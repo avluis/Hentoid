@@ -139,10 +139,10 @@
     </string-array>
 
     <string-array name="pref_viewer_read_threshold_entries">
-        <item>1 (default)</item>
-        <item>2</item>
-        <item>5</item>
-        <item>All</item>
+        <item>1 page (default)</item>
+        <item>2 pages</item>
+        <item>5 pages</item>
+        <item>All pages</item>
     </string-array>
     <string-array name="pref_viewer_read_threshold_values">
         <item>0</item>

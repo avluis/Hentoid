@@ -280,7 +280,7 @@ public final class Preferences {
     }
 
     public static int getViewerReadThreshold() {
-        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS, Integer.toString(Default.PREF_VIEWER_READ_THRESHOLD)) + "");
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_READ_THRESHOLD, Integer.toString(Default.PREF_VIEWER_READ_THRESHOLD)) + "");
     }
 
     public static int getLastKnownAppVersionCode() {
