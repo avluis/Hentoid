@@ -36,8 +36,9 @@ import timber.log.Timber;
 
 public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdapter.ImageViewHolder> {
 
-    private static final int TYPE_OTHER = 0;
-    private static final int TYPE_GIF = 1;
+    private static final int TYPE_OTHER = 0;    // PNGs and JPEGs -> use CustomSubsamplingScaleImageView
+    private static final int TYPE_GIF = 1;      // Static and animated GIFs -> use native Glide
+    private static final int TYPE_APNG = 2;     // Animated PNGs -> use APNG4Android lib through Glide
 
     private static final int PX_600_DP = Helper.dpToPixel(HentoidApp.getInstance(), 600);
 
@@ -49,7 +50,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
     private List<ImageFile> images = new ArrayList<>();
 
-    // To preload images before they appear on screen with SubsamplingScaleImageView
+    // To preload images before they appear on screen with CustomSubsamplingScaleImageView
     private int maxBitmapWidth = -1;
     private int maxBitmapHeight = -1;
 
@@ -81,10 +82,13 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     @Override
     public int getItemViewType(int position) {
         ImageFile img = images.get(position);
+        String extension = FileHelper.getExtension(img.getAbsolutePath());
 
-        if ("gif".equalsIgnoreCase(FileHelper.getExtension(img.getAbsolutePath()))
-                || img.getMimeType().contains("gif")) {
+        if ("gif".equalsIgnoreCase(extension) || img.getMimeType().contains("gif")) {
             return TYPE_GIF;
+        }
+        if ("apng".equalsIgnoreCase(extension) || img.getMimeType().contains("apng")) {
+            return TYPE_APNG;
         }
         return TYPE_OTHER;
     }
@@ -95,7 +99,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
         View view;
-        if (TYPE_GIF == viewType) {
+        if (TYPE_GIF == viewType || TYPE_APNG == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_glide, viewGroup, false);
         } else if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
@@ -173,7 +177,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
             String uri = img.getAbsolutePath();
             Timber.i(">>>>IMG %s %s", imgType, uri);
 
-            if (TYPE_GIF == imgType) {
+            if (TYPE_GIF == imgType || TYPE_APNG == imgType) {
                 ImageView view = (ImageView) imgView;
                 Glide.with(imgView.getContext().getApplicationContext())
                         .load(uri)
@@ -200,7 +204,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
         }
 
         void resetScale() {
-            if (TYPE_GIF != imgType) {
+            if (TYPE_GIF != imgType && TYPE_APNG != imgType) {
                 CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
                 if (ssView.isImageLoaded() && ssView.isReady() && ssView.isLaidOut())
                     ssView.resetScaleAndCenter();

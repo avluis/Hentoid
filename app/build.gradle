@@ -109,6 +109,13 @@ dependencies {
     implementation 'androidx.paging:paging-runtime:2.1.1'
     implementation "androidx.fragment:fragment-ktx:1.1.0"
 
+    // For ViewModel to work
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
+    kapt('androidx.lifecycle:lifecycle-common-java8:2.1.0')
+
+
     // Image loader: github.com/bumptech/glide
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     kapt('com.github.bumptech.glide:compiler:4.11.0')
@@ -144,7 +151,7 @@ dependencies {
     implementation 'com.annimon:stream:1.2.1'
 
     // LeakCanary: github.com/square/leakcanary
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.1'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.2'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android:flexbox:2.0.0'
@@ -168,12 +175,6 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.2.16'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 
-    // For ViewModel to work
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
-    kapt('androidx.lifecycle:lifecycle-common-java8:2.1.0')
-
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
     if (includeObjectBoxBrowser.toBoolean()) {
@@ -186,6 +187,10 @@ dependencies {
 
     // Cleaner date manipulation
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
+
+    // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
+    implementation 'com.github.penfeizhou.android.animation:apng:1.3.1'
+    implementation 'com.github.penfeizhou.android.animation:glide-plugin:1.3.1'
 
     // https://github.com/mikepenz/FastAdapter
     implementation "com.mikepenz:fastadapter:5.0.0-a03" // needs the `expandable`, `drag` and `scroll` extension.
