@@ -167,7 +167,8 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                ContentHelper.viewContent(view.getContext(), item.getContent());
+                Content c = item.getContent();
+                if (c != null) ContentHelper.viewContent(view.getContext(), c);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -184,7 +185,8 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                viewModel.moveUp(item.getContent().getId());
+                Content c = item.getContent();
+                if (c != null) viewModel.moveUp(c.getId());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -201,7 +203,8 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                viewModel.moveTop(item.getContent().getId());
+                Content c = item.getContent();
+                if (c != null) viewModel.moveTop(c.getId());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -218,7 +221,8 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                viewModel.moveDown(item.getContent().getId());
+                Content c = item.getContent();
+                if (c != null) viewModel.moveDown(c.getId());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -426,8 +430,10 @@ public class QueueFragment extends Fragment {
     }
 
     private void showErrorStats() {
-        if (itemAdapter.getAdapterItemCount() > 0 && itemAdapter.getAdapterItem(0).getContent() != null)
-            ErrorStatsDialogFragment.invoke(this, itemAdapter.getAdapterItem(0).getContent().getId());
+        if (itemAdapter.getAdapterItemCount() > 0) {
+            Content c = itemAdapter.getAdapterItem(0).getContent();
+            if (c != null) ErrorStatsDialogFragment.invoke(this, c.getId());
+        }
     }
 
     private void updateProgressFirstItem(boolean isPausedevent) {
