@@ -154,7 +154,11 @@
     </plurals>
     <string name="reset">Permissions have been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hendroid is restarted"</string>
-    <plurals name="secured_content">
+    <plurals name="redownload_confirm">
+        <item quantity="one">Redownload selected book from scratch ?</item>
+        <item quantity="other">Redownload selected books from scratch ?</item>
+    </plurals>
+    <plurals name="redownload_secured_content">
         <item quantity="one">One of the selected books has secured content and cannot be redownloaded\nThis book will be ignored.</item>
         <item quantity="other">Some of the selected books have secured content and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>

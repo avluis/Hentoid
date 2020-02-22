@@ -1,0 +1,3 @@
+Merge with latest Hentoid commits
+
+- Bug fixes and improvements

@@ -33,7 +33,6 @@ import me.devsaki.hentoid.services.UpdateCheckService;
 //import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
-import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 /**
@@ -163,9 +162,10 @@ public class HentoidApp extends Application {
         }
     }
 
-    // We have asked for permissions, but still denied.
+    /**
+     * Reset the app and close caller activity
+     */
     public static void reset(Activity activity) {
-        ToastUtil.toast(R.string.reset);
         Preferences.setIsFirstRun(true);
         Intent intent = new Intent(activity, IntroActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);

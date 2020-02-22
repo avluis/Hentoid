@@ -116,8 +116,9 @@ public class Content implements Serializable {
         return this;
     }
 
-    public void addAttributes(@NonNull List<Attribute> attrs) {
+    public Content addAttributes(@NonNull List<Attribute> attrs) {
         if (attributes != null) attributes.addAll(attrs);
+        return this;
     }
 
     public long getId() {
@@ -365,7 +366,7 @@ public class Content implements Serializable {
     }
 
     public String getCoverImageUrl() {
-        return coverImageUrl;
+        return (null == coverImageUrl) ? "" : coverImageUrl;
     }
 
     public Content setCoverImageUrl(String coverImageUrl) {

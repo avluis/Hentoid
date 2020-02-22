@@ -159,12 +159,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     // Current metadata search query
     private List<Attribute> metadata = Collections.emptyList();
 
-    // === SPECIFICS FOR PAGED MODE
-    // Minimum bound of loaded data
-    private int minLoadedBound;
-    // Maximum bound of loaded data
-    private int maxLoadedBound;
-
 
     /**
      * Diff calculation rules for list items
@@ -287,7 +281,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
         viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
 
-        viewModel.updateOrder(); // Blank call to trigger the first search
+        viewModel.updateOrder(); // Trigger a blank search
     }
 
     /**
@@ -473,6 +467,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
+        boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
             case R.id.action_share:
                 shareSelectedItems();
@@ -486,12 +481,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 break;
             case R.id.action_redownload:
                 redownloadSelectedItems();
+                keepToolbar = true;
                 break;
             default:
                 selectionToolbar.setVisibility(View.GONE);
                 return false;
         }
-        selectionToolbar.setVisibility(View.GONE);
+        if (!keepToolbar) selectionToolbar.setVisibility(View.GONE);
         return true;
     }
 
@@ -514,7 +510,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Context context = getActivity();
         if (1 == selectedItems.size() && context != null) {
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
-            ContentHelper.shareContent(context, c);
+            if (c != null) ContentHelper.shareContent(context, c);
         }
     }
 
@@ -538,7 +534,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (1 == selectedItems.size() && context != null) {
             ToastUtil.toast(R.string.packaging_content);
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
-            viewModel.archiveContent(c, this::onContentArchiveSuccess);
+            if (c != null) viewModel.archiveContent(c, this::onContentArchiveSuccess);
         }
     }
 
@@ -552,36 +548,38 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         List<Content> contents = new ArrayList<>();
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
-            /*
-            if (c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)) {
+            if (null == c) continue;
+            if (/*c.getSite().equals(Site.FAKKU2) || */
+                    c.getSite().equals(Site.EXHENTAI)) {
                 securedContent++;
             } else {
-                contents.add(ci.getContent());
+                contents.add(c);
             }
-             */
             contents.add(ci.getContent());
         }
 
+        String message = getResources().getQuantityString(R.plurals.redownload_confirm, securedContent);
+        if (securedContent > 0)
+            message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
+
         // TODO make it work for secured sites (Fakku, ExHentai) -> open a browser to fetch the relevant cookies ?
 
-        if (securedContent > 0) {
-            new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
-                    .setIcon(R.drawable.ic_warning)
-                    .setCancelable(false)
-                    .setTitle(R.string.app_name)
-                    .setMessage(getResources().getQuantityString(R.plurals.secured_content, securedContent))
-                    .setPositiveButton(android.R.string.yes,
-                            (dialog1, which) -> {
-                                dialog1.dismiss();
-                                downloadContent(contents, true);
-                            })
-                    .setNegativeButton(android.R.string.no,
-                            (dialog12, which) -> dialog12.dismiss())
-                    .create()
-                    .show();
-        } else {
-            downloadContent(contents, true);
-        }
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            downloadContent(contents, true);
+                            selectionToolbar.setVisibility(View.GONE);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
+
     }
 
     /**
@@ -764,6 +762,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Timber.i("Prefs change detected : %s", key);
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
             initPagingMethod(Preferences.getEndlessScroll());
+            viewModel.updateOrder(); // Trigger a blank search
         } else if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
             // Restart the app with the library activity on top
             Intent intent = requireActivity().getIntent();
@@ -797,6 +796,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param isEndless True if endless mode has to be set; false if paged mode has to be set
      */
     private void initPagingMethod(boolean isEndless) {
+        viewModel.setPagingMethod(isEndless);
+
         if (isEndless) { // Endless mode
             pager.hide();
 
@@ -804,7 +805,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
             fastAdapter.registerTypeInstance(new ContentItem(false));
-            if (library != null) pagedItemAdapter.submitList(library, this::differEndCallback);
 
             itemAdapter = null;
         } else { // Paged mode
@@ -813,12 +813,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             fastAdapter.setHasStableIds(true);
             pager.setCurrentPage(1);
             pager.show();
-            if (library != null) {
-                pager.setPageCount((int) Math.ceil(library.size() * 1.0 / Preferences.getContentPageQuantity()));
-                loadBookshelf(library);
-            }
-            viewModel.setLibraryEndLoadCallback(c -> onBoundLoad());
-            viewModel.setLibraryFrontLoadCallback(c -> onBoundLoad());
 
             pagedItemAdapter = null;
         }
@@ -830,7 +824,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                onBookFavouriteClick(item.getContent());
+                if (item.getContent() != null) onBookFavouriteClick(item.getContent());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -847,7 +841,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                onBookSourceClick(item.getContent());
+                if (item.getContent() != null) onBookSourceClick(item.getContent());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -864,7 +858,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                onBookErrorClick(item.getContent());
+                if (item.getContent() != null) onBookErrorClick(item.getContent());
             }
 
             @org.jetbrains.annotations.Nullable
@@ -887,16 +881,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
 
         recyclerView.setAdapter(fastAdapter);
-    }
-
-    /**
-     * Callback when items are loaded (in replacement of placeholders)
-     * at the beginning or the end of the current PagedList
-     * <p>
-     * Used in paged mode only
-     */
-    private void onBoundLoad() {
-        if (library != null) populateBookshelf(library, pager.getCurrentPageNumber());
     }
 
     /**
@@ -935,36 +919,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return;
             }
 
-            /* We're using PagedList v2.1.1 against the use case it has been designed for (endless lists loaded linearly).
-            Doing it right requires the following algorithm :
-
-            Check if there is unloaded data in the working dataset (iLibrary)
-                - Case A : All required data is already loaded
-                    -> Immediately populate the library screen
-                - Case B : There is missing data outside of the bounds of already loaded data
-                    -> use loadAround to load beyond these bounds and let the BoundaryCallback populate the screen once data is loaded
-                - Case C : There is missing data inside of the bounds of already loaded data (BoundaryCallback is useless for that case)
-                    -> use loadAround to load data and populate the screen after a reasonable delay (150 ms)
-
-                NB : Case C implementation  _is_ quick and hacky (no discussion about that).
-                The alternative would be to implement a whole alternate data source for Hentoid paged mode, which is massively more complex
-             */
-            //noinspection Convert2MethodRef need API24
-            long nbPlaceholders = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c == null).count();
-            Timber.d(">> nb placeholders : %s", nbPlaceholders);
-            Timber.d(">> min/max  minBound/maxBound : %s/%s  %s/%s", minIndex, maxIndex, minLoadedBound, maxLoadedBound);
-
-            if (0 == nbPlaceholders)
-                populateBookshelf(iLibrary, pager.getCurrentPageNumber()); // Case A
-            else if (minIndex < minLoadedBound || maxIndex > maxLoadedBound)
-                iLibrary.loadAround(minIndex); // Case B
-            else { // Case C
-                iLibrary.loadAround(minIndex);
-                new Handler().postDelayed(() -> populateBookshelf(iLibrary, pager.getCurrentPageNumber()), 150);
-            }
-
-            minLoadedBound = Math.min(minLoadedBound, minIndex);
-            maxLoadedBound = Math.max(maxLoadedBound, maxIndex);
+            populateBookshelf(iLibrary, pager.getCurrentPageNumber());
         }
     }
 
@@ -1053,11 +1008,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (Preferences.getEndlessScroll()) {
             pagedItemAdapter.submitList(result, this::differEndCallback);
         } else {
-
             if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
-            minLoadedBound = Integer.MAX_VALUE;
-            maxLoadedBound = Integer.MIN_VALUE;
             loadBookshelf(result);
         }
 
@@ -1097,7 +1049,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     private boolean onBookClick(@NonNull ContentItem item, int position) {
         if (selectExtension.getSelectedItems().isEmpty()) {
-            if (!invalidateNextBookClick && !item.getContent().isBeingDeleted()) {
+            if (!invalidateNextBookClick && item.getContent() != null && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
                 //ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
         	    ContentHelper.open(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());

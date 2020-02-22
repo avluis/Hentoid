@@ -140,13 +140,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (Preferences.isOpenBookInGalleryMode() && !hasGalleryBeenShown) displayGallery(false);
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
         viewModel = new ViewModelProvider(requireActivity()).get(ImageViewerViewModel.class);
 
         viewModel.onRestoreState(savedInstanceState);
@@ -161,6 +154,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
 
         viewModel.setOnShuffledChangeListener(this::onShuffleChanged);
+
+        if (Preferences.isOpenBookInGalleryMode() && !hasGalleryBeenShown) displayGallery(false);
     }
 
     @Override
