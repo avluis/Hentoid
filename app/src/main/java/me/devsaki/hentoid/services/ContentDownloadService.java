@@ -738,7 +738,7 @@ public class ContentDownloadService extends IntentService {
         }
         // No extension detected in the URL => Read binary header of the file to detect known formats
         if (fileExt.isEmpty()) {
-            fileExt = FileHelper.getImageExtensionFromPictureHeader(Arrays.copyOf(binaryContent, 12));
+            fileExt = FileHelper.getImageExtensionFromPictureHeader(binaryContent);
             Timber.d("Reading headers to determine file extension for %s -> %s", img.getUrl(), fileExt);
         }
         // If all else fails, fall back to jpg as default
