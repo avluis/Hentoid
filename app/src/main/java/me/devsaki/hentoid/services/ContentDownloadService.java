@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -268,7 +267,7 @@ public class ContentDownloadService extends IntentService {
             for (ImageFile img : images) {
                 if (img.getStatus().equals(StatusContent.ERROR)) {
                     img.setStatus(StatusContent.SAVED); // SAVED = "to be downloaded"
-                    db.updateImageFileStatusAndParams(img);
+                    db.updateImageFileStatusParamsMimeType(img);
                 }
             }
         }
@@ -307,7 +306,7 @@ public class ContentDownloadService extends IntentService {
             for (ImageFile img : images) {
                 if (img.getStatus().equals(StatusContent.SAVED)) {
                     img.setStatus(StatusContent.ERROR);
-                    db.updateImageFileStatusAndParams(img);
+                    db.updateImageFileStatusParamsMimeType(img);
                 }
             }
             completeDownload(content, 0, images.size());
@@ -566,9 +565,9 @@ public class ContentDownloadService extends IntentService {
         try {
             if (result != null) {
                 processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey(), hasImageProcessing);
-                updateImageStatus(img, true);
+                updateImage(img, true);
             } else {
-                updateImageStatus(img, false);
+                updateImage(img, false);
                 logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), "Result null");
             }
         } catch (UnsupportedContentException e) {
@@ -576,16 +575,16 @@ public class ContentDownloadService extends IntentService {
             if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl);
             else {
                 Timber.w("No backup URL found - aborting this image");
-                updateImageStatus(img, false);
+                updateImage(img, false);
                 logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), e.getMessage());
             }
         } catch (InvalidParameterException e) {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
-            updateImageStatus(img, false);
+            updateImage(img, false);
             logErrorRecord(img.content.getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), "Download params : " + img.getDownloadParams());
         } catch (IOException e) {
             Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
-            updateImageStatus(img, false);
+            updateImage(img, false);
             logErrorRecord(img.content.getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getAbsolutePath() + " " + e.getMessage());
         }
     }
@@ -618,7 +617,7 @@ public class ContentDownloadService extends IntentService {
 
         Timber.w(error);
 
-        updateImageStatus(img, false);
+        updateImage(img, false);
         logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
     }
 
@@ -638,7 +637,7 @@ public class ContentDownloadService extends IntentService {
                                 imageFile -> processBackupImage(imageFile, img, dir, site),
                                 throwable ->
                                 {
-                                    updateImageStatus(img, false);
+                                    updateImage(img, false);
                                     logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
                                     Timber.e(throwable, "Error processing backup image.");
                                 }
@@ -701,9 +700,9 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private static void processAndSaveImage(ImageFile img,
-                                            File dir,
-                                            String contentType,
+    private static void processAndSaveImage(@NonNull ImageFile img,
+                                            @NonNull File dir,
+                                            @Nullable String contentType,
                                             byte[] binaryContent,
                                             boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
@@ -720,11 +719,12 @@ public class ContentDownloadService extends IntentService {
         }
 
         String fileExt = null;
+        String mimeType = null;
         // Determine the extension of the file
 
         // Use the Content-type contained in the HTTP headers of the response
         if (null != contentType) {
-            contentType = HttpHelper.cleanContentType(contentType).first;
+            mimeType = HttpHelper.cleanContentType(contentType).first;
             // Ignore neutral binary content-type
             if (!contentType.equalsIgnoreCase("application/octet-stream")) {
                 fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
@@ -734,18 +734,22 @@ public class ContentDownloadService extends IntentService {
         // Content-type has not been useful to determine the extension => See if the URL contains an extension
         if (null == fileExt || fileExt.isEmpty()) {
             fileExt = HttpHelper.getExtensionFromUri(img.getUrl());
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt);
             Timber.d("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
         }
         // No extension detected in the URL => Read binary header of the file to detect known formats
         if (fileExt.isEmpty()) {
-            fileExt = FileHelper.getImageExtensionFromPictureHeader(Arrays.copyOf(binaryContent, 12));
-            Timber.d("Reading headers to determine file extension for %s -> %s", img.getUrl(), fileExt);
+            mimeType = FileHelper.getMimeTypeFromPictureBinary(binaryContent);
+            fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+            Timber.d("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
         }
         // If all else fails, fall back to jpg as default
-        if (fileExt.isEmpty()) {
+        if (null == fileExt || fileExt.isEmpty()) {
             fileExt = "jpg";
+            mimeType = "image/jpeg";
             Timber.d("Using default extension for %s -> %s", img.getUrl(), fileExt);
         }
+        img.setMimeType(mimeType);
 
         if (!Helper.isImageExtensionSupported(fileExt))
             throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - image not processed", fileExt, img.getUrl()));
@@ -772,11 +776,11 @@ public class ContentDownloadService extends IntentService {
      * @param img     Image to update
      * @param success True if download is successful; false if download failed
      */
-    private void updateImageStatus(ImageFile img, boolean success) {
+    private void updateImage(ImageFile img, boolean success) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         if (success) img.setDownloadParams("");
         if (img.getId() > 0)
-            db.updateImageFileStatusAndParams(img); // because thumb image isn't in the DB
+            db.updateImageFileStatusParamsMimeType(img); // because thumb image isn't in the DB
     }
 
     /**

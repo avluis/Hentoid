@@ -25,6 +25,7 @@ public class ImageFile {
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
     public ToOne<Content> content;
+    private String mimeType;
 
 
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
@@ -42,9 +43,6 @@ public class ImageFile {
     // Has the image been read from a backup URL ?
     @Transient
     private boolean isBackup = false;
-    // Inferred MIME-type of the image
-    @Transient
-    private String mimeType; // TODO : make it persistent ?
 
 
     public ImageFile() {

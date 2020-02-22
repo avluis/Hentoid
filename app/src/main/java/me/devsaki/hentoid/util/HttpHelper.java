@@ -135,6 +135,11 @@ public class HttpHelper {
         } else return new Pair<>(rawContentType, null);
     }
 
+    /**
+     * Return the extension of the file located at the given URI, without the leading '.'
+     * @param uri Location of the file
+     * @return Extension of the file located at the given URI, without the leading '.'
+     */
     public static String getExtensionFromUri(String uri) {
         String theUri = uri.toLowerCase();
         String uriNoParams = theUri;

@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -56,6 +57,8 @@ public class FileHelper {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
     private static final String PRIMARY_VOLUME_NAME = "primary";
+
+    private static final Charset CHARSET_LATIN_1 = Charset.forName("ISO-8859-1");
 
 
     public static String getFileProviderAuthority() {
@@ -518,22 +521,26 @@ public class FileHelper {
         return false;
     }
 
-    public static String getImageExtensionFromPictureHeader(byte[] header) {
-        if (header.length < 12) return "";
+    public static String getMimeTypeFromPictureBinary(byte[] binary) {
+        if (binary.length < 12) return "";
 
         // In Java, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
-        if ((byte) 0xFF == header[0] && (byte) 0xD8 == header[1] && (byte) 0xFF == header[2])
-            return "jpg";
-        else if ((byte) 0x89 == header[0] && (byte) 0x50 == header[1] && (byte) 0x4E == header[2])
-            return "png";
-        else if ((byte) 0x47 == header[0] && (byte) 0x49 == header[1] && (byte) 0x46 == header[2])
-            return "gif";
-        else if ((byte) 0x52 == header[0] && (byte) 0x49 == header[1] && (byte) 0x46 == header[2] && (byte) 0x46 == header[3]
-                && (byte) 0x57 == header[8] && (byte) 0x45 == header[9] && (byte) 0x42 == header[10] && (byte) 0x50 == header[11])
-            return "webp";
-        else if ((byte) 0x42 == header[0] && (byte) 0x4D == header[1]) return "bmp";
-        else return "";
+        if ((byte) 0xFF == binary[0] && (byte) 0xD8 == binary[1] && (byte) 0xFF == binary[2])
+            return "image/jpeg";
+        else if ((byte) 0x89 == binary[0] && (byte) 0x50 == binary[1] && (byte) 0x4E == binary[2]) {
+            // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
+            long idatPos = findSequencePosition(binary, "IDAT".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
+            long acTlPos = findSequencePosition(binary, "acTL".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
+            if (acTlPos < idatPos) return "image/apng";
+            return "image/png";
+        } else if ((byte) 0x47 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2])
+            return "image/gif";
+        else if ((byte) 0x52 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2] && (byte) 0x46 == binary[3]
+                && (byte) 0x57 == binary[8] && (byte) 0x45 == binary[9] && (byte) 0x42 == binary[10] && (byte) 0x50 == binary[11])
+            return "image/webp";
+        else if ((byte) 0x42 == binary[0] && (byte) 0x4D == binary[1]) return "image/bmp";
+        else return "image/*";
     }
 
     // Please don't delete this method!
@@ -559,6 +566,90 @@ public class FileHelper {
         sharingIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(context, FileHelper.AUTHORITY, f));
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
+
+    private static long findSequencePosition(byte[] data, byte[] sequence, long limit) {
+//        int BUFFER_SIZE = 64;
+//        byte[] readBuffer = new byte[BUFFER_SIZE];
+
+        int remainingBytes;
+//        int bytesToRead;
+//        int dataPos = 0;
+        int iSequence = 0;
+
+        remainingBytes = (int) ((limit > 0) ? Math.min(data.length, limit) : data.length);
+
+//        while (remainingBytes > 0) {
+//            bytesToRead = Math.min(remainingBytes, BUFFER_SIZE);
+//            System.arraycopy(data, dataPos, readBuffer, 0, bytesToRead);
+//            dataPos += bytesToRead;
+
+//            stream.Read(readBuffer, 0, bytesToRead);
+
+        for (int i = 0; i < remainingBytes; i++) {
+            if (sequence[iSequence] == data[i]) iSequence++;
+            else if (iSequence > 0) iSequence = 0;
+
+            if (sequence.length == iSequence) return i - sequence.length;
+        }
+
+//            remainingBytes -= bytesToRead;
+//        }
+
+        // Target sequence not found
+        return -1;
+    }
+
+    /*
+     /// <summary>
+        /// Finds a byte sequence within a stream
+        /// </summary>
+        /// <param name="stream">Stream to search into</param>
+        /// <param name="sequence">Sequence to find</param>
+        /// <param name="limit">Maximum distance (in bytes) of the sequence to find.
+        /// Put 0 for an infinite distance</param>
+        /// <returns>
+        ///     true if the sequence has been found; the stream will be positioned on the 1st byte following the sequence
+        ///     false if the sequence has not been found; the stream will keep its initial position
+        /// </returns>
+        public static bool FindSequence(Stream stream, byte[] sequence, long limit = 0)
+        {
+            int BUFFER_SIZE = 512;
+            byte[] readBuffer = new byte[BUFFER_SIZE];
+
+            int remainingBytes, bytesToRead;
+            int iSequence = 0;
+            int readBytes = 0;
+            long initialPos = stream.Position;
+
+            remainingBytes = (int)((limit > 0) ? Math.Min(stream.Length - stream.Position, limit) : stream.Length - stream.Position);
+
+            while (remainingBytes > 0)
+            {
+                bytesToRead = Math.Min(remainingBytes, BUFFER_SIZE);
+
+                stream.Read(readBuffer, 0, bytesToRead);
+
+                for (int i = 0; i < bytesToRead; i++)
+                {
+                    if (sequence[iSequence] == readBuffer[i]) iSequence++;
+                    else if (iSequence > 0) iSequence = 0;
+
+                    if (sequence.Length == iSequence)
+                    {
+                        stream.Position = initialPos + readBytes + i + 1;
+                        return true;
+                    }
+                }
+
+                remainingBytes -= bytesToRead;
+                readBytes += bytesToRead;
+            }
+
+            // If we're here, the sequence hasn't been found
+            stream.Position = initialPos;
+            return false;
+        }
+     */
 
     public static class MemoryUsageFigures {
         private final long freeMemBytes;

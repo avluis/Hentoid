@@ -233,9 +233,10 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
         @Override
         public void onImageLoadError(Exception e) {
-            // Mark image as GIF
+            Timber.i(">>>>IMG %s reloaded with Glide", img.getAbsolutePath());
+            // Manually force mime-type as GIF to fall back to Glide
             img.setMimeType("image/gif");
-            // Reload to fall back to Glide
+            // Reload adapter
             notifyItemChanged(getLayoutPosition());
         }
 
