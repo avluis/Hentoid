@@ -155,7 +155,7 @@ public class QueueFragment extends Fragment {
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Item click listener
-//        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i)); TODO implement book reading while downloading
+        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
 
         attachButtons(fastAdapter);
 
@@ -444,5 +444,15 @@ public class QueueFragment extends Fragment {
             // Hack to update the progress bar of the 1st visible card even though it is controlled by the PagedList
             ContentItem.ContentViewHolder.updateProgress(content, requireViewById(rootView, R.id.pbDownload), 0, isPausedevent);
         }
+    }
+
+    private boolean onBookClick(ContentItem i) {
+        Content c = i.getContent();
+        if (c != null) {
+            // TODO test long queues to see if a memorization of the top position (as in Library screen) is necessary
+            ContentHelper.openHentoidViewer(requireContext(), c, null);
+            return true;
+        }
+        else return false;
     }
 }

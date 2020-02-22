@@ -129,7 +129,7 @@ public final class ContentHelper {
     }
 
     @Nullable
-    public static File[] getPictureFilesFromContent(Content content) {
+    public static File[] getPictureFilesFromContent(@NonNull Content content) {
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());
 

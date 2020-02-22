@@ -123,16 +123,16 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public Single<AttributeQueryResult> getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle) {
         return Single
-            .fromCallable(() -> pagedAttributeSearch(types, filter, attrs, filterFavourites, orderStyle, page, booksPerPage))
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread());
+                .fromCallable(() -> pagedAttributeSearch(types, filter, attrs, filterFavourites, orderStyle, page, booksPerPage))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     @Override
     public Single<SparseIntArray> countAttributesPerType(List<Attribute> filter) {
         return Single.fromCallable(() -> count(filter))
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread());
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
     public LiveData<Integer> countAllBooks() {
@@ -214,6 +214,10 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Nullable
     public ImageFile selectImageFile(long id) {
         return db.selectImageFile(id);
+    }
+
+    public LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id) {
+        return new ObjectBoxLiveData<>(db.getDownloadedImagesFromContent(id));
     }
 
 

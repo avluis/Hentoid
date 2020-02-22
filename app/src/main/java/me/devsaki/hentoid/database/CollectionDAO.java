@@ -60,6 +60,8 @@ public interface CollectionDAO {
 
     ImageFile selectImageFile(long id);
 
+    LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id);
+
 
     // QUEUE
 

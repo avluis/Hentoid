@@ -71,6 +71,8 @@ public class JsonHelper {
      * @throws IOException If anything happens during file I/O
      */
     static <K> void updateJson(K object, Type type, @Nonnull DocumentFile file) throws IOException {
+        if (!file.exists()) return;
+
         try (OutputStream output = FileHelper.getOutputStream(file)) {
             if (output != null) updateJson(object, type, output);
             else Timber.w("JSON file creation failed for %s", file.getUri());
