@@ -75,7 +75,6 @@ public class LibraryViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        searchManager.dispose();
         compositeDisposable.clear();
     }
 

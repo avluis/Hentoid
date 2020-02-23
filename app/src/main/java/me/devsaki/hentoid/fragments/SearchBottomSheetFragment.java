@@ -23,17 +23,15 @@ import com.google.android.flexbox.AlignItems;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.AvailableAttributeAdapter;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
@@ -215,7 +213,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         viewModel.onCategoryFilterChanged(filter, currentPage, ATTRS_PER_PAGE);
     }
 
-    private void onAttributesReady(SearchViewModel.AttributeSearchResult results) {
+    private void onAttributesReady(CollectionDAO.AttributeQueryResult results) {
         if (!isInitiated) return;
 
         tagWaitMessage.clearAnimation();
@@ -228,7 +226,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         // Remove selected attributes from the result set
         results.attributes.removeAll(selectedAttributes);
 
-        mTotalSelectedCount = results.totalContent - selectedAttributes.size();
+        mTotalSelectedCount = results.totalSelectedAttributes - selectedAttributes.size();
         if (clearOnSuccess) attributeAdapter.clear();
         if (0 == mTotalSelectedCount) {
             String searchQuery = tagSearchView.getQuery().toString();

@@ -29,6 +29,8 @@ import javax.annotation.Nonnull;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
@@ -36,7 +38,6 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -48,7 +49,7 @@ import timber.log.Timber;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 
-public class ImageViewerViewModel extends AndroidViewModel implements PagedResultListener<Long> {
+public class ImageViewerViewModel extends AndroidViewModel {
 
     private static final String KEY_IS_SHUFFLED = "is_shuffled";
 
@@ -63,7 +64,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
     private List<Long> contentIds = Collections.emptyList();                         // Content Ids of the whole collection ordered according to current filter
     private int currentContentIndex = -1;                                            // Index of current content within the above list
-    private long loadedContentId = -1;                                               // Content ID that has been initially loaded
 
     // Pictures data
     private LiveData<List<ImageFile>> currentImageSource;
@@ -71,8 +71,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
 
     // Technical
-    private ContentSearchManager searchManager = null;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private Disposable searchDisposable = Disposables.empty();
 
 
     public ImageViewerViewModel(@NonNull Application application) {
@@ -117,21 +117,21 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     }
 
     public void loadFromSearchParams(long contentId, @Nonnull Bundle bundle) {
-        loadedContentId = contentId;
-        searchManager = new ContentSearchManager(collectionDao);
+        // Technical
+        ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
         searchManager.loadFromBundle(bundle);
-        searchManager.searchLibraryForId(this);
-    }
 
-    @Override
-    public void onPagedResultReady(List<Long> results, long totalSelectedContent, long totalContent) {
-        contentIds = results;
-        loadFromContent(loadedContentId);
-    }
-
-    @Override
-    public void onPagedResultFailed(Long contentId, String message) {
-        ToastUtil.toast("Book list loading failed");
+        searchDisposable.dispose();
+        searchDisposable = searchManager.searchLibraryForId().subscribe(
+                list -> {
+                    contentIds = list;
+                    loadFromContent(contentId);
+                },
+                throwable -> {
+                    Timber.w(throwable);
+                    ToastUtil.toast("Book list loading failed");
+                }
+        );
     }
 
     public void setStartingIndex(int index) {
@@ -197,7 +197,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     @Override
     protected void onCleared() {
         super.onCleared();
-        if (searchManager != null) searchManager.dispose();
+        searchDisposable.dispose();
         compositeDisposable.clear();
     }
 
