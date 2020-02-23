@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -32,8 +33,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -530,9 +529,11 @@ public class FileHelper {
             return "image/jpeg";
         else if ((byte) 0x89 == binary[0] && (byte) 0x50 == binary[1] && (byte) 0x4E == binary[2]) {
             // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
-            long idatPos = findSequencePosition(binary, "IDAT".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
-            long acTlPos = findSequencePosition(binary, "acTL".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
-            if (acTlPos < idatPos) return "image/apng";
+            int acTlPos = findSequencePosition(binary, 0, "acTL".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
+            if (acTlPos > -1) {
+                long idatPos = findSequencePosition(binary, acTlPos, "IDAT".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.1));
+                if (idatPos > -1) return "image/apng";
+            }
             return "image/png";
         } else if ((byte) 0x47 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2])
             return "image/gif";
@@ -543,9 +544,22 @@ public class FileHelper {
         else return "image/*";
     }
 
+    @Nullable
+    public static String getExtensionFromMimeType(@NonNull String mimeType) {
+        if (mimeType.isEmpty()) return null;
+
+        String result = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+        // Exceptions that MimeTypeMap does not support
+        if (null == result) {
+            if (mimeType.equals("image/apng") || mimeType.equals("image/vnd.mozilla.apng"))
+                return "png";
+        }
+        return result;
+    }
+
     // Please don't delete this method!
     // I need some way to trace actions when working with SD card features - Robb
-    public static void createFileWithMsg(@Nonnull String file, String msg) {
+    public static void createFileWithMsg(@NonNull String file, String msg) {
         try {
             FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
             Timber.i(">>file %s -> %s", file, msg);
@@ -555,7 +569,7 @@ public class FileHelper {
     }
 
     @Nullable
-    public static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
+    public static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
         return FileUtil.getDocumentFile(file, isDirectory);
     }
 
@@ -567,7 +581,7 @@ public class FileHelper {
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
-    private static long findSequencePosition(byte[] data, byte[] sequence, long limit) {
+    private static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
 //        int BUFFER_SIZE = 64;
 //        byte[] readBuffer = new byte[BUFFER_SIZE];
 
@@ -576,7 +590,9 @@ public class FileHelper {
 //        int dataPos = 0;
         int iSequence = 0;
 
-        remainingBytes = (int) ((limit > 0) ? Math.min(data.length, limit) : data.length);
+        if (initialPos < 0 || initialPos > data.length) return -1;
+
+        remainingBytes = (limit > 0) ? Math.min(data.length - initialPos, limit) : data.length;
 
 //        while (remainingBytes > 0) {
 //            bytesToRead = Math.min(remainingBytes, BUFFER_SIZE);
@@ -585,7 +601,7 @@ public class FileHelper {
 
 //            stream.Read(readBuffer, 0, bytesToRead);
 
-        for (int i = 0; i < remainingBytes; i++) {
+        for (int i = initialPos; i < remainingBytes; i++) {
             if (sequence[iSequence] == data[i]) iSequence++;
             else if (iSequence > 0) iSequence = 0;
 
@@ -598,58 +614,6 @@ public class FileHelper {
         // Target sequence not found
         return -1;
     }
-
-    /*
-     /// <summary>
-        /// Finds a byte sequence within a stream
-        /// </summary>
-        /// <param name="stream">Stream to search into</param>
-        /// <param name="sequence">Sequence to find</param>
-        /// <param name="limit">Maximum distance (in bytes) of the sequence to find.
-        /// Put 0 for an infinite distance</param>
-        /// <returns>
-        ///     true if the sequence has been found; the stream will be positioned on the 1st byte following the sequence
-        ///     false if the sequence has not been found; the stream will keep its initial position
-        /// </returns>
-        public static bool FindSequence(Stream stream, byte[] sequence, long limit = 0)
-        {
-            int BUFFER_SIZE = 512;
-            byte[] readBuffer = new byte[BUFFER_SIZE];
-
-            int remainingBytes, bytesToRead;
-            int iSequence = 0;
-            int readBytes = 0;
-            long initialPos = stream.Position;
-
-            remainingBytes = (int)((limit > 0) ? Math.Min(stream.Length - stream.Position, limit) : stream.Length - stream.Position);
-
-            while (remainingBytes > 0)
-            {
-                bytesToRead = Math.Min(remainingBytes, BUFFER_SIZE);
-
-                stream.Read(readBuffer, 0, bytesToRead);
-
-                for (int i = 0; i < bytesToRead; i++)
-                {
-                    if (sequence[iSequence] == readBuffer[i]) iSequence++;
-                    else if (iSequence > 0) iSequence = 0;
-
-                    if (sequence.Length == iSequence)
-                    {
-                        stream.Position = initialPos + readBytes + i + 1;
-                        return true;
-                    }
-                }
-
-                remainingBytes -= bytesToRead;
-                readBytes += bytesToRead;
-            }
-
-            // If we're here, the sequence hasn't been found
-            stream.Position = initialPos;
-            return false;
-        }
-     */
 
     public static class MemoryUsageFigures {
         private final long freeMemBytes;

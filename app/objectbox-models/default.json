@@ -159,7 +159,7 @@
     },
     {
       "id": "3:2849837771881495731",
-      "lastPropertyId": "9:3938664550318760597",
+      "lastPropertyId": "10:5317663031556875099",
       "name": "ImageFile",
       "properties": [
         {
@@ -208,6 +208,11 @@
           "name": "favourite",
           "type": 1,
           "flags": 4
+        },
+        {
+          "id": "10:5317663031556875099",
+          "name": "mimeType",
+          "type": 9
         }
       ],
       "relations": []

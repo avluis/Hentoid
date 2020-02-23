@@ -727,7 +727,7 @@ public class ContentDownloadService extends IntentService {
             mimeType = HttpHelper.cleanContentType(contentType).first;
             // Ignore neutral binary content-type
             if (!contentType.equalsIgnoreCase("application/octet-stream")) {
-                fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
+                fileExt = FileHelper.getExtensionFromMimeType(contentType);
                 Timber.d("Using content-type %s to determine file extension -> %s", contentType, fileExt);
             }
         }
@@ -738,9 +738,10 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
         }
         // No extension detected in the URL => Read binary header of the file to detect known formats
-        if (fileExt.isEmpty()) {
+        // If PNG, peek into the file to see if it is an animated PNG or not (no other way to do that)
+        if (fileExt.isEmpty() || fileExt.equals("png")) {
             mimeType = FileHelper.getMimeTypeFromPictureBinary(binaryContent);
-            fileExt = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+            fileExt = FileHelper.getExtensionFromMimeType(mimeType);
             Timber.d("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
         }
         // If all else fails, fall back to jpg as default
