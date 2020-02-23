@@ -64,6 +64,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
     private List<Long> contentIds = Collections.emptyList();                         // Content Ids of the whole collection ordered according to current filter
     private int currentContentIndex = -1;                                            // Index of current content within the above list
+    private long loadedBookId = -1;                                                  // ID of currently loaded book
 
     // Pictures data
     private LiveData<List<ImageFile>> currentImageSource;
@@ -140,7 +141,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void setImages(@NonNull Content content, @NonNull List<ImageFile> imgs) {
         // Load new content
-        File[] pictureFiles = ContentHelper.getPictureFilesFromContent(content);
+        File[] pictureFiles = ContentHelper.getPictureFilesFromContent(content); // TODO this is called too often when viewing a queued book -> optimize !
         if (pictureFiles != null && pictureFiles.length > 0) {
             List<ImageFile> imageFiles;
             if (imgs.isEmpty()) {
@@ -153,10 +154,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
             }
             sortAndSetImages(imageFiles, isShuffled);
 
-            if (Preferences.isViewerResumeLastLeft())
-                setStartingIndex(content.getLastReadPageIndex());
-            else
-                setStartingIndex(0);
+            if(content.getId() != loadedBookId) { // To be done once per book only
+                if (Preferences.isViewerResumeLastLeft())
+                    setStartingIndex(content.getLastReadPageIndex());
+                else
+                    setStartingIndex(0);
+            }
+
+            loadedBookId = content.getId();
 
             // Cache JSON and record 1 more view for the new content
             compositeDisposable.add(
