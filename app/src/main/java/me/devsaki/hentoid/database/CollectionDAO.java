@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.paging.PagedList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Single;
@@ -17,7 +18,6 @@ import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.listener.PagedResultListener;
 
 public interface CollectionDAO {
 
@@ -36,11 +36,11 @@ public interface CollectionDAO {
 
     // High-level queries
 
-    void getRecentBookIds(int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
+    Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly);
 
-    void searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
+    Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
 
-    void searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
+    Single<List<Long>> searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly);
 
 
     LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly, boolean loadAll);
@@ -60,6 +60,8 @@ public interface CollectionDAO {
 
     ImageFile selectImageFile(long id);
 
+    LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id);
+
 
     // QUEUE
 
@@ -76,7 +78,7 @@ public interface CollectionDAO {
 
     // ATTRIBUTES
 
-    Single<ObjectBoxDAO.AttributeQueryResult> getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle);
+    Single<AttributeQueryResult> getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle);
 
     Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
 
@@ -88,7 +90,16 @@ public interface CollectionDAO {
     void insertSiteHistory(@NonNull Site site, @NonNull String url);
 
 
-    // MISC
+    // RESULTS STRUCTURES
 
-    void dispose();
+    class AttributeQueryResult {
+        public List<Attribute> attributes = new ArrayList<>();
+        public long totalSelectedAttributes;
+
+        AttributeQueryResult() {}
+        public AttributeQueryResult(List<Attribute> attributes, long totalSelectedAttributes) {
+            this.attributes = new ArrayList<>(attributes);
+            this.totalSelectedAttributes = totalSelectedAttributes;
+        }
+    }
 }

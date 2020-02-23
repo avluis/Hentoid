@@ -8,6 +8,8 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -17,9 +19,6 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Executor;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -34,7 +33,7 @@ import me.devsaki.hentoid.views.ssiv.ImageSource;
 import timber.log.Timber;
 
 
-public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdapter.ImageViewHolder> {
+public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder> {
 
     private static final int TYPE_OTHER = 0;    // PNGs and JPEGs -> use CustomSubsamplingScaleImageView
     private static final int TYPE_GIF = 1;      // Static and animated GIFs -> use native Glide
@@ -48,20 +47,13 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     private View.OnTouchListener itemTouchListener;
     private RecyclerView recyclerView;
 
-    private List<ImageFile> images = new ArrayList<>();
-
     // To preload images before they appear on screen with CustomSubsamplingScaleImageView
     private int maxBitmapWidth = -1;
     private int maxBitmapHeight = -1;
 
 
-    @Override
-    public int getItemCount() {
-        return images.size();
-    }
-
-    public void setImages(List<ImageFile> images) {
-        this.images = Collections.unmodifiableList(images);
+    public ImagePagerAdapter() {
+        super(DIFF_CALLBACK);
     }
 
     public void setRecyclerView(RecyclerView v) {
@@ -73,7 +65,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     }
 
     public boolean isFavouritePresent() {
-        for (ImageFile img : images)
+        for (ImageFile img : getCurrentList())
             if (img.isFavourite()) return true;
 
         return false;
@@ -81,7 +73,8 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
     @Override
     public int getItemViewType(int position) {
-        ImageFile img = images.get(position);
+        ImageFile img = getImageAt(position);
+        if (null == img) return TYPE_OTHER;
         String extension = FileHelper.getExtension(img.getAbsolutePath());
 
         if ("gif".equalsIgnoreCase(extension) || img.getMimeType().contains("gif")) {
@@ -111,22 +104,22 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ImageViewHolder viewHolder, int pos) { // TODO make all that method less ugly
+    public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) { // TODO make all that method less ugly
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()
-                && TYPE_OTHER == viewHolder.imgType) {
-            CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) viewHolder.imgView;
+                && TYPE_OTHER == holder.imgType) {
+            CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) holder.imgView;
             ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
             if (!Preferences.isViewerZoomTransitions()) ssView.setDoubleTapZoomDuration(10);
         }
 
         int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
-        ViewGroup.LayoutParams layoutParams = viewHolder.imgView.getLayoutParams();
+        ViewGroup.LayoutParams layoutParams = holder.imgView.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = layoutStyle;
-        viewHolder.imgView.setLayoutParams(layoutParams);
-        viewHolder.setImage(images.get(pos));
+        holder.imgView.setLayoutParams(layoutParams);
+        ImageFile img = getImageAt(position);
+        if (img != null) holder.setImage(img);
     }
-
 
     @Override
     public void onViewRecycled(@NonNull ImageViewHolder holder) {
@@ -140,7 +133,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
     @Nullable
     public ImageFile getImageAt(int position) {
-        return (position >= 0 && position < images.size()) ? images.get(position) : null;
+        return (position >= 0 && position < getItemCount()) ? getItem(position) : null;
     }
 
     public void resetScaleAtPosition(int position) {
@@ -154,6 +147,21 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
         maxBitmapWidth = maxWidth;
         maxBitmapHeight = maxHeight;
     }
+
+    private static final DiffUtil.ItemCallback<ImageFile> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<ImageFile>() {
+                @Override
+                public boolean areItemsTheSame(
+                        @NonNull ImageFile oldAttr, @NonNull ImageFile newAttr) {
+                    return oldAttr.getId() == newAttr.getId();
+                }
+
+                @Override
+                public boolean areContentsTheSame(
+                        @NonNull ImageFile oldAttr, @NonNull ImageFile newAttr) {
+                    return oldAttr.getOrder().equals(newAttr.getOrder()) && oldAttr.getStatus().equals(newAttr.getStatus());
+                }
+            };
 
     final class ImageViewHolder extends RecyclerView.ViewHolder implements CustomSubsamplingScaleImageView.OnImageEventListener, RequestListener<Drawable> {
 

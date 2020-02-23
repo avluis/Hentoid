@@ -677,6 +677,14 @@ public class ObjectBoxDB {
         else return null;
     }
 
+    Query<ImageFile> getDownloadedImagesFromContent(long id) {
+        QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
+        builder.equal(ImageFile_.contentId, id);
+        builder.equal(ImageFile_.status, StatusContent.DOWNLOADED.getCode());
+        builder.order(ImageFile_.order);
+        return builder.build();
+    }
+
     void insertSiteHistory(@NonNull Site site, @NonNull String url) {
         SiteHistory siteHistory = getHistory(site);
         if (siteHistory != null) {

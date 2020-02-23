@@ -367,8 +367,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param images Book's list of images
      */
     private void onImagesChanged(List<ImageFile> images) {
-        adapter.setImages(images);
-        onUpdateImageDisplay(); // Remove cached images
+        adapter.submitList(images);
 
         maxPosition = images.size() - 1;
         seekBar.setMax(maxPosition);

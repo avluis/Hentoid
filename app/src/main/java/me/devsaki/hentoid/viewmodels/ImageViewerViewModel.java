@@ -11,6 +11,7 @@ import androidx.annotation.WorkerThread;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.annimon.stream.Stream;
@@ -28,6 +29,8 @@ import javax.annotation.Nonnull;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
@@ -35,7 +38,6 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -45,10 +47,9 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static com.annimon.stream.Collectors.toList;
 
 
-public class ImageViewerViewModel extends AndroidViewModel implements PagedResultListener<Long> {
+public class ImageViewerViewModel extends AndroidViewModel {
 
     private static final String KEY_IS_SHUFFLED = "is_shuffled";
 
@@ -63,15 +64,16 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
     private List<Long> contentIds = Collections.emptyList();                         // Content Ids of the whole collection ordered according to current filter
     private int currentContentIndex = -1;                                            // Index of current content within the above list
-    private long loadedContentId = -1;                                               // Content ID that has been initially loaded
+    private long loadedBookId = -1;                                                  // ID of currently loaded book
 
     // Pictures data
-    private final MutableLiveData<List<ImageFile>> images = new MutableLiveData<>();    // Currently displayed set of images
+    private LiveData<List<ImageFile>> currentImageSource;
+    private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();    // Currently displayed set of images
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
 
     // Technical
-    private ContentSearchManager searchManager = null;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private Disposable searchDisposable = Disposables.empty();
 
 
     public ImageViewerViewModel(@NonNull Application application) {
@@ -116,30 +118,65 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     }
 
     public void loadFromSearchParams(long contentId, @Nonnull Bundle bundle) {
-        loadedContentId = contentId;
-        searchManager = new ContentSearchManager(collectionDao);
+        // Technical
+        ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
         searchManager.loadFromBundle(bundle);
-        searchManager.searchLibraryForId(this);
-    }
 
-    @Override
-    public void onPagedResultReady(List<Long> results, long totalSelectedContent, long totalContent) {
-        contentIds = results;
-        loadFromContent(loadedContentId);
-    }
-
-    @Override
-    public void onPagedResultFailed(Long contentId, String message) {
-        ToastUtil.toast("Book list loading failed");
+        searchDisposable.dispose();
+        searchDisposable = searchManager.searchLibraryForId().subscribe(
+                list -> {
+                    contentIds = list;
+                    loadFromContent(contentId);
+                },
+                throwable -> {
+                    Timber.w(throwable);
+                    ToastUtil.toast("Book list loading failed");
+                }
+        );
     }
 
     public void setStartingIndex(int index) {
         startingIndex.setValue(index);
     }
 
-    private void setImages(List<ImageFile> imgs) {
-        List<ImageFile> list = new ArrayList<>(imgs);
-        sortAndSetImages(list, isShuffled);
+    private void setImages(@NonNull Content content, @NonNull List<ImageFile> imgs) {
+        // Load new content
+        File[] pictureFiles = ContentHelper.getPictureFilesFromContent(content); // TODO this is called too often when viewing a queued book -> optimize !
+        if (pictureFiles != null && pictureFiles.length > 0) {
+            List<ImageFile> imageFiles;
+            if (imgs.isEmpty()) {
+                imageFiles = filesToImageList(pictureFiles);
+                content.setImageFiles(imageFiles);
+                collectionDao.insertContent(content);
+            } else {
+                imageFiles = new ArrayList<>(imgs);
+                matchFilesToImageList(pictureFiles, imageFiles);
+            }
+            sortAndSetImages(imageFiles, isShuffled);
+
+            if(content.getId() != loadedBookId) { // To be done once per book only
+                if (Preferences.isViewerResumeLastLeft())
+                    setStartingIndex(content.getLastReadPageIndex());
+                else
+                    setStartingIndex(0);
+            }
+
+            loadedBookId = content.getId();
+
+            // Cache JSON and record 1 more view for the new content
+            compositeDisposable.add(
+                    Single.fromCallable(() -> postLoadProcessing(content))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    v -> {
+                                    },
+                                    Timber::e
+                            )
+            );
+        } else {
+            ToastUtil.toast(R.string.no_images);
+        }
     }
 
     public void onShuffleClick() {
@@ -155,16 +192,17 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
             Collections.shuffle(imgs);
         } else {
             // Sort images according to their Order
-            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).collect(toList());
+            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).toList();
         }
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
+
         images.setValue(imgs);
     }
 
     @Override
     protected void onCleared() {
         super.onCleared();
-        if (searchManager != null) searchManager.dispose();
+        searchDisposable.dispose();
         compositeDisposable.clear();
     }
 
@@ -260,7 +298,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         loadFromContent(contentIds.get(currentContentIndex));
     }
 
-    private void processContent(Content theContent) {
+    private void processContent(@NonNull Content theContent) {
         currentContentIndex = contentIds.indexOf(theContent.getId());
         if (-1 == currentContentIndex) currentContentIndex = 0;
 
@@ -268,39 +306,11 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         theContent.setLast(currentContentIndex >= contentIds.size() - 1);
         content.setValue(theContent);
 
-        // Load new content
-        File[] pictureFiles = ContentHelper.getPictureFilesFromContent(theContent);
-        if (pictureFiles != null && pictureFiles.length > 0) {
-            List<ImageFile> imageFiles;
-            if (null == theContent.getImageFiles() || theContent.getImageFiles().isEmpty()) {
-                imageFiles = new ArrayList<>();
-                saveFilesToImageList(pictureFiles, imageFiles, theContent);
-            } else {
-                imageFiles = new ArrayList<>(theContent.getImageFiles());
-                matchFilesToImageList(pictureFiles, imageFiles);
-            }
-            setImages(imageFiles);
-
-            if (Preferences.isViewerResumeLastLeft()) {
-                setStartingIndex(theContent.getLastReadPageIndex());
-            } else {
-                setStartingIndex(0);
-            }
-
-            // Cache JSON and record 1 more view for the new content
-            compositeDisposable.add(
-                    Single.fromCallable(() -> postLoadProcessing(theContent))
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(
-                                    v -> {
-                                    },
-                                    Timber::e
-                            )
-            );
-        } else {
-            ToastUtil.toast(R.string.no_images);
-        }
+        // Observe the content's images
+        // NB : It has to be dynamic to be updated when viewing a book from the queue screen
+        if (currentImageSource != null) images.removeSource(currentImageSource);
+        currentImageSource = collectionDao.getDownloadedImagesFromContent(theContent.getId());
+        images.addSource(currentImageSource, imgs -> setImages(theContent, imgs));
     }
 
     private static void matchFilesToImageList(File[] files, @Nonnull List<ImageFile> images) {
@@ -335,19 +345,18 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         }
     }
 
-    private void saveFilesToImageList(File[] files, @Nonnull List<ImageFile> images, @Nonnull Content content) {
-        int order = 0;
+    private List<ImageFile> filesToImageList(@NonNull File[] files) {
+        List<ImageFile> result = new ArrayList<>();
+        int order = 1;
         // Sort files by name alpha
-        List<File> fileList = Stream.of(files).sortBy(File::getName).collect(toList());
+        List<File> fileList = Stream.of(files).sortBy(File::getName).toList();
         for (File f : fileList) {
-            order++;
             ImageFile img = new ImageFile();
             String name = FileHelper.getFileNameWithoutExtension(f.getName());
-            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setAbsolutePath(f.getAbsolutePath());
-            images.add(img);
+            img.setName(name).setOrder(order++).setUrl("").setStatus(StatusContent.DOWNLOADED).setAbsolutePath(f.getAbsolutePath());
+            result.add(img);
         }
-        content.setImageFiles(images);
-        collectionDao.insertContent(content);
+        return result;
     }
 
     @WorkerThread
