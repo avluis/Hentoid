@@ -46,8 +46,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private View.OnTouchListener itemTouchListener;
     private RecyclerView recyclerView;
 
-//    private List<ImageFile> images = new ArrayList<>();
-
     // To preload images before they appear on screen with SubsamplingScaleImageView
     private int maxBitmapWidth = -1;
     private int maxBitmapHeight = -1;
