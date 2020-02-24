@@ -78,6 +78,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
     private RecyclerView.SmoothScroller smoothScroller;
+    private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onCurrentPositionChange);
     private Timer slideshowTimer = null;
 
     // Controls
@@ -220,7 +221,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView = requireViewById(rootView, R.id.image_viewer_zoom_recycler);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
-        recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
+        recyclerView.addOnScrollListener(scrollListener);
         recyclerView.setOnKeyListener(volumeGestureListener);
         recyclerView.setOnGetMaxDimensionsListener(this::onGetMaxDimensions);
         recyclerView.requestFocus();
@@ -864,6 +865,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
 
         ToastUtil.toast(String.format("Starting slideshow (delay %ss)", delaySec));
+        scrollListener.disableScroll();
 
         slideshowTimer = new Timer("slideshow");
         slideshowTimer.schedule(new TimerTask() {
@@ -876,9 +878,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void stopSlideshow() {
         if (slideshowTimer != null) {
-            ToastUtil.toast("Slideshow stopped");
             slideshowTimer.cancel();
             slideshowTimer = null;
+            scrollListener.enableScroll();
+            ToastUtil.toast("Slideshow stopped");
         }
     }
 }

@@ -11,6 +11,7 @@ import me.devsaki.hentoid.util.Preferences;
 public final class ScrollPositionListener extends RecyclerView.OnScrollListener {
 
     private final IntConsumer onPositionChangeListener;
+    private boolean isScrollEnabled = true;
 
     public ScrollPositionListener(IntConsumer onPositionChangeListener) {
         this.onPositionChangeListener = onPositionChangeListener;
@@ -31,8 +32,16 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
     @Override
     public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
         super.onScrollStateChanged(recyclerView, newState);
-        if (!Preferences.isViewerSwipeToTurn()) {
+        if (!Preferences.isViewerSwipeToTurn() || !isScrollEnabled) {
             recyclerView.stopScroll();
         }
+    }
+
+    public void disableScroll() {
+        isScrollEnabled = false;
+    }
+
+    public void enableScroll() {
+        isScrollEnabled = true;
     }
 }
