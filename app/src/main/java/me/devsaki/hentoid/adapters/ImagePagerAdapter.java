@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.adapters;
 
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,7 +20,15 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.github.penfeizhou.animation.apng.APNGDrawable;
+import com.github.penfeizhou.animation.io.FilterReader;
+import com.github.penfeizhou.animation.io.Reader;
+import com.github.penfeizhou.animation.io.StreamReader;
+import com.github.penfeizhou.animation.loader.Loader;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.Executor;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -37,7 +47,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     private static final int TYPE_OTHER = 0;    // PNGs and JPEGs -> use CustomSubsamplingScaleImageView
     private static final int TYPE_GIF = 1;      // Static and animated GIFs -> use native Glide
-    private static final int TYPE_APNG = 2;     // Animated PNGs -> use APNG4Android lib through Glide
+    private static final int TYPE_APNG = 2;     // Animated PNGs -> use APNG4Android library
 
     private static final int PX_600_DP = Helper.dpToPixel(HentoidApp.getInstance(), 600);
 
@@ -93,7 +103,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
         View view;
         if (TYPE_GIF == viewType || TYPE_APNG == viewType) {
-            view = inflater.inflate(R.layout.item_viewer_image_glide, viewGroup, false);
+            view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
         } else if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
             ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
@@ -184,15 +194,18 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             this.img = img;
             String uri = img.getAbsolutePath();
             Timber.i(">>>>IMG %s %s", imgType, uri);
-
-            if (TYPE_GIF == imgType || TYPE_APNG == imgType) {
+            if (TYPE_GIF == imgType) {
                 ImageView view = (ImageView) imgView;
-                Glide.with(imgView.getContext().getApplicationContext())
+                Glide.with(imgView)
                         .load(uri)
                         .apply(glideRequestOptions)
                         .listener(this)
                         .into(view);
+            } else if (TYPE_APNG == imgType) {
+                ImageView view = (ImageView) imgView;
 
+                APNGDrawable apngDrawable = new APNGDrawable(new ImgLoader(uri));
+                view.setImageDrawable(apngDrawable);
             } else {
                 CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
                 ssView.recycle();
@@ -271,4 +284,43 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             return false;
         }
     }
+
+    /**
+     * Custom image loaders for APNG4Android to work with files located in SAF area
+     */
+    static class ImgLoader implements Loader {
+
+        private String path;
+
+        ImgLoader(String path) {
+            this.path = path;
+        }
+
+        @Override
+        public synchronized Reader obtain() throws IOException {
+            DocumentFile file = FileHelper.getDocumentFile(new File(path), false); // Helper to get a DocumentFile out of the given File
+            if (null == file || !file.exists()) return null; // Not triggered
+            return new ImgReader(file.getUri());
+        }
+    }
+
+    static class ImgReader extends FilterReader {
+        private Uri uri;
+
+        private static InputStream getInputStream(Uri uri) throws IOException {
+            return HentoidApp.getInstance().getContentResolver().openInputStream(uri);
+        }
+
+        ImgReader(Uri uri) throws IOException {
+            super(new StreamReader(getInputStream(uri)));
+            this.uri = uri;
+        }
+
+        @Override
+        public void reset() throws IOException {
+            reader.close();
+            reader = new StreamReader(getInputStream(uri));
+        }
+    }
+
 }

@@ -307,7 +307,7 @@ public class FileHelper {
         return FileUtil.getOutputStream(target);
     }
 
-    static InputStream getInputStream(@NonNull final File target) throws IOException {
+    public static InputStream getInputStream(@NonNull final File target) throws IOException {
         return FileUtil.getInputStream(target);
     }
 

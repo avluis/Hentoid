@@ -189,8 +189,7 @@ dependencies {
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:1.3.1'
-    implementation 'com.github.penfeizhou.android.animation:glide-plugin:1.3.1'
+    implementation 'com.github.penfeizhou.android.animation:apng:1.3.3'
 
     // https://github.com/mikepenz/FastAdapter
     implementation "com.mikepenz:fastadapter:5.0.0-a03" // needs the `expandable`, `drag` and `scroll` extension.
