@@ -287,6 +287,10 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_SLIDESHOW_DELAY, Integer.toString(Default.PREF_VIEWER_SLIDESHOW_DELAY)) + "");
     }
 
+    public static int getViewerSeparatingBars() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_SEPARATING_BARS, Integer.toString(Default.PREF_VIEWER_SEPARATING_BARS)) + "");
+    }
+
     public static int getLastKnownAppVersionCode() {
         return Integer.parseInt(sharedPreferences.getString(Key.LAST_KNOWN_APP_VERSION_CODE, "0") + "");
     }

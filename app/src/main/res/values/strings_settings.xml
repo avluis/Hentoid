@@ -144,7 +144,7 @@
     <bool name="pref_viewer_tap_transitions_default" translatable="false">true</bool>
     <string name="pref_viewer_zoom_transitions">Enable zoom animation</string>
     <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
-    <string name="pref_viewer_separating_bars">Separating bars in vertical mode (WIP)</string>
+    <string name="pref_viewer_separating_bars">Separating bars in vertical mode</string>
     <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
 
     <string name="pref_viewer_navigation">Navigation &amp; behaviour</string>

@@ -61,9 +61,32 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private int maxBitmapWidth = -1;
     private int maxBitmapHeight = -1;
 
+    // Cached prefs
+    private int separatingBarsHeight;
+    private int viewerOrientation;
+
 
     public ImagePagerAdapter() {
         super(DIFF_CALLBACK);
+        refreshPrefs();
+    }
+
+    public void refreshPrefs() {
+        int separatingBarsPrefs = Preferences.getViewerSeparatingBars();
+        switch (separatingBarsPrefs) {
+            case Preferences.Constant.PREF_VIEWER_SEPARATING_BARS_SMALL:
+                separatingBarsHeight = 4;
+                break;
+            case Preferences.Constant.PREF_VIEWER_SEPARATING_BARS_MEDIUM:
+                separatingBarsHeight = 16;
+                break;
+            case Preferences.Constant.PREF_VIEWER_SEPARATING_BARS_LARGE:
+                separatingBarsHeight = 64;
+                break;
+            default:
+                separatingBarsHeight = 0;
+        }
+        viewerOrientation = Preferences.getViewerOrientation();
     }
 
     public void setRecyclerView(RecyclerView v) {
@@ -104,7 +127,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         View view;
         if (TYPE_GIF == viewType || TYPE_APNG == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
-        } else if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
+        } else if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
             ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
         } else {
@@ -115,14 +138,14 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) { // TODO make all that method less ugly
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation
                 && TYPE_OTHER == holder.imgType) {
             CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) holder.imgView;
             ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
             if (!Preferences.isViewerZoomTransitions()) ssView.setDoubleTapZoomDuration(10);
         }
 
-        int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+        int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
         ViewGroup.LayoutParams layoutParams = holder.imgView.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = layoutStyle;
@@ -135,7 +158,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public void onViewRecycled(@NonNull ImageViewHolder holder) {
         // Set the holder back to its original constraints while in vertical mode
         // (not doing this will cause super high memory usage by trying to load _all_ images)
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation())
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
             holder.imgView.setMinimumHeight(PX_600_DP);
 
         super.onViewRecycled(holder);
@@ -232,14 +255,18 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             }
         }
 
-        private void adjustHeight() {
-            imgView.setMinimumHeight(0); // TODO - use this to create separation bars in vertical mode (#419)
+        private void adjustHeight(int imgHeight) {
+            int targetHeight = imgHeight + separatingBarsHeight;
+            imgView.setMinimumHeight(targetHeight);
         }
 
         // == SUBSAMPLINGSCALEVIEW CALLBACKS
         @Override
         public void onReady() {
-            adjustHeight();
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+                CustomSubsamplingScaleImageView scaleView = (CustomSubsamplingScaleImageView) imgView;
+                adjustHeight((int) (scaleView.getScale() * scaleView.getSHeight()));
+            }
         }
 
         @Override
@@ -280,7 +307,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         @Override
         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-            adjustHeight();
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+                adjustHeight(resource.getIntrinsicHeight());
             return false;
         }
     }

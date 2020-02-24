@@ -528,6 +528,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             case Preferences.Key.PREF_VIEWER_KEEP_SCREEN_ON:
                 onUpdatePrefsScreenOn();
                 break;
+            case Preferences.Key.PREF_VIEWER_SEPARATING_BARS:
             case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY:
                 onUpdateImageDisplay();
                 break;
@@ -562,6 +563,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onUpdateImageDisplay() {
+        adapter.refreshPrefs();
         adapter.notifyDataSetChanged(); // NB : will re-run onBindViewHolder for all displayed pictures
     }
 
