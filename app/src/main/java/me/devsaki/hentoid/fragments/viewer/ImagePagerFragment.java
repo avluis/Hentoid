@@ -29,6 +29,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.annotation.Nonnull;
 
@@ -39,6 +41,7 @@ import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.views.ZoomableFrame;
 import me.devsaki.hentoid.views.ZoomableRecyclerView;
@@ -51,6 +54,7 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
+import static me.devsaki.hentoid.util.Preferences.Constant;
 
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
@@ -74,6 +78,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
     private RecyclerView.SmoothScroller smoothScroller;
+    private Timer slideshowTimer = null;
 
     // Controls
     private TextView pageNumberOverlay;
@@ -124,6 +129,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                     break;
                 case R.id.action_shuffle:
                     onShuffleClick();
+                    break;
+                case R.id.action_slideshow:
+                    startSlideshow();
                     break;
                 default:
                     // Nothing to do here
@@ -704,6 +712,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Handler for tapping on the left zone of the screen
      */
     private void onLeftTap() {
+        // Stop slideshow if it is on
+        if (slideshowTimer != null) {
+            stopSlideshow();
+            return;
+        }
+
         // Side-tapping disabled when view is zoomed
         if (recyclerView.getCurrentScale() != 1.0) return;
         // Side-tapping disabled when disabled in preferences
@@ -719,6 +733,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Handler for tapping on the right zone of the screen
      */
     private void onRightTap() {
+        // Stop slideshow if it is on
+        if (slideshowTimer != null) {
+            stopSlideshow();
+            return;
+        }
+
         // Side-tapping disabled when view is zoomed
         if (recyclerView.getCurrentScale() != 1.0) return;
         // Side-tapping disabled when disabled in preferences
@@ -734,31 +754,44 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Handler for tapping on the middle zone of the screen
      */
     private void onMiddleTap() {
-        if (View.VISIBLE == controlsOverlay.getVisibility()) {
-            controlsOverlay.animate()
-                    .alpha(0.0f)
-                    .setDuration(100)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            controlsOverlay.setVisibility(View.INVISIBLE);
-                        }
-                    });
-            setSystemBarsVisible(false);
-        } else {
-            controlsOverlay.animate()
-                    .alpha(1.0f)
-                    .setDuration(100)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            controlsOverlay.setVisibility(View.VISIBLE);
-                            setSystemBarsVisible(true);
-                        }
-                    });
+        // Stop slideshow if it is on
+        if (slideshowTimer != null) {
+            stopSlideshow();
+            return;
         }
+
+        if (View.VISIBLE == controlsOverlay.getVisibility())
+            hideControlsOverlay();
+        else
+            showControlsOverlay();
+    }
+
+    private void showControlsOverlay() {
+        controlsOverlay.animate()
+                .alpha(1.0f)
+                .setDuration(100)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        controlsOverlay.setVisibility(View.VISIBLE);
+                        setSystemBarsVisible(true);
+                    }
+                });
+    }
+
+    private void hideControlsOverlay() {
+        controlsOverlay.animate()
+                .alpha(0.0f)
+                .setDuration(100)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        controlsOverlay.setVisibility(View.INVISIBLE);
+                    }
+                });
+        setSystemBarsVisible(false);
     }
 
     /**
@@ -806,5 +839,46 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void onGetMaxDimensions(Point maxDimensions) {
         adapter.setMaxDimensions(maxDimensions.x, maxDimensions.y);
+    }
+
+    private void startSlideshow() {
+        // Hide UI
+        hideControlsOverlay();
+
+        // Compute slideshow delay
+        int delayPref = Preferences.getViewerSlideshowDelay();
+        int delaySec;
+
+        switch (delayPref) {
+            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_4:
+                delaySec = 4;
+                break;
+            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_8:
+                delaySec = 8;
+                break;
+            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_16:
+                delaySec = 16;
+                break;
+            default:
+                delaySec = 2;
+        }
+
+        ToastUtil.toast(String.format("Starting slideshow (delay %ss)", delaySec));
+
+        slideshowTimer = new Timer("slideshow");
+        slideshowTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                nextPage();
+            }
+        }, delaySec * 1000, delaySec * 1000);
+    }
+
+    private void stopSlideshow() {
+        if (slideshowTimer != null) {
+            ToastUtil.toast("Slideshow stopped");
+            slideshowTimer.cancel();
+            slideshowTimer = null;
+        }
     }
 }

@@ -156,6 +156,6 @@
     <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
     <string name="pref_viewer_read_threshold">Mark book as read after N pages</string>
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
-    <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page (WIP)</string>
+    <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
 </resources>

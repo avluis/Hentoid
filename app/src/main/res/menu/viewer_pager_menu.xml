@@ -4,6 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".activities.ImageViewerActivity">
     <item
+        android:id="@+id/action_slideshow"
+        android:enabled="true"
+        android:icon="@drawable/ic_slideshow"
+        android:orderInCategory="0"
+        android:title="@string/viewer_favourite_off"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_favourite_page"
         android:enabled="true"
         android:icon="@drawable/ic_fav_empty"
