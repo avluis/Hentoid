@@ -229,13 +229,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ImageView view = (ImageView) imgView;
 
                 APNGDrawable apngDrawable = new APNGDrawable(new ImgLoader(uri));
-                apngDrawable.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
-                    @Override
-                    public void onAnimationStart(Drawable drawable) {
-                        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
-                            adjustHeight(drawable.getIntrinsicHeight());
-                    }
-                });
+                apngDrawable.registerAnimationCallback(animationCallback);
                 view.setImageDrawable(apngDrawable);
             } else {
                 CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
@@ -319,6 +313,16 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 adjustHeight(resource.getIntrinsicHeight());
             return false;
         }
+
+
+        // == APNG4Android ANIMATION CALLBACK
+        private final Animatable2Compat.AnimationCallback animationCallback = new Animatable2Compat.AnimationCallback() {
+            @Override
+            public void onAnimationStart(Drawable drawable) {
+                if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+                    adjustHeight(drawable.getIntrinsicHeight());
+            }
+        };
     }
 
     /**
