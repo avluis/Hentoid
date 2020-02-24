@@ -13,6 +13,7 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -228,6 +229,13 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ImageView view = (ImageView) imgView;
 
                 APNGDrawable apngDrawable = new APNGDrawable(new ImgLoader(uri));
+                apngDrawable.registerAnimationCallback(new Animatable2Compat.AnimationCallback() {
+                    @Override
+                    public void onAnimationStart(Drawable drawable) {
+                        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+                            adjustHeight(drawable.getIntrinsicHeight());
+                    }
+                });
                 view.setImageDrawable(apngDrawable);
             } else {
                 CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
