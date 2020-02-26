@@ -17,6 +17,7 @@ import android.graphics.RectF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -175,6 +176,10 @@ public class CustomSubsamplingScaleImageView extends View {
      * State change originated from a double tap zoom anim.
      */
     public static final int ORIGIN_DOUBLE_TAP_ZOOM = 4;
+    /**
+     * State change originated from a long tap zoom anim.
+     */
+    public static final int ORIGIN_LONG_TAP_ZOOM = 5;
 
 
     private static final String ANIMATION_LISTENER_ERROR = "Error thrown by animation listener";
@@ -234,6 +239,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private boolean panEnabled = true;
     private boolean zoomEnabled = true;
     private boolean quickScaleEnabled = true;
+    private boolean longTapZoomEnabled = true;
 
     // Double tap zoom behaviour
     private float doubleTapZoomScale = 1F;
@@ -267,6 +273,8 @@ public class CustomSubsamplingScaleImageView extends View {
     private boolean isPanning;
     // Is quick-scale gesture in progress
     private boolean isQuickScaling;
+    // Is long tap zoom in progress
+    private boolean isLongTapZooming;
     // Max touches used in current gesture
     private int maxTouchCount;
 
@@ -347,11 +355,14 @@ public class CustomSubsamplingScaleImageView extends View {
         setMinimumTileDpi(320);
         setGestureDetector(context);
         this.handler = new Handler(message -> {
-            if (message.what == MESSAGE_LONG_CLICK && onLongClickListener != null) {
-                maxTouchCount = 0;
-                CustomSubsamplingScaleImageView.super.setOnLongClickListener(onLongClickListener);
-                performLongClick();
-                CustomSubsamplingScaleImageView.super.setOnLongClickListener(null);
+            if (message.what == MESSAGE_LONG_CLICK) {
+                if (onLongClickListener != null) {
+                    maxTouchCount = 0;
+                    CustomSubsamplingScaleImageView.super.setOnLongClickListener(onLongClickListener);
+                    performLongClick();
+                    CustomSubsamplingScaleImageView.super.setOnLongClickListener(null);
+                }
+                if (longTapZoomEnabled) longTapZoom(message.arg1, message.arg2);
             }
             return true;
         });
@@ -547,6 +558,7 @@ public class CustomSubsamplingScaleImageView extends View {
         isZooming = false;
         isPanning = false;
         isQuickScaling = false;
+        isLongTapZooming = false;
         maxTouchCount = 0;
         fullImageSampleSize = 0;
         vCenterStart = null;
@@ -669,6 +681,32 @@ public class CustomSubsamplingScaleImageView extends View {
                 return true;
             }
         });
+    }
+
+    public void longTapZoom(int x, int y) {
+        if (zoomEnabled && longTapZoomEnabled && readySent && vTranslate != null) {
+
+            isPanning = true;
+            vCenterStart = new PointF(x, y);
+            vTranslateStart = new PointF(vTranslate.x, vTranslate.y);
+
+            PointF sCenter = viewToSourceCoord(new PointF(x, y));
+            if (null == sCenter)
+                throw new IllegalStateException("vTranslate is null; aborting");
+
+            float doubleTapZoomScale = Math.min(maxScale, this.doubleTapZoomScale); // TODO factorize
+            new AnimationBuilder(doubleTapZoomScale, vCenterStart).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(ORIGIN_LONG_TAP_ZOOM).start();
+
+            isLongTapZooming = true;
+
+            float vLeftStart = vCenterStart.x - vTranslateStart.x;
+            float vTopStart = vCenterStart.y - vTranslateStart.y;
+            float vLeftNow = vLeftStart * doubleTapZoomScale;
+            float vTopNow = vTopStart * doubleTapZoomScale;
+            vTranslate.x = vCenterStart.x - vLeftNow;
+            vTranslate.y = vCenterStart.y - vTopNow;
+            vTranslateStart.set(vTranslate);
+        }
     }
 
     /**
@@ -805,7 +843,11 @@ public class CustomSubsamplingScaleImageView extends View {
                     vCenterStart.set(event.getX(), event.getY());
 
                     // Start long click timer
-                    handler.sendEmptyMessageDelayed(MESSAGE_LONG_CLICK, 600);
+                    Message m = new Message();
+                    m.what = MESSAGE_LONG_CLICK;
+                    m.arg1 = Math.round(event.getX());
+                    m.arg2 = Math.round(event.getY());
+                    handler.sendMessageDelayed(m, 500);
                 }
                 return true;
             case MotionEvent.ACTION_MOVE:
@@ -918,6 +960,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     } else if (!isZooming) {
                         // One finger pan - translate the image. We do this calculation even with pan disabled so click
                         // and long click behaviour is preserved.
+
                         float dx = Math.abs(event.getX() - vCenterStart.x);
                         float dy = Math.abs(event.getY() - vCenterStart.y);
 
@@ -990,6 +1033,12 @@ public class CustomSubsamplingScaleImageView extends View {
                         isPanning = false;
                         maxTouchCount = 0;
                     }
+
+                    if (isLongTapZooming) {
+                        isLongTapZooming = false;
+                        resetScaleAndCenter();
+                    }
+
                     // Trigger load of tiles now required
                     refreshRequiredTiles(true);
                     return true;
@@ -998,6 +1047,11 @@ public class CustomSubsamplingScaleImageView extends View {
                     isZooming = false;
                     isPanning = false;
                     maxTouchCount = 0;
+
+                    if (isLongTapZooming) {
+                        isLongTapZooming = false;
+                        resetScaleAndCenter();
+                    }
                 }
                 return true;
         }
@@ -1027,7 +1081,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 sCenter.y = sHeight() / 2f;
             }
         }
-        float doubleTapZoomScale = Math.min(maxScale, CustomSubsamplingScaleImageView.this.doubleTapZoomScale);
+        float doubleTapZoomScale = Math.min(maxScale, this.doubleTapZoomScale);
         boolean zoomIn = (scale <= doubleTapZoomScale * 0.9) || scale == minScale;
         float targetScale = zoomIn ? doubleTapZoomScale : minScale();
         if (doubleTapZoomStyle == ZOOM_FOCUS_CENTER_IMMEDIATE) {
