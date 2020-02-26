@@ -29,11 +29,14 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
@@ -79,7 +82,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private boolean hasGalleryBeenShown = false;
     private RecyclerView.SmoothScroller smoothScroller;
     private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onCurrentPositionChange);
-    private Timer slideshowTimer = null;
+    private Disposable slideshowTimer = null;
 
     // Controls
     private TextView pageNumberOverlay;
@@ -203,6 +206,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void onStop() {
         viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
+        if (slideshowTimer != null) slideshowTimer.dispose();
         super.onStop();
     }
 
@@ -528,6 +532,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             case Preferences.Key.PREF_VIEWER_KEEP_SCREEN_ON:
                 onUpdatePrefsScreenOn();
                 break;
+            case Preferences.Key.PREF_VIEWER_ZOOM_TRANSITIONS:
             case Preferences.Key.PREF_VIEWER_SEPARATING_BARS:
             case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY:
                 onUpdateImageDisplay();
@@ -869,18 +874,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         ToastUtil.toast(String.format("Starting slideshow (delay %ss)", delaySec));
         scrollListener.disableScroll();
 
-        slideshowTimer = new Timer("slideshow");
-        slideshowTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                nextPage();
-            }
-        }, delaySec * 1000, delaySec * 1000);
+        slideshowTimer = Observable.timer(delaySec, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.newThread())
+                .repeat()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(v -> nextPage());
     }
 
     private void stopSlideshow() {
         if (slideshowTimer != null) {
-            slideshowTimer.cancel();
+            slideshowTimer.dispose();
             slideshowTimer = null;
             scrollListener.enableScroll();
             ToastUtil.toast("Slideshow stopped");

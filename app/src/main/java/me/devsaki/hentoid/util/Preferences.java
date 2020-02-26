@@ -402,7 +402,7 @@ public final class Preferences {
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         public static final String PREF_VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling";
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
-        static final String PREF_VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions";
+        public static final String PREF_VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
         public static final String PREF_VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
