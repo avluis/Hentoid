@@ -67,6 +67,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
+    private static final String KEY_SLIDESHOW_ON = "slideshow_on";
+
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
@@ -173,6 +175,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         super.onSaveInstanceState(outState);
         if (controlsOverlay != null)
             outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
+        outState.putBoolean(KEY_SLIDESHOW_ON, (slideshowTimer != null));
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         if (viewModel != null) {
             viewModel.setStartingIndex(imageIndex); // Memorize the current page
@@ -187,6 +190,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         if (savedInstanceState != null) {
             hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE);
             hasGalleryBeenShown = savedInstanceState.getBoolean(KEY_GALLERY_SHOWN, false);
+            if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) startSlideshow(false);
         }
         controlsOverlay.setVisibility(hudVisibility);
     }
@@ -850,6 +854,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void startSlideshow() {
+        startSlideshow(true);
+    }
+    private void startSlideshow(boolean showToast) {
         // Hide UI
         hideControlsOverlay();
 
@@ -871,7 +878,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 delaySec = 2;
         }
 
-        ToastUtil.toast(String.format("Starting slideshow (delay %ss)", delaySec));
+        if (showToast) ToastUtil.toast(String.format("Starting slideshow (delay %ss)", delaySec));
         scrollListener.disableScroll();
 
         slideshowTimer = Observable.timer(delaySec, TimeUnit.SECONDS)
