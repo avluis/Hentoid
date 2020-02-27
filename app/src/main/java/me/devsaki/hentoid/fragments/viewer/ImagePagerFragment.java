@@ -594,9 +594,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.resetScale();
         adapter.notifyDataSetChanged();
 
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation())
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
             zoomFrame.enable();
-        else zoomFrame.disable();
+            recyclerView.setLongTapZoomEnabled(true); // TODO parametrize this
+        }
+        else {
+            zoomFrame.disable();
+            recyclerView.setLongTapZoomEnabled(false); // TODO parametrize this
+        }
 
         llm.setOrientation(getOrientation());
         pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation());

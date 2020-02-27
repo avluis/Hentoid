@@ -41,6 +41,7 @@ public class ZoomableRecyclerView extends RecyclerView {
     private static final float MAX_SCALE_RATE = 3f;
 
     private boolean isZooming = false;
+    private boolean isLongTapZooming = false;
     private boolean atLastPosition = false;
 
     private boolean atFirstPosition = false;
@@ -60,6 +61,8 @@ public class ZoomableRecyclerView extends RecyclerView {
 
     // Hack to access these values outside of a View
     private Point maxBitmapDimensions = null;
+
+    private boolean longTapZoomEnabled = true;
 
     @Override
     public void onDraw(Canvas c) {
@@ -98,6 +101,10 @@ public class ZoomableRecyclerView extends RecyclerView {
 
     public void setOnScaleListener(DoubleConsumer scaleListener) {
         this.scaleListener = scaleListener;
+    }
+
+    public void setLongTapZoomEnabled(boolean longTapZoomEnabled) {
+        this.longTapZoomEnabled = longTapZoomEnabled;
     }
 
     public interface LongTapListener {
@@ -300,6 +307,19 @@ public class ZoomableRecyclerView extends RecyclerView {
             if (longTapListener != null && longTapListener.onListen(ev)) {
                 performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             }
+            if (longTapZoomEnabled) {
+                longTapZoom(ev);
+            }
+        }
+
+        private void longTapZoom(MotionEvent ev) {
+            if (isZooming) return;
+
+            float toScale = 2f;
+            float toX = (halfWidth - ev.getX()) * (toScale - 1);
+            float toY = (halfHeight - ev.getY()) * (toScale - 1);
+            isLongTapZooming = true;
+            zoom(DEFAULT_RATE, toScale, 0f, toX, 0f, toY);
         }
 
         @Override
@@ -418,6 +438,10 @@ public class ZoomableRecyclerView extends RecyclerView {
         private void motionActionUpLocal(MotionEvent ev) {
             if (isDoubleTapping && !isQuickScaling) {
                 listener.onDoubleTapConfirmed(ev);
+            }
+            if (isLongTapZooming) {
+                zoom(currentScale, DEFAULT_RATE, getX(), 0f, getY(), 0f);
+                isLongTapZooming = false;
             }
             isZoomDragging = false;
             isDoubleTapping = false;
