@@ -65,6 +65,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     // Cached prefs
     private int separatingBarsHeight;
     private int viewerOrientation;
+    private boolean longTapZoomEnabled;
 
 
     public ImagePagerAdapter() {
@@ -88,6 +89,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 separatingBarsHeight = 0;
         }
         viewerOrientation = Preferences.getViewerOrientation();
+        longTapZoomEnabled = Preferences.isViewerHoldToZoom();
     }
 
     public void setRecyclerView(RecyclerView v) {
@@ -236,6 +238,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssView.recycle();
                 ssView.setMinimumScaleType(getScaleType());
                 ssView.setOnImageEventListener(this);
+                ssView.setLongTapZoomEnabled(longTapZoomEnabled);
                 if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
                 ssView.setImage(ImageSource.uri(uri));
             }

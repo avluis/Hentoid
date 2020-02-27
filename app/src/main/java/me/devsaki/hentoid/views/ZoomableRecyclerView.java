@@ -307,9 +307,7 @@ public class ZoomableRecyclerView extends RecyclerView {
             if (longTapListener != null && longTapListener.onListen(ev)) {
                 performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             }
-            if (longTapZoomEnabled) {
-                longTapZoom(ev);
-            }
+            if (longTapZoomEnabled) longTapZoom(ev);
         }
 
         private void longTapZoom(MotionEvent ev) {

@@ -530,8 +530,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         switch (key) {
             case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
+            case Preferences.Key.PREF_VIEWER_HOLD_TO_ZOOM:
                 onBrowseModeChange();
-                onUpdateImageDisplay();
                 break;
             case Preferences.Key.PREF_VIEWER_KEEP_SCREEN_ON:
                 onUpdatePrefsScreenOn();
@@ -592,15 +592,15 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
         recyclerView.resetScale();
-        adapter.notifyDataSetChanged();
+        onUpdateImageDisplay();
 
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
             zoomFrame.enable();
-            recyclerView.setLongTapZoomEnabled(true); // TODO parametrize this
+            recyclerView.setLongTapZoomEnabled(Preferences.isViewerHoldToZoom());
         }
         else {
             zoomFrame.disable();
-            recyclerView.setLongTapZoomEnabled(false); // TODO parametrize this
+            recyclerView.setLongTapZoomEnabled(!Preferences.isViewerHoldToZoom());
         }
 
         llm.setOrientation(getOrientation());

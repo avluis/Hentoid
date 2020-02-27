@@ -132,7 +132,7 @@
     <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
 
     <string name="pref_viewer_zoom">Zoom</string>
-    <string name="pref_viewer_zoom_holding">Temp zoom while holding (WIP)</string>
+    <string name="pref_viewer_zoom_holding">Temp zoom while holding</string>
     <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
 
     <string name="pref_viewer_visuals">Visuals</string>

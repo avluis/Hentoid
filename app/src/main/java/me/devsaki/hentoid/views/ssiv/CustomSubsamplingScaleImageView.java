@@ -2889,6 +2889,15 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     /**
+     * Enable or disable temp zoom on long tap
+     *
+     * @param longTapZoomEnabled true to enable temp zoom on hold, false to disable.
+     */
+    public final void setLongTapZoomEnabled(boolean longTapZoomEnabled) {
+        this.longTapZoomEnabled = longTapZoomEnabled;
+    }
+
+    /**
      * Returns true if pan gesture detection is enabled.
      *
      * @return true if pan gesture detection is enabled.

@@ -59,7 +59,7 @@ public class ImageViewerActivity extends BaseActivity {
 
         if (null == savedInstanceState) {
             Fragment fragment;
-            if (Preferences.isOpenBookInGalleryMode()) fragment = new ImageGalleryFragment();
+            if (Preferences.isViewerOpenBookInGalleryMode()) fragment = new ImageGalleryFragment();
             else fragment = new ImagePagerFragment();
 
             getSupportFragmentManager()
