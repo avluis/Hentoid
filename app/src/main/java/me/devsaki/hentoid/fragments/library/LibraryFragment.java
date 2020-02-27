@@ -960,10 +960,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">>Library changed ! Size=%s", result.size());
 
-        // Don't passive-refresh the list if the order is random
-        if (!newSearch && Preferences.Constant.ORDER_CONTENT_RANDOM == Preferences.getContentSortOrder())
-            return;
-
         updateTitle(result.size(), totalContentCount);
 
         // Update background text
@@ -995,10 +991,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
 
         // If the update is the result of a new search, get back on top of the list
-        if (newSearch) {
-            Timber.i(">> new search; position reset to 0");
-            topItemPosition = 0;
-        }
+        if (newSearch) topItemPosition = 0;
 
         // Update displayed books
         if (Preferences.getEndlessScroll()) {
