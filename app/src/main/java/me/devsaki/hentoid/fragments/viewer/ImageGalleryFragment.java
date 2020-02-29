@@ -10,8 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mikepenz.fastadapter.FastAdapter;
@@ -46,22 +44,6 @@ public class ImageGalleryFragment extends Fragment {
     private int startIndex = 0;
 
     private boolean filterFavourites = false;
-
-    private final AsyncDifferConfig<ImageFile> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<ImageFile>() {
-        @Override
-        public boolean areItemsTheSame(@NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
-            return oldItem.getId() == newItem.getId();
-        }
-
-        @Override
-        public boolean areContentsTheSame(@NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
-            return oldItem.getStatus().equals(newItem.getStatus())
-                    && oldItem.getDisplayOrder() == newItem.getDisplayOrder()
-                    && oldItem.getAbsolutePath().equalsIgnoreCase(newItem.getAbsolutePath())
-                    && oldItem.isFavourite() == newItem.isFavourite();
-        }
-
-    }).build();
 
 
     static ImageGalleryFragment newInstance(boolean filterFavourites) {
