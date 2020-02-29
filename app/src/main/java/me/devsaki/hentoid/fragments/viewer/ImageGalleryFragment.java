@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -138,6 +139,9 @@ public class ImageGalleryFragment extends Fragment {
                 .beginTransaction()
                 .replace(android.R.id.content, new ImagePagerFragment())
                 .commit();
+
+        getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Clear back stack
+
         return true;
     }
 

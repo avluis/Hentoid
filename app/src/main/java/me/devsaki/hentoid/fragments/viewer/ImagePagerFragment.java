@@ -813,6 +813,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         getParentFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
+                .addToBackStack(null)
                 .commit();
     }
 
