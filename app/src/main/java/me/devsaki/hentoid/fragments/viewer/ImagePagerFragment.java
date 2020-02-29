@@ -592,7 +592,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
         recyclerView.resetScale();
-        onUpdateImageDisplay();
+        onUpdateImageDisplay(); // TODO we should do more than that as a simple rebind won't recreate existing holders
 
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
             zoomFrame.enable();
