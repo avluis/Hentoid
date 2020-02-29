@@ -38,6 +38,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
@@ -74,7 +75,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
     private ZoomableFrame zoomFrame;
-    private VolumeGestureListener volumeGestureListener;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private ImageViewerViewModel viewModel;
     private int imageIndex = -1;
@@ -113,6 +113,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         View rootView = inflater.inflate(R.layout.fragment_viewer_pager, container, false);
 
         Preferences.registerPrefsChangedListener(listener);
+
+        ((ImageViewerActivity) requireActivity()).registerKeyListener(
+                new VolumeGestureListener()
+                        .setOnVolumeDownListener(this::previousPage)
+                        .setOnVolumeUpListener(this::nextPage)
+                        .setOnBackListener(this::onBackClick));
 
         initPager(rootView);
         initControlsOverlay(rootView);
@@ -220,17 +226,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         zoomFrame = requireViewById(rootView, R.id.image_viewer_zoom_frame);
 
-        volumeGestureListener = new VolumeGestureListener()
-                .setOnVolumeDownListener(this::previousPage)
-                .setOnVolumeUpListener(this::nextPage)
-                .setOnBackListener(this::onBackClick)
-                .setButtonsInverted(Preferences.isViewerInvertVolumeRocker());
-
         recyclerView = requireViewById(rootView, R.id.image_viewer_zoom_recycler);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.addOnScrollListener(scrollListener);
-        recyclerView.setOnKeyListener(volumeGestureListener);
         recyclerView.setOnGetMaxDimensionsListener(this::onGetMaxDimensions);
         recyclerView.requestFocus();
         recyclerView.setOnScaleListener(scale -> {
@@ -547,9 +546,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             case Preferences.Key.PREF_VIEWER_DISPLAY_PAGENUM:
                 onUpdatePageNumDisplay();
                 break;
-            case Preferences.Key.PREF_VIEWER_INVERT_VOLUME_ROCKER:
-                onUpdateInvertVolumeRocker();
-                break;
             default:
                 // Other changes aren't handled here
         }
@@ -565,10 +561,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onUpdateSwipeToFling() {
         int flingFactor = Preferences.isViewerSwipeToFling() ? 75 : 0;
         pageSnapWidget.setFlingSensitivity(flingFactor / 100f);
-    }
-
-    private void onUpdateInvertVolumeRocker() {
-        volumeGestureListener.setButtonsInverted(Preferences.isViewerInvertVolumeRocker());
     }
 
     private void onUpdateImageDisplay() {
@@ -597,8 +589,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
             zoomFrame.enable();
             recyclerView.setLongTapZoomEnabled(Preferences.isViewerHoldToZoom());
-        }
-        else {
+        } else {
             zoomFrame.disable();
             recyclerView.setLongTapZoomEnabled(!Preferences.isViewerHoldToZoom());
         }
@@ -861,6 +852,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void startSlideshow() {
         startSlideshow(true);
     }
+
     private void startSlideshow(boolean showToast) {
         // Hide UI
         hideControlsOverlay();
