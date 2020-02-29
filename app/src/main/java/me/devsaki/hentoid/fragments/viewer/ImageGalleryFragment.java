@@ -10,15 +10,19 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -43,6 +47,22 @@ public class ImageGalleryFragment extends Fragment {
 
     private boolean filterFavourites = false;
 
+    private final AsyncDifferConfig<ImageFile> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<ImageFile>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
+            return oldItem.getStatus().equals(newItem.getStatus())
+                    && oldItem.getDisplayOrder() == newItem.getDisplayOrder()
+                    && oldItem.getAbsolutePath().equalsIgnoreCase(newItem.getAbsolutePath())
+                    && oldItem.isFavourite() == newItem.isFavourite();
+        }
+
+    }).build();
+
 
     static ImageGalleryFragment newInstance(boolean filterFavourites) {
         ImageGalleryFragment fragment = new ImageGalleryFragment();
@@ -63,6 +83,7 @@ public class ImageGalleryFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
+        fastAdapter.setHasStableIds(true);
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p));
         // Favourite button click listener
@@ -112,11 +133,14 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private void onImagesChanged(List<ImageFile> images) {
+        List<ImageFileItem> imgs = new ArrayList<>();
         for (ImageFile img : images) {
             ImageFileItem holder = new ImageFileItem(img);
             if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
-            itemAdapter.add(holder);
+            imgs.add(holder);
+//            itemAdapter.add(holder);
         }
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs);
         updateListFilter();
         updateFavouriteDisplay();
     }

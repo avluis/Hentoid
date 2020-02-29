@@ -193,6 +193,7 @@ dependencies {
 
     // https://github.com/mikepenz/FastAdapter
     implementation "com.mikepenz:fastadapter:5.0.0-a03" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter-extensions-diff:5.0.0-a03" // diff util helpers
     implementation "com.mikepenz:fastadapter-extensions-drag:5.0.0-a03" // drag support
     implementation "com.mikepenz:fastadapter-extensions-expandable:5.0.0-a03"
     implementation "com.mikepenz:fastadapter-extensions-scroll:5.0.0-a03" // scroll helpers
