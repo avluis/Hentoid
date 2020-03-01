@@ -423,9 +423,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void applyStartingIndex(int startingIndex) {
         // Wait until the recycler has finished refreshing with the new adapter contents to go to the new page
-        recyclerWatcher = Observable.timer(150, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.newThread())
-                .repeat(100)
+        recyclerWatcher = Observable.timer(50, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.computation())
+                .repeat(300)
                 .observeOn(AndroidSchedulers.mainThread())
                 .repeatUntil(() -> !recyclerView.hasPendingAdapterUpdates())
                 .subscribe(v -> applyStartingIndexInternal(startingIndex),
@@ -923,7 +923,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         scrollListener.disableScroll();
 
         slideshowTimer = Observable.timer(delaySec, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.newThread())
+                .subscribeOn(Schedulers.computation())
                 .repeat()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(v -> nextPage());
