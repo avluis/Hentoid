@@ -32,7 +32,7 @@ public class GitHubReleaseDescItem extends AbstractItem<GitHubReleaseDescItem.Re
     private final @Type
     int entryType;
 
-    public GitHubReleaseDescItem(String text, @Type int entryType) {
+    GitHubReleaseDescItem(String text, @Type int entryType) {
         this.text = text;
         this.entryType = entryType;
     }
