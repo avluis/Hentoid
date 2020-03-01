@@ -141,14 +141,14 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     private TextView alertMessage;
 
     // === VARIABLES
+    private CustomWebViewClient webClient;
     // Currently viewed content
     private Content currentContent;
     // Database
     private CollectionDAO objectBoxDAO;
     // Indicates which mode the download button is in
     protected int actionButtonMode;
-    private CustomWebViewClient webClient;
-    // Version iof installed Chrome client
+    // Version of installed Chrome client
     private int chromeVersion;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
@@ -181,6 +181,10 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         universalBlockedContent.add("/nutaku/");
         universalBlockedContent.add("trafficjunky");
         universalBlockedContent.add("traffichaus");
+        universalBlockedContent.add("google-analytics.com");
+        universalBlockedContent.add("mc.yandex.ru");
+        universalBlockedContent.add("mc.webvisor.org");
+        universalBlockedContent.add("scorecardresearch.com");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -311,6 +315,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         super.onResume();
 
         checkPermissions();
+
+        processContent(currentContent, false);
     }
 
     @Override
