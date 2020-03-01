@@ -316,7 +316,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         checkPermissions();
 
-        processContent(currentContent, false);
+        if (getWebClient().isPageFiltered(this.webView.getUrl()))
+            processContent(currentContent, false);
     }
 
     @Override
@@ -711,7 +712,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             restrictedDomainName = s;
         }
 
-        boolean isPageFiltered(String url) {
+        boolean isPageFiltered(@NonNull String url) {
             if (filteredUrlPattern.isEmpty()) return false;
 
             for (Pattern p : filteredUrlPattern) {
@@ -727,7 +728,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
          * @param url URL to be examinated
          * @return True if URL is forbidden according to current filters; false if not
          */
-        private boolean isUrlForbidden(String url) {
+        private boolean isUrlForbidden(@NonNull String url) {
             for (String s : universalBlockedContent) {
                 if (url.contains(s)) return true;
             }
