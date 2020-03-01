@@ -370,6 +370,7 @@ public class ContentDownloadService extends IntentService {
             notificationManager.notify(new DownloadProgressNotification(title, progress, totalPages));
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
 
+            // We're polling the DB because we can't observe LiveData from a background service
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -377,7 +378,7 @@ public class ContentDownloadService extends IntentService {
                 Thread.currentThread().interrupt();
             }
         }
-        while (!isDone && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()); // TODO - Observe DB instead ?
+        while (!isDone && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
 
         if (contentQueueManager.isQueuePaused()) {
             Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
