@@ -133,6 +133,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         } else if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
             ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
+            ((CustomSubsamplingScaleImageView) view).setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL);
         } else {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
         }

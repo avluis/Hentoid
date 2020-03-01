@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.views.ssiv;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -28,6 +29,7 @@ import android.view.View;
 import android.view.ViewParent;
 
 import androidx.annotation.AnyThread;
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
@@ -41,6 +43,8 @@ import com.davemorrissey.labs.subscaleview.decoder.ImageRegionDecoder;
 import com.davemorrissey.labs.subscaleview.decoder.SkiaImageDecoder;
 import com.davemorrissey.labs.subscaleview.decoder.SkiaImageRegionDecoder;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,6 +80,13 @@ import timber.log.Timber;
 public class CustomSubsamplingScaleImageView extends View {
 
     private static final String TAG = CustomSubsamplingScaleImageView.class.getSimpleName();
+
+    @IntDef({Direction.VERTICAL, Direction.HORIZONTAL})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Direction {
+        int VERTICAL = 0;
+        int HORIZONTAL = 1;
+    }
 
     /**
      * Attempt to use EXIF information on the image to rotate it. Works for external files only.
@@ -345,6 +356,10 @@ public class CustomSubsamplingScaleImageView extends View {
 
     // Dimensions used to preload the image before the view actually appears on screen / gets its display dimensions
     private Point preloadDimensions = null;
+
+    // Direction of the swiping
+    private @Direction
+    int swipeDirection = Direction.HORIZONTAL;
 
 
     public CustomSubsamplingScaleImageView(Context context, AttributeSet attr) {
@@ -759,6 +774,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Handle touch events. One finger pans, and two finger pinch and zoom plus panning.
      */
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
 
@@ -853,6 +869,7 @@ public class CustomSubsamplingScaleImageView extends View {
             case MotionEvent.ACTION_MOVE:
                 boolean consumed = false;
                 if (maxTouchCount > 0) {
+                    // TWO-FINGER GESTURES
                     if (touchCount >= 2) {
                         // Calculate new distance between touch points, to scale and pan relative to start values.
                         float vDistEnd = distance(event.getX(0), event.getX(1), event.getY(0), event.getY(1));
@@ -902,6 +919,7 @@ public class CustomSubsamplingScaleImageView extends View {
                             fitToBounds(true);
                             refreshRequiredTiles(eagerLoadingEnabled);
                         }
+                        // ONE-FINGER GESTURES
                     } else if (isQuickScaling) {
                         // One finger zoom
                         // Stole Google's Magical Formula™ to make sure it feels the exact same
@@ -979,14 +997,18 @@ public class CustomSubsamplingScaleImageView extends View {
                             boolean edgeXSwipe = atXEdge && dx > dy && !isPanning;
                             boolean edgeYSwipe = atYEdge && dy > dx && !isPanning;
                             boolean yPan = lastY == vTranslate.y && dy > offset * 3;
+
                             if (!edgeXSwipe && !edgeYSwipe && (!atXEdge || !atYEdge || yPan || isPanning)) {
                                 isPanning = true;
-                            } else if (dx > offset || dy > offset) {
+                            } else if ((dx > offset && edgeXSwipe && swipeDirection == Direction.HORIZONTAL)
+                                    || (dy > offset && edgeYSwipe && swipeDirection == Direction.VERTICAL)
+                            ) { // Page swipe
                                 // Haven't panned the image, and we're at the left or right edge. Switch to page swipe.
                                 maxTouchCount = 0;
                                 handler.removeMessages(MESSAGE_LONG_CLICK);
                                 requestDisallowInterceptTouchEvent(false);
                             }
+
                             if (!panEnabled) {
                                 vTranslate.x = vTranslateStart.x;
                                 vTranslate.y = vTranslateStart.y;
@@ -2924,6 +2946,10 @@ public class CustomSubsamplingScaleImageView extends View {
                 invalidate();
             }
         }
+    }
+
+    public final void setDirection(@Direction int direction) {
+        this.swipeDirection = direction;
     }
 
     /**
