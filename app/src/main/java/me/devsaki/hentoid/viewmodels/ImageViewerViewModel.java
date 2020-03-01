@@ -154,7 +154,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             }
             sortAndSetImages(imageFiles, isShuffled);
 
-            if(content.getId() != loadedBookId) { // To be done once per book only
+            if (content.getId() != loadedBookId) { // To be done once per book only
                 if (Preferences.isViewerResumeLastLeft())
                     setStartingIndex(content.getLastReadPageIndex());
                 else

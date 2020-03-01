@@ -83,8 +83,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
     private RecyclerView.SmoothScroller smoothScroller;
-    private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onCurrentPositionChange);
+    private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
     private Disposable slideshowTimer = null;
+    private Disposable recyclerWatcher = null;
+
+    // Starting index management
+    private boolean isComputingImageList = false;
+    private int targetStartingIndex = -1;
 
     // Controls
     private TextView pageNumberOverlay;
@@ -217,6 +222,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onStop() {
         viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
         if (slideshowTimer != null) slideshowTimer.dispose();
+        if (recyclerWatcher != null) recyclerWatcher.dispose();
         super.onStop();
     }
 
@@ -383,15 +389,26 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param images Book's list of images
      */
     private void onImagesChanged(List<ImageFile> images) {
-        adapter.submitList(images);
+        isComputingImageList = true;
+        adapter.submitList(images, this::differEndCallback);
+    }
 
-        maxPosition = images.size() - 1;
+    /**
+     * Callback for the end of image list diff calculations
+     * Activated when all displayed items are placed on their definitive position
+     */
+    private void differEndCallback() {
+        maxPosition = adapter.getItemCount() - 1;
         seekBar.setMax(maxPosition);
-        updatePageDisplay();
 
         // Can't access the gallery when there's no page to display
-        if (!images.isEmpty()) galleryBtn.setVisibility(View.VISIBLE);
+        if (maxPosition > -1) galleryBtn.setVisibility(View.VISIBLE);
         else galleryBtn.setVisibility(View.GONE);
+
+        if (targetStartingIndex > -1) applyStartingIndex(targetStartingIndex);
+        else updatePageDisplay();
+
+        isComputingImageList = false;
     }
 
     /**
@@ -400,10 +417,37 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param startingIndex Book's starting image index
      */
     private void onStartingIndexChanged(Integer startingIndex) {
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
-            recyclerView.scrollToPosition(startingIndex);
-        else
-            llm.scrollToPositionWithOffset(startingIndex, 0);
+        if (!isComputingImageList) applyStartingIndex(startingIndex);
+        else targetStartingIndex = startingIndex;
+    }
+
+    private void applyStartingIndex(int startingIndex) {
+        // Wait until the recycler has finished refreshing with the new adapter contents to go to the new page
+        recyclerWatcher = Observable.timer(150, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.newThread())
+                .repeat(100)
+                .observeOn(AndroidSchedulers.mainThread())
+                .repeatUntil(() -> !recyclerView.hasPendingAdapterUpdates())
+                .subscribe(v -> applyStartingIndexInternal(startingIndex),
+                        Timber::e,
+                        () -> recyclerWatcher.dispose()
+                );
+        targetStartingIndex = -1;
+    }
+
+    private void applyStartingIndexInternal(int startingIndex) {
+        int currentPosition = Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
+
+        // When target position is the same as current scroll index (0), scrolling is pointless
+        // -> activate scroll listener manually
+        if (currentPosition == startingIndex) onScrollPositionChange(startingIndex);
+        else {
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+                recyclerView.scrollToPosition(startingIndex);
+            else
+                llm.scrollToPositionWithOffset(startingIndex, 0);
+        }
+        recyclerWatcher.dispose();
     }
 
     /**
@@ -435,21 +479,18 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     /**
      * Scroll listener
      *
-     * @param position New position
+     * @param scrollPosition New 0-based scroll position
      */
-    private void onCurrentPositionChange(int position) {
-        if (imageIndex != position) {
-            imageIndex = position;
-            highestImageIndexReached = Math.max(imageIndex, highestImageIndexReached);
+    private void onScrollPositionChange(int scrollPosition) {
+        imageIndex = scrollPosition;
+        highestImageIndexReached = Math.max(imageIndex, highestImageIndexReached);
 
-            // Resets zoom if we're using horizontal (independent pages) mode
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
-                adapter.resetScaleAtPosition(position);
+        // Resets zoom if we're using horizontal (independent pages) mode
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+            adapter.resetScaleAtPosition(scrollPosition);
 
-            seekBar.setProgress(position);
-            updatePageDisplay();
-            updateFavouriteDisplay();
-        }
+        updatePageDisplay();
+        updateFavouriteDisplay();
     }
 
     /**
@@ -468,6 +509,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageCurrentNumber.setText(pageNum);
         pageMaxNumber.setText(maxPage);
         pageNumberOverlay.setText(format("%s / %s", pageNum, maxPage));
+
+        seekBar.setProgress(imageIndex);
     }
 
     /**
