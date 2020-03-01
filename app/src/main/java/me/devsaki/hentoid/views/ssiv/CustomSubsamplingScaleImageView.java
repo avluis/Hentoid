@@ -1173,6 +1173,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     for (Tile tile : tileMapEntry.getValue()) {
                         if (tile.visible && (tile.loading || tile.bitmap == null)) {
                             hasMissingTiles = true;
+                            break;
                         }
                     }
                 }
@@ -1321,6 +1322,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     for (Tile tile : tileMapEntry.getValue()) {
                         if (tile.loading || tile.bitmap == null) {
                             baseLayerReady = false;
+                            break;
                         }
                     }
                 }
@@ -1545,7 +1547,7 @@ public class CustomSubsamplingScaleImageView extends View {
             // Choose the smallest ratio as inSampleSize value, this will guarantee
             // a final image with both dimensions larger than or equal to the
             // requested height and width.
-            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+            inSampleSize = Math.min(heightRatio, widthRatio);
         }
 
         // We want the actual sample size that will be used, so round down to nearest power of 2.
@@ -3186,7 +3188,7 @@ public class CustomSubsamplingScaleImageView extends View {
          * @return this builder for method chaining.
          */
         @NonNull
-        public AnimationBuilder withDuration(long duration) {
+        AnimationBuilder withDuration(long duration) {
             this.duration = duration;
             return this;
         }
@@ -3198,7 +3200,7 @@ public class CustomSubsamplingScaleImageView extends View {
          * @return this builder for method chaining.
          */
         @NonNull
-        public AnimationBuilder withInterruptible(boolean interruptible) {
+        AnimationBuilder withInterruptible(boolean interruptible) {
             this.interruptible = interruptible;
             return this;
         }
@@ -3210,7 +3212,7 @@ public class CustomSubsamplingScaleImageView extends View {
          * @return this builder for method chaining.
          */
         @NonNull
-        public AnimationBuilder withEasing(int easing) {
+        AnimationBuilder withEasing(int easing) {
             if (!VALID_EASING_STYLES.contains(easing)) {
                 throw new IllegalArgumentException("Unknown easing type: " + easing);
             }
