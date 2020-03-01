@@ -96,7 +96,7 @@ public class ContentParserFactory {
                 return new NexusParser();
             case LUSCIOUS:
                 return new LusciousParser();
-            case MUSES: // No image parser; images are fetched by ContentParser
+            case MUSES: // TODO - No image parser; images are fetched by ContentParser => what if we really want to download from scratch ??
             case NHENTAI:
             case DOUJINS:
             default:

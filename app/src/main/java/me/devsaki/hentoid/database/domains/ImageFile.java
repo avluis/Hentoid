@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import androidx.annotation.NonNull;
+
 import java.util.Locale;
 
 import io.objectbox.annotation.Convert;
@@ -151,4 +153,6 @@ public class ImageFile {
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
     }
+
+    public void setContent(@NonNull Content content) { this.content.setTargetId(content.getId()); }
 }

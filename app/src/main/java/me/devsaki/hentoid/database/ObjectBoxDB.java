@@ -96,31 +96,44 @@ public class ObjectBoxDB {
         return instance;
     }
 
+
+    public void closeThreadResources() {
+        store.closeThreadResources();
+    }
+/*
+    public void insertContent(Content content) {
+        store.callInTxNoException(() -> insertContentResult(content));
+    }
+
+ */
+
     public long insertContent(Content content) {
-        Box<Attribute> attrBox = store.boxFor(Attribute.class);
-        Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
-        List<Attribute> attributes = content.getAttributes();
+        return store.callInTxNoException(() -> {
+            Box<Attribute> attrBox = store.boxFor(Attribute.class);
+            Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
+            List<Attribute> attributes = content.getAttributes();
 
-        // Master data management managed manually
-        // Ensure all known attributes are replaced by their ID before being inserted
-        // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
-        Attribute dbAttr;
-        Attribute inputAttr;
-        for (int i = 0; i < attributes.size(); i++) {
-            inputAttr = attributes.get(i);
-            dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
-                    .setParameter(Attribute_.type, inputAttr.getType().getCode())
-                    .findFirst();
-            if (dbAttr != null) {
-                attributes.set(i, dbAttr); // If existing -> set the existing attribute
-                dbAttr.addLocationsFrom(inputAttr);
-                attrBox.put(dbAttr);
-            } else {
-                inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
+            // Master data management managed manually
+            // Ensure all known attributes are replaced by their ID before being inserted
+            // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
+            Attribute dbAttr;
+            Attribute inputAttr;
+            for (int i = 0; i < attributes.size(); i++) {
+                inputAttr = attributes.get(i);
+                dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
+                        .setParameter(Attribute_.type, inputAttr.getType().getCode())
+                        .findFirst();
+                if (dbAttr != null) {
+                    attributes.set(i, dbAttr); // If existing -> set the existing attribute
+                    dbAttr.addLocationsFrom(inputAttr);
+                    attrBox.put(dbAttr);
+                } else {
+                    inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
+                }
             }
-        }
 
-        return store.boxFor(Content.class).put(content);
+            return store.boxFor(Content.class).put(content);
+        });
     }
 
     long countContentEntries() {
@@ -278,7 +291,7 @@ public class ObjectBoxDB {
     }
 
     @Nullable
-    Content selectContentById(long id) {
+    public Content selectContentById(long id) {
         return store.boxFor(Content.class).get(id);
     }
 
@@ -613,7 +626,7 @@ public class ObjectBoxDB {
         return result;
     }
 
-    public void updateImageFileStatusParamsMimeType(ImageFile image) {
+    public void updateImageFileStatusParamsMimeType(@NonNull ImageFile image) {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
         if (img != null) {
@@ -622,6 +635,17 @@ public class ObjectBoxDB {
             img.setMimeType(image.getMimeType());
             imgBox.put(img);
         }
+    }
+
+    public void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo) {
+        QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
+        if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.getCode());
+        List<ImageFile> imgs = query.equal(ImageFile_.contentId, contentId).build().find();
+
+        if (imgs.isEmpty()) return;
+
+        for (int i = 0; i < imgs.size(); i++) imgs.get(i).setStatus(updateTo);
+        store.boxFor(ImageFile.class).put(imgs);
     }
 
     void updateImageFileUrl(ImageFile image) {
@@ -669,6 +693,14 @@ public class ObjectBoxDB {
 
     public void insertImageFile(@NonNull ImageFile img) {
         if (img.getId() > 0) store.boxFor(ImageFile.class).put(img);
+    }
+
+    public void deleteImageFiles(long contentId) {
+        store.boxFor(ImageFile.class).query().equal(ImageFile_.contentId, contentId).build().remove();
+    }
+
+    public void insertImageFiles(@NonNull List<ImageFile> imgs) {
+        store.boxFor(ImageFile.class).put(imgs);
     }
 
     @Nullable

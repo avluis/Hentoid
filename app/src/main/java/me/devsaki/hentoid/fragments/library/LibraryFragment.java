@@ -571,13 +571,14 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             downloadContent(contents, true);
+                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.deselect();
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
                 .create()
                 .show();
-
     }
 
     /**

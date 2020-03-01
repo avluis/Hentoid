@@ -118,7 +118,7 @@ public class ContentDownloadService extends IntentService {
 
         EventBus.getDefault().register(this);
 
-        db = ObjectBoxDB.getInstance(this);
+        db = ObjectBoxDB.getInstance(getApplicationContext());
 
         requestQueueManager = RequestQueueManager.getInstance(this);
 
@@ -129,6 +129,8 @@ public class ContentDownloadService extends IntentService {
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
+
+        db.closeThreadResources();
 
         if (notificationManager != null) notificationManager.cancel();
         ContentQueueManager.getInstance().setInactive();
@@ -245,8 +247,11 @@ public class ContentDownloadService extends IntentService {
                     }
                 }
 
-                content.setImageFiles(images);
-                db.insertContent(content);
+                // Manually insert new images (without using insertContent)
+                db.deleteImageFiles(content.getId());
+                db.insertImageFiles(images);
+
+                content = db.selectContentById(content.getId()); // Get updated Content with the generated ID of new images
             } catch (UnsupportedOperationException uoe) {
                 Timber.w(uoe, "A captcha has been found while parsing %s. Aborting download.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), "Image list", uoe.getMessage());
@@ -269,12 +274,7 @@ public class ContentDownloadService extends IntentService {
             }
         } else if (nbErrors > 0) {
             // Other cases : Reset ERROR status of images to mark them as "to be downloaded" (in DB and in memory)
-            for (ImageFile img : images) {
-                if (img.getStatus().equals(StatusContent.ERROR)) {
-                    img.setStatus(StatusContent.SAVED); // SAVED = "to be downloaded"
-                    db.updateImageFileStatusParamsMimeType(img);
-                }
-            }
+            db.updateImageContentStatus(content.getId(), StatusContent.ERROR, StatusContent.SAVED);
         }
 
         if (hasError) {
@@ -306,12 +306,7 @@ public class ContentDownloadService extends IntentService {
 
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
-            for (ImageFile img : images) {
-                if (img.getStatus().equals(StatusContent.SAVED)) {
-                    img.setStatus(StatusContent.ERROR);
-                    db.updateImageFileStatusParamsMimeType(img);
-                }
-            }
+            db.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ERROR);
             completeDownload(content, 0, images.size());
             return null;
         }
@@ -394,7 +389,7 @@ public class ContentDownloadService extends IntentService {
      *
      * @param content Content to mark as downloaded
      */
-    private void completeDownload(Content content, int pagesOK, int pagesKO) {
+    private void completeDownload(@NonNull Content content, int pagesOK, int pagesKO) {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
         if (!downloadCanceled && !downloadSkipped) {
@@ -419,7 +414,7 @@ public class ContentDownloadService extends IntentService {
                     && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
                     && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
             ) {
-                Timber.i("Auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries(), content.getTitle(), freeSpaceRatio);
+                Timber.i("Initiating auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries() + 1, content.getTitle(), freeSpaceRatio);
                 logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
                 content.increaseNumberDownloadRetries();
 
@@ -506,7 +501,7 @@ public class ContentDownloadService extends IntentService {
      * @param content Book whose pages to retrieve
      * @return List of pages with original URLs and file name
      */
-    private List<ImageFile> fetchImageURLs(Content content) throws Exception {
+    private List<ImageFile> fetchImageURLs(@NonNull Content content) throws Exception {
         List<ImageFile> imgs;
         // Use ImageListParser to query the source
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
@@ -514,7 +509,13 @@ public class ContentDownloadService extends IntentService {
 
         if (imgs.isEmpty()) throw new EmptyResultException();
 
-        for (ImageFile img : imgs) img.setStatus(StatusContent.SAVED);
+        // Cleanup generated objects
+        for (ImageFile img : imgs) {
+            img.setId(0);
+            img.setStatus(StatusContent.SAVED);
+            img.setContent(content);
+        }
+
         return imgs;
     }
 
