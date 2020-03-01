@@ -91,7 +91,7 @@ public class ContentDownloadService extends IntentService {
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
 
-    private RequestQueueManager<Object> requestQueueManager = null;
+    private RequestQueueManager<Object> requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
@@ -119,6 +119,8 @@ public class ContentDownloadService extends IntentService {
         EventBus.getDefault().register(this);
 
         db = ObjectBoxDB.getInstance(this);
+
+        requestQueueManager = RequestQueueManager.getInstance(this);
 
         Timber.d("Download service created");
     }
@@ -287,8 +289,6 @@ public class ContentDownloadService extends IntentService {
         // NB : No log of any sort because this is normal behaviour
         if (downloadCanceled || downloadSkipped) return null;
 
-        requestQueueManager = RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads());
-
         // Create destination folder for images to be downloaded
         File dir = ContentHelper.createContentDownloadDir(this, content);
         // Folder creation failed
@@ -414,7 +414,6 @@ public class ContentDownloadService extends IntentService {
             if (pagesKO > 0 && Preferences.isDlRetriesActive()
                     && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
                     && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
-                    && requestQueueManager != null
             ) {
                 Timber.i("Auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries(), content.getTitle(), freeSpaceRatio);
                 logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
@@ -794,19 +793,19 @@ public class ContentDownloadService extends IntentService {
         switch (event.eventType) {
             case DownloadEvent.EV_PAUSE:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                if (requestQueueManager != null) requestQueueManager.cancelQueue();
+                requestQueueManager.cancelQueue();
                 ContentQueueManager.getInstance().pauseQueue();
                 notificationManager.cancel();
                 break;
             case DownloadEvent.EV_CANCEL:
-                if (requestQueueManager != null) requestQueueManager.cancelQueue();
+                requestQueueManager.cancelQueue();
                 downloadCanceled = true;
                 // Tracking Event (Download Canceled)
                 HentoidApp.trackDownloadEvent("Cancelled");
                 break;
             case DownloadEvent.EV_SKIP:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                if (requestQueueManager != null) requestQueueManager.cancelQueue();
+                requestQueueManager.cancelQueue();
                 downloadSkipped = true;
                 // Tracking Event (Download Skipped)
                 HentoidApp.trackDownloadEvent("Skipped");
