@@ -168,6 +168,9 @@ public class ContentDownloadService extends IntentService {
      */
     @Nullable
     private Content downloadFirstInQueue() {
+        // Clear previously created requests
+        compositeDisposable.clear();
+
         // Check if queue has been paused
         if (ContentQueueManager.getInstance().isQueuePaused()) {
             Timber.w("Queue is paused. Aborting download.");
@@ -541,10 +544,14 @@ public class ContentDownloadService extends IntentService {
             }
 
             if (downloadParams != null) {
-                if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
-                    headers.put(HttpHelper.HEADER_COOKIE_KEY, downloadParams.get(HttpHelper.HEADER_COOKIE_KEY));
-                if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
-                    headers.put(HttpHelper.HEADER_REFERER_KEY, downloadParams.get(HttpHelper.HEADER_REFERER_KEY));
+                if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
+                    String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                    if (value != null) headers.put(HttpHelper.HEADER_COOKIE_KEY, value);
+                }
+                if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
+                    String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                    if (value != null) headers.put(HttpHelper.HEADER_REFERER_KEY, value);
+                }
                 if (downloadParams.containsKey("backupUrl"))
                     backupUrl = downloadParams.get("backupUrl");
             }
@@ -631,7 +638,7 @@ public class ContentDownloadService extends IntentService {
         compositeDisposable.add(
                 Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder(), content.getQtyPages()))
                         .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
+                        .observeOn(AndroidSchedulers.mainThread()) // <- do we really want to do that on the main thread ?
                         .subscribe(
                                 imageFile -> processBackupImage(imageFile, img, dir, site),
                                 throwable ->
