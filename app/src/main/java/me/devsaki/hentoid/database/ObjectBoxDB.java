@@ -108,29 +108,30 @@ public class ObjectBoxDB {
  */
 
     public long insertContent(Content content) {
-        return store.callInTxNoException(() -> {
-            Box<Attribute> attrBox = store.boxFor(Attribute.class);
-            Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
-            List<Attribute> attributes = content.getAttributes();
+        List<Attribute> attributes = content.getAttributes();
+        Box<Attribute> attrBox = store.boxFor(Attribute.class);
+        Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
 
+        return store.callInTxNoException(() -> {
             // Master data management managed manually
             // Ensure all known attributes are replaced by their ID before being inserted
             // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
             Attribute dbAttr;
             Attribute inputAttr;
-            for (int i = 0; i < attributes.size(); i++) {
-                inputAttr = attributes.get(i);
-                dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
-                        .setParameter(Attribute_.type, inputAttr.getType().getCode())
-                        .findFirst();
-                if (dbAttr != null) {
-                    attributes.set(i, dbAttr); // If existing -> set the existing attribute
-                    dbAttr.addLocationsFrom(inputAttr);
-                    attrBox.put(dbAttr);
-                } else {
-                    inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
+            if (attributes != null)
+                for (int i = 0; i < attributes.size(); i++) {
+                    inputAttr = attributes.get(i);
+                    dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
+                            .setParameter(Attribute_.type, inputAttr.getType().getCode())
+                            .findFirst();
+                    if (dbAttr != null) {
+                        attributes.set(i, dbAttr); // If existing -> set the existing attribute
+                        dbAttr.addLocationsFrom(inputAttr);
+                        attrBox.put(dbAttr);
+                    } else {
+                        inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
+                    }
                 }
-            }
 
             return store.boxFor(Content.class).put(content);
         });

@@ -242,6 +242,7 @@ unMock {
     keepStartingWith "com.android.internal.R"
     keepStartingWith "com.android.internal.util."
     keep "android.net.Uri"
+    keep "android.webkit.WebSettings"
 
     keepStartingWith "me."
 }

@@ -102,7 +102,8 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        for (Attribute a : attributes) result.add(a);
+        if (attributes != null)
+            for (Attribute a : attributes) result.add(a);
         return result;
     }
 
