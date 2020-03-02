@@ -126,16 +126,15 @@ public class CustomSubsamplingScaleImageView extends View {
 
     private static final List<Integer> VALID_ZOOM_STYLES = Arrays.asList(ZOOM_FOCUS_FIXED, ZOOM_FOCUS_CENTER, ZOOM_FOCUS_CENTER_IMMEDIATE);
 
-    /**
-     * Quadratic ease out. Not recommended for scale animation, but good for panning.
-     */
-    public static final int EASE_OUT_QUAD = 1;
-    /**
-     * Quadratic ease in and out.
-     */
-    public static final int EASE_IN_OUT_QUAD = 2;
+    @IntDef({Easing.OUT_QUAD, Easing.IN_OUT_QUAD})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Easing {
+        // Quadratic ease out. Not recommended for scale animation, but good for panning.
+        int OUT_QUAD = 1;
+        // Quadratic ease in and out.
+        int IN_OUT_QUAD = 2;
+    }
 
-    private static final List<Integer> VALID_EASING_STYLES = Arrays.asList(EASE_IN_OUT_QUAD, EASE_OUT_QUAD);
 
     /**
      * Don't allow the image to be panned off screen. As much of the image as possible is always displayed, centered in the view when it is smaller. This is the best option for galleries.
@@ -639,7 +638,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     PointF vTranslateEnd = new PointF(vTranslate.x + (velocityX * 0.25f), vTranslate.y + (velocityY * 0.25f));
                     float sCenterXEnd = ((getWidthInternal() / 2f) - vTranslateEnd.x) / scale;
                     float sCenterYEnd = ((getHeightInternal() / 2f) - vTranslateEnd.y) / scale;
-                    new AnimationBuilder(new PointF(sCenterXEnd, sCenterYEnd)).withEasing(EASE_OUT_QUAD).withPanLimited(false).withOrigin(ORIGIN_FLING).start();
+                    new AnimationBuilder(new PointF(sCenterXEnd, sCenterYEnd)).withEasing(Easing.OUT_QUAD).withPanLimited(false).withOrigin(ORIGIN_FLING).start();
                     return true;
                 }
                 return super.onFling(e1, e2, velocityX, velocityY);
@@ -709,8 +708,8 @@ public class CustomSubsamplingScaleImageView extends View {
             if (null == sCenter)
                 throw new IllegalStateException("vTranslate is null; aborting");
 
-            float doubleTapZoomScale = Math.min(maxScale, this.doubleTapZoomScale); // TODO factorize
-            new AnimationBuilder(doubleTapZoomScale, vCenterStart).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(ORIGIN_LONG_TAP_ZOOM).start();
+            float doubleTapZoomScale = Math.min(maxScale, this.doubleTapZoomScale);
+            new AnimationBuilder(doubleTapZoomScale, vCenterStart).withPanLimited(false).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(ORIGIN_LONG_TAP_ZOOM).start();
 
             isLongTapZooming = true;
 
@@ -729,7 +728,6 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        debug("onSizeChanged %dx%d -> %dx%d", oldw, oldh, w, h);
         PointF sCenter = getCenter();
         if (readySent && sCenter != null) {
             this.anim = null;
@@ -2084,7 +2082,7 @@ public class CustomSubsamplingScaleImageView extends View {
         private PointF vFocusEnd; // Where the view focal point should be moved to during the anim
         private long duration = 500; // How long the anim takes
         private boolean interruptible = true; // Whether the anim can be interrupted by a touch
-        private int easing = EASE_IN_OUT_QUAD; // Easing style
+        private int easing = Easing.IN_OUT_QUAD; // Easing style
         private int origin = ORIGIN_ANIM; // Animation origin (API, double tap or fling)
         private long time = System.currentTimeMillis(); // Start time
         private OnAnimationEventListener listener; // Event listener
@@ -2478,11 +2476,11 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param duration Anm duration
      * @return Current value
      */
-    private float ease(int type, long time, float from, float change, long duration) {
+    private float ease(@Easing int type, long time, float from, float change, long duration) {
         switch (type) {
-            case EASE_IN_OUT_QUAD:
+            case Easing.IN_OUT_QUAD:
                 return easeInOutQuad(time, from, change, duration);
-            case EASE_OUT_QUAD:
+            case Easing.OUT_QUAD:
                 return easeOutQuad(time, from, change, duration);
             default:
                 throw new IllegalStateException("Unexpected easing type: " + type);
@@ -3177,7 +3175,7 @@ public class CustomSubsamplingScaleImageView extends View {
         private final PointF targetSCenter;
         private final PointF vFocus;
         private long duration = 500;
-        private int easing = EASE_IN_OUT_QUAD;
+        private @Easing int easing = Easing.IN_OUT_QUAD;
         private int origin = ORIGIN_ANIM;
         private boolean interruptible = true;
         private boolean panLimited = true;
@@ -3232,16 +3230,13 @@ public class CustomSubsamplingScaleImageView extends View {
         }
 
         /**
-         * Set the easing style. See static fields. {@link #EASE_IN_OUT_QUAD} is recommended, and the default.
+         * Set the easing style. See static fields. Easing.IN_OUT_QUAD is recommended, and the default.
          *
          * @param easing easing style.
          * @return this builder for method chaining.
          */
         @NonNull
-        AnimationBuilder withEasing(int easing) {
-            if (!VALID_EASING_STYLES.contains(easing)) {
-                throw new IllegalArgumentException("Unknown easing type: " + easing);
-            }
+        AnimationBuilder withEasing(@Easing int easing) {
             this.easing = easing;
             return this;
         }
