@@ -143,7 +143,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     // === VARIABLES
     private CustomWebViewClient webClient;
     // Currently viewed content
-    private Content currentContent;
+    private Content currentContent = null;
     // Database
     private CollectionDAO objectBoxDAO;
     // Indicates which mode the download button is in
@@ -316,7 +316,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         checkPermissions();
 
-        if (getWebClient().isPageFiltered(this.webView.getUrl()))
+        if (currentContent != null && getWebClient().isPageFiltered(this.webView.getUrl()))
             processContent(currentContent, false);
     }
 
