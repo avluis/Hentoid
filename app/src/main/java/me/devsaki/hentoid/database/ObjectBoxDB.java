@@ -97,15 +97,10 @@ public class ObjectBoxDB {
     }
 
 
-    public void closeThreadResources() {
+    void closeThreadResources() {
         store.closeThreadResources();
     }
-/*
-    public void insertContent(Content content) {
-        store.callInTxNoException(() -> insertContentResult(content));
-    }
 
- */
 
     public long insertContent(Content content) {
         List<Attribute> attributes = content.getAttributes();
@@ -141,7 +136,7 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).count();
     }
 
-    public void updateContentStatus(StatusContent updateFrom, StatusContent updateTo) {
+    public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
         List<Content> content = selectContentByStatus(updateFrom);
         for (int i = 0; i < content.size(); i++) content.get(i).setStatus(updateTo);
 
@@ -229,7 +224,7 @@ public class ObjectBoxDB {
         }
     }
 
-    public List<QueueRecord> selectQueue() {
+    List<QueueRecord> selectQueue() {
         return store.boxFor(QueueRecord.class).query().order(QueueRecord_.rank).build().find();
     }
 
@@ -262,11 +257,11 @@ public class ObjectBoxDB {
         }
     }
 
-    public void deleteQueue(@NonNull Content content) {
+    void deleteQueue(@NonNull Content content) {
         deleteQueue(content.getId());
     }
 
-    public void deleteQueue(int queueIndex) {
+    void deleteQueue(int queueIndex) {
         store.boxFor(QueueRecord.class).remove(selectQueue().get(queueIndex).id);
     }
 
@@ -292,7 +287,7 @@ public class ObjectBoxDB {
     }
 
     @Nullable
-    public Content selectContentById(long id) {
+    Content selectContentById(long id) {
         return store.boxFor(Content.class).get(id);
     }
 
@@ -627,7 +622,7 @@ public class ObjectBoxDB {
         return result;
     }
 
-    public void updateImageFileStatusParamsMimeType(@NonNull ImageFile image) {
+    void updateImageFileStatusParamsMimeType(@NonNull ImageFile image) {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
         if (img != null) {
@@ -638,7 +633,7 @@ public class ObjectBoxDB {
         }
     }
 
-    public void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo) {
+    void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo) {
         QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
         if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.getCode());
         List<ImageFile> imgs = query.equal(ImageFile_.contentId, contentId).build().find();
@@ -658,7 +653,7 @@ public class ObjectBoxDB {
         }
     }
 
-    public SparseIntArray countProcessedImagesById(long contentId) {
+    SparseIntArray countProcessedImagesById(long contentId) {
         QueryBuilder<ImageFile> imgQuery = store.boxFor(ImageFile.class).query();
         imgQuery.equal(ImageFile_.contentId, contentId);
         List<ImageFile> images = imgQuery.build().find();
@@ -679,7 +674,7 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
     }
 
-    public void insertErrorRecord(ErrorRecord record) {
+    void insertErrorRecord(@NonNull final ErrorRecord record) {
         store.boxFor(ErrorRecord.class).put(record);
     }
 
@@ -687,20 +682,20 @@ public class ObjectBoxDB {
         return store.boxFor(ErrorRecord.class).query().equal(ErrorRecord_.contentId, contentId).build().find();
     }
 
-    public void deleteErrorRecords(long contentId) {
+    void deleteErrorRecords(long contentId) {
         List<ErrorRecord> records = selectErrorRecordByContentId(contentId);
         store.boxFor(ErrorRecord.class).remove(records);
     }
 
-    public void insertImageFile(@NonNull ImageFile img) {
+    void insertImageFile(@NonNull ImageFile img) {
         if (img.getId() > 0) store.boxFor(ImageFile.class).put(img);
     }
 
-    public void deleteImageFiles(long contentId) {
+    void deleteImageFiles(long contentId) {
         store.boxFor(ImageFile.class).query().equal(ImageFile_.contentId, contentId).build().remove();
     }
 
-    public void insertImageFiles(@NonNull List<ImageFile> imgs) {
+    void insertImageFiles(@NonNull List<ImageFile> imgs) {
         store.boxFor(ImageFile.class).put(imgs);
     }
 

@@ -12,6 +12,7 @@ import java.util.List;
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteHistory;
@@ -31,7 +32,13 @@ public interface CollectionDAO {
 
     void insertContent(@NonNull final Content content);
 
+    void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo);
+
     void deleteContent(@NonNull final Content content);
+
+    void insertErrorRecord(@NonNull final ErrorRecord record);
+
+    void deleteErrorRecords(long contentId);
 
 
     // High-level queries
@@ -58,9 +65,17 @@ public interface CollectionDAO {
 
     void insertImageFile(@NonNull ImageFile img);
 
+    void replaceImageList(long contentId, @NonNull final List<ImageFile> newList);
+
+    void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo);
+
+    void updateImageFileStatusParamsMimeType(@NonNull ImageFile image);
+
     ImageFile selectImageFile(long id);
 
     LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id);
+
+    SparseIntArray countProcessedImagesById(long contentId);
 
 
     // QUEUE
@@ -70,6 +85,8 @@ public interface CollectionDAO {
     void updateQueue(long contentId, int newOrder);
 
     void deleteQueue(@NonNull Content content);
+
+    void deleteQueue(int index);
 
     LiveData<PagedList<QueueRecord>> getQueueContent();
 
@@ -88,6 +105,11 @@ public interface CollectionDAO {
     SiteHistory getHistory(@NonNull Site s);
 
     void insertSiteHistory(@NonNull Site site, @NonNull String url);
+
+
+    // RESOURCES
+
+    void cleanup();
 
 
     // RESULTS STRUCTURES

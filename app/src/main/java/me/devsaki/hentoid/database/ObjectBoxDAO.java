@@ -26,6 +26,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteHistory;
@@ -60,6 +61,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         db = ObjectBoxDB.getInstance(store);
     }
 
+
+    public void cleanup() {
+        db.closeThreadResources();
+    }
 
     @Override
     public Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly) {
@@ -165,13 +170,37 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.insertContent(content);
     }
 
+    public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
+        db.updateContentStatus(updateFrom, updateTo);
+    }
+
     public void deleteContent(@NonNull final Content content) {
         db.deleteContent(content);
     }
 
+    public void insertErrorRecord(@NonNull final ErrorRecord record) {
+        db.insertErrorRecord(record);
+    }
+
+    public void deleteErrorRecords(long contentId) {
+        db.deleteErrorRecords(contentId);
+    }
 
     public void insertImageFile(@NonNull ImageFile img) {
         db.insertImageFile(img);
+    }
+
+    public void replaceImageList(long contentId, @NonNull final List<ImageFile> newList) {
+        db.deleteImageFiles(contentId);
+        db.insertImageFiles(newList);
+    }
+
+    public void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo) {
+        db.updateImageContentStatus(contentId, updateFrom, updateTo);
+    }
+
+    public void updateImageFileStatusParamsMimeType(@NonNull ImageFile image) {
+        db.updateImageFileStatusParamsMimeType(image);
     }
 
     @Nullable
@@ -181,6 +210,10 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id) {
         return new ObjectBoxLiveData<>(db.getDownloadedImagesFromContent(id));
+    }
+
+    public SparseIntArray countProcessedImagesById(long contentId) {
+        return db.countProcessedImagesById(contentId);
     }
 
 
@@ -279,6 +312,10 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteQueue(@NonNull Content content) {
         db.deleteQueue(content);
+    }
+
+    public void deleteQueue(int index) {
+        db.deleteQueue(index);
     }
 
     public SiteHistory getHistory(@NonNull Site s) {

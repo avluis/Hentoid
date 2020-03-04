@@ -47,7 +47,8 @@ import me.devsaki.fakku.PageInfo;
 import me.devsaki.fakku.PointTranslation;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -85,7 +86,7 @@ import timber.log.Timber;
  */
 public class ContentDownloadService extends IntentService {
 
-    private ObjectBoxDB db;                                   // Hentoid database
+    private CollectionDAO dao;
     private ServiceNotificationManager notificationManager;
     private NotificationManager warningNotificationManager;
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
@@ -118,7 +119,7 @@ public class ContentDownloadService extends IntentService {
 
         EventBus.getDefault().register(this);
 
-        db = ObjectBoxDB.getInstance(getApplicationContext());
+        dao = new ObjectBoxDAO(this);
 
         requestQueueManager = RequestQueueManager.getInstance(this);
 
@@ -130,7 +131,7 @@ public class ContentDownloadService extends IntentService {
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
-        db.closeThreadResources();
+        dao.cleanup();
 
         if (notificationManager != null) notificationManager.cancel();
         ContentQueueManager.getInstance().setInactive();
@@ -182,7 +183,7 @@ public class ContentDownloadService extends IntentService {
         // Work on first item of queue
 
         // Check if there is a first item to process
-        List<QueueRecord> queue = db.selectQueue();
+        List<QueueRecord> queue = dao.selectQueue();
         if (queue.isEmpty()) {
             Timber.w("Queue is empty. Aborting download.");
             return null;
@@ -192,7 +193,7 @@ public class ContentDownloadService extends IntentService {
 
         if (null == content) {
             Timber.w("Content is unavailable. Aborting download.");
-            db.deleteQueue(0);
+            dao.deleteQueue(0);
             content = new Content().setId(queue.get(0).content.getTargetId()); // Must supply content ID to the event for the UI to update properly
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification());
@@ -201,7 +202,7 @@ public class ContentDownloadService extends IntentService {
 
         if (StatusContent.DOWNLOADED == content.getStatus()) {
             Timber.w("Content is already downloaded. Aborting download.");
-            db.deleteQueue(0);
+            dao.deleteQueue(0);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification(content));
             return null;
@@ -209,7 +210,7 @@ public class ContentDownloadService extends IntentService {
 
         downloadCanceled = false;
         downloadSkipped = false;
-        db.deleteErrorRecords(content.getId());
+        dao.deleteErrorRecords(content.getId());
 
         boolean hasError = false;
         int nbErrors = 0;
@@ -248,10 +249,9 @@ public class ContentDownloadService extends IntentService {
                 }
 
                 // Manually insert new images (without using insertContent)
-                db.deleteImageFiles(content.getId());
-                db.insertImageFiles(images);
+                dao.replaceImageList(content.getId(), images);
 
-                content = db.selectContentById(content.getId()); // Get updated Content with the generated ID of new images
+                content = dao.selectContent(content.getId()); // Get updated Content with the generated ID of new images
             } catch (UnsupportedOperationException uoe) {
                 Timber.w(uoe, "A captcha has been found while parsing %s. Aborting download.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), "Image list", uoe.getMessage());
@@ -274,14 +274,14 @@ public class ContentDownloadService extends IntentService {
             }
         } else if (nbErrors > 0) {
             // Other cases : Reset ERROR status of images to mark them as "to be downloaded" (in DB and in memory)
-            db.updateImageContentStatus(content.getId(), StatusContent.ERROR, StatusContent.SAVED);
+            dao.updateImageContentStatus(content.getId(), StatusContent.ERROR, StatusContent.SAVED);
         }
 
         if (hasError) {
             content.setStatus(StatusContent.ERROR);
             content.setDownloadDate(Instant.now().toEpochMilli()); // Needs a download date to appear the right location when sorted by download date
-            db.insertContent(content);
-            db.deleteQueue(content);
+            dao.insertContent(content);
+            dao.deleteQueue(content);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             HentoidApp.trackDownloadEvent("Error");
             notificationManager.notify(new DownloadErrorNotification(content));
@@ -306,7 +306,7 @@ public class ContentDownloadService extends IntentService {
 
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
-            db.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ERROR);
+            dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ERROR);
             completeDownload(content, 0, images.size());
             return null;
         }
@@ -316,7 +316,7 @@ public class ContentDownloadService extends IntentService {
         content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
         if (0 == content.getQtyPages()) content.setQtyPages(images.size());
         content.setStatus(StatusContent.DOWNLOADING);
-        db.insertContent(content);
+        dao.insertContent(content);
 
         HentoidApp.trackDownloadEvent("Added");
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
@@ -353,7 +353,7 @@ public class ContentDownloadService extends IntentService {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
         do {
-            SparseIntArray statuses = db.countProcessedImagesById(content.getId());
+            SparseIntArray statuses = dao.countProcessedImagesById(content.getId());
             pagesOK = statuses.get(StatusContent.DOWNLOADED.getCode());
             pagesKO = statuses.get(StatusContent.ERROR.getCode());
 
@@ -410,6 +410,7 @@ public class ContentDownloadService extends IntentService {
 
             // Auto-retry when error pages are remaining and conditions are met
             // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
+            // TODO - test to make sure the service's thread continues to run in such a scenario
             if (pagesKO > 0 && Preferences.isDlRetriesActive()
                     && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
                     && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
@@ -423,7 +424,7 @@ public class ContentDownloadService extends IntentService {
                     if (img.getStatus().equals(StatusContent.ERROR)) {
                         Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
                         img.setStatus(StatusContent.SAVED);
-                        db.insertImageFile(img);
+                        dao.insertImageFile(img);
                         requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
                     }
                 return;
@@ -436,7 +437,7 @@ public class ContentDownloadService extends IntentService {
             // Clear download params from content
             if (0 == pagesKO && !hasError) content.setDownloadParams("");
 
-            db.insertContent(content);
+            dao.insertContent(content);
 
             // Save JSON file
             if (dir.exists()) {
@@ -446,7 +447,7 @@ public class ContentDownloadService extends IntentService {
                     DocumentFile jsonDocFile = FileHelper.getDocumentFile(jsonFile, false);
                     if (jsonDocFile != null) {
                         content.setJsonUri(jsonDocFile.getUri().toString());
-                        db.insertContent(content);
+                        dao.insertContent(content);
                     } else {
                         Timber.w("JSON file could not be cached for %s", content.getTitle());
                     }
@@ -460,7 +461,7 @@ public class ContentDownloadService extends IntentService {
             Timber.i("Content download finished: %s [%s]", content.getTitle(), content.getId());
 
             // Delete book from queue
-            db.deleteQueue(content);
+            dao.deleteQueue(content);
 
             // Increase downloads count
             contentQueueManager.downloadComplete();
@@ -658,7 +659,7 @@ public class ContentDownloadService extends IntentService {
             Timber.i("Backup URL contains image @ %s; queuing", backupImage.getUrl());
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
             originalImage.setBackup(true); // Indicates the image is from a backup (for display in error logs)
-            db.insertImageFile(originalImage);
+            dao.insertImageFile(originalImage);
             requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         } else Timber.w("Failed to parse backup URL");
     }
@@ -789,7 +790,7 @@ public class ContentDownloadService extends IntentService {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         if (success) img.setDownloadParams("");
         if (img.getId() > 0)
-            db.updateImageFileStatusParamsMimeType(img); // because thumb image isn't in the DB
+            dao.updateImageFileStatusParamsMimeType(img); // because thumb image isn't in the DB
     }
 
     /**
@@ -801,7 +802,7 @@ public class ContentDownloadService extends IntentService {
     public void onDownloadEvent(DownloadEvent event) {
         switch (event.eventType) {
             case DownloadEvent.EV_PAUSE:
-                db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
+                dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 requestQueueManager.cancelQueue();
                 ContentQueueManager.getInstance().pauseQueue();
                 notificationManager.cancel();
@@ -813,7 +814,7 @@ public class ContentDownloadService extends IntentService {
                 HentoidApp.trackDownloadEvent("Cancelled");
                 break;
             case DownloadEvent.EV_SKIP:
-                db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
+                dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 requestQueueManager.cancelQueue();
                 downloadSkipped = true;
                 // Tracking Event (Download Skipped)
@@ -826,6 +827,6 @@ public class ContentDownloadService extends IntentService {
 
     private void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
         ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description, Instant.now());
-        if (contentId > 0) db.insertErrorRecord(record);
+        if (contentId > 0) dao.insertErrorRecord(record);
     }
 }
