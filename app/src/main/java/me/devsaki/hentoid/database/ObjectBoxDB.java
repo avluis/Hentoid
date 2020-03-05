@@ -542,7 +542,7 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, long[] filteredContent) {
+    private Query<Attribute> queryAvailableAttributes(@NonNull final AttributeType type, String filter, long[] filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
@@ -561,7 +561,7 @@ public class ObjectBoxDB {
 
     @SuppressWarnings("squid:S2184")
         // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
-    List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
+    List<Attribute> selectAvailableAttributes(@NonNull AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();

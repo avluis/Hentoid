@@ -116,12 +116,6 @@ public interface CollectionDAO {
 
     class AttributeQueryResult {
         public List<Attribute> attributes = new ArrayList<>();
-        public long totalSelectedAttributes;
-
-        AttributeQueryResult() {}
-        public AttributeQueryResult(List<Attribute> attributes, long totalSelectedAttributes) {
-            this.attributes = new ArrayList<>(attributes);
-            this.totalSelectedAttributes = totalSelectedAttributes;
-        }
+        public long totalSelectedAttributes = 0;
     }
 }

@@ -262,15 +262,12 @@ public class ObjectBoxDAO implements CollectionDAO {
         AttributeQueryResult result = new AttributeQueryResult();
 
         if (attrTypes != null && !attrTypes.isEmpty()) {
-
             if (attrTypes.get(0).equals(AttributeType.SOURCE)) {
                 result.attributes.addAll(db.selectAvailableSources(attrs));
                 result.totalSelectedAttributes = result.attributes.size();
             } else {
-                result.totalSelectedAttributes = 0;
                 for (AttributeType type : attrTypes) {
                     // TODO fix sorting when concatenating both lists
-                    // No favourites button in SearchActivity
                     result.attributes.addAll(db.selectAvailableAttributes(type, attrs, filter, filterFavourites, sortOrder, pageNum, itemPerPage));
                     result.totalSelectedAttributes += db.countAvailableAttributes(type, attrs, filter, filterFavourites);
                 }

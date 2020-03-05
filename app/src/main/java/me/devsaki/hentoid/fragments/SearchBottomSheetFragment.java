@@ -226,7 +226,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         // Remove selected attributes from the result set
         results.attributes.removeAll(selectedAttributes);
 
-        mTotalSelectedCount = results.totalSelectedAttributes - selectedAttributes.size();
+        mTotalSelectedCount = results.totalSelectedAttributes/* - selectedAttributes.size()*/;
         if (clearOnSuccess) attributeAdapter.clear();
         if (0 == mTotalSelectedCount) {
             String searchQuery = tagSearchView.getQuery().toString();

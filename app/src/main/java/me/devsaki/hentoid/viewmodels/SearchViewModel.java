@@ -94,12 +94,7 @@ public class SearchViewModel extends ViewModel {
                         itemsPerPage,
                         attributeSortOrder
                 )
-                .subscribe(attributeQueryResult -> {
-                    CollectionDAO.AttributeQueryResult result = new CollectionDAO.AttributeQueryResult(
-                            attributeQueryResult.attributes, attributeQueryResult.totalSelectedAttributes
-                    );
-                    proposedAttributes.postValue(result);
-                });
+                .subscribe(proposedAttributes::postValue);
     }
 
     public void onAttributeSelected(Attribute a) {
