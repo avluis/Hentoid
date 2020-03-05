@@ -70,6 +70,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -152,6 +153,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private PagedList<Content> library;
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
+
+    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
 
     // === SEARCH PARAMETERS
     // Current text search query
@@ -1135,15 +1138,24 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     /**
      * Callback for the end of item diff calculations
-     * Activated when all displayed items are placed on their definitive position
+     * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
         if (topItemPosition > -1) {
-            int currentPosition = getTopItemPosition();
-            if (currentPosition != topItemPosition)
-                llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
+            int targetPos = topItemPosition;
+            listRefreshDebouncer.submit(targetPos);
             topItemPosition = -1;
         }
+    }
+
+    /**
+     * Callback for the end of recycler updates
+     * Activated when all _displayed_ items are placed on their definitive position
+     */
+    private void onRecyclerUpdated(int topItemPosition) {
+        int currentPosition = getTopItemPosition();
+        if (currentPosition != topItemPosition)
+            llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
     }
 
     /**

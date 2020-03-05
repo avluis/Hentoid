@@ -44,6 +44,7 @@ import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -85,7 +86,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private RecyclerView.SmoothScroller smoothScroller;
     private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
     private Disposable slideshowTimer = null;
-    private Disposable recyclerWatcher = null;
+
+    private final Debouncer<Integer> indexRefreshDebouncer = new Debouncer<>(75, this::applyStartingIndexInternal);
 
     // Starting index management
     private boolean isComputingImageList = false;
@@ -222,7 +224,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onStop() {
         viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
         if (slideshowTimer != null) slideshowTimer.dispose();
-        if (recyclerWatcher != null) recyclerWatcher.dispose();
         super.onStop();
     }
 
@@ -422,16 +423,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void applyStartingIndex(int startingIndex) {
-        // Wait until the recycler has finished refreshing with the new adapter contents to go to the new page
-        recyclerWatcher = Observable.timer(50, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.computation())
-                .repeat(300)
-                .observeOn(AndroidSchedulers.mainThread())
-                .repeatUntil(() -> !recyclerView.hasPendingAdapterUpdates())
-                .subscribe(v -> applyStartingIndexInternal(startingIndex),
-                        Timber::e,
-                        () -> recyclerWatcher.dispose()
-                );
+        indexRefreshDebouncer.submit(startingIndex);
         targetStartingIndex = -1;
     }
 
@@ -447,7 +439,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             else
                 llm.scrollToPositionWithOffset(startingIndex, 0);
         }
-        recyclerWatcher.dispose();
     }
 
     /**
