@@ -154,7 +154,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
 
+    // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+
 
     // === SEARCH PARAMETERS
     // Current text search query

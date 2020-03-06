@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.function.LongConsumer;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
@@ -40,6 +41,7 @@ import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
@@ -73,7 +75,16 @@ public class QueueFragment extends Fragment {
     private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
     private Toolbar toolbar;
 
+    // Used to keep scroll position when moving items
+    // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
+    private int topItemPosition = -1;
+    private int offsetTop = 0;
+
     private LinearLayoutManager llm;
+
+    // Used to start processing when the recyclerView has finished updating
+    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+
 
     // State
     private boolean isPreparingDownload = false;
@@ -162,6 +173,22 @@ public class QueueFragment extends Fragment {
         return rootView;
     }
 
+    // Process the move command while keeping scroll position in memory
+    // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
+    private void processMove(@NotNull ContentItem item, @NonNull LongConsumer consumer) {
+        Content c = item.getContent();
+        if (c != null) {
+            topItemPosition = getTopItemPosition();
+            offsetTop = 0;
+            if (topItemPosition >= 0) {
+                View firstView = llm.findViewByPosition(topItemPosition);
+                if (firstView != null)
+                    offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
+            }
+            consumer.accept(c.getId());
+        }
+    }
+
     private void attachButtons(FastAdapter<ContentItem> fastAdapter) {
         // Site button
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
@@ -185,8 +212,7 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                Content c = item.getContent();
-                if (c != null) viewModel.moveUp(c.getId());
+                processMove(item, viewModel::moveUp);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -203,8 +229,7 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                Content c = item.getContent();
-                if (c != null) viewModel.moveTop(c.getId());
+                processMove(item, viewModel::moveTop);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -221,8 +246,7 @@ public class QueueFragment extends Fragment {
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                Content c = item.getContent();
-                if (c != null) viewModel.moveDown(c.getId());
+                processMove(item, viewModel::moveDown);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -386,9 +410,29 @@ public class QueueFragment extends Fragment {
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        itemAdapter.submitList(result);
+        itemAdapter.submitList(result, this::differEndCallback);
 
         updateUI();
+    }
+
+    /**
+     * Callback for the end of item diff calculations
+     * Activated when all _adapter_ items are placed on their definitive position
+     */
+    private void differEndCallback() {
+        if (topItemPosition >= 0) {
+            int targetPos = topItemPosition;
+            listRefreshDebouncer.submit(targetPos);
+            topItemPosition = -1;
+        }
+    }
+
+    /**
+     * Callback for the end of recycler updates
+     * Activated when all _displayed_ items are placed on their definitive position
+     */
+    private void onRecyclerUpdated(int topItemPosition) {
+        llm.scrollToPositionWithOffset(topItemPosition, offsetTop); // Used to restore position after activity has been stopped and recreated
     }
 
     private void updateUI() {
@@ -452,7 +496,15 @@ public class QueueFragment extends Fragment {
             // TODO test long queues to see if a memorization of the top position (as in Library screen) is necessary
             ContentHelper.openHentoidViewer(requireContext(), c, null);
             return true;
-        }
-        else return false;
+        } else return false;
+    }
+
+    /**
+     * Calculate the position of the top visible item of the book list
+     *
+     * @return position of the top visible item of the book list
+     */
+    private int getTopItemPosition() {
+        return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
     }
 }
