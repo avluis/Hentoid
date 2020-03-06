@@ -410,7 +410,7 @@ public class CustomSubsamplingScaleImageView extends View {
             typedAttr.recycle();
         }
 
-        quickScaleThreshold = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, context.getResources().getDisplayMetrics());
+        quickScaleThreshold = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, context.getResources().getDisplayMetrics());
     }
 
     public CustomSubsamplingScaleImageView(Context context) {
