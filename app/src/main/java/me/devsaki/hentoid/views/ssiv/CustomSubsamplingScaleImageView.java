@@ -169,27 +169,20 @@ public class CustomSubsamplingScaleImageView extends View {
         int START = 4;
     }
 
-
-    /**
-     * State change originated from animation.
-     */
-    public static final int ORIGIN_ANIM = 1;
-    /**
-     * State change originated from touch gesture.
-     */
-    public static final int ORIGIN_TOUCH = 2;
-    /**
-     * State change originated from a fling momentum anim.
-     */
-    public static final int ORIGIN_FLING = 3;
-    /**
-     * State change originated from a double tap zoom anim.
-     */
-    public static final int ORIGIN_DOUBLE_TAP_ZOOM = 4;
-    /**
-     * State change originated from a long tap zoom anim.
-     */
-    public static final int ORIGIN_LONG_TAP_ZOOM = 5;
+    @IntDef({AnimOrigin.ANIM, AnimOrigin.TOUCH, AnimOrigin.FLING, AnimOrigin.DOUBLE_TAP_ZOOM, AnimOrigin.LONG_TAP_ZOOM})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AnimOrigin {
+        // State change originated from animation.
+        int ANIM = 1;
+        // State change originated from touch gesture.
+        int TOUCH = 2;
+        // State change originated from a fling momentum anim.
+        int FLING = 3;
+        // State change originated from a double tap zoom anim.
+        int DOUBLE_TAP_ZOOM = 4;
+        // State change originated from a long tap zoom anim.
+        int LONG_TAP_ZOOM = 5;
+    }
 
 
     private static final String ANIMATION_LISTENER_ERROR = "Error thrown by animation listener";
@@ -232,7 +225,8 @@ public class CustomSubsamplingScaleImageView extends View {
     private int panLimit = PAN_LIMIT_INSIDE;
 
     // Minimum scale type
-    private @ScaleType int minimumScaleType = ScaleType.CENTER_INSIDE;
+    private @ScaleType
+    int minimumScaleType = ScaleType.CENTER_INSIDE;
 
     // overrides for the dimensions of the generated tiles
     public static final int TILE_SIZE_AUTO = Integer.MAX_VALUE;
@@ -638,7 +632,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     PointF vTranslateEnd = new PointF(vTranslate.x + (velocityX * 0.25f), vTranslate.y + (velocityY * 0.25f));
                     float sCenterXEnd = ((getWidthInternal() / 2f) - vTranslateEnd.x) / scale;
                     float sCenterYEnd = ((getHeightInternal() / 2f) - vTranslateEnd.y) / scale;
-                    new AnimationBuilder(new PointF(sCenterXEnd, sCenterYEnd)).withEasing(Easing.OUT_QUAD).withPanLimited(false).withOrigin(ORIGIN_FLING).start();
+                    new AnimationBuilder(new PointF(sCenterXEnd, sCenterYEnd)).withEasing(Easing.OUT_QUAD).withPanLimited(false).withOrigin(AnimOrigin.FLING).start();
                     return true;
                 }
                 return super.onFling(e1, e2, velocityX, velocityY);
@@ -698,29 +692,24 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     public void longTapZoom(int x, int y) {
-        if (zoomEnabled && longTapZoomEnabled && readySent && vTranslate != null) {
+        if (zoomEnabled && longTapZoomEnabled && readySent) {
 
             isPanning = true;
             vCenterStart = new PointF(x, y);
-
             PointF sCenter = viewToSourceCoord(vCenterStart);
             if (null == sCenter)
                 throw new IllegalStateException("vTranslate is null; aborting");
 
-//            float doubleTapZoomScale = Math.min(maxScale, this.doubleTapZoomScale);
-            new AnimationBuilder(doubleTapZoomScale, sCenter, vCenterStart).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(ORIGIN_LONG_TAP_ZOOM).start();
+            Timber.d(">> longTap scale %s", scale);
+            Timber.d(">> longTap vTranslate %s", vTranslate);
+            Timber.d(">> longTap vCenterStart %s", vCenterStart);
+            Timber.d(">> longTap sCenter %s", sCenter);
+
+            new AnimationBuilder(doubleTapZoomScale, sCenter, vCenterStart).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.LONG_TAP_ZOOM).start();
 
             isLongTapZooming = true;
-
-            // Center the picture to the targeted area (else it offsets to the top left corner)
-            vTranslateStart = new PointF(vTranslate.x, vTranslate.y);
-            float vLeftStart = vCenterStart.x - vTranslateStart.x;
-            float vTopStart = vCenterStart.y - vTranslateStart.y;
-            float vLeftNow = vLeftStart * doubleTapZoomScale;
-            float vTopNow = vTopStart * doubleTapZoomScale;
-            vTranslate.x = vCenterStart.x - vLeftNow;
-            vTranslate.y = vCenterStart.y - vTopNow;
-            vTranslateStart.set(vTranslate);
+            // Panning gesture management will align itself on the new vTranslate coordinates calculated by the animator
+            vTranslateStart = null;
         }
     }
 
@@ -824,7 +813,7 @@ public class CustomSubsamplingScaleImageView extends View {
         vTranslateBefore.set(vTranslate);
 
         boolean handled = onTouchEventInternal(event);
-        sendStateChanged(scaleBefore, vTranslateBefore, ORIGIN_TOUCH);
+        sendStateChanged(scaleBefore, vTranslateBefore, AnimOrigin.TOUCH);
         return handled || super.onTouchEvent(event);
     }
 
@@ -978,6 +967,11 @@ public class CustomSubsamplingScaleImageView extends View {
                         // One finger pan - translate the image. We do this calculation even with pan disabled so click
                         // and long click behaviour is preserved.
 
+                        // When long tap zoom animation has ended, use vTranslate coordinates calculated by the animator
+                        if (isLongTapZooming && vTranslateStart.equals(0f,0f))
+                            vTranslateStart = new PointF(vTranslate.x, vTranslate.y);
+
+                        Timber.d(">> pan vCenterStart %s", vCenterStart);
                         float dx = Math.abs(event.getX() - vCenterStart.x);
                         float dy = Math.abs(event.getY() - vCenterStart.y);
 
@@ -985,12 +979,21 @@ public class CustomSubsamplingScaleImageView extends View {
                         float offset = density * 5;
                         if (dx > offset || dy > offset || isPanning) {
                             consumed = true;
+
+                            Timber.d(">> pan vTranslateStart A %s", vTranslateStart);
+                            Timber.d(">> pan event A %s %s", event.getX(), event.getY());
+
                             vTranslate.x = vTranslateStart.x + (event.getX() - vCenterStart.x);
                             vTranslate.y = vTranslateStart.y + (event.getY() - vCenterStart.y);
+
+                            Timber.d(">> = pan vTranslate A %s", vTranslate);
 
                             float lastX = vTranslate.x;
                             float lastY = vTranslate.y;
                             fitToBounds(true);
+
+                            Timber.d(">> = pan vTranslate B %s", vTranslate);
+
                             boolean atXEdge = lastX != vTranslate.x;
                             boolean atYEdge = lastY != vTranslate.y;
                             boolean edgeXSwipe = atXEdge && dx > dy && !isPanning;
@@ -1108,9 +1111,9 @@ public class CustomSubsamplingScaleImageView extends View {
         if (doubleTapZoomStyle == ZOOM_FOCUS_CENTER_IMMEDIATE) {
             setScaleAndCenter(targetScale, sCenter);
         } else if (doubleTapZoomStyle == ZOOM_FOCUS_CENTER || !zoomIn || !panEnabled) {
-            new AnimationBuilder(targetScale, sCenter).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(ORIGIN_DOUBLE_TAP_ZOOM).start();
+            new AnimationBuilder(targetScale, sCenter).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.DOUBLE_TAP_ZOOM).start();
         } else if (doubleTapZoomStyle == ZOOM_FOCUS_FIXED) {
-            new AnimationBuilder(targetScale, sCenter, vFocus).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(ORIGIN_DOUBLE_TAP_ZOOM).start();
+            new AnimationBuilder(targetScale, sCenter, vFocus).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.DOUBLE_TAP_ZOOM).start();
         }
         invalidate();
     }
@@ -1146,6 +1149,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
         // If animating scale, calculate current scale and center with easing equations
         if (anim != null && anim.vFocusStart != null) {
+            Timber.d(">> Animation START %s", anim.origin);
             // Store current values so we can send an event if they change
             float scaleBefore = scale;
             if (vTranslateBefore == null) {
@@ -1170,6 +1174,7 @@ public class CustomSubsamplingScaleImageView extends View {
             sendStateChanged(scaleBefore, vTranslateBefore, anim.origin);
             refreshRequiredTiles(finished);
             if (finished) {
+                Timber.d(">> Animation END %s", anim.origin);
                 if (anim.listener != null) {
                     try {
                         anim.listener.onComplete();
@@ -1530,6 +1535,7 @@ public class CustomSubsamplingScaleImageView extends View {
             }
             vTranslate.x = (getWidthInternal() / 2f) - (scale * sPendingCenter.x);
             vTranslate.y = (getHeightInternal() / 2f) - (scale * sPendingCenter.y);
+            Timber.d(">> preDraw vTranslate %s", vTranslate);
             sPendingCenter = null;
             pendingScale = null;
             fitToBounds(true);
@@ -1588,7 +1594,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param center Whether the image should be centered in the dimension it's too small to fill. While animating this can be false to avoid changes in direction as bounds are reached.
      * @param sat    The scale we want and the translation we're aiming for. The values are adjusted to be valid.
      */
-    private void fitToBounds(boolean center, ScaleAndTranslate sat) {
+    private void fitToBounds(boolean center, @NonNull ScaleAndTranslate sat) {
         if (panLimit == PAN_LIMIT_OUTSIDE && isReady()) {
             center = false;
         }
@@ -1652,8 +1658,10 @@ public class CustomSubsamplingScaleImageView extends View {
         fitToBounds(center, satTemp);
         scale = satTemp.scale;
         vTranslate.set(satTemp.vTranslate);
+        Timber.d(">> fitToBounds vTranslate %s", vTranslate);
         if (init && minimumScaleType != ScaleType.START) {
             vTranslate.set(vTranslateForSCenter(sWidth() / 2f, sHeight() / 2f, scale));
+            Timber.d(">> fitToBounds init vTranslate %s", vTranslate);
         }
     }
 
@@ -2083,8 +2091,10 @@ public class CustomSubsamplingScaleImageView extends View {
         private PointF vFocusEnd; // Where the view focal point should be moved to during the anim
         private long duration = 500; // How long the anim takes
         private boolean interruptible = true; // Whether the anim can be interrupted by a touch
-        private int easing = Easing.IN_OUT_QUAD; // Easing style
-        private int origin = ORIGIN_ANIM; // Animation origin (API, double tap or fling)
+        private @Easing
+        int easing = Easing.IN_OUT_QUAD; // Easing style
+        private @AnimOrigin
+        int origin = AnimOrigin.ANIM; // Animation origin (API, double tap or fling)
         private long time = System.currentTimeMillis(); // Start time
         private OnAnimationEventListener listener; // Event listener
 
@@ -3142,6 +3152,10 @@ public class CustomSubsamplingScaleImageView extends View {
         return new AnimationBuilder(scale, sCenter);
     }
 
+    /**
+     * Set temporary image dimensions to be used during pre-loading operations
+     * (i.e. when actual source height and width are not known yet)
+     */
     public void setPreloadDimensions(int width, int height) {
         preloadDimensions = new Point(width, height);
     }
@@ -3170,12 +3184,13 @@ public class CustomSubsamplingScaleImageView extends View {
         private long duration = 500;
         private @Easing
         int easing = Easing.IN_OUT_QUAD;
-        private int origin = ORIGIN_ANIM;
+        private @AnimOrigin
+        int origin = AnimOrigin.ANIM;
         private boolean interruptible = true;
         private boolean panLimited = true;
         private OnAnimationEventListener listener;
 
-        private AnimationBuilder(@NonNull PointF sCenter) {
+        private AnimationBuilder(@NonNull final PointF sCenter) {
             this.targetScale = scale;
             this.targetSCenter = sCenter;
             this.vFocus = null;
@@ -3187,13 +3202,13 @@ public class CustomSubsamplingScaleImageView extends View {
             this.vFocus = null;
         }
 
-        private AnimationBuilder(float scale, @NonNull PointF sCenter) {
+        private AnimationBuilder(float scale, @NonNull final PointF sCenter) {
             this.targetScale = scale;
             this.targetSCenter = sCenter;
             this.vFocus = null;
         }
 
-        private AnimationBuilder(float scale, @NonNull PointF sCenter, @NonNull PointF vFocus) {
+        private AnimationBuilder(float scale, @NonNull final PointF sCenter, @NonNull final PointF vFocus) {
             this.targetScale = scale;
             this.targetSCenter = sCenter;
             this.vFocus = vFocus;
@@ -3263,7 +3278,7 @@ public class CustomSubsamplingScaleImageView extends View {
          * Only for internal use. Indicates what caused the animation.
          */
         @NonNull
-        private AnimationBuilder withOrigin(int origin) {
+        private AnimationBuilder withOrigin(@AnimOrigin int origin) {
             this.origin = origin;
             return this;
         }
@@ -3283,9 +3298,9 @@ public class CustomSubsamplingScaleImageView extends View {
             int vxCenter = getPaddingLeft() + (getWidthInternal() - getPaddingRight() - getPaddingLeft()) / 2;
             int vyCenter = getPaddingTop() + (getHeightInternal() - getPaddingBottom() - getPaddingTop()) / 2;
             float targetScale = limitedScale(this.targetScale);
-            Timber.i(">> targetSCenter A %s %s", targetSCenter.x, targetSCenter.y);
+            Timber.d(">> anim start targetSCenter A %s", targetSCenter);
             PointF targetSCenter = panLimited ? limitedSCenter(this.targetSCenter.x, this.targetSCenter.y, targetScale, new PointF()) : this.targetSCenter;
-            Timber.i(">> targetSCenter B %s %s", targetSCenter.x, targetSCenter.y);
+            Timber.d(">> anim start targetSCenter B %s", targetSCenter);
             anim = new Anim();
             anim.scaleStart = scale;
             anim.scaleEnd = targetScale;
@@ -3309,14 +3324,17 @@ public class CustomSubsamplingScaleImageView extends View {
                 // Calculate where translation will be at the end of the anim
                 float vTranslateXEnd = vFocus.x - (targetScale * anim.sCenterStart.x);
                 float vTranslateYEnd = vFocus.y - (targetScale * anim.sCenterStart.y);
+                Timber.d(">> anim start vTranslateEnd %s %s", vTranslateXEnd, vTranslateYEnd);
                 ScaleAndTranslate satEnd = new ScaleAndTranslate(targetScale, new PointF(vTranslateXEnd, vTranslateYEnd));
                 // Fit the end translation into bounds
                 fitToBounds(true, satEnd);
+                Timber.d(">> anim start satEnd.vTranslate %s", satEnd.vTranslate);
                 // Adjust the position of the focus point at end so image will be in bounds
                 anim.vFocusEnd = new PointF(
                         vFocus.x + (satEnd.vTranslate.x - vTranslateXEnd),
                         vFocus.y + (satEnd.vTranslate.y - vTranslateYEnd)
                 );
+                Timber.d(">> anim start anim.vFocusEnd %s", anim.vFocusEnd);
             }
 
             invalidate();
@@ -3489,7 +3507,7 @@ public class CustomSubsamplingScaleImageView extends View {
          * whether the image is fully zoomed in or out.
          *
          * @param newScale The new scale.
-         * @param origin   Where the event originated from - one of {@link #ORIGIN_ANIM}, {@link #ORIGIN_TOUCH}.
+         * @param origin   Where the event originated from - one of AnimOrigin.ANIM, AnimOrigin.TOUCH.
          */
         void onScaleChanged(float newScale, int origin);
 
@@ -3497,7 +3515,7 @@ public class CustomSubsamplingScaleImageView extends View {
          * The source center has been changed. This can be a result of panning or zooming.
          *
          * @param newCenter The new source center point.
-         * @param origin    Where the event originated from - one of {@link #ORIGIN_ANIM}, {@link #ORIGIN_TOUCH}.
+         * @param origin    Where the event originated from - one of AnimOrigin.ANIM, AnimOrigin.TOUCH.
          */
         void onCenterChanged(PointF newCenter, int origin);
 
