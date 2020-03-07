@@ -151,24 +151,24 @@ public class CustomSubsamplingScaleImageView extends View {
 
     private static final List<Integer> VALID_PAN_LIMITS = Arrays.asList(PAN_LIMIT_INSIDE, PAN_LIMIT_OUTSIDE, PAN_LIMIT_CENTER);
 
-    /**
-     * Scale the image so that both dimensions of the image will be equal to or less than the corresponding dimension of the view. The image is then centered in the view. This is the default behaviour and best for galleries.
-     */
-    public static final int SCALE_TYPE_CENTER_INSIDE = 1;
-    /**
-     * Scale the image uniformly so that both dimensions of the image will be equal to or larger than the corresponding dimension of the view. The image is then centered in the view.
-     */
-    public static final int SCALE_TYPE_CENTER_CROP = 2;
-    /**
-     * Scale the image so that both dimensions of the image will be equal to or less than the maxScale and equal to or larger than minScale. The image is then centered in the view.
-     */
-    public static final int SCALE_TYPE_CUSTOM = 3;
-    /**
-     * Scale the image so that both dimensions of the image will be equal to or larger than the corresponding dimension of the view. The top left is shown.
-     */
-    public static final int SCALE_TYPE_START = 4;
 
-    private static final List<Integer> VALID_SCALE_TYPES = Arrays.asList(SCALE_TYPE_CENTER_CROP, SCALE_TYPE_CENTER_INSIDE, SCALE_TYPE_CUSTOM, SCALE_TYPE_START);
+    @IntDef({ScaleType.CENTER_INSIDE, ScaleType.CENTER_CROP, ScaleType.CUSTOM, ScaleType.START})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ScaleType {
+        // Scale the image so that both dimensions of the image will be equal to or less than the corresponding dimension of the view.
+        // The image is then centered in the view. This is the default behaviour and best for galleries.
+        int CENTER_INSIDE = 1;
+        // Scale the image uniformly so that both dimensions of the image will be equal to or larger than the corresponding dimension of the view.
+        // The image is then centered in the view.
+        int CENTER_CROP = 2;
+        // Scale the image so that both dimensions of the image will be equal to or less than the maxScale and equal to or larger than minScale.
+        // The image is then centered in the view.
+        int CUSTOM = 3;
+        // Scale the image so that both dimensions of the image will be equal to or larger than the corresponding dimension of the view.
+        // The top left is shown.
+        int START = 4;
+    }
+
 
     /**
      * State change originated from animation.
@@ -232,7 +232,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private int panLimit = PAN_LIMIT_INSIDE;
 
     // Minimum scale type
-    private int minimumScaleType = SCALE_TYPE_CENTER_INSIDE;
+    private @ScaleType int minimumScaleType = ScaleType.CENTER_INSIDE;
 
     // overrides for the dimensions of the generated tiles
     public static final int TILE_SIZE_AUTO = Integer.MAX_VALUE;
@@ -260,7 +260,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private float scale;
     private float scaleStart;
 
-    // Screen coordinate of top-left corner of source image
+    // Screen coordinate of top-left corner of source image (image offset relative to screen)
     private PointF vTranslate;
     private PointF vTranslateStart;
     private PointF vTranslateBefore;
@@ -298,7 +298,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private DecoderFactory<? extends ImageDecoder> bitmapDecoderFactory = new CompatDecoderFactory<>(SkiaImageDecoder.class);
     private DecoderFactory<? extends ImageRegionDecoder> regionDecoderFactory = new CompatDecoderFactory<>(SkiaImageRegionDecoder.class);
 
-    // Debug values
+    // Start of double-tap and long-tap zoom, in terms of screen (view) coordinates
     private PointF vCenterStart;
     private float vDistStart;
 
@@ -702,17 +702,18 @@ public class CustomSubsamplingScaleImageView extends View {
 
             isPanning = true;
             vCenterStart = new PointF(x, y);
-            vTranslateStart = new PointF(vTranslate.x, vTranslate.y);
 
-            PointF sCenter = viewToSourceCoord(new PointF(x, y));
+            PointF sCenter = viewToSourceCoord(vCenterStart);
             if (null == sCenter)
                 throw new IllegalStateException("vTranslate is null; aborting");
 
-            float doubleTapZoomScale = Math.min(maxScale, this.doubleTapZoomScale);
-            new AnimationBuilder(doubleTapZoomScale, vCenterStart).withPanLimited(false).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(ORIGIN_LONG_TAP_ZOOM).start();
+//            float doubleTapZoomScale = Math.min(maxScale, this.doubleTapZoomScale);
+            new AnimationBuilder(doubleTapZoomScale, sCenter, vCenterStart).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(ORIGIN_LONG_TAP_ZOOM).start();
 
             isLongTapZooming = true;
 
+            // Center the picture to the targeted area (else it offsets to the top left corner)
+            vTranslateStart = new PointF(vTranslate.x, vTranslate.y);
             float vLeftStart = vCenterStart.x - vTranslateStart.x;
             float vTopStart = vCenterStart.y - vTranslateStart.y;
             float vLeftNow = vLeftStart * doubleTapZoomScale;
@@ -1651,7 +1652,7 @@ public class CustomSubsamplingScaleImageView extends View {
         fitToBounds(center, satTemp);
         scale = satTemp.scale;
         vTranslate.set(satTemp.vTranslate);
-        if (init && minimumScaleType != SCALE_TYPE_START) {
+        if (init && minimumScaleType != ScaleType.START) {
             vTranslate.set(vTranslateForSCenter(sWidth() / 2f, sHeight() / 2f, scale));
         }
     }
@@ -2222,9 +2223,8 @@ public class CustomSubsamplingScaleImageView extends View {
      * Convert screen to source x coordinate.
      */
     private float viewToSourceX(float vx) {
-        if (vTranslate == null) {
-            return Float.NaN;
-        }
+        if (vTranslate == null) return Float.NaN;
+
         return (vx - vTranslate.x) / scale;
     }
 
@@ -2232,9 +2232,8 @@ public class CustomSubsamplingScaleImageView extends View {
      * Convert screen to source y coordinate.
      */
     private float viewToSourceY(float vy) {
-        if (vTranslate == null) {
-            return Float.NaN;
-        }
+        if (vTranslate == null) return Float.NaN;
+
         return (vy - vTranslate.y) / scale;
     }
 
@@ -2294,7 +2293,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @return a coordinate representing the corresponding source coordinate.
      */
     @Nullable
-    public final PointF viewToSourceCoord(PointF vxy) {
+    public final PointF viewToSourceCoord(@NonNull final PointF vxy) {
         return viewToSourceCoord(vxy.x, vxy.y, new PointF());
     }
 
@@ -2332,9 +2331,8 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     @Nullable
     public final PointF viewToSourceCoord(float vx, float vy, @NonNull PointF sTarget) {
-        if (vTranslate == null) {
-            return null;
-        }
+        if (vTranslate == null) return null;
+
         sTarget.set(viewToSourceX(vx), viewToSourceY(vy));
         return sTarget;
     }
@@ -2343,9 +2341,8 @@ public class CustomSubsamplingScaleImageView extends View {
      * Convert source to view x coordinate.
      */
     private float sourceToViewX(float sx) {
-        if (vTranslate == null) {
-            return Float.NaN;
-        }
+        if (vTranslate == null) return Float.NaN;
+
         return (sx * scale) + vTranslate.x;
     }
 
@@ -2353,9 +2350,8 @@ public class CustomSubsamplingScaleImageView extends View {
      * Convert source to view y coordinate.
      */
     private float sourceToViewY(float sy) {
-        if (vTranslate == null) {
-            return Float.NaN;
-        }
+        if (vTranslate == null) return Float.NaN;
+
         return (sy * scale) + vTranslate.y;
     }
 
@@ -2366,7 +2362,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @return view coordinates.
      */
     @Nullable
-    public final PointF sourceToViewCoord(PointF sxy) {
+    public final PointF sourceToViewCoord(@NonNull final PointF sxy) {
         return sourceToViewCoord(sxy.x, sxy.y, new PointF());
     }
 
@@ -2391,7 +2387,7 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     @SuppressWarnings("UnusedReturnValue")
     @Nullable
-    public final PointF sourceToViewCoord(PointF sxy, @NonNull PointF vTarget) {
+    public final PointF sourceToViewCoord(@NonNull final PointF sxy, @NonNull PointF vTarget) {
         return sourceToViewCoord(sxy.x, sxy.y, vTarget);
     }
 
@@ -2405,9 +2401,8 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     @Nullable
     public final PointF sourceToViewCoord(float sx, float sy, @NonNull PointF vTarget) {
-        if (vTranslate == null) {
-            return null;
-        }
+        if (vTranslate == null) return null;
+
         vTarget.set(sourceToViewX(sx), sourceToViewY(sy));
         return vTarget;
     }
@@ -2448,9 +2443,9 @@ public class CustomSubsamplingScaleImageView extends View {
     private float minScale() {
         int vPadding = getPaddingBottom() + getPaddingTop();
         int hPadding = getPaddingLeft() + getPaddingRight();
-        if (minimumScaleType == SCALE_TYPE_CENTER_CROP || minimumScaleType == SCALE_TYPE_START) {
+        if (minimumScaleType == ScaleType.CENTER_CROP || minimumScaleType == ScaleType.START) {
             return Math.max((getWidthInternal() - hPadding) / (float) sWidth(), (getHeightInternal() - vPadding) / (float) sHeight());
-        } else if (minimumScaleType == SCALE_TYPE_CUSTOM && minScale > 0) {
+        } else if (minimumScaleType == ScaleType.CUSTOM && minScale > 0) {
             return minScale;
         } else {
             return Math.min((getWidthInternal() - hPadding) / (float) sWidth(), (getHeightInternal() - vPadding) / (float) sHeight());
@@ -2630,14 +2625,11 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     /**
-     * Set the minimum scale type. See static fields. Normally {@link #SCALE_TYPE_CENTER_INSIDE} is best, for image galleries.
+     * Set the minimum scale type. See static fields. Normally ScaleType.CENTER_INSIDE is best, for image galleries.
      *
      * @param scaleType a scale type constant. See static fields.
      */
-    public final void setMinimumScaleType(int scaleType) {
-        if (!VALID_SCALE_TYPES.contains(scaleType)) {
-            throw new IllegalArgumentException("Invalid scale type: " + scaleType);
-        }
+    public final void setMinimumScaleType(@ScaleType int scaleType) {
         this.minimumScaleType = scaleType;
         if (isReady()) {
             fitToBounds(true);
@@ -3174,14 +3166,16 @@ public class CustomSubsamplingScaleImageView extends View {
         private final float targetScale;
         private final PointF targetSCenter;
         private final PointF vFocus;
+
         private long duration = 500;
-        private @Easing int easing = Easing.IN_OUT_QUAD;
+        private @Easing
+        int easing = Easing.IN_OUT_QUAD;
         private int origin = ORIGIN_ANIM;
         private boolean interruptible = true;
         private boolean panLimited = true;
         private OnAnimationEventListener listener;
 
-        private AnimationBuilder(PointF sCenter) {
+        private AnimationBuilder(@NonNull PointF sCenter) {
             this.targetScale = scale;
             this.targetSCenter = sCenter;
             this.vFocus = null;
@@ -3193,13 +3187,13 @@ public class CustomSubsamplingScaleImageView extends View {
             this.vFocus = null;
         }
 
-        private AnimationBuilder(float scale, PointF sCenter) {
+        private AnimationBuilder(float scale, @NonNull PointF sCenter) {
             this.targetScale = scale;
             this.targetSCenter = sCenter;
             this.vFocus = null;
         }
 
-        private AnimationBuilder(float scale, PointF sCenter, PointF vFocus) {
+        private AnimationBuilder(float scale, @NonNull PointF sCenter, @NonNull PointF vFocus) {
             this.targetScale = scale;
             this.targetSCenter = sCenter;
             this.vFocus = vFocus;
@@ -3289,7 +3283,9 @@ public class CustomSubsamplingScaleImageView extends View {
             int vxCenter = getPaddingLeft() + (getWidthInternal() - getPaddingRight() - getPaddingLeft()) / 2;
             int vyCenter = getPaddingTop() + (getHeightInternal() - getPaddingBottom() - getPaddingTop()) / 2;
             float targetScale = limitedScale(this.targetScale);
+            Timber.i(">> targetSCenter A %s %s", targetSCenter.x, targetSCenter.y);
             PointF targetSCenter = panLimited ? limitedSCenter(this.targetSCenter.x, this.targetSCenter.y, targetScale, new PointF()) : this.targetSCenter;
+            Timber.i(">> targetSCenter B %s %s", targetSCenter.x, targetSCenter.y);
             anim = new Anim();
             anim.scaleStart = scale;
             anim.scaleEnd = targetScale;
