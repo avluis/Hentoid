@@ -2793,7 +2793,7 @@ public class CustomSubsamplingScaleImageView extends View {
     public final void resetScaleAndCenter() {
         this.anim = null;
         this.pendingScale = limitedScale(0);
-        if (isReady()) {
+        if (isReady() && minimumScaleType != ScaleType.START) {
             this.sPendingCenter = new PointF(sWidth() / 2f, sHeight() / 2f);
         } else {
             this.sPendingCenter = new PointF(0, 0);

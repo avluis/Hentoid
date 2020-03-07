@@ -221,7 +221,7 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_KEEP_SCREEN_ON, Default.PREF_VIEWER_KEEP_SCREEN_ON);
     }
 
-    public static int getViewerResizeMode() {
+    public static int getViewerDisplayMode() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)) + "");
     }
 
@@ -517,6 +517,7 @@ public final class Preferences {
         static final int TRUNCATE_FOLDER_NONE = 0;
         public static final int PREF_VIEWER_DISPLAY_FIT = 0;
         public static final int PREF_VIEWER_DISPLAY_FILL = 1;
+        public static final int PREF_VIEWER_DISPLAY_STRETCH = 2;
         public static final int PREF_VIEWER_BROWSE_NONE = -1;
         public static final int PREF_VIEWER_BROWSE_LTR = 0;
         public static final int PREF_VIEWER_BROWSE_RTL = 1;

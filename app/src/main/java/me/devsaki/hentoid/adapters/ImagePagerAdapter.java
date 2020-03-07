@@ -46,9 +46,14 @@ import timber.log.Timber;
 
 public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder> {
 
-    private static final int TYPE_OTHER = 0;    // PNGs and JPEGs -> use CustomSubsamplingScaleImageView
-    private static final int TYPE_GIF = 1;      // Static and animated GIFs -> use native Glide
-    private static final int TYPE_APNG = 2;     // Animated PNGs -> use APNG4Android library
+    private static final int IMG_TYPE_OTHER = 0;    // PNGs and JPEGs -> use CustomSubsamplingScaleImageView
+    private static final int IMG_TYPE_GIF = 1;      // Static and animated GIFs -> use native Glide
+    private static final int IMG_TYPE_APNG = 2;     // Animated PNGs -> use APNG4Android library
+
+    private static final int VIEW_TYPE_IMAGEVIEW = 0;
+    private static final int VIEW_TYPE_IMAGEVIEW_STRETCH = 1;
+    private static final int VIEW_TYPE_SSIV_HORIZONTAL = 2;
+    private static final int VIEW_TYPE_SSIV_VERTICAL = 3;
 
     private static final int PX_600_DP = Helper.dpToPixel(HentoidApp.getInstance(), 600);
 
@@ -65,6 +70,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     // Cached prefs
     private int separatingBarsHeight;
     private int viewerOrientation;
+    private int displayMode;
     private boolean longTapZoomEnabled;
 
 
@@ -90,6 +96,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
         viewerOrientation = Preferences.getViewerOrientation();
         longTapZoomEnabled = Preferences.isViewerHoldToZoom();
+        displayMode = Preferences.getViewerDisplayMode();
     }
 
     public void setRecyclerView(RecyclerView v) {
@@ -107,19 +114,30 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         return false;
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        ImageFile img = getImageAt(position);
-        if (null == img) return TYPE_OTHER;
+    private int getImageType(ImageFile img) {
+        if (null == img) return IMG_TYPE_OTHER;
+
         String extension = FileHelper.getExtension(img.getAbsolutePath());
 
         if ("gif".equalsIgnoreCase(extension) || img.getMimeType().contains("gif")) {
-            return TYPE_GIF;
+            return IMG_TYPE_GIF;
         }
         if ("apng".equalsIgnoreCase(extension) || img.getMimeType().contains("apng")) {
-            return TYPE_APNG;
+            return IMG_TYPE_APNG;
         }
-        return TYPE_OTHER;
+        return IMG_TYPE_OTHER;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        int imageType = getImageType(getImageAt(position));
+
+        if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType) return VIEW_TYPE_IMAGEVIEW;
+        if (Preferences.Constant.PREF_VIEWER_DISPLAY_STRETCH == displayMode)
+            return VIEW_TYPE_IMAGEVIEW_STRETCH;
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+            return VIEW_TYPE_SSIV_VERTICAL;
+        return VIEW_TYPE_SSIV_HORIZONTAL;
     }
 
 
@@ -128,9 +146,12 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
         View view;
-        if (TYPE_GIF == viewType || TYPE_APNG == viewType) {
+        if (VIEW_TYPE_IMAGEVIEW == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
-        } else if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+        } else if (VIEW_TYPE_IMAGEVIEW_STRETCH == viewType) {
+            view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
+            ((ImageView) view).setScaleType(ImageView.ScaleType.FIT_XY);
+        } else if (VIEW_TYPE_SSIV_VERTICAL == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
             ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
             ((CustomSubsamplingScaleImageView) view).setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL);
@@ -142,8 +163,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) { // TODO make all that method less ugly
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation
-                && TYPE_OTHER == holder.imgType) {
+        if (holder.getItemViewType() == VIEW_TYPE_SSIV_HORIZONTAL) {
             CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) holder.imgView;
             ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
             if (!Preferences.isViewerZoomTransitions()) ssView.setDoubleTapZoomDuration(10);
@@ -202,39 +222,30 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     final class ImageViewHolder extends RecyclerView.ViewHolder implements CustomSubsamplingScaleImageView.OnImageEventListener, RequestListener<Drawable> {
 
-        private final int imgType;
+        private final int viewType;
         private final View imgView;
+
         private ImageFile img;
 
-        private ImageViewHolder(@NonNull View itemView, int imageType) {
+        private ImageViewHolder(@NonNull View itemView, int viewType) {
             super(itemView);
-            imgType = imageType;
+            this.viewType = viewType;
             imgView = itemView;
 
-            if (TYPE_OTHER == imgType) {
+            if (VIEW_TYPE_SSIV_HORIZONTAL == viewType || VIEW_TYPE_SSIV_VERTICAL == viewType) {
                 ((CustomSubsamplingScaleImageView) imgView).setExecutor(executor);
                 imgView.setOnTouchListener(itemTouchListener);
             }
         }
 
-        void setImage(ImageFile img) {
+        void setImage(@NonNull ImageFile img) {
             this.img = img;
+            int imgType = getImageType(img);
+
             String uri = img.getAbsolutePath();
             Timber.i(">>>>IMG %s %s", imgType, uri);
-            if (TYPE_GIF == imgType) {
-                ImageView view = (ImageView) imgView;
-                Glide.with(imgView)
-                        .load(uri)
-                        .apply(glideRequestOptions)
-                        .listener(this)
-                        .into(view);
-            } else if (TYPE_APNG == imgType) {
-                ImageView view = (ImageView) imgView;
 
-                APNGDrawable apngDrawable = new APNGDrawable(new ImgLoader(uri));
-                apngDrawable.registerAnimationCallback(animationCallback);
-                view.setImageDrawable(apngDrawable);
-            } else {
+            if (VIEW_TYPE_SSIV_HORIZONTAL == viewType || VIEW_TYPE_SSIV_VERTICAL == viewType) {
                 CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
                 ssView.recycle();
                 ssView.setMinimumScaleType(getScaleType());
@@ -242,11 +253,26 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssView.setLongTapZoomEnabled(longTapZoomEnabled);
                 if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
                 ssView.setImage(ImageSource.uri(uri));
+            } else { // ImageView
+                if (IMG_TYPE_APNG == imgType) {
+                    ImageView view = (ImageView) imgView;
+
+                    APNGDrawable apngDrawable = new APNGDrawable(new ImgLoader(uri));
+                    apngDrawable.registerAnimationCallback(animationCallback);
+                    view.setImageDrawable(apngDrawable);
+                } else {
+                    ImageView view = (ImageView) imgView;
+                    Glide.with(imgView)
+                            .load(uri)
+                            .apply(glideRequestOptions)
+                            .listener(this)
+                            .into(view);
+                }
             }
         }
 
         private int getScaleType() {
-            if (Preferences.Constant.PREF_VIEWER_DISPLAY_FILL == Preferences.getViewerResizeMode()) {
+            if (Preferences.Constant.PREF_VIEWER_DISPLAY_FILL == displayMode) {
                 return CustomSubsamplingScaleImageView.ScaleType.START;
             } else {
                 return CustomSubsamplingScaleImageView.ScaleType.CENTER_INSIDE;
@@ -254,7 +280,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         void resetScale() {
-            if (TYPE_GIF != imgType && TYPE_APNG != imgType) {
+            if (VIEW_TYPE_SSIV_HORIZONTAL == viewType || VIEW_TYPE_SSIV_VERTICAL == viewType) {
                 CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
                 if (ssView.isImageLoaded() && ssView.isReady() && ssView.isLaidOut())
                     ssView.resetScaleAndCenter();

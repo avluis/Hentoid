@@ -164,6 +164,17 @@
         <item>3</item>
     </string-array>
 
+    <string-array name="pref_viewer_display_mode_entries">
+        <item>Fit to screen (default)</item>
+        <item>Fill screen (proportionate)</item>
+        <item>Fill screen (stretch)</item>
+    </string-array>
+    <string-array name="pref_viewer_display_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
     <string-array name="pref_lock_timer_entries">
         <item>No delay</item>
         <item>10s</item>
