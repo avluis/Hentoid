@@ -705,7 +705,7 @@ public class CustomSubsamplingScaleImageView extends View {
             Timber.d(">> longTap vCenterStart %s", vCenterStart);
             Timber.d(">> longTap sCenter %s", sCenter);
 
-            new AnimationBuilder(doubleTapZoomScale, sCenter/*, vCenterStart*/).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.LONG_TAP_ZOOM).start();
+            new AnimationBuilder(doubleTapZoomScale, sCenter).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.LONG_TAP_ZOOM).start();
 
             isPanning = true;
             isLongTapZooming = true;
