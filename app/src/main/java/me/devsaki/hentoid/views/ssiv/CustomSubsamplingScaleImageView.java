@@ -294,6 +294,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
     // Start of double-tap and long-tap zoom, in terms of screen (view) coordinates
     private PointF vCenterStart;
+    private PointF vGestureCenterOffset;
     private float vDistStart;
 
     // Current quickscale state
@@ -694,7 +695,6 @@ public class CustomSubsamplingScaleImageView extends View {
     public void longTapZoom(int x, int y) {
         if (zoomEnabled && longTapZoomEnabled && readySent) {
 
-            isPanning = true;
             vCenterStart = new PointF(x, y);
             PointF sCenter = viewToSourceCoord(vCenterStart);
             if (null == sCenter)
@@ -705,8 +705,9 @@ public class CustomSubsamplingScaleImageView extends View {
             Timber.d(">> longTap vCenterStart %s", vCenterStart);
             Timber.d(">> longTap sCenter %s", sCenter);
 
-            new AnimationBuilder(doubleTapZoomScale, sCenter, vCenterStart).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.LONG_TAP_ZOOM).start();
+            new AnimationBuilder(doubleTapZoomScale, sCenter/*, vCenterStart*/).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.LONG_TAP_ZOOM).start();
 
+            isPanning = true;
             isLongTapZooming = true;
             // Panning gesture management will align itself on the new vTranslate coordinates calculated by the animator
             vTranslateStart = null;
@@ -967,13 +968,14 @@ public class CustomSubsamplingScaleImageView extends View {
                         // One finger pan - translate the image. We do this calculation even with pan disabled so click
                         // and long click behaviour is preserved.
 
-                        // When long tap zoom animation has ended, use vTranslate coordinates calculated by the animator
-                        if (isLongTapZooming && vTranslateStart.equals(0f,0f))
+                        // When long tap zoom animation has ended, use final vTranslate coordinates calculated by the animator
+                        if (isLongTapZooming && vTranslateStart.equals(0f, 0f))
                             vTranslateStart = new PointF(vTranslate.x, vTranslate.y);
 
                         Timber.d(">> pan vCenterStart %s", vCenterStart);
                         float dx = Math.abs(event.getX() - vCenterStart.x);
                         float dy = Math.abs(event.getY() - vCenterStart.y);
+                        Timber.d(">> pan delta %s %s", dx, dy);
 
                         //On the Samsung S6 long click event does not work, because the dx > 5 usually true
                         float offset = density * 5;
@@ -999,6 +1001,17 @@ public class CustomSubsamplingScaleImageView extends View {
                             boolean edgeXSwipe = atXEdge && dx > dy && !isPanning;
                             boolean edgeYSwipe = atYEdge && dy > dx && !isPanning;
                             boolean yPan = lastY == vTranslate.y && dy > offset * 3;
+
+                            // Long tap zoom : slide vCenter to the center of the view as the user pans towards it
+                            if (isLongTapZooming) {
+                                PointF viewCenter = getvCenter();
+                                if ((viewCenter.x > event.getX() && event.getX() > vCenterStart.x)
+                                        || (viewCenter.x < event.getX() && event.getX() < vCenterStart.x))
+                                    vCenterStart.x = event.getX();
+                                if ((viewCenter.y > event.getY() && event.getY() > vCenterStart.y)
+                                        || (viewCenter.y < event.getY() && event.getY() < vCenterStart.y))
+                                    vCenterStart.y = event.getY();
+                            }
 
                             if (!edgeXSwipe && !edgeYSwipe && (!atXEdge || !atYEdge || yPan || isPanning)) {
                                 isPanning = true;
@@ -2234,7 +2247,6 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private float viewToSourceX(float vx) {
         if (vTranslate == null) return Float.NaN;
-
         return (vx - vTranslate.x) / scale;
     }
 
@@ -2243,7 +2255,6 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private float viewToSourceY(float vy) {
         if (vTranslate == null) return Float.NaN;
-
         return (vy - vTranslate.y) / scale;
     }
 
@@ -2352,7 +2363,6 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private float sourceToViewX(float sx) {
         if (vTranslate == null) return Float.NaN;
-
         return (sx * scale) + vTranslate.x;
     }
 
@@ -2361,7 +2371,6 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private float sourceToViewY(float sy) {
         if (vTranslate == null) return Float.NaN;
-
         return (sy * scale) + vTranslate.y;
     }
 
@@ -2740,6 +2749,17 @@ public class CustomSubsamplingScaleImageView extends View {
         int mX = getWidthInternal() / 2;
         int mY = getHeightInternal() / 2;
         return viewToSourceCoord(mX, mY);
+    }
+
+    /**
+     * Returns the screen coordinates of the center of the view
+     *
+     * @return screen coordinates of the center of the view
+     */
+    public final PointF getvCenter() {
+        int vxCenter = getPaddingLeft() + (getWidthInternal() - getPaddingRight() - getPaddingLeft()) / 2;
+        int vyCenter = getPaddingTop() + (getHeightInternal() - getPaddingBottom() - getPaddingTop()) / 2;
+        return new PointF(vxCenter, vyCenter);
     }
 
     /**
@@ -3295,8 +3315,6 @@ public class CustomSubsamplingScaleImageView extends View {
                 }
             }
 
-            int vxCenter = getPaddingLeft() + (getWidthInternal() - getPaddingRight() - getPaddingLeft()) / 2;
-            int vyCenter = getPaddingTop() + (getHeightInternal() - getPaddingBottom() - getPaddingTop()) / 2;
             float targetScale = limitedScale(this.targetScale);
             Timber.d(">> anim start targetSCenter A %s", targetSCenter);
             PointF targetSCenter = panLimited ? limitedSCenter(this.targetSCenter.x, this.targetSCenter.y, targetScale, new PointF()) : this.targetSCenter;
@@ -3309,10 +3327,7 @@ public class CustomSubsamplingScaleImageView extends View {
             anim.sCenterStart = getCenter();
             anim.sCenterEnd = targetSCenter;
             anim.vFocusStart = sourceToViewCoord(targetSCenter);
-            anim.vFocusEnd = new PointF(
-                    vxCenter,
-                    vyCenter
-            );
+            anim.vFocusEnd = getvCenter();
             anim.duration = duration;
             anim.interruptible = interruptible;
             anim.easing = easing;
@@ -3321,6 +3336,7 @@ public class CustomSubsamplingScaleImageView extends View {
             anim.listener = listener;
 
             if (vFocus != null) {
+                Timber.d(">> anim start vFocus %s", vFocus);
                 // Calculate where translation will be at the end of the anim
                 float vTranslateXEnd = vFocus.x - (targetScale * anim.sCenterStart.x);
                 float vTranslateYEnd = vFocus.y - (targetScale * anim.sCenterStart.y);
