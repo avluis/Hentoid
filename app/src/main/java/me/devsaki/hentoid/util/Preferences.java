@@ -222,7 +222,10 @@ public final class Preferences {
     }
 
     public static int getViewerDisplayMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)) + "");
+        if (Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == getViewerOrientation())
+            return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)) + "");
+        else
+            return Constant.PREF_VIEWER_DISPLAY_FIT; // The only relevant mode for vertical (aka. webtoon) display
     }
 
     public static int getViewerBrowseMode() {

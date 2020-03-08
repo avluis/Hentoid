@@ -146,7 +146,7 @@
     <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
     <string name="pref_viewer_separating_bars">Separating bars in vertical mode</string>
     <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
-    <string name="pref_viewer_display_mode">Display mode</string>
+    <string name="pref_viewer_display_mode">Display mode for horizontal viewing</string>
     <string name="pref_viewer_display_mode_default" translatable="false">0</string>
 
     <string name="pref_viewer_navigation">Navigation &amp; behaviour</string>
