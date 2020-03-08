@@ -67,6 +67,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private int maxBitmapWidth = -1;
     private int maxBitmapHeight = -1;
 
+    private boolean isScrollLTR = true;
+
     // Cached prefs
     private int separatingBarsHeight;
     private int viewerOrientation;
@@ -170,6 +172,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) holder.imgView;
             ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
             if (!Preferences.isViewerZoomTransitions()) ssView.setDoubleTapZoomDuration(10);
+            ssView.setOffsetLeftCorner(isScrollLTR);
         }
 
         int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
@@ -206,6 +209,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public void setMaxDimensions(int maxWidth, int maxHeight) {
         maxBitmapWidth = maxWidth;
         maxBitmapHeight = maxHeight;
+    }
+
+    public void setScrollLTR(boolean isScrollLTR) {
+        this.isScrollLTR = isScrollLTR;
     }
 
     private static final DiffUtil.ItemCallback<ImageFile> DIFF_CALLBACK =

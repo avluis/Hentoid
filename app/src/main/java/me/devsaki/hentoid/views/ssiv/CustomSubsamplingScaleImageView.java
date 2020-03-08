@@ -359,6 +359,9 @@ public class CustomSubsamplingScaleImageView extends View {
     private @Direction
     int swipeDirection = Direction.HORIZONTAL;
 
+    private boolean offsetLeftCorner = true;
+    private boolean offsetConsumed = false;
+
 
     public CustomSubsamplingScaleImageView(Context context, AttributeSet attr) {
         super(context, attr);
@@ -1675,7 +1678,21 @@ public class CustomSubsamplingScaleImageView extends View {
         fitToBounds(center, satTemp);
         scale = satTemp.scale;
         vTranslate.set(satTemp.vTranslate);
-        Timber.d(">> fitToBounds vTranslate %s", vTranslate);
+
+        Timber.d(">> fitToBounds vTranslate %s : %s %s", (null == uri) ? "" : uri, center, vTranslate);
+
+        if (!offsetLeftCorner && !offsetConsumed && (
+                minimumScaleType == ScaleType.START
+                        || minimumScaleType == ScaleType.FIT_HEIGHT
+                        || minimumScaleType == ScaleType.FIT_WIDTH
+                        || minimumScaleType == ScaleType.SMART_FIT
+                        || minimumScaleType == ScaleType.SMART_FILL)) {
+            int viewWidth = getWidthInternal() - getPaddingLeft() + getPaddingRight();
+            vTranslate.set(sourceToViewX(-sWidth() + viewToSourceX(viewWidth)), vTranslate.y);
+            offsetConsumed = true;
+            Timber.d(">> fitToBounds vTranslate Right %s : %s %s", (null == uri) ? "" : uri, center, vTranslate);
+        }
+
         if (init && minimumScaleType != ScaleType.START
                 && minimumScaleType != ScaleType.FIT_HEIGHT
                 && minimumScaleType != ScaleType.FIT_WIDTH
@@ -2495,7 +2512,8 @@ public class CustomSubsamplingScaleImageView extends View {
                     // Fit to width
                     return viewWidth / (float) sWidth();
                 } else {
-                    if (viewHeight > viewWidth) return viewHeight / (float) sHeight(); // Fit to height when in portrait mode
+                    if (viewHeight > viewWidth)
+                        return viewHeight / (float) sHeight(); // Fit to height when in portrait mode
                     else return viewWidth / (float) sWidth(); // Fit to width when in landscape mode
                 }
             case ScaleType.CUSTOM:
@@ -3012,6 +3030,11 @@ public class CustomSubsamplingScaleImageView extends View {
 
     public final void setDirection(@Direction int direction) {
         this.swipeDirection = direction;
+    }
+
+    public final void setOffsetLeftCorner(boolean offsetLeftCorner) {
+        this.offsetLeftCorner = offsetLeftCorner;
+        this.offsetConsumed = false;
     }
 
     /**
