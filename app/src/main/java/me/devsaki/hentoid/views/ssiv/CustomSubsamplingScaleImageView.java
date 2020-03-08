@@ -150,7 +150,7 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
 
-    @IntDef({ScaleType.CENTER_INSIDE, ScaleType.CENTER_CROP, ScaleType.CUSTOM, ScaleType.START, ScaleType.FIT_WIDTH, ScaleType.FIT_HEIGHT, ScaleType.SMART_FIT, ScaleType.ORIGINAL_SIZE})
+    @IntDef({ScaleType.CENTER_INSIDE, ScaleType.CENTER_CROP, ScaleType.CUSTOM, ScaleType.START, ScaleType.FIT_WIDTH, ScaleType.FIT_HEIGHT, ScaleType.SMART_FIT, ScaleType.SMART_FILL, ScaleType.ORIGINAL_SIZE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ScaleType {
         // Scale the image so that both dimensions of the image will be equal to or less than the corresponding dimension of the view.
@@ -168,7 +168,8 @@ public class CustomSubsamplingScaleImageView extends View {
         int FIT_WIDTH = 5;
         int FIT_HEIGHT = 6;
         int SMART_FIT = 7;
-        int ORIGINAL_SIZE = 8;
+        int SMART_FILL = 8;
+        int ORIGINAL_SIZE = 9;
     }
 
     @IntDef({AnimOrigin.ANIM, AnimOrigin.TOUCH, AnimOrigin.FLING, AnimOrigin.DOUBLE_TAP_ZOOM, AnimOrigin.LONG_TAP_ZOOM})
@@ -2463,32 +2464,39 @@ public class CustomSubsamplingScaleImageView extends View {
      * Returns the minimum allowed scale.
      */
     private float minScale() {
-        int vPadding = getPaddingBottom() + getPaddingTop();
-        int hPadding = getPaddingLeft() + getPaddingRight();
+        int viewHeight = getHeightInternal() - getPaddingBottom() + getPaddingTop();
+        int viewWidth = getWidthInternal() - getPaddingLeft() + getPaddingRight();
 
         switch (minimumScaleType) {
             case ScaleType.CENTER_CROP:
             case ScaleType.START:
-                return Math.max((getWidthInternal() - hPadding) / (float) sWidth(), (getHeightInternal() - vPadding) / (float) sHeight());
+                return Math.max(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
             case ScaleType.FIT_WIDTH:
-                return (getWidthInternal() - hPadding) / (float) sWidth();
+                return viewWidth / (float) sWidth();
             case ScaleType.FIT_HEIGHT:
-                return (getHeightInternal() - vPadding) / (float) sHeight();
+                return viewHeight / (float) sHeight();
             case ScaleType.ORIGINAL_SIZE:
                 return 1;
             case ScaleType.SMART_FIT:
                 if (sHeight() > sWidth()) {
                     // Fit to width
-                    return (getWidthInternal() - hPadding) / (float) sWidth();
+                    return viewWidth / (float) sWidth();
                 } else {
                     // Fit to height
-                    return (getHeightInternal() - vPadding) / (float) sHeight();
+                    return viewHeight / (float) sHeight();
+                }
+            case ScaleType.SMART_FILL:
+                if (sHeight() > sWidth()) {
+                    return viewWidth / (float) sWidth();
+                } else {
+                    if (viewHeight > viewWidth) return viewHeight / (float) sHeight();
+                    else return viewWidth / (float) sWidth();
                 }
             case ScaleType.CUSTOM:
                 if (minScale > 0) return minScale; // Uses 'default' when minScale = 0
             case ScaleType.CENTER_INSIDE:
             default:
-                return Math.min((getWidthInternal() - hPadding) / (float) sWidth(), (getHeightInternal() - vPadding) / (float) sHeight());
+                return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
         }
     }
 
@@ -2814,7 +2822,8 @@ public class CustomSubsamplingScaleImageView extends View {
         if (isReady() && minimumScaleType != ScaleType.START
                 && minimumScaleType != ScaleType.FIT_HEIGHT
                 && minimumScaleType != ScaleType.FIT_WIDTH
-                && minimumScaleType != ScaleType.SMART_FIT) {
+                && minimumScaleType != ScaleType.SMART_FIT
+                && minimumScaleType != ScaleType.SMART_FILL) {
             this.sPendingCenter = new PointF(sWidth() / 2f, sHeight() / 2f);
         } else {
             this.sPendingCenter = new PointF(0, 0);

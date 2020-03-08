@@ -158,6 +158,9 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         } else {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
         }
+
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) view.setMinimumHeight(PX_600_DP);
+
         return new ImageViewHolder(view, viewType);
     }
 
@@ -273,7 +276,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         private int getScaleType() {
             if (Preferences.Constant.PREF_VIEWER_DISPLAY_FILL == displayMode) {
-                return CustomSubsamplingScaleImageView.ScaleType.SMART_FIT;
+                return CustomSubsamplingScaleImageView.ScaleType.SMART_FILL;
             } else {
                 return CustomSubsamplingScaleImageView.ScaleType.CENTER_INSIDE;
             }
