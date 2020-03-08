@@ -1676,7 +1676,12 @@ public class CustomSubsamplingScaleImageView extends View {
         scale = satTemp.scale;
         vTranslate.set(satTemp.vTranslate);
         Timber.d(">> fitToBounds vTranslate %s", vTranslate);
-        if (init && minimumScaleType != ScaleType.START) {
+        if (init && minimumScaleType != ScaleType.START
+                && minimumScaleType != ScaleType.FIT_HEIGHT
+                && minimumScaleType != ScaleType.FIT_WIDTH
+                && minimumScaleType != ScaleType.SMART_FIT
+                && minimumScaleType != ScaleType.SMART_FILL
+        ) {
             vTranslate.set(vTranslateForSCenter(sWidth() / 2f, sHeight() / 2f, scale));
             Timber.d(">> fitToBounds init vTranslate %s", vTranslate);
         }
@@ -2487,10 +2492,11 @@ public class CustomSubsamplingScaleImageView extends View {
                 }
             case ScaleType.SMART_FILL:
                 if (sHeight() > sWidth()) {
+                    // Fit to width
                     return viewWidth / (float) sWidth();
                 } else {
-                    if (viewHeight > viewWidth) return viewHeight / (float) sHeight();
-                    else return viewWidth / (float) sWidth();
+                    if (viewHeight > viewWidth) return viewHeight / (float) sHeight(); // Fit to height when in portrait mode
+                    else return viewWidth / (float) sWidth(); // Fit to width when in landscape mode
                 }
             case ScaleType.CUSTOM:
                 if (minScale > 0) return minScale; // Uses 'default' when minScale = 0
@@ -2828,6 +2834,12 @@ public class CustomSubsamplingScaleImageView extends View {
         } else {
             this.sPendingCenter = new PointF(0, 0);
         }
+        invalidate();
+    }
+
+    public final void resetScale() {
+        this.anim = null;
+        this.pendingScale = limitedScale(0);
         invalidate();
     }
 

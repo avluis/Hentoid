@@ -286,7 +286,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             if (VIEW_TYPE_SSIV_HORIZONTAL == viewType || VIEW_TYPE_SSIV_VERTICAL == viewType) {
                 CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
                 if (ssView.isImageLoaded() && ssView.isReady() && ssView.isLaidOut())
-                    ssView.resetScaleAndCenter();
+                    ssView.resetScale();
             }
         }
 
