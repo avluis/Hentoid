@@ -273,7 +273,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         private int getScaleType() {
             if (Preferences.Constant.PREF_VIEWER_DISPLAY_FILL == displayMode) {
-                return CustomSubsamplingScaleImageView.ScaleType.START;
+                return CustomSubsamplingScaleImageView.ScaleType.SMART_FIT;
             } else {
                 return CustomSubsamplingScaleImageView.ScaleType.CENTER_INSIDE;
             }

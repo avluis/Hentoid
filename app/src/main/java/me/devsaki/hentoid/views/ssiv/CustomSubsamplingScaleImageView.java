@@ -135,24 +135,22 @@ public class CustomSubsamplingScaleImageView extends View {
         int IN_OUT_QUAD = 2;
     }
 
-
-    /**
-     * Don't allow the image to be panned off screen. As much of the image as possible is always displayed, centered in the view when it is smaller. This is the best option for galleries.
-     */
-    public static final int PAN_LIMIT_INSIDE = 1;
-    /**
-     * Allows the image to be panned until it is just off screen, but no further. The edge of the image will stop when it is flush with the screen edge.
-     */
-    public static final int PAN_LIMIT_OUTSIDE = 2;
-    /**
-     * Allows the image to be panned until a corner reaches the center of the screen but no further. Useful when you want to pan any spot on the image to the exact center of the screen.
-     */
-    public static final int PAN_LIMIT_CENTER = 3;
-
-    private static final List<Integer> VALID_PAN_LIMITS = Arrays.asList(PAN_LIMIT_INSIDE, PAN_LIMIT_OUTSIDE, PAN_LIMIT_CENTER);
+    @IntDef({PanLimit.INSIDE, PanLimit.OUTSIDE, PanLimit.CENTER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PanLimit {
+        // Don't allow the image to be panned off screen. As much of the image as possible is always displayed, centered in the view when it is smaller.
+        // This is the best option for galleries.
+        int INSIDE = 1;
+        // Allows the image to be panned until it is just off screen, but no further.
+        // The edge of the image will stop when it is flush with the screen edge.
+        int OUTSIDE = 2;
+        // Allows the image to be panned until a corner reaches the center of the screen but no further.
+        // Useful when you want to pan any spot on the image to the exact center of the screen.
+        int CENTER = 3;
+    }
 
 
-    @IntDef({ScaleType.CENTER_INSIDE, ScaleType.CENTER_CROP, ScaleType.CUSTOM, ScaleType.START})
+    @IntDef({ScaleType.CENTER_INSIDE, ScaleType.CENTER_CROP, ScaleType.CUSTOM, ScaleType.START, ScaleType.FIT_WIDTH, ScaleType.FIT_HEIGHT, ScaleType.SMART_FIT, ScaleType.ORIGINAL_SIZE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ScaleType {
         // Scale the image so that both dimensions of the image will be equal to or less than the corresponding dimension of the view.
@@ -167,6 +165,10 @@ public class CustomSubsamplingScaleImageView extends View {
         // Scale the image so that both dimensions of the image will be equal to or larger than the corresponding dimension of the view.
         // The top left is shown.
         int START = 4;
+        int FIT_WIDTH = 5;
+        int FIT_HEIGHT = 6;
+        int SMART_FIT = 7;
+        int ORIGINAL_SIZE = 8;
     }
 
     @IntDef({AnimOrigin.ANIM, AnimOrigin.TOUCH, AnimOrigin.FLING, AnimOrigin.DOUBLE_TAP_ZOOM, AnimOrigin.LONG_TAP_ZOOM})
@@ -222,7 +224,8 @@ public class CustomSubsamplingScaleImageView extends View {
     private int minimumTileDpi = -1;
 
     // Pan limiting style
-    private int panLimit = PAN_LIMIT_INSIDE;
+    private @PanLimit
+    int panLimit = PanLimit.INSIDE;
 
     // Minimum scale type
     private @ScaleType
@@ -1608,7 +1611,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param sat    The scale we want and the translation we're aiming for. The values are adjusted to be valid.
      */
     private void fitToBounds(boolean center, @NonNull ScaleAndTranslate sat) {
-        if (panLimit == PAN_LIMIT_OUTSIDE && isReady()) {
+        if (panLimit == PanLimit.OUTSIDE && isReady()) {
             center = false;
         }
 
@@ -1617,7 +1620,7 @@ public class CustomSubsamplingScaleImageView extends View {
         float scaleWidth = scale * sWidth();
         float scaleHeight = scale * sHeight();
 
-        if (panLimit == PAN_LIMIT_CENTER && isReady()) {
+        if (panLimit == PanLimit.CENTER && isReady()) {
             vTranslate.x = Math.max(vTranslate.x, getWidthInternal() / 2f - scaleWidth);
             vTranslate.y = Math.max(vTranslate.y, getHeightInternal() / 2f - scaleHeight);
         } else if (center) {
@@ -1634,7 +1637,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
         float maxTx;
         float maxTy;
-        if (panLimit == PAN_LIMIT_CENTER && isReady()) {
+        if (panLimit == PanLimit.CENTER && isReady()) {
             maxTx = Math.max(0, getWidthInternal() / 2);
             maxTy = Math.max(0, getHeightInternal() / 2);
         } else if (center) {
@@ -2462,12 +2465,30 @@ public class CustomSubsamplingScaleImageView extends View {
     private float minScale() {
         int vPadding = getPaddingBottom() + getPaddingTop();
         int hPadding = getPaddingLeft() + getPaddingRight();
-        if (minimumScaleType == ScaleType.CENTER_CROP || minimumScaleType == ScaleType.START) {
-            return Math.max((getWidthInternal() - hPadding) / (float) sWidth(), (getHeightInternal() - vPadding) / (float) sHeight());
-        } else if (minimumScaleType == ScaleType.CUSTOM && minScale > 0) {
-            return minScale;
-        } else {
-            return Math.min((getWidthInternal() - hPadding) / (float) sWidth(), (getHeightInternal() - vPadding) / (float) sHeight());
+
+        switch (minimumScaleType) {
+            case ScaleType.CENTER_CROP:
+            case ScaleType.START:
+                return Math.max((getWidthInternal() - hPadding) / (float) sWidth(), (getHeightInternal() - vPadding) / (float) sHeight());
+            case ScaleType.FIT_WIDTH:
+                return (getWidthInternal() - hPadding) / (float) sWidth();
+            case ScaleType.FIT_HEIGHT:
+                return (getHeightInternal() - vPadding) / (float) sHeight();
+            case ScaleType.ORIGINAL_SIZE:
+                return 1;
+            case ScaleType.SMART_FIT:
+                if (sHeight() > sWidth()) {
+                    // Fit to width
+                    return (getWidthInternal() - hPadding) / (float) sWidth();
+                } else {
+                    // Fit to height
+                    return (getHeightInternal() - vPadding) / (float) sHeight();
+                }
+            case ScaleType.CUSTOM:
+                if (minScale > 0) return minScale; // Uses 'default' when minScale = 0
+            case ScaleType.CENTER_INSIDE:
+            default:
+                return Math.min((getWidthInternal() - hPadding) / (float) sWidth(), (getHeightInternal() - vPadding) / (float) sHeight());
         }
     }
 
@@ -2609,12 +2630,12 @@ public class CustomSubsamplingScaleImageView extends View {
         float scaleWidth = scale * sWidth();
         float scaleHeight = scale * sHeight();
 
-        if (panLimit == PAN_LIMIT_CENTER) {
+        if (panLimit == PanLimit.CENTER) {
             vTarget.top = Math.max(0, -(vTranslate.y - (getHeightInternal() / 2f)));
             vTarget.left = Math.max(0, -(vTranslate.x - (getWidthInternal() / 2f)));
             vTarget.bottom = Math.max(0, vTranslate.y - ((getHeightInternal() / 2f) - scaleHeight));
             vTarget.right = Math.max(0, vTranslate.x - ((getWidthInternal() / 2f) - scaleWidth));
-        } else if (panLimit == PAN_LIMIT_OUTSIDE) {
+        } else if (panLimit == PanLimit.OUTSIDE) {
             vTarget.top = Math.max(0, -(vTranslate.y - getHeightInternal()));
             vTarget.left = Math.max(0, -(vTranslate.x - getWidthInternal()));
             vTarget.bottom = Math.max(0, vTranslate.y + scaleHeight);
@@ -2628,14 +2649,11 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     /**
-     * Set the pan limiting style. See static fields. Normally {@link #PAN_LIMIT_INSIDE} is best, for image galleries.
+     * Set the pan limiting style. See static fields. Normally PanLimit.INSIDE is best, for image galleries.
      *
      * @param panLimit a pan limit constant. See static fields.
      */
-    public final void setPanLimit(int panLimit) {
-        if (!VALID_PAN_LIMITS.contains(panLimit)) {
-            throw new IllegalArgumentException("Invalid pan limit: " + panLimit);
-        }
+    public final void setPanLimit(@PanLimit int panLimit) {
         this.panLimit = panLimit;
         if (isReady()) {
             fitToBounds(true);
@@ -2793,7 +2811,10 @@ public class CustomSubsamplingScaleImageView extends View {
     public final void resetScaleAndCenter() {
         this.anim = null;
         this.pendingScale = limitedScale(0);
-        if (isReady() && minimumScaleType != ScaleType.START) {
+        if (isReady() && minimumScaleType != ScaleType.START
+                && minimumScaleType != ScaleType.FIT_HEIGHT
+                && minimumScaleType != ScaleType.FIT_WIDTH
+                && minimumScaleType != ScaleType.SMART_FIT) {
             this.sPendingCenter = new PointF(sWidth() / 2f, sHeight() / 2f);
         } else {
             this.sPendingCenter = new PointF(0, 0);
