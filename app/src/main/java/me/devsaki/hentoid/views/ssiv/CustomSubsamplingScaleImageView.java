@@ -359,8 +359,8 @@ public class CustomSubsamplingScaleImageView extends View {
     private @Direction
     int swipeDirection = Direction.HORIZONTAL;
 
-    private boolean offsetLeftCorner = true;
-    private boolean offsetConsumed = false;
+    private boolean offsetLeftSide = true;
+    private boolean sideOffsetConsumed = false;
 
 
     public CustomSubsamplingScaleImageView(Context context, AttributeSet attr) {
@@ -1681,15 +1681,28 @@ public class CustomSubsamplingScaleImageView extends View {
 
         Timber.d(">> fitToBounds vTranslate %s : %s %s", (null == uri) ? "" : uri, center, vTranslate);
 
-        if (!offsetLeftCorner && !offsetConsumed && (
-                minimumScaleType == ScaleType.START
-                        || minimumScaleType == ScaleType.FIT_HEIGHT
-                        || minimumScaleType == ScaleType.FIT_WIDTH
-                        || minimumScaleType == ScaleType.SMART_FIT
-                        || minimumScaleType == ScaleType.SMART_FILL)) {
-            int viewWidth = getWidthInternal() - getPaddingLeft() + getPaddingRight();
-            vTranslate.set(sourceToViewX(-sWidth() + viewToSourceX(viewWidth)), vTranslate.y);
-            offsetConsumed = true;
+        // Recenter images if their dimensions are lower than the view's dimensions after the above call to fitToBounds
+        int viewHeight = getHeightInternal() - getPaddingBottom() + getPaddingTop();
+        int viewWidth = getWidthInternal() - getPaddingLeft() + getPaddingRight();
+        float sourcevWidth = sWidth() * scale;
+        float sourcevHeight = sHeight() * scale;
+
+        if (sourcevWidth < viewWidth) vTranslate.set((viewWidth - sourcevWidth) / 2, vTranslate.y);
+        if (sourcevHeight < viewHeight)
+            vTranslate.set(vTranslate.x, (viewHeight - sourcevHeight) / 2);
+        Timber.d(">> fitToBounds vTranslate Center %s : %s %s", (null == uri) ? "" : uri, center, vTranslate);
+
+        Timber.d(">> fitToBounds vTranslate Right? %s : %s %s %s", (null == uri) ? "" : uri, offsetLeftSide, sideOffsetConsumed, (sourcevWidth > viewWidth));
+        // Display images from the right side if asked to do so
+        if (!offsetLeftSide && !sideOffsetConsumed
+                && sourcevWidth > viewWidth
+                && (minimumScaleType == ScaleType.START
+                || minimumScaleType == ScaleType.FIT_HEIGHT
+                || minimumScaleType == ScaleType.FIT_WIDTH
+                || minimumScaleType == ScaleType.SMART_FIT
+                || minimumScaleType == ScaleType.SMART_FILL)) {
+            vTranslate.set(scale * (-sWidth() + viewWidth / scale), vTranslate.y);
+            sideOffsetConsumed = true;
             Timber.d(">> fitToBounds vTranslate Right %s : %s %s", (null == uri) ? "" : uri, center, vTranslate);
         }
 
@@ -3032,9 +3045,9 @@ public class CustomSubsamplingScaleImageView extends View {
         this.swipeDirection = direction;
     }
 
-    public final void setOffsetLeftCorner(boolean offsetLeftCorner) {
-        this.offsetLeftCorner = offsetLeftCorner;
-        this.offsetConsumed = false;
+    public final void setOffsetLeftSide(boolean offsetLeftSide) {
+        this.offsetLeftSide = offsetLeftSide;
+        this.sideOffsetConsumed = false;
     }
 
     /**

@@ -473,10 +473,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param scrollPosition New 0-based scroll position
      */
     private void onScrollPositionChange(int scrollPosition) {
-        boolean isScrollLTR = true;
-        if (Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection() && imageIndex > scrollPosition) isScrollLTR = false;
-        else if (Constant.PREF_VIEWER_DIRECTION_RTL == Preferences.getViewerDirection() && imageIndex < scrollPosition) isScrollLTR = false;
-        adapter.setScrollLTR(isScrollLTR);
+        if (scrollPosition != imageIndex) {
+            boolean isScrollLTR = true;
+            if (Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection() && imageIndex > scrollPosition)
+                isScrollLTR = false;
+            else if (Constant.PREF_VIEWER_DIRECTION_RTL == Preferences.getViewerDirection() && imageIndex < scrollPosition)
+                isScrollLTR = false;
+            adapter.setScrollLTR(isScrollLTR);
+        }
 
         imageIndex = scrollPosition;
         highestImageIndexReached = Math.max(imageIndex, highestImageIndexReached);
