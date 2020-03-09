@@ -28,6 +28,7 @@ import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
+import me.devsaki.hentoid.activities.sources.PorncomixActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
 import me.devsaki.hentoid.activities.sources.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -167,6 +168,9 @@ public class Content implements Serializable {
                 return paths[paths.length - 1];
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
+            case PORNCOMIX:
+                paths = url.split("/");
+                return paths[paths.length - 1];
             case DOUJINS:
                 // ID is the last numeric part of the URL
                 // e.g. lewd-title-ch-1-3-42116 -> 42116 is the ID
@@ -248,6 +252,8 @@ public class Content implements Serializable {
                 return DoujinsActivity.class;
             case LUSCIOUS:
                 return LusciousActivity.class;
+            case PORNCOMIX:
+                return PorncomixActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -305,6 +311,8 @@ public class Content implements Serializable {
                 break;
             case LUSCIOUS:
                 return site.getUrl().replace("/manga/", "") + url;
+            case PORNCOMIX:
+                return url;
             case FAKKU:
             case HENTAICAFE:
             case PANDA:
@@ -345,6 +353,9 @@ public class Content implements Serializable {
                 return site.getUrl().replace("album", "picture") + "/1";
             case LUSCIOUS:
                 return getGalleryUrl() + "read/";
+            case PORNCOMIX:
+                if (getGalleryUrl().contains("/manga")) return getGalleryUrl() + "/p/1/";
+                else return getGalleryUrl() + "#&gid=1&pid=1";
             default:
                 return null;
         }

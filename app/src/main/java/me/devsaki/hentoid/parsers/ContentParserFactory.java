@@ -11,6 +11,7 @@ import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
 import me.devsaki.hentoid.parsers.content.NexusContent;
 import me.devsaki.hentoid.parsers.content.NhentaiContent;
+import me.devsaki.hentoid.parsers.content.PorncomixContent;
 import me.devsaki.hentoid.parsers.content.PururinContent;
 import me.devsaki.hentoid.parsers.content.TsuminoContent;
 import me.devsaki.hentoid.parsers.images.ASMHentaiParser;
@@ -61,6 +62,8 @@ public class ContentParserFactory {
                 return MusesContent.class;
             case DOUJINS:
                 return DoujinsContent.class;
+            case PORNCOMIX:
+                return PorncomixContent.class;
             case EHENTAI: // Uses the API of the site -> no HTML parser
             case EXHENTAI: // Uses the API of the site -> no HTML parser
             case LUSCIOUS: // Uses the API of the site -> no HTML parser
@@ -96,7 +99,9 @@ public class ContentParserFactory {
                 return new NexusParser();
             case LUSCIOUS:
                 return new LusciousParser();
-            case MUSES: // TODO - No image parser; images are fetched by ContentParser => what if we really want to download from scratch ??
+            // TODO - No image parser; images are fetched by ContentParser => what if we really want to download from scratch ??
+            case PORNCOMIX:
+            case MUSES:
             case NHENTAI:
             case DOUJINS:
             default:

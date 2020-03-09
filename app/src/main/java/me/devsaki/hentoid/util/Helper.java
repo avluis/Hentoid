@@ -9,6 +9,8 @@ import android.webkit.WebSettings;
 
 import androidx.annotation.NonNull;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -161,6 +163,10 @@ public final class Helper {
             }
         }
         return newString.toString();
+    }
+
+    public static String replaceUnicode(@NonNull final String s) {
+        return StringEscapeUtils.unescapeJava(s);
     }
 
     // Fix for a crash on 5.1.1
