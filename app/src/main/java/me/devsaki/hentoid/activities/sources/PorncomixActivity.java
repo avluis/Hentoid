@@ -12,6 +12,7 @@ public class PorncomixActivity extends BaseWebActivity {
             "//porncomixinfo.com/manga-comics/[A-Za-z0-9\\-]+/[A-Za-z0-9\\-]+/$",
             "//bestporncomix.com/gallery/[A-Za-z0-9\\-]+/$"
     };
+    private static final String[] DIRTY_ELEMENTS = {"iframe[name^='spot']"};
 
     Site getStartSite() {
         return Site.PORNCOMIX;
@@ -19,6 +20,7 @@ public class PorncomixActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
+        addDirtyElements(DIRTY_ELEMENTS);
         return new CustomWebViewClient(GALLERY_FILTER, this);
     }
 }
