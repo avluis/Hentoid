@@ -162,8 +162,6 @@
         <item quantity="one">One of the selected books has secured content and cannot be redownloaded\nThis book will be ignored.</item>
         <item quantity="other">Some of the selected books have secured content and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
-
-    <!-- Library fragment -->
     <string name="no_more_load_retry">No more items to load. Refresh to retry</string>
     <string name="endless_disabled">Loading has been disabled</string>
     <string name="endless_cancel">Loading has been canceled</string>
@@ -186,10 +184,6 @@
     <string name="alert_black">This site is currently unavailable for real. The app has nothing to do about it. Please try again later.</string>
     <string name="alert_wip">The Hentoid dev team is working on a fix. You will be notified by the app when a new version is ready.</string>
     <string name="alert_fix_available">A fix is available on the latest version of the app. Please update.</string>
-
-    <!-- Image Viewer -->
-    <string name="no_images">Could not load the book : No image found</string>
-    <string name="image_file_not_found">File not found in @dir</string>
 
     <!-- App Lock -->
     <string name="app_lock_pin">Enter PIN</string>
@@ -244,6 +238,8 @@
     <string name="maintenance">Performing maintenance</string>
 
     <!-- Image viewer -->
+    <string name="no_images">Could not load the book : No image found</string>
+    <string name="image_file_not_found">File not found in @dir</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
@@ -254,6 +250,8 @@
     <string name="viewer_slideshow">Slideshow</string>
     <string name="viewer_order_shuffle">Shuffle pages</string>
     <string name="viewer_order_123">Reorder pages</string>
+    <string name="viewer_filter_favourite_off">Only show favourite pages</string>
+    <string name="viewer_filter_favourite_on">Show all pages</string>
     <string name="viewer_favourite_off">Mark page as favourite</string>
     <string name="viewer_favourite_on">Unmark page as favourite</string>
     <string name="pref_viewer_image_display">Image display mode</string>

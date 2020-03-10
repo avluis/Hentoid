@@ -659,7 +659,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * Update favourite filter button appearance on the action bar
      */
     private void updateFavouriteFilter() {
-        favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
+        favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
     }
 
     /**

@@ -173,7 +173,7 @@ public class ImageGalleryFragment extends Fragment {
 
     private void updateFavouriteDisplay() {
         showFavouritePagesButton.setVisible(hasFavourite());
-        showFavouritePagesButton.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
+        showFavouritePagesButton.setIcon(filterFavourites ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
     }
 
     private void updateListFilter() {

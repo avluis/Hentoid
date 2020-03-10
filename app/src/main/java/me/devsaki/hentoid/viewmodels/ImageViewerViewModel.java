@@ -58,6 +58,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Settings
     private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
+    private boolean showFavourites = false;                                          // True if viewer only shows favourite images; false if shows all pages
     private BooleanConsumer onShuffledChangeListener;
 
     // Collection data
@@ -194,6 +195,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
             // Sort images according to their Order
             imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).toList();
         }
+
+        if (showFavourites)
+            imgs = Stream.of(imgs).filter(ImageFile::isFavourite).toList();
+
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
 
         images.setValue(imgs);
@@ -235,6 +240,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (highestImageIndexReached + 1 >= readThresholdPosition)
             ContentHelper.updateContentReads(getApplication(), collectionDao, theContent);
         else collectionDao.insertContent(theContent);
+    }
+
+    public void toggleShowFavouritePages(Consumer<Boolean> callback) {
+        Content c = content.getValue();
+        if (c != null) {
+            showFavourites = !showFavourites;
+            processContent(c);
+            callback.accept(showFavourites);
+        }
     }
 
     public void togglePageFavourite(ImageFile file, Consumer<ImageFile> callback) {

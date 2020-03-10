@@ -100,6 +100,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private View controlsOverlay;
 
     private MenuItem favoritePageButton;
+    private MenuItem showFavoritePagesButton;
     private MenuItem shuffleButton;
 
     // Bottom bar controls
@@ -140,6 +141,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             switch (clickedMenuItem.getItemId()) {
+                case R.id.action_show_favorite_pages:
+                    onShowFavouriteClick();
+                    break;
                 case R.id.action_favourite_page:
                     onFavouriteClick();
                     break;
@@ -158,6 +162,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             return true;
         });
         favoritePageButton = toolbar.getMenu().findItem(R.id.action_favourite_page);
+        showFavoritePagesButton = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
         shuffleButton = toolbar.getMenu().findItem(R.id.action_shuffle);
 
         return rootView;
@@ -361,6 +366,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     /**
+     * Handle click on "Show favourite pages" action button
+     */
+    private void onShowFavouriteClick() {
+        viewModel.toggleShowFavouritePages(this::updateShowFavouriteDisplay);
+    }
+
+    /**
      * Handle click on "Favourite" action button
      */
     private void onFavouriteClick() {
@@ -560,6 +572,21 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         } else {
             favoritePageButton.setIcon(R.drawable.ic_fav_empty);
             favoritePageButton.setTitle(R.string.viewer_favourite_off);
+        }
+    }
+
+    /**
+     * Update the display of the "favourite page" action button
+     *
+     * @param showFavouritePages True if the button has to represent a favourite page; false instead
+     */
+    private void updateShowFavouriteDisplay(boolean showFavouritePages) {
+        if (showFavouritePages) {
+            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_on);
+            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_on);
+        } else {
+            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_off);
+            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_off);
         }
     }
 
