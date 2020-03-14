@@ -28,7 +28,6 @@ import timber.log.Timber;
  */
 public class ExHentaiActivity extends BaseWebActivity {
 
-    private static final String DOMAIN_FILTER = "exhentai.org";
     private static final String[] GALLERY_FILTER = {"exhentai.org/g/[0-9]+/[A-Za-z0-9\\-_]+"};
 
     // Store cookies in a member variable during onPageStarted
@@ -44,7 +43,6 @@ public class ExHentaiActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new ExHentaiWebClient(GALLERY_FILTER, this);
         CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");
-//        client.restrictTo(DOMAIN_FILTER);
         // ExH serves images through hosts that use http connections, which is detected as "mixed content" by the app
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
             webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
