@@ -164,11 +164,9 @@ public class Content implements Serializable {
                 return url.replace("/", "");
             case HENTAICAFE:
                 return url.replace("/?p=", "");
-            case FAKKU2:
-                paths = url.split("/");
-                return paths[paths.length - 1];
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
+            case FAKKU2:
             case PORNCOMIX:
                 paths = url.split("/");
                 return paths[paths.length - 1];
@@ -191,7 +189,9 @@ public class Content implements Serializable {
         this.uniqueSiteId = computeUniqueSiteId();
     }
 
-    // Used for upgrade purposes
+    /**
+     * @deprecated Used for upgrade purposes from old versions
+     */
     @Deprecated
     public String getOldUniqueSiteId() {
         String[] paths;
