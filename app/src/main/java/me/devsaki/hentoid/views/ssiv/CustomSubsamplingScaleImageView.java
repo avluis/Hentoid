@@ -2530,7 +2530,8 @@ public class CustomSubsamplingScaleImageView extends View {
                     else return viewWidth / (float) sWidth(); // Fit to width when in landscape mode
                 }
             case ScaleType.CUSTOM:
-                if (minScale > 0) return minScale; // Uses 'default' when minScale = 0
+                if (minScale > 0) return minScale;
+                else return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
             case ScaleType.CENTER_INSIDE:
             default:
                 return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
