@@ -298,7 +298,8 @@ public class ZoomableRecyclerView extends RecyclerView {
 
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
-            if (tapListener != null) tapListener.onSingleTapConfirmedAction(e);
+            if (tapListener != null && Preferences.getViewerOrientation() == Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL)
+                tapListener.onSingleTapConfirmedAction(e);
             return false;
         }
 
