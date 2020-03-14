@@ -863,8 +863,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             List<Pair<String, String>> requestHeadersList = new ArrayList<>();
 
             if (requestHeaders != null)
-                for (String key : requestHeaders.keySet())
-                    requestHeadersList.add(new Pair<>(key, requestHeaders.get(key)));
+                for (Map.Entry<String, String> entry : requestHeaders.entrySet())
+                    requestHeadersList.add(new Pair<>(entry.getKey(), entry.getValue()));
 
             if (canUseSingleOkHttpRequest()) {
                 String cookie = CookieManager.getInstance().getCookie(urlStr);
