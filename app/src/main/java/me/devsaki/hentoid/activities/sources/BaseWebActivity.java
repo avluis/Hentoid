@@ -756,6 +756,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             );
         }
 
+        /**
+         * @deprecated kept for API19-API23
+         */
         @Override
         @Deprecated
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -795,6 +798,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             refreshNavigationMenu();
         }
 
+        /**
+         * @deprecated kept for API19-API20
+         */
         @Override
         @Deprecated
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
