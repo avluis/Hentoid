@@ -22,6 +22,8 @@ import static java.util.Objects.requireNonNull;
 
 public class SearchViewModel extends ViewModel {
 
+    private static final String ERROR_INIT = "SearchViewModel has to be initialized by calling initAndStart first";
+
     private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
     private final MutableLiveData<CollectionDAO.AttributeQueryResult> proposedAttributes = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
@@ -81,7 +83,7 @@ public class SearchViewModel extends ViewModel {
 
     public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
         if (-1 == attributeSortOrder)
-            throw new IllegalStateException("SearchViewModel has to be initialized by calling initAndStart first");
+            throw new IllegalStateException(ERROR_INIT);
 
         filterDisposable.dispose();
         filterDisposable = collectionDAO
@@ -99,7 +101,7 @@ public class SearchViewModel extends ViewModel {
 
     public void onAttributeSelected(Attribute a) {
         if (-1 == attributeSortOrder)
-            throw new IllegalStateException("SearchViewModel has to be initialized by calling initAndStart first");
+            throw new IllegalStateException(ERROR_INIT);
 
         List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
@@ -122,7 +124,7 @@ public class SearchViewModel extends ViewModel {
 
     public void onAttributeUnselected(Attribute a) {
         if (-1 == attributeSortOrder)
-            throw new IllegalStateException("SearchViewModel has to be initialized by calling initAndStart first");
+            throw new IllegalStateException(ERROR_INIT);
 
         List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
