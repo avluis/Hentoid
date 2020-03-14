@@ -278,10 +278,6 @@ public class ObjectBoxDB {
         store.boxFor(QueueRecord.class).removeAll();
     }
 
-    long countVisibleContent() {
-        return countContentSearch("", Collections.emptyList(), false);
-    }
-
     Query<Content> getVisibleContentQ() {
         return queryContentSearchContent("", Collections.emptyList(), false, Preferences.Constant.ORDER_CONTENT_NONE);
     }
@@ -360,9 +356,10 @@ public class ObjectBoxDB {
         if (filterFavourites) query.equal(Content_.favourite, true);
         if (hasTitleFilter) query.contains(Content_.title, title);
         if (hasTagFilter) {
-            for (AttributeType attrType : metadataMap.keySet()) {
+            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
+                AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = metadataMap.get(attrType);
+                    List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty()) {
                         query.in(Content_.id, getFilteredContent(attrs, false));
                     }
@@ -517,14 +514,15 @@ public class ObjectBoxDB {
             if (params != null && !params.isEmpty())
                 query.in(Content_.site, getIdsFromAttributes(params));
 
-            for (AttributeType attrType : metadataMap.keySet()) {
+            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
+                AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = metadataMap.get(attrType);
-                    if (attrs != null && !attrs.isEmpty()) {
+                    List<Attribute> attrs = entry.getValue();
+                    if (attrs != null && !attrs.isEmpty())
                         query.in(Content_.id, getFilteredContent(attrs, false));
-                    }
                 }
             }
+
         }
 
         List<Content> content = query.build().find();
@@ -533,8 +531,10 @@ public class ObjectBoxDB {
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by source
         Map<Site, List<Content>> map = Stream.of(content).collect(Collectors.groupingBy(Content::getSite));
-        for (Site s : map.keySet()) {
-            result.add(new Attribute(AttributeType.SOURCE, s.getDescription()).setExternalId(s.getCode()).setCount(map.get(s).size()));
+        for (Map.Entry<Site, List<Content>> entry : map.entrySet()) {
+            Site site = entry.getKey();
+            int size = (null == entry.getValue()) ? 0 : entry.getValue().size();
+            result.add(new Attribute(AttributeType.SOURCE, site.getDescription()).setExternalId(site.getCode()).setCount(size));
         }
         // Order by count desc
         result = Stream.of(result).sortBy(a -> -a.getCount()).collect(toList());
@@ -542,7 +542,8 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private Query<Attribute> queryAvailableAttributes(@NonNull final AttributeType type, String filter, long[] filteredContent) {
+    private Query<Attribute> queryAvailableAttributes(
+            @NonNull final AttributeType type, String filter, long[] filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
@@ -555,13 +556,16 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    long countAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
+    long countAvailableAttributes(AttributeType
+                                          type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
         return queryAvailableAttributes(type, filter, getFilteredContent(attributeFilter, filterFavourites)).count();
     }
 
     @SuppressWarnings("squid:S2184")
         // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
-    List<Attribute> selectAvailableAttributes(@NonNull AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
+    List<Attribute> selectAvailableAttributes(@NonNull AttributeType
+                                                      type, List<Attribute> attributeFilter, String filter, boolean filterFavourites,
+                                              int sortOrder, int page, int itemsPerPage) {
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
@@ -572,7 +576,8 @@ public class ObjectBoxDB {
             if (0 == filteredContent.length) count = a.contents.size();
             else {
                 count = 0;
-                for (Content c : a.contents) if (filteredContentAsList.contains(c.getId())) count++;
+                for (Content c : a.contents)
+                    if (filteredContentAsList.contains(c.getId())) count++;
             }
             a.setCount(count);
         }
@@ -615,8 +620,11 @@ public class ObjectBoxDB {
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
         Map<AttributeType, List<Attribute>> map = Stream.of(attributes).collect(Collectors.groupingBy(Attribute::getType));
-        for (AttributeType t : map.keySet()) {
-            result.append(t.getCode(), map.get(t).size());
+
+        for (Map.Entry<AttributeType, List<Attribute>> entry : map.entrySet()) {
+            AttributeType t = entry.getKey();
+            int size = (null == entry.getValue()) ? 0 : entry.getValue().size();
+            result.append(t.getCode(), size);
         }
 
         return result;
@@ -633,7 +641,8 @@ public class ObjectBoxDB {
         }
     }
 
-    void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo) {
+    void updateImageContentStatus(long contentId, StatusContent
+            updateFrom, @NonNull StatusContent updateTo) {
         QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
         if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.getCode());
         List<ImageFile> imgs = query.equal(ImageFile_.contentId, contentId).build().find();
@@ -663,8 +672,11 @@ public class ObjectBoxDB {
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
         Map<StatusContent, List<ImageFile>> map = Stream.of(images).collect(Collectors.groupingBy(ImageFile::getStatus));
-        for (StatusContent t : map.keySet()) {
-            result.append(t.getCode(), map.get(t).size());
+
+        for (Map.Entry<StatusContent, List<ImageFile>> entry : map.entrySet()) {
+            StatusContent t = entry.getKey();
+            int size = (null == entry.getValue()) ? 0 : entry.getValue().size();
+            result.append(t.getCode(), size);
         }
 
         return result;
