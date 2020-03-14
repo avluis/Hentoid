@@ -8,6 +8,7 @@ import com.annimon.stream.Stream;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import io.objectbox.annotation.Backlink;
@@ -110,8 +111,8 @@ public class Content implements Serializable {
 
     public Content addAttributes(@NonNull AttributeMap attrs) {
         if (attributes != null) {
-            for (AttributeType type : attrs.keySet()) {
-                List<Attribute> attrList = attrs.get(type);
+            for (Map.Entry<AttributeType, List<Attribute>> entry : attrs.entrySet()) {
+                List<Attribute> attrList = entry.getValue();
                 if (attrList != null)
                     addAttributes(attrList);
             }
