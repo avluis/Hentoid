@@ -115,7 +115,7 @@ public class ImportService extends IntentService {
     }
 
     private void eventProgress(Content content, int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, content, booksOK, booksKO, nbBooks));
+        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int nbBooks, int booksOK, int booksKO, File cleanupLogFile) {
