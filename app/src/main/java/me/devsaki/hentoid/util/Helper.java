@@ -75,6 +75,10 @@ public final class Helper {
         return new String(decodedBytes);
     }
 
+    public static String encode64(String rawString) {
+        return android.util.Base64.encodeToString(rawString.getBytes(), android.util.Base64.DEFAULT);
+    }
+
     public static int dpToPixel(@NonNull final Context context, int dp) {
         if (-1 == DENSITY_DPI) DENSITY_DPI = context.getResources().getDisplayMetrics().densityDpi;
         float scaleFactor = (1.0f / DisplayMetrics.DENSITY_DEFAULT) * DENSITY_DPI;

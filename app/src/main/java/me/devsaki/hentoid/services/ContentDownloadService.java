@@ -267,7 +267,7 @@ public class ContentDownloadService extends IntentService {
                 // not an error
             } catch (EmptyResultException ere) {
                 Timber.w(ere, "No images have been found while parsing %s. Aborting download.", content.getTitle());
-                logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, "No images have been found");
+                logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, "No images have been found. Error = " + ere.getMessage());
                 hasError = true;
             } catch (Exception e) {
                 Timber.w(e, "An exception has occurred while parsing %s. Aborting download.", content.getTitle());
