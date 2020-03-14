@@ -36,8 +36,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 
-// TODO query methods should return an RxJava observable/single so that consumers can control
-//  cancellation and see completion status through Disposable.isDisposed()
 public class ObjectBoxDAO implements CollectionDAO {
 
     private final ObjectBoxDB db;
@@ -240,22 +238,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         } else {
             return Collections.emptyList();
         }
-
-        // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages) -> Unexploited
-/*
-        if (Mode.SEARCH_CONTENT_MODULAR == mode || Mode.COUNT_CONTENT_MODULAR == mode) {
-            result.totalSelectedContent = db.countContentSearch(filter, metadata, favouritesOnly);
-        } else if (Mode.SEARCH_CONTENT_UNIVERSAL == mode || Mode.COUNT_CONTENT_UNIVERSAL == mode) {
-            result.totalSelectedContent = db.countContentUniversal(filter, favouritesOnly);
-        } else {
-            result.totalSelectedContent = 0;
-        }
-*/
-
-        // Fetch total book count (i.e. total number of books in all the collection, regardless of filter) -> Unexploited
-//        result.totalContent = db.countVisibleContent();
-
-//        return result;
     }
 
     private AttributeQueryResult pagedAttributeSearch(List<AttributeType> attrTypes, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, int pageNum, int itemPerPage) {
