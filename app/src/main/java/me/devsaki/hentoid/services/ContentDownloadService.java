@@ -171,6 +171,8 @@ public class ContentDownloadService extends IntentService {
      */
     @Nullable
     private Content downloadFirstInQueue() {
+        final String CONTENT_PART_IMAGE_LIST = "Image list";
+
         // Clear previously created requests
         compositeDisposable.clear();
 
@@ -254,22 +256,22 @@ public class ContentDownloadService extends IntentService {
                 content = dao.selectContent(content.getId()); // Get updated Content with the generated ID of new images
             } catch (UnsupportedOperationException uoe) {
                 Timber.w(uoe, "A captcha has been found while parsing %s. Aborting download.", content.getTitle());
-                logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), "Image list", uoe.getMessage());
+                logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, uoe.getMessage());
                 hasError = true;
             } catch (LimitReachedException lre) {
                 Timber.w(lre, "The bandwidth limit has been reached while parsing %s. Aborting download.", content.getTitle());
-                logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Image list", lre.getMessage());
+                logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), CONTENT_PART_IMAGE_LIST, lre.getMessage());
                 hasError = true;
             } catch (PreparationInterruptedException ie) {
                 Timber.i(ie, "Preparation of %s interrupted", content.getTitle());
                 // not an error
             } catch (EmptyResultException ere) {
                 Timber.w(ere, "No images have been found while parsing %s. Aborting download.", content.getTitle());
-                logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", "No images have been found");
+                logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, "No images have been found");
                 hasError = true;
             } catch (Exception e) {
                 Timber.w(e, "An exception has occurred while parsing %s. Aborting download.", content.getTitle());
-                logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", e.getMessage());
+                logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, e.getMessage());
                 hasError = true;
             }
         } else if (nbErrors > 0) {
