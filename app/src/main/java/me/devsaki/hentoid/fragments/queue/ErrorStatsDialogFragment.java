@@ -20,7 +20,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -98,7 +98,7 @@ public class ErrorStatsDialogFragment extends DialogFragment {
 
     private void updateStats(long contentId) {
         List<ErrorRecord> errors = ObjectBoxDB.getInstance(getContext()).selectErrorRecordByContentId(contentId);
-        Map<ErrorType, Integer> errorsByType = new HashMap<>();
+        Map<ErrorType, Integer> errorsByType = new EnumMap<>(ErrorType.class);
 
         for (ErrorRecord error : errors) {
             if (errorsByType.containsKey(error.getType())) {
