@@ -76,7 +76,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
 
 
         @Override
-        public void bindView(@NotNull ImageFileItem item, @NotNull List<Object> list) {
+        public void bindView(@NotNull ImageFileItem item, @NotNull List<?> list) {
             String currentBegin = item.isCurrent ? ">" : "";
             String currentEnd = item.isCurrent ? "<" : "";
             pageNumberTxt.setText(String.format("%sPage %s%s", currentBegin, item.image.getOrder(), currentEnd));

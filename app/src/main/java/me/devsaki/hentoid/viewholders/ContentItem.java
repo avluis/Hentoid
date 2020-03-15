@@ -156,7 +156,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
 
         @Override
-        public void bindView(@NotNull ContentItem item, @NotNull List<Object> payloads) {
+        public void bindView(@NotNull ContentItem item, @NotNull List<?> payloads) {
             if (item.isEmpty || null == item.content) return; // Ignore placeholders from PagedList
 
             // Payloads are set when the content stays the same but some properties alone change
