@@ -156,6 +156,10 @@
     <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
     <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
+    <string name="pref_viewer_continuous_title">Continuous reading</string>
+    <string name="pref_viewer_continuous_summary_off">Using next page on last page has no effect</string>
+    <string name="pref_viewer_continuous_summary_on">Using next page on last page loads the next book</string>
+    <bool name="pref_viewer_continuous_default" translatable="false">false</bool>
     <string name="pref_viewer_read_threshold">Mark book as read after N pages</string>
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page</string>

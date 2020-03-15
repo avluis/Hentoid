@@ -600,6 +600,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         switch (key) {
             case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
             case Preferences.Key.PREF_VIEWER_HOLD_TO_ZOOM:
+            case Preferences.Key.PREF_VIEWER_CONTINUOUS:
                 onBrowseModeChange();
                 break;
             case Preferences.Key.PREF_VIEWER_KEEP_SCREEN_ON:
@@ -685,7 +686,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Load next page
      */
     private void nextPage() {
-        if (imageIndex == maxPosition) return;
+        if (imageIndex == maxPosition) {
+            if (Preferences.isViewerContinuous()) nextBook();
+            else return;
+        }
 
         if (Preferences.isViewerTapTransitions()) {
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
@@ -706,7 +710,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Load previous page
      */
     private void previousPage() {
-        if (imageIndex == 0) return;
+        if (0 == imageIndex) {
+            if (Preferences.isViewerContinuous()) previousBook();
+            else return;
+        }
 
         if (Preferences.isViewerTapTransitions())
             recyclerView.smoothScrollToPosition(imageIndex - 1);
@@ -797,7 +804,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
 
         // Side-tapping disabled when view is zoomed
-        if (recyclerView.getCurrentScale() != 1.0) return;
+        if (recyclerView.getScale() != 1.0) return;
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isViewerTapToTurn()) return;
 
@@ -818,7 +825,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
 
         // Side-tapping disabled when view is zoomed
-        if (recyclerView.getCurrentScale() != 1.0) return;
+        if (recyclerView.getScale() != 1.0) return;
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isViewerTapToTurn()) return;
 

@@ -27,6 +27,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener.Listener;
+import timber.log.Timber;
 
 /**
  * Zoomable RecyclerView that supports gestures
@@ -37,19 +38,20 @@ import me.devsaki.hentoid.widget.ViewZoomGestureListener.Listener;
 public class ZoomableRecyclerView extends RecyclerView {
 
     private static final long ANIMATOR_DURATION_TIME = 200;
-    private static final float DEFAULT_RATE = 1f;
-    private static final float MAX_SCALE_RATE = 3f;
+    private static final float DEFAULT_SCALE = 1f;
+    private static final float MAX_SCALE = 3f;
 
     private boolean isZooming = false;
     private boolean isLongTapZooming = false;
-    private boolean atLastPosition = false;
 
     private boolean atFirstPosition = false;
+    private boolean atLastPosition = false;
+
     private int halfWidth = 0;
     private int halfHeight = 0;
     private int firstVisibleItemPosition = 0;
     private int lastVisibleItemPosition = 0;
-    private float currentScale = DEFAULT_RATE;
+    private float scale = DEFAULT_SCALE;
 
     private final GestureListener listener = new GestureListener();
     private DoubleConsumer scaleListener = null;
@@ -151,21 +153,21 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     private float getPositionX(float positionX) {
-        float maxPositionX = halfWidth * (currentScale - 1);
+        float maxPositionX = halfWidth * (scale - 1);
         return Helper.coerceIn(positionX, -maxPositionX, maxPositionX);
     }
 
     private float getPositionY(float positionY) {
-        float maxPositionY = halfHeight * (currentScale - 1);
+        float maxPositionY = halfHeight * (scale - 1);
         return Helper.coerceIn(positionY, -maxPositionY, maxPositionY);
     }
 
-    public float getCurrentScale() {
-        return currentScale;
+    public float getScale() {
+        return scale;
     }
 
     public void resetScale() {
-        zoom(currentScale, DEFAULT_RATE, getX(), 0f, getY(), 0f);
+        zoom(scale, DEFAULT_SCALE, getX(), 0f, getY(), 0f);
     }
 
     private void zoom(
@@ -201,8 +203,8 @@ public class ZoomableRecyclerView extends RecyclerView {
             @Override
             public void onAnimationEnd(Animator animation) {
                 isZooming = false;
-                currentScale = toRate;
-                if (scaleListener != null) scaleListener.accept(currentScale);
+                scale = toRate;
+                if (scaleListener != null) scaleListener.accept(scale);
             }
 
             @Override
@@ -230,7 +232,7 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     boolean zoomFling(int velocityX, int velocityY) {
-        if (currentScale <= 1f) return false;
+        if (scale <= DEFAULT_SCALE) return false;
 
         float distanceTimeFactor = 0.4f;
         Float newX = null;
@@ -261,12 +263,12 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     void onScale(float scaleFactor) {
-        currentScale *= scaleFactor;
-        currentScale = Helper.coerceIn(currentScale, DEFAULT_RATE, MAX_SCALE_RATE);
+        scale *= scaleFactor;
+        scale = Helper.coerceIn(scale, DEFAULT_SCALE, MAX_SCALE);
 
-        setScaleRate(currentScale);
+        setScaleRate(scale);
 
-        if (currentScale != DEFAULT_RATE) {
+        if (scale != DEFAULT_SCALE) {
             setX(getPositionX(getX()));
             setY(getPositionY(getY()));
         } else {
@@ -274,7 +276,7 @@ public class ZoomableRecyclerView extends RecyclerView {
             setY(0f);
         }
 
-        if (scaleListener != null) scaleListener.accept(currentScale);
+        if (scaleListener != null) scaleListener.accept(scale);
     }
 
     void onScaleBegin() {
@@ -284,8 +286,8 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     void onScaleEnd() {
-        if (getScaleX() < DEFAULT_RATE) {
-            zoom(currentScale, DEFAULT_RATE, getX(), 0f, getY(), 0f);
+        if (getScaleX() < DEFAULT_SCALE) {
+            zoom(scale, DEFAULT_SCALE, getX(), 0f, getY(), 0f);
         }
     }
 
@@ -318,21 +320,46 @@ public class ZoomableRecyclerView extends RecyclerView {
             float toX = (halfWidth - ev.getX()) * (toScale - 1);
             float toY = (halfHeight - ev.getY()) * (toScale - 1);
             isLongTapZooming = true;
-            zoom(DEFAULT_RATE, toScale, 0f, toX, 0f, toY);
+            zoom(DEFAULT_SCALE, toScale, 0f, toX, 0f, toY);
         }
 
         @Override
         public void onDoubleTapConfirmed(MotionEvent ev) {
             if (!isZooming) {
-                if (getScaleX() != DEFAULT_RATE) {
-                    zoom(currentScale, DEFAULT_RATE, getX(), 0f, getY(), 0f);
+                if (getScaleX() != DEFAULT_SCALE) {
+                    zoom(scale, DEFAULT_SCALE, getX(), 0f, getY(), 0f);
                 } else {
                     float toScale = 2f;
                     float toX = (halfWidth - ev.getX()) * (toScale - 1);
                     float toY = (halfHeight - ev.getY()) * (toScale - 1);
-                    zoom(DEFAULT_RATE, toScale, 0f, toX, 0f, toY);
+                    zoom(DEFAULT_SCALE, toScale, 0f, toX, 0f, toY);
                 }
             }
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            float fullDistanceX = -distanceX;
+            float fullDistanceY = -distanceY;
+            if (e1 != null && e2 != null) {
+                fullDistanceX = e2.getX() - e1.getX();
+                fullDistanceY = e2.getY() - e1.getY();
+            }
+
+            if (getLayoutManager() != null && getLayoutManager().canScrollVertically() && DEFAULT_SCALE == scale) {
+                if (fullDistanceY > 0 && atFirstPosition)
+                    Timber.i(">> OutOfBoundary Y START %s", fullDistanceY);
+                else if (fullDistanceY < 0 && atLastPosition)
+                    Timber.i(">> OutOfBoundary Y END %s", fullDistanceY);
+            }
+
+            if (getLayoutManager() != null && getLayoutManager().canScrollHorizontally() && DEFAULT_SCALE == scale) {
+                if (fullDistanceX > 0 && atFirstPosition)
+                    Timber.i(">> OutOfBoundary X START %s", fullDistanceX);
+                else if (fullDistanceX < 0 && atLastPosition)
+                    Timber.i(">> OutOfBoundary X END %s", fullDistanceX);
+            }
+            return false;
         }
     }
 
@@ -403,7 +430,7 @@ public class ZoomableRecyclerView extends RecyclerView {
             int dx = (canMoveHorizontally()) ? x - downX : 0;
             int dy = (canMoveVertically()) ? y - downY : 0;
 
-            if (!isZoomDragging && currentScale > 1f) {
+            if (!isZoomDragging && scale > DEFAULT_SCALE) {
                 boolean startScroll = false;
 
                 if (Math.abs(dx) > touchSlop) {
@@ -439,7 +466,7 @@ public class ZoomableRecyclerView extends RecyclerView {
                 listener.onDoubleTapConfirmed(ev);
             }
             if (isLongTapZooming) {
-                zoom(currentScale, DEFAULT_RATE, getX(), 0f, getY(), 0f);
+                zoom(scale, DEFAULT_SCALE, getX(), 0f, getY(), 0f);
                 isLongTapZooming = false;
             }
             isZoomDragging = false;

@@ -282,6 +282,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_OPEN_GALLERY, Default.PREF_VIEWER_OPEN_GALLERY);
     }
 
+    public static boolean isViewerContinuous() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_CONTINUOUS, Default.PREF_VIEWER_CONTINUOUS);
+    }
+
     public static int getViewerReadThreshold() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_READ_THRESHOLD, Integer.toString(Default.PREF_VIEWER_READ_THRESHOLD)) + "");
     }
@@ -411,7 +415,8 @@ public final class Preferences {
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
         public static final String PREF_VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
-        public static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
+        public static final String PREF_VIEWER_CONTINUOUS = "pref_viewer_continuous";
+        static final String PREF_VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
         static final String PREF_VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
         static final String PREF_VIEWER_PAGE_TURN_TAP = "pref_viewer_page_turn_tap";
         static final String PREF_VIEWER_PAGE_TURN_VOLUME = "pref_viewer_page_turn_volume";
@@ -467,6 +472,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final boolean PREF_VIEWER_ZOOM_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
+        static final boolean PREF_VIEWER_CONTINUOUS = false;
         static final boolean PREF_VIEWER_PAGE_TURN_SWIPE = true;
         static final boolean PREF_VIEWER_PAGE_TURN_TAP = true;
         static final boolean PREF_VIEWER_PAGE_TURN_VOLUME = true;
