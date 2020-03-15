@@ -21,6 +21,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.exception.ParseException;
 import okhttp3.Response;
 import timber.log.Timber;
 
@@ -41,7 +42,7 @@ public class HitomiParser implements ImageListParser {
         String pageUrl = content.getReaderUrl();
 
         Document doc = getOnlineDocument(pageUrl);
-        if (null == doc) throw new Exception("Document unreachable : " + pageUrl);
+        if (null == doc) throw new ParseException("Document unreachable : " + pageUrl);
 
         Timber.d("Parsing: %s", pageUrl);
 

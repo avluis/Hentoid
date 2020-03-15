@@ -40,7 +40,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.exception.JSONParseException;
+import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
@@ -224,7 +224,7 @@ public class ImportService extends IntentService {
 
                 if (null == content) booksKO++;
                 else booksOK++;
-            } catch (JSONParseException jse) {
+            } catch (ParseException jse) {
                 if (null == content)
                     content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
@@ -265,7 +265,7 @@ public class ImportService extends IntentService {
 
 
     @Nullable
-    private static Content importJson(File folder) throws JSONParseException {
+    private static Content importJson(File folder) throws ParseException {
         File json = new File(folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
         if (json.exists()) return importJsonV2(json);
 
@@ -304,7 +304,7 @@ public class ImportService extends IntentService {
         }
         try {
             if (urlBuilder.getDescription() == null) {
-                throw new JSONParseException("Problems loading attribute v2.");
+                throw new ParseException("Problems loading attribute v2.");
             }
 
             return new Attribute(type, urlBuilder.getDescription(), urlBuilder.getId(), site);
@@ -316,7 +316,7 @@ public class ImportService extends IntentService {
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private static Content importJsonLegacy(File json) throws JSONParseException {
+    private static Content importJsonLegacy(File json) throws ParseException {
         try {
             DoujinBuilder doujinBuilder =
                     JsonHelper.jsonToObject(json, DoujinBuilder.class);
@@ -360,13 +360,13 @@ public class ImportService extends IntentService {
             return contentV2;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (old) file");
-            throw new JSONParseException("Error reading JSON (old) file : " + e.getMessage());
+            throw new ParseException("Error reading JSON (old) file : " + e.getMessage());
         }
     }
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private static Content importJsonV1(File json) throws JSONParseException {
+    private static Content importJsonV1(File json) throws ParseException {
         try {
             ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
             if (content.getStatus() != StatusContent.DOWNLOADED
@@ -383,12 +383,12 @@ public class ImportService extends IntentService {
             return contentV2;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v1) file");
-            throw new JSONParseException("Error reading JSON (v1) file : " + e.getMessage());
+            throw new ParseException("Error reading JSON (v1) file : " + e.getMessage());
         }
     }
 
     @CheckResult
-    private static Content importJsonV2(File json) throws JSONParseException {
+    private static Content importJsonV2(File json) throws ParseException {
         try {
             JsonContent content = JsonHelper.jsonToObject(json, JsonContent.class);
             Content result = content.toEntity();
@@ -404,7 +404,7 @@ public class ImportService extends IntentService {
             return result;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v2) file");
-            throw new JSONParseException("Error reading JSON (v2) file : " + e.getMessage(), e);
+            throw new ParseException("Error reading JSON (v2) file : " + e.getMessage(), e);
         }
     }
 }

@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.HttpHelper;
+import me.devsaki.hentoid.util.exception.ParseException;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
@@ -38,11 +39,11 @@ public class HentaiCafeParser extends BaseParser {
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "PHPSESSID="+content.getTitle().hashCode()));
         Document doc = getOnlineDocument(pageUrl, headers, true);
-        if (null == doc) throw new Exception("Document unreachable : " + pageUrl);
+        if (null == doc) throw new ParseException("Document unreachable : " + pageUrl);
 
         Timber.d("Parsing: %s", pageUrl);
         Elements links = doc.select("a.x-btn");
-        if (links.isEmpty()) throw new Exception("No links found @ " + pageUrl);
+        if (links.isEmpty()) throw new ParseException("No links found @ " + pageUrl);
 
         if (links.size() > 1) Timber.d("Multiple chapters found!");
         progressStart(links.size());
