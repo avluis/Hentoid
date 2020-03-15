@@ -160,7 +160,8 @@ public class QueueFragment extends Fragment {
 
         FastAdapter<ContentItem> fastAdapter = FastAdapter.with(itemAdapter);
         fastAdapter.setHasStableIds(true);
-        fastAdapter.registerTypeInstance(new ContentItem(true));
+        ContentItem item = new ContentItem(true);
+        fastAdapter.registerItemFactory(item.getType(), item);
         recyclerView.setAdapter(fastAdapter);
 
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();

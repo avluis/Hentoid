@@ -806,7 +806,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(false), ContentItem::new);
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
-            fastAdapter.registerTypeInstance(new ContentItem(false));
+            ContentItem item = new ContentItem(false);
+            fastAdapter.registerItemFactory(item.getType(), item);
 
             itemAdapter = null;
         } else { // Paged mode
