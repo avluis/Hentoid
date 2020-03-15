@@ -177,7 +177,8 @@ public class ExHentaiParser implements ImageListParser {
     }
 
     private void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
-        Elements imageLinks = doc.getElementsByClass("gdtm");
+        Elements imageLinks = doc.getElementsByClass("gdtm"); // Normal thumbs
+        if (null == imageLinks || imageLinks.isEmpty()) imageLinks = doc.getElementsByClass("gdtl"); // Large thumbs
         for (Element e : imageLinks) {
             e = e.select("div").first().select("a").first();
             pageUrls.add(e.attr("href"));
