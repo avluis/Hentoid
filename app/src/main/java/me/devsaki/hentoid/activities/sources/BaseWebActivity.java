@@ -471,12 +471,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
                 android.R.color.holo_red_light);
     }
 
-    private void refreshNavigationMenu() {
-        backMenu.setEnabled(webView.canGoBack());
-        forwardMenu.setEnabled(webView.canGoForward());
-        galleryMenu.setEnabled(backListContainsGallery(webView.copyBackForwardList()) > -1);
-    }
-
     private void onBackClick() {
         webView.goBack();
     }
@@ -796,6 +790,12 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             isHtmlLoaded = false; // Reset for the next page
             refreshStopMenu.setIcon(R.drawable.ic_action_refresh);
             refreshNavigationMenu();
+        }
+
+        private void refreshNavigationMenu() {
+            backMenu.setEnabled(webView.canGoBack());
+            forwardMenu.setEnabled(webView.canGoForward());
+            galleryMenu.setEnabled(backListContainsGallery(webView.copyBackForwardList()) > -1);
         }
 
         /**
