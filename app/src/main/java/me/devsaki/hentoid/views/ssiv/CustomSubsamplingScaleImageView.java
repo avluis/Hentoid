@@ -298,7 +298,6 @@ public class CustomSubsamplingScaleImageView extends View {
 
     // Start of double-tap and long-tap zoom, in terms of screen (view) coordinates
     private PointF vCenterStart;
-    private PointF vGestureCenterOffset;
     private float vDistStart;
 
     // Current quickscale state
@@ -527,11 +526,11 @@ public class CustomSubsamplingScaleImageView extends View {
                 this.bitmapIsCached = previewSource.isCached();
                 onPreviewLoaded(previewSource.getBitmap());
             } else {
-                Uri uri = previewSource.getUri();
-                if (uri == null && previewSource.getResource() != null) {
-                    uri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getContext().getPackageName() + "/" + previewSource.getResource());
+                Uri previewSourceUri = previewSource.getUri();
+                if (previewSourceUri == null && previewSource.getResource() != null) {
+                    previewSourceUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getContext().getPackageName() + "/" + previewSource.getResource());
                 }
-                BitmapLoadTask task = new BitmapLoadTask(this, getContext(), bitmapDecoderFactory, uri, true);
+                BitmapLoadTask task = new BitmapLoadTask(this, getContext(), bitmapDecoderFactory, previewSourceUri, true);
                 execute(task);
             }
         }
@@ -1125,9 +1124,9 @@ public class CustomSubsamplingScaleImageView extends View {
                 sCenter.y = sHeight() / 2f;
             }
         }
-        float doubleTapZoomScale = Math.min(maxScale, this.doubleTapZoomScale);
-        boolean zoomIn = (scale <= doubleTapZoomScale * 0.9) || scale == minScale;
-        float targetScale = zoomIn ? doubleTapZoomScale : minScale();
+        float targetDoubleTapZoomScale = Math.min(maxScale, doubleTapZoomScale);
+        boolean zoomIn = (scale <= targetDoubleTapZoomScale * 0.9) || scale == minScale;
+        float targetScale = zoomIn ? targetDoubleTapZoomScale : minScale();
         if (doubleTapZoomStyle == ZOOM_FOCUS_CENTER_IMMEDIATE) {
             setScaleAndCenter(targetScale, sCenter);
         } else if (doubleTapZoomStyle == ZOOM_FOCUS_CENTER || !zoomIn || !panEnabled) {
@@ -1308,11 +1307,11 @@ public class CustomSubsamplingScaleImageView extends View {
             if (null != center)
                 canvas.drawText("Source center: " + String.format(Locale.ENGLISH, "%.2f", center.x) + ":" + String.format(Locale.ENGLISH, "%.2f", center.y), px(5), px(45), debugTextPaint);
             if (anim != null) {
-                PointF vCenterStart = sourceToViewCoord(anim.sCenterStart);
+                PointF targetvCenterStart = sourceToViewCoord(anim.sCenterStart);
                 PointF vCenterEndRequested = sourceToViewCoord(anim.sCenterEndRequested);
                 PointF vCenterEnd = sourceToViewCoord(anim.sCenterEnd);
-                if (vCenterStart != null) {
-                    canvas.drawCircle(vCenterStart.x, vCenterStart.y, px(10), debugLinePaint);
+                if (targetvCenterStart != null) {
+                    canvas.drawCircle(targetvCenterStart.x, targetvCenterStart.y, px(10), debugLinePaint);
                     debugLinePaint.setColor(Color.RED);
                 }
                 if (vCenterEndRequested != null) {
@@ -1619,20 +1618,20 @@ public class CustomSubsamplingScaleImageView extends View {
             center = false;
         }
 
-        PointF vTranslate = sat.vTranslate;
-        float scale = limitedScale(sat.scale);
-        float scaleWidth = scale * sWidth();
-        float scaleHeight = scale * sHeight();
+        PointF targetvTranslate = sat.vTranslate;
+        float targetScale = limitedScale(sat.scale);
+        float scaleWidth = targetScale * sWidth();
+        float scaleHeight = targetScale * sHeight();
 
         if (panLimit == PanLimit.CENTER && isReady()) {
-            vTranslate.x = Math.max(vTranslate.x, getWidthInternal() / 2f - scaleWidth);
-            vTranslate.y = Math.max(vTranslate.y, getHeightInternal() / 2f - scaleHeight);
+            targetvTranslate.x = Math.max(targetvTranslate.x, getWidthInternal() / 2f - scaleWidth);
+            targetvTranslate.y = Math.max(targetvTranslate.y, getHeightInternal() / 2f - scaleHeight);
         } else if (center) {
-            vTranslate.x = Math.max(vTranslate.x, getWidthInternal() - scaleWidth);
-            vTranslate.y = Math.max(vTranslate.y, getHeightInternal() - scaleHeight);
+            targetvTranslate.x = Math.max(targetvTranslate.x, getWidthInternal() - scaleWidth);
+            targetvTranslate.y = Math.max(targetvTranslate.y, getHeightInternal() - scaleHeight);
         } else {
-            vTranslate.x = Math.max(vTranslate.x, -scaleWidth);
-            vTranslate.y = Math.max(vTranslate.y, -scaleHeight);
+            targetvTranslate.x = Math.max(targetvTranslate.x, -scaleWidth);
+            targetvTranslate.y = Math.max(targetvTranslate.y, -scaleHeight);
         }
 
         // Asymmetric padding adjustments
@@ -1652,10 +1651,10 @@ public class CustomSubsamplingScaleImageView extends View {
             maxTy = Math.max(0, getHeightInternal());
         }
 
-        vTranslate.x = Math.min(vTranslate.x, maxTx);
-        vTranslate.y = Math.min(vTranslate.y, maxTy);
+        targetvTranslate.x = Math.min(targetvTranslate.x, maxTx);
+        targetvTranslate.y = Math.min(targetvTranslate.y, maxTy);
 
-        sat.scale = scale;
+        sat.scale = targetScale;
     }
 
     /**
@@ -1786,6 +1785,7 @@ public class CustomSubsamplingScaleImageView extends View {
         }
 
         @Override
+        @Nullable
         protected int[] doInBackground(Void... params) {
             try {
                 String sourceUri = source.toString();
@@ -2078,11 +2078,11 @@ public class CustomSubsamplingScaleImageView extends View {
                 String[] columns = {MediaStore.Images.ImageColumns.ORIENTATION};
                 cursor = context.getContentResolver().query(Uri.parse(sourceUri), columns, null, null, null);
                 if (cursor != null && cursor.moveToFirst()) {
-                    int orientation = cursor.getInt(0);
-                    if (VALID_ORIENTATIONS.contains(orientation) && orientation != ORIENTATION_USE_EXIF) {
-                        exifOrientation = orientation;
+                    int targetOrientation = cursor.getInt(0);
+                    if (VALID_ORIENTATIONS.contains(targetOrientation) && targetOrientation != ORIENTATION_USE_EXIF) {
+                        exifOrientation = targetOrientation;
                     } else {
-                        Timber.w(TAG, "Unsupported orientation: %s", orientation);
+                        Timber.w(TAG, "Unsupported orientation: %s", targetOrientation);
                     }
                 }
             } catch (Exception e) {
@@ -3394,18 +3394,18 @@ public class CustomSubsamplingScaleImageView extends View {
                 }
             }
 
-            float targetScale = limitedScale(this.targetScale);
+            float localTargetScale = limitedScale(targetScale);
             Timber.d(">> anim start targetSCenter A %s", targetSCenter);
-            PointF targetSCenter = panLimited ? limitedSCenter(this.targetSCenter.x, this.targetSCenter.y, targetScale, new PointF()) : this.targetSCenter;
-            Timber.d(">> anim start targetSCenter B %s", targetSCenter);
+            PointF localTargetSCenter = panLimited ? limitedSCenter(targetSCenter.x, targetSCenter.y, localTargetScale, new PointF()) : targetSCenter;
+            Timber.d(">> anim start targetSCenter B %s", localTargetSCenter);
             anim = new Anim();
             anim.scaleStart = scale;
-            anim.scaleEnd = targetScale;
+            anim.scaleEnd = localTargetScale;
             anim.time = System.currentTimeMillis();
-            anim.sCenterEndRequested = targetSCenter;
+            anim.sCenterEndRequested = localTargetSCenter;
             anim.sCenterStart = getCenter();
-            anim.sCenterEnd = targetSCenter;
-            anim.vFocusStart = sourceToViewCoord(targetSCenter);
+            anim.sCenterEnd = localTargetSCenter;
+            anim.vFocusStart = sourceToViewCoord(localTargetSCenter);
             anim.vFocusEnd = getvCenter();
             anim.duration = duration;
             anim.interruptible = interruptible;
@@ -3417,10 +3417,10 @@ public class CustomSubsamplingScaleImageView extends View {
             if (vFocus != null) {
                 Timber.d(">> anim start vFocus %s", vFocus);
                 // Calculate where translation will be at the end of the anim
-                float vTranslateXEnd = vFocus.x - (targetScale * anim.sCenterStart.x);
-                float vTranslateYEnd = vFocus.y - (targetScale * anim.sCenterStart.y);
+                float vTranslateXEnd = vFocus.x - (localTargetScale * anim.sCenterStart.x);
+                float vTranslateYEnd = vFocus.y - (localTargetScale * anim.sCenterStart.y);
                 Timber.d(">> anim start vTranslateEnd %s %s", vTranslateXEnd, vTranslateYEnd);
-                ScaleAndTranslate satEnd = new ScaleAndTranslate(targetScale, new PointF(vTranslateXEnd, vTranslateYEnd));
+                ScaleAndTranslate satEnd = new ScaleAndTranslate(localTargetScale, new PointF(vTranslateXEnd, vTranslateYEnd));
                 // Fit the end translation into bounds
                 fitToBounds(true, satEnd);
                 Timber.d(">> anim start satEnd.vTranslate %s", satEnd.vTranslate);
@@ -3441,11 +3441,11 @@ public class CustomSubsamplingScaleImageView extends View {
          */
         @NonNull
         private PointF limitedSCenter(float sCenterX, float sCenterY, float scale, @NonNull PointF sTarget) {
-            PointF vTranslate = vTranslateForSCenter(sCenterX, sCenterY, scale);
+            PointF targetvTranslate = vTranslateForSCenter(sCenterX, sCenterY, scale);
             int vxCenter = getPaddingLeft() + (getWidthInternal() - getPaddingRight() - getPaddingLeft()) / 2;
             int vyCenter = getPaddingTop() + (getHeightInternal() - getPaddingBottom() - getPaddingTop()) / 2;
-            float sx = (vxCenter - vTranslate.x) / scale;
-            float sy = (vyCenter - vTranslate.y) / scale;
+            float sx = (vxCenter - targetvTranslate.x) / scale;
+            float sy = (vyCenter - targetvTranslate.y) / scale;
             sTarget.set(sx, sy);
             return sTarget;
         }
