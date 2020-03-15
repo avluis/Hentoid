@@ -15,6 +15,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewPropertyAnimator;
 import android.view.animation.DecelerateInterpolator;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Consumer;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -346,20 +347,27 @@ public class ZoomableRecyclerView extends RecyclerView {
                 fullDistanceY = e2.getY() - e1.getY();
             }
 
-            if (getLayoutManager() != null && getLayoutManager().canScrollVertically() && DEFAULT_SCALE == scale) {
-                if (fullDistanceY > 0 && atFirstPosition)
-                    Timber.i(">> OutOfBoundary Y START %s", fullDistanceY);
-                else if (fullDistanceY < 0 && atLastPosition)
-                    Timber.i(">> OutOfBoundary Y END %s", fullDistanceY);
-            }
+            LinearLayoutManager llm = (LinearLayoutManager) getLayoutManager();
+            if (llm != null) {
+                if (llm.canScrollVertically() && DEFAULT_SCALE == scale) {
+                    if (!isForwardGesture(llm, fullDistanceY) && atFirstPosition)
+                        Timber.i(">> OutOfBoundary Y START %s", fullDistanceY);
+                    else if (isForwardGesture(llm, fullDistanceY) && atLastPosition)
+                        Timber.i(">> OutOfBoundary Y END %s", fullDistanceY);
+                }
 
-            if (getLayoutManager() != null && getLayoutManager().canScrollHorizontally() && DEFAULT_SCALE == scale) {
-                if (fullDistanceX > 0 && atFirstPosition)
-                    Timber.i(">> OutOfBoundary X START %s", fullDistanceX);
-                else if (fullDistanceX < 0 && atLastPosition)
-                    Timber.i(">> OutOfBoundary X END %s", fullDistanceX);
+                if (llm.canScrollHorizontally() && DEFAULT_SCALE == scale) {
+                    if (!isForwardGesture(llm, fullDistanceX) && atFirstPosition)
+                        Timber.i(">> OutOfBoundary X START %s", fullDistanceX);
+                    else if (isForwardGesture(llm, fullDistanceX) && atLastPosition)
+                        Timber.i(">> OutOfBoundary X END %s", fullDistanceX);
+                }
             }
             return false;
+        }
+
+        private boolean isForwardGesture(@NonNull final LinearLayoutManager llm, float delta) {
+            return ((!llm.getReverseLayout() && delta < 0) || (llm.getReverseLayout() && delta > 0));
         }
     }
 
