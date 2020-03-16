@@ -15,15 +15,12 @@ import android.view.ViewConfiguration;
 import android.view.ViewPropertyAnimator;
 import android.view.animation.DecelerateInterpolator;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Consumer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.function.DoubleConsumer;
-
-import org.threeten.bp.Instant;
 
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -68,8 +65,6 @@ public class ZoomableRecyclerView extends RecyclerView {
 
     private boolean longTapZoomEnabled = true;
 
-    private Runnable onStartOutOfBoundScroll = null;
-    private Runnable onEndOutOfBoundScroll = null;
 
     @Override
     public void onDraw(Canvas c) {
@@ -112,14 +107,6 @@ public class ZoomableRecyclerView extends RecyclerView {
 
     public void setLongTapZoomEnabled(boolean longTapZoomEnabled) {
         this.longTapZoomEnabled = longTapZoomEnabled;
-    }
-
-    public void setOnStartOutOfBoundScrollListener(Runnable onStartOutOfBoundScrollListener) {
-        this.onStartOutOfBoundScroll = onStartOutOfBoundScrollListener;
-    }
-
-    public void setOnEndOutOfBoundScrollListener(Runnable onEndOutOfBoundScrollListener) {
-        this.onEndOutOfBoundScroll = onEndOutOfBoundScrollListener;
     }
 
     public interface LongTapListener {
@@ -305,9 +292,6 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     class GestureListener extends Listener {
-
-        private long lastScrollEventTick = -1;
-
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             detector.isDoubleTapping = true;
@@ -351,39 +335,6 @@ public class ZoomableRecyclerView extends RecyclerView {
                     zoom(DEFAULT_SCALE, toScale, 0f, toX, 0f, toY);
                 }
             }
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            float fullDistanceX = -distanceX;
-            float fullDistanceY = -distanceY;
-            if (e1 != null && e2 != null) {
-                fullDistanceX = e2.getX() - e1.getX();
-                fullDistanceY = e2.getY() - e1.getY();
-            }
-
-            LinearLayoutManager llm = (LinearLayoutManager) getLayoutManager();
-            if (llm != null && Instant.now().toEpochMilli() - lastScrollEventTick > 500) {
-                lastScrollEventTick = Instant.now().toEpochMilli();
-                if (llm.canScrollVertically() && DEFAULT_SCALE == scale) {
-                    if (!isForwardGesture(llm, fullDistanceY) && atFirstPosition && onStartOutOfBoundScroll != null)
-                        onStartOutOfBoundScroll.run();
-                    else if (isForwardGesture(llm, fullDistanceY) && atLastPosition && onEndOutOfBoundScroll != null)
-                        onEndOutOfBoundScroll.run();
-                }
-
-                if (llm.canScrollHorizontally() && DEFAULT_SCALE == scale) {
-                    if (!isForwardGesture(llm, fullDistanceX) && atFirstPosition && onStartOutOfBoundScroll != null)
-                        onStartOutOfBoundScroll.run();
-                    else if (isForwardGesture(llm, fullDistanceX) && atLastPosition && onEndOutOfBoundScroll != null)
-                        onEndOutOfBoundScroll.run();
-                }
-            }
-            return false;
-        }
-
-        private boolean isForwardGesture(@NonNull final LinearLayoutManager llm, float delta) {
-            return ((!llm.getReverseLayout() && delta < 0) || (llm.getReverseLayout() && delta > 0));
         }
     }
 

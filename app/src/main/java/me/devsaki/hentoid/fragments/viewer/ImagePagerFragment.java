@@ -253,8 +253,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             }
         });
         recyclerView.setLongTapListener(ev -> false);
-        recyclerView.setOnEndOutOfBoundScrollListener(this::nextPage);
-        recyclerView.setOnStartOutOfBoundScrollListener(this::previousPage);
 
         OnZoneTapListener onHorizontalZoneTapListener = new OnZoneTapListener(recyclerView)
                 .setOnLeftZoneTapListener(this::onLeftTap)
@@ -281,6 +279,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 return LinearSmoothScroller.SNAP_TO_START;
             }
         };
+
+        scrollListener.setOnStartOutOfBoundScrollListener(() -> {
+            if (Preferences.isViewerContinuous()) previousBook();
+        });
+        scrollListener.setOnEndOutOfBoundScrollListener(() -> {
+            if (Preferences.isViewerContinuous()) nextBook();
+        });
     }
 
     private void initControlsOverlay(View rootView) {
