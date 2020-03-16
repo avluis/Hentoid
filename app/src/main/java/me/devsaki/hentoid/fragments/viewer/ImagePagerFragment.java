@@ -253,6 +253,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             }
         });
         recyclerView.setLongTapListener(ev -> false);
+        recyclerView.setOnEndOutOfBoundScrollListener(this::nextPage);
+        recyclerView.setOnStartOutOfBoundScrollListener(this::previousPage);
 
         OnZoneTapListener onHorizontalZoneTapListener = new OnZoneTapListener(recyclerView)
                 .setOnLeftZoneTapListener(this::onLeftTap)

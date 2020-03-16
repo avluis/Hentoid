@@ -23,12 +23,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.function.DoubleConsumer;
 
+import org.threeten.bp.Instant;
+
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener.Listener;
-import timber.log.Timber;
 
 /**
  * Zoomable RecyclerView that supports gestures
@@ -66,6 +67,9 @@ public class ZoomableRecyclerView extends RecyclerView {
     private Point maxBitmapDimensions = null;
 
     private boolean longTapZoomEnabled = true;
+
+    private Runnable onStartOutOfBoundScroll = null;
+    private Runnable onEndOutOfBoundScroll = null;
 
     @Override
     public void onDraw(Canvas c) {
@@ -108,6 +112,14 @@ public class ZoomableRecyclerView extends RecyclerView {
 
     public void setLongTapZoomEnabled(boolean longTapZoomEnabled) {
         this.longTapZoomEnabled = longTapZoomEnabled;
+    }
+
+    public void setOnStartOutOfBoundScrollListener(Runnable onStartOutOfBoundScrollListener) {
+        this.onStartOutOfBoundScroll = onStartOutOfBoundScrollListener;
+    }
+
+    public void setOnEndOutOfBoundScrollListener(Runnable onEndOutOfBoundScrollListener) {
+        this.onEndOutOfBoundScroll = onEndOutOfBoundScrollListener;
     }
 
     public interface LongTapListener {
@@ -293,6 +305,9 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     class GestureListener extends Listener {
+
+        private long lastScrollEventTick = -1;
+
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             detector.isDoubleTapping = true;
@@ -348,19 +363,20 @@ public class ZoomableRecyclerView extends RecyclerView {
             }
 
             LinearLayoutManager llm = (LinearLayoutManager) getLayoutManager();
-            if (llm != null) {
+            if (llm != null && Instant.now().toEpochMilli() - lastScrollEventTick > 500) {
+                lastScrollEventTick = Instant.now().toEpochMilli();
                 if (llm.canScrollVertically() && DEFAULT_SCALE == scale) {
-                    if (!isForwardGesture(llm, fullDistanceY) && atFirstPosition)
-                        Timber.i(">> OutOfBoundary Y START %s", fullDistanceY);
-                    else if (isForwardGesture(llm, fullDistanceY) && atLastPosition)
-                        Timber.i(">> OutOfBoundary Y END %s", fullDistanceY);
+                    if (!isForwardGesture(llm, fullDistanceY) && atFirstPosition && onStartOutOfBoundScroll != null)
+                        onStartOutOfBoundScroll.run();
+                    else if (isForwardGesture(llm, fullDistanceY) && atLastPosition && onEndOutOfBoundScroll != null)
+                        onEndOutOfBoundScroll.run();
                 }
 
                 if (llm.canScrollHorizontally() && DEFAULT_SCALE == scale) {
-                    if (!isForwardGesture(llm, fullDistanceX) && atFirstPosition)
-                        Timber.i(">> OutOfBoundary X START %s", fullDistanceX);
-                    else if (isForwardGesture(llm, fullDistanceX) && atLastPosition)
-                        Timber.i(">> OutOfBoundary X END %s", fullDistanceX);
+                    if (!isForwardGesture(llm, fullDistanceX) && atFirstPosition && onStartOutOfBoundScroll != null)
+                        onStartOutOfBoundScroll.run();
+                    else if (isForwardGesture(llm, fullDistanceX) && atLastPosition && onEndOutOfBoundScroll != null)
+                        onEndOutOfBoundScroll.run();
                 }
             }
             return false;
