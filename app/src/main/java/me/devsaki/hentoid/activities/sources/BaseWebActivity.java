@@ -70,6 +70,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
@@ -114,7 +115,7 @@ import static me.devsaki.hentoid.util.HttpHelper.HEADER_CONTENT_TYPE;
  * this activity's function, it is recommended to request for this permission and show rationale if
  * permission request is denied
  */
-public abstract class BaseWebActivity extends AppCompatActivity implements WebContentListener {
+public abstract class BaseWebActivity extends BaseActivity implements WebContentListener {
 
     protected static final int MODE_DL = 0;
     private static final int MODE_QUEUE = 1;
@@ -214,8 +215,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ThemeHelper.applyTheme(this);
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
