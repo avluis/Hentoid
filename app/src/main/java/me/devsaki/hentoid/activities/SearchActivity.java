@@ -70,8 +70,7 @@ public class SearchActivity extends BaseActivity {
         Uri searchUri = new SearchActivityBundle.Parser(savedInstanceState).getUri();
         if (searchUri != null) {
             List<Attribute> preSelectedAttributes = SearchActivityBundle.Parser.parseSearchUri(searchUri);
-            if (preSelectedAttributes != null)
-                viewModel.setSelectedAttributes(preSelectedAttributes);
+            viewModel.setSelectedAttributes(preSelectedAttributes);
         }
     }
 
