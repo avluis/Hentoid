@@ -99,7 +99,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     // == CONTROLS OVERLAY ==
     private View controlsOverlay;
 
-    private MenuItem favoritePageButton;
     private MenuItem showFavoritePagesButton;
     private MenuItem shuffleButton;
 
@@ -144,8 +143,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 case R.id.action_show_favorite_pages:
                     onShowFavouriteClick();
                     break;
-                case R.id.action_favourite_page:
-                    onFavouriteClick();
+                case R.id.action_page_menu:
+                    onPageMenuClick();
                     break;
                 case R.id.action_settings:
                     onSettingsClick();
@@ -161,7 +160,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             }
             return true;
         });
-        favoritePageButton = toolbar.getMenu().findItem(R.id.action_favourite_page);
         showFavoritePagesButton = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
         shuffleButton = toolbar.getMenu().findItem(R.id.action_shuffle);
 
@@ -221,7 +219,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         if (Preferences.Constant.PREF_VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             BrowseModeDialogFragment.invoke(this);
         updatePageDisplay();
-        updateFavouriteDisplay();
+        updateFavouritesGalleryButtonDisplay();
     }
 
     // Make sure position is saved when app is closed by the user
@@ -380,27 +378,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     /**
-     * Handle click on "Favourite" action button
+     * Handle click on "Page menu" action button
      */
-    private void onFavouriteClick() {
-        ImageFile currentImage = adapter.getImageAt(imageIndex);
-        if (currentImage != null)
-            viewModel.togglePageFavourite(currentImage, this::onFavouriteSuccess);
-    }
-
-    /**
-     * Success callback when the new favourite'd state has been successfully persisted
-     *
-     * @param img The favourite'd / unfavourite'd ImageFile in its new state
-     */
-    private void onFavouriteSuccess(ImageFile img) {
-        // Check if the updated image is still the one displayed on screen
-        ImageFile currentImage = adapter.getImageAt(imageIndex);
-        if (currentImage != null && img.getId() == currentImage.getId()) {
-            currentImage.setFavourite(img.isFavourite());
-            updateFavouriteDisplay(img.isFavourite());
-        }
-        updateFavouritesGalleryButtonDisplay();
+    private void onPageMenuClick() {
+        ImageBottomSheetFragment.show(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex);
     }
 
     /**
@@ -509,7 +490,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             adapter.resetScaleAtPosition(scrollPosition);
 
         updatePageDisplay();
-        updateFavouriteDisplay();
+        updateFavouritesGalleryButtonDisplay();
     }
 
     /**
@@ -548,38 +529,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     /**
-     * Update the display of all favourite controls (favourite page action _and_ favourites gallery launcher)
-     */
-    private void updateFavouriteDisplay() {
-        updateFavouritesGalleryButtonDisplay();
-
-        ImageFile currentImage = adapter.getImageAt(imageIndex);
-        if (currentImage != null)
-            updateFavouriteDisplay(currentImage.isFavourite());
-    }
-
-    /**
      * Update the display of the favourites gallery launcher
      */
     private void updateFavouritesGalleryButtonDisplay() {
         if (adapter.isFavouritePresent())
             favouritesGalleryBtn.setVisibility(View.VISIBLE);
         else favouritesGalleryBtn.setVisibility(View.INVISIBLE);
-    }
-
-    /**
-     * Update the display of the "favourite page" action button
-     *
-     * @param isFavourited True if the button has to represent a favourite page; false instead
-     */
-    private void updateFavouriteDisplay(boolean isFavourited) {
-        if (isFavourited) {
-            favoritePageButton.setIcon(R.drawable.ic_fav_full);
-            favoritePageButton.setTitle(R.string.viewer_favourite_on);
-        } else {
-            favoritePageButton.setIcon(R.drawable.ic_fav_empty);
-            favoritePageButton.setTitle(R.string.viewer_favourite_off);
-        }
     }
 
     /**

@@ -16,11 +16,11 @@
         android:title="@string/viewer_favourite_off"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_favourite_page"
+        android:id="@+id/action_page_menu"
         android:enabled="true"
-        android:icon="@drawable/ic_fav_empty"
+        android:icon="@drawable/ic_image"
         android:orderInCategory="0"
-        android:title="@string/viewer_favourite_off"
+        android:title="@string/viewer_page_menu"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_shuffle"
