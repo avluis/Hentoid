@@ -266,7 +266,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             String uri = img.getAbsolutePath();
             Timber.i(">>>>IMG %s %s", imgType, uri);
 
-            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType) {
+            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType) { // SubsamplingScaleImageView
                 CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
                 ssView.recycle();
                 ssView.setMinimumScaleType(getScaleType());
