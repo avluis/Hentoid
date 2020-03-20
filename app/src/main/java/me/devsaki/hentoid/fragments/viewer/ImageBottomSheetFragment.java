@@ -89,6 +89,9 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         View copyButton = requireViewById(rootView, R.id.img_action_copy);
         copyButton.setOnClickListener(v -> onCopyClick());
 
+        View shareButton = requireViewById(rootView, R.id.img_action_share);
+        shareButton.setOnClickListener(v -> onShareClick());
+
         return rootView;
     }
 
@@ -174,6 +177,14 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         } catch (IOException e) {
             Snackbar.make(rootView, R.string.copy_fail_snackbar, LENGTH_LONG).show();
         }
+    }
+
+    /**
+     * Handle click on "Share" action button
+     */
+    private void onShareClick() {
+        File sourceFile = new File(image.getAbsolutePath());
+        FileHelper.shareFile(requireContext(), sourceFile, "Share picture");
     }
 
     private static Point getIMGSize(String path) {
