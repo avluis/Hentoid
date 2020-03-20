@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
 import android.webkit.MimeTypeMap;
@@ -23,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -459,9 +461,15 @@ public class FileHelper {
      * @param context Context
      * @param aFile   File to be opened
      */
-    public static void openFile(Context context, File aFile) {
+    public static void openFile(@NonNull Context context, @NonNull File aFile) {
         File file = new File(aFile.getAbsolutePath());
-        Intent myIntent = new Intent(Intent.ACTION_VIEW, FileProvider.getUriForFile(context, AUTHORITY, file));
+        Intent myIntent = new Intent(Intent.ACTION_VIEW);
+        Uri dataUri = FileProvider.getUriForFile(context, AUTHORITY, file);
+        if (file.isDirectory()) {
+            myIntent.setDataAndType(dataUri, DocumentsContract.Document.MIME_TYPE_DIR);
+        } else {
+            myIntent.setDataAndTypeAndNormalize(dataUri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(aFile.getName())));
+        }
         myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         try {
             context.startActivity(myIntent);
@@ -493,17 +501,9 @@ public class FileHelper {
      * @throws IOException If any IOException occurs
      */
     public static void saveBinaryInFile(File file, byte[] binaryContent) throws IOException {
-        byte[] buffer = new byte[1024];
-        int count;
-
         try (InputStream input = new ByteArrayInputStream(binaryContent)) {
             try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
-
-                while ((count = input.read(buffer)) != -1) {
-                    output.write(buffer, 0, count);
-                }
-
-                output.flush();
+                copy(input, output);
             }
         }
     }
@@ -613,6 +613,56 @@ public class FileHelper {
 
         // Target sequence not found
         return -1;
+    }
+
+    public static void copy(@NonNull File src, @NonNull File dst) throws IOException {
+        try (InputStream in = new FileInputStream(src)) {
+            try (OutputStream out = new FileOutputStream(dst)) {
+                copy(in, out);
+            }
+        }
+    }
+
+    public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        out.flush();
+    }
+
+    public static File getDownloadsFolder() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    }
+
+    public static OutputStream openNewDownloadOutputStream(@NonNull final String fileName) throws IOException {
+        // TODO implement when targetSDK = 29
+        /*
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return openNewDownloadOutputStreamQ(fileName, mimeType)
+        } else {*/
+        return openNewDownloadOutputStreamLegacy(fileName);
+        //}
+    }
+
+    private static OutputStream openNewDownloadOutputStreamLegacy(@NonNull final String fileName) throws IOException {
+        File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (null == downloadsFolder) throw new IOException("Downloads folder not found");
+
+        File target = new File(downloadsFolder, fileName);
+        if (!target.exists() && !target.createNewFile())
+            throw new IOException("Could not create new file in downloads folder");
+
+        return FileUtil.getOutputStream(target);
+    }
+
+    @TargetApi(29)
+    private static OutputStream openNewDownloadOutputStreamQ(@NonNull final String fileName, @NonNull final String mimeType) throws IOException {
+        // TODO implement when targetSDK = 29
+        // https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
+        return null;
     }
 
     public static class MemoryUsageFigures {

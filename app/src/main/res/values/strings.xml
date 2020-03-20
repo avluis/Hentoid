@@ -258,6 +258,8 @@
     <string name="pref_viewer_image_display">Image display mode</string>
     <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
     <string name="gallery_menu_favourite">Toggle favourite filter</string>
+    <string name="copy_success_snackbar">Image has been copied to downloads folder</string>
+    <string name="copy_fail_snackbar">Could not write to downloads folder</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

@@ -16,17 +16,24 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.snackbar.Snackbar;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
 
@@ -36,6 +43,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private ImageFile image = null;
 
     // UI
+    private View rootView;
     private TextView imgPath;
     private TextView imgDimensions;
 
@@ -70,13 +78,16 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.include_viewer_image_info, container, false);
+        rootView = inflater.inflate(R.layout.include_viewer_image_info, container, false);
 
         imgPath = requireViewById(rootView, R.id.image_path);
         imgDimensions = requireViewById(rootView, R.id.image_dimensions);
 
         favoriteButton = requireViewById(rootView, R.id.img_action_favourite);
         favoriteButton.setOnClickListener(v -> onFavouriteClick());
+
+        View copyButton = requireViewById(rootView, R.id.img_action_copy);
+        copyButton.setOnClickListener(v -> onCopyClick());
 
         return rootView;
     }
@@ -142,6 +153,27 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             favoriteButton.setImageResource(R.drawable.ic_fav_full);
         else
             favoriteButton.setImageResource(R.drawable.ic_fav_empty);
+    }
+
+    /**
+     * Handle click on "Copy" action button
+     */
+    private void onCopyClick() {
+        String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getAbsolutePath());
+        try {
+            File sourceFile = new File(image.getAbsolutePath());
+            try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(targetFileName)) {
+                try (InputStream input = FileHelper.getInputStream(sourceFile)) {
+                    FileHelper.copy(input, newDownload);
+                }
+            }
+
+            Snackbar.make(rootView, R.string.copy_success_snackbar, LENGTH_LONG)
+                    .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
+                    .show();
+        } catch (IOException e) {
+            Snackbar.make(rootView, R.string.copy_fail_snackbar, LENGTH_LONG).show();
+        }
     }
 
     private static Point getIMGSize(String path) {
