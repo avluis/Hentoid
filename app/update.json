@@ -7,8 +7,7 @@
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" },
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"189" },
-	  {"sourceName":"NEXUS", "status":"GREY" },
-	  {"sourceName":"HENTAICAFE", "status":"BLACK" }
+	  {"sourceName":"NEXUS", "status":"GREY" }
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" },
