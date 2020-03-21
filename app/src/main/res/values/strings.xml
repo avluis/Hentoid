@@ -4,7 +4,6 @@
     <string name="app_intro">Welcome</string>
     <string name="yes">Yes</string> <!-- because Android default "OK" value for "yes" key is nonsense -->
     <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
-    <string name="try_it">Try it</string>
     <string name="on">On</string>
     <string name="off">Off</string>
 
@@ -122,7 +121,6 @@
     <string name="redownload_log_clipboard">Log copied to clipboard</string>
 
     <!-- Library fragment -->
-    <string name="ask_delete">Are you sure you wish to delete this?</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
@@ -255,11 +253,11 @@
     <string name="viewer_page_menu">Page menu</string>
     <string name="viewer_favourite_off">Mark page as favourite</string>
     <string name="viewer_favourite_on">Unmark page as favourite</string>
+    <string name="viewer_delete_book">Delete book</string>
     <string name="pref_viewer_image_display">Image display mode</string>
-    <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
-    <string name="gallery_menu_favourite">Toggle favourite filter</string>
-    <string name="copy_success_snackbar">Copied to Downloads folder</string>
-    <string name="copy_fail_snackbar">Could not write to Downloads folder</string>
+    <string name="viewer_copy_success">Copied to Downloads folder</string>
+    <string name="viewer_copy_fail">Could not write to Downloads folder</string>
+    <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

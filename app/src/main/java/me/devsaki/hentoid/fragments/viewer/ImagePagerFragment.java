@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +47,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.views.ZoomableFrame;
@@ -154,6 +156,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                     break;
                 case R.id.action_slideshow:
                     startSlideshow();
+                    break;
+                case R.id.action_delete_book:
+                    onDeleteBook();
                     break;
                 default:
                     // Nothing to do here
@@ -464,6 +469,23 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             shuffleButton.setIcon(R.drawable.ic_menu_sort_random);
             shuffleButton.setTitle(R.string.viewer_order_shuffle);
         }
+    }
+
+    private void onDeleteBook() {
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.viewer_ask_delete_book)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            viewModel.deleteBook();
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
     }
 
 

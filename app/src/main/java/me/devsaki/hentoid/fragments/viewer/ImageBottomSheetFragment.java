@@ -171,11 +171,11 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
                 }
             }
 
-            Snackbar.make(rootView, R.string.copy_success_snackbar, LENGTH_LONG)
+            Snackbar.make(rootView, R.string.viewer_copy_success, LENGTH_LONG)
                     .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                     .show();
         } catch (IOException e) {
-            Snackbar.make(rootView, R.string.copy_fail_snackbar, LENGTH_LONG).show();
+            Snackbar.make(rootView, R.string.viewer_copy_fail, LENGTH_LONG).show();
         }
     }
 

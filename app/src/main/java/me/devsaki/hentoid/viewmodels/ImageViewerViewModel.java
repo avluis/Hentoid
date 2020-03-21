@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -300,6 +301,31 @@ public class ImageViewerViewModel extends AndroidViewModel {
             return img;
         } else
             throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));
+    }
+
+    public void deleteBook() {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doDeleteBook(loadedBookId))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> {
+                                    contentIds.remove(currentContentIndex);
+                                    if (currentContentIndex >= contentIds.size() && currentContentIndex > 0) currentContentIndex--;
+                                    loadFromContent(contentIds.get(currentContentIndex));
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    @WorkerThread
+    private void doDeleteBook(long contentId) {
+        Content content = collectionDao.selectContent(contentId);
+        if (content != null) {
+            collectionDao.deleteQueue(content);
+            ContentHelper.removeContent(content, collectionDao);
+        }
     }
 
     public void loadNextContent() {

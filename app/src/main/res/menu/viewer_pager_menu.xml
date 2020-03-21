@@ -30,6 +30,13 @@
         android:title="@string/viewer_order_shuffle"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_delete_book"
+        android:enabled="true"
+        android:icon="@drawable/ic_action_delete_forever"
+        android:orderInCategory="1"
+        android:title="@string/viewer_delete_book"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_settings"
         android:enabled="true"
         android:icon="@drawable/ic_settings"

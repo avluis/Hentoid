@@ -62,7 +62,7 @@ public class ObjectBoxDB {
 
 
     private ObjectBoxDB(Context context) {
-        store = MyObjectBox.builder().androidContext(context.getApplicationContext()).maxSizeInKByte(2*1024*1024).build(); // 2Gb max size
+        store = MyObjectBox.builder().androidContext(context.getApplicationContext()).maxSizeInKByte(2 * 1024 * 1024).build(); // 2Gb max size
 
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
             boolean started = new AndroidObjectBrowser(store).start(context.getApplicationContext());
@@ -269,9 +269,7 @@ public class ObjectBoxDB {
         Box<QueueRecord> queueRecordBox = store.boxFor(QueueRecord.class);
         QueueRecord record = queueRecordBox.query().equal(QueueRecord_.contentId, contentId).build().findFirst();
 
-        if (record != null) {
-            queueRecordBox.remove(record);
-        }
+        if (record != null) queueRecordBox.remove(record);
     }
 
     public void deleteAllQueue() {

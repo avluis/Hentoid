@@ -3,6 +3,7 @@ package me.devsaki.hentoid.viewmodels;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.WorkerThread;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -189,14 +190,14 @@ public class QueueViewModel extends AndroidViewModel {
         );
     }
 
+    @WorkerThread
     private void doCancel(long contentId) {
         // Remove content altogether from the DB (including queue)
         Content content = queueDao.selectContent(contentId);
         if (content != null) {
             queueDao.deleteQueue(content);
-            queueDao.deleteContent(content);
-            // Remove the content from the disk
-            ContentHelper.removeContent(content);
+            // Remove the content from the disk and the DB
+            ContentHelper.removeContent(content, queueDao);
         }
     }
 }

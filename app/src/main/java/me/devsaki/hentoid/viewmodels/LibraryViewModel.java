@@ -284,8 +284,7 @@ public class LibraryViewModel extends AndroidViewModel {
             Content theContent = collectionDao.selectContent(content.getId());
 
             if (theContent != null) {
-                ContentHelper.removeContent(theContent);
-                collectionDao.deleteContent(theContent);
+                ContentHelper.removeContent(theContent, collectionDao);
                 Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
                 return theContent;
             }

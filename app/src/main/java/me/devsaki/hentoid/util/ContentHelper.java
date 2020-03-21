@@ -148,9 +148,13 @@ public final class ContentHelper {
         );
     }
 
-
+    /**
+     * Remove given Content from the disk and the DB
+     * @param content Content to be removed
+     * @param dao DAO to be used
+     */
     @WorkerThread
-    public static void removeContent(@NonNull Content content) {
+    public static void removeContent(@NonNull Content content, @NonNull CollectionDAO dao) {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (!content.getStorageFolder().isEmpty()) {
             File dir = getContentDownloadDir(content);
@@ -160,6 +164,7 @@ public final class ContentHelper {
                 Timber.w("Failed to delete directory: %s", dir);
             }
         }
+        dao.deleteContent(content);
     }
 
     /**
