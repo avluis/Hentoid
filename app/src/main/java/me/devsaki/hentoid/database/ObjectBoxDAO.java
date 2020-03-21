@@ -201,6 +201,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.updateImageFileStatusParamsMimeType(image);
     }
 
+    public void deleteImageFile(@NonNull ImageFile img) {
+        db.deleteImageFile(img.getId());
+    }
+
     @Nullable
     public ImageFile selectImageFile(long id) {
         return db.selectImageFile(id);

@@ -71,6 +71,8 @@ public interface CollectionDAO {
 
     void updateImageFileStatusParamsMimeType(@NonNull ImageFile image);
 
+    void deleteImageFile(@NonNull ImageFile img);
+
     ImageFile selectImageFile(long id);
 
     LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id);

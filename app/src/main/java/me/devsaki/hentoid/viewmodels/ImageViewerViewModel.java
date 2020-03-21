@@ -311,7 +311,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .subscribe(
                                 () -> {
                                     contentIds.remove(currentContentIndex);
-                                    if (currentContentIndex >= contentIds.size() && currentContentIndex > 0) currentContentIndex--;
+                                    if (currentContentIndex >= contentIds.size() && currentContentIndex > 0)
+                                        currentContentIndex--;
                                     loadFromContent(contentIds.get(currentContentIndex));
                                 },
                                 Timber::e
@@ -326,6 +327,26 @@ public class ImageViewerViewModel extends AndroidViewModel {
             collectionDao.deleteQueue(content);
             ContentHelper.removeContent(content, collectionDao);
         }
+    }
+
+    public void deletePage(int pageIndex) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doDeletePage(pageIndex))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Update is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    @WorkerThread
+    private void doDeletePage(int pageIndex) {
+        List<ImageFile> imageFiles = images.getValue();
+        if (imageFiles != null && imageFiles.size() > pageIndex)
+            ContentHelper.removePage(imageFiles.get(pageIndex), collectionDao, getApplication());
     }
 
     public void loadNextContent() {

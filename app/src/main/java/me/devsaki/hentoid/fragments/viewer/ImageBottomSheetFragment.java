@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -92,6 +93,9 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         View shareButton = requireViewById(rootView, R.id.img_action_share);
         shareButton.setOnClickListener(v -> onShareClick());
 
+        View deleteButton = requireViewById(rootView, R.id.img_action_delete);
+        deleteButton.setOnClickListener(v -> onDeleteClick());
+
         return rootView;
     }
 
@@ -121,7 +125,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         image = images.get(imageIndex);
 
         imgPath.setText(image.getAbsolutePath());
-        Point size = getIMGSize(image.getAbsolutePath());
+        Point size = getImageSize(image.getAbsolutePath());
         imgDimensions.setText(String.format("%s x %s", size.x, size.y));
 
         updateFavouriteDisplay(image.isFavourite());
@@ -187,7 +191,28 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         FileHelper.shareFile(requireContext(), sourceFile, "Share picture");
     }
 
-    private static Point getIMGSize(String path) {
+    /**
+     * Handle click on "Delete" action button
+     */
+    private void onDeleteClick() {
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.viewer_ask_delete_page)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            viewModel.deletePage(imageIndex);
+
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
+    }
+
+    private static Point getImageSize(String path) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, options);

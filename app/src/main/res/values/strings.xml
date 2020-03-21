@@ -258,6 +258,7 @@
     <string name="viewer_copy_success">Copied to Downloads folder</string>
     <string name="viewer_copy_fail">Could not write to Downloads folder</string>
     <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
+    <string name="viewer_ask_delete_page">Are you sure you wish to delete this page?</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

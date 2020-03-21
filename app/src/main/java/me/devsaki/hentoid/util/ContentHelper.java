@@ -25,6 +25,7 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.JsonContent;
 import timber.log.Timber;
@@ -150,21 +151,48 @@ public final class ContentHelper {
 
     /**
      * Remove given Content from the disk and the DB
+     *
      * @param content Content to be removed
-     * @param dao DAO to be used
+     * @param dao     DAO to be used
      */
     @WorkerThread
     public static void removeContent(@NonNull Content content, @NonNull CollectionDAO dao) {
+        // Remove from DB
+        // NB : start with DB to have a LiveData feedback, because file removal can take much time
+        dao.deleteContent(content);
+
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (!content.getStorageFolder().isEmpty()) {
             File dir = getContentDownloadDir(content);
             if (deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
                 Timber.i("Directory %s removed.", dir);
             } else {
-                Timber.w("Failed to delete directory: %s", dir);
+                Timber.w("Failed to delete directory: %s", dir); // TODO use exception to display feedback on screen
             }
         }
-        dao.deleteContent(content);
+    }
+
+    /**
+     * Remove given page from the disk and the DB
+     *
+     * @param image Page to be removed
+     * @param dao   DAO to be used
+     */
+    @WorkerThread
+    public static void removePage(@NonNull ImageFile image, @NonNull CollectionDAO dao, @NonNull final Context context) {
+        // Remove from DB
+        // NB : start with DB to have a LiveData feedback, because file removal can take much time
+        dao.deleteImageFile(image);
+
+        // Remove the page from disk
+        if (image.getAbsolutePath() != null && !image.getAbsolutePath().isEmpty()) {
+            File imgFile = new File(image.getAbsolutePath());
+            FileHelper.removeFile(imgFile); // TODO use exception to display feedback on screen
+        }
+
+        // Update content JSON if it exists (i.e. if book is not queued)
+        Content content = dao.selectContent(image.content.getTargetId());
+        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
     }
 
     /**

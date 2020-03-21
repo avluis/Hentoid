@@ -705,6 +705,10 @@ public class ObjectBoxDB {
         store.boxFor(ImageFile.class).query().equal(ImageFile_.contentId, contentId).build().remove();
     }
 
+    void deleteImageFile(long imageId) {
+        store.boxFor(ImageFile.class).remove(imageId);
+    }
+
     void insertImageFiles(@NonNull List<ImageFile> imgs) {
         store.boxFor(ImageFile.class).put(imgs);
     }
