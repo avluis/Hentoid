@@ -769,7 +769,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             // Restart the app with the library activity on top
             Intent intent = requireActivity().getIntent();
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             requireActivity().finish();
             startActivity(intent);

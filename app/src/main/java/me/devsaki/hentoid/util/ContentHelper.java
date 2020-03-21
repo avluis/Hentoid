@@ -53,7 +53,6 @@ public final class ContentHelper {
 
     public static void viewContent(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         Intent intent = new Intent(context, content.getWebActivityClass());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(content.getGalleryUrl());
         intent.putExtras(builder.getBundle());

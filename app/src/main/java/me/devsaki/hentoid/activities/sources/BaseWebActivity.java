@@ -32,7 +32,6 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -94,7 +93,6 @@ import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import okhttp3.Response;
@@ -498,7 +496,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         Intent intent = new Intent(this, LibraryActivity.class);
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
         // it can interfere with Double-Back (press back twice) to exit
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
@@ -572,12 +570,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
     private void goToQueue() {
         Intent intent = new Intent(this, QueueActivity.class);
-        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
-        // it can interfere with Double-Back (press back twice) to exit
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-        finish();
     }
 
     @Override

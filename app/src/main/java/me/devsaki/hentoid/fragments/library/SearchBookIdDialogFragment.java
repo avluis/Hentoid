@@ -119,7 +119,6 @@ public class SearchBookIdDialogFragment extends DialogFragment {
         if (null == s) return false;
 
         Intent intent = new Intent(requireContext(), Content.getWebActivityClass(s));
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(getUrlFromId(s, bookId));

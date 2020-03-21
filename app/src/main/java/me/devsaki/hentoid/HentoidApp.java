@@ -160,7 +160,7 @@ public class HentoidApp extends Application {
     public static void reset(Activity activity) {
         Preferences.setIsFirstRun(true);
         Intent intent = new Intent(activity, IntroActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         instance.startActivity(intent);
         activity.finish();
     }
