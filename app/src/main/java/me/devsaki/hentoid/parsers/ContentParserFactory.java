@@ -6,6 +6,7 @@ import me.devsaki.hentoid.parsers.content.ASMHentaiContent;
 import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
 import me.devsaki.hentoid.parsers.content.FakkuContent;
+import me.devsaki.hentoid.parsers.content.HbrowseContent;
 import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
 import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
@@ -64,6 +65,8 @@ public class ContentParserFactory {
                 return DoujinsContent.class;
             case PORNCOMIX:
                 return PorncomixContent.class;
+            case HBROWSE:
+                return HbrowseContent.class;
             case EHENTAI: // Uses the API of the site -> no HTML parser
             case EXHENTAI: // Uses the API of the site -> no HTML parser
             case LUSCIOUS: // Uses the API of the site -> no HTML parser
@@ -104,6 +107,7 @@ public class ContentParserFactory {
             case MUSES:
             case NHENTAI:
             case DOUJINS:
+            case HBROWSE:
             default:
                 return new DummyParser();
         }

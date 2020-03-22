@@ -99,6 +99,8 @@ public class IntentActivity extends AppCompatActivity {
                 return toParse.replace("/hentai", "");
             case NEXUS:
                 return toParse.replace("/view", "");
+            case HBROWSE:
+                return toParse.substring(1);
             case MUSES:
             case DOUJINS:
             case LUSCIOUS:

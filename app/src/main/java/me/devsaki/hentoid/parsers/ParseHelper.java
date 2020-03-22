@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers;
 
+import androidx.annotation.NonNull;
+
 import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
 
@@ -40,14 +42,19 @@ public class ParseHelper {
         return s;
     }
 
-    public static void parseAttributes(AttributeMap map, AttributeType type, List<Element> elements, boolean filterCount, Site site) {
+    public static void parseAttributes(@NonNull AttributeMap map, @NonNull AttributeType type, List<Element> elements, boolean filterCount, @NonNull Site site) {
         if (elements != null)
             for (Element a : elements) parseAttribute(map, type, a, filterCount, site);
     }
 
-    public static void parseAttribute(AttributeMap map, AttributeType type, Element element, boolean filterCount, Site site) {
+    public static void parseAttribute(@NonNull AttributeMap map, @NonNull AttributeType type, @NonNull Element element, boolean filterCount, @NonNull Site site) {
+        parseAttribute(map, type, element, filterCount, site, "");
+    }
+
+    public static void parseAttribute(@NonNull AttributeMap map, @NonNull AttributeType type, @NonNull Element element, boolean filterCount, @NonNull Site site, @NonNull final String prefix) {
         String name = Helper.removeNonPrintableChars(element.text());
         if (filterCount) name = removeBrackets(name);
+        if (!prefix.isEmpty()) name = prefix + ":" + name;
         Attribute attribute = new Attribute(type, name, element.attr("href"), site);
 
         map.add(attribute);

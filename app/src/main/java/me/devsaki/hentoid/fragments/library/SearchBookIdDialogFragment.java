@@ -79,6 +79,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
                 if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
                 if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
                 if (!foundSitesList.contains(Site.LUSCIOUS.getCode())) sites.add(Site.LUSCIOUS);
+                if (!foundSitesList.contains(Site.HBROWSE.getCode())) sites.add(Site.HBROWSE);
             }
             ItemAdapter<TextItem<Site>> itemAdapter = new ItemAdapter<>();
             itemAdapter.set(Stream.of(sites).map(s -> new TextItem<>(s.getDescription(), s, true)).toList());
@@ -110,6 +111,8 @@ public class SearchBookIdDialogFragment extends DialogFragment {
                 return site.getUrl() + "/view/" + id;
             case LUSCIOUS:
                 return site.getUrl().replace("manga", "albums") + id + "/";
+            case HBROWSE:
+                return site.getUrl() + id + "/c00001";
             default:
                 return site.getUrl();
         }

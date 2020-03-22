@@ -23,6 +23,7 @@ import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
+import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
@@ -151,6 +152,8 @@ public class Content implements Serializable {
             case PURURIN:
                 paths = url.split("/");
                 return (paths.length > 1) ? paths[1] : paths[0];
+            case HBROWSE:
+                return url.split("/")[0];
             case HITOMI:
                 paths = url.split("/");
                 String expression = (paths.length > 1) ? paths[1] : paths[0];
@@ -255,6 +258,8 @@ public class Content implements Serializable {
                 return LusciousActivity.class;
             case PORNCOMIX:
                 return PorncomixActivity.class;
+            case HBROWSE:
+                return HbrowseActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -319,6 +324,7 @@ public class Content implements Serializable {
             case PANDA:
             case MUSES:
             case DOUJINS:
+            case HBROWSE:
             default:
                 galleryConst = "";
         }
@@ -341,6 +347,7 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case DOUJINS:
+            case HBROWSE:
                 return getGalleryUrl();
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
