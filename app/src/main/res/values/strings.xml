@@ -212,6 +212,7 @@
 
     <!-- Web viewer -->
     <string name="web_gallery">Back to gallery page</string>
+    <string name="web_home">Back to library</string>
     <string name="web_back">Back</string>
     <string name="web_forward">Forward</string>
     <string name="web_refresh_stop">Refresh/stop</string>

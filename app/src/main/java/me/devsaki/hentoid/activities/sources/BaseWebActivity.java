@@ -230,11 +230,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> goHome());
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
+        refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
 
         BottomNavigationView bottomToolbar = findViewById(R.id.bottom_navigation);
         bottomToolbar.setOnNavigationItemSelectedListener(this::onMenuItemSelected);
         bottomToolbar.setItemIconTintList(null); // Hack to make selector resource work
-        refreshStopMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
         backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
         forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
         galleryMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_gallery);
@@ -275,6 +275,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
     private boolean onMenuItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.web_menu_home:
+                this.goHome();
+                break;
             case R.id.web_menu_back:
                 this.onBackClick();
                 break;
