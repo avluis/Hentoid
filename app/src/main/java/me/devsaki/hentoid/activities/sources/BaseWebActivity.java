@@ -313,6 +313,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         checkPermissions();
 
+        Timber.i(">> WebActivity resume : %s %s %s", webView.getUrl(), currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
         if (currentContent != null && getWebClient().isPageFiltered(this.webView.getUrl()))
             processContent(currentContent, false);
     }
