@@ -70,14 +70,20 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
                 if (recyclerView.computeVerticalScrollOffset() != dragStartPositionY)
                     isSettlingY = true;
             } else if (RecyclerView.SCROLL_STATE_IDLE == newState) {
+                // Don't do anything if we're not on a boundary
+                if (!(llm.findLastVisibleItemPosition() == llm.getItemCount() || 0 == llm.findFirstVisibleItemPosition()))
+                    return;
+
                 if (recyclerView.computeHorizontalScrollOffset() == dragStartPositionX && !isSettlingX && llm.canScrollHorizontally()) {
-                    if (0 == dragStartPositionX && !llm.getReverseLayout()) onStartOutOfBoundScroll.run();
+                    if (0 == dragStartPositionX && !llm.getReverseLayout())
+                        onStartOutOfBoundScroll.run();
                     else if (0 == dragStartPositionX) onEndOutOfBoundScroll.run();
                     else if (llm.getReverseLayout()) onStartOutOfBoundScroll.run();
                     else onEndOutOfBoundScroll.run();
                 }
                 if (recyclerView.computeVerticalScrollOffset() == dragStartPositionY && !isSettlingY && llm.canScrollVertically()) {
-                    if (0 == dragStartPositionY && !llm.getReverseLayout()) onStartOutOfBoundScroll.run();
+                    if (0 == dragStartPositionY && !llm.getReverseLayout())
+                        onStartOutOfBoundScroll.run();
                     else if (0 == dragStartPositionY) onEndOutOfBoundScroll.run();
                     else if (llm.getReverseLayout()) onStartOutOfBoundScroll.run();
                     else onEndOutOfBoundScroll.run();
