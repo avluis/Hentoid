@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.views.ssiv;
+package me.devsaki.hentoid.customssiv;
 
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
@@ -34,15 +34,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 
-import com.davemorrissey.labs.subscaleview.ImageViewState;
-import com.davemorrissey.labs.subscaleview.R.styleable;
-import com.davemorrissey.labs.subscaleview.decoder.CompatDecoderFactory;
-import com.davemorrissey.labs.subscaleview.decoder.DecoderFactory;
-import com.davemorrissey.labs.subscaleview.decoder.ImageDecoder;
-import com.davemorrissey.labs.subscaleview.decoder.ImageRegionDecoder;
-import com.davemorrissey.labs.subscaleview.decoder.SkiaImageDecoder;
-import com.davemorrissey.labs.subscaleview.decoder.SkiaImageRegionDecoder;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
@@ -56,8 +47,15 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.customssiv.R.styleable;
+import me.devsaki.hentoid.customssiv.decoder.CompatDecoderFactory;
+import me.devsaki.hentoid.customssiv.decoder.DecoderFactory;
+import me.devsaki.hentoid.customssiv.decoder.ImageDecoder;
+import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder;
+import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder;
+import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder;
 import timber.log.Timber;
+
 
 /**
  * <p>
@@ -384,29 +382,29 @@ public class CustomSubsamplingScaleImageView extends View {
         // Handle XML attributes
         if (attr != null) {
             TypedArray typedAttr = getContext().obtainStyledAttributes(attr, R.styleable.CustomSubsamplingScaleImageView);
-            if (typedAttr.hasValue(styleable.SubsamplingScaleImageView_assetName)) {
-                String assetName = typedAttr.getString(styleable.SubsamplingScaleImageView_assetName);
+            if (typedAttr.hasValue(styleable.CustomSubsamplingScaleImageView_assetName)) {
+                String assetName = typedAttr.getString(styleable.CustomSubsamplingScaleImageView_assetName);
                 if (assetName != null && assetName.length() > 0) {
                     setImage(ImageSource.asset(assetName).tilingEnabled());
                 }
             }
-            if (typedAttr.hasValue(styleable.SubsamplingScaleImageView_src)) {
-                int resId = typedAttr.getResourceId(styleable.SubsamplingScaleImageView_src, 0);
+            if (typedAttr.hasValue(styleable.CustomSubsamplingScaleImageView_src)) {
+                int resId = typedAttr.getResourceId(styleable.CustomSubsamplingScaleImageView_src, 0);
                 if (resId > 0) {
                     setImage(ImageSource.resource(resId).tilingEnabled());
                 }
             }
-            if (typedAttr.hasValue(styleable.SubsamplingScaleImageView_panEnabled)) {
-                setPanEnabled(typedAttr.getBoolean(styleable.SubsamplingScaleImageView_panEnabled, true));
+            if (typedAttr.hasValue(styleable.CustomSubsamplingScaleImageView_panEnabled)) {
+                setPanEnabled(typedAttr.getBoolean(styleable.CustomSubsamplingScaleImageView_panEnabled, true));
             }
-            if (typedAttr.hasValue(styleable.SubsamplingScaleImageView_zoomEnabled)) {
-                setZoomEnabled(typedAttr.getBoolean(styleable.SubsamplingScaleImageView_zoomEnabled, true));
+            if (typedAttr.hasValue(styleable.CustomSubsamplingScaleImageView_zoomEnabled)) {
+                setZoomEnabled(typedAttr.getBoolean(styleable.CustomSubsamplingScaleImageView_zoomEnabled, true));
             }
-            if (typedAttr.hasValue(styleable.SubsamplingScaleImageView_quickScaleEnabled)) {
-                setQuickScaleEnabled(typedAttr.getBoolean(styleable.SubsamplingScaleImageView_quickScaleEnabled, true));
+            if (typedAttr.hasValue(styleable.CustomSubsamplingScaleImageView_quickScaleEnabled)) {
+                setQuickScaleEnabled(typedAttr.getBoolean(styleable.CustomSubsamplingScaleImageView_quickScaleEnabled, true));
             }
-            if (typedAttr.hasValue(styleable.SubsamplingScaleImageView_tileBackgroundColor)) {
-                setTileBackgroundColor(typedAttr.getColor(styleable.SubsamplingScaleImageView_tileBackgroundColor, Color.argb(0, 0, 0, 0)));
+            if (typedAttr.hasValue(styleable.CustomSubsamplingScaleImageView_tileBackgroundColor)) {
+                setTileBackgroundColor(typedAttr.getColor(styleable.CustomSubsamplingScaleImageView_tileBackgroundColor, Color.argb(0, 0, 0, 0)));
             }
             typedAttr.recycle();
         }

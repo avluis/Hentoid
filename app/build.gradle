@@ -96,7 +96,6 @@ dependencies {
 
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.exifinterface:exifinterface:1.1.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     //implementation 'com.google.android.material:material:1.0.0'
@@ -185,9 +184,6 @@ dependencies {
         releaseImplementation "io.objectbox:objectbox-android:2.5.1"
     }
 
-    // https://github.com/davemorrissey/subsampling-scale-image-view
-    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
-
     // Cleaner date manipulation
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
@@ -207,6 +203,7 @@ dependencies {
 
     // ProgressDialog alternative - https://github.com/Livin21/MissMe
     implementation 'com.lmntrx.android.library.livin.missme:missme:0.1.5'
+    implementation project(path: ':app:customssiv')
 }
 
 sonarqube {

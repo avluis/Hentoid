@@ -37,13 +37,13 @@ import java.util.concurrent.Executor;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
+import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageLoaderThreadExecutor;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.views.ssiv.CustomSubsamplingScaleImageView;
-import me.devsaki.hentoid.views.ssiv.ImageSource;
 import timber.log.Timber;
 
 
