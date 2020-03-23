@@ -71,7 +71,7 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
                     isSettlingY = true;
             } else if (RecyclerView.SCROLL_STATE_IDLE == newState) {
                 // Don't do anything if we're not on a boundary
-                if (!(llm.findLastVisibleItemPosition() == llm.getItemCount() || 0 == llm.findFirstVisibleItemPosition()))
+                if (!(llm.findLastVisibleItemPosition() == llm.getItemCount() - 1 || 0 == llm.findFirstVisibleItemPosition()))
                     return;
 
                 if (recyclerView.computeHorizontalScrollOffset() == dragStartPositionX && !isSettlingX && llm.canScrollHorizontally()) {
