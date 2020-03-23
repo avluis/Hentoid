@@ -20,6 +20,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.renderscript.RenderScript;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -359,9 +360,12 @@ public class CustomSubsamplingScaleImageView extends View {
     private boolean offsetLeftSide = true;
     private boolean sideOffsetConsumed = false;
 
+    private RenderScript rs;
+
 
     public CustomSubsamplingScaleImageView(Context context, AttributeSet attr) {
         super(context, attr);
+        rs = RenderScript.create(context);
         density = getResources().getDisplayMetrics().density;
         setMinimumDpi(160);
         setDoubleTapZoomDpi(160);
@@ -1262,6 +1266,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
         } else if (bitmap != null) {
 
+            // TODO use that to implement fit to screen
             float xScale = scale;
             float yScale = scale;
 
@@ -1269,6 +1274,23 @@ public class CustomSubsamplingScaleImageView extends View {
                 xScale = scale * ((float) sWidth / bitmap.getWidth());
                 yScale = scale * ((float) sHeight / bitmap.getHeight());
             }
+
+            int nbResize = 0;
+            if (scale < 0.75) nbResize++;
+            if (scale < 0.38) nbResize++;
+
+            Bitmap b = bitmap;
+            if (nbResize > 0) {
+                Timber.i(">> successiveResize %s BEGIN", nbResize);
+                b = ResizeBitmap.successiveResize(bitmap, nbResize);
+                //b = ResizeBitmap.successiveResizeRS(rs, bitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
+                Timber.i(">> successiveResize %s SUCCESS", nbResize);
+                float newScale = (float)Math.pow(0.5, nbResize);
+                xScale = xScale / newScale;
+                yScale = yScale / newScale;
+            }
+
+//            Bitmap b = ResizeBitmap.resizeBitmap2(rs, bitmap, xScale, yScale);
 
             if (matrix == null) {
                 matrix = new Matrix();
@@ -1294,8 +1316,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 matrix.mapRect(sRect);
                 canvas.drawRect(sRect, tileBgPaint);
             }
-            canvas.drawBitmap(bitmap, matrix, bitmapPaint);
-
+            canvas.drawBitmap(b, matrix, bitmapPaint);
         }
 
         if (debug) {
@@ -1862,7 +1883,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Async task used to load images without blocking the UI thread.
      */
-    private static class TileLoadTask extends AsyncTask<Void, Void, Bitmap> {
+    private static class TileLoadTask extends AsyncTask<Void, Void, Bitmap> { // TODO - aren't AsyncTasks supposed to be deprecated soon ?
         private final WeakReference<CustomSubsamplingScaleImageView> viewRef;
         private final WeakReference<ImageRegionDecoder> decoderRef;
         private final WeakReference<Tile> tileRef;
@@ -1978,6 +1999,23 @@ public class CustomSubsamplingScaleImageView extends View {
                 if (context != null && decoderFactory != null && view != null) {
                     view.debug("BitmapLoadTask.doInBackground");
                     bitmap = decoderFactory.make().decode(context, source);
+                    /*
+                    int nbResize = 0;
+                    if (scale < 0.75) nbResize++;
+                    if (scale < 0.38) nbResize++;
+
+                    Bitmap b = bitmap;
+                    if (nbResize > 0) {
+                        Timber.i(">> successiveResize %s BEGIN", nbResize);
+                        b = ResizeBitmap.successiveResize(bitmap, nbResize);
+                        //b = ResizeBitmap.successiveResizeRS(rs, bitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
+                        Timber.i(">> successiveResize %s SUCCESS", nbResize);
+                        float newScale = (float)Math.pow(0.5, nbResize);
+                        xScale = xScale / newScale;
+                        yScale = yScale / newScale;
+                    }
+
+                     */
                     return view.getExifOrientation(context, sourceUri);
                 }
             } catch (Exception e) {
@@ -2035,7 +2073,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Called by worker task when full size image bitmap is ready (tiling is disabled).
      */
-    private synchronized void onImageLoaded(Bitmap bitmap, int sOrientation, boolean bitmapIsCached) {
+    private synchronized void onImageLoaded(@NonNull Bitmap bitmap, int sOrientation, boolean bitmapIsCached) {
         debug("onImageLoaded");
         // If actual dimensions don't match the declared size, reset everything.
         if (this.sWidth > 0 && this.sHeight > 0 && (this.sWidth != bitmap.getWidth() || this.sHeight != bitmap.getHeight())) {

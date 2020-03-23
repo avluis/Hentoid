@@ -5,6 +5,7 @@ import android.app.Application;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -23,6 +24,7 @@ import org.threeten.bp.Instant;
 
 import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.activities.IntroActivity;
+import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
@@ -152,6 +154,8 @@ public class HentoidApp extends Application {
         FirebaseAnalytics.getInstance(this).setUserProperty("endless", Boolean.toString(Preferences.getEndlessScroll()));
 
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
+
+//        CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.ARGB_8888);
     }
 
     /**
