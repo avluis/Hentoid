@@ -21,6 +21,7 @@ import me.devsaki.hentoid.parsers.images.DummyParser;
 import me.devsaki.hentoid.parsers.images.EHentaiParser;
 import me.devsaki.hentoid.parsers.images.ExHentaiParser;
 import me.devsaki.hentoid.parsers.images.FakkuParser;
+import me.devsaki.hentoid.parsers.images.HbrowseParser;
 import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
@@ -115,6 +116,7 @@ public class ContentParserFactory {
             case DOUJINS:
                 return new DoujinsParser();
             case HBROWSE:
+                return new HbrowseParser();
             default:
                 return new DummyParser();
         }

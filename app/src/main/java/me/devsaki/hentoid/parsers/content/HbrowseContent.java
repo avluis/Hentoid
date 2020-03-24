@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -16,6 +15,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.parsers.images.HbrowseParser;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -47,7 +47,8 @@ public class HbrowseContent implements ContentParser {
             String metaType = e.select("td strong").first().childNode(0).toString();
             Element metaContent = e.select("td").last();
 
-            if (metaType.equalsIgnoreCase("title")) result.setTitle(metaContent.childNode(0).toString());
+            if (metaType.equalsIgnoreCase("title"))
+                result.setTitle(metaContent.childNode(0).toString());
             if (metaType.equalsIgnoreCase("artist"))
                 addAttribute(metaContent, attributes, AttributeType.ARTIST);
 
@@ -72,27 +73,7 @@ public class HbrowseContent implements ContentParser {
         }
         result.addAttributes(attributes);
 
-        List<ImageFile> imgs = new ArrayList<>();
-        int index = 1;
-
-        String chapter = "";
-        String[] parts = result.getUrl().split("/");
-        if (parts.length > 1) chapter = parts[1];
-
-        for (Element e : scripts) {
-            String scriptContent = e.toString();
-            if (scriptContent.contains("list")) {
-                int beginIndex = scriptContent.indexOf("list = [") + 8;
-                String[] list = scriptContent.substring(beginIndex, scriptContent.indexOf("];", beginIndex)).replace("\"", "").split(",");
-                for (String s : list) {
-                    if (!s.trim().isEmpty() && !s.equalsIgnoreCase("zzz")) {
-                        String imgUrl = Site.HBROWSE.getUrl() + "data/" + result.getUniqueSiteId() + "/" + chapter + "/" + s;
-                        imgs.add(new ImageFile(index++, imgUrl, StatusContent.SAVED, list.length));
-                    }
-                }
-                break;
-            }
-        }
+        List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(result, scripts));
         result.setImageFiles(imgs);
         result.setQtyPages(imgs.size());
 
