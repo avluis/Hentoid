@@ -1957,7 +1957,7 @@ public class CustomSubsamplingScaleImageView extends View {
 //                    Bitmap b = bitmap;
         if (nbResize > 0) {
             Timber.i(">> successiveResize %s BEGIN", nbResize);
-            workingBitmap = ResizeBitmap.successiveResize(workingBitmap, nbResize);
+            workingBitmap = ResizeBitmapHelper.successiveResize(workingBitmap, nbResize);
             //b = ResizeBitmap.successiveResizeRS(rs, bitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
             Timber.i(">> successiveResize %s SUCCESS", nbResize);
             float newScale = (float) Math.pow(0.5, nbResize);
