@@ -39,4 +39,8 @@ dependencies {
 
     // Timber (Extensible Logger): github.com/JakeWharton/timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
+
+    //    https://github.com/ReactiveX/RxJava
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.16'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 }

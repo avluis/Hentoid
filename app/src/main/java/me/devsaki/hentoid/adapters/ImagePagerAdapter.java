@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.concurrent.Executor;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -42,7 +41,6 @@ import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.ImageLoaderThreadExecutor;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -64,7 +62,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     private static final int PX_600_DP = Helper.dpToPixel(HentoidApp.getInstance(), 600);
 
-    private static final Executor executor = new ImageLoaderThreadExecutor();
+    //    private static final Executor executor = new ImageLoaderThreadExecutor();
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private View.OnTouchListener itemTouchListener;
@@ -252,9 +250,9 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             this.viewType = viewType;
             imgView = itemView;
 
-            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType)
+/*            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType)
                 ((CustomSubsamplingScaleImageView) imgView).setExecutor(executor);
-
+*/
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
                 imgView.setOnTouchListener(itemTouchListener);
         }
@@ -328,12 +326,12 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         @Override
-        public void onPreviewLoadError(Exception e) {
+        public void onPreviewLoadError(Throwable e) {
             // Nothing special
         }
 
         @Override
-        public void onImageLoadError(Exception e) {
+        public void onImageLoadError(Throwable e) {
             Timber.i(">>>>IMG %s reloaded with Glide", img.getAbsolutePath());
             // Manually force mime-type as GIF to fall back to Glide
             img.setMimeType("image/gif");
@@ -342,7 +340,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         @Override
-        public void onTileLoadError(Exception e) {
+        public void onTileLoadError(Throwable e) {
             // Nothing special
         }
 
