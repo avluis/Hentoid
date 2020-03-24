@@ -532,17 +532,20 @@ public class CustomSubsamplingScaleImageView extends View {
                 if (previewSourceUri == null && previewSource.getResource() != null) {
                     previewSourceUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getContext().getPackageName() + "/" + previewSource.getResource());
                 }
-                final Uri previewSourceUriFinal = previewSourceUri.normalizeScheme();
-
-                loadDisposable.add(
-                        Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, previewSourceUriFinal, true))
-                                .subscribeOn(Schedulers.computation())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(
-                                        p -> onPreviewLoaded(p.bitmap, p.scale),
-                                        e -> onImageEventListener.onPreviewLoadError(e)
-                                )
-                );
+                if (previewSourceUri != null) {
+                    final Uri previewSourceUriFinal = previewSourceUri.normalizeScheme();
+                    loadDisposable.add(
+                            Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, previewSourceUriFinal, true))
+                                    .subscribeOn(Schedulers.computation())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(
+                                            p -> onPreviewLoaded(p.bitmap, p.scale),
+                                            e -> onImageEventListener.onPreviewLoadError(e)
+                                    )
+                    );
+                } else {
+                    Timber.w("PreviewSourceUri cannot be determined");
+                }
             }
         }
 
@@ -693,9 +696,6 @@ public class CustomSubsamplingScaleImageView extends View {
                         isZooming = true;
                         quickScaleLastDistance = -1F;
                         quickScaleSCenter = viewToSourceCoord(vCenterStart);
-                        if (null == quickScaleSCenter)
-                            throw new IllegalStateException("vTranslate is null; aborting");
-
                         quickScaleVStart = new PointF(e.getX(), e.getY());
                         quickScaleVLastPoint = new PointF(quickScaleSCenter.x, quickScaleSCenter.y);
                         quickScaleMoved = false;
@@ -704,9 +704,6 @@ public class CustomSubsamplingScaleImageView extends View {
                     } else {
                         // Start double tap zoom animation.
                         PointF sCenter = viewToSourceCoord(new PointF(e.getX(), e.getY()));
-                        if (null == sCenter)
-                            throw new IllegalStateException("vTranslate is null; aborting");
-
                         doubleTapZoom(sCenter, new PointF(e.getX(), e.getY()));
                         return true;
                     }
@@ -729,8 +726,6 @@ public class CustomSubsamplingScaleImageView extends View {
 
             vCenterStart = new PointF(x, y);
             PointF sCenter = viewToSourceCoord(vCenterStart);
-            if (null == sCenter)
-                throw new IllegalStateException("vTranslate is null; aborting");
 
             Timber.d(">> longTap scale %s", scale);
             Timber.d(">> longTap vTranslate %s", vTranslate);
@@ -751,11 +746,10 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        PointF sCenter = getCenter();
-        if (readySent && sCenter != null) {
+        if (readySent) {
             this.anim = null;
             this.pendingScale = scale;
-            this.sPendingCenter = sCenter;
+            this.sPendingCenter = getCenter();
         }
     }
 
@@ -1347,24 +1341,21 @@ public class CustomSubsamplingScaleImageView extends View {
             canvas.drawText("Scale: " + String.format(Locale.ENGLISH, "%.2f", scale) + " (" + String.format(Locale.ENGLISH, "%.2f", minScale()) + " - " + String.format(Locale.ENGLISH, "%.2f", maxScale) + ")", px(5), px(15), debugTextPaint);
             canvas.drawText("Translate: " + String.format(Locale.ENGLISH, "%.2f", vTranslate.x) + ":" + String.format(Locale.ENGLISH, "%.2f", vTranslate.y), px(5), px(30), debugTextPaint);
             PointF center = getCenter();
-            if (null != center)
-                canvas.drawText("Source center: " + String.format(Locale.ENGLISH, "%.2f", center.x) + ":" + String.format(Locale.ENGLISH, "%.2f", center.y), px(5), px(45), debugTextPaint);
+            canvas.drawText("Source center: " + String.format(Locale.ENGLISH, "%.2f", center.x) + ":" + String.format(Locale.ENGLISH, "%.2f", center.y), px(5), px(45), debugTextPaint);
             if (anim != null) {
                 PointF targetvCenterStart = sourceToViewCoord(anim.sCenterStart);
                 PointF vCenterEndRequested = sourceToViewCoord(anim.sCenterEndRequested);
                 PointF vCenterEnd = sourceToViewCoord(anim.sCenterEnd);
-                if (targetvCenterStart != null) {
-                    canvas.drawCircle(targetvCenterStart.x, targetvCenterStart.y, px(10), debugLinePaint);
-                    debugLinePaint.setColor(Color.RED);
-                }
-                if (vCenterEndRequested != null) {
-                    canvas.drawCircle(vCenterEndRequested.x, vCenterEndRequested.y, px(20), debugLinePaint);
-                    debugLinePaint.setColor(Color.BLUE);
-                }
-                if (vCenterEnd != null) {
-                    canvas.drawCircle(vCenterEnd.x, vCenterEnd.y, px(25), debugLinePaint);
-                    debugLinePaint.setColor(Color.CYAN);
-                }
+
+                canvas.drawCircle(targetvCenterStart.x, targetvCenterStart.y, px(10), debugLinePaint);
+                debugLinePaint.setColor(Color.RED);
+
+                canvas.drawCircle(vCenterEndRequested.x, vCenterEndRequested.y, px(20), debugLinePaint);
+                debugLinePaint.setColor(Color.BLUE);
+
+                canvas.drawCircle(vCenterEnd.x, vCenterEnd.y, px(25), debugLinePaint);
+                debugLinePaint.setColor(Color.CYAN);
+
                 canvas.drawCircle(getWidthInternal() / 2f, getHeightInternal() / 2f, px(30), debugLinePaint);
             }
             if (vCenterStart != null) {
@@ -2237,16 +2228,14 @@ public class CustomSubsamplingScaleImageView extends View {
      * Convert screen to source x coordinate.
      */
     private float viewToSourceX(float vx) {
-        if (vTranslate == null) return Float.NaN;
-        return (vx - vTranslate.x) / scale;
+        return (vx - ((null == vTranslate) ? 0 : vTranslate.x)) / scale;
     }
 
     /**
      * Convert screen to source y coordinate.
      */
     private float viewToSourceY(float vy) {
-        if (vTranslate == null) return Float.NaN;
-        return (vy - vTranslate.y) / scale;
+        return (vy - ((null == vTranslate) ? 0 : vTranslate.y)) / scale;
     }
 
     /**
@@ -2304,7 +2293,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param vxy view X/Y coordinate.
      * @return a coordinate representing the corresponding source coordinate.
      */
-    @Nullable
     public final PointF viewToSourceCoord(@NonNull final PointF vxy) {
         return viewToSourceCoord(vxy.x, vxy.y, new PointF());
     }
@@ -2316,7 +2304,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param vy view Y coordinate.
      * @return a coordinate representing the corresponding source coordinate.
      */
-    @Nullable
     public final PointF viewToSourceCoord(float vx, float vy) {
         return viewToSourceCoord(vx, vy, new PointF());
     }
@@ -2328,7 +2315,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param sTarget target object for result. The same instance is also returned.
      * @return source coordinates. This is the same instance passed to the sTarget param.
      */
-    @Nullable
     public final PointF viewToSourceCoord(PointF vxy, @NonNull PointF sTarget) {
         return viewToSourceCoord(vxy.x, vxy.y, sTarget);
     }
@@ -2341,10 +2327,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param sTarget target object for result. The same instance is also returned.
      * @return source coordinates. This is the same instance passed to the sTarget param.
      */
-    @Nullable
     public final PointF viewToSourceCoord(float vx, float vy, @NonNull PointF sTarget) {
-        if (vTranslate == null) return null;
-
         sTarget.set(viewToSourceX(vx), viewToSourceY(vy));
         return sTarget;
     }
@@ -2353,16 +2336,14 @@ public class CustomSubsamplingScaleImageView extends View {
      * Convert source to view x coordinate.
      */
     private float sourceToViewX(float sx) {
-        if (vTranslate == null) return Float.NaN;
-        return (sx * scale) + vTranslate.x;
+        return (sx * scale) + ((null == vTranslate) ? 0 : vTranslate.x);
     }
 
     /**
      * Convert source to view y coordinate.
      */
     private float sourceToViewY(float sy) {
-        if (vTranslate == null) return Float.NaN;
-        return (sy * scale) + vTranslate.y;
+        return (sy * scale) + ((null == vTranslate) ? 0 : vTranslate.y);
     }
 
     /**
@@ -2371,7 +2352,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param sxy source coordinates to convert.
      * @return view coordinates.
      */
-    @Nullable
     public final PointF sourceToViewCoord(@NonNull final PointF sxy) {
         return sourceToViewCoord(sxy.x, sxy.y, new PointF());
     }
@@ -2383,7 +2363,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param sy source Y coordinate.
      * @return view coordinates.
      */
-    @Nullable
     public final PointF sourceToViewCoord(float sx, float sy) {
         return sourceToViewCoord(sx, sy, new PointF());
     }
@@ -2396,7 +2375,6 @@ public class CustomSubsamplingScaleImageView extends View {
      * @return view coordinates. This is the same instance passed to the vTarget param.
      */
     @SuppressWarnings("UnusedReturnValue")
-    @Nullable
     public final PointF sourceToViewCoord(@NonNull final PointF sxy, @NonNull PointF vTarget) {
         return sourceToViewCoord(sxy.x, sxy.y, vTarget);
     }
@@ -2409,10 +2387,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param vTarget target object for result. The same instance is also returned.
      * @return view coordinates. This is the same instance passed to the vTarget param.
      */
-    @Nullable
     public final PointF sourceToViewCoord(float sx, float sy, @NonNull PointF vTarget) {
-        if (vTranslate == null) return null;
-
         vTarget.set(sourceToViewX(sx), sourceToViewY(sy));
         return vTarget;
     }
@@ -2760,7 +2735,6 @@ public class CustomSubsamplingScaleImageView extends View {
      *
      * @return the source coordinates current at the center of the view.
      */
-    @Nullable
     public final PointF getCenter() {
         int mX = getWidthInternal() / 2;
         int mY = getHeightInternal() / 2;
@@ -2916,7 +2890,7 @@ public class CustomSubsamplingScaleImageView extends View {
     @Nullable
     public final ImageViewState getState() {
         PointF center = getCenter();
-        if (vTranslate != null && sWidth > 0 && sHeight > 0 && center != null) {
+        if (vTranslate != null && sWidth > 0 && sHeight > 0) {
             return new ImageViewState(getScale(), center, getOrientation());
         }
         return null;
