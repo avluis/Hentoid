@@ -8,9 +8,9 @@ import android.renderscript.ScriptIntrinsicResize;
 import android.renderscript.Type;
 
 // Credits go to https://medium.com/@petrakeas/alias-free-resize-with-renderscript-5bf15a86ce3
-public class ResizeBitmap {
+class ResizeBitmap {
 
-    public static Bitmap successiveResize(Bitmap src, int resizeNum) {
+    static Bitmap successiveResize(Bitmap src, int resizeNum) {
         int srcWidth = src.getWidth();
         int srcHeight = src.getHeight();
         Bitmap output = src;
@@ -26,7 +26,7 @@ public class ResizeBitmap {
         return output;
     }
 
-    public static Bitmap successiveResizeRS(RenderScript rs, Bitmap src, int resizeNum) {
+    static Bitmap successiveResizeRS(RenderScript rs, Bitmap src, int resizeNum) {
         int srcWidth = src.getWidth();
         int srcHeight = src.getHeight();
         Bitmap.Config config = src.getConfig();
@@ -57,8 +57,8 @@ public class ResizeBitmap {
         return output;
     }
 
-    public static Bitmap resizeBitmap2(RenderScript rs, Bitmap src, float xScale, float yScale) {
-        Bitmap.Config  bitmapConfig = src.getConfig();
+    static Bitmap resizeBitmap2(RenderScript rs, Bitmap src, float xScale, float yScale) {
+        Bitmap.Config bitmapConfig = src.getConfig();
         int srcWidth = src.getWidth();
         int srcHeight = src.getHeight();
         int dstWidth = Math.round(srcWidth * xScale);
