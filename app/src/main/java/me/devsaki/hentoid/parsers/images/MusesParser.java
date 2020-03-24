@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -15,7 +17,7 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 public class MusesParser extends BaseParser {
 
     @Override
-    protected List<String> parseImages(Content content) throws Exception {
+    protected List<String> parseImages(@NonNull Content content) throws Exception {
         List<String> result = new ArrayList<>();
 
         // Fetch the book gallery page

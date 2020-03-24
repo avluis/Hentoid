@@ -2,6 +2,8 @@ package me.devsaki.hentoid.parsers.images;
 
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.jsoup.nodes.Document;
@@ -39,7 +41,7 @@ public class ExHentaiParser implements ImageListParser {
     private boolean processHalted = false;
 
 
-    public List<ImageFile> parseImageList(Content content) throws Exception {
+    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
         try {
@@ -162,7 +164,7 @@ public class ExHentaiParser implements ImageListParser {
     }
 
     @Nullable
-    public ImageFile parseBackupUrl(String url, int order, int maxPages) throws Exception {
+    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) throws Exception {
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         Document doc = getOnlineDocument(url, headers, Site.EXHENTAI.canKnowHentoidAgent());

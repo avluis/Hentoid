@@ -1,0 +1,47 @@
+package me.devsaki.hentoid.parsers.images;
+
+import androidx.annotation.NonNull;
+
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.exception.ParseException;
+
+import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
+
+public class NhentaiParser extends BaseParser {
+
+    @Override
+    protected List<String> parseImages(@NonNull Content content) throws Exception {
+        // Fetch the book gallery page
+        Document doc = getOnlineDocument(content.getGalleryUrl());
+        if (null == doc)
+            throw new ParseException("Document unreachable : " + content.getGalleryUrl());
+
+        List<Element> thumbs = doc.select("#thumbnail-container img[data-src]");
+
+        return parseImages(content, thumbs);
+    }
+
+    public static List<String> parseImages(@NonNull Content content, @NonNull List<Element> thumbs) {
+        String[] coverParts = content.getCoverImageUrl().split("/");
+        String mediaId = coverParts[coverParts.length - 2];
+        String serverUrl = "https://i.nhentai.net/galleries/" + mediaId + "/"; // We infer the whole book is stored on the same server
+
+        List<String> result = new ArrayList<>();
+
+        int index = 1;
+        for (Element e : thumbs) {
+            String s = e.attr("data-src");
+            if (null == s || s.isEmpty()) continue;
+            result.add(serverUrl + index++ + "." + FileHelper.getExtension(s));
+        }
+
+        return result;
+    }
+}

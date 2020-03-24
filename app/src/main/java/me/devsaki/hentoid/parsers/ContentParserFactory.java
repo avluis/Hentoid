@@ -26,6 +26,7 @@ import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.parsers.images.LusciousParser;
 import me.devsaki.hentoid.parsers.images.MusesParser;
 import me.devsaki.hentoid.parsers.images.NexusParser;
+import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
 import me.devsaki.hentoid.parsers.images.TsuminoParser;
@@ -109,6 +110,7 @@ public class ContentParserFactory {
             case MUSES:
                 return new MusesParser();
             case NHENTAI:
+                return new NhentaiParser();
             case DOUJINS:
             case HBROWSE:
             default:

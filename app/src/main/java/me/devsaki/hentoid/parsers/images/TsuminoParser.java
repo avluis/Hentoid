@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -19,7 +21,7 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 public class TsuminoParser extends BaseParser {
 
     @Override
-    protected List<String> parseImages(Content content) throws Exception {
+    protected List<String> parseImages(@NonNull Content content) throws Exception {
         // Fetch the reader page
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (null != doc) {

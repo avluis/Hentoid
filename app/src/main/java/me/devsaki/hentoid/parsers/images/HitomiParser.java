@@ -38,7 +38,7 @@ public class HitomiParser implements ImageListParser {
     private static final String HOSTNAME_SUFFIX = "a";
     private static final char HOSTNAME_PREFIX_BASE = 97;
 
-    public List<ImageFile> parseImageList(Content content) throws Exception {
+    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         String pageUrl = content.getReaderUrl();
 
         Document doc = getOnlineDocument(pageUrl);
@@ -114,7 +114,7 @@ public class HitomiParser implements ImageListParser {
         return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
     }
 
-    public ImageFile parseBackupUrl(String url, int order, int maxPages) {
+    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // Hitomi does not use backup URLs
         return null;
     }

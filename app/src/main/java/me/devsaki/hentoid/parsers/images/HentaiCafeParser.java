@@ -3,6 +3,8 @@ package me.devsaki.hentoid.parsers.images;
 import android.util.Pair;
 import android.webkit.URLUtil;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONTokener;
@@ -30,7 +32,7 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 public class HentaiCafeParser extends BaseParser {
 
     @Override
-    protected List<String> parseImages(Content content) throws Exception {
+    protected List<String> parseImages(@NonNull Content content) throws Exception {
         List<String> result = new ArrayList<>();
         String pageUrl = content.getGalleryUrl();
         int pages = 0;

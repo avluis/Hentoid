@@ -2,6 +2,8 @@ package me.devsaki.hentoid.parsers.images;
 
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +31,7 @@ public class FakkuParser implements ImageListParser {
     private final ParseProgress progress = new ParseProgress();
 
 
-    public List<ImageFile> parseImageList(Content content) {
+    public List<ImageFile> parseImageList(@NonNull Content content) {
 
         List<ImageFile> result = Collections.emptyList();
         String downloadParamsStr = content.getDownloadParams();
@@ -122,7 +124,7 @@ public class FakkuParser implements ImageListParser {
         return result;
     }
 
-    public ImageFile parseBackupUrl(String url, int order, int maxPages) {
+    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // This class does not use backup URLs
         return null;
     }
