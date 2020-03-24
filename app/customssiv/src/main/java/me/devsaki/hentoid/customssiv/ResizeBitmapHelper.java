@@ -1,11 +1,6 @@
 package me.devsaki.hentoid.customssiv;
 
 import android.graphics.Bitmap;
-import android.renderscript.Allocation;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
-import android.renderscript.ScriptIntrinsicResize;
-import android.renderscript.Type;
 
 import androidx.annotation.NonNull;
 
@@ -28,6 +23,9 @@ class ResizeBitmapHelper {
         return output;
     }
 
+    // RENDERSCRIPT ALTERNATE IMPLEMENTATION (requires API 21+)
+
+    /*
     static Bitmap successiveResizeRS(@NonNull final RenderScript rs, @NonNull final Bitmap src, int resizeNum) {
         if (resizeNum < 1) return src;
 
@@ -68,13 +66,13 @@ class ResizeBitmapHelper {
         int dstWidth = Math.round(srcWidth * xScale);
         int dstHeight = Math.round(srcHeight * yScale);
 
-        /* Calculate gaussian's radius */
+        // Calculate gaussian's radius
         float sigma = xScale / (float) Math.PI;
         // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
         float radius = 2.5f * sigma - 1.5f;
         radius = Math.min(25, Math.max(0.0001f, radius));
 
-        /* Gaussian filter */
+        // Gaussian filter
         Allocation tmpIn = Allocation.createFromBitmap(rs, src);
         Allocation tmpFiltered = Allocation.createTyped(rs, tmpIn.getType());
         ScriptIntrinsicBlur blurInstrinsic = ScriptIntrinsicBlur.create(rs, tmpIn.getElement());
@@ -86,7 +84,7 @@ class ResizeBitmapHelper {
         tmpIn.destroy();
         blurInstrinsic.destroy();
 
-        /* Resize */
+        // Resize
         Bitmap dst = Bitmap.createBitmap(dstWidth, dstHeight, bitmapConfig);
         Type t = Type.createXY(rs, tmpFiltered.getElement(), dstWidth, dstHeight);
         Allocation tmpOut = Allocation.createTyped(rs, t);
@@ -102,4 +100,5 @@ class ResizeBitmapHelper {
 
         return dst;
     }
+    */
 }
