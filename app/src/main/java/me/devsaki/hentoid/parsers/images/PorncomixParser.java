@@ -25,7 +25,7 @@ public class PorncomixParser extends BaseParser {
 
         Element mangaPagesContainer = doc.selectFirst(".reading-content script");
         List<Element> galleryPages = doc.select("#dgwt-jg-2 a"); // same for zone
-        List<Element> bestPages = doc.select("#gallery-2 a"); // same for zone
+        List<Element> bestPages = doc.select("#gallery-2 a");
 
         return parseImages(mangaPagesContainer, galleryPages, bestPages);
     }

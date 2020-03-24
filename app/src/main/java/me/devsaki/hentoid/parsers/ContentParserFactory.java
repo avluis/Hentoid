@@ -24,6 +24,7 @@ import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.parsers.images.LusciousParser;
+import me.devsaki.hentoid.parsers.images.MusesParser;
 import me.devsaki.hentoid.parsers.images.NexusParser;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
@@ -103,10 +104,10 @@ public class ContentParserFactory {
                 return new NexusParser();
             case LUSCIOUS:
                 return new LusciousParser();
-            // TODO - No image parser; images are fetched by ContentParser => what if we really want to download from scratch ??
             case PORNCOMIX:
                 return new PorncomixParser();
             case MUSES:
+                return new MusesParser();
             case NHENTAI:
             case DOUJINS:
             case HBROWSE:
