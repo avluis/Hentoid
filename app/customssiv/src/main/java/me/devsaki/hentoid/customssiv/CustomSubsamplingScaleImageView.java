@@ -1292,24 +1292,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 xScale = scale * ((float) sWidth / bitmap.getWidth());
                 yScale = scale * ((float) sHeight / bitmap.getHeight());
             }
-/*
-            int nbResize = 0;
-            if (scale < 0.75) nbResize++;
-            if (scale < 0.38) nbResize++;
 
-            Bitmap b = bitmap;
-            if (nbResize > 0) {
-                Timber.i(">> successiveResize %s BEGIN", nbResize);
-                b = ResizeBitmap.successiveResize(bitmap, nbResize);
-                //b = ResizeBitmap.successiveResizeRS(rs, bitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
-                Timber.i(">> successiveResize %s SUCCESS", nbResize);
-                float newScale = (float)Math.pow(0.5, nbResize);
-                xScale = xScale / newScale;
-                yScale = yScale / newScale;
-            }
-
-//            Bitmap b = ResizeBitmap.resizeBitmap2(rs, bitmap, xScale, yScale);
-*/
             if (matrix == null) {
                 matrix = new Matrix();
             }
@@ -1945,12 +1928,11 @@ public class CustomSubsamplingScaleImageView extends View {
         if (workingScale < 0.75) nbResize++;
         if (workingScale < 0.38) nbResize++;
 
-//                    Bitmap b = bitmap;
         if (nbResize > 0) {
-            Timber.i(">> successiveResize %s BEGIN", nbResize);
+            Timber.d(">> successiveResize %s BEGIN", nbResize);
             workingBitmap = ResizeBitmapHelper.successiveResize(workingBitmap, nbResize);
-            //b = ResizeBitmap.successiveResizeRS(rs, bitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
-            Timber.i(">> successiveResize %s SUCCESS", nbResize);
+            //workingBitmap = ResizeBitmap.successiveResizeRS(rs, workingBitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
+            Timber.d(">> successiveResize %s SUCCESS", nbResize);
             float newScale = (float) Math.pow(0.5, nbResize);
             workingScale = workingScale / newScale;
         }
