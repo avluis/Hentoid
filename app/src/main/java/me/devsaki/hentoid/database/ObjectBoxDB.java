@@ -62,7 +62,7 @@ public class ObjectBoxDB {
 
 
     private ObjectBoxDB(Context context) {
-        final long maxSize = 2 * 1024 * 1024; // 2Gb max size
+        final long maxSize = (long)2 * 1024 * 1024; // 2Gb max size
         store = MyObjectBox.builder().androidContext(context.getApplicationContext()).maxSizeInKByte(maxSize).build();
 
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
