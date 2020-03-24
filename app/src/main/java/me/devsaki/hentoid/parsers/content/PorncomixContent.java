@@ -2,7 +2,6 @@ package me.devsaki.hentoid.parsers.content;
 
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -14,9 +13,9 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.HttpHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class PorncomixContent implements ContentParser {
@@ -87,28 +86,7 @@ public class PorncomixContent implements ContentParser {
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, true, Site.PORNCOMIX);
         result.addAttributes(attributes);
 
-        int index = 1;
-        List<ImageFile> images = new ArrayList<>();
-
-        if (mangaPagesContainer != null) {
-            String pageArray = Helper.replaceUnicode(mangaPagesContainer.childNode(0).toString().replace("\"", "").replace("\\/", "/"));
-            String[] pages = pageArray.substring(pageArray.indexOf('[') + 1, pageArray.lastIndexOf(']')).split(",");
-            for (String s : pages)
-                images.add(new ImageFile(index++, s, StatusContent.SAVED, pages.length));
-        } else if (galleryPages != null && !galleryPages.isEmpty()) {
-            for (Element e : galleryPages)
-                images.add(new ImageFile(index++, e.attr("href"), StatusContent.SAVED, galleryPages.size()));
-        } else if (bestPages != null && !bestPages.isEmpty()) {
-            String imgUrl;
-            String imgExt;
-            for (Element e : bestPages) {
-                imgUrl = e.attr("src");
-                imgExt = HttpHelper.getExtensionFromUri(imgUrl);
-                imgUrl = imgUrl.substring(0, imgUrl.lastIndexOf('-')) + "." + imgExt;
-                images.add(new ImageFile(index++, imgUrl, StatusContent.SAVED, bestPages.size()));
-            }
-        }
-
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, bestPages));
         result.setImageFiles(images);
         result.setQtyPages(images.size());
 
