@@ -198,6 +198,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
             holder.imgView.setMinimumHeight(PX_600_DP);
 
+        // Free the SSIV's resources
+        if (ViewType.SSIV_HORIZONTAL == holder.viewType || ViewType.SSIV_VERTICAL == holder.viewType) // SubsamplingScaleImageView
+            ((CustomSubsamplingScaleImageView) holder.imgView).recycle();
+
         super.onViewRecycled(holder);
     }
 

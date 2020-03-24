@@ -19,7 +19,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.renderscript.RenderScript;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -48,6 +47,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.customssiv.R.styleable;
 import me.devsaki.hentoid.customssiv.decoder.CompatDecoderFactory;
@@ -358,7 +358,9 @@ public class CustomSubsamplingScaleImageView extends View {
     private boolean offsetLeftSide = true;
     private boolean sideOffsetConsumed = false;
 
-    private RenderScript rs;
+    private final CompositeDisposable loadDisposable = new CompositeDisposable();
+
+    //private RenderScript rs; <-- unused for now
 
 
     public CustomSubsamplingScaleImageView(Context context, AttributeSet attr) {
@@ -532,13 +534,15 @@ public class CustomSubsamplingScaleImageView extends View {
                 }
                 final Uri previewSourceUriFinal = previewSourceUri.normalizeScheme();
 
-                Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, previewSourceUriFinal, true))
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                p -> onPreviewLoaded(p.bitmap, p.scale),
-                                e -> onImageEventListener.onPreviewLoadError(e)
-                        );
+                loadDisposable.add(
+                        Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, previewSourceUriFinal, true))
+                                .subscribeOn(Schedulers.computation())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                        p -> onPreviewLoaded(p.bitmap, p.scale),
+                                        e -> onImageEventListener.onPreviewLoadError(e)
+                                )
+                );
             }
         }
 
@@ -554,22 +558,26 @@ public class CustomSubsamplingScaleImageView extends View {
             }
             if (imageSource.getTile() || sRegion != null) {
                 // Load the bitmap using tile decoding.
-                Single.fromCallable(() -> initTiles(this, getContext(), regionDecoderFactory, uri))
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                a -> onTilesInitialized(a[0], a[1], a[2]),
-                                e -> onImageEventListener.onImageLoadError(e)
-                        );
+                loadDisposable.add(
+                        Single.fromCallable(() -> initTiles(this, getContext(), regionDecoderFactory, uri))
+                                .subscribeOn(Schedulers.computation())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                        a -> onTilesInitialized(a[0], a[1], a[2]),
+                                        e -> onImageEventListener.onImageLoadError(e)
+                                )
+                );
             } else {
                 // Load the bitmap as a single image.
-                Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, uri, false))
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                p -> onImageLoaded(p.bitmap, p.orientation, p.scale, false),
-                                e -> onImageEventListener.onImageLoadError(e)
-                        );
+                loadDisposable.add(
+                        Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, uri, false))
+                                .subscribeOn(Schedulers.computation())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                        p -> onImageLoaded(p.bitmap, p.orientation, p.scale, false),
+                                        e -> onImageEventListener.onImageLoadError(e)
+                                )
+                );
             }
         }
     }
@@ -645,6 +653,7 @@ public class CustomSubsamplingScaleImageView extends View {
             tileMap = null;
         }
         setGestureDetector(getContext());
+        loadDisposable.clear();
     }
 
     private void setGestureDetector(final Context context) {
@@ -1476,7 +1485,7 @@ public class CustomSubsamplingScaleImageView extends View {
         debug("initialiseBaseLayer maxTileDimensions=%dx%d", maxTileDimensions.x, maxTileDimensions.y);
 
         satTemp = new ScaleAndTranslate(0f, new PointF(0, 0));
-        fitToBounds(true, satTemp);
+        fitToBounds(true, satTemp, new Point(sWidth(), sHeight()));
 
         // Load double resolution - next level will be split into four tiles and at the center all four are required,
         // so don't bother with tiling until the next level 16 tiles are needed.
@@ -1492,27 +1501,31 @@ public class CustomSubsamplingScaleImageView extends View {
             decoder.recycle();
             decoder = null;
 
-            Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, uri, false))
-                    .subscribeOn(Schedulers.computation())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                            p -> onImageLoaded(p.bitmap, p.orientation, p.scale, false),
-                            e -> onImageEventListener.onImageLoadError(e)
-                    );
+            loadDisposable.add(
+                    Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, uri, false))
+                            .subscribeOn(Schedulers.computation())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    p -> onImageLoaded(p.bitmap, p.orientation, p.scale, false),
+                                    e -> onImageEventListener.onImageLoadError(e)
+                            )
+            );
         } else {
             initialiseTileMap(maxTileDimensions);
 
             List<Tile> baseGrid = tileMap.get(fullImageSampleSize);
             if (baseGrid != null) {
-                Observable.fromIterable(baseGrid)
-                        .subscribeOn(Schedulers.computation())
-                        .flatMap(baseTile -> Observable.fromCallable(() -> loadTile(this, decoder, baseTile)))
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                bitmap -> onTileLoaded(),
-                                onImageEventListener::onTileLoadError,
-                                () -> refreshRequiredTiles(true)
-                        );
+                loadDisposable.add(
+                        Observable.fromIterable(baseGrid)
+                                .subscribeOn(Schedulers.computation())
+                                .flatMap(baseTile -> Observable.fromCallable(() -> loadTile(this, decoder, baseTile)))
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                        bitmap -> onTileLoaded(),
+                                        onImageEventListener::onTileLoadError,
+                                        () -> refreshRequiredTiles(true)
+                                )
+                );
             }
 
         }
@@ -1534,6 +1547,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
         // Load tiles of the correct sample size that are on screen. Discard tiles off screen, and those that are higher
         // resolution than required, or lower res than required but not the base layer, so the base layer is always present.
+        loadDisposable.clear();
         for (Map.Entry<Integer, List<Tile>> tileMapEntry : tileMap.entrySet()) {
             for (Tile tile : tileMapEntry.getValue()) {
                 if (tile.sampleSize < sampleSize || (tile.sampleSize > sampleSize && tile.sampleSize != fullImageSampleSize)) {
@@ -1547,13 +1561,15 @@ public class CustomSubsamplingScaleImageView extends View {
                     if (tileVisible(tile)) {
                         tile.visible = true;
                         if (!tile.loading && tile.bitmap == null && load) {
-                            Observable.fromCallable(() -> loadTile(this, decoder, tile))
-                                    .subscribeOn(Schedulers.computation())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(
-                                            bitmap -> onTileLoaded(),
-                                            onImageEventListener::onTileLoadError
-                                    );
+                            loadDisposable.add(
+                                    Observable.fromCallable(() -> loadTile(this, decoder, tile))
+                                            .subscribeOn(Schedulers.computation())
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe(
+                                                    bitmap -> onTileLoaded(),
+                                                    onImageEventListener::onTileLoadError
+                                            )
+                            );
                         }
                     } else if (tile.sampleSize != fullImageSampleSize) {
                         tile.visible = false;
@@ -1660,11 +1676,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * @param center Whether the image should be centered in the dimension it's too small to fill. While animating this can be false to avoid changes in direction as bounds are reached.
      * @param sat    The scale we want and the translation we're aiming for. The values are adjusted to be valid.
      */
-    private void fitToBounds(boolean center, @NonNull ScaleAndTranslate sat) {
-        fitToBounds(center, sat, new Point(sWidth(), sHeight()));
-    }
-
-    private void fitToBounds(boolean center, @NonNull ScaleAndTranslate sat, Point sSize) {
+    private void fitToBounds(boolean center, @NonNull ScaleAndTranslate sat, @NonNull Point sSize) {
         if (panLimit == PanLimit.OUTSIDE && isReady()) {
             center = false;
         }
@@ -1845,72 +1857,6 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     /**
-     * Async task used to get image details without blocking the UI thread.
-     */
-    /*
-    private static class TilesInitTask extends AsyncTask<Void, Void, int[]> {
-        private final WeakReference<CustomSubsamplingScaleImageView> viewRef;
-        private final WeakReference<Context> contextRef;
-        private final WeakReference<DecoderFactory<? extends ImageRegionDecoder>> decoderFactoryRef;
-        private final Uri source;
-        private ImageRegionDecoder decoder;
-        private Exception exception;
-
-        TilesInitTask(CustomSubsamplingScaleImageView view, Context context, DecoderFactory<? extends ImageRegionDecoder> decoderFactory, Uri source) {
-            this.viewRef = new WeakReference<>(view);
-            this.contextRef = new WeakReference<>(context);
-            this.decoderFactoryRef = new WeakReference<>(decoderFactory);
-            this.source = source;
-        }
-
-        @Override
-        @Nullable
-        protected int[] doInBackground(Void... params) {
-            try {
-                String sourceUri = source.toString();
-                Context context = contextRef.get();
-                DecoderFactory<? extends ImageRegionDecoder> decoderFactory = decoderFactoryRef.get();
-                CustomSubsamplingScaleImageView view = viewRef.get();
-                if (context != null && decoderFactory != null && view != null) {
-                    view.debug("TilesInitTask.doInBackground");
-                    decoder = decoderFactory.make();
-                    Point dimensions = decoder.init(context, source);
-                    int sWidth = dimensions.x;
-                    int sHeight = dimensions.y;
-                    int exifOrientation = view.getExifOrientation(context, sourceUri);
-                    if (view.sRegion != null) {
-                        view.sRegion.left = Math.max(0, view.sRegion.left);
-                        view.sRegion.top = Math.max(0, view.sRegion.top);
-                        view.sRegion.right = Math.min(sWidth, view.sRegion.right);
-                        view.sRegion.bottom = Math.min(sHeight, view.sRegion.bottom);
-                        sWidth = view.sRegion.width();
-                        sHeight = view.sRegion.height();
-                    }
-                    return new int[]{sWidth, sHeight, exifOrientation};
-                }
-            } catch (Exception e) {
-                Timber.tag(TAG).e(e, "Failed to initialise bitmap decoder");
-                this.exception = e;
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(int[] xyo) {
-            final CustomSubsamplingScaleImageView view = viewRef.get();
-            if (view != null) {
-                if (decoder != null && xyo != null && xyo.length == 3) {
-                    view.onTilesInited(decoder, xyo[0], xyo[1], xyo[2]);
-                } else if (exception != null && view.onImageEventListener != null) {
-                    view.onImageEventListener.onImageLoadError(exception);
-                }
-            }
-        }
-    }
-
-     */
-
-    /**
      * Called by worker task when decoder is ready and image size and EXIF orientation is known.
      */
     private synchronized void onTilesInitialized(/*ImageRegionDecoder decoder,*/ int sWidth, int sHeight, int sOrientation) {
@@ -1968,76 +1914,6 @@ public class CustomSubsamplingScaleImageView extends View {
         }
         return null; // TODO useless
     }
-
-    /**
-     * Async task used to load images without blocking the UI thread.
-     */
-/*
-    private static class TileLoadTask extends AsyncTask<Void, Void, Bitmap> { // TODO - aren't AsyncTasks supposed to be deprecated soon ?
-        private final WeakReference<CustomSubsamplingScaleImageView> viewRef;
-        private final WeakReference<ImageRegionDecoder> decoderRef;
-        private final WeakReference<Tile> tileRef;
-        private Exception exception;
-
-        TileLoadTask(CustomSubsamplingScaleImageView view, ImageRegionDecoder decoder, Tile tile) {
-            this.viewRef = new WeakReference<>(view);
-            this.decoderRef = new WeakReference<>(decoder);
-            this.tileRef = new WeakReference<>(tile);
-            tile.loading = true;
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... params) {
-            try {
-                CustomSubsamplingScaleImageView view = viewRef.get();
-                ImageRegionDecoder decoder = decoderRef.get();
-                Tile tile = tileRef.get();
-                if (decoder != null && tile != null && view != null && decoder.isReady() && tile.visible) {
-                    view.debug("TileLoadTask.doInBackground, tile.sRect=%s, tile.sampleSize=%d", tile.sRect, tile.sampleSize);
-                    view.decoderLock.readLock().lock();
-                    try {
-                        if (decoder.isReady()) {
-                            // Update tile's file sRect according to rotation
-                            view.fileSRect(tile.sRect, tile.fileSRect);
-                            if (view.sRegion != null) {
-                                tile.fileSRect.offset(view.sRegion.left, view.sRegion.top);
-                            }
-                            return decoder.decodeRegion(tile.fileSRect, tile.sampleSize);
-                        } else {
-                            tile.loading = false;
-                        }
-                    } finally {
-                        view.decoderLock.readLock().unlock();
-                    }
-                } else if (tile != null) {
-                    tile.loading = false;
-                }
-            } catch (Exception e) {
-                Timber.tag(TAG).e(e, "Failed to decode tile");
-                this.exception = e;
-            } catch (OutOfMemoryError e) {
-                Timber.tag(TAG).e(e, "Failed to decode tile - OutOfMemoryError");
-                this.exception = new RuntimeException(e);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            final CustomSubsamplingScaleImageView subsamplingScaleImageView = viewRef.get();
-            final Tile tile = tileRef.get();
-            if (subsamplingScaleImageView != null && tile != null) {
-                if (bitmap != null) {
-                    tile.bitmap = bitmap;
-                    tile.loading = false;
-                    subsamplingScaleImageView.onTileLoaded();
-                } else if (exception != null && subsamplingScaleImageView.onImageEventListener != null) {
-                    subsamplingScaleImageView.onImageEventListener.onTileLoadError(exception);
-                }
-            }
-        }
-    }
- */
 
     /**
      * Called by worker task when a tile has loaded. Redraws the view.
@@ -3477,7 +3353,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 Timber.d(">> anim start vTranslateEnd %s %s", vTranslateXEnd, vTranslateYEnd);
                 ScaleAndTranslate satEnd = new ScaleAndTranslate(localTargetScale, new PointF(vTranslateXEnd, vTranslateYEnd));
                 // Fit the end translation into bounds
-                fitToBounds(true, satEnd);
+                fitToBounds(true, satEnd, new Point(sWidth(), sHeight()));
                 Timber.d(">> anim start satEnd.vTranslate %s", satEnd.vTranslate);
                 // Adjust the position of the focus point at end so image will be in bounds
                 anim.vFocusEnd = new PointF(
@@ -3687,12 +3563,12 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
 
-    public static class LoadBitmapResult {
-        public final Bitmap bitmap;
-        public final Integer orientation;
-        public final float scale;
+    static class LoadBitmapResult {
+        final Bitmap bitmap;
+        final Integer orientation;
+        final float scale;
 
-        public LoadBitmapResult(Bitmap bitmap, Integer orientation, float scale) {
+        LoadBitmapResult(Bitmap bitmap, Integer orientation, float scale) {
             this.bitmap = bitmap;
             this.orientation = orientation;
             this.scale = scale;
