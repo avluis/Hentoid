@@ -15,6 +15,7 @@ import me.devsaki.fakku.PageInfo;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.FakkuGalleryMetadata;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -102,7 +103,7 @@ public class FakkuParser implements ImageListParser {
             int order = Integer.parseInt(p);
             FakkuGalleryMetadata.FakkuPage page = info.getPages().get(p);
             if (page != null) {
-                ImageFile img = ParseHelper.urlToImageFile(page.getImage(), order, info.getPages().size());
+                ImageFile img = ParseHelper.urlToImageFile(page.getImage(), order, info.getPages().size(), StatusContent.SAVED);
 
                 String pageInfoValue;
                 if (pageInfo != null)

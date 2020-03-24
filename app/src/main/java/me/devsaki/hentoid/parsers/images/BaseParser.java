@@ -8,6 +8,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import timber.log.Timber;
 
@@ -26,7 +27,7 @@ public abstract class BaseParser implements ImageListParser {
         Timber.d("Gallery URL: %s", readerUrl);
 
         List<String> imgUrls = parseImages(content);
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(imgUrls);
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(imgUrls, StatusContent.SAVED);
 
         Timber.d("%s", images);
 

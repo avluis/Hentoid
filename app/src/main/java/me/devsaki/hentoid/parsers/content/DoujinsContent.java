@@ -48,7 +48,7 @@ public class DoujinsContent implements ContentParser {
 
         List<String> imageUrls = DoujinsParser.parseImages(images);
         result.setQtyPages(imageUrls.size());
-        result.setImageFiles(ParseHelper.urlsToImageFiles(imageUrls));
+        result.setImageFiles(ParseHelper.urlsToImageFiles(imageUrls, StatusContent.SAVED));
 
         // Deduplicate tags
         AttributeMap attributes = new AttributeMap();

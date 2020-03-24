@@ -60,21 +60,21 @@ public class ParseHelper {
         map.add(attribute);
     }
 
-    public static ImageFile urlToImageFile(@Nonnull String imgUrl, int order, int nbPages) {
+    public static ImageFile urlToImageFile(@Nonnull String imgUrl, int order, int nbPages, @NonNull final StatusContent status) {
         ImageFile result = new ImageFile();
 
         int nbMaxDigits = (int) (Math.floor(Math.log10(nbPages)) + 1);
         String name = String.format(Locale.US, "%0" + nbMaxDigits + "d", order);
-        result.setName(name).setOrder(order).setUrl(imgUrl).setStatus(StatusContent.ONLINE);
+        result.setName(name).setOrder(order).setUrl(imgUrl).setStatus(status);
 
         return result;
     }
 
-    public static List<ImageFile> urlsToImageFiles(@Nonnull List<String> imgUrls) {
+    public static List<ImageFile> urlsToImageFiles(@Nonnull List<String> imgUrls, @NonNull final StatusContent status) {
         List<ImageFile> result = new ArrayList<>();
 
         int order = 1;
-        for (String s : imgUrls) result.add(urlToImageFile(s, order++, imgUrls.size()));
+        for (String s : imgUrls) result.add(urlToImageFile(s, order++, imgUrls.size(), status));
 
         return result;
     }

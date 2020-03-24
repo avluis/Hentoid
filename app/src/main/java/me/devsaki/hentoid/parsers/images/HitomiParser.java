@@ -15,6 +15,7 @@ import java.util.Map;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -97,7 +98,7 @@ public class HitomiParser implements ImageListParser {
         String imageSubdomain = subdomainFromGalleryId(Integer.valueOf(componentB, 16));
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/" + folder + "/" + componentA + "/" + componentB + "/" + hash + "." + extension;
 
-        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
+        return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
     }
 
     private ImageFile buildSimplePicture(@NonNull Content content, @NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
@@ -107,7 +108,7 @@ public class HitomiParser implements ImageListParser {
         String imageSubdomain = subdomainFromGalleryId(referenceId);
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/galleries/" + content.getUniqueSiteId() + "/" + page.getName();
 
-        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
+        return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
     }
 
     private String subdomainFromGalleryId(int referenceId) {

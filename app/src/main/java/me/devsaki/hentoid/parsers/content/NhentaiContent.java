@@ -77,7 +77,7 @@ public class NhentaiContent implements ContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.NHENTAI);
         result.addAttributes(attributes);
 
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(result, thumbs));
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(result, thumbs), StatusContent.SAVED);
         result.setImageFiles(images);
         result.setQtyPages(images.size());
 

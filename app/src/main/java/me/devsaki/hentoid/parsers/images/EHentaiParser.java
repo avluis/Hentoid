@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.HttpHelper;
@@ -94,7 +95,7 @@ public class EHentaiParser implements ImageListParser {
                         // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
                         if (imageUrl.contains("/509.gif"))
                             throw new LimitReachedException("Bandwidth limit reached");
-                        img = ParseHelper.urlToImageFile(imageUrl, order++, pageUrls.size());
+                        img = ParseHelper.urlToImageFile(imageUrl, order++, pageUrls.size(), StatusContent.SAVED);
                         result.add(img);
 
                         // "Click here if the image fails loading" link
@@ -142,14 +143,16 @@ public class EHentaiParser implements ImageListParser {
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
             if (imageUrl.contains("/509.gif"))
                 throw new LimitReachedException("Bandwidth limit reached");
-            if (!imageUrl.isEmpty()) return ParseHelper.urlToImageFile(imageUrl, order, maxPages);
+            if (!imageUrl.isEmpty())
+                return ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED);
         }
         return null;
     }
 
     private void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
         Elements imageLinks = doc.getElementsByClass("gdtm"); // Normal thumbs
-        if (null == imageLinks || imageLinks.isEmpty()) imageLinks = doc.getElementsByClass("gdtl"); // Large thumbs
+        if (null == imageLinks || imageLinks.isEmpty())
+            imageLinks = doc.getElementsByClass("gdtl"); // Large thumbs
         for (Element e : imageLinks) {
             e = e.select("div").first().select("a").first();
             pageUrls.add(e.attr("href"));
