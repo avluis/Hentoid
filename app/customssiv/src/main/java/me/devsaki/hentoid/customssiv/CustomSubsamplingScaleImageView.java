@@ -2008,7 +2008,7 @@ public class CustomSubsamplingScaleImageView extends View {
         if (sourceUri.startsWith(ContentResolver.SCHEME_CONTENT)) {
             Cursor cursor = null;
             try {
-                String[] columns = {MediaStore.Images.ImageColumns.ORIENTATION};
+                String[] columns = {MediaStore.MediaColumns.ORIENTATION};
                 cursor = context.getContentResolver().query(Uri.parse(sourceUri), columns, null, null, null);
                 if (cursor != null && cursor.moveToFirst()) {
                     int targetOrientation = cursor.getInt(0);

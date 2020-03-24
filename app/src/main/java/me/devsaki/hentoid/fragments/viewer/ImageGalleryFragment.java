@@ -121,7 +121,6 @@ public class ImageGalleryFragment extends Fragment {
             ImageFileItem holder = new ImageFileItem(img);
             if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
             imgs.add(holder);
-//            itemAdapter.add(holder);
         }
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs);
         updateListFilter();

@@ -77,7 +77,7 @@ public class DatabaseMigrationService extends IntentService {
         migrate();
     }
 
-    private void eventProgress(Content content, int nbBooks, int booksOK, int booksKO) {
+    private void eventProgress(int nbBooks, int booksOK, int booksKO) {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, booksOK, booksKO, nbBooks));
     }
 
@@ -138,7 +138,7 @@ public class DatabaseMigrationService extends IntentService {
                 trace(Log.ERROR, log, "Migrate book ERROR : %s %s %s", e.getMessage(), bookIds.get(i) + "", content.getTitle());
             }
 
-            eventProgress(content, bookIds.size(), booksOK, booksKO);
+            eventProgress(bookIds.size(), booksOK, booksKO);
         }
         trace(Log.INFO, log, "Books migration complete : %s OK; %s KO", booksOK + "", booksKO + "");
 

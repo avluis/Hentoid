@@ -322,10 +322,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     @WorkerThread
     private void doDeleteBook(long contentId) {
-        Content content = collectionDao.selectContent(contentId);
-        if (content != null) {
-            collectionDao.deleteQueue(content);
-            ContentHelper.removeContent(content, collectionDao);
+        Content targetContent = collectionDao.selectContent(contentId);
+        if (targetContent != null) {
+            collectionDao.deleteQueue(targetContent);
+            ContentHelper.removeContent(targetContent, collectionDao);
         }
     }
 

@@ -114,7 +114,7 @@ public class ImportService extends IntentService {
         startImport(doRename, doCleanAbsent, doCleanNoImages, doCleanUnreadable);
     }
 
-    private void eventProgress(Content content, int nbBooks, int booksOK, int booksKO) {
+    private void eventProgress(int nbBooks, int booksOK, int booksKO) {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, booksOK, booksKO, nbBooks));
     }
 
@@ -240,7 +240,7 @@ public class ImportService extends IntentService {
                 trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", e.getMessage(), folder.getAbsolutePath());
             }
 
-            eventProgress(content, files.size() - nbFolders, booksOK, booksKO);
+            eventProgress(files.size() - nbFolders, booksOK, booksKO);
         }
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
 

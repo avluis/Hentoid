@@ -62,7 +62,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     private static final int PX_600_DP = Helper.dpToPixel(HentoidApp.getInstance(), 600);
 
-    //    private static final Executor executor = new ImageLoaderThreadExecutor();
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private View.OnTouchListener itemTouchListener;
@@ -253,10 +252,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             super(itemView);
             this.viewType = viewType;
             imgView = itemView;
-
-/*            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType)
-                ((CustomSubsamplingScaleImageView) imgView).setExecutor(executor);
-*/
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
                 imgView.setOnTouchListener(itemTouchListener);
         }
