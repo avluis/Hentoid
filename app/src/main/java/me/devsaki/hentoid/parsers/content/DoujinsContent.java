@@ -2,17 +2,16 @@ package me.devsaki.hentoid.parsers.content;
 
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.parsers.images.DoujinsParser;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
@@ -42,19 +41,14 @@ public class DoujinsContent implements ContentParser {
         }
 
         if (images != null && !images.isEmpty()) {
-            result.setQtyPages(images.size());
-
             // Cover = thumb from the 1st page
             String coverUrl = images.get(0).attr("data-thumb2");
             result.setCoverImageUrl(coverUrl);
-
-            // Images
-            int index = 1;
-            List<ImageFile> imgs = new ArrayList<>();
-            for (Element e : images)
-                imgs.add(new ImageFile(index++, e.attr("data-file"), StatusContent.SAVED, images.size()));
-            result.setImageFiles(imgs);
         }
+
+        List<String> imageUrls = DoujinsParser.parseImages(images);
+        result.setQtyPages(imageUrls.size());
+        result.setImageFiles(ParseHelper.urlsToImageFiles(imageUrls));
 
         // Deduplicate tags
         AttributeMap attributes = new AttributeMap();
