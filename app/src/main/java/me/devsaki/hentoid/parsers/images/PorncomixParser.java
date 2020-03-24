@@ -18,6 +18,7 @@ public class PorncomixParser extends BaseParser {
 
     @Override
     protected List<String> parseImages(Content content) throws Exception {
+        // Fetch the book gallery page
         Document doc = getOnlineDocument(content.getGalleryUrl());
         if (null == doc)
             throw new ParseException("Document unreachable : " + content.getGalleryUrl());

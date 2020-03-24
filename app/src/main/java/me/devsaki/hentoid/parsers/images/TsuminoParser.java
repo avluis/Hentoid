@@ -20,6 +20,7 @@ public class TsuminoParser extends BaseParser {
 
     @Override
     protected List<String> parseImages(Content content) throws Exception {
+        // Fetch the reader page
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (null != doc) {
             Elements captcha = doc.select(".g-recaptcha");

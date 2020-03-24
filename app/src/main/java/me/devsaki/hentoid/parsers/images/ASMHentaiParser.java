@@ -16,6 +16,7 @@ public class ASMHentaiParser extends BaseParser {
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 
+        // Fetch the reader page
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (doc != null) {
             String imgUrl = "https:" +
