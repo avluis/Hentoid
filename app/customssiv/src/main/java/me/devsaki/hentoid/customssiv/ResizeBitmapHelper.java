@@ -7,6 +7,10 @@ import androidx.annotation.NonNull;
 // Credits go to https://medium.com/@petrakeas/alias-free-resize-with-renderscript-5bf15a86ce3
 class ResizeBitmapHelper {
 
+    private ResizeBitmapHelper() {
+        throw new IllegalStateException("Utility class");
+    }
+
     static Bitmap successiveResize(@NonNull final Bitmap src, int resizeNum) {
         int srcWidth = src.getWidth();
         int srcHeight = src.getHeight();
