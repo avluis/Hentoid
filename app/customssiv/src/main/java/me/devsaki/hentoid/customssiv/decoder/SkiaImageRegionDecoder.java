@@ -150,7 +150,7 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
     public synchronized void recycle() {
         decoderLock.writeLock().lock();
         try {
-            decoder.recycle();
+            if (decoder != null) decoder.recycle();
             decoder = null;
         } finally {
             decoderLock.writeLock().unlock();
