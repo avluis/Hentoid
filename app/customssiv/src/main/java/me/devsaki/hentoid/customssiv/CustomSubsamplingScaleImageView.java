@@ -31,6 +31,7 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 import androidx.exifinterface.media.ExifInterface;
 
 import java.lang.annotation.Retention;
@@ -1807,6 +1808,7 @@ public class CustomSubsamplingScaleImageView extends View {
         }
     }
 
+    @WorkerThread
     private int[] initTiles(
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull Context context,
@@ -1863,6 +1865,7 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     @Nullable
+    @WorkerThread
     protected Bitmap loadTile(
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull ImageRegionDecoder decoder,
@@ -1910,6 +1913,7 @@ public class CustomSubsamplingScaleImageView extends View {
         invalidate();
     }
 
+    @WorkerThread
     private LoadBitmapResult loadBitmap(
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull Context context,
