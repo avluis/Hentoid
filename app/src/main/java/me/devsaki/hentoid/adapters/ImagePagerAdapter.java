@@ -78,6 +78,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private int viewerOrientation;
     private int displayMode;
     private boolean longTapZoomEnabled;
+    private boolean autoRotate;
 
 
     public ImagePagerAdapter() {
@@ -103,6 +104,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         viewerOrientation = Preferences.getViewerOrientation();
         longTapZoomEnabled = Preferences.isViewerHoldToZoom();
         displayMode = Preferences.getViewerDisplayMode();
+        autoRotate = Preferences.isViewerAutoRotate();
     }
 
     public void setRecyclerView(RecyclerView v) {
@@ -269,6 +271,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssView.setMinimumScaleType(getScaleType());
                 ssView.setOnImageEventListener(this);
                 ssView.setLongTapZoomEnabled(longTapZoomEnabled);
+                ssView.setAutoRotate(autoRotate);
                 if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
                 ssView.setImage(ImageSource.uri(uri));
             } else { // ImageView

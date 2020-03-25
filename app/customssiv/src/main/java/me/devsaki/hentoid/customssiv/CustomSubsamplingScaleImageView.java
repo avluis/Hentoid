@@ -359,7 +359,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private boolean offsetLeftSide = true;
     private boolean sideOffsetConsumed = false;
 
-    private boolean autoRotate = true;
+    private boolean autoRotate = false;
     private int screenWidth;
     private int screenHeight;
 

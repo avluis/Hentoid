@@ -592,7 +592,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 break;
             case Preferences.Key.PREF_VIEWER_ZOOM_TRANSITIONS:
             case Preferences.Key.PREF_VIEWER_SEPARATING_BARS:
-            case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY: // TODO maybe use onBrowseModeChange which is supposed to recreate all viewholders
+            case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY:
+            case Preferences.Key.PREF_VIEWER_AUTO_ROTATE: // TODO maybe use onBrowseModeChange which is supposed to recreate all viewholders
                 onUpdateImageDisplay();
                 break;
             case Preferences.Key.PREF_VIEWER_SWIPE_TO_FLING:

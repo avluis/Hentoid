@@ -317,6 +317,13 @@
                 android:title="@string/pref_viewer_display_mode"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
+                android:defaultValue="@bool/pref_viewer_auto_rotate_default"
+                android:key="pref_viewer_auto_rotate"
+                android:title="@string/pref_viewer_auto_rotate"
+                android:summaryOff="@string/pref_viewer_auto_rotate_summary_off"
+                android:summaryOn="@string/pref_viewer_auto_rotate_summary_on"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_display_pagenum_default"
                 android:key="pref_viewer_display_pagenum"
                 android:title="@string/pref_viewer_display_pagenum"
