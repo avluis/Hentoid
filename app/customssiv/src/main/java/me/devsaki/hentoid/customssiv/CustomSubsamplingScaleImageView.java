@@ -359,15 +359,19 @@ public class CustomSubsamplingScaleImageView extends View {
     private boolean offsetLeftSide = true;
     private boolean sideOffsetConsumed = false;
 
-    private final CompositeDisposable loadDisposable = new CompositeDisposable();
+    private boolean autoRotate = true;
+    private int screenWidth;
+    private int screenHeight;
 
-    //private RenderScript rs; <-- unused for now
+    private final CompositeDisposable loadDisposable = new CompositeDisposable();
 
 
     public CustomSubsamplingScaleImageView(Context context, AttributeSet attr) {
         super(context, attr);
-//        rs = RenderScript.create(context);
         density = getResources().getDisplayMetrics().density;
+        screenWidth = context.getResources().getDisplayMetrics().widthPixels;
+        screenHeight = context.getResources().getDisplayMetrics().heightPixels;
+
         setMinimumDpi(160);
         setDoubleTapZoomDpi(160);
         setMinimumTileDpi(320);
@@ -728,11 +732,6 @@ public class CustomSubsamplingScaleImageView extends View {
             vCenterStart = new PointF(x, y);
             PointF sCenter = viewToSourceCoord(vCenterStart);
 
-            Timber.d(">> longTap scale %s", scale);
-            Timber.d(">> longTap vTranslate %s", vTranslate);
-            Timber.d(">> longTap vCenterStart %s", vCenterStart);
-            Timber.d(">> longTap sCenter %s", sCenter);
-
             new AnimationBuilder(doubleTapZoomScale, sCenter).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.LONG_TAP_ZOOM).start();
 
             isPanning = true;
@@ -999,29 +998,20 @@ public class CustomSubsamplingScaleImageView extends View {
                         if (isLongTapZooming && vTranslateStart.equals(0f, 0f))
                             vTranslateStart = new PointF(vTranslate.x, vTranslate.y);
 
-                        Timber.d(">> pan vCenterStart %s", vCenterStart);
                         float dx = Math.abs(event.getX() - vCenterStart.x);
                         float dy = Math.abs(event.getY() - vCenterStart.y);
-                        Timber.d(">> pan delta %s %s", dx, dy);
 
                         //On the Samsung S6 long click event does not work, because the dx > 5 usually true
                         float offset = density * 5;
                         if (dx > offset || dy > offset || isPanning) {
                             consumed = true;
 
-                            Timber.d(">> pan vTranslateStart A %s", vTranslateStart);
-                            Timber.d(">> pan event A %s %s", event.getX(), event.getY());
-
                             vTranslate.x = vTranslateStart.x + (event.getX() - vCenterStart.x);
                             vTranslate.y = vTranslateStart.y + (event.getY() - vCenterStart.y);
-
-                            Timber.d(">> = pan vTranslate A %s", vTranslate);
 
                             float lastX = vTranslate.x;
                             float lastY = vTranslate.y;
                             fitToBounds(true);
-
-                            Timber.d(">> = pan vTranslate B %s", vTranslate);
 
                             boolean atXEdge = lastX != vTranslate.x;
                             boolean atYEdge = lastY != vTranslate.y;
@@ -1189,7 +1179,6 @@ public class CustomSubsamplingScaleImageView extends View {
 
         // If animating scale, calculate current scale and center with easing equations
         if (anim != null && anim.vFocusStart != null) {
-            Timber.d(">> Animation START %s", anim.origin);
             // Store current values so we can send an event if they change
             float scaleBefore = scale;
             if (vTranslateBefore == null) {
@@ -1214,7 +1203,6 @@ public class CustomSubsamplingScaleImageView extends View {
             sendStateChanged(scaleBefore, vTranslateBefore, anim.origin);
             refreshRequiredTiles(finished);
             if (finished) {
-                Timber.d(">> Animation END %s", anim.origin);
                 if (anim.listener != null) {
                     try {
                         anim.listener.onComplete();
@@ -1462,6 +1450,9 @@ public class CustomSubsamplingScaleImageView extends View {
         satTemp = new ScaleAndTranslate(0f, new PointF(0, 0));
         fitToBounds(true, satTemp, new Point(sWidth(), sHeight()));
 
+        if (autoRotate && needsRotating(sWidth(), sHeight())) orientation = ORIENTATION_90;
+        else orientation = ORIENTATION_0;
+
         // Load double resolution - next level will be split into four tiles and at the center all four are required,
         // so don't bother with tiling until the next level 16 tiles are needed.
         fullImageSampleSize = calculateInSampleSize(satTemp.scale);
@@ -1592,7 +1583,6 @@ public class CustomSubsamplingScaleImageView extends View {
             }
             vTranslate.x = (getWidthInternal() / 2f) - (scale * sPendingCenter.x);
             vTranslate.y = (getHeightInternal() / 2f) - (scale * sPendingCenter.y);
-            Timber.d(">> preDraw vTranslate %s", vTranslate);
             sPendingCenter = null;
             pendingScale = null;
             fitToBounds(true);
@@ -1720,8 +1710,6 @@ public class CustomSubsamplingScaleImageView extends View {
         scale = satTemp.scale;
         vTranslate.set(satTemp.vTranslate);
 
-        Timber.d(">> fitToBounds vTranslate %s : %s %s", (null == uri) ? "" : uri, center, vTranslate);
-
         // Recenter images if their dimensions are lower than the view's dimensions after the above call to fitToBounds
         int viewHeight = getHeightInternal() - getPaddingBottom() + getPaddingTop();
         int viewWidth = getWidthInternal() - getPaddingLeft() + getPaddingRight();
@@ -1731,9 +1719,7 @@ public class CustomSubsamplingScaleImageView extends View {
         if (sourcevWidth < viewWidth) vTranslate.set((viewWidth - sourcevWidth) / 2, vTranslate.y);
         if (sourcevHeight < viewHeight)
             vTranslate.set(vTranslate.x, (viewHeight - sourcevHeight) / 2);
-        Timber.d(">> fitToBounds vTranslate Center %s : %s %s", (null == uri) ? "" : uri, center, vTranslate);
 
-        Timber.d(">> fitToBounds vTranslate Right? %s : %s %s %s", (null == uri) ? "" : uri, offsetLeftSide, sideOffsetConsumed, (sourcevWidth > viewWidth));
         // Display images from the right side if asked to do so
         if (!offsetLeftSide && !sideOffsetConsumed
                 && sourcevWidth > viewWidth
@@ -1744,7 +1730,6 @@ public class CustomSubsamplingScaleImageView extends View {
                 || minimumScaleType == ScaleType.SMART_FILL)) {
             vTranslate.set(scale * (-sSize.x + viewWidth / scale), vTranslate.y);
             sideOffsetConsumed = true;
-            Timber.d(">> fitToBounds vTranslate Right %s : %s %s", (null == uri) ? "" : uri, center, vTranslate);
         }
 
         if (init && minimumScaleType != ScaleType.START
@@ -1754,7 +1739,6 @@ public class CustomSubsamplingScaleImageView extends View {
                 && minimumScaleType != ScaleType.SMART_FILL
         ) {
             vTranslate.set(vTranslateForSCenter(sSize.x / 2f, sSize.y / 2f, scale, sSize));
-            Timber.d(">> fitToBounds init vTranslate %s", vTranslate);
         }
     }
 
@@ -1923,6 +1907,7 @@ public class CustomSubsamplingScaleImageView extends View {
         view.debug("BitmapLoadTask.doInBackground");
         float workingScale;
         Bitmap workingBitmap = decoderFactory.make().decode(context, source);
+
         ScaleAndTranslate workingSaT = new ScaleAndTranslate(0, new PointF(0, 0));
         fitToBounds(true, workingSaT, new Point(workingBitmap.getWidth(), workingBitmap.getHeight()));
         workingScale = workingSaT.scale;
@@ -1974,6 +1959,10 @@ public class CustomSubsamplingScaleImageView extends View {
         if (this.sWidth > 0 && this.sHeight > 0 && (this.sWidth != bitmap.getWidth() || this.sHeight != bitmap.getHeight())) {
             reset(false);
         }
+
+        if (autoRotate && needsRotating(bitmap.getWidth(), bitmap.getHeight())) orientation = ORIENTATION_90;
+        else orientation = ORIENTATION_0;
+
         if (this.bitmap != null && !this.bitmapIsCached) {
             this.bitmap.recycle();
         }
@@ -2044,6 +2033,15 @@ public class CustomSubsamplingScaleImageView extends View {
             }
         }
         return exifOrientation;
+    }
+
+    private boolean needsRotating(int sWidth, int sHeight) {
+        boolean isSourceSquare = (Math.abs(sHeight - sWidth) < sWidth * 0.1);
+        if (isSourceSquare) return false;
+
+        boolean isSourceLandscape = (sWidth > sHeight * 1.33);
+        boolean isScreenLandscape = (screenWidth > screenHeight * 1.33);
+        return (isSourceLandscape != isScreenLandscape);
     }
 
     private static class Tile {
@@ -2953,13 +2951,20 @@ public class CustomSubsamplingScaleImageView extends View {
         }
     }
 
+    // TODO documentation
     public final void setDirection(@Direction int direction) {
         this.swipeDirection = direction;
     }
 
+    // TODO documentation
     public final void setOffsetLeftSide(boolean offsetLeftSide) {
         this.offsetLeftSide = offsetLeftSide;
         this.sideOffsetConsumed = false;
+    }
+
+    // TODO documentation
+    public final void setAutoRotate(boolean autoRotate) {
+        this.autoRotate = autoRotate;
     }
 
     /**
@@ -3149,11 +3154,13 @@ public class CustomSubsamplingScaleImageView extends View {
         preloadDimensions = new Point(width, height);
     }
 
+    // TODO documentation
     private int getWidthInternal() {
         if (getWidth() > 0 || null == preloadDimensions) return getWidth();
         else return preloadDimensions.x;
     }
 
+    // TODO documentation
     private int getHeightInternal() {
         if (getHeight() > 0 || null == preloadDimensions) return getHeight();
         else return preloadDimensions.y;
@@ -3285,9 +3292,7 @@ public class CustomSubsamplingScaleImageView extends View {
             }
 
             float localTargetScale = limitedScale(targetScale);
-            Timber.d(">> anim start targetSCenter A %s", targetSCenter);
             PointF localTargetSCenter = panLimited ? limitedSCenter(targetSCenter.x, targetSCenter.y, localTargetScale, new PointF()) : targetSCenter;
-            Timber.d(">> anim start targetSCenter B %s", localTargetSCenter);
             anim = new Anim();
             anim.scaleStart = scale;
             anim.scaleEnd = localTargetScale;
@@ -3305,21 +3310,17 @@ public class CustomSubsamplingScaleImageView extends View {
             anim.listener = listener;
 
             if (vFocus != null) {
-                Timber.d(">> anim start vFocus %s", vFocus);
                 // Calculate where translation will be at the end of the anim
                 float vTranslateXEnd = vFocus.x - (localTargetScale * anim.sCenterStart.x);
                 float vTranslateYEnd = vFocus.y - (localTargetScale * anim.sCenterStart.y);
-                Timber.d(">> anim start vTranslateEnd %s %s", vTranslateXEnd, vTranslateYEnd);
                 ScaleAndTranslate satEnd = new ScaleAndTranslate(localTargetScale, new PointF(vTranslateXEnd, vTranslateYEnd));
                 // Fit the end translation into bounds
                 fitToBounds(true, satEnd, new Point(sWidth(), sHeight()));
-                Timber.d(">> anim start satEnd.vTranslate %s", satEnd.vTranslate);
                 // Adjust the position of the focus point at end so image will be in bounds
                 anim.vFocusEnd = new PointF(
                         vFocus.x + (satEnd.vTranslate.x - vTranslateXEnd),
                         vFocus.y + (satEnd.vTranslate.y - vTranslateYEnd)
                 );
-                Timber.d(">> anim start anim.vFocusEnd %s", anim.vFocusEnd);
             }
 
             invalidate();
