@@ -228,7 +228,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> goHome());
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
 

@@ -6,7 +6,7 @@
     tools:ignore="AlwaysShowAction">
     <item
         android:id="@+id/web_menu_home"
-        android:icon="@drawable/ic_close"
+        android:icon="@drawable/ic_menu_home"
         android:title="@string/web_home"
         app:showAsAction="always" />
     <item
