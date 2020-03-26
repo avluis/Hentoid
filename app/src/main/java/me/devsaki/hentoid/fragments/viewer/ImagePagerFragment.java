@@ -673,7 +673,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void nextPage() {
         if (imageIndex == maxPosition) {
             if (Preferences.isViewerContinuous()) nextBook();
-            else return;
+            return;
         }
 
         if (Preferences.isViewerTapTransitions()) {
@@ -697,7 +697,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void previousPage() {
         if (0 == imageIndex) {
             if (Preferences.isViewerContinuous()) previousBook();
-            else return;
+            return;
         }
 
         if (Preferences.isViewerTapTransitions())
