@@ -49,6 +49,9 @@ public class FakkuParser implements ImageListParser {
             return result;
         }
 
+        // Add referer information to downloadParams
+        downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl());
+
         if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
             Timber.e("Download parameters do not contain any cookie");
             return result;
@@ -56,7 +59,8 @@ public class FakkuParser implements ImageListParser {
 
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, downloadParams.get(HttpHelper.HEADER_COOKIE_KEY)));
-        String readUrl = content.getGalleryUrl().replace("www", "books") + "/read";
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, downloadParams.get(HttpHelper.HEADER_REFERER_KEY)));
+        String readUrl = content.getGalleryUrl().replace("www", "books").replace("/hentai", "//hentai") + "/read";
         FakkuGalleryMetadata info;
         try {
             info = HttpHelper.getOnlineJson(readUrl, headers, false, FakkuGalleryMetadata.class);
@@ -71,9 +75,6 @@ public class FakkuParser implements ImageListParser {
         }
 
         progress.start(info.getPages().keySet().size() + 1);
-
-        // Add referer information to downloadParams for future image download
-        downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl());
 
         // Process book info to get page detailed info
         String pid = null;
