@@ -21,6 +21,8 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.exception.AccountException;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -32,7 +34,7 @@ public class FakkuParser implements ImageListParser {
     private final ParseProgress progress = new ParseProgress();
 
 
-    public List<ImageFile> parseImageList(@NonNull Content content) {
+    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
 
         List<ImageFile> result = Collections.emptyList();
         String downloadParamsStr = content.getDownloadParams();
@@ -52,23 +54,25 @@ public class FakkuParser implements ImageListParser {
         // Add referer information to downloadParams
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl());
 
-        if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
-            Timber.e("Download parameters do not contain any cookie");
-            return result;
-        }
+        String cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+        if (null == cookieStr || !cookieStr.toLowerCase().contains("fakku"))
+            throw new AccountException("Your have to be logged with a Fakku account");
 
         List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, downloadParams.get(HttpHelper.HEADER_COOKIE_KEY)));
+        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
         headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, downloadParams.get(HttpHelper.HEADER_REFERER_KEY)));
         String readUrl = content.getGalleryUrl().replace("www", "books").replace("/hentai", "//hentai") + "/read";
-        FakkuGalleryMetadata info;
-        try {
-            info = HttpHelper.getOnlineJson(readUrl, headers, false, FakkuGalleryMetadata.class);
-        } catch (IOException e) {
-            Timber.e(e, "I/O Error while attempting to connect to %s", readUrl);
-            return result;
-        }
 
+        // Get the raw content of the page to detect if it's JSON (no JSON = probably trying to get a premium book with a non-premium account)
+        ResponseBody response = HttpHelper.getOnlineResource(readUrl, headers, false).body();
+        if (null == response) throw new IOException("Could not load response");
+
+        String rawResource = response.string().trim();
+        if (!rawResource.startsWith("{") || !rawResource.endsWith("}")) // No JSON file
+            throw new AccountException("Your have to be logged with a paid Fakku account to download non-free books");
+
+        // Parse the content if JSON
+        FakkuGalleryMetadata info = JsonHelper.jsonToObject(rawResource, FakkuGalleryMetadata.class);
         if (null == info) {
             Timber.e("Could not get info @%s", readUrl);
             return result;
@@ -102,6 +106,8 @@ public class FakkuParser implements ImageListParser {
         result = new ArrayList<>();
         for (String p : info.getPages().keySet()) {
             int order = Integer.parseInt(p);
+            if (pageInfo != null && order > pageInfo.size()) continue;
+
             FakkuGalleryMetadata.FakkuPage page = info.getPages().get(p);
             if (page != null) {
                 ImageFile img = ParseHelper.urlToImageFile(page.getImage(), order, info.getPages().size(), StatusContent.SAVED);

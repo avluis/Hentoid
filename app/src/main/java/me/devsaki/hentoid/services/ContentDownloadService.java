@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.services;
 
+import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -70,6 +71,8 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.exception.AccountException;
+import me.devsaki.hentoid.util.exception.CaptchaException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
@@ -150,7 +153,7 @@ public class ContentDownloadService extends IntentService {
     private void iterateQueue() {
         // Process these here to avoid initializing notifications for downloads that will never start
         if (ContentQueueManager.getInstance().isQueuePaused()) {
-            Timber.w("Queue is paused. Aborting download.");
+            Timber.w("Queue is paused. Download aborted.");
             return;
         }
 
@@ -169,6 +172,7 @@ public class ContentDownloadService extends IntentService {
      *
      * @return 1st book of the download queue; null if no book is available to download
      */
+    @SuppressLint("TimberExceptionLogging")
     @Nullable
     private Content downloadFirstInQueue() {
         final String CONTENT_PART_IMAGE_LIST = "Image list";
@@ -178,7 +182,7 @@ public class ContentDownloadService extends IntentService {
 
         // Check if queue has been paused
         if (ContentQueueManager.getInstance().isQueuePaused()) {
-            Timber.w("Queue is paused. Aborting download.");
+            Timber.w("Queue is paused. Download aborted.");
             return null;
         }
 
@@ -187,14 +191,14 @@ public class ContentDownloadService extends IntentService {
         // Check if there is a first item to process
         List<QueueRecord> queue = dao.selectQueue();
         if (queue.isEmpty()) {
-            Timber.w("Queue is empty. Aborting download.");
+            Timber.w("Queue is empty. Download aborted.");
             return null;
         }
 
         Content content = queue.get(0).content.getTarget();
 
         if (null == content) {
-            Timber.w("Content is unavailable. Aborting download.");
+            Timber.w("Content is unavailable. Download aborted.");
             dao.deleteQueue(0);
             content = new Content().setId(queue.get(0).content.getTargetId()); // Must supply content ID to the event for the UI to update properly
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
@@ -203,7 +207,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         if (StatusContent.DOWNLOADED == content.getStatus()) {
-            Timber.w("Content is already downloaded. Aborting download.");
+            Timber.w("Content is already downloaded. Download aborted.");
             dao.deleteQueue(0);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification(content));
@@ -254,23 +258,29 @@ public class ContentDownloadService extends IntentService {
                 dao.replaceImageList(content.getId(), images);
 
                 content = dao.selectContent(content.getId()); // Get updated Content with the generated ID of new images
-            } catch (UnsupportedOperationException uoe) {
-                Timber.w(uoe, "A captcha has been found while parsing %s. Aborting download.", content.getTitle());
-                logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, uoe.getMessage());
+            } catch (CaptchaException cpe) {
+                Timber.w(cpe, "A captcha has been found while parsing %s. Download aborted.", content.getTitle());
+                logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, "Captcha found");
+                hasError = true;
+            } catch (AccountException ae) {
+                String description = String.format("Your %s account does not allow to download the book %s. %s. Download aborted.", content.getSite().getDescription(), content.getTitle(), ae.getMessage());
+                Timber.w(ae, description);
+                logErrorRecord(content.getId(), ErrorType.ACCOUNT, content.getUrl(), CONTENT_PART_IMAGE_LIST, description);
                 hasError = true;
             } catch (LimitReachedException lre) {
-                Timber.w(lre, "The bandwidth limit has been reached while parsing %s. %s. Aborting download.", content.getTitle(), lre.getMessage());
-                logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), CONTENT_PART_IMAGE_LIST, lre.getMessage());
+                String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
+                Timber.w(lre, description);
+                logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), CONTENT_PART_IMAGE_LIST, description);
                 hasError = true;
             } catch (PreparationInterruptedException ie) {
                 Timber.i(ie, "Preparation of %s interrupted", content.getTitle());
                 // not an error
             } catch (EmptyResultException ere) {
-                Timber.w(ere, "No images have been found while parsing %s. Aborting download.", content.getTitle());
+                Timber.w(ere, "No images have been found while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, "No images have been found. Error = " + ere.getMessage());
                 hasError = true;
             } catch (Exception e) {
-                Timber.w(e, "An exception has occurred while parsing %s. Aborting download.", content.getTitle());
+                Timber.w(e, "An exception has occurred while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, e.getMessage());
                 hasError = true;
             }
@@ -585,7 +595,7 @@ public class ContentDownloadService extends IntentService {
             Timber.w(e);
             if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl);
             else {
-                Timber.w("No backup URL found - aborting this image");
+                Timber.w("No backup URL found - image aborted");
                 updateImage(img, false);
                 logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), e.getMessage());
             }
