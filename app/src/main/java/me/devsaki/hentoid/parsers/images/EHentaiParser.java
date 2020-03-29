@@ -94,7 +94,7 @@ public class EHentaiParser implements ImageListParser {
                     if (!imageUrl.isEmpty()) {
                         // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
                         if (imageUrl.contains("/509.gif"))
-                            throw new LimitReachedException("Bandwidth limit reached");
+                            throw new LimitReachedException("E-hentai download points regenerate over time or can be bought on e-hentai if you're in a hurry");
                         img = ParseHelper.urlToImageFile(imageUrl, order++, pageUrls.size(), StatusContent.SAVED);
                         result.add(img);
 

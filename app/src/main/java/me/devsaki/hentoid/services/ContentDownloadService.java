@@ -259,7 +259,7 @@ public class ContentDownloadService extends IntentService {
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, uoe.getMessage());
                 hasError = true;
             } catch (LimitReachedException lre) {
-                Timber.w(lre, "The bandwidth limit has been reached while parsing %s. Aborting download.", content.getTitle());
+                Timber.w(lre, "The bandwidth limit has been reached while parsing %s. %s. Aborting download.", content.getTitle(), lre.getMessage());
                 logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), CONTENT_PART_IMAGE_LIST, lre.getMessage());
                 hasError = true;
             } catch (PreparationInterruptedException ie) {
