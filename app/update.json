@@ -8,8 +8,7 @@
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"189" },
       {"sourceName":"FAKKU2", "status":"RED" },
-	  {"sourceName":"NEXUS", "status":"RED" },
-	  {"sourceName":"FAKKU2", "status":"RED" }
+	  {"sourceName":"NEXUS", "status":"RED" }
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" },
