@@ -1486,7 +1486,10 @@ public class CustomSubsamplingScaleImageView extends View {
                 loadDisposable.add(
                         Observable.fromIterable(baseGrid)
                                 .subscribeOn(Schedulers.computation())
-                                .map(item -> loadTile(this, decoder, item, targetScale))
+                                .flatMap(item -> Observable.just(item)
+                                        .subscribeOn(Schedulers.computation())
+                                        .map(i2 -> loadTile(this, decoder, i2, targetScale))
+                                )
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
                                         this::onTileLoaded,
