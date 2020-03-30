@@ -986,7 +986,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
-        if (Helper.isNumeric(query)) {
+        if (newSearch && Helper.isNumeric(query)) {
             ArrayList<Integer> siteCodes = Stream.of(result)
                     .filter(content -> query.equals(content.getUniqueSiteId()))
                     .map(Content::getSite)
