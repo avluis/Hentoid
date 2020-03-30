@@ -343,7 +343,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         @Override
         public void onTileLoadError(Throwable e) {
-            // Nothing special
+            Timber.w(e, ">> tileLoad error");
         }
 
         @Override
