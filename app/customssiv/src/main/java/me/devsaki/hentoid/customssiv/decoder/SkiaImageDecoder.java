@@ -52,7 +52,7 @@ public class SkiaImageDecoder implements ImageDecoder {
 
     @Override
     @NonNull
-    public Bitmap decode(@NonNull Context context, @NonNull Uri uri) throws Exception {
+    public Bitmap decode(@NonNull final Context context, @NonNull final Uri uri) throws Exception {
         String uriString = uri.toString();
         BitmapFactory.Options options = new BitmapFactory.Options();
         Bitmap bitmap;

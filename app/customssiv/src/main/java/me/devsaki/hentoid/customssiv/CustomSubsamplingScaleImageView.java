@@ -540,13 +540,16 @@ public class CustomSubsamplingScaleImageView extends View {
                 }
                 if (previewSourceUri != null) {
                     final Uri previewSourceUriFinal = previewSourceUri.normalizeScheme();
+
                     loadDisposable.add(
-                            Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, targetScale, previewSourceUriFinal))
+                            Single.fromCallable(() -> bitmapDecoderFactory.make().decode(getContext(), uri))
+                                    .subscribeOn(Schedulers.io())
+                                    .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
                                     .subscribeOn(Schedulers.computation())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
                                             p -> onPreviewLoaded(p.bitmap, p.scale),
-                                            e -> onImageEventListener.onPreviewLoadError(e)
+                                            e -> onImageEventListener.onImageLoadError(e)
                                     )
                     );
                 } else {
@@ -579,7 +582,9 @@ public class CustomSubsamplingScaleImageView extends View {
             } else {
                 // Load the bitmap as a single image.
                 loadDisposable.add(
-                        Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, targetScale, uri))
+                        Single.fromCallable(() -> bitmapDecoderFactory.make().decode(getContext(), uri))
+                                .subscribeOn(Schedulers.io())
+                                .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
                                 .subscribeOn(Schedulers.computation())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
@@ -1470,7 +1475,9 @@ public class CustomSubsamplingScaleImageView extends View {
             decoder = null;
 
             loadDisposable.add(
-                    Single.fromCallable(() -> loadBitmap(this, getContext(), bitmapDecoderFactory, targetScale, uri))
+                    Single.fromCallable(() -> bitmapDecoderFactory.make().decode(getContext(), uri))
+                            .subscribeOn(Schedulers.io())
+                            .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
                             .subscribeOn(Schedulers.computation())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
@@ -1485,10 +1492,9 @@ public class CustomSubsamplingScaleImageView extends View {
             if (baseGrid != null) {
                 loadDisposable.add(
                         Observable.fromIterable(baseGrid)
-                                .subscribeOn(Schedulers.computation())
-                                .flatMap(item -> Observable.just(item)
-                                        .subscribeOn(Schedulers.computation())
-                                        .map(i2 -> loadTile(this, decoder, i2, targetScale))
+                                .flatMap(tile -> Observable.just(tile)
+                                        .subscribeOn(Schedulers.io())
+                                        .map(tile2 -> loadTile(this, decoder, tile2, targetScale)) // TODO breakdown load -> IO and resize -> computation
                                 )
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
@@ -1922,15 +1928,20 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     @WorkerThread
-    private LoadBitmapResult loadBitmap(
-            @NonNull CustomSubsamplingScaleImageView view,
+    private Bitmap loadBitmap(
+            @NonNull final Uri source,
             @NonNull Context context,
-            @NonNull DecoderFactory<? extends ImageDecoder> decoderFactory,
-            final float targetScale,
-            @NonNull Uri source) throws Exception {
-        String sourceUri = source.toString();
-        view.debug("BitmapLoadTask.doInBackground");
-        Bitmap workingBitmap = decoderFactory.make().decode(context, source);
+            @NonNull DecoderFactory<? extends ImageDecoder> decoderFactory) throws Exception {
+        return decoderFactory.make().decode(context, source);
+    }
+
+    @WorkerThread
+    private ProcessBitmapResult processBitmap(
+            @NonNull final Uri source,
+            @NonNull Context context,
+            @NonNull Bitmap bitmap,
+            @NonNull CustomSubsamplingScaleImageView view,
+            final float targetScale) {
         float workingScale = targetScale;
 
         int nbResize = 0;
@@ -1938,36 +1949,14 @@ public class CustomSubsamplingScaleImageView extends View {
 
         if (nbResize > 0) {
             Timber.d(">> successiveResize %s %s BEGIN", targetScale, nbResize);
-            workingBitmap = ResizeBitmapHelper.successiveResize(workingBitmap, nbResize);
-            //workingBitmap = ResizeBitmap.successiveResizeRS(rs, workingBitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
+            bitmap = ResizeBitmapHelper.successiveResize(bitmap, nbResize);
+            //workingBitmap = ResizeBitmap.successiveResizeRS(rs, workingBitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888; demands more memory
             Timber.d(">> successiveResize %s SUCCESS", nbResize);
             float newScale = (float) Math.pow(0.5, nbResize);
             workingScale = workingScale / newScale;
         }
 
-        return new LoadBitmapResult(workingBitmap, view.getExifOrientation(context, sourceUri), workingScale);
-    }
-
-    /**
-     * Called by worker task when preview image is loaded.
-     */
-    private synchronized void onPreviewLoaded(@NonNull Bitmap previewBitmap, float scale) {
-        debug("onPreviewLoaded");
-        if (bitmap != null || imageLoadedSent) {
-            previewBitmap.recycle();
-            return;
-        }
-        if (pRegion != null) {
-            bitmap = Bitmap.createBitmap(previewBitmap, pRegion.left, pRegion.top, pRegion.width(), pRegion.height());
-        } else {
-            bitmap = previewBitmap;
-        }
-        bitmapIsPreview = true;
-        this.scale = scale;
-        if (checkReady()) {
-            invalidate();
-            requestLayout();
-        }
+        return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), workingScale);
     }
 
     /**
@@ -2002,6 +1991,28 @@ public class CustomSubsamplingScaleImageView extends View {
         boolean ready = checkReady();
         boolean imageLoaded = checkImageLoaded();
         if (ready || imageLoaded) {
+            invalidate();
+            requestLayout();
+        }
+    }
+
+    /**
+     * Called by worker task when preview image is loaded.
+     */
+    private synchronized void onPreviewLoaded(@NonNull Bitmap previewBitmap, float scale) {
+        debug("onPreviewLoaded");
+        if (bitmap != null || imageLoadedSent) {
+            previewBitmap.recycle();
+            return;
+        }
+        if (pRegion != null) {
+            bitmap = Bitmap.createBitmap(previewBitmap, pRegion.left, pRegion.top, pRegion.width(), pRegion.height());
+        } else {
+            bitmap = previewBitmap;
+        }
+        bitmapIsPreview = true;
+        this.scale = scale;
+        if (checkReady()) {
             invalidate();
             requestLayout();
         }
@@ -3544,12 +3555,12 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
 
-    static class LoadBitmapResult {
+    static class ProcessBitmapResult {
         final Bitmap bitmap;
         final Integer orientation;
         final float scale;
 
-        LoadBitmapResult(Bitmap bitmap, Integer orientation, float scale) {
+        ProcessBitmapResult(Bitmap bitmap, Integer orientation, float scale) {
             this.bitmap = bitmap;
             this.orientation = orientation;
             this.scale = scale;
