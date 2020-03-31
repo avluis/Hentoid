@@ -1528,7 +1528,6 @@ public class CustomSubsamplingScaleImageView extends View {
 
         // Load tiles of the correct sample size that are on screen. Discard tiles off screen, and those that are higher
         // resolution than required, or lower res than required but not the base layer, so the base layer is always present.
-        loadDisposable.clear();
         for (Map.Entry<Integer, List<Tile>> tileMapEntry : tileMap.entrySet()) {
             for (Tile tile : tileMapEntry.getValue()) {
                 if (tile.sampleSize < sampleSize || (tile.sampleSize > sampleSize && tile.sampleSize != fullImageSampleSize)) {
@@ -1875,57 +1874,49 @@ public class CustomSubsamplingScaleImageView extends View {
             view.decoderLock.readLock().lock();
             try {
                 if (decoder.isReady()) {
+                    tile.loading = true;
                     // Update tile's file sRect according to rotation
                     view.fileSRect(tile.sRect, tile.fileSRect);
                     if (view.sRegion != null)
                         tile.fileSRect.offset(view.sRegion.left, view.sRegion.top);
                     tile.bitmap = decoder.decodeRegion(tile.fileSRect, tile.sampleSize);
                 }
-                tile.loading = false;
             } finally {
                 view.decoderLock.readLock().unlock();
             }
-        } else {
-            tile.loading = false;
         }
+        if (null == tile.bitmap) tile.loading = false;
         return tile;
     }
 
     @WorkerThread
-    protected float processTile(
+    protected Tile processTile(
             @NonNull Tile loadedTile,
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
-        float workingScale = targetScale;
-
         // TODO refactor the resizing algorithm in common with processBitmap
         int nbResize = 0;
         for (int i = 1; i < 10; i++) if (targetScale < Math.pow(0.5, i)) nbResize++;
 
         if (nbResize > 0) {
-            Timber.d(">> successiveResize %s %s BEGIN", targetScale, nbResize);
             loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, nbResize);
             //workingBitmap = ResizeBitmap.successiveResizeRS(rs, workingBitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
-            Timber.d(">> successiveResize %s SUCCESS", nbResize);
-            float newScale = (float) Math.pow(0.5, nbResize);
-            workingScale = workingScale / newScale; // Not useful for tiles
         }
+        loadedTile.loading = false;
 
-        return targetScale;
+        return loadedTile;
     }
 
     /**
      * Called by worker task when a tile has loaded. Redraws the view.
      */
-    private synchronized void onTileLoaded(float targetScale) {
-        debug("onTileLoaded");
+    private synchronized void onTileLoaded(Tile tile) {
         checkReady();
         checkImageLoaded();
         if (isBaseLayerReady()) {
             if (!bitmapIsCached && bitmap != null) {
                 bitmap.recycle();
             }
-            scale = targetScale;
             bitmap = null;
             if (onImageEventListener != null && bitmapIsCached) {
                 onImageEventListener.onPreviewReleased();
