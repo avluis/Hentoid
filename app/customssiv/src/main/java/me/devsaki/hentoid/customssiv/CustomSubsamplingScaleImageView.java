@@ -1867,11 +1867,10 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     @WorkerThread
-    protected LoadTileResult loadTile(
+    protected Tile loadTile(
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull ImageRegionDecoder decoder,
             @NonNull Tile tile) {
-        Bitmap resultBmp = null;
         if (decoder.isReady() && tile.visible) {
             view.decoderLock.readLock().lock();
             try {
@@ -1880,8 +1879,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     view.fileSRect(tile.sRect, tile.fileSRect);
                     if (view.sRegion != null)
                         tile.fileSRect.offset(view.sRegion.left, view.sRegion.top);
-
-                    resultBmp = decoder.decodeRegion(tile.fileSRect, tile.sampleSize);
+                    tile.bitmap = decoder.decodeRegion(tile.fileSRect, tile.sampleSize);
                 }
                 tile.loading = false;
             } finally {
@@ -1890,16 +1888,15 @@ public class CustomSubsamplingScaleImageView extends View {
         } else {
             tile.loading = false;
         }
-        return new LoadTileResult(resultBmp, tile);
+        return tile;
     }
 
     @WorkerThread
     protected float processTile(
-            @NonNull LoadTileResult loadedTile,
+            @NonNull Tile loadedTile,
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
         float workingScale = targetScale;
-        Tile tile = loadedTile.tile;
 
         // TODO refactor the resizing algorithm in common with processBitmap
         int nbResize = 0;
@@ -1907,7 +1904,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
         if (nbResize > 0) {
             Timber.d(">> successiveResize %s %s BEGIN", targetScale, nbResize);
-            tile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, nbResize);
+            loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, nbResize);
             //workingBitmap = ResizeBitmap.successiveResizeRS(rs, workingBitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
             Timber.d(">> successiveResize %s SUCCESS", nbResize);
             float newScale = (float) Math.pow(0.5, nbResize);
@@ -3555,16 +3552,6 @@ public class CustomSubsamplingScaleImageView extends View {
 
         @Override
         public void onScaleChanged(float newScale, int origin) {
-        }
-    }
-
-    static class LoadTileResult {
-        final Bitmap bitmap;
-        final Tile tile;
-
-        LoadTileResult(Bitmap bitmap, Tile tile) {
-            this.bitmap = bitmap;
-            this.tile = tile;
         }
     }
 
