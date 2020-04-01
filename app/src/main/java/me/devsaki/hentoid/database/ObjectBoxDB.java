@@ -197,7 +197,7 @@ public class ObjectBoxDB {
         for (long id : contentId) {
             Content c = contentBox.get(id);
             if (c != null) {
-//                store.runInTx(() -> { // Transaction disabled because it is inoperant when called from LibraryViewModel
+                store.runInTx(() -> {
                 if (c.getImageFiles() != null) {
                     for (ImageFile i : c.getImageFiles())
                         imageFileBox.remove(i);   // Delete imageFiles
@@ -221,7 +221,7 @@ public class ObjectBoxDB {
                 c.getAttributes().clear();                                      // Clear links to all attributes
 
                 contentBox.remove(c);                                           // Remove the content itself
-//                });
+                });
             }
         }
     }
