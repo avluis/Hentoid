@@ -305,29 +305,38 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void deleteBook() {
+        Content targetContent = collectionDao.selectContent(loadedBookId);
+        if (null == targetContent) return;
+
+        // Unplug image source listener (avoid displaying pages as they are being deleted)
+        if (currentImageSource != null) images.removeSource(currentImageSource);
+
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doDeleteBook(loadedBookId))
+                Completable.fromRunnable(() -> doDeleteBook(targetContent))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 () -> {
+                                    currentImageSource = null;
+                                    // Switch to the next book
                                     contentIds.remove(currentContentIndex);
                                     if (currentContentIndex >= contentIds.size() && currentContentIndex > 0)
                                         currentContentIndex--;
                                     loadFromContent(contentIds.get(currentContentIndex));
                                 },
-                                Timber::e
+                                e -> {
+                                    Timber.e(e);
+                                    // Restore image source listener on error
+                                    images.addSource(currentImageSource, imgs -> setImages(targetContent, imgs));
+                                }
                         )
         );
     }
 
     @WorkerThread
-    private void doDeleteBook(long contentId) {
-        Content targetContent = collectionDao.selectContent(contentId);
-        if (targetContent != null) {
-            collectionDao.deleteQueue(targetContent);
-            ContentHelper.removeContent(targetContent, collectionDao);
-        }
+    private void doDeleteBook(@NonNull Content targetContent) {
+        collectionDao.deleteQueue(targetContent);
+        ContentHelper.removeContent(targetContent, collectionDao);
     }
 
     public void deletePage(int pageIndex) {
