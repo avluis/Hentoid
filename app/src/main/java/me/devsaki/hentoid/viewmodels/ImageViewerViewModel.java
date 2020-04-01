@@ -171,7 +171,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
-                                    v -> compositeDisposable.clear(),
+                                    v -> {
+                                    },
                                     Timber::e
                             )
             );
