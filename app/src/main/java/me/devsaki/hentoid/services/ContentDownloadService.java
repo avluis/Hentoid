@@ -160,8 +160,11 @@ public class ContentDownloadService extends IntentService {
         notifyStart();
 
         Content content = downloadFirstInQueue();
-        if (content != null) watchProgress(content);
-        else notificationManager.cancel();
+        while (content != null) {
+            watchProgress(content);
+            content = downloadFirstInQueue();
+        }
+        notificationManager.cancel();
     }
 
     /**
@@ -319,7 +322,7 @@ public class ContentDownloadService extends IntentService {
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
             dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ERROR);
-            completeDownload(content, 0, images.size());
+            completeDownload(content.getId(), 0, images.size());
             return null;
         }
 
@@ -357,24 +360,24 @@ public class ContentDownloadService extends IntentService {
      *
      * @param content Content to watch (1st book of the download queue)
      */
-    private void watchProgress(Content content) {
+    private void watchProgress(@NonNull Content content) {
         boolean isDone;
         int pagesOK;
         int pagesKO;
-        List<ImageFile> images = content.getImageFiles();
-        ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
+        List<ImageFile> images = content.getImageFiles();
+        int totalPages = (null == images) ? 0 : images.size();
+
+        ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
         do {
             SparseIntArray statuses = dao.countProcessedImagesById(content.getId());
             pagesOK = statuses.get(StatusContent.DOWNLOADED.getCode());
             pagesKO = statuses.get(StatusContent.ERROR.getCode());
 
-            String title = content.getTitle();
-            int totalPages = (null == images) ? 0 : images.size();
             int progress = pagesOK + pagesKO;
             isDone = progress == totalPages;
             Timber.d("Progress: OK:%s KO:%s Total:%s", pagesOK, pagesKO, totalPages);
-            notificationManager.notify(new DownloadProgressNotification(title, progress, totalPages));
+            notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages));
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
 
             // We're polling the DB because we can't observe LiveData from a background service
@@ -391,7 +394,8 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
             if (downloadCanceled) notificationManager.cancel();
         } else {
-            completeDownload(content, pagesOK, pagesKO);
+            // NB : no need to supply the Content itself as it has not been updated during the loop
+            completeDownload(content.getId(), pagesOK, pagesKO);
         }
     }
 
@@ -399,10 +403,12 @@ public class ContentDownloadService extends IntentService {
      * Completes the download of a book when all images have been processed
      * Then launches a new IntentService
      *
-     * @param content Content to mark as downloaded
+     * @param contentId Id of the Content to mark as downloaded
      */
-    private void completeDownload(@NonNull Content content, int pagesOK, int pagesKO) {
+    private void completeDownload(final long contentId, final int pagesOK, final int pagesKO) {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
+        // Get the latest value of Content
+        Content content = dao.selectContent(contentId);
 
         if (!downloadCanceled && !downloadSkipped) {
             List<ImageFile> images = content.getImageFiles();
@@ -418,7 +424,10 @@ public class ContentDownloadService extends IntentService {
             }
             // Set error state if there are non-downloaded pages
             // NB : this should not happen theoretically
-            if (content.getNbDownloadedPages() < content.getQtyPages()) hasError = true;
+            if (content.getNbDownloadedPages() < content.getQtyPages()) {
+                Timber.i(">> downloaded vs. qty KO %s vs %s", content.getNbDownloadedPages(), content.getQtyPages());
+                hasError = true;
+            }
             File dir = ContentHelper.getContentDownloadDir(content);
 
             // Auto-retry when error pages are remaining and conditions are met
@@ -506,9 +515,6 @@ public class ContentDownloadService extends IntentService {
         } else {
             Timber.d("Content download skipped : %s [%s]", content.getTitle(), content.getId());
         }
-
-        // Download next content
-        iterateQueue();
     }
 
     /**
