@@ -12,6 +12,8 @@ class ResizeBitmapHelper {
     }
 
     static Bitmap successiveResize(@NonNull final Bitmap src, int resizeNum) {
+        if (0 == resizeNum) return src;
+
         int srcWidth = src.getWidth();
         int srcHeight = src.getHeight();
         Bitmap output = src;

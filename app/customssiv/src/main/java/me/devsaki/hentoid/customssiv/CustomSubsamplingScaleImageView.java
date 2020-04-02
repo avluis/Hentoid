@@ -34,6 +34,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.exifinterface.media.ExifInterface;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -1894,16 +1896,12 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull Tile loadedTile,
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
-        // TODO refactor the resizing algorithm in common with processBitmap
-        int nbResize = 0;
-        for (int i = 1; i < 10; i++) if (targetScale < Math.pow(0.5, i)) nbResize++;
 
-        if (nbResize > 0) {
-            loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, nbResize);
-            //workingBitmap = ResizeBitmap.successiveResizeRS(rs, workingBitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888
-        }
+        ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
+        loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, resizeParams.left);
+        //workingBitmap = ResizeBitmap.successiveResizeRS(rs, loadedTile.bitmap, resizeParams.left); <-- needs bitmaps decoded as ARGB_8888; demands more memory
+
         loadedTile.loading = false;
-
         return loadedTile;
     }
 
@@ -1934,21 +1932,29 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull Bitmap bitmap,
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
-        float workingScale = targetScale;
 
+        ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
+        bitmap = ResizeBitmapHelper.successiveResize(bitmap, resizeParams.left);
+        //workingBitmap = ResizeBitmap.successiveResizeRS(rs, bitmap, resizeParams.left); <-- needs bitmaps decoded as ARGB_8888; demands more memory
+
+        return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), resizeParams.right);
+    }
+
+    // TODO documentation !
+    @WorkerThread
+    private ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
+        float resultScale = targetScale;
         int nbResize = 0;
-        for (int i = 1; i < 10; i++) if (targetScale < Math.pow(0.5, i)) nbResize++;
+
+        // Resize when approaching the target scale by 1/3 because there already are artifacts displayed
+        // (seen with full-res pictures resized to 65% with Android's default bilinear filtering)
+        for (int i = 1; i < 10; i++) if (targetScale < Math.pow(0.5, i) * 1.33) nbResize++;
 
         if (nbResize > 0) {
-            Timber.d(">> successiveResize %s %s BEGIN", targetScale, nbResize);
-            bitmap = ResizeBitmapHelper.successiveResize(bitmap, nbResize);
-            //workingBitmap = ResizeBitmap.successiveResizeRS(rs, workingBitmap, nbResize); <-- needs bitmaps decoded as ARGB_8888; demands more memory
-            Timber.d(">> successiveResize %s SUCCESS", nbResize);
             float newScale = (float) Math.pow(0.5, nbResize);
-            workingScale = workingScale / newScale;
+            resultScale = resultScale / newScale;
         }
-
-        return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), workingScale);
+        return new ImmutablePair<>(nbResize, resultScale);
     }
 
     /**
