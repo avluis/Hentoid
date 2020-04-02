@@ -184,6 +184,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         universalBlockedContent.add("mc.yandex.ru");
         universalBlockedContent.add("mc.webvisor.org");
         universalBlockedContent.add("scorecardresearch.com");
+        universalBlockedContent.add("hadskiz.com");
+        universalBlockedContent.add("pushnotifications.click");
+        universalBlockedContent.add("fingahvf.top");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -568,7 +571,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
 
-        if (!quickDownload) changeFabActionMode(MODE_QUEUE);
+        /*if (!quickDownload) */changeFabActionMode(MODE_QUEUE);
     }
 
     private void goToQueue() {
