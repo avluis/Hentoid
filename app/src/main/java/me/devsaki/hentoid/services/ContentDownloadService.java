@@ -322,7 +322,7 @@ public class ContentDownloadService extends IntentService {
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
             dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ERROR);
-            completeDownload(content.getId(), 0, images.size());
+            completeDownload(content.getId(), content.getTitle(), 0, images.size());
             return null;
         }
 
@@ -395,7 +395,7 @@ public class ContentDownloadService extends IntentService {
             if (downloadCanceled) notificationManager.cancel();
         } else {
             // NB : no need to supply the Content itself as it has not been updated during the loop
-            completeDownload(content.getId(), pagesOK, pagesKO);
+            completeDownload(content.getId(), content.getTitle(), pagesOK, pagesKO);
         }
     }
 
@@ -405,7 +405,7 @@ public class ContentDownloadService extends IntentService {
      *
      * @param contentId Id of the Content to mark as downloaded
      */
-    private void completeDownload(final long contentId, final int pagesOK, final int pagesKO) {
+    private void completeDownload(final long contentId, @NonNull final String title, final int pagesOK, final int pagesKO) {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
         // Get the latest value of Content
         Content content = dao.selectContent(contentId);
@@ -419,7 +419,7 @@ public class ContentDownloadService extends IntentService {
             // Set error state if less pages than initially detected - More than 10% difference in number of pages
             if (content.getQtyPages() > 0 && nbImages < content.getQtyPages() && Math.abs(nbImages - content.getQtyPages()) > content.getQtyPages() * 0.1) {
                 String errorMsg = String.format("The number of images found (%s) does not match the book's number of pages (%s)", nbImages, content.getQtyPages());
-                logErrorRecord(content.getId(), ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
+                logErrorRecord(contentId, ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
                 hasError = true;
             }
             // Set error state if there are non-downloaded pages
@@ -473,16 +473,16 @@ public class ContentDownloadService extends IntentService {
                         content.setJsonUri(jsonDocFile.getUri().toString());
                         dao.insertContent(content);
                     } else {
-                        Timber.w("JSON file could not be cached for %s", content.getTitle());
+                        Timber.w("JSON file could not be cached for %s", title);
                     }
                 } catch (IOException e) {
-                    Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
+                    Timber.e(e, "I/O Error saving JSON: %s", title);
                 }
             } else {
                 Timber.w("completeDownload : Directory %s does not exist - JSON not saved", dir.getAbsolutePath());
             }
 
-            Timber.i("Content download finished: %s [%s]", content.getTitle(), content.getId());
+            Timber.i("Content download finished: %s [%s]", title, contentId);
 
             // Delete book from queue
             dao.deleteQueue(content);
@@ -510,10 +510,10 @@ public class ContentDownloadService extends IntentService {
             // Tracking Event (Download Completed)
             HentoidApp.trackDownloadEvent("Completed");
         } else if (downloadCanceled) {
-            Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
+            Timber.d("Content download canceled: %s [%s]", title, contentId);
             notificationManager.cancel();
         } else {
-            Timber.d("Content download skipped : %s [%s]", content.getTitle(), content.getId());
+            Timber.d("Content download skipped : %s [%s]", title, contentId);
         }
     }
 
