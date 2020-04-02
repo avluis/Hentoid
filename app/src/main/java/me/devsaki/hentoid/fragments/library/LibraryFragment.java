@@ -178,7 +178,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         @Override
         public boolean areContentsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.equals(newItem)
+            return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
+                    && oldItem.getSite().equals(newItem.getSite())
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
                     && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
                     && oldItem.isBeingDeleted() == newItem.isBeingDeleted()

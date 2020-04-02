@@ -614,8 +614,7 @@ public class Content implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-        return Objects.equals(url, content.url) &&
-                site == content.site;
+        return id == content.id;
     }
 
     @Override
