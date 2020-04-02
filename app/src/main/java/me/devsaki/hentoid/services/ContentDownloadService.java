@@ -410,36 +410,39 @@ public class ContentDownloadService extends IntentService {
             int nbImages = images.size();
 
             boolean hasError = false;
-            // Less pages than initially detected - More than 10% difference in number of pages
+            // Set error state if less pages than initially detected - More than 10% difference in number of pages
             if (content.getQtyPages() > 0 && nbImages < content.getQtyPages() && Math.abs(nbImages - content.getQtyPages()) > content.getQtyPages() * 0.1) {
                 String errorMsg = String.format("The number of images found (%s) does not match the book's number of pages (%s)", nbImages, content.getQtyPages());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
                 hasError = true;
             }
-
+            // Set error state if there are non-downloaded pages
+            // NB : this should not happen theoretically
+            if (content.getNbDownloadedPages() < content.getQtyPages()) hasError = true;
             File dir = ContentHelper.getContentDownloadDir(content);
-            double freeSpaceRatio = new FileHelper.MemoryUsageFigures(dir).getFreeUsageRatio100();
 
             // Auto-retry when error pages are remaining and conditions are met
             // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
             // TODO - test to make sure the service's thread continues to run in such a scenario
             if (pagesKO > 0 && Preferences.isDlRetriesActive()
-                    && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()
-                    && (freeSpaceRatio < Preferences.getDlRetriesMemLimit())
-            ) {
-                Timber.i("Initiating auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries() + 1, content.getTitle(), freeSpaceRatio);
-                logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
-                content.increaseNumberDownloadRetries();
+                    && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()) {
+                double freeSpaceRatio = new FileHelper.MemoryUsageFigures(dir).getFreeUsageRatio100();
 
-                // Re-queue all failed images
-                for (ImageFile img : images)
-                    if (img.getStatus().equals(StatusContent.ERROR)) {
-                        Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
-                        img.setStatus(StatusContent.SAVED);
-                        dao.insertImageFile(img);
-                        requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
-                    }
-                return;
+                if (freeSpaceRatio < Preferences.getDlRetriesMemLimit()) {
+                    Timber.i("Initiating auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries() + 1, content.getTitle(), freeSpaceRatio);
+                    logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
+                    content.increaseNumberDownloadRetries();
+
+                    // Re-queue all failed images
+                    for (ImageFile img : images)
+                        if (img.getStatus().equals(StatusContent.ERROR)) {
+                            Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
+                            img.setStatus(StatusContent.SAVED);
+                            dao.insertImageFile(img);
+                            requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
+                        }
+                    return;
+                }
             }
 
             // Mark content as downloaded
