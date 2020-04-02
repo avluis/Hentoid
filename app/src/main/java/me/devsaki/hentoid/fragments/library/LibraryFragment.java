@@ -561,7 +561,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             }
         }
 
-        String message = getResources().getQuantityString(R.plurals.redownload_confirm, securedContent);
+        String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
         if (securedContent > 0)
             message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
 
