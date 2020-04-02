@@ -74,7 +74,7 @@ public class LogUtil {
         logStr.append(info.logName).append(" log : begin").append(LINE_SEPARATOR);
         logStr.append(String.format("Hentoid ver: %s (%s)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)).append(LINE_SEPARATOR);
         if (info.log.isEmpty())
-            logStr.append("No activity to report - ").append(info.noDataMessage);
+            logStr.append("No activity to report - ").append(info.noDataMessage).append(LINE_SEPARATOR);
         else {
             // Log beginning, end and duration
             Instant beginning = Stream.of(info.log).filter(l -> l.timestamp != null).min((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
