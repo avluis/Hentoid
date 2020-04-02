@@ -143,11 +143,11 @@ public class ErrorsDialogFragment extends DialogFragment {
     }
 
     private void redownload(@NonNull final Content content) {
-        parent.downloadContent(content);
+        parent.redownloadContent(content);
         dismiss();
     }
 
     public interface Parent {
-        void downloadContent(final Content content);
+        void redownloadContent(final Content content);
     }
 }

@@ -575,7 +575,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 .setPositiveButton(android.R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            downloadContent(contents, true);
+                            redownloadContent(contents, true);
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
                             selectExtension.deselect();
                             selectionToolbar.setVisibility(View.GONE);
@@ -1087,13 +1087,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content to add back to the download queue
      */
-    public void downloadContent(@NonNull final Content content) {
+    public void redownloadContent(@NonNull final Content content) {
         List<Content> contentList = new ArrayList<>();
         contentList.add(content);
-        downloadContent(contentList, false);
+        redownloadContent(contentList, false);
     }
 
-    private void downloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
+    private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
         for (Content c : contentList) viewModel.addContentToQueue(c, targetImageStatus);
 
