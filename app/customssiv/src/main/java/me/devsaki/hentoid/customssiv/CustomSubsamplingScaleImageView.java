@@ -1941,6 +1941,7 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     // TODO documentation !
+    // TODO can that algorithm be merged with calculateInSampleSize ?
     @WorkerThread
     private ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
         float resultScale = targetScale;
