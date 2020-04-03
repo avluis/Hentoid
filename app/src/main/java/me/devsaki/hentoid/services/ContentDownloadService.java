@@ -425,92 +425,92 @@ public class ContentDownloadService extends IntentService {
 
             DocumentFile dir = DocumentFile.fromTreeUri(this, Uri.parse(content.getStorageUri()));
             if (dir != null && dir.exists()) {
-                double freeSpaceRatio = new FileHelper.MemoryUsageFiguresSaf(this, dir).getFreeUsageRatio100();
-
                 // Auto-retry when error pages are remaining and conditions are met
                 // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
-                // TODO - test to make sure the service's thread continues to run in such a scenarioif (pagesKO > 0 && Preferences.isDlRetriesActive()
+                // TODO - test to make sure the service's thread continues to run in such a scenario
+                if (pagesKO > 0 && Preferences.isDlRetriesActive()
                         && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()) {
-                        double freeSpaceRatio = new FileHelper.MemoryUsageFigures(dir).getFreeUsageRatio100();
+                    double freeSpaceRatio = new FileHelper.MemoryUsageFiguresSaf(this, dir).getFreeUsageRatio100();
 
-                if (freeSpaceRatio < Preferences.getDlRetriesMemLimit()) {
-                    Timber.i("Initiating auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries() + 1, content.getTitle(), freeSpaceRatio);
-                    logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
-                    content.increaseNumberDownloadRetries();
+                    if (freeSpaceRatio < Preferences.getDlRetriesMemLimit()) {
+                        Timber.i("Initiating auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries() + 1, content.getTitle(), freeSpaceRatio);
+                        logErrorRecord(content.getId(), ErrorType.UNDEFINED, "", content.getTitle(), "Auto-retry #" + content.getNumberDownloadRetries());
+                        content.increaseNumberDownloadRetries();
 
-                    // Re-queue all failed images
-                    for (ImageFile img : images)
-                        if (img.getStatus().equals(StatusContent.ERROR)) {
-                            Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
-                            img.setStatus(StatusContent.SAVED);
-                            dao.insertImageFile(img);
-                            requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
-                        }
-                    return;
-                }
-            }
-
-            // Mark content as downloaded
-            if (0 == content.getDownloadDate())
-                content.setDownloadDate(Instant.now().toEpochMilli());
-            content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
-            // Clear download params from content
-            if (0 == pagesKO && !hasError) content.setDownloadParams("");
-
-            dao.insertContent(content);
-
-            // Save JSON file
-            if (dir != null) {
-                if (dir.exists()) {
-                    try {
-                        DocumentFile jsonFile = JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
-                        // Cache its URI to the newly created content
-                        if (jsonFile != null) {
-                            content.setJsonUri(jsonFile.getUri().toString());
-                            dao.insertContent(content);
-                        } else {
-                            Timber.w("JSON file could not be cached for %s", title);
-                        }
-                    } catch (IOException e) {
-                        Timber.e(e, "I/O Error saving JSON: %s", title);
+                        // Re-queue all failed images
+                        for (ImageFile img : images)
+                            if (img.getStatus().equals(StatusContent.ERROR)) {
+                                Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
+                                img.setStatus(StatusContent.SAVED);
+                                dao.insertImageFile(img);
+                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
+                            }
+                        return;
                     }
-                } else {
-                    Timber.w("completeDownload : Directory %s does not exist - JSON not saved", dir.getUri());
                 }
-            }
 
-            Timber.i("Content download finished: %s [%s]", title, contentId);
+                // Mark content as downloaded
+                if (0 == content.getDownloadDate())
+                    content.setDownloadDate(Instant.now().toEpochMilli());
+                content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+                // Clear download params from content
+                if (0 == pagesKO && !hasError) content.setDownloadParams("");
 
-            // Delete book from queue
-            dao.deleteQueue(content);
+                dao.insertContent(content);
 
-            // Increase downloads count
-            contentQueueManager.downloadComplete();
+                // Save JSON file
+                if (dir != null) {
+                    if (dir.exists()) {
+                        try {
+                            DocumentFile jsonFile = JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
+                            // Cache its URI to the newly created content
+                            if (jsonFile != null) {
+                                content.setJsonUri(jsonFile.getUri().toString());
+                                dao.insertContent(content);
+                            } else {
+                                Timber.w("JSON file could not be cached for %s", title);
+                            }
+                        } catch (IOException e) {
+                            Timber.e(e, "I/O Error saving JSON: %s", title);
+                        }
+                    } else {
+                        Timber.w("completeDownload : Directory %s does not exist - JSON not saved", dir.getUri());
+                    }
+                }
 
-            if (0 == pagesKO) {
-                int downloadCount = contentQueueManager.getDownloadCount();
-                notificationManager.notify(new DownloadSuccessNotification(downloadCount));
+                Timber.i("Content download finished: %s [%s]", title, contentId);
 
-                // Tracking Event (Download Success)
-                HentoidApp.trackDownloadEvent("Success");
+                // Delete book from queue
+                dao.deleteQueue(content);
+
+                // Increase downloads count
+                contentQueueManager.downloadComplete();
+
+                if (0 == pagesKO) {
+                    int downloadCount = contentQueueManager.getDownloadCount();
+                    notificationManager.notify(new DownloadSuccessNotification(downloadCount));
+
+                    // Tracking Event (Download Success)
+                    HentoidApp.trackDownloadEvent("Success");
+                } else {
+                    notificationManager.notify(new DownloadErrorNotification(content));
+
+                    // Tracking Event (Download Error)
+                    HentoidApp.trackDownloadEvent("Error");
+                }
+
+                // Signals current download as completed
+                Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
+                EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages));
+
+                // Tracking Event (Download Completed)
+                HentoidApp.trackDownloadEvent("Completed");
+            } else if (downloadCanceled) {
+                Timber.d("Content download canceled: %s [%s]", title, contentId);
+                notificationManager.cancel();
             } else {
-                notificationManager.notify(new DownloadErrorNotification(content));
-
-                // Tracking Event (Download Error)
-                HentoidApp.trackDownloadEvent("Error");
+                Timber.d("Content download skipped : %s [%s]", title, contentId);
             }
-
-            // Signals current download as completed
-            Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
-            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages));
-
-            // Tracking Event (Download Completed)
-            HentoidApp.trackDownloadEvent("Completed");
-        } else if (downloadCanceled) {
-            Timber.d("Content download canceled: %s [%s]", title, contentId);
-            notificationManager.cancel();
-        } else {
-            Timber.d("Content download skipped : %s [%s]", title, contentId);
         }
     }
 
@@ -779,10 +779,8 @@ public class ContentDownloadService extends IntentService {
             mimeType = "image/jpeg";
             Timber.d("Using default extension for %s -> %s", img.getUrl(), fileExt);
         }
-        img.setMimeType(mimeType);
-
-        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt);
         if (null == mimeType) mimeType = "image/*";
+        img.setMimeType(mimeType);
 
         if (!Helper.isImageExtensionSupported(fileExt))
             throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - image not processed", fileExt, img.getUrl()));

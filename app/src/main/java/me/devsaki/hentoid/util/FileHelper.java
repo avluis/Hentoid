@@ -1,11 +1,11 @@
 package me.devsaki.hentoid.util;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
@@ -211,7 +211,7 @@ public class FileHelper {
         return FileUtils.openInputStream(target);
     }
 
-    static InputStream getInputStream(@NonNull final DocumentFile target) throws IOException {
+    public static InputStream getInputStream(@NonNull final DocumentFile target) throws IOException {
         return FileUtil.getInputStream(target);
     }
 
@@ -414,6 +414,14 @@ public class FileHelper {
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
+    public static void shareFile(final @NonNull Context context, final @NonNull File f, final @NonNull String title) {
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("text/*");
+        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(context, FileHelper.AUTHORITY, f));
+        context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
+    }
+
     public static List<DocumentFile> listFiles(@NonNull DocumentFile parent, FileFilter filter) {
         List<DocumentFile> result = new ArrayList<>();
 
@@ -451,30 +459,6 @@ public class FileHelper {
         List<DocumentFile> result = FileUtil.listDocumentFiles(context, parent, documentFileName);
         if (!result.isEmpty()) return result.get(0);
         else return null;
-    }
-
-    // Please don't delete this method!
-    // I need some way to trace actions when working with SD card features - Robb
-    public static void createFileWithMsg(@NonNull String file, String msg) {
-        try {
-            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
-            Timber.i(">>file %s -> %s", file, msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Nullable
-    public static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
-        return FileUtil.getDocumentFile(file, isDirectory);
-    }
-
-    public static void shareFile(final @NonNull Context context, final @NonNull File f, final @NonNull String title) {
-        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        sharingIntent.setType("text/*");
-        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-        sharingIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(context, FileHelper.AUTHORITY, f));
-        context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
     private static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
@@ -551,7 +535,7 @@ public class FileHelper {
         if (!target.exists() && !target.createNewFile())
             throw new IOException("Could not create new file in downloads folder");
 
-        return FileUtil.getOutputStream(target);
+        return getOutputStream(target);
     }
 
     @TargetApi(29)

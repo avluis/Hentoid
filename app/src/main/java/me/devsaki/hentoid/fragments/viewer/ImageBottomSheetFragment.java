@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.viewer;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -19,7 +21,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -112,8 +113,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private void onImagesChanged(List<ImageFile> images) {
         image = images.get(imageIndex);
 
-        imgPath.setText(image.getAbsolutePath());
-        Point size = getImageSize(image.getAbsolutePath());
+        imgPath.setText(image.getFileUri());
+        Point size = getImageSize(image.getFileUri());
         imgDimensions.setText(String.format("%s x %s", size.x, size.y));
 
         updateFavouriteDisplay(image.isFavourite());
@@ -154,9 +155,12 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Copy" action button
      */
     private void onCopyClick() {
-        String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getAbsolutePath());
+        String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getFileUri());
         try {
-            File sourceFile = new File(image.getAbsolutePath());
+            Uri fileUri = Uri.parse(image.getFileUri());
+            DocumentFile sourceFile = DocumentFile.fromSingleUri(requireContext(), fileUri);
+            if (null == sourceFile || !sourceFile.exists()) return;
+
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(targetFileName)) {
                 try (InputStream input = FileHelper.getInputStream(sourceFile)) {
                     FileHelper.copy(input, newDownload);
@@ -175,8 +179,11 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Share" action button
      */
     private void onShareClick() {
-        File sourceFile = new File(image.getAbsolutePath());
-        FileHelper.shareFile(requireContext(), sourceFile, "Share picture");
+        Uri fileUri = Uri.parse(image.getFileUri());
+        DocumentFile docFile = DocumentFile.fromSingleUri(requireContext(), fileUri);
+
+        if (docFile != null && docFile.exists())
+            FileHelper.shareFile(requireContext(), docFile, "Share picture");
     }
 
     /**

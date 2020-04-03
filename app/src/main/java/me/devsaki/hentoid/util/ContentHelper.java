@@ -17,6 +17,8 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
@@ -162,9 +164,11 @@ public final class ContentHelper {
         dao.deleteImageFile(image);
 
         // Remove the page from disk
-        if (image.getAbsolutePath() != null && !image.getAbsolutePath().isEmpty()) {
-            File imgFile = new File(image.getAbsolutePath());
-            FileHelper.removeFile(imgFile); // TODO use exception to display feedback on screen
+        if (image.getFileUri() != null && !image.getFileUri().isEmpty()) {
+            Uri uri = Uri.parse(image.getFileUri());
+
+            DocumentFile doc = DocumentFile.fromSingleUri(context, uri);
+            if (doc != null && doc.exists()) doc.delete();
         }
 
         // Update content JSON if it exists (i.e. if book is not queued)

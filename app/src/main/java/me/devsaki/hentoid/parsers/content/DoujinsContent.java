@@ -2,11 +2,13 @@ package me.devsaki.hentoid.parsers.content;
 
 import org.jsoup.nodes.Element;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -60,7 +62,7 @@ public class DoujinsContent implements ContentParser {
 
         List<String> imageUrls = DoujinsParser.parseImages(images);
         result.setQtyPages(imageUrls.size());
-        result.setImageFiles(ParseHelper.urlsToImageFiles(imageUrls, StatusContent.SAVED));
+        result.setImageFiles(ParseHelper.urlsToImageFiles(imageUrls, result.getCoverImageUrl(), StatusContent.SAVED));
 
         // Deduplicate tags
         AttributeMap attributes = new AttributeMap();

@@ -159,7 +159,7 @@
     },
     {
       "id": "3:2849837771881495731",
-      "lastPropertyId": "11:1586173063770197139",
+      "lastPropertyId": "12:4629186691354022017",
       "name": "ImageFile",
       "properties": [
         {
@@ -219,6 +219,11 @@
           "name": "isCover",
           "type": 1,
           "flags": 4
+        },
+        {
+          "id": "12:4629186691354022017",
+          "name": "mimeType",
+          "type": 9
         }
       ],
       "relations": []

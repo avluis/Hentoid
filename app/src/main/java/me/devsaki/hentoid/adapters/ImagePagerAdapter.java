@@ -28,7 +28,6 @@ import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.io.StreamReader;
 import com.github.penfeizhou.animation.loader.Loader;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
@@ -125,7 +124,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private int getImageType(ImageFile img) {
         if (null == img) return IMG_TYPE_OTHER;
 
-        String extension = FileHelper.getExtension(img.getAbsolutePath());
+        String extension = FileHelper.getExtension(img.getFileUri());
 
         if ("gif".equalsIgnoreCase(extension) || img.getMimeType().contains("gif")) {
             return IMG_TYPE_GIF;
@@ -333,7 +332,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         @Override
         public void onImageLoadError(Throwable e) {
-            Timber.i(">>>>IMG %s reloaded with Glide", img.getAbsolutePath());
+            Timber.i(">>>>IMG %s reloaded with Glide", img.getFileUri());
             // Manually force mime-type as GIF to fall back to Glide
             img.setMimeType("image/gif");
             // Reload adapter
@@ -380,15 +379,15 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
      */
     static class ImgLoader implements Loader {
 
-        private String path;
+        private Uri uri;
 
-        ImgLoader(String path) {
-            this.path = path;
+        ImgLoader(Uri uri) {
+            this.uri = uri;
         }
 
         @Override
         public synchronized Reader obtain() throws IOException {
-            DocumentFile file = FileHelper.getDocumentFile(new File(path), false); // Helper to get a DocumentFile out of the given File
+            DocumentFile file = DocumentFile.fromSingleUri(HentoidApp.getInstance().getApplicationContext(), uri);
             if (null == file || !file.exists()) return null; // Not triggered
             return new ImgReader(file.getUri());
         }

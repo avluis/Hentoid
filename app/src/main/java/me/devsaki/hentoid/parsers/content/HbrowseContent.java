@@ -73,7 +73,7 @@ public class HbrowseContent implements ContentParser {
         }
         result.addAttributes(attributes);
 
-        List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(result, scripts), StatusContent.SAVED);
+        List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(result, scripts), result.getCoverImageUrl(), StatusContent.SAVED);
         result.setImageFiles(imgs);
         result.setQtyPages(imgs.size());
 

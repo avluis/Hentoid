@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -46,7 +44,6 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.annimon.stream.Collectors.toList;
 
 
@@ -141,33 +138,32 @@ public class ImageViewerViewModel extends AndroidViewModel {
         startingIndex.setValue(index);
     }
 
-    private void setImages(@NonNull Content content, @NonNull List<ImageFile> imgs) {
+    private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
         // Load new content
-        File[] pictureFiles = ContentHelper.getPictureFilesFromContent(content); // TODO this is called too often when viewing a queued book -> optimize !
-        if (pictureFiles != null && pictureFiles.length > 0) {
+        // TODO test performance => only use when no images set, or when no URIs on know images ?
+        List<DocumentFile> pictureFiles = ContentHelper.getPictureFilesFromContent(getApplication(), theContent);
+        if (!pictureFiles.isEmpty()) {
             List<ImageFile> imageFiles;
-            if (imgs.isEmpty()) {
-                imageFiles = filesToImageList(pictureFiles);
-                content.setImageFiles(imageFiles);
-                collectionDao.insertContent(content);
+            if (null == theContent.getImageFiles() || theContent.getImageFiles().isEmpty()) {
+                imageFiles = new ArrayList<>();
+                saveFilesToImageList(pictureFiles, imageFiles, theContent);
             } else {
-                imageFiles = new ArrayList<>(imgs);
+                imageFiles = new ArrayList<>(theContent.getImageFiles());
                 matchFilesToImageList(pictureFiles, imageFiles);
             }
-            sortAndSetImages(imageFiles, isShuffled);
 
-            if (content.getId() != loadedBookId) { // To be done once per book only
+            if (theContent.getId() != loadedBookId) { // To be done once per book only
                 if (Preferences.isViewerResumeLastLeft())
-                    setStartingIndex(content.getLastReadPageIndex());
+                    setStartingIndex(theContent.getLastReadPageIndex());
                 else
                     setStartingIndex(0);
             }
 
-            loadedBookId = content.getId();
+            loadedBookId = theContent.getId();
 
             // Cache JSON and record 1 more view for the new content
             compositeDisposable.add(
-                    Single.fromCallable(() -> postLoadProcessing(content))
+                    Single.fromCallable(() -> postLoadProcessing(getApplication().getApplicationContext(), theContent))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
@@ -336,7 +332,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     @WorkerThread
     private void doDeleteBook(@NonNull Content targetContent) {
         collectionDao.deleteQueue(targetContent);
-        ContentHelper.removeContent(targetContent, collectionDao);
+        ContentHelper.removeContent(getApplication(), targetContent, collectionDao);
     }
 
     public void deletePage(int pageIndex) {
@@ -417,24 +413,26 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    private List<ImageFile> filesToImageList(@NonNull File[] files) {
-        List<ImageFile> result = new ArrayList<>();
-        int order = 1;
+    private void saveFilesToImageList(List<DocumentFile> files, @NonNull List<ImageFile> images, @NonNull Content content) {
+        int order = 0;
         // Sort files by name alpha
-        List<DocumentFile> fileList = Stream.of(files).filter(f -> f != null).sortBy(DocumentFile::getName).toList();
+        List<DocumentFile> fileList = Stream.of(files).filter(f -> f != null).sortBy(DocumentFile::getName).collect(toList());
         for (DocumentFile f : fileList) {
+            order++;
             ImageFile img = new ImageFile();
             String name = FileHelper.getFileNameWithoutExtension(f.getName());
-            img.setName(name).setOrder(order++).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString());
-            result.add(img);
+            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString());
+            images.add(img);
         }
-        return result;
+        content.setImageFiles(images);
+        collectionDao.insertContent(content);
     }
 
     @WorkerThread
     private Content postLoadProcessing(@NonNull Context context, @NonNull Content content) {
         cacheJson(context, content);
-        return ContentHelper.updateContentReads(context, content);
+        ContentHelper.updateContentReads(context, collectionDao, content);
+        return content;
     }
 
     // Cache JSON URI in the database to speed up favouriting

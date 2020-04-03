@@ -86,7 +86,7 @@ public class PorncomixContent implements ContentParser {
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, true, Site.PORNCOMIX);
         result.addAttributes(attributes);
 
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, bestPages), StatusContent.SAVED);
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, bestPages), result.getCoverImageUrl(), StatusContent.SAVED);
         result.setImageFiles(images);
         result.setQtyPages(images.size());
 
