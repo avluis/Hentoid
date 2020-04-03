@@ -43,6 +43,7 @@ public class ImageGalleryFragment extends Fragment {
     private RecyclerView recyclerView;
 
     private int startIndex = 0;
+    private boolean firstLoadDone = false;
 
     private boolean filterFavourites = false;
 
@@ -110,6 +111,7 @@ public class ImageGalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        firstLoadDone = false;
         viewModel = new ViewModelProvider(requireActivity()).get(ImageViewerViewModel.class);
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
@@ -178,9 +180,13 @@ public class ImageGalleryFragment extends Fragment {
     private void updateListFilter() {
         if (itemAdapter.getAdapterItemCount() > 0) {
             itemAdapter.filter(filterFavourites ? "true" : "");
-            if (itemAdapter.getAdapterItemCount() > startIndex)
-                recyclerView.scrollToPosition(startIndex);
-            else recyclerView.scrollToPosition(0);
+
+            if (!firstLoadDone) {
+                if (itemAdapter.getAdapterItemCount() > startIndex)
+                    recyclerView.scrollToPosition(startIndex);
+                else recyclerView.scrollToPosition(0);
+                firstLoadDone = true;
+            }
         }
     }
 
