@@ -81,6 +81,12 @@
             android:name=".activities.sources.ExHentaiActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.PorncomixActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
+            android:name=".activities.sources.HbrowseActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -167,6 +173,10 @@
                 <!-- Accepts URIs that begin with "https://nhentai.net/g/" -->
                 <data
                     android:host="nhentai.net"
+                    android:pathPrefix="/g/"
+                    android:scheme="https" />
+                <data
+                    android:host="www.nhentai.net"
                     android:pathPrefix="/g/"
                     android:scheme="https" />
             </intent-filter>
@@ -300,6 +310,28 @@
                 <data
                     android:host="luscious.net"
                     android:pathPattern="..*/..*"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="porncomixonline.net"
+                    android:pathPattern="..*/..*"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="www.hbrowse.com"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>

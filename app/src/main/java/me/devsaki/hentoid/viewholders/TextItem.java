@@ -66,7 +66,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder> {
 
 
         @Override
-        public void bindView(@NotNull TextItem<T> item, @NotNull List<Object> list) {
+        public void bindView(@NotNull TextItem<T> item, @NotNull List<?> list) {
             title.setText(Helper.capitalizeString(item.text));
             if (item.centered) title.setGravity(Gravity.CENTER);
         }

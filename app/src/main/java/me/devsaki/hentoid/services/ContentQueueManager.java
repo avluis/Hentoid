@@ -63,7 +63,7 @@ public class ContentQueueManager {
 
 
     // DOWNLOAD COUNTER MANAGEMENT
-    public int getDownloadCount() {
+    int getDownloadCount() {
         return downloadCount;
     }
 

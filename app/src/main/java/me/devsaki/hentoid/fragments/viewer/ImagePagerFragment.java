@@ -28,18 +28,28 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.views.ZoomableFrame;
 import me.devsaki.hentoid.views.ZoomableRecyclerView;
@@ -52,6 +62,7 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
+import static me.devsaki.hentoid.util.Preferences.Constant;
 
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
@@ -61,20 +72,29 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
+    private static final String KEY_SLIDESHOW_ON = "slideshow_on";
+
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
     private ZoomableFrame zoomFrame;
-    private VolumeGestureListener volumeGestureListener;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private ImageViewerViewModel viewModel;
     private int imageIndex = -1;
+    private int highestImageIndexReached = -1; // To manage "Mark book as read after N pages" pref
     private int maxPosition; // For navigation
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
-    private boolean savedPositionWithBack = false;
     private RecyclerView.SmoothScroller smoothScroller;
+    private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
+    private Disposable slideshowTimer = null;
+
+    private final Debouncer<Integer> indexRefreshDebouncer = new Debouncer<>(75, this::applyStartingIndexInternal);
+
+    // Starting index management
+    private boolean isComputingImageList = false;
+    private int targetStartingIndex = -1;
 
     // Controls
     private TextView pageNumberOverlay;
@@ -82,7 +102,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     // == CONTROLS OVERLAY ==
     private View controlsOverlay;
 
-    private MenuItem favoritePageButton;
+    private MenuItem showFavoritePagesButton;
     private MenuItem shuffleButton;
 
     // Bottom bar controls
@@ -104,6 +124,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         Preferences.registerPrefsChangedListener(listener);
 
+        ((ImageViewerActivity) requireActivity()).registerKeyListener(
+                new VolumeGestureListener()
+                        .setOnVolumeDownListener(this::previousPage)
+                        .setOnVolumeUpListener(this::nextPage)
+                        .setOnBackListener(this::onBackClick));
+
         initPager(rootView);
         initControlsOverlay(rootView);
 
@@ -117,8 +143,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             switch (clickedMenuItem.getItemId()) {
-                case R.id.action_favourite_page:
-                    onFavouriteClick();
+                case R.id.action_show_favorite_pages:
+                    onShowFavouriteClick();
+                    break;
+                case R.id.action_page_menu:
+                    onPageMenuClick();
                     break;
                 case R.id.action_settings:
                     onSettingsClick();
@@ -126,12 +155,18 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 case R.id.action_shuffle:
                     onShuffleClick();
                     break;
+                case R.id.action_slideshow:
+                    startSlideshow();
+                    break;
+                case R.id.action_delete_book:
+                    onDeleteBook();
+                    break;
                 default:
                     // Nothing to do here
             }
             return true;
         });
-        favoritePageButton = toolbar.getMenu().findItem(R.id.action_favourite_page);
+        showFavoritePagesButton = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
         shuffleButton = toolbar.getMenu().findItem(R.id.action_shuffle);
 
         return rootView;
@@ -155,8 +190,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
 
         viewModel.setOnShuffledChangeListener(this::onShuffleChanged);
-
-        if (Preferences.isOpenBookInGalleryMode() && !hasGalleryBeenShown) displayGallery(false);
     }
 
     @Override
@@ -164,6 +197,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         super.onSaveInstanceState(outState);
         if (controlsOverlay != null)
             outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
+        outState.putBoolean(KEY_SLIDESHOW_ON, (slideshowTimer != null));
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         if (viewModel != null) {
             viewModel.setStartingIndex(imageIndex); // Memorize the current page
@@ -178,6 +212,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         if (savedInstanceState != null) {
             hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE);
             hasGalleryBeenShown = savedInstanceState.getBoolean(KEY_GALLERY_SHOWN, false);
+            if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) startSlideshow(false);
         }
         controlsOverlay.setVisibility(hudVisibility);
     }
@@ -190,14 +225,15 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         if (Preferences.Constant.PREF_VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             BrowseModeDialogFragment.invoke(this);
         updatePageDisplay();
-        updateFavouriteDisplay();
+        updateFavouritesGalleryButtonDisplay();
     }
 
     // Make sure position is saved when app is closed by the user
     @Override
     public void onStop() {
+        viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
+        if (slideshowTimer != null) slideshowTimer.dispose();
         super.onStop();
-        if (!savedPositionWithBack) viewModel.savePosition(imageIndex);
     }
 
 
@@ -206,17 +242,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         zoomFrame = requireViewById(rootView, R.id.image_viewer_zoom_frame);
 
-        volumeGestureListener = new VolumeGestureListener()
-                .setOnVolumeDownListener(this::previousPage)
-                .setOnVolumeUpListener(this::nextPage)
-                .setOnBackListener(this::onBackClick)
-                .setButtonsInverted(Preferences.isViewerInvertVolumeRocker());
-
         recyclerView = requireViewById(rootView, R.id.image_viewer_zoom_recycler);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
-        recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
-        recyclerView.setOnKeyListener(volumeGestureListener);
+        recyclerView.addOnScrollListener(scrollListener);
         recyclerView.setOnGetMaxDimensionsListener(this::onGetMaxDimensions);
         recyclerView.requestFocus();
         recyclerView.setOnScaleListener(scale -> {
@@ -254,6 +283,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 return LinearSmoothScroller.SNAP_TO_START;
             }
         };
+
+        scrollListener.setOnStartOutOfBoundScrollListener(() -> {
+            if (Preferences.isViewerContinuous()) previousBook();
+        });
+        scrollListener.setOnEndOutOfBoundScrollListener(() -> {
+            if (Preferences.isViewerContinuous()) nextBook();
+        });
     }
 
     private void initControlsOverlay(View rootView) {
@@ -316,8 +352,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Back button handler
      */
     private void onBackClick() {
-        viewModel.savePosition(imageIndex);
-        savedPositionWithBack = true;
         requireActivity().onBackPressed();
     }
 
@@ -343,27 +377,17 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     /**
-     * Handle click on "Favourite" action button
+     * Handle click on "Show favourite pages" action button
      */
-    private void onFavouriteClick() {
-        ImageFile currentImage = adapter.getImageAt(imageIndex);
-        if (currentImage != null)
-            viewModel.togglePageFavourite(currentImage, this::onFavouriteSuccess);
+    private void onShowFavouriteClick() {
+        viewModel.toggleShowFavouritePages(this::updateShowFavouriteDisplay);
     }
 
     /**
-     * Success callback when the new favourite'd state has been successfully persisted
-     *
-     * @param img The favourite'd / unfavourite'd ImageFile in its new state
+     * Handle click on "Page menu" action button
      */
-    private void onFavouriteSuccess(ImageFile img) {
-        // Check if the updated image is still the one displayed on screen
-        ImageFile currentImage = adapter.getImageAt(imageIndex);
-        if (currentImage != null && img.getId() == currentImage.getId()) {
-            currentImage.setFavourite(img.isFavourite());
-            updateFavouriteDisplay(img.isFavourite());
-        }
-        updateFavouritesGalleryButtonDisplay();
+    private void onPageMenuClick() {
+        ImageBottomSheetFragment.show(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex);
     }
 
     /**
@@ -372,16 +396,26 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param images Book's list of images
      */
     private void onImagesChanged(List<ImageFile> images) {
-        adapter.setImages(images);
-        onUpdateImageDisplay(); // Remove cached images
+        isComputingImageList = true;
+        adapter.submitList(images, this::differEndCallback);
+    }
 
-        maxPosition = images.size() - 1;
+    /**
+     * Callback for the end of image list diff calculations
+     * Activated when all displayed items are placed on their definitive position
+     */
+    private void differEndCallback() {
+        maxPosition = adapter.getItemCount() - 1;
         seekBar.setMax(maxPosition);
-        updatePageDisplay();
 
         // Can't access the gallery when there's no page to display
-        if (!images.isEmpty()) galleryBtn.setVisibility(View.VISIBLE);
+        if (maxPosition > -1) galleryBtn.setVisibility(View.VISIBLE);
         else galleryBtn.setVisibility(View.GONE);
+
+        if (targetStartingIndex > -1) applyStartingIndex(targetStartingIndex);
+        else updatePageDisplay();
+
+        isComputingImageList = false;
     }
 
     /**
@@ -390,10 +424,27 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param startingIndex Book's starting image index
      */
     private void onStartingIndexChanged(Integer startingIndex) {
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
-            recyclerView.scrollToPosition(startingIndex);
-        else
-            llm.scrollToPositionWithOffset(startingIndex, 0);
+        if (!isComputingImageList) applyStartingIndex(startingIndex);
+        else targetStartingIndex = startingIndex;
+    }
+
+    private void applyStartingIndex(int startingIndex) {
+        indexRefreshDebouncer.submit(startingIndex);
+        targetStartingIndex = -1;
+    }
+
+    private void applyStartingIndexInternal(int startingIndex) {
+        int currentPosition = Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
+
+        // When target position is the same as current scroll index (0), scrolling is pointless
+        // -> activate scroll listener manually
+        if (currentPosition == startingIndex) onScrollPositionChange(startingIndex);
+        else {
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+                recyclerView.scrollToPosition(startingIndex);
+            else
+                llm.scrollToPositionWithOffset(startingIndex, 0);
+        }
     }
 
     /**
@@ -421,24 +472,48 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
     }
 
+    private void onDeleteBook() {
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.viewer_ask_delete_book)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            viewModel.deleteBook();
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
+    }
+
 
     /**
-     * Scroll listener
+     * Scroll / page change listener
      *
-     * @param position New position
+     * @param scrollPosition New 0-based scroll position
      */
-    private void onCurrentPositionChange(int position) {
-        if (this.imageIndex != position) {
-            this.imageIndex = position;
-
-            // Resets zoom if we're using horizontal (independent pages) mode
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
-                adapter.resetScaleAtPosition(position);
-
-            seekBar.setProgress(position);
-            updatePageDisplay();
-            updateFavouriteDisplay();
+    private void onScrollPositionChange(int scrollPosition) {
+        if (scrollPosition != imageIndex) {
+            boolean isScrollLTR = true;
+            if (Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection() && imageIndex > scrollPosition)
+                isScrollLTR = false;
+            else if (Constant.PREF_VIEWER_DIRECTION_RTL == Preferences.getViewerDirection() && imageIndex < scrollPosition)
+                isScrollLTR = false;
+            adapter.setScrollLTR(isScrollLTR);
         }
+
+        imageIndex = scrollPosition;
+        highestImageIndexReached = Math.max(imageIndex, highestImageIndexReached);
+
+        // Resets zoom if we're using horizontal (independent pages) mode
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+            adapter.resetScaleAtPosition(scrollPosition);
+
+        updatePageDisplay();
+        updateFavouritesGalleryButtonDisplay();
     }
 
     /**
@@ -457,6 +532,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageCurrentNumber.setText(pageNum);
         pageMaxNumber.setText(maxPage);
         pageNumberOverlay.setText(format("%s / %s", pageNum, maxPage));
+
+        seekBar.setProgress(imageIndex);
     }
 
     /**
@@ -475,17 +552,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     /**
-     * Update the display of all favourite controls (favourite page action _and_ favourites gallery launcher)
-     */
-    private void updateFavouriteDisplay() {
-        updateFavouritesGalleryButtonDisplay();
-
-        ImageFile currentImage = adapter.getImageAt(imageIndex);
-        if (currentImage != null)
-            updateFavouriteDisplay(currentImage.isFavourite());
-    }
-
-    /**
      * Update the display of the favourites gallery launcher
      */
     private void updateFavouritesGalleryButtonDisplay() {
@@ -497,15 +563,15 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     /**
      * Update the display of the "favourite page" action button
      *
-     * @param isFavourited True if the button has to represent a favourite page; false instead
+     * @param showFavouritePages True if the button has to represent a favourite page; false instead
      */
-    private void updateFavouriteDisplay(boolean isFavourited) {
-        if (isFavourited) {
-            favoritePageButton.setIcon(R.drawable.ic_fav_full);
-            favoritePageButton.setTitle(R.string.viewer_favourite_on);
+    private void updateShowFavouriteDisplay(boolean showFavouritePages) {
+        if (showFavouritePages) {
+            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_on);
+            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_on);
         } else {
-            favoritePageButton.setIcon(R.drawable.ic_fav_empty);
-            favoritePageButton.setTitle(R.string.viewer_favourite_off);
+            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_off);
+            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_off);
         }
     }
 
@@ -518,13 +584,17 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         switch (key) {
             case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
+            case Preferences.Key.PREF_VIEWER_HOLD_TO_ZOOM:
+            case Preferences.Key.PREF_VIEWER_CONTINUOUS:
                 onBrowseModeChange();
-                onUpdateImageDisplay();
                 break;
             case Preferences.Key.PREF_VIEWER_KEEP_SCREEN_ON:
                 onUpdatePrefsScreenOn();
                 break;
+            case Preferences.Key.PREF_VIEWER_ZOOM_TRANSITIONS:
+            case Preferences.Key.PREF_VIEWER_SEPARATING_BARS:
             case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY:
+            case Preferences.Key.PREF_VIEWER_AUTO_ROTATE: // TODO maybe use onBrowseModeChange which is supposed to recreate all viewholders
                 onUpdateImageDisplay();
                 break;
             case Preferences.Key.PREF_VIEWER_SWIPE_TO_FLING:
@@ -532,9 +602,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 break;
             case Preferences.Key.PREF_VIEWER_DISPLAY_PAGENUM:
                 onUpdatePageNumDisplay();
-                break;
-            case Preferences.Key.PREF_VIEWER_INVERT_VOLUME_ROCKER:
-                onUpdateInvertVolumeRocker();
                 break;
             default:
                 // Other changes aren't handled here
@@ -553,11 +620,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageSnapWidget.setFlingSensitivity(flingFactor / 100f);
     }
 
-    private void onUpdateInvertVolumeRocker() {
-        volumeGestureListener.setButtonsInverted(Preferences.isViewerInvertVolumeRocker());
-    }
-
     private void onUpdateImageDisplay() {
+        adapter.refreshPrefs();
         adapter.notifyDataSetChanged(); // NB : will re-run onBindViewHolder for all displayed pictures
     }
 
@@ -577,11 +641,15 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
         recyclerView.resetScale();
-        adapter.notifyDataSetChanged();
+        onUpdateImageDisplay(); // TODO we should do more than that as a simple rebind won't recreate existing holders
 
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation())
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
             zoomFrame.enable();
-        else zoomFrame.disable();
+            recyclerView.setLongTapZoomEnabled(Preferences.isViewerHoldToZoom());
+        } else {
+            zoomFrame.disable();
+            recyclerView.setLongTapZoomEnabled(!Preferences.isViewerHoldToZoom());
+        }
 
         llm.setOrientation(getOrientation());
         pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation());
@@ -604,7 +672,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Load next page
      */
     private void nextPage() {
-        if (imageIndex == maxPosition) return;
+        if (imageIndex == maxPosition) {
+            if (Preferences.isViewerContinuous()) nextBook();
+            return;
+        }
 
         if (Preferences.isViewerTapTransitions()) {
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
@@ -625,7 +696,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Load previous page
      */
     private void previousPage() {
-        if (imageIndex == 0) return;
+        if (0 == imageIndex) {
+            if (Preferences.isViewerContinuous()) previousBook();
+            return;
+        }
 
         if (Preferences.isViewerTapTransitions())
             recyclerView.smoothScrollToPosition(imageIndex - 1);
@@ -637,7 +711,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Load next book
      */
     private void nextBook() {
-        viewModel.savePosition(imageIndex);
+        viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
+        highestImageIndexReached = -1;
         viewModel.loadNextContent();
     }
 
@@ -645,7 +720,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Load previous book
      */
     private void previousBook() {
-        viewModel.savePosition(imageIndex);
+        viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
+        highestImageIndexReached = -1;
         viewModel.loadPreviousContent();
     }
 
@@ -707,8 +783,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Handler for tapping on the left zone of the screen
      */
     private void onLeftTap() {
+        // Stop slideshow if it is on
+        if (slideshowTimer != null) {
+            stopSlideshow();
+            return;
+        }
+
         // Side-tapping disabled when view is zoomed
-        if (recyclerView.getCurrentScale() != 1.0) return;
+        if (recyclerView.getScale() != 1.0) return;
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isViewerTapToTurn()) return;
 
@@ -722,8 +804,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Handler for tapping on the right zone of the screen
      */
     private void onRightTap() {
+        // Stop slideshow if it is on
+        if (slideshowTimer != null) {
+            stopSlideshow();
+            return;
+        }
+
         // Side-tapping disabled when view is zoomed
-        if (recyclerView.getCurrentScale() != 1.0) return;
+        if (recyclerView.getScale() != 1.0) return;
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isViewerTapToTurn()) return;
 
@@ -737,31 +825,44 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Handler for tapping on the middle zone of the screen
      */
     private void onMiddleTap() {
-        if (View.VISIBLE == controlsOverlay.getVisibility()) {
-            controlsOverlay.animate()
-                    .alpha(0.0f)
-                    .setDuration(100)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            controlsOverlay.setVisibility(View.INVISIBLE);
-                        }
-                    });
-            setSystemBarsVisible(false);
-        } else {
-            controlsOverlay.animate()
-                    .alpha(1.0f)
-                    .setDuration(100)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            controlsOverlay.setVisibility(View.VISIBLE);
-                            setSystemBarsVisible(true);
-                        }
-                    });
+        // Stop slideshow if it is on
+        if (slideshowTimer != null) {
+            stopSlideshow();
+            return;
         }
+
+        if (View.VISIBLE == controlsOverlay.getVisibility())
+            hideControlsOverlay();
+        else
+            showControlsOverlay();
+    }
+
+    private void showControlsOverlay() {
+        controlsOverlay.animate()
+                .alpha(1.0f)
+                .setDuration(100)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        controlsOverlay.setVisibility(View.VISIBLE);
+                        setSystemBarsVisible(true);
+                    }
+                });
+    }
+
+    private void hideControlsOverlay() {
+        controlsOverlay.animate()
+                .alpha(0.0f)
+                .setDuration(100)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        controlsOverlay.setVisibility(View.INVISIBLE);
+                    }
+                });
+        setSystemBarsVisible(false);
     }
 
     /**
@@ -775,7 +876,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         getParentFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
-                .addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager
+                .addToBackStack(null)
                 .commit();
     }
 
@@ -810,5 +911,50 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void onGetMaxDimensions(Point maxDimensions) {
         adapter.setMaxDimensions(maxDimensions.x, maxDimensions.y);
+    }
+
+    private void startSlideshow() {
+        startSlideshow(true);
+    }
+
+    private void startSlideshow(boolean showToast) {
+        // Hide UI
+        hideControlsOverlay();
+
+        // Compute slideshow delay
+        int delayPref = Preferences.getViewerSlideshowDelay();
+        int delaySec;
+
+        switch (delayPref) {
+            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_4:
+                delaySec = 4;
+                break;
+            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_8:
+                delaySec = 8;
+                break;
+            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_16:
+                delaySec = 16;
+                break;
+            default:
+                delaySec = 2;
+        }
+
+        if (showToast) ToastUtil.toast(String.format("Starting slideshow (delay %ss)", delaySec));
+        scrollListener.disableScroll();
+
+        slideshowTimer = Observable.timer(delaySec, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.computation())
+                .repeat()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(v -> nextPage());
+    }
+
+    private void stopSlideshow() {
+        if (slideshowTimer != null) {
+            slideshowTimer.dispose();
+            slideshowTimer = null;
+            scrollListener.enableScroll();
+            ToastUtil.toast("Slideshow stopped");
+        }
     }
 }

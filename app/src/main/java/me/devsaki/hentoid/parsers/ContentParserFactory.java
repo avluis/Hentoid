@@ -6,23 +6,30 @@ import me.devsaki.hentoid.parsers.content.ASMHentaiContent;
 import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
 import me.devsaki.hentoid.parsers.content.FakkuContent;
+import me.devsaki.hentoid.parsers.content.HbrowseContent;
 import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
 import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
 import me.devsaki.hentoid.parsers.content.NexusContent;
 import me.devsaki.hentoid.parsers.content.NhentaiContent;
+import me.devsaki.hentoid.parsers.content.PorncomixContent;
 import me.devsaki.hentoid.parsers.content.PururinContent;
 import me.devsaki.hentoid.parsers.content.TsuminoContent;
 import me.devsaki.hentoid.parsers.images.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.images.DoujinsParser;
 import me.devsaki.hentoid.parsers.images.DummyParser;
 import me.devsaki.hentoid.parsers.images.EHentaiParser;
 import me.devsaki.hentoid.parsers.images.ExHentaiParser;
 import me.devsaki.hentoid.parsers.images.FakkuParser;
+import me.devsaki.hentoid.parsers.images.HbrowseParser;
 import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.parsers.images.LusciousParser;
+import me.devsaki.hentoid.parsers.images.MusesParser;
 import me.devsaki.hentoid.parsers.images.NexusParser;
+import me.devsaki.hentoid.parsers.images.NhentaiParser;
+import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
 import me.devsaki.hentoid.parsers.images.TsuminoParser;
 
@@ -61,6 +68,10 @@ public class ContentParserFactory {
                 return MusesContent.class;
             case DOUJINS:
                 return DoujinsContent.class;
+            case PORNCOMIX:
+                return PorncomixContent.class;
+            case HBROWSE:
+                return HbrowseContent.class;
             case EHENTAI: // Uses the API of the site -> no HTML parser
             case EXHENTAI: // Uses the API of the site -> no HTML parser
             case LUSCIOUS: // Uses the API of the site -> no HTML parser
@@ -96,9 +107,16 @@ public class ContentParserFactory {
                 return new NexusParser();
             case LUSCIOUS:
                 return new LusciousParser();
-            case MUSES: // No image parser; images are fetched by ContentParser
+            case PORNCOMIX:
+                return new PorncomixParser();
+            case MUSES:
+                return new MusesParser();
             case NHENTAI:
+                return new NhentaiParser();
             case DOUJINS:
+                return new DoujinsParser();
+            case HBROWSE:
+                return new HbrowseParser();
             default:
                 return new DummyParser();
         }

@@ -22,8 +22,10 @@ import static java.util.Objects.requireNonNull;
 
 public class SearchViewModel extends ViewModel {
 
+    private static final String ERROR_INIT = "SearchViewModel has to be initialized by calling initAndStart first";
+
     private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
-    private final MutableLiveData<AttributeSearchResult> proposedAttributes = new MutableLiveData<>();
+    private final MutableLiveData<CollectionDAO.AttributeQueryResult> proposedAttributes = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
 
     private LiveData<Integer> currentCountSource = null;
@@ -48,7 +50,7 @@ public class SearchViewModel extends ViewModel {
     }
 
     @NonNull
-    public LiveData<AttributeSearchResult> getProposedAttributesData() {
+    public LiveData<CollectionDAO.AttributeQueryResult> getProposedAttributesData() {
         return proposedAttributes;
     }
 
@@ -80,7 +82,8 @@ public class SearchViewModel extends ViewModel {
     }
 
     public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
-        if (-1 == attributeSortOrder) throw new IllegalStateException("SearchViewModel has to be initialized by calling initAndStart first");
+        if (-1 == attributeSortOrder)
+            throw new IllegalStateException(ERROR_INIT);
 
         filterDisposable.dispose();
         filterDisposable = collectionDAO
@@ -93,16 +96,12 @@ public class SearchViewModel extends ViewModel {
                         itemsPerPage,
                         attributeSortOrder
                 )
-                .subscribe(attributeQueryResult -> {
-                    AttributeSearchResult result = new AttributeSearchResult(
-                            attributeQueryResult.pagedAttributes, attributeQueryResult.totalSelectedAttributes
-                    );
-                    proposedAttributes.postValue(result);
-                });
+                .subscribe(proposedAttributes::postValue);
     }
 
     public void onAttributeSelected(Attribute a) {
-        if (-1 == attributeSortOrder) throw new IllegalStateException("SearchViewModel has to be initialized by calling initAndStart first");
+        if (-1 == attributeSortOrder)
+            throw new IllegalStateException(ERROR_INIT);
 
         List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
@@ -124,7 +123,8 @@ public class SearchViewModel extends ViewModel {
     }
 
     public void onAttributeUnselected(Attribute a) {
-        if (-1 == attributeSortOrder) throw new IllegalStateException("SearchViewModel has to be initialized by calling initAndStart first");
+        if (-1 == attributeSortOrder)
+            throw new IllegalStateException(ERROR_INIT);
 
         List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
@@ -161,23 +161,10 @@ public class SearchViewModel extends ViewModel {
         selectedContentCount.addSource(currentCountSource, selectedContentCount::setValue);
     }
 
-    // === HELPER RESULT STRUCTURES
-    // TODO this appears to be a duplicate of ObjectBoxDao.AttributeQueryResult
-    public static class AttributeSearchResult {
-        public final List<Attribute> attributes;
-        public final long totalContent;
-
-        AttributeSearchResult(List<Attribute> attributes, long totalContent) {
-            this.attributes = new ArrayList<>(attributes);
-            this.totalContent = totalContent;
-        }
-    }
-
     @Override
     protected void onCleared() {
         filterDisposable.dispose();
         countDisposable.dispose();
-        if (collectionDAO != null) collectionDAO.dispose();
         super.onCleared();
     }
 }

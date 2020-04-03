@@ -2,7 +2,6 @@ package me.devsaki.hentoid.parsers.content;
 
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -13,8 +12,8 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -46,8 +45,8 @@ public class NhentaiContent implements ContentParser {
     @Selector(value = "#info a[href*='/category']")
     private List<Element> categories;
 
-    @Selector(value = "#thumbnail-container img[data-src]", attr = "data-src")
-    private List<String> thumbs;
+    @Selector(value = "#thumbnail-container img[data-src]")
+    private List<Element> thumbs;
 
 
     public Content toContent(@Nonnull String url) {
@@ -94,7 +93,7 @@ public class NhentaiContent implements ContentParser {
             index++;
         }
         result.setImageFiles(images);
-        result.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
+        result.setQtyPages(images.size());
 
         return result;
     }

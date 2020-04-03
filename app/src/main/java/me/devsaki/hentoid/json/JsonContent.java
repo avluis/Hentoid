@@ -3,7 +3,7 @@ package me.devsaki.hentoid.json;
 import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -71,7 +71,7 @@ public class JsonContent {
         result.lastReadDate = c.getLastReadDate();
         result.lastReadPageIndex = c.getLastReadPageIndex();
 
-        result.attributes = new HashMap<>();
+        result.attributes = new EnumMap<>(AttributeType.class);
         for (Attribute a : c.getAttributes()) {
             JsonAttribute attr = JsonAttribute.fromEntity(a, c.getSite());
             result.addAttribute(attr);

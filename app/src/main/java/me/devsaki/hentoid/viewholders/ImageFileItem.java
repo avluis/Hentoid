@@ -7,6 +7,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
@@ -27,8 +29,9 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
     private boolean isCurrent;
     private static final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
-    public ImageFileItem(ImageFile image) {
+    public ImageFileItem(@NonNull ImageFile image) {
         this.image = image;
+        setIdentifier(image.getId());
     }
 
     public ImageFile getImage() {
@@ -76,7 +79,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
 
 
         @Override
-        public void bindView(@NotNull ImageFileItem item, @NotNull List<Object> list) {
+        public void bindView(@NotNull ImageFileItem item, @NotNull List<?> list) {
             String currentBegin = item.isCurrent ? ">" : "";
             String currentEnd = item.isCurrent ? "<" : "";
             pageNumberTxt.setText(String.format("%sPage %s%s", currentBegin, item.image.getOrder(), currentEnd));

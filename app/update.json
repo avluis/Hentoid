@@ -1,12 +1,14 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.11.0/hentoid1110186.apk",
-  "versionCode": "186",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.11.2/hentoid1112189.apk",
+  "versionCode": "189",
   "updateURL.beta": "https://cdn.discordapp.com/attachments/418817277383671808/647791824500686848/hentoid1100163-beta2.apk",
   "versionCode.beta": "163",
   "sourceAlerts":[
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" },
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
-	  {"sourceName":"NEXUS", "status":"GREY" }
+      {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"189" },
+      {"sourceName":"FAKKU2", "status":"RED" },
+	  {"sourceName":"NEXUS", "status":"RED" }
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"EXAMPLE", "status":"RED", "fixedByBuild":"100" },

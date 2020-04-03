@@ -14,6 +14,7 @@ import io.objectbox.query.Query;
 import io.objectbox.reactive.DataObserver;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 
+// Inspired from ObjectBoxDataSource
 class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
     private final Query<T> query;
     private final DataObserver<List<T>> observer;
@@ -37,7 +38,6 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
             } else {
                 this.invalidate();
             }
-
         }
     }
 
@@ -61,6 +61,7 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
         for (int i = startPosition; i < maxPage; i++) {
             result.add(lazyList.get(order.get(i)));
         }
+
         return result;
     }
 
@@ -73,7 +74,7 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
 
         @NonNull
         public DataSource<Integer, I> create() {
-            return new ObjectBoxRandomDataSource(this.query);
+            return new ObjectBoxRandomDataSource<>(query);
         }
     }
 

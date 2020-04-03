@@ -22,8 +22,9 @@ import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
-import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.JsonContent;
 import timber.log.Timber;
@@ -46,7 +47,6 @@ public final class ContentHelper {
 
     public static void viewContent(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         Intent intent = new Intent(context, content.getWebActivityClass());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(content.getGalleryUrl());
         intent.putExtras(builder.getBundle());
@@ -97,15 +97,12 @@ public final class ContentHelper {
     }
 
     @WorkerThread
-    public static Content updateContentReads(@NonNull Context context, @NonNull Content content) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+    public static void updateContentReads(@NonNull Context context, @Nonnull CollectionDAO dao, @NonNull Content content) {
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
-        db.insertContent(content);
+        dao.insertContent(content);
 
         if (!content.getJsonUri().isEmpty()) updateJson(context, content);
         else createJson(context, content);
-
-        return content;
     }
 
     public static List<DocumentFile> getPictureFilesFromContent(Context context, Content content) {
@@ -128,9 +125,17 @@ public final class ContentHelper {
         );
     }
 
-
+    /**
+     * Remove given Content from the disk and the DB
+     *
+     * @param content Content to be removed
+     * @param dao     DAO to be used
+     */
     @WorkerThread
-    public static void removeContent(@NonNull Context context, @NonNull Content content) {
+    public static void removeContent(@NonNull Context context, @NonNull Content content, @NonNull CollectionDAO dao) {
+        // Remove from DB
+        // NB : start with DB to have a LiveData feedback, because file removal can take much time
+        dao.deleteContent(content);
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (!content.getStorageUri().isEmpty()) {
             DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
@@ -139,9 +144,32 @@ public final class ContentHelper {
             if (folder.delete()) {
                 Timber.i("Directory removed : %s", content.getStorageUri());
             } else {
-                Timber.w("Failed to delete directory : %s", content.getStorageUri());
+                Timber.w("Failed to delete directory : %s", content.getStorageUri()); // TODO use exception to display feedback on screen
             }
         }
+    }
+
+    /**
+     * Remove given page from the disk and the DB
+     *
+     * @param image Page to be removed
+     * @param dao   DAO to be used
+     */
+    @WorkerThread
+    public static void removePage(@NonNull ImageFile image, @NonNull CollectionDAO dao, @NonNull final Context context) {
+        // Remove from DB
+        // NB : start with DB to have a LiveData feedback, because file removal can take much time
+        dao.deleteImageFile(image);
+
+        // Remove the page from disk
+        if (image.getAbsolutePath() != null && !image.getAbsolutePath().isEmpty()) {
+            File imgFile = new File(image.getAbsolutePath());
+            FileHelper.removeFile(imgFile); // TODO use exception to display feedback on screen
+        }
+
+        // Update content JSON if it exists (i.e. if book is not queued)
+        Content content = dao.selectContent(image.content.getTargetId());
+        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
     }
 
     /**

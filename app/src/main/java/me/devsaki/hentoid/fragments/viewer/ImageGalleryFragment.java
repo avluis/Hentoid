@@ -9,16 +9,19 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -40,6 +43,7 @@ public class ImageGalleryFragment extends Fragment {
     private RecyclerView recyclerView;
 
     private int startIndex = 0;
+    private boolean firstLoadDone = false;
 
     private boolean filterFavourites = false;
 
@@ -63,6 +67,7 @@ public class ImageGalleryFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
+        fastAdapter.setHasStableIds(true);
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p));
         // Favourite button click listener
@@ -106,17 +111,20 @@ public class ImageGalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        firstLoadDone = false;
         viewModel = new ViewModelProvider(requireActivity()).get(ImageViewerViewModel.class);
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
     }
 
     private void onImagesChanged(List<ImageFile> images) {
+        List<ImageFileItem> imgs = new ArrayList<>();
         for (ImageFile img : images) {
             ImageFileItem holder = new ImageFileItem(img);
             if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
-            itemAdapter.add(holder);
+            imgs.add(holder);
         }
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs);
         updateListFilter();
         updateFavouriteDisplay();
     }
@@ -128,7 +136,13 @@ public class ImageGalleryFragment extends Fragment {
     private boolean onItemClick(int position) {
         ImageFileItem imgFile = itemAdapter.getAdapterItem(position);
         viewModel.setStartingIndex(imgFile.getImage().getDisplayOrder());
-        requireActivity().onBackPressed();
+        getParentFragmentManager()
+                .beginTransaction()
+                .replace(android.R.id.content, new ImagePagerFragment())
+                .commit();
+
+        getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Clear back stack
+
         return true;
     }
 
@@ -160,15 +174,19 @@ public class ImageGalleryFragment extends Fragment {
 
     private void updateFavouriteDisplay() {
         showFavouritePagesButton.setVisible(hasFavourite());
-        showFavouritePagesButton.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
+        showFavouritePagesButton.setIcon(filterFavourites ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
     }
 
     private void updateListFilter() {
         if (itemAdapter.getAdapterItemCount() > 0) {
             itemAdapter.filter(filterFavourites ? "true" : "");
-            if (itemAdapter.getAdapterItemCount() > startIndex)
-                recyclerView.scrollToPosition(startIndex);
-            else recyclerView.scrollToPosition(0);
+
+            if (!firstLoadDone) {
+                if (itemAdapter.getAdapterItemCount() > startIndex)
+                    recyclerView.scrollToPosition(startIndex);
+                else recyclerView.scrollToPosition(0);
+                firstLoadDone = true;
+            }
         }
     }
 

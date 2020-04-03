@@ -4,12 +4,9 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
-import com.squareup.moshi.Types;
-
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,12 +15,14 @@ import java.util.Map;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.json.sources.HitomiGalleryPage;
+import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.exception.ParseException;
 import okhttp3.Response;
 import timber.log.Timber;
 
@@ -40,11 +39,11 @@ public class HitomiParser implements ImageListParser {
     private static final String HOSTNAME_SUFFIX = "a";
     private static final char HOSTNAME_PREFIX_BASE = 97;
 
-    public List<ImageFile> parseImageList(Content content) throws Exception {
+    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         String pageUrl = content.getReaderUrl();
 
         Document doc = getOnlineDocument(pageUrl);
-        if (null == doc) throw new Exception("Document unreachable : " + pageUrl);
+        if (null == doc) throw new ParseException("Document unreachable : " + pageUrl);
 
         Timber.d("Parsing: %s", pageUrl);
 
@@ -59,8 +58,7 @@ public class HitomiParser implements ImageListParser {
         if (null == response.body()) throw new IOException("Empty body");
 
         String json = response.body().string().replace("var galleryinfo = ", "");
-        Type listPagesType = Types.newParameterizedType(List.class, HitomiGalleryPage.class);
-        List<HitomiGalleryPage> gallery = JsonHelper.jsonToObject(json, listPagesType);
+        HitomiGalleryInfo gallery = JsonHelper.jsonToObject(json, HitomiGalleryInfo.class);
 
         Map<String, String> downloadParams = new HashMap<>();
         // Add referer information to downloadParams for future image download
@@ -70,13 +68,13 @@ public class HitomiParser implements ImageListParser {
         ImageFile img;
         int order = 1;
         boolean isHashAvailable;
-        for (HitomiGalleryPage page : gallery) {
+        for (HitomiGalleryInfo.HitomiGalleryPage page : gallery.getFiles()) {
             isHashAvailable = (page.getHash() != null && !page.getHash().isEmpty());
             if (1 == page.getHaswebp() && isHashAvailable && Preferences.isDlHitomiWebp())
-                img = buildWebpPicture(page, order++, gallery.size());
+                img = buildWebpPicture(page, order++, gallery.getFiles().size());
             else if (isHashAvailable)
-                img = buildHashPicture(page, order++, gallery.size());
-            else img = buildSimplePicture(content, page, order++, gallery.size());
+                img = buildHashPicture(page, order++, gallery.getFiles().size());
+            else img = buildSimplePicture(content, page, order++, gallery.getFiles().size());
             img.setDownloadParams(downloadParamsStr);
             result.add(img);
         }
@@ -84,15 +82,15 @@ public class HitomiParser implements ImageListParser {
         return result;
     }
 
-    private ImageFile buildWebpPicture(@NonNull HitomiGalleryPage page, int order, int maxPages) {
+    private ImageFile buildWebpPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
         return buildHashPicture(page, order, maxPages, "webp", "webp");
     }
 
-    private ImageFile buildHashPicture(@NonNull HitomiGalleryPage page, int order, int maxPages) {
+    private ImageFile buildHashPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
         return buildHashPicture(page, order, maxPages, "images", FileHelper.getExtension(page.getName()));
     }
 
-    private ImageFile buildHashPicture(@NonNull HitomiGalleryPage page, int order, int maxPages, String folder, String extension) {
+    private ImageFile buildHashPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages, String folder, String extension) {
         String hash = page.getHash();
         String componentA = hash.substring(hash.length() - 1);
         String componentB = hash.substring(hash.length() - 3, hash.length() - 1);
@@ -100,24 +98,24 @@ public class HitomiParser implements ImageListParser {
         String imageSubdomain = subdomainFromGalleryId(Integer.valueOf(componentB, 16));
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/" + folder + "/" + componentA + "/" + componentB + "/" + hash + "." + extension;
 
-        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
+        return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
     }
 
-    private ImageFile buildSimplePicture(@NonNull Content content, @NonNull HitomiGalleryPage page, int order, int maxPages) {
+    private ImageFile buildSimplePicture(@NonNull Content content, @NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
         // New Hitomi image URLs starting from june 2018
         //  If book ID is even, starts with 'aa'; else starts with 'ba'
         int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
         String imageSubdomain = subdomainFromGalleryId(referenceId);
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/galleries/" + content.getUniqueSiteId() + "/" + page.getName();
 
-        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
+        return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
     }
 
     private String subdomainFromGalleryId(int referenceId) {
         return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
     }
 
-    public ImageFile parseBackupUrl(String url, int order, int maxPages) {
+    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // Hitomi does not use backup URLs
         return null;
     }

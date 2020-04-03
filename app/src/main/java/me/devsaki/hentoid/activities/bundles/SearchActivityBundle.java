@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,6 +14,12 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.util.AttributeMap;
 
+/**
+ * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.SearchActivity}
+ * through a Bundle.
+ *
+ * Use Builder class to set data; use Parser class to get data
+ */
 public class SearchActivityBundle {
     private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
     private static final String KEY_MODE = "mode";
@@ -49,11 +56,16 @@ public class SearchActivityBundle {
             Uri.Builder searchUri = new Uri.Builder()
                     .scheme("search")
                     .authority("hentoid");
-            for (AttributeType attrType : metadataMap.keySet()) {
-                List<Attribute> attrs = metadataMap.get(attrType);
-                for (Attribute attr : attrs)
-                    searchUri.appendQueryParameter(attrType.name(), attr.getId() + ";" + attr.getName());
+
+
+            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
+                AttributeType attrType = entry.getKey();
+                List<Attribute> attrs = entry.getValue();
+                if (attrs != null)
+                    for (Attribute attr : attrs)
+                        searchUri.appendQueryParameter(attrType.name(), attr.getId() + ";" + attr.getName());
             }
+
             return searchUri.build();
         }
 

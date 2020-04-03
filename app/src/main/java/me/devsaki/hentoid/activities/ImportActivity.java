@@ -225,11 +225,11 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     // TODO when to do that ?
-    private void revokePermission() {
-        for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
-            getContentResolver().releasePersistableUriPermission(p.getUri(),
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        }
+    private void revokePreviousPermissions(@NonNull Uri newUri) {
+        for (UriPermission p : getContentResolver().getPersistedUriPermissions())
+            if (!p.getUri().equals(newUri))
+                getContentResolver().releasePersistableUriPermission(p.getUri(),
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
             Timber.d("Permissions revoked successfully.");
         } else {
@@ -294,7 +294,10 @@ public class ImportActivity extends AppCompatActivity {
         int treePathSeparator = treePath.indexOf(':');
         String folderName = treePath.substring(treePathSeparator + 1);
 
-        // Persist access permissions
+        // Release previous access permissions, if different than the new one
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) revokePreviousPermissions(treeUri);
+
+        // Persist new access permission
         getContentResolver().takePersistableUriPermission(treeUri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 

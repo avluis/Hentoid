@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import androidx.annotation.NonNull;
+
 import java.util.Locale;
 
 import io.objectbox.annotation.Convert;
@@ -27,6 +29,7 @@ public class ImageFile {
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status = StatusContent.UNHANDLED_ERROR;
     public ToOne<Content> content;
+    private String mimeType;
 
 
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
@@ -41,9 +44,6 @@ public class ImageFile {
     // Has the image been read from a backup URL ?
     @Transient
     private boolean isBackup = false;
-    // Inferred MIME-type of the image
-    @Transient
-    private String mimeType; // TODO : make it persistent ?
 
 
     public ImageFile() {
@@ -159,4 +159,6 @@ public class ImageFile {
     public void setMimeType(String mimeType) {
         this.mimeType = mimeType;
     }
+
+    public void setContent(@NonNull Content content) { this.content.setTargetId(content.getId()); }
 }

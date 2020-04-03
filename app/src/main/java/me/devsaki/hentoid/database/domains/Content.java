@@ -8,6 +8,7 @@ import com.annimon.stream.Stream;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import io.objectbox.annotation.Backlink;
@@ -22,12 +23,14 @@ import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
+import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
+import me.devsaki.hentoid.activities.sources.PorncomixActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
 import me.devsaki.hentoid.activities.sources.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -102,14 +105,15 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        for (Attribute a : attributes) result.add(a);
+        if (attributes != null)
+            for (Attribute a : attributes) result.add(a);
         return result;
     }
 
     public Content addAttributes(@NonNull AttributeMap attrs) {
         if (attributes != null) {
-            for (AttributeType type : attrs.keySet()) {
-                List<Attribute> attrList = attrs.get(type);
+            for (Map.Entry<AttributeType, List<Attribute>> entry : attrs.entrySet()) {
+                List<Attribute> attrList = entry.getValue();
                 if (attrList != null)
                     addAttributes(attrList);
             }
@@ -148,6 +152,8 @@ public class Content implements Serializable {
             case PURURIN:
                 paths = url.split("/");
                 return (paths.length > 1) ? paths[1] : paths[0];
+            case HBROWSE:
+                return url.split("/")[0];
             case HITOMI:
                 paths = url.split("/");
                 String expression = (paths.length > 1) ? paths[1] : paths[0];
@@ -161,11 +167,12 @@ public class Content implements Serializable {
                 return url.replace("/", "");
             case HENTAICAFE:
                 return url.replace("/?p=", "");
-            case FAKKU2:
-                paths = url.split("/");
-                return paths[paths.length - 1];
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
+            case FAKKU2:
+            case PORNCOMIX:
+                paths = url.split("/");
+                return paths[paths.length - 1];
             case DOUJINS:
                 // ID is the last numeric part of the URL
                 // e.g. lewd-title-ch-1-3-42116 -> 42116 is the ID
@@ -185,7 +192,9 @@ public class Content implements Serializable {
         this.uniqueSiteId = computeUniqueSiteId();
     }
 
-    // Used for upgrade purposes
+    /**
+     * @deprecated Used for upgrade purposes from old versions
+     */
     @Deprecated
     public String getOldUniqueSiteId() {
         String[] paths;
@@ -247,6 +256,10 @@ public class Content implements Serializable {
                 return DoujinsActivity.class;
             case LUSCIOUS:
                 return LusciousActivity.class;
+            case PORNCOMIX:
+                return PorncomixActivity.class;
+            case HBROWSE:
+                return HbrowseActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -304,11 +317,14 @@ public class Content implements Serializable {
                 break;
             case LUSCIOUS:
                 return site.getUrl().replace("/manga/", "") + url;
+            case PORNCOMIX:
+                return url;
             case FAKKU:
             case HENTAICAFE:
             case PANDA:
             case MUSES:
             case DOUJINS:
+            case HBROWSE:
             default:
                 galleryConst = "";
         }
@@ -331,6 +347,7 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case DOUJINS:
+            case HBROWSE:
                 return getGalleryUrl();
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
@@ -344,6 +361,9 @@ public class Content implements Serializable {
                 return site.getUrl().replace("album", "picture") + "/1";
             case LUSCIOUS:
                 return getGalleryUrl() + "read/";
+            case PORNCOMIX:
+                if (getGalleryUrl().contains("/manga")) return getGalleryUrl() + "/p/1/";
+                else return getGalleryUrl() + "#&gid=1&pid=1";
             default:
                 return null;
         }
@@ -603,12 +623,11 @@ public class Content implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-        return Objects.equals(url, content.url) &&
-                site == content.site;
+        return id == content.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url, site);
+        return Objects.hash(id);
     }
 }

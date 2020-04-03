@@ -25,7 +25,6 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.database.ActivePagedList;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -52,16 +51,12 @@ public class LibraryViewModel extends AndroidViewModel {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Collection data
-    private ActivePagedList<Content> currentSource;
+    private LiveData<PagedList<Content>> currentSource;
     private LiveData<Integer> totalContent = collectionDao.countAllBooks();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
 
     // Updated whenever a new search is performed
     private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
-
-    // Paged mode callbacks
-    private Consumer<Content> frontConsumer;
-    private Consumer<Content> endConsumer;
 
 
     public LibraryViewModel(@NonNull Application application) {
@@ -80,21 +75,12 @@ public class LibraryViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        searchManager.dispose();
         compositeDisposable.clear();
     }
 
     @NonNull
     public LiveData<PagedList<Content>> getLibraryPaged() {
         return libraryPaged;
-    }
-
-    public void setLibraryFrontLoadCallback(Consumer<Content> consumer) {
-        frontConsumer = consumer;
-    }
-
-    public void setLibraryEndLoadCallback(Consumer<Content> consumer) {
-        endConsumer = consumer;
     }
 
     @NonNull
@@ -121,14 +107,12 @@ public class LibraryViewModel extends AndroidViewModel {
      * Perform a new library search
      */
     private void performSearch() {
-        if (currentSource != null) libraryPaged.removeSource(currentSource.getPagedList());
+        if (currentSource != null) libraryPaged.removeSource(currentSource);
 
         searchManager.setContentSortOrder(Preferences.getContentSortOrder());
         currentSource = searchManager.getLibrary();
-        if (frontConsumer != null) currentSource.setOnItemAtFrontLoaded(frontConsumer);
-        if (endConsumer != null) currentSource.setOnItemAtEndLoaded(endConsumer);
 
-        libraryPaged.addSource(currentSource.getPagedList(), libraryPaged::setValue);
+        libraryPaged.addSource(currentSource, libraryPaged::setValue);
     }
 
     /**
@@ -161,6 +145,15 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void toggleFavouriteFilter() {
         searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
+        newSearch.setValue(true);
+        performSearch();
+    }
+
+    /**
+     * Set the mode (endless or paged)
+     */
+    public void setPagingMethod(boolean isEndless) {
+        searchManager.setLoadAll(!isEndless);
         newSearch.setValue(true);
         performSearch();
     }
@@ -291,8 +284,7 @@ public class LibraryViewModel extends AndroidViewModel {
             Content theContent = collectionDao.selectContent(content.getId());
 
             if (theContent != null) {
-                ContentHelper.removeContent(getApplication(), theContent);
-                collectionDao.deleteContent(theContent);
+                ContentHelper.removeContent(getApplication(), theContent, collectionDao);
                 Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
                 return theContent;
             }

@@ -4,7 +4,6 @@
     <string name="app_intro">Welcome</string>
     <string name="yes">Yes</string> <!-- because Android default "OK" value for "yes" key is nonsense -->
     <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
-    <string name="try_it">Try it</string>
     <string name="on">On</string>
     <string name="off">Off</string>
 
@@ -116,7 +115,6 @@
     <string name="redownload_log_clipboard">Log copied to clipboard</string>
 
     <!-- Library fragment -->
-    <string name="ask_delete">Are you sure you wish to delete this?</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
@@ -148,12 +146,14 @@
     </plurals>
     <string name="reset">Permissions have been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
-    <plurals name="secured_content">
+    <plurals name="redownload_confirm">
+        <item quantity="one">Redownload selected book from scratch ?</item>
+        <item quantity="other">Redownload selected books from scratch ?</item>
+    </plurals>
+    <plurals name="redownload_secured_content">
         <item quantity="one">One of the selected books has secured content and cannot be redownloaded\nThis book will be ignored.</item>
         <item quantity="other">Some of the selected books have secured content and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
-
-    <!-- Library fragment -->
     <string name="no_more_load_retry">No more items to load. Refresh to retry</string>
     <string name="endless_disabled">Loading has been disabled</string>
     <string name="endless_cancel">Loading has been canceled</string>
@@ -176,10 +176,6 @@
     <string name="alert_black">This site is currently unavailable for real. The app has nothing to do about it. Please try again later.</string>
     <string name="alert_wip">The Hentoid dev team is working on a fix. You will be notified by the app when a new version is ready.</string>
     <string name="alert_fix_available">A fix is available on the latest version of the app. Please update.</string>
-
-    <!-- Image Viewer -->
-    <string name="no_images">Could not load the book : No image found</string>
-    <string name="image_file_not_found">File not found in @dir</string>
 
     <!-- App Lock -->
     <string name="app_lock_pin">Enter PIN</string>
@@ -210,6 +206,7 @@
 
     <!-- Web viewer -->
     <string name="web_gallery">Back to gallery page</string>
+    <string name="web_home">Back to library</string>
     <string name="web_back">Back</string>
     <string name="web_forward">Forward</string>
     <string name="web_refresh_stop">Refresh/stop</string>
@@ -234,6 +231,8 @@
     <string name="maintenance">Performing maintenance</string>
 
     <!-- Image viewer -->
+    <string name="no_images">Could not load the book : No image found</string>
+    <string name="image_file_not_found">File not found in @dir</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
@@ -241,13 +240,20 @@
     <string name="viewer_prefs_title">Viewer preferences</string>
     <string name="viewer_prefs_display_fit">Fit (image is entirely displayed on screen)</string>
     <string name="viewer_prefs_display_fill">Fill (image takes up all screen)</string>
+    <string name="viewer_slideshow">Slideshow</string>
     <string name="viewer_order_shuffle">Shuffle pages</string>
     <string name="viewer_order_123">Reorder pages</string>
+    <string name="viewer_filter_favourite_off">Only show favourite pages</string>
+    <string name="viewer_filter_favourite_on">Show all pages</string>
+    <string name="viewer_page_menu">Page menu</string>
     <string name="viewer_favourite_off">Mark page as favourite</string>
     <string name="viewer_favourite_on">Unmark page as favourite</string>
+    <string name="viewer_delete_book">Delete book</string>
     <string name="pref_viewer_image_display">Image display mode</string>
-    <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
-    <string name="gallery_menu_favourite">Toggle favourite filter</string>
+    <string name="viewer_copy_success">Copied to Downloads folder</string>
+    <string name="viewer_copy_fail">Could not write to Downloads folder</string>
+    <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
+    <string name="viewer_ask_delete_page">Are you sure you wish to delete this page?</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

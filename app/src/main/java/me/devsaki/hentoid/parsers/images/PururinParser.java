@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Document;
 
 import java.io.File;
@@ -25,7 +27,7 @@ public class PururinParser extends BaseParser {
     }
 
     @Override
-    protected List<String> parseImages(Content content) throws Exception {
+    protected List<String> parseImages(@NonNull Content content) throws Exception {
         List<String> result = new ArrayList<>();
         String url = content.getReaderUrl();
         String protocol = url.substring(0, 5);

@@ -40,7 +40,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.exception.JSONParseException;
+import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
@@ -114,18 +114,18 @@ public class ImportService extends IntentService {
         startImport(doRename, doCleanAbsent, doCleanNoImages, doCleanUnreadable);
     }
 
-    private void eventProgress(Content content, int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, content, booksOK, booksKO, nbBooks));
+    private void eventProgress(int nbBooks, int booksOK, int booksKO) {
+        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
         EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, List<String> memoryLog, String s, String... t) {
+    private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
         s = String.format(s, (Object[]) t);
         Timber.log(priority, s);
-        if (null != memoryLog) memoryLog.add(s);
+        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s));
     }
 
 
@@ -142,7 +142,7 @@ public class ImportService extends IntentService {
         int booksKO = 0;                        // Number of folders found with no valid book inside
         int nbFolders = 0;                      // Number of folders found with no content but subfolders
         Content content = null;
-        List<String> log = new ArrayList<>();
+        List<LogUtil.LogEntry> log = new ArrayList<>();
 
         DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
         if (null == rootFolder || !rootFolder.exists()) {
@@ -232,7 +232,7 @@ public class ImportService extends IntentService {
 
                 if (null == content) booksKO++;
                 else booksOK++;
-            } catch (JSONParseException jse) {
+            } catch (ParseException jse) {
                 if (null == content)
                     content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
@@ -248,7 +248,7 @@ public class ImportService extends IntentService {
                 trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", e.getMessage(), folder.getUri().toString());
             }
 
-            eventProgress(content, files.size() - nbFolders, booksOK, booksKO);
+            eventProgress(files.size() - nbFolders, booksOK, booksKO);
         }
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
 
@@ -262,7 +262,7 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
-    private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<String> log) {
+    private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogUtil.LogEntry> log) {
         LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
         logInfo.setLogName(cleanup ? "Cleanup" : "Import");
         logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
@@ -273,7 +273,7 @@ public class ImportService extends IntentService {
 
 
     @Nullable
-    private static Content importJson(@NonNull Context context, @NonNull DocumentFile folder) throws JSONParseException {
+    private static Content importJson(@NonNull Context context, @NonNull DocumentFile folder) throws ParseException {
         //DocumentFile json = folder.findFile(Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
         DocumentFile json = FileHelper.findFile(context, folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
         if (json != null && json.exists()) return importJsonV2(json);
@@ -315,7 +315,7 @@ public class ImportService extends IntentService {
         }
         try {
             if (urlBuilder.getDescription() == null) {
-                throw new JSONParseException("Problems loading attribute v2.");
+                throw new ParseException("Problems loading attribute v2.");
             }
 
             return new Attribute(type, urlBuilder.getDescription(), urlBuilder.getId(), site);
@@ -327,7 +327,7 @@ public class ImportService extends IntentService {
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private static Content importJsonLegacy(DocumentFile json) throws JSONParseException {
+    private static Content importJsonLegacy(DocumentFile json) throws ParseException {
         try {
             DoujinBuilder doujinBuilder =
                     JsonHelper.jsonToObject(json, DoujinBuilder.class);
@@ -371,13 +371,13 @@ public class ImportService extends IntentService {
             return contentV2;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (old) file");
-            throw new JSONParseException("Error reading JSON (old) file : " + e.getMessage());
+            throw new ParseException("Error reading JSON (old) file : " + e.getMessage());
         }
     }
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private static Content importJsonV1(DocumentFile json) throws JSONParseException {
+    private static Content importJsonV1(DocumentFile json) throws ParseException {
         try {
             ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
             if (content.getStatus() != StatusContent.DOWNLOADED
@@ -394,12 +394,12 @@ public class ImportService extends IntentService {
             return contentV2;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v1) file");
-            throw new JSONParseException("Error reading JSON (v1) file : " + e.getMessage());
+            throw new ParseException("Error reading JSON (v1) file : " + e.getMessage());
         }
     }
 
     @CheckResult
-    private static Content importJsonV2(DocumentFile json) throws JSONParseException {
+    private static Content importJsonV2(DocumentFile json) throws ParseException {
         try {
             JsonContent content = JsonHelper.jsonToObject(json, JsonContent.class);
             Content result = content.toEntity();
@@ -415,7 +415,7 @@ public class ImportService extends IntentService {
             return result;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v2) file");
-            throw new JSONParseException("Error reading JSON (v2) file : " + e.getMessage(), e);
+            throw new ParseException("Error reading JSON (v2) file : " + e.getMessage(), e);
         }
     }
 }

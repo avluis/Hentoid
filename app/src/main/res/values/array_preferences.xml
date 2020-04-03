@@ -139,10 +139,10 @@
     </string-array>
 
     <string-array name="pref_viewer_read_threshold_entries">
-        <item>1 (default)</item>
-        <item>2</item>
-        <item>5</item>
-        <item>All</item>
+        <item>1 page (default)</item>
+        <item>2 pages</item>
+        <item>5 pages</item>
+        <item>All pages</item>
     </string-array>
     <string-array name="pref_viewer_read_threshold_values">
         <item>0</item>
@@ -162,6 +162,17 @@
         <item>1</item>
         <item>2</item>
         <item>3</item>
+    </string-array>
+
+    <string-array name="pref_viewer_display_mode_entries">
+        <item>Fit to screen (default)</item>
+        <item>Fill screen (proportionate)</item>
+        <item>Fill screen (stretch)</item>
+    </string-array>
+    <string-array name="pref_viewer_display_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
     </string-array>
 
     <string-array name="pref_lock_timer_entries">

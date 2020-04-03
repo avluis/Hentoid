@@ -58,6 +58,7 @@ public class OnZoneTapListener implements View.OnTouchListener {
             onRightZoneTapListener.run();
         } else {
             if (onMiddleZoneTapListener != null) onMiddleZoneTapListener.run();
+            else return false;
         }
         return true;
     }
