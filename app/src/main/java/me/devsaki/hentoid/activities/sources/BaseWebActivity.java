@@ -129,9 +129,17 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         int READ = 2;
     }
 
-    private static final int STATUS_UNKNOWN = 0;
-    private static final int STATUS_IN_COLLECTION = 1;
-    private static final int STATUS_IN_QUEUE = 2;
+    @IntDef({ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface ContentStatus {
+        // Content is unknown (i.e. ready to be downloaded)
+        int UNKNOWN = 0;
+        // Content is already in the library
+        int IN_COLLECTION = 1;
+        // Content is already queued
+        int IN_QUEUE = 2;
+    }
+
 
     // === UI
     // Associated webview
@@ -315,7 +323,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 this.onCopyClick();
                 break;
             case R.id.web_menu_download:
-                this.onActionFabClick();
+                this.onActionClick();
                 break;
             default:
                 return false;
@@ -568,9 +576,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     /**
-     * Listener for Action floating action button : download content, view queue or read content
+     * Listener for the Action button : download content, view queue or read content
      */
-    public void onActionFabClick() {
+    public void onActionClick() {
         if (ActionMode.DOWNLOAD == actionButtonMode) processDownload(false);
         else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
         else if (ActionMode.READ == actionButtonMode && currentContent != null) {
@@ -583,8 +591,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
     }
 
-    // TODO doc
-    private void changeFabActionMode(@ActionMode int mode) {
+    /**
+     * Switch the action button to either of the available modes
+     *
+     * @param mode Mode to switch to
+     */
+    private void changeActionMode(@ActionMode int mode) {
         @DrawableRes int resId = R.drawable.ic_info;
         if (ActionMode.DOWNLOAD == mode) {
             resId = R.drawable.selector_download_action;
@@ -600,6 +612,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
     /**
      * Add current content (i.e. content of the currently viewed book) to the download queue
+     *
+     * @param quickDownload True if the action has been triggered by a quick download
+     *                      (which means we're not on a book gallery page but on the book list page)
      */
     void processDownload(boolean quickDownload) {
         if (null == currentContent) return;
@@ -611,7 +626,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastUtil.toast(R.string.already_downloaded);
-            if (!quickDownload) changeFabActionMode(ActionMode.READ);
+            if (!quickDownload) changeActionMode(ActionMode.READ);
             return;
         }
         ToastUtil.toast(R.string.add_to_queue);
@@ -621,9 +636,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
 
         /*if (!quickDownload) */
-        changeFabActionMode(ActionMode.VIEW_QUEUE);
+        changeActionMode(ActionMode.VIEW_QUEUE);
     }
 
+    /**
+     * Take the user to the queue screen
+     */
     private void goToQueue() {
         Intent intent = new Intent(this, QueueActivity.class);
         startActivity(intent);
@@ -655,10 +673,14 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     /**
      * Display webview controls according to designated content
      *
-     * @param content Currently displayed content
+     * @param content       Currently displayed content
+     * @param quickDownload True if the action has been triggered by a quick download
+     *                      (which means we're not on a book gallery page but on the book list page)
+     * @return The status of the Content after being processed
      */
-    private int processContent(@NonNull Content content, boolean quickDownload) {
-        int result = STATUS_UNKNOWN;
+    private @ContentStatus
+    int processContent(@NonNull Content content, boolean quickDownload) {
+        @ContentStatus int result = ContentStatus.UNKNOWN;
         if (null == content.getUrl()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
@@ -682,16 +704,16 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             } else {
                 content = contentDB;
             }
-            if (!quickDownload) changeFabActionMode(ActionMode.DOWNLOAD);
+            if (!quickDownload) changeActionMode(ActionMode.DOWNLOAD);
         }
 
         if (isInCollection) {
-            if (!quickDownload) changeFabActionMode(ActionMode.READ);
-            result = STATUS_IN_COLLECTION;
+            if (!quickDownload) changeActionMode(ActionMode.READ);
+            result = ContentStatus.IN_COLLECTION;
         }
         if (isInQueue) {
-            if (!quickDownload) changeFabActionMode(ActionMode.VIEW_QUEUE);
-            result = STATUS_IN_QUEUE;
+            if (!quickDownload) changeActionMode(ActionMode.VIEW_QUEUE);
+            result = ContentStatus.IN_QUEUE;
         }
 
         currentContent = content;
@@ -699,11 +721,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     public void onResultReady(@NonNull Content results, boolean quickDownload) {
-        int status = processContent(results, quickDownload);
+        @ContentStatus int status = processContent(results, quickDownload);
         if (quickDownload) {
-            if (STATUS_UNKNOWN == status) processDownload(true);
-            else if (STATUS_IN_COLLECTION == status) ToastUtil.toast(R.string.already_downloaded);
-            else if (STATUS_IN_QUEUE == status) ToastUtil.toast(R.string.already_queued);
+            if (ContentStatus.UNKNOWN == status) processDownload(true);
+            else if (ContentStatus.IN_COLLECTION == status)
+                ToastUtil.toast(R.string.already_downloaded);
+            else if (ContentStatus.IN_QUEUE == status) ToastUtil.toast(R.string.already_queued);
         }
     }
 
@@ -711,10 +734,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         runOnUiThread(() -> ToastUtil.toast(R.string.web_unparsable));
     }
 
+    /**
+     * Listener for the events of the download engine
+     * Used to switch the action button to Read when the download of the currently viewed is completed
+     * @param event Event fired by the download engine
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
         if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent)) {
-            changeFabActionMode(ActionMode.READ);
+            changeActionMode(ActionMode.READ);
         }
     }
 
@@ -724,12 +752,19 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     class CustomWebViewClient extends WebViewClient {
 
-        final CompositeDisposable compositeDisposable = new CompositeDisposable();
+        // Used to clear RxJava observers (avoiding memory leaks)
+        private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+        // Pre-built object to represent an empty input stream
+        // (will be used instead of the actual stream when the requested resource is blocked)
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        // Listener to the results of the page parser
         protected final WebContentListener listener;
+        // List of the URL patterns identifying a parsable book gallery page
         private final List<Pattern> filteredUrlPattern = new ArrayList<>();
+        // Adapter used to parse the HTML code of book gallery pages
         private final HtmlAdapter<ContentParser> htmlAdapter;
 
+        // TODO doc
         private String restrictedDomainName = "";
         private boolean isPageLoading = false;
         boolean isHtmlLoaded = false;
