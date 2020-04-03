@@ -146,7 +146,12 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
 
         int nbPages = Preferences.getContentPageQuantity();
-        int initialLoad = loadAll ? (int) query.count() : nbPages * 2;
+        int initialLoad = nbPages * 2;
+        if (loadAll) {
+            // Trump Android's algorithm by setting a number of pages higher that the actual number of results
+            // to avoid having a truncated result set (see issue #501)
+            initialLoad = (int) Math.ceil(query.count() * 1.0 / nbPages) * nbPages;
+        }
 
         PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(!loadAll).setInitialLoadSizeHint(initialLoad).setPageSize(nbPages).build();
 
