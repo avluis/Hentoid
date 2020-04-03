@@ -619,6 +619,6 @@ public class Content implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(url, site);
+        return Objects.hash(id);
     }
 }
