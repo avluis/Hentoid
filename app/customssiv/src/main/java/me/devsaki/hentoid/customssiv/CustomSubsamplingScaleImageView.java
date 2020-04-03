@@ -541,8 +541,6 @@ public class CustomSubsamplingScaleImageView extends View {
                     previewSourceUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + getContext().getPackageName() + "/" + previewSource.getResource());
                 }
                 if (previewSourceUri != null) {
-                    final Uri previewSourceUriFinal = previewSourceUri.normalizeScheme();
-
                     loadDisposable.add(
                             Single.fromCallable(() -> bitmapDecoderFactory.make().decode(getContext(), uri))
                                     .subscribeOn(Schedulers.io())
