@@ -14,6 +14,12 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.util.AttributeMap;
 
+/**
+ * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.SearchActivity}
+ * through a Bundle.
+ *
+ * Use Builder class to set data; use Parser class to get data
+ */
 public class SearchActivityBundle {
     private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
     private static final String KEY_MODE = "mode";

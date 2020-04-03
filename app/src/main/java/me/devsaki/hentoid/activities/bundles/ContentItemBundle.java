@@ -5,6 +5,12 @@ import android.os.Bundle;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Helper class to transfer payload data to {@link me.devsaki.hentoid.viewholders.ContentItem}
+ * through a Bundle
+ *
+ * Use Builder class to set data; use Parser class to get data
+ */
 public class ContentItemBundle {
     private static final String KEY_DELETE_PROCESSING = "is_being_deleted";
     private static final String KEY_FAV_PROCESSING = "is_being_favourited";

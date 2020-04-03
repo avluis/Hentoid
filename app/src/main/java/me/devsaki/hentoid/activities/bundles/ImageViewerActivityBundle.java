@@ -4,6 +4,12 @@ import android.os.Bundle;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.ImageViewerActivity}
+ * through a Bundle
+ *
+ * Use Builder class to set data; use Parser class to get data
+ */
 public class ImageViewerActivityBundle {
     private static final String KEY_CONTENT_ID = "contentId";
     private static final String KEY_SEARCH_PARAMS = "searchParams";

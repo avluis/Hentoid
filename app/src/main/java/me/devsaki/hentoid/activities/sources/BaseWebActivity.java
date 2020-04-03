@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
@@ -48,6 +49,8 @@ import org.jsoup.nodes.Element;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -115,9 +118,16 @@ import static me.devsaki.hentoid.util.HttpHelper.HEADER_CONTENT_TYPE;
  */
 public abstract class BaseWebActivity extends BaseActivity implements WebContentListener {
 
-    protected static final int MODE_DL = 0;
-    private static final int MODE_QUEUE = 1;
-    private static final int MODE_READ = 2;
+    @IntDef({ActionMode.DOWNLOAD, ActionMode.VIEW_QUEUE, ActionMode.READ})
+    @Retention(RetentionPolicy.SOURCE)
+    protected @interface ActionMode {
+        // Download book
+        int DOWNLOAD = 0;
+        // Go to the queue screen
+        int VIEW_QUEUE = 1;
+        // Read downloaded book (image viewer)
+        int READ = 2;
+    }
 
     private static final int STATUS_UNKNOWN = 0;
     private static final int STATUS_IN_COLLECTION = 1;
@@ -146,7 +156,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // Database
     private CollectionDAO objectBoxDAO;
     // Indicates which mode the download button is in
-    protected int actionButtonMode;
+    protected @ActionMode
+    int actionButtonMode;
     // Version of installed Chrome client
     private int chromeVersion;
     // Alert to be displayed
@@ -257,15 +268,23 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         displayAlertBanner();
     }
 
+    /**
+     * Determine the URL the browser will load at startup
+     * - Either an URL specifically given to the activity (e.g. "view source" action)
+     * - Or the last viewed page, if the option is enabled
+     * - If neither of the previous cases, the default URL of the site
+     *
+     * @return URL to load at startup
+     */
     private String getStartUrl() {
-        // Priority 1 : URL specifically given to the activity ("view source" action)
+        // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
         if (getIntent().getExtras() != null) {
             BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
             String intentUrl = parser.getUrl();
             if (!intentUrl.isEmpty()) return intentUrl;
         }
 
-        // Priority 2 : Last viewed position, if option activated
+        // Priority 2 : Last viewed position, if option enabled
         if (Preferences.isBrowserResumeLast()) {
             SiteHistory siteHistory = objectBoxDAO.getHistory(getStartSite());
             if (siteHistory != null && !siteHistory.getUrl().isEmpty()) return siteHistory.getUrl();
@@ -452,14 +471,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (refreshLayout != null) refreshLayout.addView(webView, layoutParams);
     }
 
-    private void displayAlertBanner() {
-        if (alertMessage != null && alert != null) {
-            alertIcon.setImageResource(alert.getStatus().getIcon());
-            alertMessage.setText(formatAlertMessage(alert));
-            alertBanner.setVisibility(View.VISIBLE);
-        }
-    }
-
     private void initSwipeLayout() {
         swipeLayout = findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(() -> {
@@ -474,30 +485,68 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 android.R.color.holo_red_light);
     }
 
+    /**
+     * Displays the top alert banner
+     * (the one that contains the alerts when downloads are broken or sites are unavailable)
+     */
+    private void displayAlertBanner() {
+        if (alertMessage != null && alert != null) {
+            alertIcon.setImageResource(alert.getStatus().getIcon());
+            alertMessage.setText(formatAlertMessage(alert));
+            alertBanner.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     * Handler for the close icon of the top alert banner
+     */
+    public void onAlertCloseClick(View view) {
+        alertBanner.setVisibility(View.GONE);
+    }
+
+
+    /**
+     * Handler for the "back" navigation button of the browser
+     */
     private void onBackClick() {
         webView.goBack();
     }
 
+    /**
+     * Handler for the "forward" navigation button of the browser
+     */
     private void onForwardClick() {
         webView.goForward();
     }
 
+    /**
+     * Handler for the "back to gallery page" navigation button of the browser
+     */
     private void onGalleryClick() {
         WebBackForwardList list = webView.copyBackForwardList();
         int galleryIndex = backListContainsGallery(list);
         if (galleryIndex > -1) webView.goBackOrForward(galleryIndex - list.getCurrentIndex());
     }
 
+    /**
+     * Handler for the "refresh page/stop refreshing" button of the browser
+     */
     private void onRefreshStopClick() {
         if (webClient.isLoading()) webView.stopLoading();
         else webView.reload();
     }
 
+    /**
+     * Handler for the "copy URL to clipboard" button
+     */
     private void onCopyClick() {
         if (Helper.copyPlainTextToClipboard(this, webView.getUrl()))
             ToastUtil.toast(R.string.web_url_clipboard);
     }
 
+    /**
+     * Handler for the "Home" navigation button
+     */
     private void goHome() {
         Intent intent = new Intent(this, LibraryActivity.class);
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
@@ -508,6 +557,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         finish();
     }
 
+    /**
+     * Handler for the phone's back button
+     */
     @Override
     public void onBackPressed() {
         if (!webView.canGoBack()) {
@@ -515,17 +567,13 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
     }
 
-    public void onAlertCloseClick(View view) {
-        alertBanner.setVisibility(View.GONE);
-    }
-
     /**
      * Listener for Action floating action button : download content, view queue or read content
      */
     public void onActionFabClick() {
-        if (MODE_DL == actionButtonMode) processDownload(false);
-        else if (MODE_QUEUE == actionButtonMode) goToQueue();
-        else if (MODE_READ == actionButtonMode && currentContent != null) {
+        if (ActionMode.DOWNLOAD == actionButtonMode) processDownload(false);
+        else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
+        else if (ActionMode.READ == actionButtonMode && currentContent != null) {
             currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
             if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()
@@ -535,13 +583,14 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
     }
 
-    private void changeFabActionMode(int mode) {
+    // TODO doc
+    private void changeFabActionMode(@ActionMode int mode) {
         @DrawableRes int resId = R.drawable.ic_info;
-        if (MODE_DL == mode) {
+        if (ActionMode.DOWNLOAD == mode) {
             resId = R.drawable.selector_download_action;
-        } else if (MODE_QUEUE == mode) {
+        } else if (ActionMode.VIEW_QUEUE == mode) {
             resId = R.drawable.ic_action_queue;
-        } else if (MODE_READ == mode) {
+        } else if (ActionMode.READ == mode) {
             resId = R.drawable.ic_action_play;
         }
         actionButtonMode = mode;
@@ -562,7 +611,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastUtil.toast(R.string.already_downloaded);
-            if (!quickDownload) changeFabActionMode(MODE_READ);
+            if (!quickDownload) changeFabActionMode(ActionMode.READ);
             return;
         }
         ToastUtil.toast(R.string.add_to_queue);
@@ -571,7 +620,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
 
-        /*if (!quickDownload) */changeFabActionMode(MODE_QUEUE);
+        /*if (!quickDownload) */
+        changeFabActionMode(ActionMode.VIEW_QUEUE);
     }
 
     private void goToQueue() {
@@ -632,15 +682,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             } else {
                 content = contentDB;
             }
-            if (!quickDownload) changeFabActionMode(MODE_DL);
+            if (!quickDownload) changeFabActionMode(ActionMode.DOWNLOAD);
         }
 
         if (isInCollection) {
-            if (!quickDownload) changeFabActionMode(MODE_READ);
+            if (!quickDownload) changeFabActionMode(ActionMode.READ);
             result = STATUS_IN_COLLECTION;
         }
         if (isInQueue) {
-            if (!quickDownload) changeFabActionMode(MODE_QUEUE);
+            if (!quickDownload) changeFabActionMode(ActionMode.VIEW_QUEUE);
             result = STATUS_IN_QUEUE;
         }
 
@@ -664,7 +714,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
         if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent)) {
-            changeFabActionMode(MODE_READ);
+            changeFabActionMode(ActionMode.READ);
         }
     }
 
