@@ -104,18 +104,6 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        // TODO keep ?
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        // TODO keep ?
-    }
-
     /**
      * Observer for changes in the book's list of images
      *
