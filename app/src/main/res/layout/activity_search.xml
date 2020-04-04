@@ -145,6 +145,7 @@
         android:paddingEnd="20dp"
         android:text="@string/search_button"
         android:visibility="gone"
+        tools:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
