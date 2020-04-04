@@ -753,7 +753,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     class CustomWebViewClient extends WebViewClient {
 
         // Used to clear RxJava observers (avoiding memory leaks)
-        private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+        protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
         // Pre-built object to represent an empty input stream
         // (will be used instead of the actual stream when the requested resource is blocked)
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
