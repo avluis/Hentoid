@@ -230,8 +230,8 @@
     <string name="category_language">Language (%1$d)</string>
     <string name="category_source">Source (%1$d)</string>
     <plurals name="search_button">
-        <item quantity="one">%1 Result found</item>
-        <item quantity="other">%1 Results found</item>
+        <item quantity="one">%s Result found</item>
+        <item quantity="other">%s Results found</item>
     </plurals>
     <string name="search_select_a_filter">Select a filter</string>
 
