@@ -71,8 +71,11 @@ public class SearchViewModel extends ViewModel {
 
     // === VERB METHODS
 
-    public void initAndStart(int attributeSortOrder) {
+    public void init(int attributeSortOrder) {
         this.attributeSortOrder = attributeSortOrder;
+    }
+
+    public void update() {
         countAttributesPerType();
         updateSelectionResult();
     }
@@ -107,19 +110,12 @@ public class SearchViewModel extends ViewModel {
 
         // Direct impact on selectedAttributes
         selectedAttributesList.add(a);
-        selectedAttributes.setValue(selectedAttributesList);
-
-        // Indirect impact on attributesPerType and availableAttributes
-        countAttributesPerType();
-        updateSelectionResult();
+        setSelectedAttributes(selectedAttributesList);
     }
 
     public void setSelectedAttributes(@NonNull List<Attribute> attrs) {
         selectedAttributes.setValue(attrs);
-
-        // Indirect impact on attributesPerType
-        countAttributesPerType();
-        updateSelectionResult();
+        update();
     }
 
     public void onAttributeUnselected(Attribute a) {
@@ -130,11 +126,7 @@ public class SearchViewModel extends ViewModel {
 
         // Direct impact on selectedAttributes
         selectedAttributesList.remove(a);
-        selectedAttributes.setValue(selectedAttributesList);
-
-        // Indirect impact on attributesPerType and availableAttributes
-        countAttributesPerType();
-        updateSelectionResult();
+        setSelectedAttributes(selectedAttributesList);
     }
 
     private void countAttributesPerType() {

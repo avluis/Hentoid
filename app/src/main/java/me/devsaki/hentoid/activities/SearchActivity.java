@@ -141,8 +141,10 @@ public class SearchActivity extends BaseActivity {
         viewModel.getAttributesCountData().observe(this, this::onQueryUpdated);
         viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
         viewModel.getSelectedContentCount().observe(this, this::onBooksCounted);
+
+        viewModel.init(Preferences.getAttributesSortOrder());
         if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
-        else viewModel.initAndStart(Preferences.getAttributesSortOrder());
+        else viewModel.update();
     }
 
     /**
