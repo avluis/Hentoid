@@ -185,7 +185,7 @@ public class SearchActivity extends BaseActivity {
      * @param attributeTypes Attribute type(s) to select
      */
     private void onAttrButtonClick(AttributeType... attributeTypes) {
-        SearchBottomSheetFragment.show(this, getSupportFragmentManager(), attributeTypes);
+        SearchBottomSheetFragment.invoke(this, getSupportFragmentManager(), attributeTypes);
     }
 
     /**
