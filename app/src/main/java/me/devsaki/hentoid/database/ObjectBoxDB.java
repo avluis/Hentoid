@@ -528,6 +528,7 @@ public class ObjectBoxDB {
         List<Content> content = query.build().find();
 
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by source
         Map<Site, List<Content>> map = Stream.of(content).collect(Collectors.groupingBy(Content::getSite));
@@ -624,6 +625,7 @@ public class ObjectBoxDB {
 
         SparseIntArray result = new SparseIntArray();
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
         Map<AttributeType, List<Attribute>> map = Stream.of(attributes).collect(Collectors.groupingBy(Attribute::getType));
@@ -676,6 +678,7 @@ public class ObjectBoxDB {
 
         SparseIntArray result = new SparseIntArray();
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
         Map<StatusContent, List<ImageFile>> map = Stream.of(images).collect(Collectors.groupingBy(ImageFile::getStatus));
