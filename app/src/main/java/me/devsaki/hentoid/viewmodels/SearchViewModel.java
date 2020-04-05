@@ -27,12 +27,16 @@ public class SearchViewModel extends ViewModel {
     private final CollectionDAO collectionDAO;
 
     // LIVEDATAS
-    private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
+
+    // Results of queries
     private final MutableLiveData<CollectionDAO.AttributeQueryResult> availableAttributes = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> nbAttributesPerType = new MutableLiveData<>();
-
     private LiveData<Integer> currentSelectedContentCountInternal = null;
     private final MediatorLiveData<Integer> selectedContentCount = new MediatorLiveData<>();
+
+    // Selected attributes (passed between SearchBottomSheetFragment and SearchActivity as LiveData via the ViewModel)
+    private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
+
 
     // Currently active attribute types
     private List<AttributeType> attributeTypes;
