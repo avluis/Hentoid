@@ -51,7 +51,9 @@ import static java.lang.String.format;
  * TODO 1 : look into recyclerview.extensions.ListAdapter for a RecyclerView.Adapter that can issue
  * appropriate notify commands based on list diff
  * <p>
- * TODO 2 : Take some time to use PagedList and FastAdapter to reduce boilerplate code used to display the endless list of available attributes
+ * TODO 2 : Use PagedList and FastAdapter to reduce boilerplate code used to display the endless list of available attributes
+ * NB : only possible when ObjectBox implements SELECT Object.Field, COUNT(Object.Field) GROUP BY Object.Field to handle
+ * source selection in a native ObjectBox query.
  */
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
