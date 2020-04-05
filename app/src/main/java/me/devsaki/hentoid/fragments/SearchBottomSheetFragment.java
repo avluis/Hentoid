@@ -121,7 +121,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
             ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
             viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(SearchViewModel.class);
-            viewModel.onCategoryChanged(selectedAttributeTypes);
+            viewModel.setAttributeTypes(selectedAttributeTypes);
         }
     }
 
@@ -177,7 +177,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        viewModel.getProposedAttributesData().observe(getViewLifecycleOwner(), this::onAttributesReady);
+        viewModel.getAvailableAttributesData().observe(getViewLifecycleOwner(), this::onAttributesReady);
         searchMasterData("");
     }
 
@@ -221,7 +221,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         }
         this.clearOnSuccess = clearOnSuccess;
 
-        viewModel.onCategoryFilterChanged(filter, currentPage, ATTRS_PER_PAGE);
+        viewModel.setAttributeQuery(filter, currentPage, ATTRS_PER_PAGE);
     }
 
     /**
@@ -265,7 +265,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
-            viewModel.onAttributeSelected(a);
+            viewModel.addSelectedAttribute(a);
             searchMasterData(tagSearchView.getQuery().toString());
         }
     }
