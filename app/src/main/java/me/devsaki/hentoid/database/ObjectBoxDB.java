@@ -696,6 +696,10 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
     }
 
+    List<Content> selectContentWithOldTsuminoCovers() {
+        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/").build().find();
+    }
+
     void insertErrorRecord(@NonNull final ErrorRecord record) {
         store.boxFor(ErrorRecord.class).put(record);
     }
