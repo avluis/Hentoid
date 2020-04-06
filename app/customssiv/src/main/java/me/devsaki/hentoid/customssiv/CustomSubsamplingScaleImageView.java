@@ -2079,6 +2079,15 @@ public class CustomSubsamplingScaleImageView extends View {
         return exifOrientation;
     }
 
+    /**
+     * Indicates if the picture needs to be rotated 90°, according to the given picture proportions (auto-rotate feature)
+     * The goal is to align the picture's proportions with the phone screen's proportions
+     * NB : The result of this method is independent from auto-rotate mode being enabled
+     *
+     * @param sWidth Picture width
+     * @param sHeight Picture height
+     * @return True if the picture needs to be rotated 90°
+     */
     private boolean needsRotating(int sWidth, int sHeight) {
         boolean isSourceSquare = (Math.abs(sHeight - sWidth) < sWidth * 0.1);
         if (isSourceSquare) return false;
@@ -3017,7 +3026,7 @@ public class CustomSubsamplingScaleImageView extends View {
      *
      * Auto-rotate chooses automatically the most fitting orientation so that the image occupies
      * most of the screen, according to its dimensions and the device's screen dimensions and
-     * the device's orientation
+     * the device's orientation (see needsRotating method)
      *
      * @param autoRotate True if auto-rotate mode should be on
      */
