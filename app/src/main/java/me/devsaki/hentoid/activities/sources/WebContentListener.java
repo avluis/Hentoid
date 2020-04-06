@@ -11,7 +11,7 @@ interface WebContentListener {
     /**
      * Callback when the page has been successfuly parsed into a Content
      * @param results Parsed Content
-     * @param quickDownload True if the action has been triggered by a quick download
+     * @param quickDownload True if the action has been triggered by a quick download action
      */
     void onResultReady(@NonNull Content results, boolean quickDownload);
 
