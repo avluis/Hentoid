@@ -196,7 +196,7 @@ public class QueueFragment extends Fragment {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
                 Content c = item.getContent();
-                if (c != null) ContentHelper.viewContent(view.getContext(), c);
+                if (c != null) ContentHelper.viewContentGalleryPage(view.getContext(), c);
             }
 
             @org.jetbrains.annotations.Nullable

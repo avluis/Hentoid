@@ -1060,7 +1060,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param content Content whose "source" button has been clicked on
      */
     private void onBookSourceClick(@NonNull Content content) {
-        ContentHelper.viewContent(requireContext(), content);
+        ContentHelper.viewContentGalleryPage(requireContext(), content);
     }
 
     /**
