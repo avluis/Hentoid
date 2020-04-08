@@ -364,12 +364,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void loadNextContent() {
         if (currentContentIndex < contentIds.size() - 1) currentContentIndex++;
-        loadFromContent(contentIds.get(currentContentIndex));
+        if (!contentIds.isEmpty())
+            loadFromContent(contentIds.get(currentContentIndex));
     }
 
     public void loadPreviousContent() {
         if (currentContentIndex > 0) currentContentIndex--;
-        loadFromContent(contentIds.get(currentContentIndex));
+        if (!contentIds.isEmpty())
+            loadFromContent(contentIds.get(currentContentIndex));
     }
 
     private void processContent(@NonNull Content theContent) {
