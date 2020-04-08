@@ -92,7 +92,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
             putString(ARG_PREFERENCE_ROOT, preferenceScreen.key)
         }
 
-        parentFragmentManager.commit {
+        parentFragmentManager.commit(true) {
             replace(android.R.id.content, preferenceFragment)
             addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager
         }
