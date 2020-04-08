@@ -163,6 +163,10 @@
                     android:host="hitomi.la"
                     android:pathPattern="..*/..*"
                     android:scheme="https" />
+                <data
+                    android:host="www.hitomi.la"
+                    android:pathPattern="..*/..*"
+                    android:scheme="https" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -265,6 +269,18 @@
                 <data
                     android:host="fakku.net"
                     android:pathPrefix="/hentai/"
+                    android:scheme="https" />
+                <data
+                    android:host="www.fakku.net"
+                    android:pathPrefix="/hentai/"
+                    android:scheme="https" />
+                <data
+                    android:host="fakku.net"
+                    android:pathPrefix="/stay-home"
+                    android:scheme="https" />
+                <data
+                    android:host="www.fakku.net"
+                    android:pathPrefix="/stay-home"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
