@@ -535,6 +535,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         // Prior Library found, drop and recreate db
         cleanUpDB();
         // Send results to scan
+        // TODO investigate if spawning a dialog in an invisible-themed activity such as this one can generate an invisible dialog on some devices
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(this.getString(R.string.please_wait));
         progressDialog.setIndeterminate(false);
