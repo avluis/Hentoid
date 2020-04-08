@@ -110,6 +110,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * @param images Book's list of images
      */
     private void onImagesChanged(List<ImageFile> images) {
+        if (imageIndex >= images.size()) imageIndex = images.size() -1; // Might happen when deleting the last page
         image = images.get(imageIndex);
 
         imgPath.setText(image.getAbsolutePath());
