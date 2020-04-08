@@ -77,12 +77,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
 
-
-    // TODO ViewModel auto-init is not easy to read; prefer initializing actively, e.g. by the activity
     public ImageViewerViewModel(@NonNull Application application) {
         super(application);
-        content.setValue(null); // Default content; tells everyone nothing has been loaded yet
     }
+
 
     @NonNull
     public LiveData<List<ImageFile>> getImages() {
@@ -319,11 +317,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .subscribe(
                                 () -> {
                                     currentImageSource = null;
-                                    // Switch to the next book
-                                    contentIds.remove(currentContentIndex);
-                                    if (currentContentIndex >= contentIds.size() && currentContentIndex > 0)
-                                        currentContentIndex--;
-                                    loadFromContent(contentIds.get(currentContentIndex));
+                                    // Switch to the next book if the list is populated (multi-book)
+                                    if (!contentIds.isEmpty()) {
+                                        contentIds.remove(currentContentIndex);
+                                        if (currentContentIndex >= contentIds.size() && currentContentIndex > 0)
+                                            currentContentIndex--;
+                                        loadFromContent(contentIds.get(currentContentIndex));
+                                    } else { // Close the viewer if the list is empty (single book)
+                                        content.setValue(null);
+                                    }
                                 },
                                 e -> {
                                     Timber.e(e);

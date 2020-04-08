@@ -452,7 +452,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param content Loaded book
      */
     private void onContentChanged(Content content) {
-        if (null == content) return;
+        if (null == content) {
+            onBackClick();
+            return;
+        }
         updateBookNavigation(content);
     }
 
