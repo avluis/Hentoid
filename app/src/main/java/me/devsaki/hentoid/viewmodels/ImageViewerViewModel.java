@@ -78,6 +78,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private Disposable searchDisposable = Disposables.empty();
 
 
+    // TODO ViewModel auto-init is not easy to read; prefer initializing actively, e.g. by the activity
     public ImageViewerViewModel(@NonNull Application application) {
         super(application);
         content.setValue(null); // Default content; tells everyone nothing has been loaded yet
