@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.events;
 
+import androidx.annotation.NonNull;
+
 import me.devsaki.hentoid.database.domains.Content;
 
 /**
@@ -29,7 +31,7 @@ public class DownloadEvent {
      * @param pagesKO    pages downloaded with errors
      * @param pagesTotal total pages to download
      */
-    public DownloadEvent(Content content, int eventType, int pagesOK, int pagesKO, int pagesTotal) {
+    public DownloadEvent(@NonNull Content content, int eventType, int pagesOK, int pagesKO, int pagesTotal) {
         this.content = content;
         this.eventType = eventType;
         this.pagesOK = pagesOK;
@@ -43,7 +45,7 @@ public class DownloadEvent {
      * @param content   Canceled content
      * @param eventType event type code (among DownloadEvent public static EV_ values)
      */
-    public DownloadEvent(Content content, int eventType) {
+    public DownloadEvent(@NonNull Content content, int eventType) {
         this.content = content;
         this.eventType = eventType;
         this.pagesOK = 0;

@@ -97,7 +97,7 @@
     <string name="pref_app_preview_summary_off">App preview in Recent Apps disabled.\nEnable if you need to take a screen shot.</string>
     <string name="pref_app_preview_summary_on">App preview in Recent Apps enabled.</string>
     <string name="pref_app_preview_default" translatable="false">false</string>
-    <string name="pref_analytics_preference_title">Google Analytics</string>
+    <string name="pref_analytics_preference_title">Firebase Analytics</string>
     <string name="pref_analytics_preference_summary_off">Analytics Tracking is currently disabled.\nEnabling it will help us improve the app by tracking crashes &amp; exceptions.</string>
     <string name="pref_analytics_preference_summary_on">Analytics Tracking is currently enabled.\nThanks for helping us improve Hentoid!</string>
     <string name="pref_analytics_preference_default" translatable="false">true</string>
@@ -132,7 +132,7 @@
     <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
 
     <string name="pref_viewer_zoom">Zoom</string>
-    <string name="pref_viewer_zoom_holding">Temp zoom while holding (WIP)</string>
+    <string name="pref_viewer_zoom_holding">Temp zoom while holding</string>
     <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
 
     <string name="pref_viewer_visuals">Visuals</string>
@@ -144,18 +144,28 @@
     <bool name="pref_viewer_tap_transitions_default" translatable="false">true</bool>
     <string name="pref_viewer_zoom_transitions">Enable zoom animation</string>
     <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
-    <string name="pref_viewer_separating_bars">Separating bars in vertical mode (WIP)</string>
+    <string name="pref_viewer_separating_bars">Separating bars in vertical mode</string>
     <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
+    <string name="pref_viewer_display_mode">Display mode for horizontal viewing</string>
+    <string name="pref_viewer_display_mode_default" translatable="false">0</string>
+    <string name="pref_viewer_auto_rotate">Auto-rotate pictures</string>
+    <bool name="pref_viewer_auto_rotate_default" translatable="false">false</bool>
+    <string name="pref_viewer_auto_rotate_summary_off">Pictures are not rotated</string>
+    <string name="pref_viewer_auto_rotate_summary_on">Pictures are rotated to best occupy the screen</string>
 
     <string name="pref_viewer_navigation">Navigation &amp; behaviour</string>
     <string name="pref_viewer_resume_last_left_title">Resume reading when reopening books</string>
-    <string name="pref_viewer_resume_last_left_summary_off">Reopening a book will always start at page 1</string>
-    <string name="pref_viewer_resume_last_left_summary_on">Reopening a book will resume on last read page, except if the end of the book has been reached</string>
+    <string name="pref_viewer_resume_last_left_summary_off">Reopening a book alway starts at page 1</string>
+    <string name="pref_viewer_resume_last_left_summary_on">Reopening a book resumes on last read page, except if the end of the book has been reached</string>
     <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
     <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
-    <string name="pref_viewer_read_threshold">Mark book as read after N pages (WIP)</string>
+    <string name="pref_viewer_continuous_title">Continuous reading</string>
+    <string name="pref_viewer_continuous_summary_off">Using next page on last page has no effect</string>
+    <string name="pref_viewer_continuous_summary_on">Using next page on last page loads the next book</string>
+    <bool name="pref_viewer_continuous_default" translatable="false">false</bool>
+    <string name="pref_viewer_read_threshold">Mark book as read after N pages</string>
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
-    <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page (WIP)</string>
+    <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
 </resources>

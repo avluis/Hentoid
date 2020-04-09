@@ -5,9 +5,9 @@
     tools:context=".activities.sources.BaseWebActivity"
     tools:ignore="AlwaysShowAction">
     <item
-        android:id="@+id/web_menu_refresh_stop"
-        android:icon="@drawable/ic_action_refresh"
-        android:title="@string/web_refresh_stop"
+        android:id="@+id/web_menu_home"
+        android:icon="@drawable/ic_menu_home"
+        android:title="@string/web_home"
         app:showAsAction="always" />
     <item
         android:id="@+id/web_menu_gallery"

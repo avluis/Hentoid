@@ -2,7 +2,6 @@ package me.devsaki.hentoid.parsers.content;
 
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -13,8 +12,8 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -46,8 +45,8 @@ public class NhentaiContent implements ContentParser {
     @Selector(value = "#info a[href*='/category']")
     private List<Element> categories;
 
-    @Selector(value = "#thumbnail-container img[data-src]", attr = "data-src")
-    private List<String> thumbs;
+    @Selector(value = "#thumbnail-container img[data-src]")
+    private List<Element> thumbs;
 
 
     public Content toContent(@Nonnull String url) {
@@ -78,18 +77,9 @@ public class NhentaiContent implements ContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.NHENTAI);
         result.addAttributes(attributes);
 
-        String[] coverParts = coverUrl.split("/");
-        String mediaId = coverParts[coverParts.length - 2];
-        String serverUrl = "https://i.nhentai.net/galleries/" + mediaId + "/"; // We infer the whole book is stored on the same server
-
-        int index = 1;
-        List<ImageFile> images = new ArrayList<>();
-        for (String s : thumbs) {
-            images.add(new ImageFile(index, serverUrl + index + "." + FileHelper.getExtension(s), StatusContent.SAVED, thumbs.size())); // We infer actual book page images have the same format as their thumbs
-            index++;
-        }
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(result, thumbs), StatusContent.SAVED);
         result.setImageFiles(images);
-        result.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
+        result.setQtyPages(images.size());
 
         return result;
     }

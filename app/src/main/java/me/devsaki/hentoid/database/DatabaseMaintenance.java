@@ -3,6 +3,8 @@ package me.devsaki.hentoid.database;
 import android.content.Context;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -21,7 +23,7 @@ public class DatabaseMaintenance {
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup
      */
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    public static void performDatabaseHousekeeping(Context context) {
+    public static void performDatabaseHousekeeping(@NonNull Context context) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
         Timber.d("Content item(s) count: %s", db.countContentEntries());
@@ -36,7 +38,7 @@ public class DatabaseMaintenance {
         }
     }
 
-    private static void performDatabaseCleanups(ObjectBoxDB db) {
+    private static void performDatabaseCleanups(@NonNull ObjectBoxDB db) {
         // Set items that were being downloaded in previous session as paused
         Timber.i("Updating queue status : start");
         db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
@@ -60,7 +62,7 @@ public class DatabaseMaintenance {
         for (Content c : contents) db.deleteContent(c);
         Timber.i("Clearing temporary books : done");
 
-        // Update URLs from deprecated Pururin hosts
+        // Update URLs from deprecated Pururin image hosts
         Timber.i("Upgrading Pururin image hosts : start");
         contents = db.selectContentWithOldPururinHost();
         Timber.i("Upgrading Pururin image hosts : %s books detected", contents.size());
@@ -73,13 +75,25 @@ public class DatabaseMaintenance {
             db.insertContent(c);
         }
         Timber.i("Upgrading Pururin image hosts : done");
+
+        // Update URLs from deprecated Tsumino image covers
+        Timber.i("Upgrading Tsumino covers : start");
+        contents = db.selectContentWithOldTsuminoCovers();
+        Timber.i("Upgrading Tsumino covers : %s books detected", contents.size());
+        for (Content c : contents) {
+            String url = c.getCoverImageUrl().replace("www.tsumino.com/Image/Thumb", "content.tsumino.com/thumbs");
+            if (!url.endsWith("/1")) url += "/1";
+            c.setCoverImageUrl(url);
+            db.insertContent(c);
+        }
+        Timber.i("Upgrading Tsumino covers : done");
     }
 
     /**
      * Handles complex DB version updates at startup
      */
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    public static void performOldDatabaseUpdate(HentoidDB db) {
+    public static void performOldDatabaseUpdate(@NonNull HentoidDB db) {
         // Update all "storage_folder" fields in CONTENT table (mandatory) (since versionCode 44 / v1.2.2)
         List<Content> contents = db.selectContentEmptyFolder();
         if (contents != null && !contents.isEmpty()) {
@@ -109,7 +123,7 @@ public class DatabaseMaintenance {
     }
 
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    public static boolean hasToMigrate(Context context) {
+    public static boolean hasToMigrate(@NonNull Context context) {
         HentoidDB oldDb = HentoidDB.getInstance(context);
         return (oldDb.countContentEntries() > 0);
     }

@@ -10,6 +10,7 @@ public enum ErrorType {
     CAPTCHA(3, "Captcha"),
     IMG_PROCESSING(4, "Image processing"),
     SITE_LIMIT(5, "Downloads/bandwidth limit reached"),
+    ACCOUNT(6, "No account or insufficient credentials"),
     UNDEFINED(99, "Undefined");
 
     private final int code;

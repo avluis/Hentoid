@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/image_dialog_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:theme="@style/Theme.Light.BottomSheetDialog">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/Theme.Light.BottomSheetDialog">
+
+        <TextView
+            android:id="@+id/image_path"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/caption"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/app_intro" />
+
+        <TextView
+            android:id="@+id/image_dimensions"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/caption"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/image_path"
+            tools:text="@string/app_intro" />
+
+        <View
+            android:id="@+id/img_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="?colorOnPrimary"
+            app:layout_constraintTop_toBottomOf="@id/image_dimensions" />
+
+        <ImageView
+            android:id="@+id/img_action_favourite"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_fav_empty"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_divider"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/img_action_copy"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_action_copy"
+            app:layout_constraintEnd_toStartOf="@id/img_action_share"
+            app:layout_constraintStart_toEndOf="@id/img_action_favourite"
+            app:layout_constraintTop_toBottomOf="@id/img_divider"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/img_action_share"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_action_share"
+            app:layout_constraintEnd_toStartOf="@id/img_action_delete"
+            app:layout_constraintStart_toEndOf="@id/img_action_copy"
+            app:layout_constraintTop_toBottomOf="@id/img_divider"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/img_action_delete"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="8dp"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_action_delete_forever"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/img_divider"
+            tools:ignore="ContentDescription" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

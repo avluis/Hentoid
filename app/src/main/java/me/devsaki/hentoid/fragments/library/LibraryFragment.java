@@ -70,6 +70,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -153,6 +154,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
 
+    // Used to start processing when the recyclerView has finished updating
+    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+
+
     // === SEARCH PARAMETERS
     // Current text search query
     private String query = "";
@@ -173,7 +178,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         @Override
         public boolean areContentsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.equals(newItem)
+            return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
+                    && oldItem.getSite().equals(newItem.getSite())
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
                     && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
                     && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
@@ -556,7 +562,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             }
         }
 
-        String message = getResources().getQuantityString(R.plurals.redownload_confirm, securedContent);
+        String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
         if (securedContent > 0)
             message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
 
@@ -570,14 +576,15 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 .setPositiveButton(android.R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            downloadContent(contents, true);
+                            redownloadContent(contents, true);
+                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.deselect();
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
                 .create()
                 .show();
-
     }
 
     /**
@@ -653,7 +660,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * Update favourite filter button appearance on the action bar
      */
     private void updateFavouriteFilter() {
-        favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
+        favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
     }
 
     /**
@@ -675,7 +682,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         int currentPosition = getTopItemPosition();
         if (currentPosition > 0 || -1 == topItemPosition) topItemPosition = currentPosition;
 
-        Timber.d(">> memorize position %s", topItemPosition);
         outState.putInt(KEY_LAST_LIST_POSITION, topItemPosition);
         topItemPosition = -1;
     }
@@ -691,7 +697,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (fastAdapter != null) fastAdapter.withSavedInstanceState(savedInstanceState);
         // Mark last position in the list to be the one it will come back to
         topItemPosition = savedInstanceState.getInt(KEY_LAST_LIST_POSITION, 0);
-        Timber.d(">> position loaded from memory %s", topItemPosition);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -763,7 +768,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             // Restart the app with the library activity on top
             Intent intent = requireActivity().getIntent();
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             requireActivity().finish();
             startActivity(intent);
@@ -800,7 +804,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(false), ContentItem::new);
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
-            fastAdapter.registerTypeInstance(new ContentItem(false));
+            ContentItem item = new ContentItem(false);
+            fastAdapter.registerItemFactory(item.getType(), item);
 
             itemAdapter = null;
         } else { // Paged mode
@@ -960,10 +965,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">>Library changed ! Size=%s", result.size());
 
-        // Don't passive-refresh the list if the order is random
-        if (!newSearch && Preferences.Constant.ORDER_CONTENT_RANDOM == Preferences.getContentSortOrder())
-            return;
-
         updateTitle(result.size(), totalContentCount);
 
         // Update background text
@@ -984,7 +985,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
-        if (Helper.isNumeric(query)) {
+        if (newSearch && Helper.isNumeric(query)) {
             ArrayList<Integer> siteCodes = Stream.of(result)
                     .filter(content -> query.equals(content.getUniqueSiteId()))
                     .map(Content::getSite)
@@ -995,10 +996,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
 
         // If the update is the result of a new search, get back on top of the list
-        if (newSearch) {
-            Timber.i(">> new search; position reset to 0");
-            topItemPosition = 0;
-        }
+        if (newSearch) topItemPosition = 0;
 
         // Update displayed books
         if (Preferences.getEndlessScroll()) {
@@ -1062,7 +1060,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param content Content whose "source" button has been clicked on
      */
     private void onBookSourceClick(@NonNull Content content) {
-        ContentHelper.viewContent(requireContext(), content);
+        ContentHelper.viewContentGalleryPage(requireContext(), content);
     }
 
     /**
@@ -1088,13 +1086,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param content Content to add back to the download queue
      */
-    public void downloadContent(@NonNull final Content content) {
+    public void redownloadContent(@NonNull final Content content) {
         List<Content> contentList = new ArrayList<>();
         contentList.add(content);
-        downloadContent(contentList, false);
+        redownloadContent(contentList, false);
     }
 
-    private void downloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
+    private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
         for (Content c : contentList) viewModel.addContentToQueue(c, targetImageStatus);
 
@@ -1141,15 +1139,24 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     /**
      * Callback for the end of item diff calculations
-     * Activated when all displayed items are placed on their definitive position
+     * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
         if (topItemPosition > -1) {
-            int currentPosition = getTopItemPosition();
-            if (currentPosition != topItemPosition)
-                llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
+            int targetPos = topItemPosition;
+            listRefreshDebouncer.submit(targetPos);
             topItemPosition = -1;
         }
+    }
+
+    /**
+     * Callback for the end of recycler updates
+     * Activated when all _displayed_ items are placed on their definitive position
+     */
+    private void onRecyclerUpdated(int topItemPosition) {
+        int currentPosition = getTopItemPosition();
+        if (currentPosition != topItemPosition)
+            llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
     }
 
     /**

@@ -24,12 +24,12 @@ import okhttp3.ResponseBody;
 
 /**
  * Created by Robb_w in 2018/04; heavily inspired by
- *      https://gist.github.com/LOG-TAG/3ad1c191b3ca7eab3ea6834386e30eb9
- *     and
- *      https://gist.github.com/JakeWharton/5616899
- *  <p>
- *  okhttp wrapper for Volley; allows the use of okhttp as low-level network operations handler by Volley
- *  The main reason being okhttp's ability to automatically follow 301 & 302's while default Volley handler cannot
+ * https://gist.github.com/LOG-TAG/3ad1c191b3ca7eab3ea6834386e30eb9
+ * and
+ * https://gist.github.com/JakeWharton/5616899
+ * <p>
+ * okhttp wrapper for Volley; allows the use of okhttp as low-level network operations handler by Volley
+ * The main reason being okhttp's ability to automatically follow 301 & 302's while default Volley handler cannot
  */
 public class VolleyOkHttp3Stack extends BaseHttpStack {
 
@@ -81,9 +81,7 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
     @Nullable
     private static RequestBody createRequestBody(Request r) throws AuthFailureError {
         final byte[] body = r.getBody();
-        if (body == null) {
-            return null;
-        }
+        if (body == null) return null;
         return RequestBody.create(MediaType.parse(r.getBodyContentType()), body);
     }
 
@@ -93,11 +91,13 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
         okHttpRequestBuilder.url(request.getUrl());
 
         Map<String, String> headers = request.getHeaders();
-        for (final String name : headers.keySet()) {
-            okHttpRequestBuilder.addHeader(name, headers.get(name));
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            String value = (null == entry.getValue()) ? "" : entry.getValue();
+            okHttpRequestBuilder.addHeader(entry.getKey(), value);
         }
-        for (final String name : additionalHeaders.keySet()) {
-            okHttpRequestBuilder.addHeader(name, additionalHeaders.get(name));
+        for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
+            String value = (null == entry.getValue()) ? "" : entry.getValue();
+            okHttpRequestBuilder.addHeader(entry.getKey(), value);
         }
 
         setConnectionParametersForRequest(okHttpRequestBuilder, request);
@@ -105,7 +105,6 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
         okhttp3.Request okHttpRequest = okHttpRequestBuilder.build();
         Call okHttpCall = client.newCall(okHttpRequest);
         Response okHttpResponse = okHttpCall.execute();
-
 
         int code = okHttpResponse.code();
         ResponseBody body = okHttpResponse.body();
@@ -120,9 +119,7 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
         for (int i = 0, len = responseHeaders.size(); i < len; i++) {
             final String name = responseHeaders.name(i);
             final String value = responseHeaders.value(i);
-            if (name != null) {
-                headers.add(new Header(name, value));
-            }
+            headers.add(new Header(name, value));
         }
         return headers;
     }

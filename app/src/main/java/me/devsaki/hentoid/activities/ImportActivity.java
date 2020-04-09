@@ -277,11 +277,12 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         importFolder(getExistingHentoidDirFrom(currentRootDir));
     }
 
-    private void revokePermission() {
-        for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
-            getContentResolver().releasePersistableUriPermission(p.getUri(),
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        }
+    private void revokePreviousPermissions(@NonNull Uri newUri) {
+        for (UriPermission p : getContentResolver().getPersistedUriPermissions())
+            if (!p.getUri().equals(newUri))
+                getContentResolver().releasePersistableUriPermission(p.getUri(),
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
         if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
             Timber.d("Permissions revoked successfully.");
         } else {
@@ -355,10 +356,10 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         int treePathSeparator = treePath.indexOf(':');
         String folderName = treePath.substring(treePathSeparator + 1);
 
-        // Release previous access permissions
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) revokePermission();
+        // Release previous access permissions, if different than the new one
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) revokePreviousPermissions(treeUri);
 
-        // Persist access permissions
+        // Persist new access permission
         getContentResolver().takePersistableUriPermission(treeUri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
@@ -534,6 +535,7 @@ public class ImportActivity extends AppCompatActivity implements KitkatRootFolde
         // Prior Library found, drop and recreate db
         cleanUpDB();
         // Send results to scan
+        // TODO investigate if spawning a dialog in an invisible-themed activity such as this one can generate an invisible dialog on some devices
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(this.getString(R.string.please_wait));
         progressDialog.setIndeterminate(false);

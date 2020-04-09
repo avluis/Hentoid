@@ -4,6 +4,7 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'io.fabric'
 apply plugin: 'org.sonarqube'
+apply plugin: 'de.mobilej.unmock'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
@@ -25,7 +26,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 28
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.11.2a'
+        versionName '1.11.3'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN")?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -34,6 +35,12 @@ android {
         buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ "objectbox.incremental" : "true" ]
+            }
+        }
     }
     buildTypes {
         debug {
@@ -73,20 +80,22 @@ dependencies {
     implementation project(':fakkuLib')
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:2.19.0'
+    testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
+    testImplementation "androidx.arch.core:core-testing:2.1.0"
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.50"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.71"
 
     // Firebase
-    implementation 'com.google.firebase:firebase-analytics:17.2.1'
+    implementation 'com.google.firebase:firebase-analytics:17.2.3'
 
     // Crashlytics
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
 
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.exifinterface:exifinterface:1.1.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     //implementation 'com.google.android.material:material:1.0.0'
@@ -96,8 +105,15 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
-    implementation 'androidx.paging:paging-runtime:2.1.1'
-    implementation "androidx.fragment:fragment-ktx:1.1.0"
+    implementation 'androidx.paging:paging-runtime:2.1.2'
+    implementation "androidx.fragment:fragment-ktx:1.2.4"
+
+    // For ViewModel to work
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
+    kapt('androidx.lifecycle:lifecycle-common-java8:2.2.0')
+
 
     // Image loader: github.com/bumptech/glide
     implementation 'com.github.bumptech.glide:glide:4.11.0'
@@ -134,7 +150,7 @@ dependencies {
     implementation 'com.annimon:stream:1.2.1'
 
     // LeakCanary: github.com/square/leakcanary
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.1'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.2'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android:flexbox:2.0.0'
@@ -144,6 +160,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation 'org.apache.commons:commons-lang3:3.9'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-text/
+    implementation 'org.apache.commons:commons-text:1.4' // !!! Don't update that one or Lint will go mad
 
     // Retrofit-ready-ready HTML parser with CSS selectors : https://github.com/DroidsOnRoids/jspoon
     implementation 'pl.droidsonroids:jspoon:1.3.2'
@@ -158,37 +177,33 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.2.16'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 
-    // For ViewModel to work
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
-    kapt('androidx.lifecycle:lifecycle-common-java8:2.1.0')
-
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
     if (includeObjectBoxBrowser.toBoolean()) {
-        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.5.0"
-        releaseImplementation "io.objectbox:objectbox-android:2.5.0"
+        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.5.1"
+        releaseImplementation "io.objectbox:objectbox-android:2.5.1"
     }
-
-    // https://github.com/davemorrissey/subsampling-scale-image-view
-    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
 
     // Cleaner date manipulation
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
+    // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
+    implementation 'com.github.penfeizhou.android.animation:apng:1.3.3'
+
     // https://github.com/mikepenz/FastAdapter
-    implementation "com.mikepenz:fastadapter:5.0.0-a03" // needs the `expandable`, `drag` and `scroll` extension.
-    implementation "com.mikepenz:fastadapter-extensions-drag:5.0.0-a03" // drag support
-    implementation "com.mikepenz:fastadapter-extensions-expandable:5.0.0-a03"
-    implementation "com.mikepenz:fastadapter-extensions-scroll:5.0.0-a03" // scroll helpers
-    implementation "com.mikepenz:fastadapter-extensions-paged:5.0.0-a03"
-    implementation "com.mikepenz:fastadapter-extensions-ui:5.0.0-a03" // needs the `expandable`, `drag` and `scroll` extension.
-    implementation "com.mikepenz:fastadapter-extensions-utils:5.0.0-a03" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter:5.0.0" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter-extensions-diff:5.0.0" // diff util helpers
+    implementation "com.mikepenz:fastadapter-extensions-drag:5.0.0" // drag support
+    implementation "com.mikepenz:fastadapter-extensions-expandable:5.0.0"
+    implementation "com.mikepenz:fastadapter-extensions-scroll:5.0.0" // scroll helpers
+    implementation "com.mikepenz:fastadapter-extensions-paged:5.0.0"
+    implementation "com.mikepenz:fastadapter-extensions-ui:5.0.0" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter-extensions-utils:5.0.0" // needs the `expandable`, `drag` and `scroll` extension.
     implementation "com.mikepenz:materialize:1.2.1"
 
     // ProgressDialog alternative - https://github.com/Livin21/MissMe
     implementation 'com.lmntrx.android.library.livin.missme:missme:0.1.5'
+    implementation project(path: ':app:customssiv')
 }
 
 sonarqube {
@@ -200,6 +215,36 @@ sonarqube {
         property "sonar.sources", "src/main/"
         property "sonar.login", "3d0dc80792bad95f0193e7ed626cf090ac83e208"
     }
+}
+
+unMock {
+    keep "android.widget.BaseAdapter"
+    keep "android.widget.ArrayAdapter"
+    keep "android.os.Bundle"
+    keepStartingWith "android.database.MatrixCursor"
+    keep "android.database.AbstractCursor"
+    keep "android.database.CrossProcessCursor"
+    keepStartingWith "android.text.TextUtils"
+    keepStartingWith "android.util."
+    keepStartingWith "android.text."
+    keepStartingWith "android.content.ContentValues"
+    keepStartingWith "android.content.ComponentName"
+    keepStartingWith "android.content.ContentUris"
+    keepStartingWith "android.content.ContentProviderOperation"
+    keepStartingWith "android.content.ContentProviderResult"
+    keepStartingWith "android.content.UriMatcher"
+    keepStartingWith "android.content.Intent"
+    keepStartingWith "android.content.IIntentReceiver"
+    keep "android.location.Location"
+    keepStartingWith "android.content.res.Configuration"
+    keepStartingWith "org."
+    keepStartingWith "libcore."
+    keepStartingWith "com.android.internal.R"
+    keepStartingWith "com.android.internal.util."
+    keep "android.net.Uri"
+    keep "android.webkit.WebSettings"
+
+    keepStartingWith "me."
 }
 
 apply plugin: 'com.google.gms.google-services'

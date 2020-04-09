@@ -15,12 +15,14 @@ import java.util.Map;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.exception.ParseException;
 import okhttp3.Response;
 import timber.log.Timber;
 
@@ -37,11 +39,11 @@ public class HitomiParser implements ImageListParser {
     private static final String HOSTNAME_SUFFIX = "a";
     private static final char HOSTNAME_PREFIX_BASE = 97;
 
-    public List<ImageFile> parseImageList(Content content) throws Exception {
+    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         String pageUrl = content.getReaderUrl();
 
         Document doc = getOnlineDocument(pageUrl);
-        if (null == doc) throw new Exception("Document unreachable : " + pageUrl);
+        if (null == doc) throw new ParseException("Document unreachable : " + pageUrl);
 
         Timber.d("Parsing: %s", pageUrl);
 
@@ -96,7 +98,7 @@ public class HitomiParser implements ImageListParser {
         String imageSubdomain = subdomainFromGalleryId(Integer.valueOf(componentB, 16));
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/" + folder + "/" + componentA + "/" + componentB + "/" + hash + "." + extension;
 
-        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
+        return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
     }
 
     private ImageFile buildSimplePicture(@NonNull Content content, @NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
@@ -106,14 +108,14 @@ public class HitomiParser implements ImageListParser {
         String imageSubdomain = subdomainFromGalleryId(referenceId);
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/galleries/" + content.getUniqueSiteId() + "/" + page.getName();
 
-        return ParseHelper.urlToImageFile(pageUrl, order, maxPages);
+        return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
     }
 
     private String subdomainFromGalleryId(int referenceId) {
         return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
     }
 
-    public ImageFile parseBackupUrl(String url, int order, int maxPages) {
+    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // Hitomi does not use backup URLs
         return null;
     }

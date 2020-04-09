@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.views.ssiv;
+package me.devsaki.hentoid.customssiv;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;

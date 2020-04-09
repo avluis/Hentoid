@@ -2,6 +2,8 @@ package me.devsaki.hentoid.parsers.images;
 
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.jsoup.nodes.Document;
@@ -19,6 +21,7 @@ import javax.annotation.Nullable;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.HttpHelper;
@@ -35,7 +38,7 @@ public class EHentaiParser implements ImageListParser {
     private boolean processHalted = false;
 
 
-    public List<ImageFile> parseImageList(Content content) throws Exception {
+    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
         List<ImageFile> result = new ArrayList<>();
@@ -91,8 +94,8 @@ public class EHentaiParser implements ImageListParser {
                     if (!imageUrl.isEmpty()) {
                         // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
                         if (imageUrl.contains("/509.gif"))
-                            throw new LimitReachedException("Bandwidth limit reached");
-                        img = ParseHelper.urlToImageFile(imageUrl, order++, pageUrls.size());
+                            throw new LimitReachedException("E-hentai download points regenerate over time or can be bought on e-hentai if you're in a hurry");
+                        img = ParseHelper.urlToImageFile(imageUrl, order++, pageUrls.size(), StatusContent.SAVED);
                         result.add(img);
 
                         // "Click here if the image fails loading" link
@@ -131,7 +134,7 @@ public class EHentaiParser implements ImageListParser {
     }
 
     @Nullable
-    public ImageFile parseBackupUrl(String url, int order, int maxPages) throws Exception {
+    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) throws Exception {
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         Document doc = getOnlineDocument(url, headers, Site.EHENTAI.canKnowHentoidAgent());
@@ -140,17 +143,16 @@ public class EHentaiParser implements ImageListParser {
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
             if (imageUrl.contains("/509.gif"))
                 throw new LimitReachedException("Bandwidth limit reached");
-            if (!imageUrl.isEmpty()) return ParseHelper.urlToImageFile(imageUrl, order, maxPages);
+            if (!imageUrl.isEmpty())
+                return ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED);
         }
         return null;
     }
 
     private void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
-        Elements imageLinks = doc.getElementsByClass("gdtm");
-        for (Element e : imageLinks) {
-            e = e.select("div").first().select("a").first();
-            pageUrls.add(e.attr("href"));
-        }
+        Elements imageLinks = doc.select(".gdtm div a"); // Normal thumbs
+        if (null == imageLinks || imageLinks.isEmpty()) imageLinks = doc.select(".gdtl a"); // Large thumbs
+        for (Element e : imageLinks) pageUrls.add(e.attr("href"));
     }
 
     private String getDisplayedImageUrl(@Nonnull Document doc) {

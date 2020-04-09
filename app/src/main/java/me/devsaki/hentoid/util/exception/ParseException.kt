@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.util.exception
 
-class JSONParseException : Exception {
+class ParseException : Exception {
 
     constructor(message: String) : super(message)
 

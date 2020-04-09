@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
@@ -116,12 +115,6 @@ public class HentoidApp extends Application {
         boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
-        // This code has been inherited from the FakkuDroid era; no documentation available
-        // Best guess : allows networking on main thread
-        // TODO : test and remove during a future beta; networking shouldn't happen on main thread anymore
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
         // DB housekeeping
         performDatabaseHousekeeping();
 
@@ -160,7 +153,7 @@ public class HentoidApp extends Application {
     public static void reset(Activity activity) {
         Preferences.setIsFirstRun(true);
         Intent intent = new Intent(activity, IntroActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         instance.startActivity(intent);
         activity.finish();
     }

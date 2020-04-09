@@ -288,7 +288,6 @@
                 android:key="pref_viewer_invert_volume_rocker"
                 android:title="@string/pref_viewer_invert_volume"
                 app:iconSpaceReserved="false" />
-            <!--
             <PreferenceCategory
                 android:title="@string/pref_viewer_zoom"
                 app:iconSpaceReserved="false">
@@ -298,7 +297,6 @@
                     android:title="@string/pref_viewer_zoom_holding"
                     app:iconSpaceReserved="false" />
             </PreferenceCategory>
-            -->
         </PreferenceScreen>
 
         <PreferenceScreen
@@ -309,6 +307,21 @@
                 android:defaultValue="@bool/pref_viewer_keep_screen_on_default"
                 android:key="pref_viewer_keep_screen_on"
                 android:title="@string/pref_viewer_keep_screen_on"
+                app:iconSpaceReserved="false" />
+            <ListPreference
+                android:defaultValue="@string/pref_viewer_display_mode_default"
+                android:entries="@array/pref_viewer_display_mode_entries"
+                android:entryValues="@array/pref_viewer_display_mode_values"
+                android:key="pref_viewer_image_display"
+                android:summary="@string/pref_generic_summary"
+                android:title="@string/pref_viewer_display_mode"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@bool/pref_viewer_auto_rotate_default"
+                android:key="pref_viewer_auto_rotate"
+                android:title="@string/pref_viewer_auto_rotate"
+                android:summaryOff="@string/pref_viewer_auto_rotate_summary_off"
+                android:summaryOn="@string/pref_viewer_auto_rotate_summary_on"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_display_pagenum_default"
@@ -325,7 +338,6 @@
                 android:key="pref_viewer_zoom_transitions"
                 android:title="@string/pref_viewer_zoom_transitions"
                 app:iconSpaceReserved="false" />
-            <!--
             <ListPreference
                 android:defaultValue="@string/pref_viewer_separating_bars_default"
                 android:entries="@array/pref_viewer_separating_bars_entries"
@@ -334,7 +346,6 @@
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_viewer_separating_bars"
                 app:iconSpaceReserved="false" />
-                -->
         </PreferenceScreen>
 
         <PreferenceScreen
@@ -353,7 +364,13 @@
                 android:key="pref_viewer_open_gallery"
                 android:title="@string/pref_viewer_open_gallery"
                 app:iconSpaceReserved="false" />
-            <!--
+            <CheckBoxPreference
+                android:defaultValue="@bool/pref_viewer_continuous_default"
+                android:key="pref_viewer_continuous"
+                android:title="@string/pref_viewer_continuous_title"
+                android:summaryOff="@string/pref_viewer_continuous_summary_off"
+                android:summaryOn="@string/pref_viewer_continuous_summary_on"
+                app:iconSpaceReserved="false" />
             <ListPreference
                 android:defaultValue="@string/pref_viewer_read_threshold_default"
                 android:entries="@array/pref_viewer_read_threshold_entries"
@@ -362,8 +379,6 @@
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_viewer_read_threshold"
                 app:iconSpaceReserved="false" />
-                -->
-            <!--
             <ListPreference
                 android:defaultValue="@string/pref_viewer_slideshow_delay_default"
                 android:entries="@array/pref_viewer_slideshow_delay_entries"
@@ -372,7 +387,6 @@
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_viewer_slideshow_delay"
                 app:iconSpaceReserved="false" />
-                -->
         </PreferenceScreen>
 
     </PreferenceScreen>

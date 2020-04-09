@@ -32,7 +32,7 @@ public class GitHubReleaseDescItem extends AbstractItem<GitHubReleaseDescItem.Re
     private final @Type
     int entryType;
 
-    public GitHubReleaseDescItem(String text, @Type int entryType) {
+    GitHubReleaseDescItem(String text, @Type int entryType) {
         this.text = text;
         this.entryType = entryType;
     }
@@ -66,7 +66,7 @@ public class GitHubReleaseDescItem extends AbstractItem<GitHubReleaseDescItem.Re
 
 
         @Override
-        public void bindView(@NotNull GitHubReleaseDescItem item, @NotNull List<Object> list) {
+        public void bindView(@NotNull GitHubReleaseDescItem item, @NotNull List<?> list) {
             if (item.entryType == Type.DESCRIPTION) setDescContent(item.text);
             else if (item.entryType == Type.LIST_ITEM) setListContent(item.text);
         }

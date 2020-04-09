@@ -12,7 +12,7 @@
         app:showAsAction="collapseActionView|always" />
     <item
         android:id="@+id/action_favourites"
-        android:icon="@drawable/ic_fav_empty"
+        android:icon="@drawable/ic_filter_favs_off"
         android:title="@string/menu_fav"
         android:checkable="true"
         android:checked="false"

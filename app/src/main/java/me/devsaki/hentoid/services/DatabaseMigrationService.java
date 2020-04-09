@@ -77,18 +77,18 @@ public class DatabaseMigrationService extends IntentService {
         migrate();
     }
 
-    private void eventProgress(Content content, int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, content, booksOK, booksKO, nbBooks));
+    private void eventProgress(int nbBooks, int booksOK, int booksKO) {
+        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int nbBooks, int booksOK, int booksKO, File importLogFile) {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, importLogFile));
     }
 
-    private void trace(int priority, List<String> memoryLog, String s, String... t) {
+    private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
         s = String.format(s, (Object[]) t);
         Timber.log(priority, s);
-        if (null != memoryLog) memoryLog.add(s);
+        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s));
     }
 
     private void cleanUpDB() {
@@ -113,7 +113,7 @@ public class DatabaseMigrationService extends IntentService {
         ObjectBoxDB newDB = ObjectBoxDB.getInstance(this);
 
         List<Integer> bookIds = oldDB.selectMigrableContentIds();
-        List<String> log = new ArrayList<>();
+        List<LogUtil.LogEntry> log = new ArrayList<>();
         SparseArray<Long> keyMapping = new SparseArray<>();
 
         trace(Log.INFO, log, "Books migration starting : %s books total", bookIds.size() + "");
@@ -138,7 +138,7 @@ public class DatabaseMigrationService extends IntentService {
                 trace(Log.ERROR, log, "Migrate book ERROR : %s %s %s", e.getMessage(), bookIds.get(i) + "", content.getTitle());
             }
 
-            eventProgress(content, bookIds.size(), booksOK, booksKO);
+            eventProgress(bookIds.size(), booksOK, booksKO);
         }
         trace(Log.INFO, log, "Books migration complete : %s OK; %s KO", booksOK + "", booksKO + "");
 
@@ -170,7 +170,7 @@ public class DatabaseMigrationService extends IntentService {
         stopSelf();
     }
 
-    private LogUtil.LogInfo buildLogInfo(@NonNull List<String> log) {
+    private LogUtil.LogInfo buildLogInfo(@NonNull List<LogUtil.LogEntry> log) {
         LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
         logInfo.setLogName("Migration");
         logInfo.setFileName("migration_log");

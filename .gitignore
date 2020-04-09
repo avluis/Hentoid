@@ -52,3 +52,12 @@ signing.gradle
 *.ipr
 *.iws
 .idea/
+/app/objectbox-jni-windows-x64.dll
+/fakkuLib/old/
+/fakkuLib/old2/
+/fakkuLib/reference/
+/captures/
+/local_history.patch
+/app/fabric.properties
+/app/objectbox-models/default.json.bak
+/objectbox-jni-windows-x64.dll

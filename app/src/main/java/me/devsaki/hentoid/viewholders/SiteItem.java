@@ -73,9 +73,8 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
             chk = view.findViewById(R.id.drawer_item_chk);
         }
 
-
         @Override
-        public void bindView(@NotNull SiteItem item, @NotNull List<Object> list) {
+        public void bindView(@NotNull SiteItem item, @NotNull List<?> list) {
             dragHandle.setVisibility(item.showHandle ? View.VISIBLE : View.GONE);
             title.setText(item.site.getDescription());
             icon.setImageResource(item.site.getIco());

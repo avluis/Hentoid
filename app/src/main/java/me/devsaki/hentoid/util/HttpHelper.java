@@ -99,10 +99,10 @@ public class HttpHelper {
     private static Map<String, String> okHttpHeadersToWebResourceHeaders(@NonNull final Map<String, List<String>> okHttpHeaders) {
         Map<String, String> result = new HashMap<>();
 
-        for (String key : okHttpHeaders.keySet()) {
-            List<String> values = okHttpHeaders.get(key);
+        for (Map.Entry<String, List<String>> entry : okHttpHeaders.entrySet()) {
+            List<String> values = entry.getValue();
             if (values != null)
-                result.put(key, TextUtils.join(getValuesSeparatorFromHttpHeader(key), values));
+                result.put(entry.getKey(), TextUtils.join(getValuesSeparatorFromHttpHeader(entry.getKey()), values));
         }
 
         return result;
@@ -135,6 +135,12 @@ public class HttpHelper {
         } else return new Pair<>(rawContentType, null);
     }
 
+    /**
+     * Return the extension of the file located at the given URI, without the leading '.'
+     *
+     * @param uri Location of the file
+     * @return Extension of the file located at the given URI, without the leading '.'
+     */
     public static String getExtensionFromUri(String uri) {
         String theUri = uri.toLowerCase();
         String uriNoParams = theUri;
@@ -194,8 +200,11 @@ public class HttpHelper {
         String existingCookiesStr = mgr.getCookie(domain);
         if (existingCookiesStr != null) {
             Map<String, String> existingCookies = parseCookies(existingCookiesStr);
-            for (String key : cookies.keySet()) {
-                if (!existingCookies.containsKey(key)) cookiesToSet.put(key, cookies.get(key));
+
+            for (Map.Entry<String, String> entry : cookies.entrySet()) {
+                String key = entry.getKey();
+                String value = (null == entry.getValue()) ? "" : entry.getValue();
+                if (!existingCookies.containsKey(key)) cookiesToSet.put(key, value);
                 else {
                     String val = existingCookies.get(key);
                     if (val != null && !val.equals(cookies.get(key)))
@@ -204,7 +213,7 @@ public class HttpHelper {
             }
         }
 
-        for (String key : cookiesToSet.keySet())
-            mgr.setCookie(domain, key + "=" + cookiesToSet.get(key));
+        for (Map.Entry<String, String> entry : cookiesToSet.entrySet())
+            mgr.setCookie(domain, entry.getKey() + "=" + entry.getValue());
     }
 }

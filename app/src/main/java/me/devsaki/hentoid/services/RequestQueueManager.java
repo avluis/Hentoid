@@ -12,10 +12,6 @@ import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.VolleyOkHttp3Stack;
@@ -29,20 +25,17 @@ import timber.log.Timber;
  */
 public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListener<T> {
     private static RequestQueueManager mInstance;           // Instance of the singleton
-    private static Boolean allowParallelDownloads = null;   // True if current instance can download from the same IP with multiple simultaneous connexions
+    //    private static Boolean allowParallelDownloads = null;   // True if current instance can download from the same IP with multiple simultaneous connexions
     private static final int TIMEOUT_MS = 15000;
 
     private RequestQueue mRequestQueue;                     // Volley download request queue
     private int nbRequests = 0;                             // Number of requests currently in the queue (for debug display)
 
     // Anti-parallel downloads management
-    private Map<String, List<Request<T>>> serverRequests;  // Stores requests for all servers to be handed down to Volley during anti-parallel mode
+//    private Map<String, List<Request<T>>> serverRequests;  // Stores requests for all servers to be handed down to Volley during anti-parallel mode
 
 
-    private RequestQueueManager(Context context, boolean allowParallelDownloads) {
-        RequestQueueManager.allowParallelDownloads = allowParallelDownloads;
-        if (!allowParallelDownloads) serverRequests = new HashMap<>();
-
+    private RequestQueueManager(Context context) {
         int dlThreadCount = Preferences.getDownloadThreadCount();
         if (dlThreadCount == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
             dlThreadCount = getSuggestedThreadCount(context);
@@ -71,9 +64,9 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     }
 
     @SuppressWarnings("unchecked")
-    public static synchronized <T> RequestQueueManager<T> getInstance(Context context, boolean allowParallelDownloads) {
-        if (context != null && (mInstance == null || (null == RequestQueueManager.allowParallelDownloads || RequestQueueManager.allowParallelDownloads != allowParallelDownloads))) {
-            mInstance = new RequestQueueManager<T>(context, allowParallelDownloads);
+    public static synchronized <T> RequestQueueManager<T> getInstance(Context context) {
+        if (context != null && mInstance == null) {
+            mInstance = new RequestQueueManager<T>(context);
         }
         return mInstance;
     }
@@ -110,6 +103,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
      * @param request Request to addAll to the queue
      */
     void queueRequest(Request<T> request) {
+        /*
         if (!allowParallelDownloads) {
             String host = Uri.parse(request.getUrl()).getHost();
             List<Request<T>> requests;
@@ -125,6 +119,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
                 // hence it is not added to the requests list
             }
         }
+         */
         addToRequestQueue(request);
     }
 
@@ -143,7 +138,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
         nbRequests--;
         Timber.d("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
 
-        if (!allowParallelDownloads) {
+/*        if (!allowParallelDownloads) {
             // Feed the next request of the same server to the global queue
             String host = Uri.parse(request.getUrl()).getHost();
             if (serverRequests.containsKey(host)) {
@@ -157,6 +152,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
                 if (0 == hostQueueSize) serverRequests.remove(host);
             }
         }
+        */
     }
 
     /**

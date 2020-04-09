@@ -20,7 +20,7 @@ public class LusciousParser implements ImageListParser {
 
     private final ParseProgress progress = new ParseProgress();
 
-    public List<ImageFile> parseImageList(Content content) {
+    public List<ImageFile> parseImageList(@NonNull Content content) {
         List<ImageFile> result = new ArrayList<>();
 
         getPages(content, content.getUniqueSiteId(), 1, result);
@@ -63,7 +63,7 @@ public class LusciousParser implements ImageListParser {
         }
     }
 
-    public ImageFile parseBackupUrl(String url, int order, int maxPages) {
+    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // This class does not use backup URLs
         return null;
     }

@@ -4,19 +4,12 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.DisplayMetrics;
 import android.webkit.WebSettings;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
+
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,7 +24,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
-import static android.graphics.Bitmap.Config.ARGB_8888;
 
 /**
  * Created by avluis on 06/05/2016.
@@ -47,35 +39,6 @@ public final class Helper {
 
     private static int DENSITY_DPI = -1;
 
-    //Currently only nhentai source uses this method
-    static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
-        Drawable d = ContextCompat.getDrawable(context, drawableId);
-
-        if (d != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            d = (DrawableCompat.wrap(d)).mutate();
-        }
-
-        if (d != null) {
-            Bitmap b = Bitmap.createBitmap(d.getIntrinsicWidth(), d.getIntrinsicHeight(), ARGB_8888);
-            Canvas c = new Canvas(b);
-            d.setBounds(0, 0, c.getWidth(), c.getHeight());
-            d.draw(c);
-
-            return b;
-        } else {
-            return Bitmap.createBitmap(0, 0, Bitmap.Config.ARGB_8888);
-        }
-    }
-
-    static Bitmap tintBitmap(Bitmap bitmap, int color) {
-        Paint p = new Paint();
-        p.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
-        Bitmap b = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), ARGB_8888);
-        Canvas canvas = new Canvas(b);
-        canvas.drawBitmap(bitmap, 0, 0, p);
-
-        return b;
-    }
 
     public static String capitalizeString(String s) {
         if (s == null || s.isEmpty()) return s;
@@ -112,6 +75,10 @@ public final class Helper {
         return new String(decodedBytes);
     }
 
+    public static String encode64(String rawString) {
+        return android.util.Base64.encodeToString(rawString.getBytes(), android.util.Base64.DEFAULT);
+    }
+
     public static int dpToPixel(@NonNull final Context context, int dp) {
         if (-1 == DENSITY_DPI) DENSITY_DPI = context.getResources().getDisplayMetrics().densityDpi;
         float scaleFactor = (1.0f / DisplayMetrics.DENSITY_DEFAULT) * DENSITY_DPI;
@@ -142,8 +109,7 @@ public final class Helper {
 
     public static float coerceIn(float value, float min, float max) {
         if (value < min) return min;
-        else if (value > max) return max;
-        else return value;
+        else return Math.min(value, max);
     }
 
     public static List<InputStream> duplicateInputStream(@Nonnull InputStream stream, int numberDuplicates) throws IOException {
@@ -201,6 +167,10 @@ public final class Helper {
             }
         }
         return newString.toString();
+    }
+
+    public static String replaceUnicode(@NonNull final String s) {
+        return StringEscapeUtils.unescapeJava(s);
     }
 
     // Fix for a crash on 5.1.1

@@ -4,6 +4,12 @@ import android.os.Bundle;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.ImportActivity}
+ * through a Bundle
+ *
+ * Use Builder class to set data; use Parser class to get data
+ */
 public class ImportActivityBundle {
     private static final String KEY_REFRESH = "refresh";
     private static final String KEY_REFRESH_RENAME = "rename";
