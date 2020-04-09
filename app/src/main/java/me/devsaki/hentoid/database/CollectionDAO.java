@@ -3,6 +3,7 @@ package me.devsaki.hentoid.database;
 import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.paging.PagedList;
 
@@ -97,7 +98,14 @@ public interface CollectionDAO {
 
     // ATTRIBUTES
 
-    Single<AttributeQueryResult> getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle);
+    Single<AttributeQueryResult> getAttributeMasterDataPaged(
+            @NonNull List<AttributeType> types,
+            String filter,
+            List<Attribute> attrs,
+            boolean filterFavourites,
+            int page,
+            int booksPerPage,
+            int orderStyle);
 
     Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
 

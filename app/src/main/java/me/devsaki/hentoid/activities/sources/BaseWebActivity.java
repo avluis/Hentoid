@@ -346,7 +346,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         checkPermissions();
 
         Timber.i(">> WebActivity resume : %s %s %s", webView.getUrl(), currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
-        if (currentContent != null && getWebClient().isPageFiltered(this.webView.getUrl()))
+        if (currentContent != null && getWebClient().isBookGallery(this.webView.getUrl()))
             processContent(currentContent, false);
     }
 
@@ -447,7 +447,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                     url = message.getData().getString("url");
                 }
 
-                if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
+                if (url != null && !url.isEmpty() && webClient.isBookGallery(url)) {
                     // Launch on a new thread to avoid crashes
                     webClient.parseResponseAsync(url);
                     return true;
@@ -761,10 +761,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         private final List<Pattern> filteredUrlPattern = new ArrayList<>();
         // Adapter used to parse the HTML code of book gallery pages
         private final HtmlAdapter<ContentParser> htmlAdapter;
-
-        // TODO doc
+        // Domain name for which link navigation is restricted
         private String restrictedDomainName = "";
+        // Loading state of the current webpage (used for the refresh/stop feature)
         private boolean isPageLoading = false;
+        // Loading state of the HTML code of the current webpage (used to trigger the action button)
         boolean isHtmlLoaded = false;
 
 
@@ -784,11 +785,20 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             compositeDisposable.clear();
         }
 
-        void restrictTo(String s) {
+        /**
+         * Restrict link navigation to a given domain name
+         * @param s Domain name to restrict link navigation to
+         */
+        protected void restrictTo(String s) {
             restrictedDomainName = s;
         }
 
-        boolean isPageFiltered(@NonNull String url) {
+        /**
+         * Indicates if the given URL is a book gallery page
+         * @param url URL to test
+         * @return True if the given URL represents a book gallery page
+         */
+        boolean isBookGallery(@NonNull final String url) {
             if (filteredUrlPattern.isEmpty()) return false;
 
             for (Pattern p : filteredUrlPattern) {
@@ -873,6 +883,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             refreshNavigationMenu();
         }
 
+        /**
+         * Refresh the visuals of the buttons of the navigation menu
+         */
         private void refreshNavigationMenu() {
             backMenu.setEnabled(webView.canGoBack());
             forwardMenu.setEnabled(webView.canGoForward());
@@ -897,13 +910,20 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             else return super.shouldInterceptRequest(view, request);
         }
 
+        /**
+         * Determines if the page at the given URL is to be processed
+         * @param url Called URL
+         * @param headers Request headers
+         * @return Processed response if the page has been processed;
+         * null if vanilla processing should happen instead
+         */
         @Nullable
-        private WebResourceResponse shouldInterceptRequestInternal(@NonNull String url,
-                                                                   @Nullable Map<String, String> headers) {
+        private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
+                                                                   @Nullable final Map<String, String> headers) {
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (isPageFiltered(url)) return parseResponse(url, headers, true, false);
+                if (isBookGallery(url)) return parseResponse(url, headers, true, false);
                 // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
                 if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
                     return parseResponse(url, headers, false, false);
@@ -912,6 +932,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             }
         }
 
+        /**
+         * Process the given webpage in a background thread (used by quick download)
+         * @param urlStr URL of the page to parse
+         */
         void parseResponseAsync(@NonNull String urlStr) {
             compositeDisposable.add(
                     Completable.fromCallable(() -> parseResponse(urlStr, null, true, true))
@@ -922,6 +946,16 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             );
         }
 
+        /**
+         * Process the webpage at the given URL
+         * @param urlStr URL of the page to process
+         * @param requestHeaders Request headers to use
+         * @param analyzeForDownload True if the page has to be analyzed for potential downloads;
+         *                           false if only ad removal should happen
+         * @param quickDownload True if the present call has been triggered by a quick download action
+         * @return Processed response if the page has been actually processed;
+         *         null if vanilla processing should happen instead
+         */
         @SuppressLint("NewApi")
         @WorkerThread
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
@@ -1009,6 +1043,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             return null;
         }
 
+        /**
+         * Process Content parsed from a webpage
+         * @param content Content to be processed
+         * @param headersList HTTP headers of the request that has generated the Content
+         * @param quickDownload True if the present call has been triggered by a quick download action
+         */
         private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList, boolean quickDownload) {
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
@@ -1026,7 +1066,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         /**
-         * Indicated whether the current webpage is still loading or not
+         * Indicate whether the current webpage is still loading or not
          *
          * @return True if current webpage is being loaded; false if not
          */
@@ -1034,6 +1074,13 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             return isPageLoading;
         }
 
+        /**
+         * Remove nodes from the HTML document contained in the given stream, using a list of CSS selectors to identify them
+         * @param stream Stream containing the HTML document to process
+         * @param baseUri Base URI if the document
+         * @param dirtyElements CSS selectors of the nodes to remove
+         * @return Stream containing the HTML document stripped from the elements to remove
+         */
         private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, @NonNull List<String> dirtyElements) {
             try {
                 Document doc = Jsoup.parse(stream, null, baseUri);
@@ -1051,15 +1098,26 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
     }
 
-    private int backListContainsGallery(WebBackForwardList backForwardList) {
+    /**
+     * Indicate if the browser's back list contains a book gallery
+     * Used to determine the display of the "back to latest gallery" button
+     * @param backForwardList Back list to examine
+     * @return Index of the latest book gallery in the list; -1 if none has been detected
+     */
+    private int backListContainsGallery(@NonNull final WebBackForwardList backForwardList) {
         for (int i = backForwardList.getCurrentIndex() - 1; i >= 0; i--) {
             WebHistoryItem item = backForwardList.getItemAtIndex(i);
-            if (webClient.isPageFiltered(item.getUrl())) return i;
+            if (webClient.isBookGallery(item.getUrl())) return i;
         }
         return -1;
     }
 
-    private String formatAlertMessage(@NonNull UpdateInfo.SourceAlert alert) {
+    /**
+     * Format the message to display for the given source alert
+     * @param alert Source alert
+     * @return Message to be displayed for the user for the given source alert
+     */
+    private String formatAlertMessage(@NonNull final UpdateInfo.SourceAlert alert) {
         String result = "";
 
         // Main message body

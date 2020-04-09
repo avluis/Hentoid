@@ -87,7 +87,14 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public Single<AttributeQueryResult> getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle) {
+    public Single<AttributeQueryResult> getAttributeMasterDataPaged(
+            @NonNull List<AttributeType> types,
+            String filter,
+            List<Attribute> attrs,
+            boolean filterFavourites,
+            int page,
+            int booksPerPage,
+            int orderStyle) {
         return Single
                 .fromCallable(() -> pagedAttributeSearch(types, filter, attrs, filterFavourites, orderStyle, page, booksPerPage))
                 .subscribeOn(Schedulers.io())
@@ -249,10 +256,17 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
     }
 
-    private AttributeQueryResult pagedAttributeSearch(List<AttributeType> attrTypes, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, int pageNum, int itemPerPage) {
+    private AttributeQueryResult pagedAttributeSearch(
+            @NonNull List<AttributeType> attrTypes,
+            String filter,
+            List<Attribute> attrs,
+            boolean filterFavourites,
+            int sortOrder,
+            int pageNum,
+            int itemPerPage) {
         AttributeQueryResult result = new AttributeQueryResult();
 
-        if (attrTypes != null && !attrTypes.isEmpty()) {
+        if (!attrTypes.isEmpty()) {
             if (attrTypes.get(0).equals(AttributeType.SOURCE)) {
                 result.attributes.addAll(db.selectAvailableSources(attrs));
                 result.totalSelectedAttributes = result.attributes.size();

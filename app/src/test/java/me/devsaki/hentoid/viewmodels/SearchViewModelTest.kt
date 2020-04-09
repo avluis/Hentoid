@@ -53,15 +53,15 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
 
     @Test
     fun `verify initial state`() {
-        val viewModel = SearchViewModel(mockObjectBoxDAO)
+        val viewModel = SearchViewModel(mockObjectBoxDAO, 1)
 
         viewModel.selectedAttributesData.shouldNotBeNull()
     }
 
     @Test
     fun `count category attributes unfiltered`() {
-        val viewModel = SearchViewModel(mockObjectBoxDAO)
-        viewModel.initAndStart(1)
+        val viewModel = SearchViewModel(mockObjectBoxDAO, 1)
+        viewModel.update()
 
         val attrs = viewModel.attributesCountData.value
         attrs.shouldNotBeNull()
@@ -80,15 +80,15 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
 
     @Test
     fun `list category attributes unfiltered`() {
-        val viewModel = SearchViewModel(mockObjectBoxDAO)
-        viewModel.initAndStart(1)
+        val viewModel = SearchViewModel(mockObjectBoxDAO, 1)
+        viewModel.update()
 
         val typeList = ArrayList<AttributeType>()
         typeList.add(AttributeType.ARTIST)
-        viewModel.onCategoryChanged(typeList)
-        viewModel.onCategoryFilterChanged("", 1, 40)
+        viewModel.setAttributeTypes(typeList)
+        viewModel.setAttributeQuery("", 1, 40)
 
-        val attrs = viewModel.proposedAttributesData.value
+        val attrs = viewModel.availableAttributesData.value
         attrs.shouldNotBeNull()
         attrs.attributes.shouldNotBeNull()
 

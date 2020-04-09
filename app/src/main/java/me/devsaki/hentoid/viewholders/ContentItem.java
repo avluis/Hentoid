@@ -300,6 +300,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         }
 
         private void attachPages(Content content, boolean isQueued) {
+            tvPages.setVisibility(0 == content.getQtyPages() ? View.GONE : View.VISIBLE);
             Context context = tvPages.getContext();
             String template = context.getResources().getString(R.string.work_pages);
             template = template.replace("@pages@", content.getQtyPages() + "");
@@ -317,7 +318,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
             if (tagsAttributes == null) {
                 tvTags.setText(context.getResources().getString(R.string.work_untitled));
+                tvTags.setVisibility(View.GONE);
             } else {
+                tvTags.setVisibility(View.VISIBLE);
                 List<String> allTags = new ArrayList<>();
                 for (Attribute attribute : tagsAttributes) {
                     allTags.add(attribute.getName());

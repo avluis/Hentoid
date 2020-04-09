@@ -528,6 +528,7 @@ public class ObjectBoxDB {
         List<Content> content = query.build().find();
 
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by source
         Map<Site, List<Content>> map = Stream.of(content).collect(Collectors.groupingBy(Content::getSite));
@@ -543,7 +544,9 @@ public class ObjectBoxDB {
     }
 
     private Query<Attribute> queryAvailableAttributes(
-            @NonNull final AttributeType type, String filter, long[] filteredContent) {
+            @NonNull final AttributeType type,
+            String filter,
+            long[] filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
@@ -563,9 +566,14 @@ public class ObjectBoxDB {
 
     @SuppressWarnings("squid:S2184")
         // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
-    List<Attribute> selectAvailableAttributes(@NonNull AttributeType
-                                                      type, List<Attribute> attributeFilter, String filter, boolean filterFavourites,
-                                              int sortOrder, int page, int itemsPerPage) {
+    List<Attribute> selectAvailableAttributes(
+            @NonNull AttributeType type,
+            List<Attribute> attributeFilter,
+            String filter,
+            boolean filterFavourites,
+            int sortOrder,
+            int page,
+            int itemsPerPage) {
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
@@ -617,6 +625,7 @@ public class ObjectBoxDB {
 
         SparseIntArray result = new SparseIntArray();
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
         Map<AttributeType, List<Attribute>> map = Stream.of(attributes).collect(Collectors.groupingBy(Attribute::getType));
@@ -669,6 +678,7 @@ public class ObjectBoxDB {
 
         SparseIntArray result = new SparseIntArray();
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
         Map<StatusContent, List<ImageFile>> map = Stream.of(images).collect(Collectors.groupingBy(ImageFile::getStatus));
@@ -684,6 +694,10 @@ public class ObjectBoxDB {
 
     List<Content> selectContentWithOldPururinHost() {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
+    }
+
+    List<Content> selectContentWithOldTsuminoCovers() {
+        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/").build().find();
     }
 
     void insertErrorRecord(@NonNull final ErrorRecord record) {

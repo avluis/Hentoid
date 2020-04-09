@@ -14,8 +14,12 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.viewholders.AttributeViewHolder;
 
+/**
+ * Adapter for the available attributes list displayed in the advanced search screen
+ */
 public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeViewHolder> {
 
+    // Threshold for infinite loading
     private static final int VISIBLE_THRESHOLD = 5;
 
     private final List<Attribute> dataset = new ArrayList<>();

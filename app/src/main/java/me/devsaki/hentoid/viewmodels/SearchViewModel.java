@@ -19,39 +19,54 @@ import me.devsaki.hentoid.enums.AttributeType;
 
 import static java.util.Objects.requireNonNull;
 
-
+/**
+ * ViewModel for the advanced search screen
+ */
 public class SearchViewModel extends ViewModel {
 
-    private static final String ERROR_INIT = "SearchViewModel has to be initialized by calling initAndStart first";
+    private final CollectionDAO collectionDAO;
 
-    private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
-    private final MutableLiveData<CollectionDAO.AttributeQueryResult> proposedAttributes = new MutableLiveData<>();
-    private final MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
+    // LIVEDATAS
 
-    private LiveData<Integer> currentCountSource = null;
+    // Results of queries
+    private final MutableLiveData<CollectionDAO.AttributeQueryResult> availableAttributes = new MutableLiveData<>();
+    private final MutableLiveData<SparseIntArray> nbAttributesPerType = new MutableLiveData<>();
+    private LiveData<Integer> currentSelectedContentCountInternal = null;
     private final MediatorLiveData<Integer> selectedContentCount = new MediatorLiveData<>();
 
-    private CollectionDAO collectionDAO;
+    // Selected attributes (passed between SearchBottomSheetFragment and SearchActivity as LiveData via the ViewModel)
+    private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
 
-    private List<AttributeType> category;
 
+    // Currently active attribute types
+    private List<AttributeType> attributeTypes;
+
+    // Disposables (to cleanup Rx calls and avoid memory leaks)
     private Disposable countDisposable = Disposables.empty();
-
     private Disposable filterDisposable = Disposables.disposed();
 
-    private int attributeSortOrder = -1;
+    // Sort order for attributes
+    // (used as a variable rather than a direct call to Preferences to facilitate unit testing)
+    private int attributeSortOrder;
 
 
-    // === INIT METHODS
-
-    public SearchViewModel(CollectionDAO collectionDAO) {
+    public SearchViewModel(@NonNull CollectionDAO collectionDAO, int attributeSortOrder) {
         this.collectionDAO = collectionDAO;
+        this.attributeSortOrder = attributeSortOrder;
         selectedAttributes.setValue(new ArrayList<>());
     }
 
+    @Override
+    protected void onCleared() {
+        filterDisposable.dispose();
+        countDisposable.dispose();
+        super.onCleared();
+    }
+
+
     @NonNull
-    public LiveData<CollectionDAO.AttributeQueryResult> getProposedAttributesData() {
-        return proposedAttributes;
+    public LiveData<CollectionDAO.AttributeQueryResult> getAvailableAttributesData() {
+        return availableAttributes;
     }
 
     @NonNull
@@ -61,7 +76,7 @@ public class SearchViewModel extends ViewModel {
 
     @NonNull
     public LiveData<SparseIntArray> getAttributesCountData() {
-        return attributesPerType;
+        return nbAttributesPerType;
     }
 
     @NonNull
@@ -69,26 +84,36 @@ public class SearchViewModel extends ViewModel {
         return selectedContentCount;
     }
 
-    // === VERB METHODS
 
-    public void initAndStart(int attributeSortOrder) {
-        this.attributeSortOrder = attributeSortOrder;
+    /**
+     * Update the viewmodel according to current query properties
+     */
+    public void update() {
         countAttributesPerType();
         updateSelectionResult();
     }
 
-    public void onCategoryChanged(List<AttributeType> category) {
-        this.category = category;
+    /**
+     * Set the attributes type to search in the Atttribute search
+     *
+     * @param attributeTypes Attribute types the searches will be performed for
+     */
+    public void setAttributeTypes(@NonNull List<AttributeType> attributeTypes) {
+        this.attributeTypes = attributeTypes;
     }
 
-    public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
-        if (-1 == attributeSortOrder)
-            throw new IllegalStateException(ERROR_INIT);
-
+    /**
+     * Set and run the query to perform the Attribute search
+     *
+     * @param query        Content of the attribute name to search (%s%)
+     * @param pageNum      Number of the "paged" result to fetch
+     * @param itemsPerPage Number of items per result "page"
+     */
+    public void setAttributeQuery(String query, int pageNum, int itemsPerPage) {
         filterDisposable.dispose();
         filterDisposable = collectionDAO
                 .getAttributeMasterDataPaged(
-                        category,
+                        attributeTypes,
                         query,
                         selectedAttributes.getValue(),
                         false,
@@ -96,47 +121,54 @@ public class SearchViewModel extends ViewModel {
                         itemsPerPage,
                         attributeSortOrder
                 )
-                .subscribe(proposedAttributes::postValue);
+                .subscribe(availableAttributes::postValue);
     }
 
-    public void onAttributeSelected(Attribute a) {
-        if (-1 == attributeSortOrder)
-            throw new IllegalStateException(ERROR_INIT);
-
+    /**
+     * Add the given attribute to the attribute selection for the Content and Attribute searches
+     * - Only books tagged with all selected attributes will be among Content search results
+     * - Only attributes contained in these books will be among Attribute search results
+     *
+     * @param attr Attribute to add to current selection
+     */
+    public void addSelectedAttribute(@NonNull final Attribute attr) {
         List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
         // Direct impact on selectedAttributes
-        selectedAttributesList.add(a);
-        selectedAttributes.setValue(selectedAttributesList);
-
-        // Indirect impact on attributesPerType and availableAttributes
-        countAttributesPerType();
-        updateSelectionResult();
+        selectedAttributesList.add(attr);
+        setSelectedAttributes(selectedAttributesList);
     }
 
+    /**
+     * Set the selected attributes for the Content and Attribute searches
+     * - Only books tagged with all selected attributes will be among Content search results
+     * - Only attributes contained in these books will be among Attribute search results
+     *
+     * @param attrs Selected attributes
+     */
     public void setSelectedAttributes(@NonNull List<Attribute> attrs) {
         selectedAttributes.setValue(attrs);
-
-        // Indirect impact on attributesPerType
-        countAttributesPerType();
-        updateSelectionResult();
+        update();
     }
 
-    public void onAttributeUnselected(Attribute a) {
-        if (-1 == attributeSortOrder)
-            throw new IllegalStateException(ERROR_INIT);
-
+    /**
+     * Remove the given attribute from the current selection for the Content and Attribute searches
+     * - Only books tagged with all selected attributes will be among Content search results
+     * - Only attributes contained in these books will be among Attribute search results
+     *
+     * @param attr Attribute to remove from current selection
+     */
+    public void removeSelectedAttribute(@NonNull final Attribute attr) {
         List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
         // Direct impact on selectedAttributes
-        selectedAttributesList.remove(a);
-        selectedAttributes.setValue(selectedAttributesList);
-
-        // Indirect impact on attributesPerType and availableAttributes
-        countAttributesPerType();
-        updateSelectionResult();
+        selectedAttributesList.remove(attr);
+        setSelectedAttributes(selectedAttributesList);
     }
 
+    /**
+     * Run the query to get the number of attributes per type
+     */
     private void countAttributesPerType() {
         countDisposable.dispose();
         countDisposable = collectionDAO.countAttributesPerType(selectedAttributes.getValue())
@@ -151,20 +183,17 @@ public class SearchViewModel extends ViewModel {
                         }
                     }
 
-                    attributesPerType.postValue(results);
+                    nbAttributesPerType.postValue(results);
                 });
     }
 
+    /**
+     * Run the query to get the available Attributes and Content
+     */
     private void updateSelectionResult() {
-        if (currentCountSource != null) selectedContentCount.removeSource(currentCountSource);
-        currentCountSource = collectionDAO.countBooks("", selectedAttributes.getValue(), false);
-        selectedContentCount.addSource(currentCountSource, selectedContentCount::setValue);
-    }
-
-    @Override
-    protected void onCleared() {
-        filterDisposable.dispose();
-        countDisposable.dispose();
-        super.onCleared();
+        if (currentSelectedContentCountInternal != null)
+            selectedContentCount.removeSource(currentSelectedContentCountInternal);
+        currentSelectedContentCountInternal = collectionDAO.countBooks("", selectedAttributes.getValue(), false);
+        selectedContentCount.addSource(currentSelectedContentCountInternal, selectedContentCount::setValue);
     }
 }

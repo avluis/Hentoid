@@ -81,7 +81,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ZoomableFrame zoomFrame;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private ImageViewerViewModel viewModel;
-    private int imageIndex = -1;
+    private int imageIndex = -1; // 0-based image index
     private int highestImageIndexReached = -1; // To manage "Mark book as read after N pages" pref
     private int maxPosition; // For navigation
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
@@ -453,7 +453,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param content Loaded book
      */
     private void onContentChanged(Content content) {
-        if (null == content) return;
+        if (null == content) {
+            onBackClick();
+            return;
+        }
         updateBookNavigation(content);
     }
 

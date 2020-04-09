@@ -46,8 +46,14 @@ import static androidx.core.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
 
 /**
- * TODO: look into recyclerview.extensions.ListAdapter for a RecyclerView.Adapter that can issue
+ * Bottom fragment that displays the available attributes in the advanced search screen
+ * <p>
+ * TODO 1 : look into recyclerview.extensions.ListAdapter for a RecyclerView.Adapter that can issue
  * appropriate notify commands based on list diff
+ * <p>
+ * TODO 2 : Use PagedList and FastAdapter to reduce boilerplate code used to display the endless list of available attributes
+ * NB : only possible when ObjectBox implements SELECT Object.Field, COUNT(Object.Field) GROUP BY Object.Field to handle
+ * source selection in a native ObjectBox query.
  */
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
@@ -71,8 +77,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     private boolean clearOnSuccess; // Flag to clear the adapter on content reception
 
+    // Current page of paged content (used to display the attributes list as an endless list)
     private int currentPage;
-    private long mTotalSelectedCount;
+    private long mTotalSelectedCount; // Total count of current available attributes
 
     // Selected attribute types (selection done in the activity view)
     private List<AttributeType> selectedAttributeTypes = new ArrayList<>();
@@ -80,14 +87,16 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // ViewModel of the current activity
     private SearchViewModel viewModel;
 
-    private boolean isInitiated = false; // https://stackoverflow.com/a/50474911
+    // Flag to indicate is the fragment has been initialized, to avoid a double LiveData notification
+    // See https://stackoverflow.com/a/50474911
+    private boolean isInitialized = false;
 
 
     // ======== CONSTANTS
     private static final int ATTRS_PER_PAGE = 40;
 
 
-    public static void show(Context context, FragmentManager fragmentManager, AttributeType[] types) {
+    public static void invoke(@NonNull Context context, @NonNull FragmentManager fragmentManager, AttributeType[] types) {
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
 
         builder.setAttributeTypes(types);
@@ -114,7 +123,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
             ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
             viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(SearchViewModel.class);
-            viewModel.onCategoryChanged(selectedAttributeTypes);
+            viewModel.setAttributeTypes(selectedAttributeTypes);
         }
     }
 
@@ -170,14 +179,14 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        viewModel.getProposedAttributesData().observe(getViewLifecycleOwner(), this::onAttributesReady);
+        viewModel.getAvailableAttributesData().observe(getViewLifecycleOwner(), this::onAttributesReady);
         searchMasterData("");
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        isInitiated = true;
+        isInitialized = true;
     }
 
     @Override
@@ -187,8 +196,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     /**
-     * Loads the attributes corresponding to the given AttributeType, filtered with the given
-     * string
+     * Load the attributes corresponding to the given AttributeType, filtered with the given
+     * string (applying "contains" filter)
      *
      * @param filter Filter to apply to the attributes name (only retrieve attributes with name like
      *               %s%)
@@ -198,10 +207,14 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         searchMasterData(filter, true, true);
     }
 
-    private void loadMoreMasterData(final String filter) {
-        searchMasterData(filter, false, false);
-    }
-
+    /**
+     * Search the attributes master data according to the given parameters
+     *
+     * @param filter              Filter to apply to the attributes name (only retrieve attributes with name like %s%)
+     * @param displayLoadingImage True if a "loading..." image has to be displayed
+     * @param clearOnSuccess      True if the currently displayed list should be clear when this call succeeds
+     *                            (should be true for new searches; false for "load more" queries)
+     */
     private void searchMasterData(final String filter, boolean displayLoadingImage, boolean clearOnSuccess) {
         if (displayLoadingImage) {
             tagWaitMessage.startAnimation(new BlinkAnimation(750, 20));
@@ -210,11 +223,16 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         }
         this.clearOnSuccess = clearOnSuccess;
 
-        viewModel.onCategoryFilterChanged(filter, currentPage, ATTRS_PER_PAGE);
+        viewModel.setAttributeQuery(filter, currentPage, ATTRS_PER_PAGE);
     }
 
+    /**
+     * Observer for changes in the available attributes (= query results)
+     *
+     * @param results Available attributes according to current search query
+     */
     private void onAttributesReady(CollectionDAO.AttributeQueryResult results) {
-        if (!isInitiated) return;
+        if (!isInitialized) return; // Hack to avoid double calls from LiveData
 
         tagWaitMessage.clearAnimation();
 
@@ -249,7 +267,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
-            viewModel.onAttributeSelected(a);
+            viewModel.addSelectedAttribute(a);
             searchMasterData(tagSearchView.getQuery().toString());
         }
     }
@@ -265,15 +283,22 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         return searchManager.getSearchableInfo(activity.getComponentName());
     }
 
+    /**
+     * Indicates if the current "page" of loaded attributes is the last one
+     */
     private boolean isLastPage() {
         return (currentPage * ATTRS_PER_PAGE >= mTotalSelectedCount);
     }
 
+    /**
+     * Callback when the recyclerview has reached the end of loaded items
+     * Load the next set of items
+     */
     private void loadMore() {
         if (!isLastPage()) { // NB : A "page" is a group of loaded attributes. Last page is reached when scrolling reaches the very end of the list
             Timber.d("Load more data now~");
             currentPage++;
-            loadMoreMasterData(tagSearchView.getQuery().toString());
+            searchMasterData(tagSearchView.getQuery().toString(), false, false);
         }
     }
 }

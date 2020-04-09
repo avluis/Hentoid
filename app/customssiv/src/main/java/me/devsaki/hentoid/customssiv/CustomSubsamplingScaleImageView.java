@@ -355,13 +355,21 @@ public class CustomSubsamplingScaleImageView extends View {
     private Point preloadDimensions = null;
 
     // Direction of the swiping
+    // Used to trigger a relevant "next page" event according to which border has been reached
+    // (Vertical -> top and bottom borders / Horizontal -> left and right borders)
     private @Direction
     int swipeDirection = Direction.HORIZONTAL;
 
+    // True if the image offset should be its left side
+    // Used to display the correct border in fill screen mode according to the book viewing mode
+    // (LTR -> left / RTL -> right)
     private boolean offsetLeftSide = true;
+    // First-time flag for the side offset (prevents the image offsetting when the user has already scrolled it)
     private boolean sideOffsetConsumed = false;
-
+    // Flag for auto-rotate mode enabled
     private boolean autoRotate = false;
+
+    // Phone screen width and height (stored here for optimization)
     private int screenWidth;
     private int screenHeight;
 
@@ -1938,14 +1946,21 @@ public class CustomSubsamplingScaleImageView extends View {
         return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), resizeParams.right);
     }
 
-    // TODO documentation !
-    // TODO can that algorithm be merged with calculateInSampleSize ?
+    /**
+     * Compute resizing parameters according to the given target scale
+     * TODO can that algorithm be merged with calculateInSampleSize ?
+     *
+     * @param targetScale target scale of the image to display (% of the raw dimensions)
+     * @return Pair containing
+     *    - First : Number of half-resizes to perform (see {@link ResizeBitmapHelper})
+     *    - Second : New scale to use to display the resized image at the initial target zoom level
+     */
     @WorkerThread
     private ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
         float resultScale = targetScale;
         int nbResize = 0;
 
-        // Resize when approaching the target scale by 1/3 because there already are artifacts displayed
+        // Resize when approaching the target scale by 1/3 because there may already be artifacts displayed at that point
         // (seen with full-res pictures resized to 65% with Android's default bilinear filtering)
         for (int i = 1; i < 10; i++) if (targetScale < Math.pow(0.5, i) * 1.33) nbResize++;
 
@@ -2064,6 +2079,15 @@ public class CustomSubsamplingScaleImageView extends View {
         return exifOrientation;
     }
 
+    /**
+     * Indicates if the picture needs to be rotated 90°, according to the given picture proportions (auto-rotate feature)
+     * The goal is to align the picture's proportions with the phone screen's proportions
+     * NB : The result of this method is independent from auto-rotate mode being enabled
+     *
+     * @param sWidth Picture width
+     * @param sHeight Picture height
+     * @return True if the picture needs to be rotated 90°
+     */
     private boolean needsRotating(int sWidth, int sHeight) {
         boolean isSourceSquare = (Math.abs(sHeight - sWidth) < sWidth * 0.1);
         if (isSourceSquare) return false;
@@ -2980,18 +3004,32 @@ public class CustomSubsamplingScaleImageView extends View {
         }
     }
 
-    // TODO documentation
+    /**
+     * Set the direction of the viewing (default : Horizontal)
+     * @param direction Direction to set
+     */
     public final void setDirection(@Direction int direction) {
         this.swipeDirection = direction;
     }
 
-    // TODO documentation
+    /**
+     * Indicate if the image offset should be its left side (default : true)
+     * @param offsetLeftSide True if the image offset is its left side; false for the right side
+     */
     public final void setOffsetLeftSide(boolean offsetLeftSide) {
         this.offsetLeftSide = offsetLeftSide;
         this.sideOffsetConsumed = false;
     }
 
-    // TODO documentation
+    /**
+     * Enable auto-rotate mode (default : false)
+     *
+     * Auto-rotate chooses automatically the most fitting orientation so that the image occupies
+     * most of the screen, according to its dimensions and the device's screen dimensions and
+     * the device's orientation (see needsRotating method)
+     *
+     * @param autoRotate True if auto-rotate mode should be on
+     */
     public final void setAutoRotate(boolean autoRotate) {
         this.autoRotate = autoRotate;
     }
@@ -3183,13 +3221,25 @@ public class CustomSubsamplingScaleImageView extends View {
         preloadDimensions = new Point(width, height);
     }
 
-    // TODO documentation
+    /**
+     * Get the width of the CustomSubsamplingScaleImageView
+     * If not inflated/known yet, use the temporary image dimensions
+     * WARNING : use this method instead of parent's getWidth
+     *
+     * @return Width of the view according to above specs
+     */
     private int getWidthInternal() {
         if (getWidth() > 0 || null == preloadDimensions) return getWidth();
         else return preloadDimensions.x;
     }
 
-    // TODO documentation
+    /**
+     * Get the height of the CustomSubsamplingScaleImageView
+     * If not inflated/known yet, use the temporary image dimensions
+     * WARNING : use this method instead of parent's getHeight
+     *
+     * @return Height of the view according to above specs
+     */
     private int getHeightInternal() {
         if (getHeight() > 0 || null == preloadDimensions) return getHeight();
         else return preloadDimensions.y;

@@ -43,11 +43,22 @@ public final class ContentHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    public static void viewContent(@NonNull final Context context, @NonNull Content content) {
-        viewContent(context, content, false);
+    /**
+     * Open the app's web browser to view the given Content's gallery page
+     * @param context Context to use for the action
+     * @param content Content to view
+     */
+    public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content) {
+        viewContentGalleryPage(context, content, false);
     }
 
-    public static void viewContent(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
+    /**
+     * Open the app's web browser to view the given Content's gallery page
+     * @param context Context to use for the action
+     * @param content Content to view
+     * @param wrapPin True if the intent should be wrapped with PIN protection
+     */
+    public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         Intent intent = new Intent(context, content.getWebActivityClass());
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(content.getGalleryUrl());
@@ -56,6 +67,11 @@ public final class ContentHelper {
         context.startActivity(intent);
     }
 
+    /**
+     * Update the given Content's JSON file with its current values
+     * @param context Context to use for the action
+     * @param content Content whose JSON file to update
+     */
     public static void updateJson(@NonNull Context context, @NonNull Content content) {
         DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
         if (null == file)
@@ -68,10 +84,13 @@ public final class ContentHelper {
         }
     }
 
+    /**
+     * Create the given Content's JSON file and populate it with its current values
+     * @param content Content whose JSON file to create
+     */
     public static void createJson(@NonNull Context context, @NonNull Content content) {
         DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
         if (null == folder || !folder.exists()) return;
-
         try {
             JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, folder);
         } catch (IOException e) {
@@ -80,10 +99,11 @@ public final class ContentHelper {
     }
 
     /**
-     * Open built-in image viewer telling it to display the images of the given Content
-     *
-     * @param context Context
-     * @param content Content to be displayed
+     * Open the given Content in the built-in image viewer
+     * @param context Context to use for the action
+     * @param content Content to view
+     * @param searchParams Current search parameters (so that the next/previous book feature
+     *                     is faithful to the library screen's order)
      */
     public static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageUri());
@@ -98,6 +118,12 @@ public final class ContentHelper {
         context.startActivity(viewer);
     }
 
+    /**
+     * Update the given Content's number of reads in both DB and JSON file
+     * @param context Context to use for the action
+     * @param dao DAO to use for the action
+     * @param content Content to update
+     */
     @WorkerThread
     public static void updateContentReads(@NonNull Context context, @Nonnull CollectionDAO dao, @NonNull Content content) {
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
@@ -107,6 +133,13 @@ public final class ContentHelper {
         else createJson(context, content);
     }
 
+    /**
+     * Find the picture files for the given Content
+     * NB1 : Pictures with non-supported formats are not included in the results
+     * NB2 : Cover picture is not included in the results
+     * @param content Content to retrieve picture files for
+     * @return List of picture files
+     */
     public static List<DocumentFile> getPictureFilesFromContent(Context context, Content content) {
         String storageUri = content.getStorageUri();
 
@@ -128,7 +161,7 @@ public final class ContentHelper {
     }
 
     /**
-     * Remove given Content from the disk and the DB
+     * Remove the given Content from the disk and the DB
      *
      * @param content Content to be removed
      * @param dao     DAO to be used
@@ -152,7 +185,7 @@ public final class ContentHelper {
     }
 
     /**
-     * Remove given page from the disk and the DB
+     * Remove the given page from the disk and the DB
      *
      * @param image Page to be removed
      * @param dao   DAO to be used
@@ -201,7 +234,7 @@ public final class ContentHelper {
      * @param content Content to get the path from
      * @return Canonical download directory path of the given content, according to current user preferences
      */
-    public static String formatBookFolderName(Content content) {
+    public static String formatBookFolderName(@NonNull final Content content) {
         String result = "";
 
         String title = content.getTitle().replaceAll(UNAUTHORIZED_CHARS, "_");
@@ -235,8 +268,13 @@ public final class ContentHelper {
         return result;
     }
 
+    /**
+     * Format the Content ID for folder naming purposes
+     * @param content Content whose ID to format
+     * @return Formatted Content ID
+     */
     @SuppressWarnings("squid:S2676") // Math.abs is used for formatting purposes only
-    private static String formatBookId(Content content) {
+    private static String formatBookId(@NonNull final Content content) {
         String id = content.getUniqueSiteId();
         // For certain sources (8muses, fakku), unique IDs are strings that may be very long
         // => shorten them by using their hashCode
@@ -244,6 +282,12 @@ public final class ContentHelper {
         return "[" + id + "]";
     }
 
+    /**
+     * Return the given site's download directory. Create it if it doesn't exist.
+     * @param context Context to use for the action
+     * @param site Site to get the download directory for
+     * @return Download directory of the given Site
+     */
     @Nullable
     public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri();
@@ -265,7 +309,12 @@ public final class ContentHelper {
         } else return siteFolder;
     }
 
-    public static void shareContent(final Context context, final Content item) {
+    /**
+     * Open the "share with..." Android dialog for the given Content
+     * @param context Context to use for the action
+     * @param item Content to share
+     */
+    public static void shareContent(@NonNull final Context context, @NonNull final Content item) {
         String url = item.getGalleryUrl();
 
         Intent intent = new Intent();
