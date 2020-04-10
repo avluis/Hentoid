@@ -175,13 +175,16 @@ class FileUtil {
         return listDocumentFiles(context, parent, nameFilter, true, true);
     }
 
-    private static List<DocumentFile> listDocumentFiles(@NonNull final Context context, @NonNull final DocumentFile parent, final String nameFilter, boolean listFolders, boolean listFiles) {
+    private static List<DocumentFile> listDocumentFiles(
+            @NonNull final Context context,
+            @NonNull final DocumentFile parent,
+            final String nameFilter,
+            boolean listFolders,
+            boolean listFiles) {
         final ContentResolver resolver = context.getContentResolver();
-        /*
-        final Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(),
-                DocumentsContract.getDocumentId(parent.getUri()));
-         */
-        final Uri searchUri = DocumentsContract.buildChildDocumentsUri(FileHelper.getFileProviderAuthority(), DocumentsContract.getDocumentId(parent.getUri()));
+
+        final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
+        //final Uri searchUri = DocumentsContract.buildChildDocumentsUri(FileHelper.getFileProviderAuthority(), DocumentsContract.getDocumentId(parent.getUri()));
         final List<Uri> results = new ArrayList<>();
 
         String selectionClause = null;
@@ -197,12 +200,15 @@ class FileUtil {
             selectionClause += DocumentsContract.Document.COLUMN_DISPLAY_NAME + "=" + nameFilter;
         }
 
+        Timber.d("selectionClause %s", selectionClause);
+
         try (Cursor c = resolver.query(searchUri, new String[]{
                 DocumentsContract.Document.COLUMN_DOCUMENT_ID}, selectionClause, selectionArgs, null)) {
             if (c != null)
                 while (c.moveToNext()) {
                     final String documentId = c.getString(0);
                     final Uri documentUri = DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId);
+                    Timber.d("C NEXT %s", documentUri.toString());
                     results.add(documentUri);
                 }
         } catch (Exception e) {
@@ -214,7 +220,8 @@ class FileUtil {
     private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final DocumentFile parent, @NonNull final List<Uri> uris) {
         final List<DocumentFile> resultFiles = new ArrayList<>();
         for (Uri uri : uris) {
-            DocumentFile docFile = newTreeDocumentFile(parent, context, uri);
+            //DocumentFile docFile = newTreeDocumentFile(parent, context, uri);
+            DocumentFile docFile = DocumentFile.fromTreeUri(context, uri);
             if (docFile != null) resultFiles.add(docFile);
         }
         return resultFiles;
@@ -226,6 +233,7 @@ class FileUtil {
             if (null == treeDocumentFileConstructor) {
                 Class<?> treeDocumentFileClazz = Class.forName("androidx.documentfile.provider.TreeDocumentFile");
                 treeDocumentFileConstructor = treeDocumentFileClazz.getConstructor(DocumentFile.class, Context.class, Uri.class);
+                treeDocumentFileConstructor.setAccessible(true);
             }
             return (DocumentFile) treeDocumentFileConstructor.newInstance(parent, context, uri);
             //resultFiles[i] = new TreeDocumentFile(this, context, result[i]);

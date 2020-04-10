@@ -132,8 +132,10 @@ public class ImportActivity extends AppCompatActivity {
 
     private void prepImport(Bundle savedState) {
         if (savedState != null) {
-            currentRootDir = DocumentFile.fromTreeUri(this, Uri.parse(savedState.getString(CURRENT_DIR)));
-            prevRootDir = DocumentFile.fromTreeUri(this, Uri.parse(savedState.getString(PREV_DIR)));
+            if (savedState.containsKey(CURRENT_DIR))
+                currentRootDir = DocumentFile.fromTreeUri(this, Uri.parse(savedState.getString(CURRENT_DIR)));
+            if (savedState.containsKey(PREV_DIR))
+                prevRootDir = DocumentFile.fromTreeUri(this, Uri.parse(savedState.getString(PREV_DIR)));
             calledByPrefs = savedState.getBoolean(CALLED_BY_PREFS);
 
             Bundle bundle = savedState.getBundle(REFRESH_OPTIONS);
@@ -148,10 +150,12 @@ public class ImportActivity extends AppCompatActivity {
         }
 
         String downloadFolderUriStr = Preferences.getStorageUri();
-        Timber.d(downloadFolderUriStr);
+        Timber.d("downloadFolderUriStr %s", downloadFolderUriStr);
 
-        DocumentFile downloadFolder = DocumentFile.fromTreeUri(this, Uri.parse(downloadFolderUriStr));
-        if (downloadFolder != null && downloadFolder.exists()) currentRootDir = downloadFolder;
+        if (!downloadFolderUriStr.isEmpty()) {
+            DocumentFile downloadFolder = DocumentFile.fromTreeUri(this, Uri.parse(downloadFolderUriStr));
+            if (downloadFolder != null && downloadFolder.exists()) currentRootDir = downloadFolder;
+        }
         openFolderPicker();
     }
 
@@ -179,9 +183,9 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(CURRENT_DIR, currentRootDir.getUri().toString());
-        outState.putString(PREV_DIR, prevRootDir.getUri().toString());
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        if (currentRootDir != null) outState.putString(CURRENT_DIR, currentRootDir.getUri().toString());
+        if (prevRootDir != null) outState.putString(PREV_DIR, prevRootDir.getUri().toString());
         outState.putBoolean(CALLED_BY_PREFS, calledByPrefs);
 
         ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();

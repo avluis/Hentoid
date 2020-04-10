@@ -45,6 +45,7 @@ public final class ContentHelper {
 
     /**
      * Open the app's web browser to view the given Content's gallery page
+     *
      * @param context Context to use for the action
      * @param content Content to view
      */
@@ -54,6 +55,7 @@ public final class ContentHelper {
 
     /**
      * Open the app's web browser to view the given Content's gallery page
+     *
      * @param context Context to use for the action
      * @param content Content to view
      * @param wrapPin True if the intent should be wrapped with PIN protection
@@ -69,6 +71,7 @@ public final class ContentHelper {
 
     /**
      * Update the given Content's JSON file with its current values
+     *
      * @param context Context to use for the action
      * @param content Content whose JSON file to update
      */
@@ -86,6 +89,7 @@ public final class ContentHelper {
 
     /**
      * Create the given Content's JSON file and populate it with its current values
+     *
      * @param content Content whose JSON file to create
      */
     public static void createJson(@NonNull Context context, @NonNull Content content) {
@@ -100,8 +104,9 @@ public final class ContentHelper {
 
     /**
      * Open the given Content in the built-in image viewer
-     * @param context Context to use for the action
-     * @param content Content to view
+     *
+     * @param context      Context to use for the action
+     * @param content      Content to view
      * @param searchParams Current search parameters (so that the next/previous book feature
      *                     is faithful to the library screen's order)
      */
@@ -120,8 +125,9 @@ public final class ContentHelper {
 
     /**
      * Update the given Content's number of reads in both DB and JSON file
+     *
      * @param context Context to use for the action
-     * @param dao DAO to use for the action
+     * @param dao     DAO to use for the action
      * @param content Content to update
      */
     @WorkerThread
@@ -137,6 +143,7 @@ public final class ContentHelper {
      * Find the picture files for the given Content
      * NB1 : Pictures with non-supported formats are not included in the results
      * NB2 : Cover picture is not included in the results
+     *
      * @param content Content to retrieve picture files for
      * @return List of picture files
      */
@@ -270,6 +277,7 @@ public final class ContentHelper {
 
     /**
      * Format the Content ID for folder naming purposes
+     *
      * @param content Content whose ID to format
      * @return Formatted Content ID
      */
@@ -284,8 +292,9 @@ public final class ContentHelper {
 
     /**
      * Return the given site's download directory. Create it if it doesn't exist.
+     *
      * @param context Context to use for the action
-     * @param site Site to get the download directory for
+     * @param site    Site to get the download directory for
      * @return Download directory of the given Site
      */
     @Nullable
@@ -304,15 +313,16 @@ public final class ContentHelper {
 
         String siteFolderName = site.getFolder();
         DocumentFile siteFolder = FileHelper.findFolder(context, appFolder, siteFolderName);
-        if (null == siteFolder) { // Create
+        if (null == siteFolder) // Create
             return appFolder.createDirectory(siteFolderName);
-        } else return siteFolder;
+        else return siteFolder;
     }
 
     /**
      * Open the "share with..." Android dialog for the given Content
+     *
      * @param context Context to use for the action
-     * @param item Content to share
+     * @param item    Content to share
      */
     public static void shareContent(@NonNull final Context context, @NonNull final Content item) {
         String url = item.getGalleryUrl();
