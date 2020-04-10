@@ -422,6 +422,8 @@ public class FileHelper {
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
+    // TODO Performance leverage ContentProviderClient when doing repeated calls to listXXX
+    // see https://stackoverflow.com/questions/5084896/using-contentproviderclient-vs-contentresolver-to-access-content-provider
     public static List<DocumentFile> listFiles(@NonNull DocumentFile parent, FileFilter filter) {
         List<DocumentFile> result = new ArrayList<>();
 

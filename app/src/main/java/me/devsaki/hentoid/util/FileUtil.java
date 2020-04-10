@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util;
 
+import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -18,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -181,35 +183,34 @@ class FileUtil {
             final String nameFilter,
             boolean listFolders,
             boolean listFiles) {
-        final ContentResolver resolver = context.getContentResolver();
-
-        final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
-        //final Uri searchUri = DocumentsContract.buildChildDocumentsUri(FileHelper.getFileProviderAuthority(), DocumentsContract.getDocumentId(parent.getUri()));
         final List<Uri> results = new ArrayList<>();
 
-        String selectionClause = null;
-        if (listFolders && !listFiles)
-            selectionClause = DocumentsContract.Document.COLUMN_MIME_TYPE + "=" + DocumentsContract.Document.MIME_TYPE_DIR;
-        else if (!listFolders && listFiles)
-            selectionClause = DocumentsContract.Document.COLUMN_MIME_TYPE + "!=" + DocumentsContract.Document.MIME_TYPE_DIR;
+        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
+        if (null == client) return Collections.emptyList();
 
-        String[] selectionArgs = null;
-        if (nameFilter != null) {
-            if (selectionClause != null) selectionClause += " AND ";
-            else selectionClause = "";
-            selectionClause += DocumentsContract.Document.COLUMN_DISPLAY_NAME + "=" + nameFilter;
-        }
+        try {
+            final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
+            //final Uri searchUri = DocumentsContract.buildChildDocumentsUri(FileHelper.getFileProviderAuthority(), DocumentsContract.getDocumentId(parent.getUri()));
 
-        try (Cursor c = resolver.query(searchUri, new String[]{
-                DocumentsContract.Document.COLUMN_DOCUMENT_ID}, selectionClause, selectionArgs, null)) {
-            if (c != null)
-                while (c.moveToNext()) {
-                    final String documentId = c.getString(0);
-                    final Uri documentUri = DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId);
-                    results.add(documentUri);
-                }
-        } catch (Exception e) {
-            Timber.w(e, "Failed query %s %s", selectionClause, selectionArgs);
+            try (Cursor c = client.query(searchUri, new String[]{
+                    DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                    DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                    DocumentsContract.Document.COLUMN_MIME_TYPE}, null, null, null)) {
+                if (c != null)
+                    while (c.moveToNext()) {
+                        final String documentId = c.getString(0);
+                        final String documentName = c.getString(1);
+                        boolean isFolder = c.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
+
+                        // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
+                        if ((null == nameFilter || documentName.equalsIgnoreCase(nameFilter)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
+                            results.add(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId));
+                    }
+            } catch (Exception e) {
+                Timber.w(e, "Failed query");
+            }
+        } finally {
+            client.close();
         }
         return convertFromUris(context, parent, results);
     }

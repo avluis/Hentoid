@@ -109,6 +109,8 @@ public class JsonHelper {
                 }
                 json.append(sCurrentLine);
             }
+        } catch (Exception e) {
+            Timber.e(e, "Error while reading %s", f.getUri().toString());
         }
         return jsonToObject(json.toString(), type);
     }
