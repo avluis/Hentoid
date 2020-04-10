@@ -200,19 +200,16 @@ class FileUtil {
             selectionClause += DocumentsContract.Document.COLUMN_DISPLAY_NAME + "=" + nameFilter;
         }
 
-        Timber.d("selectionClause %s", selectionClause);
-
         try (Cursor c = resolver.query(searchUri, new String[]{
                 DocumentsContract.Document.COLUMN_DOCUMENT_ID}, selectionClause, selectionArgs, null)) {
             if (c != null)
                 while (c.moveToNext()) {
                     final String documentId = c.getString(0);
                     final Uri documentUri = DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId);
-                    Timber.d("C NEXT %s", documentUri.toString());
                     results.add(documentUri);
                 }
         } catch (Exception e) {
-            Timber.w(e, "Failed query");
+            Timber.w(e, "Failed query %s %s", selectionClause, selectionArgs);
         }
         return convertFromUris(context, parent, results);
     }
