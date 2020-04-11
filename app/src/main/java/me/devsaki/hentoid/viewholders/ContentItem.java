@@ -39,7 +39,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
-import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
@@ -200,6 +199,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         private void attachCover(Content content) {
             String thumbLocation = content.getCover().getFileUri();
             if (thumbLocation.isEmpty()) thumbLocation = content.getCover().getUrl();
+            if (thumbLocation.isEmpty()) thumbLocation = content.getCoverImageUrl();
 
             Context context = ivCover.getContext().getApplicationContext();
 
