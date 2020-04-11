@@ -345,60 +345,39 @@ public final class ContentHelper {
         context.startActivity(Intent.createChooser(intent, context.getString(R.string.send_to)));
     }
 
+    private static String removeLeadingZeroesAndExtension(String s) {
+        if (null == s) return "";
+
+        int beginIndex = 0;
+        if (s.startsWith("0")) beginIndex = -1;
+
+        for (int i = 0; i < s.length(); i++) {
+            if (-1 == beginIndex && s.charAt(i) != '0') beginIndex = i;
+            if ('.' == s.charAt(i)) return s.substring(beginIndex, i);
+        }
+
+        return (-1 == beginIndex) ? "0" : s.substring(beginIndex);
+    }
+
     public static List<ImageFile> matchFilesToImageList(@NonNull List<DocumentFile> files, @NonNull List<ImageFile> images) {
+        Map<String, String> fileNameUris = new HashMap<>();
         int imageIndex = 0;
-        int fileIndex;
-        boolean matchFound;
-        DocumentFile file;
-        String fileName;
 
-        Timber.i(">> match 1");
+        for (DocumentFile file : files)
+            fileNameUris.put(removeLeadingZeroesAndExtension(file.getName()), file.getUri().toString());
+
+        Timber.i(">> match begin");
         while (imageIndex < images.size()) {
-            matchFound = false;
-            for (fileIndex = 0; fileIndex < files.size(); fileIndex++) {
-                file = files.get(fileIndex);
-                fileName = file.getName();
-                // Image and file name match => store absolute path and remove the file (further processing is useless)
-                if (fileName != null && fileNamesMatchCached(images.get(imageIndex).getName(), fileName)) {
-                    matchFound = true;
-                    images.get(imageIndex).setFileUri(file.getUri().toString());
-                    files.remove(fileIndex);
-                    break;
-                }
-            }
-            // Image is not among detected files => remove it
-            if (!matchFound) {
+            String imgName = removeLeadingZeroesAndExtension(images.get(imageIndex).getName());
+            if (fileNameUris.containsKey(imgName))
+                images.get(imageIndex++).setFileUri(fileNameUris.get(imgName));
+            else {
+                Timber.i(">> img dropped %s", imgName);
                 images.remove(imageIndex);
-            } else imageIndex++;
+            }
         }
-        Timber.i(">> match 7");
+        Timber.i(">> match end");
         return images;
-    }
-
-    // Match when the names are exactly the same, or when their value is
-    private static boolean fileNamesMatchCached(@NonNull String name1, @NonNull String name2) {
-        final String key = name1 + "&" + name2;
-        if (fileNameMatchCache.containsKey(key)) return fileNameMatchCache.get(key);
-        else {
-            boolean result = fileNamesMatch(name1, name2);
-            fileNameMatchCache.put(key, result);
-            return result;
-        }
-    }
-
-    private static boolean fileNamesMatch(@NonNull String name1, @NonNull String name2) {
-        name1 = FileHelper.getFileNameWithoutExtension(name1);
-        name2 = FileHelper.getFileNameWithoutExtension(name2);
-        if (name1.equalsIgnoreCase(name2)) return true;
-        if (name1.startsWith(Consts.THUMB_FILE_NAME) || name2.startsWith(Consts.THUMB_FILE_NAME))
-            return false;
-        Timber.i(">> namesMatch 2 %s %s", name1, name2);
-
-        try {
-            return (Integer.parseInt(name1) == Integer.parseInt(name2));
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
     public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files) {
