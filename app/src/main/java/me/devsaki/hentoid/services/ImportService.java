@@ -211,19 +211,21 @@ public class ImportService extends IntentService {
                     }
 
                     if (rename) {
-                        String canonicalBookDir = ContentHelper.formatBookFolderName(content);
+                        String canonicalBookFolderName = ContentHelper.formatBookFolderName(content);
 
+                        // TODO test that
                         List<String> currentPathParts = bookFolder.getUri().getPathSegments();
-                        String currentBookDir = currentPathParts.get(currentPathParts.size() - 1); // TODO check if that one's the folder name and not the file name
+                        String[] bookUriParts = currentPathParts.get(currentPathParts.size() - 1).split(":");
+                        String[] bookPathParts = bookUriParts[bookUriParts.length - 1].split("/");
+                        String bookFolderName = bookPathParts[bookPathParts.length - 1];
 
-                        if (!canonicalBookDir.equalsIgnoreCase(currentBookDir)) {
-
+                        if (!canonicalBookFolderName.equalsIgnoreCase(bookFolderName)) {
                             //if (FileHelper.renameDirectory(folder, new File(settingDir, canonicalBookDir))) {
-                            if (bookFolder.renameTo(canonicalBookDir)) {
-                                content.setStorageUri(canonicalBookDir);
-                                trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
+                            if (bookFolder.renameTo(canonicalBookFolderName)) {
+                                content.setStorageUri(canonicalBookFolderName);
+                                trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName);
                             } else {
-                                trace(Log.WARN, log, "[Rename KO] Could not rename file %s to %s", currentBookDir, canonicalBookDir);
+                                trace(Log.WARN, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName);
                             }
                         }
                     }
