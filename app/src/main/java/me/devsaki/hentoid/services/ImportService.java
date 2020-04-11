@@ -23,6 +23,7 @@ import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -166,15 +167,16 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
         for (int i = 0; i < files.size(); i++) {
             DocumentFile folder = files.get(i);
+            List<DocumentFile> imageFiles = null;
 
             // Detect the presence of images if the corresponding cleanup option has been enabled
             if (cleanNoImages) {
-                List<DocumentFile> images = FileHelper.listFiles(
+                imageFiles = FileHelper.listFiles(
                         folder,
                         file -> (file.isDirectory() || Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName())))
                 );
 
-                if (images.isEmpty()) { // No images nor subfolders
+                if (imageFiles.isEmpty()) { // No images nor subfolders
                     booksKO++;
                     boolean success = folder.delete();
                     trace(Log.INFO, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", folder.getUri().toString());
@@ -186,19 +188,31 @@ public class ImportService extends IntentService {
             try {
                 content = importJson(this, folder);
                 if (content != null) {
+
+                    if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) // No cover
+                    {
+                        // Get the saved cover file
+                        if (null == imageFiles) imageFiles = FileHelper.listFiles(
+                                folder,
+                                file -> (file.getName() != null && file.getName().startsWith("thumb"))
+                        );
+
+                        // Add it to the book's images
+                        if (!imageFiles.isEmpty()) {
+                            ImageFile cover = new ImageFile(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
+                            cover.setFileUri(imageFiles.get(0).getUri().toString());
+                            cover.setIsCover(true);
+                            if (content.getImageFiles() != null) content.getImageFiles().add(cover);
+                        }
+                    }
+
                     if (rename) {
                         String canonicalBookDir = ContentHelper.formatBookFolderName(content);
 
-                        //String[] currentPathParts = folder.getAbsolutePath().split(File.separator);
                         List<String> currentPathParts = folder.getUri().getPathSegments();
                         String currentBookDir = currentPathParts.get(currentPathParts.size() - 1); // TODO check if that one's the folder name and not the file name
 
                         if (!canonicalBookDir.equalsIgnoreCase(currentBookDir)) {
-                            /*
-                            String settingDir = Preferences.getRootFolderName();
-                            if (settingDir.isEmpty())
-                                settingDir = FileHelper.getDefaultDir(this, canonicalBookDir).getAbsolutePath();
-                            */
 
                             //if (FileHelper.renameDirectory(folder, new File(settingDir, canonicalBookDir))) {
                             if (folder.renameTo(canonicalBookDir)) {
