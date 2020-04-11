@@ -35,7 +35,6 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -43,8 +42,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
-
-import static com.annimon.stream.Collectors.toList;
 
 
 public class ImageViewerViewModel extends AndroidViewModel {
@@ -138,42 +135,48 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
-        // Load new content
-        // TODO test performance => only use when no images set, or when no URIs on know images ?
-        List<DocumentFile> pictureFiles = ContentHelper.getPictureFilesFromContent(getApplication(), theContent);
-        if (!pictureFiles.isEmpty()) {
-            List<ImageFile> imageFiles;
-            if (null == theContent.getImageFiles() || theContent.getImageFiles().isEmpty()) {
-                imageFiles = new ArrayList<>();
-                saveFilesToImageList(pictureFiles, imageFiles, theContent);
-            } else {
-                imageFiles = new ArrayList<>(theContent.getImageFiles());
-                matchFilesToImageList(pictureFiles, imageFiles);
-            }
+        boolean missingUris = Stream.of(imgs).filter(img -> img.getFileUri().isEmpty()).count() > 0;
+        List<ImageFile> imageFiles = new ArrayList<>(imgs);
 
-            if (theContent.getId() != loadedBookId) { // To be done once per book only
-                if (Preferences.isViewerResumeLastLeft())
-                    setStartingIndex(theContent.getLastReadPageIndex());
+        // Reattach actual files to the book's pictures if they are empty or have no URI's
+        if (missingUris || imgs.isEmpty()) {
+            List<DocumentFile> pictureFiles = ContentHelper.getPictureFilesFromContent(getApplication(), theContent);
+            if (!pictureFiles.isEmpty()) {
+                if (imgs.isEmpty()) {
+                    imageFiles = ContentHelper.createImageListFromFiles(pictureFiles);
+                    theContent.setImageFiles(imageFiles);
+                    collectionDao.insertContent(theContent);
+                }
                 else
-                    setStartingIndex(0);
+                    ContentHelper.matchFilesToImageList(pictureFiles, imageFiles);
+            } else { // No pictures at all
+                // TODO : do something more UX-friendly here; the user is alone with that black screen...
+                ToastUtil.toast(R.string.no_images);
             }
-
-            loadedBookId = theContent.getId();
-
-            // Cache JSON and record 1 more view for the new content
-            compositeDisposable.add(
-                    Single.fromCallable(() -> postLoadProcessing(getApplication().getApplicationContext(), theContent))
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(
-                                    v -> {
-                                    },
-                                    Timber::e
-                            )
-            );
-        } else {
-            ToastUtil.toast(R.string.no_images);
         }
+
+        sortAndSetImages(imageFiles, isShuffled);
+
+        if (theContent.getId() != loadedBookId) { // To be done once per book only
+            if (Preferences.isViewerResumeLastLeft())
+                setStartingIndex(theContent.getLastReadPageIndex());
+            else
+                setStartingIndex(0);
+        }
+
+        loadedBookId = theContent.getId();
+
+        // Cache JSON and record 1 more view for the new content
+        compositeDisposable.add(
+                Single.fromCallable(() -> postLoadProcessing(getApplication().getApplicationContext(), theContent))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                },
+                                Timber::e
+                        )
+        );
     }
 
     public void onShuffleClick() {
@@ -383,54 +386,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (currentImageSource != null) images.removeSource(currentImageSource);
         currentImageSource = collectionDao.getDownloadedImagesFromContent(theContent.getId());
         images.addSource(currentImageSource, imgs -> setImages(theContent, imgs));
-    }
-
-    private static void matchFilesToImageList(List<DocumentFile> files, @NonNull List<ImageFile> images) {
-        int i = 0;
-        while (i < images.size()) {
-            boolean matchFound = false;
-            for (DocumentFile f : files) {
-                String fileName = f.getName();
-                // Image and file name match => store absolute path
-                if (fileName != null && fileNamesMatch(images.get(i).getName(), fileName)) {
-                    matchFound = true;
-                    images.get(i).setFileUri(f.getUri().toString());
-                    break;
-                }
-            }
-            // Image is not among detected files => remove it
-            if (!matchFound) {
-                images.remove(i);
-            } else i++;
-        }
-    }
-
-    // Match when the names are exactly the same, or when their value is
-    private static boolean fileNamesMatch(@NonNull String name1, @NonNull String name2) {
-        name1 = FileHelper.getFileNameWithoutExtension(name1);
-        name2 = FileHelper.getFileNameWithoutExtension(name2);
-        if (name1.equalsIgnoreCase(name2)) return true;
-
-        try {
-            return (Integer.parseInt(name1) == Integer.parseInt(name2));
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    private void saveFilesToImageList(List<DocumentFile> files, @NonNull List<ImageFile> images, @NonNull Content content) {
-        int order = 0;
-        // Sort files by name alpha
-        List<DocumentFile> fileList = Stream.of(files).filter(f -> f != null).sortBy(DocumentFile::getName).collect(toList());
-        for (DocumentFile f : fileList) {
-            order++;
-            ImageFile img = new ImageFile();
-            String name = FileHelper.getFileNameWithoutExtension(f.getName());
-            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString());
-            images.add(img);
-        }
-        content.setImageFiles(images);
-        collectionDao.insertContent(content);
     }
 
     @WorkerThread

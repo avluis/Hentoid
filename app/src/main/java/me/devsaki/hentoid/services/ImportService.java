@@ -148,10 +148,7 @@ public class ImportService extends IntentService {
         Content content = null;
         List<LogUtil.LogEntry> log = new ArrayList<>();
 
-        final FileHelper.NameFilter usefulNames = displayName -> (displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME_V2)
-                || displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME)
-                || displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME_OLD)
-                || displayName.startsWith(Consts.THUMB_FILE_NAME));
+        final FileHelper.NameFilter imageNames = displayName -> Helper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
         DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
         if (null == rootFolder || !rootFolder.exists()) {
@@ -195,20 +192,38 @@ public class ImportService extends IntentService {
 
             // Detect JSON and try to parse it
             try {
-                List<DocumentFile> usefulFiles = FileHelper.listDocumentFiles(this, bookFolder, usefulNames);
-                content = importJson(bookFolder, usefulFiles);
+                Timber.i(">> start %s", bookFolder.getUri().toString());
+                List<DocumentFile> usefulFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
+                Timber.i(">> json start %s %s", usefulFiles.size(), bookFolder.getUri().toString());
+                content = importJson(bookFolder);
+                Timber.i(">> json end %s", bookFolder.getUri().toString());
                 if (content != null) {
+                    List<ImageFile> contentImages;
+                    if (content.getImageFiles() != null) contentImages = content.getImageFiles();
+                    else contentImages = new ArrayList<>();
 
-                    if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) { // No cover
-                        // Get the saved cover file
-                        Optional<DocumentFile> file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
-                        if (file.isPresent() && file.get().exists()) {
-                            ImageFile cover = new ImageFile(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
-                            cover.setFileUri(file.get().getUri().toString());
-                            cover.setIsCover(true);
-                            if (content.getImageFiles() != null) content.getImageFiles().add(cover);
+                    // Attach file Uri's to the book's images
+                    if (!usefulFiles.isEmpty()) {
+                        if (contentImages.isEmpty()) { // No images described in the JSON -> recreate them
+                            contentImages = ContentHelper.createImageListFromFiles(usefulFiles);
+                            content.setImageFiles(contentImages);
+                            content.getCover().setUrl(content.getCoverImageUrl());
+                        } else { // Existing images described in the JSON -> map them
+                            content.setImageFiles(ContentHelper.matchFilesToImageList(usefulFiles, contentImages));
+                            // If no cover is defined, get it too
+                            if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) {
+                                Optional<DocumentFile> file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
+                                if (file.isPresent()) {
+                                    ImageFile cover = new ImageFile(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
+                                    cover.setName(Consts.THUMB_FILE_NAME);
+                                    cover.setFileUri(file.get().getUri().toString());
+                                    cover.setIsCover(true);
+                                    contentImages.add(0, cover);
+                                }
+                            }
                         }
                     }
+                    Timber.i(">> images %s", bookFolder.getUri().toString());
 
                     if (rename) {
                         String canonicalBookFolderName = ContentHelper.formatBookFolderName(content);
@@ -253,6 +268,7 @@ public class ImportService extends IntentService {
                 if (null == content) booksKO++;
                 else booksOK++;
             } catch (ParseException jse) {
+                Timber.w(jse);
                 if (null == content)
                     content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
@@ -262,6 +278,7 @@ public class ImportService extends IntentService {
                     trace(Log.INFO, log, "[Remove unreadable JSON %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
                 }
             } catch (Exception e) {
+                Timber.w(e);
                 if (null == content)
                     content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
@@ -291,18 +308,27 @@ public class ImportService extends IntentService {
         return logInfo;
     }
 
+    @Nullable
+    private static DocumentFile findByName(@NonNull final List<DocumentFile> list, @NonNull final String name) {
+        for (DocumentFile f : list)
+            if (f.getName() != null && f.getName().equals(name)) return f;
+        return null;
+    }
 
     @Nullable
-    private static Content importJson(@NonNull DocumentFile folder, @NonNull List<DocumentFile> usefulFiles) throws ParseException {
+    private Content importJson(@NonNull DocumentFile folder) throws ParseException {
+        Timber.i(">>importJson 1");
+        DocumentFile file = FileHelper.findFile(this, folder, Consts.JSON_FILE_NAME_V2);
+        Timber.i(">>importJson 2");
+        if (file != null) return importJsonV2(file, folder);
 
-        Optional<DocumentFile> file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().equalsIgnoreCase(Consts.JSON_FILE_NAME_V2)).findFirst();
-        if (file.isPresent() && file.get().exists()) return importJsonV2(file.get(), folder);
+        Timber.i(">>importJson 3");
+        file = FileHelper.findFile(this, folder, Consts.JSON_FILE_NAME);
+        Timber.i(">>importJson 4");
+        if (file != null) return importJsonV1(file, folder);
 
-        file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().equalsIgnoreCase(Consts.JSON_FILE_NAME)).findFirst();
-        if (file.isPresent() && file.get().exists()) return importJsonV1(file.get(), folder);
-
-        file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().equalsIgnoreCase(Consts.JSON_FILE_NAME_OLD)).findFirst();
-        if (file.isPresent() && file.get().exists()) return importJsonLegacy(file.get(), folder);
+        file = FileHelper.findFile(this, folder, Consts.JSON_FILE_NAME_OLD);
+        if (file != null) return importJsonLegacy(file, folder);
 
         return null;
     }
@@ -422,7 +448,6 @@ public class ImportService extends IntentService {
             JsonContent content = JsonHelper.jsonToObject(json, JsonContent.class);
             Content result = content.toEntity();
             result.setJsonUri(json.getUri().toString());
-
             result.setStorageUri(parentFolder.getUri().toString());
 
             if (result.getStatus() != StatusContent.DOWNLOADED

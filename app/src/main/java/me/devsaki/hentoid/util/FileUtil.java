@@ -165,31 +165,7 @@ class FileUtil {
         return convertFromUris(context, parent, results);
     }
 
-    static List<DocumentFile> listFolders(@NonNull final Context context, @NonNull final DocumentFile parent) {
-        return listDocumentFiles(context, parent, null, true, false);
-    }
-
-    static List<DocumentFile> listFolders(@NonNull final Context context, @NonNull final DocumentFile parent, final String nameFilter) {
-        return listDocumentFiles(context, parent, FileHelper.createNameFilterEquals(nameFilter), true, false);
-    }
-
-    static List<DocumentFile> listFiles(@NonNull final Context context, @NonNull final DocumentFile parent, final String nameFilter) {
-        return listDocumentFiles(context, parent, FileHelper.createNameFilterEquals(nameFilter), false, true);
-    }
-
-    static List<DocumentFile> listFolders(@NonNull final Context context, @NonNull final DocumentFile parent, final FileHelper.NameFilter filter) {
-        return listDocumentFiles(context, parent, filter, true, false);
-    }
-
-    static List<DocumentFile> listFiles(@NonNull final Context context, @NonNull final DocumentFile parent, final FileHelper.NameFilter filter) {
-        return listDocumentFiles(context, parent, filter, false, true);
-    }
-
-    static List<DocumentFile> listDocumentFiles(@NonNull final Context context, @NonNull final DocumentFile parent, final FileHelper.NameFilter filter) {
-        return listDocumentFiles(context, parent, filter, true, true);
-    }
-
-    private static List<DocumentFile> listDocumentFiles(
+    static List<DocumentFile> listDocumentFiles(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
             final FileHelper.NameFilter nameFilter,
@@ -224,14 +200,15 @@ class FileUtil {
         } finally {
             client.close();
         }
-        return convertFromUris(context, parent, results);
+        List<DocumentFile> list = convertFromUris(context, parent, results);
+        return list;
     }
 
     private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final DocumentFile parent, @NonNull final List<Uri> uris) {
         final List<DocumentFile> resultFiles = new ArrayList<>();
         for (Uri uri : uris) {
-            //DocumentFile docFile = newTreeDocumentFile(parent, context, uri);
-            DocumentFile docFile = DocumentFile.fromTreeUri(context, uri);
+            DocumentFile docFile = newTreeDocumentFile(parent, context, uri);
+            //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri);   <-- should be the proper way to go but it's inefficient as it calls buildDocumentUriUsingTree once again
             if (docFile != null) resultFiles.add(docFile);
         }
         return resultFiles;
@@ -239,14 +216,14 @@ class FileUtil {
 
     @Nullable
     private static DocumentFile newTreeDocumentFile(@NonNull final DocumentFile parent, @NonNull final Context context, @NonNull final Uri uri) {
+        //resultFiles[i] = new TreeDocumentFile(this, context, result[i]); <-- not visible
         try {
             if (null == treeDocumentFileConstructor) {
                 Class<?> treeDocumentFileClazz = Class.forName("androidx.documentfile.provider.TreeDocumentFile");
-                treeDocumentFileConstructor = treeDocumentFileClazz.getConstructor(DocumentFile.class, Context.class, Uri.class);
+                treeDocumentFileConstructor = treeDocumentFileClazz.getDeclaredConstructor(DocumentFile.class, Context.class, Uri.class);
                 treeDocumentFileConstructor.setAccessible(true);
             }
             return (DocumentFile) treeDocumentFileConstructor.newInstance(parent, context, uri);
-            //resultFiles[i] = new TreeDocumentFile(this, context, result[i]);
         } catch (Exception ex) {
             Timber.e(ex);
         }

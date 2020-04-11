@@ -10,12 +10,16 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.annimon.stream.Stream;
+
 import org.threeten.bp.Instant;
 
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -28,8 +32,11 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import timber.log.Timber;
+
+import static com.annimon.stream.Collectors.toList;
 
 /**
  * Utility class for Content-related operations
@@ -37,6 +44,8 @@ import timber.log.Timber;
 public final class ContentHelper {
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
+
+    private static final Map<String, Boolean> fileNameMatchCache = new HashMap<>();
 
 
     private ContentHelper() {
@@ -334,5 +343,77 @@ public final class ContentHelper {
         intent.putExtra(Intent.EXTRA_TEXT, url);
 
         context.startActivity(Intent.createChooser(intent, context.getString(R.string.send_to)));
+    }
+
+    public static List<ImageFile> matchFilesToImageList(@NonNull List<DocumentFile> files, @NonNull List<ImageFile> images) {
+        int imageIndex = 0;
+        int fileIndex;
+        boolean matchFound;
+        DocumentFile file;
+        String fileName;
+
+        Timber.i(">> match 1");
+        while (imageIndex < images.size()) {
+            matchFound = false;
+            for (fileIndex = 0; fileIndex < files.size(); fileIndex++) {
+                file = files.get(fileIndex);
+                fileName = file.getName();
+                // Image and file name match => store absolute path and remove the file (further processing is useless)
+                if (fileName != null && fileNamesMatchCached(images.get(imageIndex).getName(), fileName)) {
+                    matchFound = true;
+                    images.get(imageIndex).setFileUri(file.getUri().toString());
+                    files.remove(fileIndex);
+                    break;
+                }
+            }
+            // Image is not among detected files => remove it
+            if (!matchFound) {
+                images.remove(imageIndex);
+            } else imageIndex++;
+        }
+        Timber.i(">> match 7");
+        return images;
+    }
+
+    // Match when the names are exactly the same, or when their value is
+    private static boolean fileNamesMatchCached(@NonNull String name1, @NonNull String name2) {
+        final String key = name1 + "&" + name2;
+        if (fileNameMatchCache.containsKey(key)) return fileNameMatchCache.get(key);
+        else {
+            boolean result = fileNamesMatch(name1, name2);
+            fileNameMatchCache.put(key, result);
+            return result;
+        }
+    }
+
+    private static boolean fileNamesMatch(@NonNull String name1, @NonNull String name2) {
+        name1 = FileHelper.getFileNameWithoutExtension(name1);
+        name2 = FileHelper.getFileNameWithoutExtension(name2);
+        if (name1.equalsIgnoreCase(name2)) return true;
+        if (name1.startsWith(Consts.THUMB_FILE_NAME) || name2.startsWith(Consts.THUMB_FILE_NAME))
+            return false;
+        Timber.i(">> namesMatch 2 %s %s", name1, name2);
+
+        try {
+            return (Integer.parseInt(name1) == Integer.parseInt(name2));
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files) {
+        List<ImageFile> result = new ArrayList<>();
+        int order = 0;
+        // Sort files by name alpha
+        List<DocumentFile> fileList = Stream.of(files).filter(f -> f != null).sortBy(DocumentFile::getName).collect(toList());
+        for (DocumentFile f : fileList) {
+            String name = (f.getName() != null) ? FileHelper.getFileNameWithoutExtension(f.getName()) : "";
+            ImageFile img = new ImageFile();
+            if (name.startsWith("thumb")) img.setIsCover(true);
+            else order++;
+            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString());
+            result.add(img);
+        }
+        return result;
     }
 }

@@ -32,8 +32,10 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -57,6 +59,7 @@ public class FileHelper {
     private static final String PRIMARY_VOLUME_NAME = "primary";
 
     private static final Charset CHARSET_LATIN_1 = Charset.forName("ISO-8859-1");
+
 
 
     public static String getFileProviderAuthority() {
@@ -436,27 +439,33 @@ public class FileHelper {
     }
 
     public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
-        return FileUtil.listFolders(context, parent);
+        return FileUtil.listDocumentFiles(context, parent, null, true, false);
+    }
+
+    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
+        return FileUtil.listDocumentFiles(context, parent, filter, false, true);
     }
 
     @Nullable
     public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
-        //List<DocumentFile> result = listFiles(parent, f -> f.isDirectory() && f.getName() != null && f.getName().equalsIgnoreCase(subfolderName));
-        List<DocumentFile> result = FileUtil.listFolders(context, parent, subfolderName);
+        List<DocumentFile> result = listDocumentFiles(context, parent, subfolderName, true, false);
         if (!result.isEmpty()) return result.get(0);
         else return null;
     }
 
     @Nullable
     public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String fileName) {
-        //List<DocumentFile> result = listFiles(parent, f -> f.isFile() && f.getName() != null && f.getName().equalsIgnoreCase(fileName));
-        List<DocumentFile> result = FileUtil.listFiles(context, parent, fileName);
+        List<DocumentFile> result = listDocumentFiles(context, parent, fileName, false, true);
         if (!result.isEmpty()) return result.get(0);
         else return null;
     }
 
-    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, final NameFilter filter) {
-        return FileUtil.listDocumentFiles(context, parent, filter);
+    private static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
+                                                        @NonNull final DocumentFile parent,
+                                                        final String nameFilter,
+                                                        boolean listFolders,
+                                                        boolean listFiles) {
+        return FileUtil.listDocumentFiles(context, parent, FileHelper.createNameFilterEquals(nameFilter), listFolders, listFiles);
     }
 
     private static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
