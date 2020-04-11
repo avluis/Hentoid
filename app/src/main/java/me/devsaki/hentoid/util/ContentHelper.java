@@ -45,7 +45,7 @@ public final class ContentHelper {
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
-    private static final Map<String, Boolean> fileNameMatchCache = new HashMap<>();
+    private static final Map<String, String> fileNameMatchCache = new HashMap<>();
 
 
     private ContentHelper() {
@@ -359,16 +359,25 @@ public final class ContentHelper {
         return (-1 == beginIndex) ? "0" : s.substring(beginIndex);
     }
 
+    private static String removeLeadingZeroesAndExtensionCached(String s) {
+        if (fileNameMatchCache.containsKey(s)) return fileNameMatchCache.get(s);
+        else {
+            String result = removeLeadingZeroesAndExtension(s);
+            fileNameMatchCache.put(s, result);
+            return result;
+        }
+    }
+
     public static List<ImageFile> matchFilesToImageList(@NonNull List<DocumentFile> files, @NonNull List<ImageFile> images) {
         Map<String, String> fileNameUris = new HashMap<>();
         int imageIndex = 0;
 
         for (DocumentFile file : files)
-            fileNameUris.put(removeLeadingZeroesAndExtension(file.getName()), file.getUri().toString());
+            fileNameUris.put(removeLeadingZeroesAndExtensionCached(file.getName()), file.getUri().toString());
 
         Timber.i(">> match begin");
         while (imageIndex < images.size()) {
-            String imgName = removeLeadingZeroesAndExtension(images.get(imageIndex).getName());
+            String imgName = removeLeadingZeroesAndExtensionCached(images.get(imageIndex).getName());
             if (fileNameUris.containsKey(imgName))
                 images.get(imageIndex++).setFileUri(fileNameUris.get(imgName));
             else {
