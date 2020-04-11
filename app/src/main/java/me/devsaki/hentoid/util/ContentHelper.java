@@ -161,7 +161,7 @@ public final class ContentHelper {
         return FileHelper.listFiles(folder,
                 file -> (file.isFile()
                         && file.getName() != null
-                        && !file.getName().toLowerCase().startsWith("thumb")
+                        && !file.getName().toLowerCase().startsWith(Consts.THUMB_FILE_NAME)
                         && Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName()))
                 )
         );

@@ -165,22 +165,34 @@ class FileUtil {
         return convertFromUris(context, parent, results);
     }
 
+    static List<DocumentFile> listFolders(@NonNull final Context context, @NonNull final DocumentFile parent) {
+        return listDocumentFiles(context, parent, null, true, false);
+    }
+
     static List<DocumentFile> listFolders(@NonNull final Context context, @NonNull final DocumentFile parent, final String nameFilter) {
-        return listDocumentFiles(context, parent, nameFilter, true, false);
+        return listDocumentFiles(context, parent, FileHelper.createNameFilterEquals(nameFilter), true, false);
     }
 
     static List<DocumentFile> listFiles(@NonNull final Context context, @NonNull final DocumentFile parent, final String nameFilter) {
-        return listDocumentFiles(context, parent, nameFilter, false, true);
+        return listDocumentFiles(context, parent, FileHelper.createNameFilterEquals(nameFilter), false, true);
     }
 
-    static List<DocumentFile> listDocumentFiles(@NonNull final Context context, @NonNull final DocumentFile parent, final String nameFilter) {
-        return listDocumentFiles(context, parent, nameFilter, true, true);
+    static List<DocumentFile> listFolders(@NonNull final Context context, @NonNull final DocumentFile parent, final FileHelper.NameFilter filter) {
+        return listDocumentFiles(context, parent, filter, true, false);
+    }
+
+    static List<DocumentFile> listFiles(@NonNull final Context context, @NonNull final DocumentFile parent, final FileHelper.NameFilter filter) {
+        return listDocumentFiles(context, parent, filter, false, true);
+    }
+
+    static List<DocumentFile> listDocumentFiles(@NonNull final Context context, @NonNull final DocumentFile parent, final FileHelper.NameFilter filter) {
+        return listDocumentFiles(context, parent, filter, true, true);
     }
 
     private static List<DocumentFile> listDocumentFiles(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
-            final String nameFilter,
+            final FileHelper.NameFilter nameFilter,
             boolean listFolders,
             boolean listFiles) {
         final List<Uri> results = new ArrayList<>();
@@ -203,7 +215,7 @@ class FileUtil {
                         boolean isFolder = c.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
 
                         // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
-                        if ((null == nameFilter || documentName.equalsIgnoreCase(nameFilter)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
+                        if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
                             results.add(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId));
                     }
             } catch (Exception e) {

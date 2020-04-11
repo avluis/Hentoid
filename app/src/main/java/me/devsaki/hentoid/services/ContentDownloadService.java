@@ -64,6 +64,7 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -741,7 +742,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         byte[] finalBinaryContent = null;
-        if (hasImageProcessing && !img.getName().equals("thumb")) {
+        if (hasImageProcessing && !img.getName().equals(Consts.THUMB_FILE_NAME)) {
             if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty())
                 finalBinaryContent = processImage(img.getDownloadParams(), binaryContent);
             else throw new InvalidParameterException("No processing parameters found");

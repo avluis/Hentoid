@@ -30,6 +30,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -307,7 +308,7 @@ public class LibraryViewModel extends AndroidViewModel {
         DocumentFile bookFolder = DocumentFile.fromTreeUri(getApplication(), Uri.parse(content.getStorageUri()));
         if (null == bookFolder || !bookFolder.exists()) return;
 
-        List<DocumentFile> files = FileHelper.listFiles(bookFolder, f -> f.getName() != null && !f.getName().endsWith(".json") && !f.getName().contains("thumb"));
+        List<DocumentFile> files = FileHelper.listFiles(bookFolder, f -> f.getName() != null && !f.getName().endsWith(".json") && !f.getName().contains(Consts.THUMB_FILE_NAME));
 //        files = Stream.of(files).sortBy(DocumentFile::getName).toList();
         if (!files.isEmpty()) {
             // Create folder to share from

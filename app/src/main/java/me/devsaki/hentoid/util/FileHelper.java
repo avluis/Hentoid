@@ -422,7 +422,7 @@ public class FileHelper {
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
-    // TODO Performance leverage ContentProviderClient when doing repeated calls to listXXX
+    // TODO Performance leverage ContentProviderClient when doing repeated calls to listXXX for all file accessors
     // see https://stackoverflow.com/questions/5084896/using-contentproviderclient-vs-contentresolver-to-access-content-provider
     public static List<DocumentFile> listFiles(@NonNull DocumentFile parent, FileFilter filter) {
         List<DocumentFile> result = new ArrayList<>();
@@ -436,7 +436,7 @@ public class FileHelper {
     }
 
     public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
-        return FileUtil.listFolders(context, parent, null);
+        return FileUtil.listFolders(context, parent);
     }
 
     @Nullable
@@ -455,12 +455,8 @@ public class FileHelper {
         else return null;
     }
 
-    @Nullable
-    public static DocumentFile findDocumentFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String documentFileName) {
-        //List<DocumentFile> result = listFiles(parent, f -> f.isFile() && f.getName() != null && f.getName().equalsIgnoreCase(fileName));
-        List<DocumentFile> result = FileUtil.listDocumentFiles(context, parent, documentFileName);
-        if (!result.isEmpty()) return result.get(0);
-        else return null;
+    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, final NameFilter filter) {
+        return FileUtil.listDocumentFiles(context, parent, filter);
     }
 
     private static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
@@ -594,18 +590,32 @@ public class FileHelper {
         }
     }
 
+    static NameFilter createNameFilterEquals(@NonNull final String name) {
+        return displayName -> displayName.equalsIgnoreCase(name);
+    }
+
     @FunctionalInterface
     public interface FileFilter {
 
         /**
-         * Tests whether or not the specified abstract pathname should be
-         * included in a pathname list.
+         * Tests whether or not the specified abstract DocumentFile should be included in a pathname list.
          *
-         * @param pathname The abstract pathname to be tested
-         * @return <code>true</code> if and only if <code>pathname</code>
-         * should be included
+         * @param file The abstract DocumentFile to be tested
+         * @return <code>true</code> if and only if <code>file</code> should be included
          */
-        boolean accept(DocumentFile pathname);
+        boolean accept(DocumentFile file);
+    }
+
+    @FunctionalInterface
+    public interface NameFilter {
+
+        /**
+         * Tests whether or not the specified abstract display name should be included in a pathname list.
+         *
+         * @param displayName The abstract display name to be tested
+         * @return <code>true</code> if and only if <code>displayName</code> should be included
+         */
+        boolean accept(@NonNull String displayName);
     }
 
 }

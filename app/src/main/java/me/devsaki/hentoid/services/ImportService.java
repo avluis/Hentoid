@@ -12,6 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
+
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
@@ -145,6 +148,11 @@ public class ImportService extends IntentService {
         Content content = null;
         List<LogUtil.LogEntry> log = new ArrayList<>();
 
+        final FileHelper.NameFilter usefulNames = displayName -> (displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME_V2)
+                || displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME)
+                || displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME_OLD)
+                || displayName.startsWith(Consts.THUMB_FILE_NAME));
+
         DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
         if (null == rootFolder || !rootFolder.exists()) {
             Timber.e("rootFolder is not defined (%s)", Preferences.getStorageUri());
@@ -152,55 +160,51 @@ public class ImportService extends IntentService {
         }
 
         // 1st pass : count subfolders of every site folder
-        List<DocumentFile> files = new ArrayList<>();
+        List<DocumentFile> bookFolders = new ArrayList<>();
         List<DocumentFile> siteFolders = FileHelper.listFolders(this, rootFolder);
         for (DocumentFile f : siteFolders)
-            files.addAll(FileHelper.listFolders(this, f));
+            bookFolders.addAll(FileHelper.listFolders(this, f));
 
         // 2nd pass : scan every folder for a JSON file or subdirectories
         String enabled = getApplication().getResources().getString(R.string.enabled);
         String disabled = getApplication().getResources().getString(R.string.disabled);
-        trace(Log.DEBUG, log, "Import books starting - initial detected count : %s", files.size() + "");
+        trace(Log.DEBUG, log, "Import books starting - initial detected count : %s", bookFolders.size() + "");
         trace(Log.INFO, log, "Rename folders %s", (rename ? enabled : disabled));
         trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
         trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
         trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
-        for (int i = 0; i < files.size(); i++) {
-            DocumentFile folder = files.get(i);
+        for (int i = 0; i < bookFolders.size(); i++) {
+            DocumentFile bookFolder = bookFolders.get(i);
             List<DocumentFile> imageFiles = null;
 
             // Detect the presence of images if the corresponding cleanup option has been enabled
+            // TODO optimize; there will be two filesystem queries because of this
             if (cleanNoImages) {
                 imageFiles = FileHelper.listFiles(
-                        folder,
+                        bookFolder,
                         file -> (file.isDirectory() || Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName())))
                 );
 
                 if (imageFiles.isEmpty()) { // No images nor subfolders
                     booksKO++;
-                    boolean success = folder.delete();
-                    trace(Log.INFO, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", folder.getUri().toString());
+                    boolean success = bookFolder.delete();
+                    trace(Log.INFO, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
                     continue;
                 }
             }
 
             // Detect JSON and try to parse it
             try {
-                content = importJson(this, folder);
+                List<DocumentFile> usefulFiles = FileHelper.listDocumentFiles(this, bookFolder, usefulNames);
+                content = importJson(bookFolder, usefulFiles);
                 if (content != null) {
 
-                    if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) // No cover
-                    {
+                    if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) { // No cover
                         // Get the saved cover file
-                        if (null == imageFiles) imageFiles = FileHelper.listFiles(
-                                folder,
-                                file -> (file.getName() != null && file.getName().startsWith("thumb"))
-                        );
-
-                        // Add it to the book's images
-                        if (!imageFiles.isEmpty()) {
+                        Optional<DocumentFile> file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
+                        if (file.isPresent() && file.get().exists()) {
                             ImageFile cover = new ImageFile(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
-                            cover.setFileUri(imageFiles.get(0).getUri().toString());
+                            cover.setFileUri(file.get().getUri().toString());
                             cover.setIsCover(true);
                             if (content.getImageFiles() != null) content.getImageFiles().add(cover);
                         }
@@ -209,13 +213,13 @@ public class ImportService extends IntentService {
                     if (rename) {
                         String canonicalBookDir = ContentHelper.formatBookFolderName(content);
 
-                        List<String> currentPathParts = folder.getUri().getPathSegments();
+                        List<String> currentPathParts = bookFolder.getUri().getPathSegments();
                         String currentBookDir = currentPathParts.get(currentPathParts.size() - 1); // TODO check if that one's the folder name and not the file name
 
                         if (!canonicalBookDir.equalsIgnoreCase(currentBookDir)) {
 
                             //if (FileHelper.renameDirectory(folder, new File(settingDir, canonicalBookDir))) {
-                            if (folder.renameTo(canonicalBookDir)) {
+                            if (bookFolder.renameTo(canonicalBookDir)) {
                                 content.setStorageUri(canonicalBookDir);
                                 trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
                             } else {
@@ -225,21 +229,21 @@ public class ImportService extends IntentService {
                     }
                     // TODO : Populate images when data is loaded from old JSONs (DoujinBuilder object)
                     ObjectBoxDB.getInstance(this).insertContent(content);
-                    trace(Log.INFO, log, "Import book OK : %s", folder.getUri().toString());
+                    trace(Log.INFO, log, "Import book OK : %s", bookFolder.getUri().toString());
                 } else { // JSON not found
-                    List<DocumentFile> subdirs = FileHelper.listFolders(this, folder);
+                    List<DocumentFile> subdirs = FileHelper.listFolders(this, bookFolder);
                     if (!subdirs.isEmpty()) // Folder doesn't contain books but contains subdirectories
                     {
-                        files.addAll(subdirs);
-                        trace(Log.INFO, log, "Subfolders found in : %s", folder.getUri().toString());
+                        bookFolders.addAll(subdirs);
+                        trace(Log.INFO, log, "Subfolders found in : %s", bookFolder.getUri().toString());
                         nbFolders++;
                         continue;
                     } else { // No JSON nor any subdirectory
-                        trace(Log.WARN, log, "Import book KO! (no JSON found) : %s", folder.getUri().toString());
+                        trace(Log.WARN, log, "Import book KO! (no JSON found) : %s", bookFolder.getUri().toString());
                         // Deletes the folder if cleanup is active
                         if (cleanNoJSON) {
-                            boolean success = folder.delete();
-                            trace(Log.INFO, log, "[Remove no JSON %s] Folder %s", success ? "OK" : "KO", folder.getUri().toString());
+                            boolean success = bookFolder.delete();
+                            trace(Log.INFO, log, "[Remove no JSON %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
                         }
                     }
                 }
@@ -250,26 +254,26 @@ public class ImportService extends IntentService {
                 if (null == content)
                     content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
-                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", jse.getMessage(), folder.getUri().toString());
+                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", jse.getMessage(), bookFolder.getUri().toString());
                 if (cleanUnreadableJSON) {
-                    boolean success = folder.delete();
-                    trace(Log.INFO, log, "[Remove unreadable JSON %s] Folder %s", success ? "OK" : "KO", folder.getUri().toString());
+                    boolean success = bookFolder.delete();
+                    trace(Log.INFO, log, "[Remove unreadable JSON %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
                 }
             } catch (Exception e) {
                 if (null == content)
                     content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
-                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", e.getMessage(), folder.getUri().toString());
+                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", e.getMessage(), bookFolder.getUri().toString());
             }
 
-            eventProgress(files.size() - nbFolders, booksOK, booksKO);
+            eventProgress(bookFolders.size() - nbFolders, booksOK, booksKO);
         }
-        trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
+        trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
 
         // Write cleanup log in root folder
         DocumentFile cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
 
-        eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
+        eventComplete(bookFolders.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
 
         stopForeground(true);
@@ -287,18 +291,16 @@ public class ImportService extends IntentService {
 
 
     @Nullable
-    private static Content importJson(@NonNull Context context, @NonNull DocumentFile folder) throws ParseException {
-        //DocumentFile json = folder.findFile(Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
-        DocumentFile json = FileHelper.findFile(context, folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
-        if (json != null && json.exists()) return importJsonV2(json, folder);
+    private static Content importJson(@NonNull DocumentFile folder, @NonNull List<DocumentFile> usefulFiles) throws ParseException {
 
-        //json = folder.findFile(Consts.JSON_FILE_NAME); // (v1) JSON file format
-        json = FileHelper.findFile(context, folder, Consts.JSON_FILE_NAME); // (v1) JSON file format
-        if (json != null && json.exists()) return importJsonV1(json, folder);
+        Optional<DocumentFile> file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().equalsIgnoreCase(Consts.JSON_FILE_NAME_V2)).findFirst();
+        if (file.isPresent() && file.get().exists()) return importJsonV2(file.get(), folder);
 
-        //json = folder.findFile(Consts.JSON_FILE_NAME_OLD); // (old) JSON file format (legacy and/or FAKKUDroid App)
-        json = FileHelper.findFile(context, folder, Consts.JSON_FILE_NAME_OLD); // (old) JSON file format (legacy and/or FAKKUDroid App)
-        if (json != null && json.exists()) return importJsonLegacy(json, folder);
+        file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().equalsIgnoreCase(Consts.JSON_FILE_NAME)).findFirst();
+        if (file.isPresent() && file.get().exists()) return importJsonV1(file.get(), folder);
+
+        file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().equalsIgnoreCase(Consts.JSON_FILE_NAME_OLD)).findFirst();
+        if (file.isPresent() && file.get().exists()) return importJsonLegacy(file.get(), folder);
 
         return null;
     }
