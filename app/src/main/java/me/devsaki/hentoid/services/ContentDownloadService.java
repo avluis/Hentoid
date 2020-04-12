@@ -431,7 +431,7 @@ public class ContentDownloadService extends IntentService {
                 // TODO - test to make sure the service's thread continues to run in such a scenario
                 if (pagesKO > 0 && Preferences.isDlRetriesActive()
                         && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()) {
-                    double freeSpaceRatio = new FileHelper.MemoryUsageFiguresSaf(this, dir).getFreeUsageRatio100();
+                    double freeSpaceRatio = new FileHelper.MemoryUsageFigures(this, dir).getFreeUsageRatio100();
 
                     if (freeSpaceRatio < Preferences.getDlRetriesMemLimit()) {
                         Timber.i("Initiating auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries() + 1, content.getTitle(), freeSpaceRatio);

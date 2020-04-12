@@ -172,16 +172,13 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
         for (int i = 0; i < bookFolders.size(); i++) {
             DocumentFile bookFolder = bookFolders.get(i);
+            Timber.i(">> start %s", bookFolder.getUri().toString());
+            List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
 
             // Detect the presence of images if the corresponding cleanup option has been enabled
-            // TODO optimize; there will be two filesystem queries because of this
             if (cleanNoImages) {
-                List<DocumentFile> imageFiles = FileHelper.listFiles(
-                        bookFolder,
-                        file -> (file.isDirectory() || Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName())))
-                );
-
-                if (imageFiles.isEmpty()) { // No images nor subfolders
+                List<DocumentFile> subfolders = FileHelper.listFolders(this, bookFolder);
+                if (imageFiles.isEmpty() && subfolders.isEmpty()) { // No images nor subfolders
                     booksKO++;
                     boolean success = bookFolder.delete();
                     trace(Log.INFO, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
@@ -191,8 +188,6 @@ public class ImportService extends IntentService {
 
             // Detect JSON and try to parse it
             try {
-                Timber.i(">> start %s", bookFolder.getUri().toString());
-                List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
                 Timber.i(">> json start %s %s", imageFiles.size(), bookFolder.getUri().toString());
                 content = importJson(bookFolder);
                 Timber.i(">> json end %s", bookFolder.getUri().toString());

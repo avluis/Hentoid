@@ -18,7 +18,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 
@@ -27,7 +26,6 @@ import org.apache.commons.io.FileUtils;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +33,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 
@@ -60,7 +58,7 @@ public class FileHelper {
 
     private static final String PRIMARY_VOLUME_NAME = "primary";
 
-    private static final Charset CHARSET_LATIN_1 = Charset.forName("ISO-8859-1");
+    private static final Charset CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1;
 
 
     public static String getFileProviderAuthority() {
@@ -71,57 +69,6 @@ public class FileHelper {
     public static DocumentFile getFileFromUriString(@NonNull final Context context, @NonNull final String uriStr) {
         Uri fileUri = Uri.parse(uriStr);
         return DocumentFile.fromSingleUri(context, fileUri);
-    }
-
-
-    /**
-     * Determine the main folder of the external SD card containing the given file. (Kitkat+)
-     *
-     * @param file The file.
-     * @return The main folder of the external SD card containing this file,
-     * if the file is on an SD card. Otherwise, null is returned.
-     */
-    static String getExtSdCardFolder(final File file) {
-        String[] extSdPaths = getExtSdCardPaths();
-        try {
-            for (String extSdPath : extSdPaths) {
-                if (file.getCanonicalPath().startsWith(extSdPath)) {
-                    return extSdPath;
-                }
-            }
-        } catch (IOException e) {
-            return null;
-        }
-
-        return null;
-    }
-
-    /**
-     * Get a list of external SD card paths. (Kitkat+)
-     *
-     * @return A list of external SD card paths.
-     */
-    private static String[] getExtSdCardPaths() {
-        Context context = HentoidApp.getInstance();
-        List<String> paths = new ArrayList<>();
-        for (File file : ContextCompat.getExternalFilesDirs(context, "external")) {
-            if (file != null && !file.equals(context.getExternalFilesDir("external"))) {
-                int index = file.getAbsolutePath().lastIndexOf("/Android/data");
-                if (index < 0) {
-                    Timber.w("Unexpected external file dir: %s", file.getAbsolutePath());
-                } else {
-                    String path = file.getAbsolutePath().substring(0, index);
-                    try {
-                        path = new File(path).getCanonicalPath();
-                    } catch (IOException e) {
-                        // Keep non-canonical path.
-                    }
-                    paths.add(path);
-                }
-            }
-        }
-
-        return paths.toArray(new String[0]);
     }
 
     // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
@@ -215,16 +162,12 @@ public class FileHelper {
      * @param target The file.
      * @return FileOutputStream.
      */
-    static OutputStream getOutputStream(@NonNull final File target) throws IOException {
+    private static OutputStream getOutputStream(@NonNull final File target) throws IOException {
         return FileUtils.openOutputStream(target);
     }
 
     static OutputStream getOutputStream(@NonNull final DocumentFile target) throws IOException {
         return FileUtil.getOutputStream(target);
-    }
-
-    public static InputStream getInputStream(@NonNull final File target) throws IOException {
-        return FileUtils.openInputStream(target);
     }
 
     public static InputStream getInputStream(@NonNull final DocumentFile target) throws IOException {
@@ -354,21 +297,6 @@ public class FileHelper {
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
-    /**
-     * Save the given binary content in the given file
-     *
-     * @param file          File to save content on
-     * @param binaryContent Content to save
-     * @throws IOException If any IOException occurs
-     */
-    public static void saveBinaryInFile(File file, byte[] binaryContent) throws IOException {
-        try (InputStream input = new ByteArrayInputStream(binaryContent)) {
-            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
-                copy(input, output);
-            }
-        }
-    }
-
     public static void saveBinaryInFile(DocumentFile file, byte[] binaryContent) throws IOException {
         byte[] buffer = new byte[1024];
         int count;
@@ -430,29 +358,14 @@ public class FileHelper {
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
-    public static void shareFile(final @NonNull Context context, final @NonNull File f, final @NonNull String title) {
-        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        sharingIntent.setType("text/*");
-        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-        sharingIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(context, FileHelper.AUTHORITY, f));
-        context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
-    }
-
     // TODO Performance leverage ContentProviderClient when doing repeated calls to listXXX for all file accessors
     // see https://stackoverflow.com/questions/5084896/using-contentproviderclient-vs-contentresolver-to-access-content-provider
-    public static List<DocumentFile> listFiles(@NonNull DocumentFile parent, FileFilter filter) {
-        List<DocumentFile> result = new ArrayList<>();
-
-        DocumentFile[] files = parent.listFiles();
-        if (filter != null)
-            for (DocumentFile file : files)
-                if (filter.accept(file)) result.add(file);
-
-        return result;
-    }
-
     public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
         return FileUtil.listDocumentFiles(context, parent, null, true, false);
+    }
+
+    public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
+        return FileUtil.listDocumentFiles(context, parent, filter, true, false);
     }
 
     public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
@@ -515,14 +428,6 @@ public class FileHelper {
         return -1;
     }
 
-    public static void copy(@NonNull File src, @NonNull File dst) throws IOException {
-        try (InputStream in = new FileInputStream(src)) {
-            try (OutputStream out = new FileOutputStream(dst)) {
-                copy(in, out);
-            }
-        }
-    }
-
     public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
         // Transfer bytes from in to out
         byte[] buf = new byte[1024];
@@ -577,34 +482,14 @@ public class FileHelper {
         return resolver.openOutputStream(targetFileUri);
     }
 
-
     public static class MemoryUsageFigures {
-        private final long freeMemBytes;
-        private final long totalMemBytes;
-
-
-        public MemoryUsageFigures(File f) {
-            this.freeMemBytes = f.getFreeSpace();
-            this.totalMemBytes = f.getTotalSpace();
-        }
-
-        public double getFreeUsageRatio100() {
-            return freeMemBytes * 100.0 / totalMemBytes;
-        }
-
-        public String formatFreeUsageMb() {
-            return Math.round(freeMemBytes / 1e6) + "/" + Math.round(totalMemBytes / 1e6);
-        }
-    }
-
-    public static class MemoryUsageFiguresSaf {
         private final long freeMemBytes;
         private final long totalMemBytes;
 
         // Check https://stackoverflow.com/questions/56663624/how-to-get-free-and-total-size-of-each-storagevolume
         // to see if a better solution compatible with API21 has been found
         // TODO - encapsulate the reflection trick used by getVolumePath
-        public MemoryUsageFiguresSaf(@NonNull Context context, @NonNull DocumentFile f) {
+        public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
             String fullPath = getFullPathFromTreeUri(f.getUri(), context, true); // Oh so dirty !!
             if (fullPath != null) {
                 File file = new File(fullPath);
@@ -625,20 +510,8 @@ public class FileHelper {
         }
     }
 
-    static NameFilter createNameFilterEquals(@NonNull final String name) {
+    private static NameFilter createNameFilterEquals(@NonNull final String name) {
         return displayName -> displayName.equalsIgnoreCase(name);
-    }
-
-    @FunctionalInterface
-    public interface FileFilter {
-
-        /**
-         * Tests whether or not the specified abstract DocumentFile should be included in a pathname list.
-         *
-         * @param file The abstract DocumentFile to be tested
-         * @return <code>true</code> if and only if <code>file</code> should be included
-         */
-        boolean accept(DocumentFile file);
     }
 
     @FunctionalInterface

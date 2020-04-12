@@ -157,7 +157,7 @@ public final class ContentHelper {
      * @param content Content to retrieve picture files for
      * @return List of picture files
      */
-    public static List<DocumentFile> getPictureFilesFromContent(Context context, Content content) {
+    public static List<DocumentFile> getPictureFilesFromContent(@NonNull final Context context, @NonNull final Content content) {
         String storageUri = content.getStorageUri();
 
         Timber.d("Opening: %s from: %s", content.getTitle(), storageUri);
@@ -168,11 +168,10 @@ public final class ContentHelper {
             return new ArrayList<>();
         }
 
-        return FileHelper.listFiles(folder,
-                file -> (file.isFile()
-                        && file.getName() != null
-                        && !file.getName().toLowerCase().startsWith(Consts.THUMB_FILE_NAME)
-                        && Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName()))
+        return FileHelper.listFolders(context,
+                folder,
+                displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME)
+                        && Helper.isImageExtensionSupported(FileHelper.getExtension(displayName))
                 )
         );
     }

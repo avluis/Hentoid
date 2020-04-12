@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.util;
 
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -145,26 +144,6 @@ class FileUtil {
         return isSuccess;
     }
 
-    public static List<DocumentFile> listFilesDefault(@NonNull final Context context, @NonNull final DocumentFile parent) {
-        final ContentResolver resolver = context.getContentResolver();
-        final Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(),
-                DocumentsContract.getDocumentId(parent.getUri()));
-        final List<Uri> results = new ArrayList<>();
-
-        try (Cursor c = resolver.query(childrenUri, new String[]{
-                DocumentsContract.Document.COLUMN_DOCUMENT_ID}, null, null, null)) {
-            if (c != null)
-                while (c.moveToNext()) {
-                    final String documentId = c.getString(0);
-                    final Uri documentUri = DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId);
-                    results.add(documentUri);
-                }
-        } catch (Exception e) {
-            Timber.w(e, "Failed query");
-        }
-        return convertFromUris(context, parent, results);
-    }
-
     static List<DocumentFile> listDocumentFiles(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
@@ -178,8 +157,6 @@ class FileUtil {
 
         try {
             final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
-            //final Uri searchUri = DocumentsContract.buildChildDocumentsUri(FileHelper.getFileProviderAuthority(), DocumentsContract.getDocumentId(parent.getUri()));
-
             try (Cursor c = client.query(searchUri, new String[]{
                     DocumentsContract.Document.COLUMN_DOCUMENT_ID,
                     DocumentsContract.Document.COLUMN_DISPLAY_NAME,
@@ -200,8 +177,7 @@ class FileUtil {
         } finally {
             client.close();
         }
-        List<DocumentFile> list = convertFromUris(context, parent, results);
-        return list;
+        return convertFromUris(context, parent, results);
     }
 
     private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final DocumentFile parent, @NonNull final List<Uri> uris) {

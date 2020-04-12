@@ -75,6 +75,10 @@ public class ImportActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
 
 
+    private final static FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
+            || displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD);
+
+
     // TODO try once more to use the refresh options without selecting anything in the SAF dialog
 
     @Override
@@ -160,31 +164,22 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     // Try and detect any ".Hentoid" or "Hentoid" folder inside the selected folder
-    private static DocumentFile getExistingHentoidDirFrom(@NonNull DocumentFile root) {
-
+    private DocumentFile getExistingHentoidDirFrom(@NonNull DocumentFile root) {
         if (!root.exists() || !root.isDirectory() || null == root.getName()) return root;
 
-        if (root.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
-                || root.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD))
-            return root;
+        // Selected folder _is_ the Hentoid folder
+        if (hentoidFolderNames.accept(root.getName())) return root;
 
-        List<DocumentFile> hentoidDirs = FileHelper.listFiles(root,
-                file -> (file.isDirectory() &&
-                        (
-                                file.getName() != null &&
-                                        (file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
-                                                || file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD))
-                        )
-                )
-        );
-
+        // If not, look for it in its children
+        List<DocumentFile> hentoidDirs = FileHelper.listFolders(this, root, hentoidFolderNames);
         if (!hentoidDirs.isEmpty()) return hentoidDirs.get(0);
         else return root;
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
-        if (currentRootDir != null) outState.putString(CURRENT_DIR, currentRootDir.getUri().toString());
+        if (currentRootDir != null)
+            outState.putString(CURRENT_DIR, currentRootDir.getUri().toString());
         if (prevRootDir != null) outState.putString(PREV_DIR, prevRootDir.getUri().toString());
         outState.putBoolean(CALLED_BY_PREFS, calledByPrefs);
 
@@ -228,19 +223,6 @@ public class ImportActivity extends AppCompatActivity {
         importFolder(getExistingHentoidDirFrom(currentRootDir));
     }
 
-    // TODO when to do that ?
-    private void revokePreviousPermissions(@NonNull Uri newUri) {
-        for (UriPermission p : getContentResolver().getPersistedUriPermissions())
-            if (!p.getUri().equals(newUri))
-                getContentResolver().releasePersistableUriPermission(p.getUri(),
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
-            Timber.d("Permissions revoked successfully.");
-        } else {
-            Timber.d("Permissions failed to be revoked.");
-        }
-    }
-
     private void openFolderPicker() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -280,12 +262,28 @@ public class ImportActivity extends AppCompatActivity {
         }
     }
 
-    // Return from SAF picker
-    public void onSelectSAFRootFolder(@NonNull Uri treeUri) {
+    private void revokePreviousPermissions(@NonNull final Uri newUri) {
+        for (UriPermission p : getContentResolver().getPersistedUriPermissions())
+            if (!p.getUri().equals(newUri))
+                getContentResolver().releasePersistableUriPermission(p.getUri(),
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
+            Timber.d("Permissions revoked successfully.");
+        } else {
+            Timber.d("Permissions failed to be revoked.");
+        }
+    }
 
-        // Persist access permissions
+    // Return from SAF picker
+    public void onSelectSAFRootFolder(@NonNull final Uri treeUri) {
+
+        // Release previous access permissions, if different than the new one
+        revokePreviousPermissions(treeUri);
+
+        // Persist new access permission
         getContentResolver().takePersistableUriPermission(treeUri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
 
         /*
         String treePath = treeUri.getPath();
@@ -297,14 +295,6 @@ public class ImportActivity extends AppCompatActivity {
 
         int treePathSeparator = treePath.indexOf(':');
         String folderName = treePath.substring(treePathSeparator + 1);
-
-        // Release previous access permissions, if different than the new one
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) revokePreviousPermissions(treeUri);
-
-        // Persist new access permission
-        getContentResolver().takePersistableUriPermission(treeUri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-
 
         // Determine whether the designated file is
         // - on a removable media (e.g. SD card, OTG)
@@ -358,8 +348,10 @@ public class ImportActivity extends AppCompatActivity {
         }
          */
 
+        // Is this even possible, knowing that we just c
         DocumentFile docFile = DocumentFile.fromTreeUri(this, treeUri);
         if (null == docFile || !docFile.exists()) {
+            // Is that even possible, knowing that we just come from the SAF picker ?
             String message = String.format("Could not find the selected file %s", treeUri.toString());
             Timber.e(message);
             exit(RESULT_CANCELED, message);
@@ -367,22 +359,6 @@ public class ImportActivity extends AppCompatActivity {
         }
 
         importFolder(docFile);
-    }
-
-    private DocumentFile addHentoidFolder(@NonNull final DocumentFile baseFolder) {
-        String folderName = baseFolder.getName();
-        if (null == folderName) folderName = "";
-
-        // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
-        if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)) {
-            DocumentFile targetFolder = getExistingHentoidDirFrom(baseFolder);
-
-            // If not, create one
-            if (targetFolder.getUri().equals(baseFolder.getUri()))
-                return targetFolder.createDirectory(Consts.DEFAULT_LOCAL_DIRECTORY);
-            else return targetFolder;
-        }
-        return baseFolder;
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -420,8 +396,8 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     private void importFolder(@NonNull final DocumentFile targetFolder) {
-        DocumentFile folder = addHentoidFolder(targetFolder);
-        if (!FileHelper.checkAndSetRootFolder(folder, true)) {
+        DocumentFile hentoidFolder = getExistingHentoidDirFrom(targetFolder);
+        if (!FileHelper.checkAndSetRootFolder(hentoidFolder, true)) {
             prepImport(null);
             return;
         }
