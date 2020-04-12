@@ -32,10 +32,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -61,11 +59,9 @@ public class FileHelper {
     private static final Charset CHARSET_LATIN_1 = Charset.forName("ISO-8859-1");
 
 
-
     public static String getFileProviderAuthority() {
         return AUTHORITY;
     }
-
 
 
     public static DocumentFile getFileFromUriString(@NonNull final Context context, @NonNull final String uriStr) {
@@ -126,14 +122,13 @@ public class FileHelper {
 
     // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
     @Nullable
-    public static String getFullPathFromTreeUri(@Nullable final Uri treeUri, Context con) {
-        if (treeUri == null) return null;
-        String volumePath = getVolumePath(getVolumeIdFromTreeUri(treeUri), con);
+    public static String getFullPathFromTreeUri(@NonNull final Uri uri, @NonNull final Context con, boolean isFolder) {
+        String volumePath = getVolumePath(getVolumeIdFromUri(uri, isFolder), con);
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
             volumePath = volumePath.substring(0, volumePath.length() - 1);
 
-        String documentPath = getDocumentPathFromTreeUri(treeUri);
+        String documentPath = getDocumentPathFromUri(uri, isFolder);
         if (documentPath.endsWith(File.separator))
             documentPath = documentPath.substring(0, documentPath.length() - 1);
 
@@ -180,15 +175,21 @@ public class FileHelper {
         }
     }
 
-    private static String getVolumeIdFromTreeUri(final Uri treeUri) {
-        final String docId = DocumentsContract.getTreeDocumentId(treeUri);
+    private static String getVolumeIdFromUri(final Uri uri, boolean isFolder) {
+        final String docId;
+        if (isFolder) docId = DocumentsContract.getTreeDocumentId(uri);
+        else docId = DocumentsContract.getDocumentId(uri);
+
         final String[] split = docId.split(":");
         if (split.length > 0) return split[0];
         else return null;
     }
 
-    private static String getDocumentPathFromTreeUri(final Uri treeUri) {
-        final String docId = DocumentsContract.getTreeDocumentId(treeUri);
+    private static String getDocumentPathFromUri(final Uri uri, boolean isFolder) {
+        final String docId;
+        if (isFolder) docId = DocumentsContract.getTreeDocumentId(uri);
+        else docId = DocumentsContract.getDocumentId(uri);
+
         final String[] split = docId.split(":");
         if ((split.length >= 2) && (split[1] != null)) return split[1];
         else return File.separator;
@@ -587,7 +588,7 @@ public class FileHelper {
         // to see if a better solution compatible with API21 has been found
         // TODO - encapsulate the reflection trick used by getVolumePath
         public MemoryUsageFiguresSaf(@NonNull Context context, @NonNull DocumentFile f) {
-            String fullPath = getFullPathFromTreeUri(f.getUri(), context); // Oh so dirty !!
+            String fullPath = getFullPathFromTreeUri(f.getUri(), context, true); // Oh so dirty !!
             if (fullPath != null) {
                 File file = new File(fullPath);
                 this.freeMemBytes = file.getFreeSpace();

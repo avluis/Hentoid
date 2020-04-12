@@ -116,7 +116,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
 
-        imgPath.setText(image.getFileUri()); // TODO format it to something more user-friendly
+        imgPath.setText(FileHelper.getFullPathFromTreeUri(Uri.parse(image.getFileUri()), requireContext(), false)); // TODO format it to something more user-friendly
         Point size = getImageSize(requireContext(), image.getFileUri());
         imgDimensions.setText(String.format("%s x %s", size.x, size.y));
 
