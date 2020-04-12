@@ -441,13 +441,13 @@ public class ImportActivity extends AppCompatActivity {
         // Send results to scan
         // TODO investigate if spawning a dialog in an invisible-themed activity such as this one can generate an invisible dialog on some devices
         progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage(this.getString(R.string.please_wait));
         progressDialog.setIndeterminate(false);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setMax(0);
         progressDialog.setCancelable(false);
         progressDialog.setColor(ThemeHelper.getColor(this, R.color.secondary_light));
         progressDialog.setTextColor(R.color.white_opacity_87);
+        progressDialog.setMessage(this.getString(R.string.importing_please_wait));
         progressDialog.show();
 
         ImportNotificationChannel.init(this);
