@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -117,8 +116,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
 
-        imgPath.setText(image.getFileUri());
-        Point size = getImageSize(image.getFileUri());
+        imgPath.setText(image.getFileUri()); // TODO format it to something more user-friendly
+        Point size = getImageSize(requireContext(), image.getFileUri());
         imgDimensions.setText(String.format("%s x %s", size.x, size.y));
 
         updateFavouriteDisplay(image.isFavourite());
@@ -161,8 +160,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private void onCopyClick() {
         String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getFileUri());
         try {
-            Uri fileUri = Uri.parse(image.getFileUri());
-            DocumentFile sourceFile = DocumentFile.fromSingleUri(requireContext(), fileUri);
+            DocumentFile sourceFile = FileHelper.getFileFromUriString(requireContext(), image.getFileUri());
             if (null == sourceFile || !sourceFile.exists()) return;
 
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(targetFileName)) {
@@ -183,9 +181,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Share" action button
      */
     private void onShareClick() {
-        Uri fileUri = Uri.parse(image.getFileUri());
-        DocumentFile docFile = DocumentFile.fromSingleUri(requireContext(), fileUri);
-
+        DocumentFile docFile = FileHelper.getFileFromUriString(requireContext(), image.getFileUri());
         if (docFile != null && docFile.exists())
             FileHelper.shareFile(requireContext(), docFile, "Share picture");
     }
@@ -211,8 +207,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
                 .show();
     }
 
-    private static Point getImageSize(@NonNull final String uri) {
-        DocumentFile imgFile = FileHelper.getFileFromUriString(HentoidApp.getInstance().getApplicationContext(), uri);
+    private static Point getImageSize(@NonNull final Context context, @NonNull final String uri) {
+        DocumentFile imgFile = FileHelper.getFileFromUriString(context, uri);
         if (null == imgFile || !imgFile.exists()) return new Point(0, 0);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
