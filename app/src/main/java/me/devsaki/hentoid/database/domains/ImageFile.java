@@ -153,7 +153,7 @@ public class ImageFile {
     }
 
     public String getMimeType() {
-        return (null == mimeType) ? "" : mimeType;
+        return (null == mimeType) ? "image/*" : mimeType;
     }
 
     public void setMimeType(String mimeType) {

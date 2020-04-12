@@ -163,7 +163,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             DocumentFile sourceFile = FileHelper.getFileFromUriString(requireContext(), image.getFileUri());
             if (null == sourceFile || !sourceFile.exists()) return;
 
-            try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(targetFileName)) {
+            try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, image.getMimeType())) {
                 try (InputStream input = FileHelper.getInputStream(sourceFile)) {
                     FileHelper.copy(input, newDownload);
                 }

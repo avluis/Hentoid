@@ -3,12 +3,16 @@ package me.devsaki.hentoid.util;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -533,14 +537,16 @@ public class FileHelper {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     }
 
-    public static OutputStream openNewDownloadOutputStream(@NonNull final String fileName) throws IOException {
-        // TODO implement when targetSDK = 29
-        /*
+    public static OutputStream openNewDownloadOutputStream(
+            @NonNull final Context context,
+            @NonNull final String fileName,
+            @NonNull final String mimeType
+    ) throws IOException {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return openNewDownloadOutputStreamQ(fileName, mimeType)
-        } else {*/
-        return openNewDownloadOutputStreamLegacy(fileName);
-        //}
+            return openNewDownloadOutputStreamQ(context, fileName, mimeType);
+        } else {
+            return openNewDownloadOutputStreamLegacy(fileName);
+        }
     }
 
     private static OutputStream openNewDownloadOutputStreamLegacy(@NonNull final String fileName) throws IOException {
@@ -554,12 +560,24 @@ public class FileHelper {
         return getOutputStream(target);
     }
 
+    // https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
     @TargetApi(29)
-    private static OutputStream openNewDownloadOutputStreamQ(@NonNull final String fileName, @NonNull final String mimeType) throws IOException {
-        // TODO implement when targetSDK = 29
-        // https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
-        return null;
+    private static OutputStream openNewDownloadOutputStreamQ(
+            @NonNull final Context context,
+            @NonNull final String fileName,
+            @NonNull final String mimeType) throws IOException {
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+        values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
+//        values.put(MediaStore.Downloads.IS_PENDING, 1);
+
+        ContentResolver resolver = context.getContentResolver();
+        Uri targetFileUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+        if (null == targetFileUri) throw new IOException("Target URI could not be formed");
+
+        return resolver.openOutputStream(targetFileUri);
     }
+
 
     public static class MemoryUsageFigures {
         private final long freeMemBytes;
