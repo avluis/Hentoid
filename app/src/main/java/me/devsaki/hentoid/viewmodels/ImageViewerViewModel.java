@@ -146,8 +146,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     imageFiles = ContentHelper.createImageListFromFiles(pictureFiles);
                     theContent.setImageFiles(imageFiles);
                     collectionDao.insertContent(theContent);
-                }
-                else
+                } else
                     ContentHelper.matchFilesToImageList(pictureFiles, imageFiles);
             } else { // No pictures at all
                 // TODO : do something more UX-friendly here; the user is alone with that black screen...
@@ -190,9 +189,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void sortAndSetImages(@NonNull List<ImageFile> imgs, boolean shuffle) {
         if (shuffle) {
             Collections.shuffle(imgs);
+            // Don't keep the cover
+            imgs = Stream.of(imgs).filter(img -> !img.isCover()).toList();
         } else {
-            // Sort images according to their Order
-            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).toList();
+            // Sort images according to their Order; don't keep the cover
+            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).filter(img -> !img.isCover()).toList();
         }
 
         if (showFavourites)
