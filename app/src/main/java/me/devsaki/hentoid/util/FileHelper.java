@@ -66,6 +66,14 @@ public class FileHelper {
         return AUTHORITY;
     }
 
+
+
+    public static DocumentFile getFileFromUriString(@NonNull final Context context, @NonNull final String uriStr) {
+        Uri fileUri = Uri.parse(uriStr);
+        return DocumentFile.fromSingleUri(context, fileUri);
+    }
+
+
     /**
      * Determine the main folder of the external SD card containing the given file. (Kitkat+)
      *

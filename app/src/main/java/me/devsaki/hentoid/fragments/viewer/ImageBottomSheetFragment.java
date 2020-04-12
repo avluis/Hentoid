@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -33,6 +34,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
@@ -111,7 +113,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * @param images Book's list of images
      */
     private void onImagesChanged(List<ImageFile> images) {
-        if (imageIndex >= images.size()) imageIndex = images.size() -1; // Might happen when deleting the last page
+        if (imageIndex >= images.size())
+            imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
 
         imgPath.setText(image.getFileUri());
@@ -208,10 +211,18 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
                 .show();
     }
 
-    private static Point getImageSize(String path) {
+    private static Point getImageSize(@NonNull final String uri) {
+        DocumentFile imgFile = FileHelper.getFileFromUriString(HentoidApp.getInstance().getApplicationContext(), uri);
+        if (null == imgFile || !imgFile.exists()) return new Point(0, 0);
+
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, options);
-        return new Point(options.outWidth, options.outHeight);
+        try {
+            BitmapFactory.decodeStream(FileHelper.getInputStream(imgFile), null, options);
+            return new Point(options.outWidth, options.outHeight);
+        } catch (IOException e) {
+            Timber.w(e);
+            return new Point(0, 0);
+        }
     }
 }
