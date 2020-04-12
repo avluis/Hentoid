@@ -692,14 +692,6 @@ public class ObjectBoxDB {
         return result;
     }
 
-    List<Content> selectContentWithOldPururinHost() {
-        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
-    }
-
-    List<Content> selectContentWithOldTsuminoCovers() {
-        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/").build().find();
-    }
-
     void insertErrorRecord(@NonNull final ErrorRecord record) {
         store.boxFor(ErrorRecord.class).put(record);
     }
@@ -756,5 +748,21 @@ public class ObjectBoxDB {
     @Nullable
     SiteHistory getHistory(@NonNull Site s) {
         return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
+    }
+
+    /**
+     * ONE-SHOT USE QUERIES
+     */
+
+    List<Content> selectContentWithOldPururinHost() {
+        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
+    }
+
+    List<Content> selectContentWithOldTsuminoCovers() {
+        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/").build().find();
+    }
+
+    public long countDownloadedImagesWithoutUri() {
+        return store.boxFor(ImageFile.class).query().equal(ImageFile_.status, StatusContent.DOWNLOADED.getCode()).isNull(ImageFile_.fileUri).build().count();
     }
 }

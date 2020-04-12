@@ -19,6 +19,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -41,8 +42,6 @@ public class SplashActivity extends AppCompatActivity {
 
         Timber.d("Splash / Init");
 
-        EventBus.getDefault().register(this);
-
         // Pre-processing on app update
         if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
             Timber.d("Splash / Update detected");
@@ -57,14 +56,22 @@ public class SplashActivity extends AppCompatActivity {
         Timber.d("Splash / Startup flow initiated");
         if (Preferences.isFirstRun()) {
             goToActivity(new Intent(this, IntroActivity.class));
+        } else if (hasToMigrateAndroid10()) {
+            // TODO smth
         } else {
             goToLibraryActivity();
         }
     }
 
+    private boolean hasToMigrateAndroid10() {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(this);
+        long imagesKO = db.countDownloadedImagesWithoutUri();
+        Timber.i(">> count10 %s", imagesKO);
+        return imagesKO > 0;
+    }
+
     @Override
     protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
         super.onDestroy();
