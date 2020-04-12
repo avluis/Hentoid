@@ -84,7 +84,8 @@
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="import_dialog">Importing Library</string>
     <string name="add_dialog">Adding files to DB</string>
-    <string name="please_wait">Please wait…</string>
+    <string name="importing_please_wait">Importing, please wait…</string>
+    <string name="updating_please_wait">Updating, please wait…</string>
     <string name="scanning_files">Scanning files…</string>
     <string name="adding_to_db">Adding files to database…</string>
     <string name="kitkat_rationale">Unable to modify contents of the SD Card. This is caused by the external storage policy by Google in Android 4.4.\nTo bypass this limitation, you can try using one of the \'sd fix\' tools available in the Google Play Store (Root Required).</string>

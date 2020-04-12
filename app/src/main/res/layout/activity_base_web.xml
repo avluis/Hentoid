@@ -42,7 +42,7 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/please_wait" />
+            tools:text="@string/importing_please_wait" />
 
         <ImageView
             android:id="@+id/web_alert_icon"
