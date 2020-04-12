@@ -45,6 +45,7 @@ public final class ContentHelper {
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
+    // TODO empty this cache at some point
     private static final Map<String, String> fileNameMatchCache = new HashMap<>();
 
 
@@ -369,7 +370,7 @@ public final class ContentHelper {
     }
 
     public static List<ImageFile> matchFilesToImageList(@NonNull List<DocumentFile> files, @NonNull List<ImageFile> images) {
-        Map<String, String> fileNameUris = new HashMap<>();
+        Map<String, String> fileNameUris = new HashMap<>(files.size());
         int imageIndex = 0;
 
         for (DocumentFile file : files)
