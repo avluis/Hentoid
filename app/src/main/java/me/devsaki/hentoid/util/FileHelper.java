@@ -569,7 +569,6 @@ public class FileHelper {
         ContentValues values = new ContentValues();
         values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
         values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
-//        values.put(MediaStore.Downloads.IS_PENDING, 1);
 
         ContentResolver resolver = context.getContentResolver();
         Uri targetFileUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
