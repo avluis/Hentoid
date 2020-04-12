@@ -65,10 +65,13 @@ public class FileHelper {
         return AUTHORITY;
     }
 
-
     public static DocumentFile getFileFromUriString(@NonNull final Context context, @NonNull final String uriStr) {
         Uri fileUri = Uri.parse(uriStr);
         return DocumentFile.fromSingleUri(context, fileUri);
+    }
+
+    static Uri getUriFromFile(@NonNull final Context context, @NonNull final File file) {
+        return FileProvider.getUriForFile(context, AUTHORITY, file);
     }
 
     // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
@@ -257,7 +260,7 @@ public class FileHelper {
     public static void openFile(@NonNull Context context, @NonNull File aFile) {
         File file = new File(aFile.getAbsolutePath());
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
-        Uri dataUri = FileProvider.getUriForFile(context, AUTHORITY, file);
+        Uri dataUri = getUriFromFile(context, aFile);
         if (file.isDirectory()) {
             myIntent.setDataAndType(dataUri, DocumentsContract.Document.MIME_TYPE_DIR);
         } else {

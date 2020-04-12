@@ -103,7 +103,7 @@ public class HentoidApp extends Application {
 
         // Prefs
         Preferences.init(this);
-        Preferences.performHousekeeping();
+        Preferences.performHousekeeping(this);
 
         // Init version number on first run
         if (0 == Preferences.getLastKnownAppVersionCode())

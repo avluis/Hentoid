@@ -2,10 +2,11 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
-import androidx.documentfile.provider.DocumentFile;
+import androidx.annotation.NonNull;
 
 import com.annimon.stream.Stream;
 
@@ -48,7 +49,7 @@ public final class Preferences {
         }
     }
 
-    public static void performHousekeeping() {
+    public static void performHousekeeping(@NonNull final Context context) {
         // Fling factor -> Swipe to fling (v1.9.0)
         if (sharedPreferences.contains(Key.PREF_VIEWER_FLING_FACTOR)) {
             int flingFactor = Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_FLING_FACTOR, "0") + "");
@@ -85,10 +86,10 @@ public final class Preferences {
             String folder = sharedPreferences.getString(Key.PREF_SETTINGS_FOLDER, "");
             String uri = sharedPreferences.getString(Key.PREF_SD_STORAGE_URI, "");
             if (!folder.isEmpty() && uri.isEmpty()) {
-                DocumentFile docFile = DocumentFile.fromFile(new File(folder));
-                if (docFile.exists())
-                    sharedPreferences.edit().putString(Key.PREF_SD_STORAGE_URI, docFile.getUri().toString()).apply();
+                Uri data = FileHelper.getUriFromFile(context, new File(folder));
+                uri = data.toString();
             }
+            sharedPreferences.edit().putString(Key.PREF_SD_STORAGE_URI, uri).apply();
             sharedPreferences.edit().remove(Key.PREF_SETTINGS_FOLDER).apply();
         }
     }
