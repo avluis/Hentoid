@@ -172,12 +172,11 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
         for (int i = 0; i < bookFolders.size(); i++) {
             DocumentFile bookFolder = bookFolders.get(i);
-            List<DocumentFile> imageFiles = null;
 
             // Detect the presence of images if the corresponding cleanup option has been enabled
             // TODO optimize; there will be two filesystem queries because of this
             if (cleanNoImages) {
-                imageFiles = FileHelper.listFiles(
+                List<DocumentFile> imageFiles = FileHelper.listFiles(
                         bookFolder,
                         file -> (file.isDirectory() || Helper.isImageExtensionSupported(FileHelper.getExtension(file.getName())))
                 );
@@ -193,8 +192,8 @@ public class ImportService extends IntentService {
             // Detect JSON and try to parse it
             try {
                 Timber.i(">> start %s", bookFolder.getUri().toString());
-                List<DocumentFile> usefulFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
-                Timber.i(">> json start %s %s", usefulFiles.size(), bookFolder.getUri().toString());
+                List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
+                Timber.i(">> json start %s %s", imageFiles.size(), bookFolder.getUri().toString());
                 content = importJson(bookFolder);
                 Timber.i(">> json end %s", bookFolder.getUri().toString());
                 if (content != null) {
@@ -203,16 +202,16 @@ public class ImportService extends IntentService {
                     else contentImages = new ArrayList<>();
 
                     // Attach file Uri's to the book's images
-                    if (!usefulFiles.isEmpty()) {
+                    if (!imageFiles.isEmpty()) {
                         if (contentImages.isEmpty()) { // No images described in the JSON -> recreate them
-                            contentImages = ContentHelper.createImageListFromFiles(usefulFiles);
+                            contentImages = ContentHelper.createImageListFromFiles(imageFiles);
                             content.setImageFiles(contentImages);
                             content.getCover().setUrl(content.getCoverImageUrl());
                         } else { // Existing images described in the JSON -> map them
-                            content.setImageFiles(ContentHelper.matchFilesToImageList(usefulFiles, contentImages));
+                            content.setImageFiles(ContentHelper.matchFilesToImageList(imageFiles, contentImages));
                             // If no cover is defined, get it too
                             if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) {
-                                Optional<DocumentFile> file = Stream.of(usefulFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
+                                Optional<DocumentFile> file = Stream.of(imageFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
                                 if (file.isPresent()) {
                                     ImageFile cover = new ImageFile(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
                                     cover.setName(Consts.THUMB_FILE_NAME);
