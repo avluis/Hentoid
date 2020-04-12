@@ -173,12 +173,12 @@ public class ImportService extends IntentService {
         for (int i = 0; i < bookFolders.size(); i++) {
             DocumentFile bookFolder = bookFolders.get(i);
             Timber.i(">> start %s", bookFolder.getUri().toString());
-            List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
 
             // Detect the presence of images if the corresponding cleanup option has been enabled
             if (cleanNoImages) {
+                List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
                 List<DocumentFile> subfolders = FileHelper.listFolders(this, bookFolder);
-                if (imageFiles.isEmpty() && subfolders.isEmpty()) { // No images nor subfolders
+                if (imageFiles.isEmpty() && subfolders.isEmpty()) { // No supported images nor subfolders
                     booksKO++;
                     boolean success = bookFolder.delete();
                     trace(Log.INFO, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
@@ -188,7 +188,7 @@ public class ImportService extends IntentService {
 
             // Detect JSON and try to parse it
             try {
-                Timber.i(">> json start %s %s", imageFiles.size(), bookFolder.getUri().toString());
+                Timber.i(">> json start %s", bookFolder.getUri().toString());
                 content = importJson(bookFolder);
                 Timber.i(">> json end %s", bookFolder.getUri().toString());
                 if (content != null) {
@@ -196,7 +196,25 @@ public class ImportService extends IntentService {
                     if (content.getImageFiles() != null) contentImages = content.getImageFiles();
                     else contentImages = new ArrayList<>();
 
+                    if (rename) {
+                        String canonicalBookFolderName = ContentHelper.formatBookFolderName(content);
+
+                        List<String> currentPathParts = bookFolder.getUri().getPathSegments();
+                        String[] bookUriParts = currentPathParts.get(currentPathParts.size() - 1).split(":");
+                        String[] bookPathParts = bookUriParts[bookUriParts.length - 1].split("/");
+                        String bookFolderName = bookPathParts[bookPathParts.length - 1];
+
+                        if (!canonicalBookFolderName.equalsIgnoreCase(bookFolderName)) {
+                            if (renameFolder(bookFolder, content, canonicalBookFolderName)) {
+                                trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName);
+                            } else {
+                                trace(Log.WARN, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName);
+                            }
+                        }
+                    }
+
                     // Attach file Uri's to the book's images
+                    List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
                     if (!imageFiles.isEmpty()) {
                         if (contentImages.isEmpty()) { // No images described in the JSON -> recreate them
                             contentImages = ContentHelper.createImageListFromFiles(imageFiles);
@@ -219,32 +237,13 @@ public class ImportService extends IntentService {
                     }
                     Timber.i(">> images %s", bookFolder.getUri().toString());
 
-                    if (rename) {
-                        String canonicalBookFolderName = ContentHelper.formatBookFolderName(content);
-
-                        // TODO test that
-                        List<String> currentPathParts = bookFolder.getUri().getPathSegments();
-                        String[] bookUriParts = currentPathParts.get(currentPathParts.size() - 1).split(":");
-                        String[] bookPathParts = bookUriParts[bookUriParts.length - 1].split("/");
-                        String bookFolderName = bookPathParts[bookPathParts.length - 1];
-
-                        if (!canonicalBookFolderName.equalsIgnoreCase(bookFolderName)) {
-                            //if (FileHelper.renameDirectory(folder, new File(settingDir, canonicalBookDir))) {
-                            if (bookFolder.renameTo(canonicalBookFolderName)) {
-                                content.setStorageUri(canonicalBookFolderName);
-                                trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName);
-                            } else {
-                                trace(Log.WARN, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName);
-                            }
-                        }
-                    }
                     ObjectBoxDB.getInstance(this).insertContent(content);
                     trace(Log.INFO, log, "Import book OK : %s", bookFolder.getUri().toString());
                 } else { // JSON not found
-                    List<DocumentFile> subdirs = FileHelper.listFolders(this, bookFolder);
-                    if (!subdirs.isEmpty()) // Folder doesn't contain books but contains subdirectories
+                    List<DocumentFile> subfolders = FileHelper.listFolders(this, bookFolder);
+                    if (!subfolders.isEmpty()) // Folder doesn't contain books but contains subdirectories
                     {
-                        bookFolders.addAll(subdirs);
+                        bookFolders.addAll(subfolders);
                         trace(Log.INFO, log, "Subfolders found in : %s", bookFolder.getUri().toString());
                         nbFolders++;
                         continue;
@@ -299,6 +298,23 @@ public class ImportService extends IntentService {
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setLog(log);
         return logInfo;
+    }
+
+    private boolean renameFolder(@NonNull DocumentFile folder, @NonNull final Content content, @NonNull final String newName) {
+        try {
+            if (folder.renameTo(newName)) {
+                // 1- Update the book folder's URI
+                content.setStorageUri(folder.getUri().toString());
+                // 2- Update the JSON's URI
+                DocumentFile jsonFile = FileHelper.findFile(this, folder, Consts.JSON_FILE_NAME_V2);
+                if (jsonFile != null) content.setJsonUri(jsonFile.getUri().toString());
+                // 3- Update the image's URIs -> will be done by the next block back in startImport
+                return true;
+            }
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+        return false;
     }
 
     @Nullable
