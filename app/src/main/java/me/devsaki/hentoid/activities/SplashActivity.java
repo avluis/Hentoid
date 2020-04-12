@@ -9,11 +9,7 @@ import android.webkit.WebView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.lmntrx.android.library.livin.missme.ProgressDialog;
-
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 
@@ -24,7 +20,6 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
-import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -38,7 +33,6 @@ import timber.log.Timber;
  */
 public class SplashActivity extends AppCompatActivity {
 
-    private ProgressDialog progressDialog;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Override
@@ -87,17 +81,6 @@ public class SplashActivity extends AppCompatActivity {
         Intent intent = new Intent(this, LibraryActivity.class);
         intent = UnlockActivity.wrapIntent(this, intent);
         goToActivity(intent);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onImportEvent(ImportEvent event) {
-        if (ImportEvent.EV_PROGRESS == event.eventType) {
-            progressDialog.setMax(event.booksTotal);
-            progressDialog.setProgress(event.booksOK + event.booksKO);
-        } else if (ImportEvent.EV_COMPLETE == event.eventType) {
-            if (progressDialog != null) progressDialog.dismiss();
-            goToLibraryActivity();
-        }
     }
 
     private void onAppUpdated() {
