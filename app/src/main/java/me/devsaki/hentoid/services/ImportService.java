@@ -244,7 +244,6 @@ public class ImportService extends IntentService {
                             }
                         }
                     }
-                    // TODO : Populate images when data is loaded from old JSONs (DoujinBuilder object)
                     ObjectBoxDB.getInstance(this).insertContent(content);
                     trace(Log.INFO, log, "Import book OK : %s", bookFolder.getUri().toString());
                 } else { // JSON not found
@@ -309,22 +308,11 @@ public class ImportService extends IntentService {
     }
 
     @Nullable
-    private static DocumentFile findByName(@NonNull final List<DocumentFile> list, @NonNull final String name) {
-        for (DocumentFile f : list)
-            if (f.getName() != null && f.getName().equals(name)) return f;
-        return null;
-    }
-
-    @Nullable
     private Content importJson(@NonNull DocumentFile folder) throws ParseException {
-        Timber.i(">>importJson 1");
         DocumentFile file = FileHelper.findFile(this, folder, Consts.JSON_FILE_NAME_V2);
-        Timber.i(">>importJson 2");
         if (file != null) return importJsonV2(file, folder);
 
-        Timber.i(">>importJson 3");
         file = FileHelper.findFile(this, folder, Consts.JSON_FILE_NAME);
-        Timber.i(">>importJson 4");
         if (file != null) return importJsonV1(file, folder);
 
         file = FileHelper.findFile(this, folder, Consts.JSON_FILE_NAME_OLD);
