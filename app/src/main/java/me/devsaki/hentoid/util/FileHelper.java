@@ -208,11 +208,11 @@ public class FileHelper {
         }
     }
 
-    public static boolean checkAndSetRootFolder(DocumentFile folder) {
+    public static boolean checkAndSetRootFolder(@NonNull final DocumentFile folder) {
         return checkAndSetRootFolder(folder, false);
     }
 
-    public static boolean checkAndSetRootFolder(DocumentFile folder, boolean notify) {
+    public static boolean checkAndSetRootFolder(@NonNull final DocumentFile folder, boolean notify) {
         Context context = HentoidApp.getInstance();
 
         // Validate folder

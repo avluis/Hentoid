@@ -101,19 +101,25 @@ public class LogUtil {
     public static DocumentFile writeLog(@Nonnull Context context, @Nonnull LogInfo info) {
         // Create the log
         String log = buildLog(info);
+        String logFileName = info.fileName + ".txt";
 
         // Save it
         try {
-            String settingDir = Preferences.getStorageUri();
-            if (settingDir.isEmpty()) return null;
+            String settingFolderUriStr = Preferences.getStorageUri();
+            if (settingFolderUriStr.isEmpty()) return null;
 
-            DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(settingDir));
+            DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(settingFolderUriStr));
             if (null == folder || !folder.exists()) return null;
 
-            DocumentFile cleanupLogFile = folder.createFile("text/plain", info.fileName + ".txt");
+            // Remove previously created log file
+            DocumentFile previousLog = FileHelper.findFile(context, folder, logFileName);
+            if (previousLog != null) previousLog.delete();
 
-            FileHelper.saveBinaryInFile(cleanupLogFile, log.getBytes());
-            return cleanupLogFile;
+            // Create new log file
+            // NB : doing this without deleting the old one results in "log file (1).txt"
+            DocumentFile logDocumentFile = folder.createFile("text/plain", logFileName);
+            FileHelper.saveBinaryInFile(logDocumentFile, log.getBytes());
+            return logDocumentFile;
         } catch (Exception e) {
             Timber.e(e);
         }
