@@ -460,23 +460,17 @@ public class ContentDownloadService extends IntentService {
                 dao.insertContent(content);
 
                 // Save JSON file
-                if (dir != null) {
-                    if (dir.exists()) {
-                        try {
-                            DocumentFile jsonFile = JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
-                            // Cache its URI to the newly created content
-                            if (jsonFile != null) {
-                                content.setJsonUri(jsonFile.getUri().toString());
-                                dao.insertContent(content);
-                            } else {
-                                Timber.w("JSON file could not be cached for %s", title);
-                            }
-                        } catch (IOException e) {
-                            Timber.e(e, "I/O Error saving JSON: %s", title);
-                        }
+                try {
+                    DocumentFile jsonFile = JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
+                    // Cache its URI to the newly created content
+                    if (jsonFile != null) {
+                        content.setJsonUri(jsonFile.getUri().toString());
+                        dao.insertContent(content);
                     } else {
-                        Timber.w("completeDownload : Directory %s does not exist - JSON not saved", dir.getUri());
+                        Timber.w("JSON file could not be cached for %s", title);
                     }
+                } catch (IOException e) {
+                    Timber.e(e, "I/O Error saving JSON: %s", title);
                 }
 
                 Timber.i("Content download finished: %s [%s]", title, contentId);
@@ -506,12 +500,14 @@ public class ContentDownloadService extends IntentService {
 
                 // Tracking Event (Download Completed)
                 HentoidApp.trackDownloadEvent("Completed");
-            } else if (downloadCanceled) {
-                Timber.d("Content download canceled: %s [%s]", title, contentId);
-                notificationManager.cancel();
             } else {
-                Timber.d("Content download skipped : %s [%s]", title, contentId);
+                Timber.w("completeDownload : Directory %s does not exist - JSON not saved", content.getStorageUri());
             }
+        } else if (downloadCanceled) {
+            Timber.d("Content download canceled: %s [%s]", title, contentId);
+            notificationManager.cancel();
+        } else {
+            Timber.d("Content download skipped : %s [%s]", title, contentId);
         }
     }
 
@@ -731,8 +727,8 @@ public class ContentDownloadService extends IntentService {
      */
     @Nullable
     private static DocumentFile processAndSaveImage(@NonNull ImageFile img,
-                @NonNull DocumentFile dir,
-                @Nullable String contentType,
+                                                    @NonNull DocumentFile dir,
+                                                    @Nullable String contentType,
                                                     byte[] binaryContent,
                                                     boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
