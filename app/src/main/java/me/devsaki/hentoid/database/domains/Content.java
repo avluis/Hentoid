@@ -62,6 +62,7 @@ public class Content implements Serializable {
     private ToMany<ImageFile> imageFiles;
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
+    private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite;
     private long reads = 0;
@@ -510,6 +511,15 @@ public class Content implements Serializable {
     public Content setSite(Site site) {
         this.site = site;
         return this;
+    }
+
+
+    /**
+     * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
+     */
+    @Deprecated
+    public String getStorageFolder() {
+        return storageFolder == null ? "" : storageFolder;
     }
 
     public String getStorageUri() {
