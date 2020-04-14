@@ -34,13 +34,15 @@
             android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".activities.IntroActivity"
             android:label="@string/app_intro" />
+        <activity
+            android:name=".activities.Api29MigrationActivity"
+            android:label="@string/title_activity_api29_migration" />
         <activity
             android:name=".activities.sources.HitomiActivity"
             android:configChanges="orientation|screenSize" />
@@ -373,6 +375,8 @@
         <service android:name=".services.ImportService" />
 
         <service android:name=".services.DatabaseMaintenanceService" />
+
+        <service android:name=".services.API29MigrationService" />
 
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 

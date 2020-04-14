@@ -33,7 +33,7 @@
     },
     {
       "id": "2:5880334030341287801",
-      "lastPropertyId": "21:2083354954158879943",
+      "lastPropertyId": "22:7814489134149553071",
       "name": "Content",
       "properties": [
         {
@@ -146,6 +146,11 @@
         {
           "id": "21:2083354954158879943",
           "name": "storageUri",
+          "type": 9
+        },
+        {
+          "id": "22:7814489134149553071",
+          "name": "storageFolder",
           "type": 9
         }
       ],

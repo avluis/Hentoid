@@ -8,12 +8,17 @@
     <string name="off">Off</string>
 
     <!-- Activities -->
+    <string name="title_activity_api29_migration">API 29 migration</string>
     <string name="title_activity_downloads">Library</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
+
+    <!-- API29 migration screen -->
+    <string name="api29_migration_title">File management update</string>
+    <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
 
     <!-- Library screen toolbar -->
     <string name="menu_tags">Tags</string>
