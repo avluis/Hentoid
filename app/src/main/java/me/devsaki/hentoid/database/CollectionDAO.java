@@ -3,12 +3,13 @@ package me.devsaki.hentoid.database;
 import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.paging.PagedList;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -27,8 +28,10 @@ public interface CollectionDAO {
 
     // Low-level operations
 
+    @Nullable
     Content selectContent(long id);
 
+    @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url);
 
     void insertContent(@NonNull final Content content);
@@ -123,7 +126,8 @@ public interface CollectionDAO {
 
 
     // RESULTS STRUCTURES
-    @SuppressWarnings("squid:S1104") // This is a dumb struct class, nothing more
+    @SuppressWarnings("squid:S1104")
+            // This is a dumb struct class, nothing more
     class AttributeQueryResult {
         public List<Attribute> attributes = new ArrayList<>();
         public long totalSelectedAttributes = 0;

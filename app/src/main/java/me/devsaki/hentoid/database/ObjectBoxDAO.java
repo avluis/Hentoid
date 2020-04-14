@@ -168,10 +168,12 @@ public class ObjectBoxDAO implements CollectionDAO {
         ).build();
     }
 
+    @Nullable
     public Content selectContent(long id) {
         return db.selectContentById(id);
     }
 
+    @Nullable
     public Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url) {
         return db.selectContentBySourceAndUrl(site, url);
     }
