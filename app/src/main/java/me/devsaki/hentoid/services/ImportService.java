@@ -23,7 +23,8 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
-import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -170,6 +171,7 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
         trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
         trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
+        CollectionDAO dao = new ObjectBoxDAO(this);
         for (int i = 0; i < bookFolders.size(); i++) {
             DocumentFile bookFolder = bookFolders.get(i);
             Timber.i(">> start %s", bookFolder.getUri().toString());
@@ -237,7 +239,7 @@ public class ImportService extends IntentService {
                     }
                     Timber.i(">> images %s", bookFolder.getUri().toString());
 
-                    ObjectBoxDB.getInstance(this).insertContent(content);
+                    dao.insertContent(content);
                     trace(Log.INFO, log, "Import book OK : %s", bookFolder.getUri().toString());
                 } else { // JSON not found
                     List<DocumentFile> subfolders = FileHelper.listFolders(this, bookFolder);
