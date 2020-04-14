@@ -7,7 +7,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -69,31 +69,6 @@ public class FileHelper {
     public static DocumentFile getFileFromUriString(@NonNull final Context context, @NonNull final String uriStr) {
         Uri fileUri = Uri.parse(uriStr);
         return DocumentFile.fromSingleUri(context, fileUri);
-    }
-
-    static Uri getUriFromFile(@NonNull final Context context, @NonNull final File file) {
-        //return FileProvider.getUriForFile(context, AUTHORITY, file);  <-- doesn't work as this kind of URI fails when trying to convert with DocumentFile
-
-        String filePath = file.getAbsolutePath();
-        Cursor cursor = context.getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[] { MediaStore.Images.Media._ID },
-                MediaStore.Images.Media.DATA + "=? ",
-                new String[] { filePath }, null);
-        if (cursor != null && cursor.moveToFirst()) {
-            int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
-            cursor.close();
-            return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "" + id);
-        } else {
-            if (file.exists()) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.DATA, filePath);
-                return context.getContentResolver().insert(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-            } else {
-                return null;
-            }
-        }
     }
 
     // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
@@ -233,13 +208,7 @@ public class FileHelper {
         }
     }
 
-    public static boolean checkAndSetRootFolder(@NonNull final DocumentFile folder) {
-        return checkAndSetRootFolder(folder, false);
-    }
-
-    public static boolean checkAndSetRootFolder(@NonNull final DocumentFile folder, boolean notify) {
-        Context context = HentoidApp.getInstance();
-
+    public static boolean checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder, boolean notify) {
         // Validate folder
         if (!folder.exists() && !folder.isDirectory()) {
             if (notify)
@@ -282,7 +251,7 @@ public class FileHelper {
     public static void openFile(@NonNull Context context, @NonNull File aFile) {
         File file = new File(aFile.getAbsolutePath());
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
-        Uri dataUri = getUriFromFile(context, aFile);
+        Uri dataUri = FileProvider.getUriForFile(context, AUTHORITY, file);
         if (file.isDirectory()) {
             myIntent.setDataAndType(dataUri, DocumentsContract.Document.MIME_TYPE_DIR);
         } else {
@@ -535,6 +504,20 @@ public class FileHelper {
         }
     }
 
+    public static void revokePreviousPermissions(@NonNull final Context context, @NonNull final Uri newUri) {
+        ContentResolver resolver = context.getContentResolver();
+        for (UriPermission p : resolver.getPersistedUriPermissions())
+            if (!p.getUri().equals(newUri))
+                resolver.releasePersistableUriPermission(p.getUri(),
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        if (resolver.getPersistedUriPermissions().isEmpty()) {
+            Timber.d("Permissions revoked successfully.");
+        } else {
+            Timber.d("Permissions failed to be revoked.");
+        }
+    }
+
+
     private static NameFilter createNameFilterEquals(@NonNull final String name) {
         return displayName -> displayName.equalsIgnoreCase(name);
     }
@@ -550,5 +533,4 @@ public class FileHelper {
          */
         boolean accept(@NonNull String displayName);
     }
-
 }

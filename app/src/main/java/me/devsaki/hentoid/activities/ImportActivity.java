@@ -3,7 +3,6 @@ package me.devsaki.hentoid.activities;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.UriPermission;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -262,23 +261,11 @@ public class ImportActivity extends AppCompatActivity {
         }
     }
 
-    private void revokePreviousPermissions(@NonNull final Uri newUri) {
-        for (UriPermission p : getContentResolver().getPersistedUriPermissions())
-            if (!p.getUri().equals(newUri))
-                getContentResolver().releasePersistableUriPermission(p.getUri(),
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        if (getContentResolver().getPersistedUriPermissions().isEmpty()) {
-            Timber.d("Permissions revoked successfully.");
-        } else {
-            Timber.d("Permissions failed to be revoked.");
-        }
-    }
-
     // Return from SAF picker
     public void onSelectSAFRootFolder(@NonNull final Uri treeUri) {
 
         // Release previous access permissions, if different than the new one
-        revokePreviousPermissions(treeUri);
+        FileHelper.revokePreviousPermissions(this, treeUri);
 
         // Persist new access permission
         getContentResolver().takePersistableUriPermission(treeUri,
@@ -396,8 +383,9 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     private void importFolder(@NonNull final DocumentFile targetFolder) {
+        // TODO re-create "addHentoidDir" because getExistingHentoidDirFrom doesn't add any directory when none found
         DocumentFile hentoidFolder = getExistingHentoidDirFrom(targetFolder);
-        if (!FileHelper.checkAndSetRootFolder(hentoidFolder, true)) {
+        if (!FileHelper.checkAndSetRootFolder(this, hentoidFolder, true)) {
             prepImport(null);
             return;
         }
@@ -422,7 +410,7 @@ public class ImportActivity extends AppCompatActivity {
                                     // Prior Library found, but user chose to cancel
                                     if (prevRootDir != null) currentRootDir = prevRootDir;
                                     if (currentRootDir != null)
-                                        FileHelper.checkAndSetRootFolder(currentRootDir);
+                                        FileHelper.checkAndSetRootFolder(this, currentRootDir, false);
                                     exit(RESULT_CANCELED, ConstsImport.EXISTING_LIBRARY_FOUND);
                                 })
                         .create()

@@ -2,15 +2,13 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
 
 import com.annimon.stream.Stream;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -83,13 +81,7 @@ public final class Preferences {
         }
 
         if (sharedPreferences.contains(Key.PREF_SETTINGS_FOLDER)) {
-            String folder = sharedPreferences.getString(Key.PREF_SETTINGS_FOLDER, "");
-            String uri = sharedPreferences.getString(Key.PREF_SD_STORAGE_URI, "");
-            if (!folder.isEmpty() && uri.isEmpty()) {
-                Uri data = FileHelper.getUriFromFile(context, new File(folder));
-                uri = data.toString();
-            }
-            sharedPreferences.edit().putString(Key.PREF_SD_STORAGE_URI, uri).apply();
+            // Can't migrate file:// URIs into content:// URIs => remove entirely
             sharedPreferences.edit().remove(Key.PREF_SETTINGS_FOLDER).apply();
         }
     }
