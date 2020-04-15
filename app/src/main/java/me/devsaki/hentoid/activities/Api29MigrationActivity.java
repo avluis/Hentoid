@@ -17,7 +17,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
@@ -28,8 +27,6 @@ import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 public class Api29MigrationActivity extends AppCompatActivity {
-
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // UI
     private View step1button;
@@ -70,8 +67,6 @@ public class Api29MigrationActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         EventBus.getDefault().unregister(this);
-        compositeDisposable.clear();
-
         super.onDestroy();
     }
 
@@ -104,9 +99,9 @@ public class Api29MigrationActivity extends AppCompatActivity {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
             if (treeUri != null) onSelectSAFRootFolder(treeUri);
-        } else if (resultCode == RESULT_CANCELED) {
-            selectHentoidFolder(); // TODO explain to user and make him start again manually
-        }
+        }/* else if (resultCode == RESULT_CANCELED) {
+            // Do nothing, user will have to push the button again
+        }*/
     }
 
     // Return from SAF picker
@@ -127,10 +122,8 @@ public class Api29MigrationActivity extends AppCompatActivity {
     }
 
     private void scanLibrary(@NonNull final DocumentFile root) {
-        if (!FileHelper.checkAndSetRootFolder(this, root, true)) {
-            selectHentoidFolder(); // TODO explain to user and make him start again manually
-            return;
-        }
+        // Check if the selected folder is valid (user error msgs are displayed inside this call)
+        if (!FileHelper.checkAndSetRootFolder(this, root, true)) return;
 
         // Hentoid folder is finally selected at this point -> Update UI
         step1folderTxt.setText(FileHelper.getFullPathFromTreeUri(this, Uri.parse(Preferences.getStorageUri()), true));
@@ -165,20 +158,13 @@ public class Api29MigrationActivity extends AppCompatActivity {
             } else if (3 == event.step) {
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
                 step3check.setVisibility(View.VISIBLE);
-                // Wait 3s to show the user the process has been completed
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    Timber.e(e);
-                    Thread.currentThread().interrupt();
-                }
                 goToLibraryActivity();
             }
         }
     }
 
     private void goToLibraryActivity() {
-        Timber.d("API29 migration / Launch library");
+        Timber.d("API29 migration / Complete : Launch library");
         Intent intent = new Intent(this, LibraryActivity.class);
         intent = UnlockActivity.wrapIntent(this, intent);
         startActivity(intent);

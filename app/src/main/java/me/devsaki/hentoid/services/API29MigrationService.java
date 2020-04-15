@@ -224,9 +224,9 @@ public class API29MigrationService extends IntentService {
         trace(Log.INFO, log, "Migration complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", contentIds.size() + "");
 
         // Write cleanup log in root folder
-        DocumentFile cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(log));
+        DocumentFile migrationLogFile = LogUtil.writeLog(this, buildLogInfo(log));
 
-        eventComplete(3, contentIds.size(), booksOK, booksKO, cleanupLogFile);
+        eventComplete(3, contentIds.size(), booksOK, booksKO, migrationLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
 
         stopForeground(true);
