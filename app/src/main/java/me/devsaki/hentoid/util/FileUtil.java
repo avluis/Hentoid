@@ -184,10 +184,7 @@ class FileUtil {
         final List<DocumentFile> resultFiles = new ArrayList<>();
         for (Uri uri : uris) {
             DocumentFile docFile = newTreeDocumentFile(parent, context, uri);
-            /*
-             * Following line should be the proper way to go but it's inefficient as it calls buildDocumentUriUsingTree once again
-             * If reactivated, needs androidx.documentfile:documentfile:1.0.1+ to work properly
-             */
+            // Following line should be the proper way to go but it's inefficient as it calls buildDocumentUriUsingTree once again
             //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri);
             if (docFile != null) resultFiles.add(docFile);
         }

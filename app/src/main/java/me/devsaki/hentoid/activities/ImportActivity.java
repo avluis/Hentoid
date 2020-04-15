@@ -382,9 +382,24 @@ public class ImportActivity extends AppCompatActivity {
         return false;
     }
 
+    private DocumentFile addHentoidFolder(@NonNull final DocumentFile baseFolder) {
+        String folderName = baseFolder.getName();
+        if (null == folderName) folderName = "";
+
+        // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
+        if (!hentoidFolderNames.accept(folderName)) {
+            DocumentFile targetFolder = getExistingHentoidDirFrom(baseFolder);
+
+            // If not, create one
+            if (targetFolder.getUri().equals(baseFolder.getUri()))
+                return targetFolder.createDirectory(Consts.DEFAULT_LOCAL_DIRECTORY);
+            else return targetFolder;
+        }
+        return baseFolder;
+    }
+
     private void importFolder(@NonNull final DocumentFile targetFolder) {
-        // TODO re-create "addHentoidDir" because getExistingHentoidDirFrom doesn't add any directory when none found
-        DocumentFile hentoidFolder = getExistingHentoidDirFrom(targetFolder);
+        DocumentFile hentoidFolder = addHentoidFolder(targetFolder);
         if (!FileHelper.checkAndSetRootFolder(this, hentoidFolder, true)) {
             prepImport(null);
             return;
