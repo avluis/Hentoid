@@ -126,7 +126,6 @@ public class API29MigrationService extends IntentService {
         // 1st pass : cache all book folders
         List<DocumentFile> siteFolders = FileHelper.listFolders(this, rootFolder);
 
-        // TODO display a progress dialog for that one
         List<DocumentFile> bookFolders;
         int foldersCount = 1;
         for (DocumentFile siteFolder : siteFolders) {
@@ -135,14 +134,14 @@ public class API29MigrationService extends IntentService {
             for (DocumentFile bookFolder : bookFolders)
                 siteFoldersCache.put(bookFolder.getName(), bookFolder);
             bookFoldersCache.put(siteFolder.getName(), siteFoldersCache);
-            eventProgress(siteFolders.size(), 2, foldersCount++, 0);
+            eventProgress(2, siteFolders.size(), foldersCount++, 0);
         }
 
         // 2nd pass : scan every book in the library and match actual URIs to it
         dao = new ObjectBoxDAO(this);
         searchDisposable = dao.getRecentBookIds(Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST, false).subscribe(
                 list -> {
-                    eventComplete(siteFolders.size(), 2, siteFolders.size(), 0, null);
+                    eventComplete(2, siteFolders.size(), siteFolders.size(), 0, null);
                     searchDisposable.dispose();
                     migrateLibrary(log, list);
                 },
@@ -219,14 +218,14 @@ public class API29MigrationService extends IntentService {
                 }
             } else booksKO++; // null books
 
-            eventProgress(contentIds.size(), 3, booksOK, booksKO);
+            eventProgress(3, contentIds.size(), booksOK, booksKO);
         }
         trace(Log.INFO, log, "Migration complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", contentIds.size() + "");
 
         // Write cleanup log in root folder
         DocumentFile cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(log));
 
-        eventComplete(contentIds.size(), 3, booksOK, booksKO, cleanupLogFile);
+        eventComplete(3, contentIds.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
 
         stopForeground(true);

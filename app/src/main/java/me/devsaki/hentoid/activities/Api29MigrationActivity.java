@@ -19,11 +19,9 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
-import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
-import me.devsaki.hentoid.services.ImportService;
+import me.devsaki.hentoid.services.API29MigrationService;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -34,17 +32,17 @@ public class Api29MigrationActivity extends AppCompatActivity {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // UI
+    private View step1button;
     private TextView step1folderTxt;
     private View step1check;
     private View step2block;
     private ProgressBar step2progress;
     private View step2check;
     private View step3block;
+    private TextView step3Txt;
     private ProgressBar step3progress;
     private View step3check;
 
-
-    private ObjectBoxDB db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,12 +51,15 @@ public class Api29MigrationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_api29_migration);
 
         // UI
+        step1button = findViewById(R.id.api29_step1_button);
+        step1button.setOnClickListener(v -> selectHentoidFolder());
         step1folderTxt = findViewById(R.id.api29_step1_folder);
         step1check = findViewById(R.id.api29_step1_check);
         step2block = findViewById(R.id.api29_step2);
         step2progress = findViewById(R.id.api29_step2_bar);
         step2check = findViewById(R.id.api29_step2_check);
         step3block = findViewById(R.id.api29_step3);
+        step3Txt = findViewById(R.id.api29_step3_text);
         step3progress = findViewById(R.id.api29_step3_bar);
         step3check = findViewById(R.id.api29_step3_check);
 
@@ -66,16 +67,22 @@ public class Api29MigrationActivity extends AppCompatActivity {
         doMigrate();
     }
 
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        compositeDisposable.clear();
+
+        super.onDestroy();
+    }
+
     private void doMigrate() {
         Timber.d("API 29 migration / Initiated");
         String storageUri = Preferences.getStorageUri();
         DocumentFile storageDoc = (storageUri.isEmpty()) ? null : DocumentFile.fromTreeUri(this, Uri.parse(storageUri));
 
-        if (null == storageDoc || !storageDoc.exists()) {
-            selectHentoidFolder();
-        } else { // Folder already set to a content:// URI (previous use of SAF picker)
-            scanLibrary(storageDoc);
-        }
+        // Folder already set to a content:// URI (previous use of SAF picker)
+        if (storageDoc != null && storageDoc.exists()) scanLibrary(storageDoc);
+        else step1button.setVisibility(View.VISIBLE);
     }
 
     private void selectHentoidFolder() {
@@ -127,18 +134,12 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
         // Hentoid folder is finally selected at this point -> Update UI
         step1folderTxt.setText(FileHelper.getFullPathFromTreeUri(this, Uri.parse(Preferences.getStorageUri()), true));
+        step1button.setVisibility(View.GONE);
         step1check.setVisibility(View.VISIBLE);
         step2block.setVisibility(View.VISIBLE);
 
         ImportNotificationChannel.init(this);
-        Intent intent = ImportService.makeIntent(this);
-
-        ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();
-        builder.setRefreshRename(false);
-        builder.setRefreshCleanAbsent(false);
-        builder.setRefreshCleanNoImages(false);
-        builder.setRefreshCleanUnreadable(false);
-        intent.putExtras(builder.getBundle());
+        Intent intent = API29MigrationService.makeIntent(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
@@ -151,37 +152,37 @@ public class Api29MigrationActivity extends AppCompatActivity {
     public void onMigrationEvent(ProcessEvent event) {
         ProgressBar progressBar = (2 == event.step) ? step2progress : step3progress;
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            Timber.i(">> progress event %s", event.step);
             progressBar.setMax(event.elementsTotal);
             progressBar.setProgress(event.elementsOK + event.elementsKO);
+            if (3 == event.step)
+                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            Timber.i(">> complete event %s", event.step);
             if (2 == event.step) {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
             } else if (3 == event.step) {
+                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
                 step3check.setVisibility(View.VISIBLE);
+                // Wait 3s to show the user the process has been completed
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    Timber.e(e);
+                    Thread.currentThread().interrupt();
+                }
                 goToLibraryActivity();
             }
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        compositeDisposable.clear();
-
-        super.onDestroy();
-    }
-
-    private void goToActivity(Intent intent) {
+    private void goToLibraryActivity() {
+        Timber.d("API29 migration / Launch library");
+        Intent intent = new Intent(this, LibraryActivity.class);
+        intent = UnlockActivity.wrapIntent(this, intent);
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
-    }
-
-    private void goToLibraryActivity() {
-        Timber.d("Splash / Launch library");
-        Intent intent = new Intent(this, LibraryActivity.class);
-        intent = UnlockActivity.wrapIntent(this, intent);
-        goToActivity(intent);
     }
 }
