@@ -6,7 +6,7 @@
     tools:ignore="AlwaysShowAction">
     <item
         android:id="@+id/action_check_all"
-        android:icon="@drawable/ic_check"
+        android:icon="@drawable/ic_check_square"
         android:title="@string/menu_search"
         app:showAsAction="collapseActionView|always" />
     <item

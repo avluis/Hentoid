@@ -32,7 +32,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.Consts;
@@ -349,18 +349,18 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onImportEventProgress(ImportEvent event) {
-        if (ImportEvent.EV_PROGRESS == event.eventType) {
-            progressDialog.setMax(event.booksTotal);
-            progressDialog.setProgress(event.booksOK + event.booksKO);
+    public void onImportEventProgress(ProcessEvent event) {
+        if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            progressDialog.setMax(event.elementsTotal);
+            progressDialog.setProgress(event.elementsOK + event.elementsKO);
         }
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onImportEventComplete(ImportEvent event) {
-        if (ImportEvent.EV_COMPLETE == event.eventType) {
+    public void onImportEventComplete(ProcessEvent event) {
+        if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             if (progressDialog != null) progressDialog.dismiss();
-            exit(RESULT_OK, (event.booksOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
+            exit(RESULT_OK, (event.elementsOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
         }
     }
 

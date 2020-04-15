@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Locale;
 
 import me.devsaki.hentoid.BuildConfig;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
@@ -73,8 +72,8 @@ public class FileHelper {
 
     // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
     @Nullable
-    public static String getFullPathFromTreeUri(@NonNull final Uri uri, @NonNull final Context con, boolean isFolder) {
-        String volumePath = getVolumePath(getVolumeIdFromUri(uri, isFolder), con);
+    public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri, boolean isFolder) {
+        String volumePath = getVolumePath(getVolumeIdFromUri(uri, isFolder), context);
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
             volumePath = volumePath.substring(0, volumePath.length() - 1);
@@ -484,7 +483,7 @@ public class FileHelper {
         // to see if a better solution compatible with API21 has been found
         // TODO - encapsulate the reflection trick used by getVolumePath
         public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
-            String fullPath = getFullPathFromTreeUri(f.getUri(), context, true); // Oh so dirty !!
+            String fullPath = getFullPathFromTreeUri(context, f.getUri(), true); // Oh so dirty !!
             if (fullPath != null) {
                 File file = new File(fullPath);
                 this.freeMemBytes = file.getFreeSpace();

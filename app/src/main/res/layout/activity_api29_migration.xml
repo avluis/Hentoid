@@ -39,36 +39,163 @@
         android:minHeight="48dp"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/intro_5_light"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/api29_step1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="30dp"
-            android:text="@string/slide_05_light" />
+            android:padding="16dp">
+            <TextView
+                android:id="@+id/api29_step1_number"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?colorSecondary"
+                android:gravity="center"
+                android:text="1"
+                android:textSize="@dimen/text_header_6"
+                android:textStyle="bold"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="HardcodedText" />
 
-        <TextView
-            android:id="@+id/intro_5_dark"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:padding="30dp"
-            android:text="@string/slide_05_dark" />
+            <TextView
+                android:id="@+id/api29_step1_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16dp"
+                android:text="@string/api29_migration_step1"
+                app:layout_constraintLeft_toRightOf="@id/api29_step1_number"
+                app:layout_constraintTop_toTopOf="@id/api29_step1_number" />
 
-        <TextView
-            android:id="@+id/intro_5_black"
+            <TextView
+                android:id="@+id/api29_step1_folder"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16dp"
+                tools:text="@string/web_home"
+                android:textSize="@dimen/caption"
+                app:layout_constraintTop_toBottomOf="@id/api29_step1_text"
+                app:layout_constraintStart_toEndOf="@id/api29_step1_number"
+                app:layout_constraintBottom_toBottomOf="@id/api29_step1_number" />
+
+            <ImageView
+                android:id="@+id/api29_step1_check"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_check"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="@id/api29_step1_number"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="@id/api29_step1_number" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/api29_step2"
+            android:visibility="gone"
+            tools:visibility="visible"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:padding="30dp"
-            android:text="@string/slide_05_black" />
+            android:padding="16dp">
+            <TextView
+                android:id="@+id/api29_step2_number"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?colorSecondary"
+                android:gravity="center"
+                android:text="2"
+                android:textSize="@dimen/text_header_6"
+                android:textStyle="bold"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/api29_step2_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16dp"
+                android:text="@string/api29_migration_step2"
+                app:layout_constraintLeft_toRightOf="@id/api29_step2_number"
+                app:layout_constraintTop_toTopOf="@id/api29_step2_number" />
+
+            <ProgressBar
+                android:id="@+id/api29_step2_bar"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="0dp"
+                android:layout_height="4dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                app:layout_constraintEnd_toStartOf="@id/api29_step2_check"
+                app:layout_constraintStart_toEndOf="@id/api29_step2_number"
+                app:layout_constraintBottom_toBottomOf="@id/api29_step2_number"
+                app:layout_constraintTop_toBottomOf="@id/api29_step2_text" />
+
+            <ImageView
+                android:id="@+id/api29_step2_check"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_check"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="@id/api29_step2_number"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="@id/api29_step2_number" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/api29_step3"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+            <TextView
+                android:id="@+id/api29_step3_number"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?colorSecondary"
+                android:gravity="center"
+                android:text="3"
+                android:textSize="@dimen/text_header_6"
+                android:textStyle="bold"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/api29_step3_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16dp"
+                android:text="@string/api29_migration_step3"
+                app:layout_constraintLeft_toRightOf="@id/api29_step3_number"
+                app:layout_constraintTop_toTopOf="@id/api29_step3_number" />
+
+            <ProgressBar
+                android:id="@+id/api29_step3_bar"
+                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                android:layout_width="0dp"
+                android:layout_height="4dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                app:layout_constraintEnd_toStartOf="@id/api29_step3_check"
+                app:layout_constraintStart_toEndOf="@id/api29_step3_number"
+                app:layout_constraintBottom_toBottomOf="@id/api29_step3_number"
+                app:layout_constraintTop_toBottomOf="@id/api29_step3_text" />
+
+            <ImageView
+                android:id="@+id/api29_step3_check"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_check"
+                android:visibility="gone"
+                tools:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="@id/api29_step3_number"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="@id/api29_step3_number" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </LinearLayout>

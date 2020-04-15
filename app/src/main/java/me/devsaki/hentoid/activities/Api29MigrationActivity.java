@@ -1,40 +1,49 @@
 package me.devsaki.hentoid.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
-
-import com.lmntrx.android.library.livin.missme.ProgressDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import io.reactivex.disposables.CompositeDisposable;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
-import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 import timber.log.Timber;
 
 public class Api29MigrationActivity extends AppCompatActivity {
 
-    private ProgressDialog progressDialog;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    // UI
+    private TextView step1folderTxt;
+    private View step1check;
+    private View step2block;
+    private ProgressBar step2progress;
+    private View step2check;
+    private View step3block;
+    private ProgressBar step3progress;
+    private View step3check;
+
+
     private ObjectBoxDB db;
 
     @Override
@@ -42,6 +51,16 @@ public class Api29MigrationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_api29_migration);
+
+        // UI
+        step1folderTxt = findViewById(R.id.api29_step1_folder);
+        step1check = findViewById(R.id.api29_step1_check);
+        step2block = findViewById(R.id.api29_step2);
+        step2progress = findViewById(R.id.api29_step2_bar);
+        step2check = findViewById(R.id.api29_step2_check);
+        step3block = findViewById(R.id.api29_step3);
+        step3progress = findViewById(R.id.api29_step3_bar);
+        step3check = findViewById(R.id.api29_step3_check);
 
         EventBus.getDefault().register(this);
         doMigrate();
@@ -106,17 +125,10 @@ public class Api29MigrationActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO integrate that into the main screen instead of a progress dialog
-        // Send results to scan
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setCancelable(false);
-        progressDialog.setIndeterminate(false);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setMax(0);
-        progressDialog.setColor(ThemeHelper.getColor(this, R.color.secondary_light));
-        progressDialog.setTextColor(R.color.white_opacity_87);
-        progressDialog.setMessage(this.getString(R.string.updating_please_wait));
-        progressDialog.show();
+        // Hentoid folder is finally selected at this point -> Update UI
+        step1folderTxt.setText(FileHelper.getFullPathFromTreeUri(this, Uri.parse(Preferences.getStorageUri()), true));
+        step1check.setVisibility(View.VISIBLE);
+        step2block.setVisibility(View.VISIBLE);
 
         ImportNotificationChannel.init(this);
         Intent intent = ImportService.makeIntent(this);
@@ -136,13 +148,19 @@ public class Api29MigrationActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onImportEvent(ImportEvent event) {
-        if (ImportEvent.EV_PROGRESS == event.eventType) {
-            progressDialog.setMax(event.booksTotal);
-            progressDialog.setProgress(event.booksOK + event.booksKO);
-        } else if (ImportEvent.EV_COMPLETE == event.eventType) {
-            if (progressDialog != null) progressDialog.dismiss();
-            goToLibraryActivity();
+    public void onMigrationEvent(ProcessEvent event) {
+        ProgressBar progressBar = (2 == event.step) ? step2progress : step3progress;
+        if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            progressBar.setMax(event.elementsTotal);
+            progressBar.setProgress(event.elementsOK + event.elementsKO);
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            if (2 == event.step) {
+                step2check.setVisibility(View.VISIBLE);
+                step3block.setVisibility(View.VISIBLE);
+            } else if (3 == event.step) {
+                step3check.setVisibility(View.VISIBLE);
+                goToLibraryActivity();
+            }
         }
     }
 

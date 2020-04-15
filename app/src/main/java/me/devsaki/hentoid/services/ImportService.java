@@ -31,7 +31,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.json.ContentV1;
 import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
@@ -120,11 +120,11 @@ public class ImportService extends IntentService {
     }
 
     private void eventProgress(int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, booksOK, booksKO, nbBooks));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 1, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 1, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {

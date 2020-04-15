@@ -29,7 +29,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.Consts;
@@ -96,12 +96,12 @@ public class API29MigrationService extends IntentService {
         performMigration();
     }
 
-    private void eventProgress(int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, booksOK, booksKO, nbBooks));
+    private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, step, booksOK, booksKO, nbBooks));
     }
 
-    private void eventComplete(int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, cleanupLogFile));
+    private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
@@ -128,18 +128,24 @@ public class API29MigrationService extends IntentService {
 
         // TODO display a progress dialog for that one
         List<DocumentFile> bookFolders;
+        int foldersCount = 1;
         for (DocumentFile siteFolder : siteFolders) {
             bookFolders = FileHelper.listFolders(this, siteFolder);
             Map<String, DocumentFile> siteFoldersCache = new HashMap<>(bookFolders.size());
             for (DocumentFile bookFolder : bookFolders)
                 siteFoldersCache.put(bookFolder.getName(), bookFolder);
             bookFoldersCache.put(siteFolder.getName(), siteFoldersCache);
+            eventProgress(siteFolders.size(), 2, foldersCount++, 0);
         }
 
         // 2nd pass : scan every book in the library and match actual URIs to it
         dao = new ObjectBoxDAO(this);
         searchDisposable = dao.getRecentBookIds(Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST, false).subscribe(
-                list -> migrateLibrary(log, list),
+                list -> {
+                    eventComplete(siteFolders.size(), 2, siteFolders.size(), 0, null);
+                    searchDisposable.dispose();
+                    migrateLibrary(log, list);
+                },
                 throwable -> {
                     Timber.w(throwable);
                     ToastUtil.toast("Book list loading failed");
@@ -164,6 +170,8 @@ public class API29MigrationService extends IntentService {
                         booksKO++;
                         continue;
                     }
+                    // TODO - check if objectbox ID's allow portability of storageFolder property; update manually if not
+                    // TODO - check if persisted JSON URIs are all proper content URIs and not file URIs
                     String[] contentFolderParts = content.getStorageFolder().split(File.separator);
                     String bookFolderName = contentFolderParts[contentFolderParts.length - 1];
                     DocumentFile bookFolder = siteFolder.get(bookFolderName);
@@ -211,14 +219,14 @@ public class API29MigrationService extends IntentService {
                 }
             } else booksKO++; // null books
 
-            eventProgress(contentIds.size(), booksOK, booksKO);
+            eventProgress(contentIds.size(), 3, booksOK, booksKO);
         }
         trace(Log.INFO, log, "Migration complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", contentIds.size() + "");
 
         // Write cleanup log in root folder
         DocumentFile cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(log));
 
-        eventComplete(contentIds.size(), booksOK, booksKO, cleanupLogFile);
+        eventComplete(contentIds.size(), 3, booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
 
         stopForeground(true);

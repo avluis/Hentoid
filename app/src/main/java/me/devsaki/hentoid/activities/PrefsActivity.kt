@@ -8,7 +8,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle
-import me.devsaki.hentoid.events.ImportEvent
+import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.PreferenceFragment
 import me.devsaki.hentoid.util.FileHelper
 import org.greenrobot.eventbus.EventBus
@@ -53,8 +53,8 @@ class PrefsActivity : BaseActivity() {
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onImportEventComplete(event: ImportEvent) {
-        if (ImportEvent.EV_COMPLETE == event.eventType && event.logFile != null) {
+    fun onImportEventComplete(event: ProcessEvent) {
+        if (ProcessEvent.EventType.COMPLETE == event.eventType && event.logFile != null) {
             val contentView = findViewById<View>(android.R.id.content)
             val snackbar = Snackbar.make(contentView, R.string.task_done, BaseTransientBottomBar.LENGTH_LONG)
             snackbar.setAction("READ LOG") { FileHelper.openFile(this, event.logFile) }

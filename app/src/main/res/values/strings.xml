@@ -19,6 +19,9 @@
     <!-- API29 migration screen -->
     <string name="api29_migration_title">File management update</string>
     <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
+    <string name="api29_migration_step1">Hentoid folder</string>
+    <string name="api29_migration_step2">Scan site folders</string>
+    <string name="api29_migration_step3">Scan library</string>
 
     <!-- Library screen toolbar -->
     <string name="menu_tags">Tags</string>
