@@ -12,7 +12,6 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val parentActivity = context as IntroActivity
-        tv_library_custom.setOnClickListener { parentActivity.onCustomStorageSelected() }
-        tv_library_default.setOnClickListener { parentActivity.onDefaultStorageSelected() }
+        intro_select_app_folder.setOnClickListener { parentActivity.onCustomStorageSelected() }
     }
 }

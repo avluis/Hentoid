@@ -77,16 +77,6 @@ public class IntroActivity extends AppIntro2 {
         getPager().goToNextSlide();
     }
 
-    public void onDefaultStorageSelected() {
-        /*
-        Intent defaultDir = new Intent(this, ImportActivity.class);
-        defaultDir.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
-
-         */
-        // TODO there's no default storage anymore
-    }
-
     public void onCustomStorageSelected() {
         Intent customDir = new Intent(this, ImportActivity.class);
         startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
