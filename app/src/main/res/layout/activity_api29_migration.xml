@@ -88,7 +88,8 @@
                 app:layout_constraintBottom_toBottomOf="@id/api29_step1_number"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="@id/api29_step1_number"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/api29_step1_button"
@@ -161,7 +162,8 @@
                 app:layout_constraintBottom_toBottomOf="@id/api29_step2_number"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="@id/api29_step2_number"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+                tools:ignore="ContentDescription" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -216,7 +218,8 @@
                 app:layout_constraintBottom_toBottomOf="@id/api29_step3_number"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="@id/api29_step3_number"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+                tools:ignore="ContentDescription" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </LinearLayout>
