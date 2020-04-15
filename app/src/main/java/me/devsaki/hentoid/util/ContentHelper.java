@@ -368,25 +368,23 @@ public final class ContentHelper {
         }
     }
 
-    public static List<ImageFile> matchFilesToImageList(@NonNull List<DocumentFile> files, @NonNull List<ImageFile> images) {
+    public static List<ImageFile> matchFilesToImageList(@NonNull final List<DocumentFile> files, @NonNull final List<ImageFile> images) {
         Map<String, String> fileNameUris = new HashMap<>(files.size());
-        int imageIndex = 0;
+        List<ImageFile> result = new ArrayList<>();
 
         for (DocumentFile file : files)
             fileNameUris.put(removeLeadingZeroesAndExtensionCached(file.getName()), file.getUri().toString());
 
         Timber.i(">> match begin");
-        while (imageIndex < images.size()) {
-            String imgName = removeLeadingZeroesAndExtensionCached(images.get(imageIndex).getName());
+        for (ImageFile img : images) {
+            String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
             if (fileNameUris.containsKey(imgName))
-                images.get(imageIndex++).setFileUri(fileNameUris.get(imgName));
-            else {
+                result.add(img.setFileUri(fileNameUris.get(imgName)));
+            else
                 Timber.i(">> img dropped %s", imgName);
-                images.remove(imageIndex);
-            }
         }
         Timber.i(">> match end");
-        return images;
+        return result;
     }
 
     public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files) {
@@ -397,7 +395,7 @@ public final class ContentHelper {
         for (DocumentFile f : fileList) {
             String name = (f.getName() != null) ? FileHelper.getFileNameWithoutExtension(f.getName()) : "";
             ImageFile img = new ImageFile();
-            if (name.startsWith("thumb")) img.setIsCover(true);
+            if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
             img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString());
             result.add(img);

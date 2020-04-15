@@ -169,7 +169,6 @@ public class API29MigrationService extends IntentService {
                         booksKO++;
                         continue;
                     }
-                    // TODO - check if objectbox ID's allow portability of storageFolder property; update manually if not
                     // TODO - check if persisted JSON URIs are all proper content URIs and not file URIs
                     String[] contentFolderParts = content.getStorageFolder().split(File.separator);
                     String bookFolderName = contentFolderParts[contentFolderParts.length - 1];
@@ -180,6 +179,7 @@ public class API29MigrationService extends IntentService {
                         continue;
                     }
                     content.setStorageUri(bookFolder.getUri().toString());
+                    dao.insertContent(content);
 
                     List<ImageFile> contentImages;
                     if (content.getImageFiles() != null) contentImages = content.getImageFiles();
@@ -193,7 +193,7 @@ public class API29MigrationService extends IntentService {
                             content.setImageFiles(contentImages);
                             content.getCover().setUrl(content.getCoverImageUrl());
                         } else { // Existing images -> map them
-                            content.setImageFiles(ContentHelper.matchFilesToImageList(imageFiles, contentImages));
+                            contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
                             // If no cover is defined, get it too
                             if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) {
                                 Optional<DocumentFile> file = Stream.of(imageFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
@@ -205,10 +205,11 @@ public class API29MigrationService extends IntentService {
                                     contentImages.add(0, cover);
                                 }
                             }
+                            content.setImageFiles(contentImages);
                         }
                     }
+                    dao.replaceImageList(contentId, contentImages);
 
-                    dao.insertContent(content);
                     booksOK++;
                     trace(Log.INFO, log, "Migrate book OK : %s", bookFolder.getUri().toString());
                 } catch (Exception e) {
@@ -216,7 +217,7 @@ public class API29MigrationService extends IntentService {
                     booksKO++;
                     trace(Log.ERROR, log, "Migrate book ERROR : %s for Content %s [%s]", e.getMessage(), content.getTitle(), contentId + "");
                 }
-            } else booksKO++; // null books
+            } else booksKO++; // null books (content ID not found in DB)
 
             eventProgress(3, contentIds.size(), booksOK, booksKO);
         }

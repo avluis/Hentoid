@@ -132,8 +132,9 @@ public class ImageFile {
         return fileUri;
     }
 
-    public void setFileUri(String fileUri) {
+    public ImageFile setFileUri(String fileUri) {
         this.fileUri = fileUri;
+        return this;
     }
 
     public int getDisplayOrder() {
