@@ -73,7 +73,7 @@ public interface CollectionDAO {
 
     void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo);
 
-    void updateImageFileStatusParamsMimeType(@NonNull ImageFile image);
+    void updateImageFileStatusParamsMimeTypeUri(@NonNull ImageFile image);
 
     void deleteImageFile(@NonNull ImageFile img);
 

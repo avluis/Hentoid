@@ -810,7 +810,7 @@ public class ContentDownloadService extends IntentService {
         img.setFileUri(uriStr);
         if (success) img.setDownloadParams("");
         if (img.getId() > 0)
-            dao.updateImageFileStatusParamsMimeType(img); // because thumb image isn't in the DB
+            dao.updateImageFileStatusParamsMimeTypeUri(img); // because thumb image isn't in the DB
     }
 
     /**

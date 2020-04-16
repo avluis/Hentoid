@@ -211,8 +211,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.updateImageContentStatus(contentId, updateFrom, updateTo);
     }
 
-    public void updateImageFileStatusParamsMimeType(@NonNull ImageFile image) {
-        db.updateImageFileStatusParamsMimeType(image);
+    public void updateImageFileStatusParamsMimeTypeUri(@NonNull ImageFile image) {
+        db.updateImageFileStatusParamsMimeTypeUri(image);
     }
 
     public void deleteImageFile(@NonNull ImageFile img) {

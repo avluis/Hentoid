@@ -639,13 +639,14 @@ public class ObjectBoxDB {
         return result;
     }
 
-    void updateImageFileStatusParamsMimeType(@NonNull ImageFile image) {
+    void updateImageFileStatusParamsMimeTypeUri(@NonNull ImageFile image) {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
         if (img != null) {
             img.setStatus(image.getStatus());
             img.setDownloadParams(image.getDownloadParams());
             img.setMimeType(image.getMimeType());
+            img.setFileUri(image.getFileUri());
             imgBox.put(img);
         }
     }
