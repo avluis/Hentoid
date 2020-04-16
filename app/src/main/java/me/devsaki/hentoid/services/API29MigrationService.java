@@ -163,13 +163,13 @@ public class API29MigrationService extends IntentService {
             Content content = dao.selectContent(contentId);
             if (content != null) {
                 try {
+                    // Set the book's storage URI
                     Map<String, DocumentFile> siteFolder = bookFoldersCache.get(content.getSite().getDescription());
                     if (null == siteFolder) {
                         trace(Log.WARN, log, "Migrate book KO : site folder %s not found for %s [%s]", content.getSite().getDescription(), content.getTitle(), contentId + "");
                         booksKO++;
                         continue;
                     }
-                    // TODO - check if persisted JSON URIs are all proper content URIs and not file URIs
                     String[] contentFolderParts = content.getStorageFolder().split(File.separator);
                     String bookFolderName = contentFolderParts[contentFolderParts.length - 1];
                     DocumentFile bookFolder = siteFolder.get(bookFolderName);
@@ -179,6 +179,11 @@ public class API29MigrationService extends IntentService {
                         continue;
                     }
                     content.setStorageUri(bookFolder.getUri().toString());
+
+                    // Delete the JSON URI if not in the correct format (file:// instead of content://)
+                    // (might be the case when the migrated collection was stored on phone memory)
+                    if (content.getJsonUri().isEmpty() || !content.getJsonUri().startsWith("content")) content.setJsonUri("");
+
                     dao.insertContent(content);
 
                     List<ImageFile> contentImages;
