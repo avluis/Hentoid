@@ -88,7 +88,6 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
     private void downloadUpdate(Uri updateUri) {
         Timber.w(this.getResources().getString(R.string.starting_download));
 
-        // TODO this won't work - use SAF all the way
         File apkFile = new File(getExternalCacheDir(), "hentoid.apk");
         Uri destinationUri = Uri.fromFile(apkFile);
 
