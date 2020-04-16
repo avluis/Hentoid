@@ -155,6 +155,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
             if (2 == event.step) {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
+                step3block.invalidate();
             } else if (3 == event.step) {
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
                 step3check.setVisibility(View.VISIBLE);
