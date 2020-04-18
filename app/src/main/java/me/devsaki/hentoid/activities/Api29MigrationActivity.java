@@ -122,7 +122,10 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
     private void scanLibrary(@NonNull final DocumentFile root) {
         // Check if the selected folder is valid (user error msgs are displayed inside this call)
-        if (!FileHelper.checkAndSetRootFolder(this, root, true)) return;
+        if (!FileHelper.checkAndSetRootFolder(this, root, true)) {
+            step1button.setVisibility(View.VISIBLE);
+            return;
+        }
 
         // Hentoid folder is finally selected at this point -> Update UI
         step1folderTxt.setText(FileHelper.getFullPathFromTreeUri(this, Uri.parse(Preferences.getStorageUri()), true));
@@ -140,30 +143,21 @@ public class Api29MigrationActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMigrationEvent(ProcessEvent event) {
+        ProgressBar progressBar = (2 == event.step) ? step2progress : step3progress;
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            Timber.i(">> progress event %s", event.step);
-            runOnUiThread(() -> {
-                ProgressBar progressBar = (2 == event.step) ? step2progress : step3progress;
-                progressBar.setMax(event.elementsTotal);
-                progressBar.setProgress(event.elementsOK + event.elementsKO);
-            });
+            progressBar.setMax(event.elementsTotal);
+            progressBar.setProgress(event.elementsOK + event.elementsKO);
             if (3 == event.step)
-                runOnUiThread(() -> step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal)));
+                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            Timber.i(">> complete event %s", event.step);
             if (2 == event.step) {
-                runOnUiThread(() -> {
-                    step2check.setVisibility(View.VISIBLE);
-                    step3block.setVisibility(View.VISIBLE);
-                    step3block.invalidate();
-                });
+                step2check.setVisibility(View.VISIBLE);
+                step3block.setVisibility(View.VISIBLE);
             } else if (3 == event.step) {
-                runOnUiThread(() -> {
-                    step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
-                    step3check.setVisibility(View.VISIBLE);
-                });
+                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
+                step3check.setVisibility(View.VISIBLE);
                 goToLibraryActivity();
             }
         }

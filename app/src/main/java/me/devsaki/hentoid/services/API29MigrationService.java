@@ -21,9 +21,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -93,7 +95,11 @@ public class API29MigrationService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        performMigration();
+        try {
+            performMigration();
+        } catch (InterruptedException ie) {
+            Timber.e(ie);
+        }
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -101,7 +107,7 @@ public class API29MigrationService extends IntentService {
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
@@ -114,7 +120,7 @@ public class API29MigrationService extends IntentService {
     /**
      * Import books from known source folders
      */
-    private void performMigration() {
+    private void performMigration() throws InterruptedException {
         List<LogUtil.LogEntry> log = new ArrayList<>();
 
         DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
@@ -137,19 +143,27 @@ public class API29MigrationService extends IntentService {
             eventProgress(2, siteFolders.size(), foldersCount++, 0);
         }
 
+        // tasks are used to execute Rx's observeOn on current thread
+        // See https://github.com/square/retrofit/issues/370#issuecomment-315868381
+        LinkedBlockingQueue<Runnable> tasks = new LinkedBlockingQueue<>();
+
         // 2nd pass : scan every book in the library and match actual URIs to it
         dao = new ObjectBoxDAO(this);
-        searchDisposable = dao.getRecentBookIds(Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST, false).subscribe(
-                list -> {
-                    eventComplete(2, siteFolders.size(), siteFolders.size(), 0, null);
-                    searchDisposable.dispose();
-                    migrateLibrary(log, list);
-                },
-                throwable -> {
-                    Timber.w(throwable);
-                    ToastUtil.toast("Book list loading failed");
-                }
-        );
+        searchDisposable = dao.getRecentBookIds(Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST, false)
+                .observeOn(Schedulers.from(tasks::add))
+                .subscribe(
+                        list -> {
+                            eventComplete(2, siteFolders.size(), siteFolders.size(), 0, null);
+                            searchDisposable.dispose();
+                            migrateLibrary(log, list);
+                        },
+                        throwable -> {
+                            Timber.w(throwable);
+                            ToastUtil.toast("Book list loading failed");
+                        }
+                );
+
+        tasks.take().run();
     }
 
     private void migrateLibrary(@NonNull final List<LogUtil.LogEntry> log, @NonNull final List<Long> contentIds) {
@@ -182,7 +196,8 @@ public class API29MigrationService extends IntentService {
 
                     // Delete the JSON URI if not in the correct format (file:// instead of content://)
                     // (might be the case when the migrated collection was stored on phone memory)
-                    if (content.getJsonUri().isEmpty() || !content.getJsonUri().startsWith("content")) content.setJsonUri("");
+                    if (content.getJsonUri().isEmpty() || !content.getJsonUri().startsWith("content"))
+                        content.setJsonUri("");
 
                     dao.insertContent(content);
 

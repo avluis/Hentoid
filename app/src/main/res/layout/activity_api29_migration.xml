@@ -33,6 +33,7 @@
         android:textSize="16sp" />
 
     <LinearLayout
+        android:id="@+id/api29_steps"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="5"
@@ -88,8 +89,8 @@
                 app:layout_constraintBottom_toBottomOf="@id/api29_step1_number"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="@id/api29_step1_number"
-                tools:visibility="visible"
-                tools:ignore="ContentDescription" />
+                tools:ignore="ContentDescription"
+                tools:visibility="visible" />
 
             <TextView
                 android:id="@+id/api29_step1_button"
@@ -115,7 +116,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:visibility="gone"
+            android:visibility="invisible"
             tools:visibility="visible">
 
             <TextView
@@ -162,8 +163,8 @@
                 app:layout_constraintBottom_toBottomOf="@id/api29_step2_number"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="@id/api29_step2_number"
-                tools:visibility="visible"
-                tools:ignore="ContentDescription" />
+                tools:ignore="ContentDescription"
+                tools:visibility="visible" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -171,7 +172,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:visibility="gone"
+            android:visibility="invisible"
             tools:visibility="visible">
 
             <TextView
@@ -192,7 +193,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginStart="16dp"
-                android:text="@string/api29_migration_step3"
+                android:text="@string/api29_migration_step3_init"
                 app:layout_constraintLeft_toRightOf="@id/api29_step3_number"
                 app:layout_constraintTop_toTopOf="@id/api29_step3_number" />
 
@@ -218,8 +219,8 @@
                 app:layout_constraintBottom_toBottomOf="@id/api29_step3_number"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="@id/api29_step3_number"
-                tools:visibility="visible"
-                tools:ignore="ContentDescription" />
+                tools:ignore="ContentDescription"
+                tools:visibility="visible" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </LinearLayout>
