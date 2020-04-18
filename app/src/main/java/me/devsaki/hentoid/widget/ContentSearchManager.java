@@ -11,11 +11,11 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Single;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Preferences;
 
 public class ContentSearchManager {
@@ -112,16 +112,12 @@ public class ContentSearchManager {
             return collectionDAO.getRecentBooks(contentSortOrder, filterFavourites, loadAll); // Default search (display recent)
     }
 
-    public void searchLibraryForId(PagedResultListener<Long> listener) {
+    public Single<List<Long>> searchLibraryForId() {
         if (!getQuery().isEmpty())
-            collectionDAO.searchBookIdsUniversal(getQuery(), contentSortOrder, filterFavourites, listener); // Universal search
+            return collectionDAO.searchBookIdsUniversal(getQuery(), contentSortOrder, filterFavourites); // Universal search
         else if (!tags.isEmpty())
-            collectionDAO.searchBookIds("", tags, contentSortOrder, filterFavourites, listener); // Advanced search
+            return collectionDAO.searchBookIds("", tags, contentSortOrder, filterFavourites); // Advanced search
         else
-            collectionDAO.getRecentBookIds(contentSortOrder, filterFavourites, listener); // Default search (display recent)
-    }
-
-    public void dispose() {
-        collectionDAO.dispose();
+            return collectionDAO.getRecentBookIds(contentSortOrder, filterFavourites); // Default search (display recent)
     }
 }

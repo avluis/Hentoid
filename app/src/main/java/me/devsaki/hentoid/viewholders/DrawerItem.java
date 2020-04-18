@@ -105,7 +105,7 @@ public class DrawerItem extends AbstractItem<DrawerItem.DrawerViewHolder> {
 
 
         @Override
-        public void bindView(@NotNull DrawerItem item, @NotNull List<Object> list) {
+        public void bindView(@NotNull DrawerItem item, @NotNull List<?> list) {
             icon.setImageResource(item.icon);
             if (item.alertStatus != AlertStatus.NONE) {
                 alert.setVisibility(View.VISIBLE);

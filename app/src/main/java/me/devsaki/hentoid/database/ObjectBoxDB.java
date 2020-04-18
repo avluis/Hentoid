@@ -62,7 +62,8 @@ public class ObjectBoxDB {
 
 
     private ObjectBoxDB(Context context) {
-        store = MyObjectBox.builder().androidContext(context.getApplicationContext()).build();
+        final long maxSize = (long) 2 * 1024 * 1024; // 2Gb max size
+        store = MyObjectBox.builder().androidContext(context.getApplicationContext()).maxSizeInKByte(maxSize).build();
 
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
             boolean started = new AndroidObjectBrowser(store).start(context.getApplicationContext());
@@ -96,38 +97,47 @@ public class ObjectBoxDB {
         return instance;
     }
 
+
+    void closeThreadResources() {
+        store.closeThreadResources();
+    }
+
+
     public long insertContent(Content content) {
+        List<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
         Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
-        List<Attribute> attributes = content.getAttributes();
 
-        // Master data management managed manually
-        // Ensure all known attributes are replaced by their ID before being inserted
-        // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
-        Attribute dbAttr;
-        Attribute inputAttr;
-        for (int i = 0; i < attributes.size(); i++) {
-            inputAttr = attributes.get(i);
-            dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
-                    .setParameter(Attribute_.type, inputAttr.getType().getCode())
-                    .findFirst();
-            if (dbAttr != null) {
-                attributes.set(i, dbAttr); // If existing -> set the existing attribute
-                dbAttr.addLocationsFrom(inputAttr);
-                attrBox.put(dbAttr);
-            } else {
-                inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
-            }
-        }
+        return store.callInTxNoException(() -> {
+            // Master data management managed manually
+            // Ensure all known attributes are replaced by their ID before being inserted
+            // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
+            Attribute dbAttr;
+            Attribute inputAttr;
+            if (attributes != null)
+                for (int i = 0; i < attributes.size(); i++) {
+                    inputAttr = attributes.get(i);
+                    dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
+                            .setParameter(Attribute_.type, inputAttr.getType().getCode())
+                            .findFirst();
+                    if (dbAttr != null) {
+                        attributes.set(i, dbAttr); // If existing -> set the existing attribute
+                        dbAttr.addLocationsFrom(inputAttr);
+                        attrBox.put(dbAttr);
+                    } else {
+                        inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
+                    }
+                }
 
-        return store.boxFor(Content.class).put(content);
+            return store.boxFor(Content.class).put(content);
+        });
     }
 
     long countContentEntries() {
         return store.boxFor(Content.class).count();
     }
 
-    public void updateContentStatus(StatusContent updateFrom, StatusContent updateTo) {
+    public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
         List<Content> content = selectContentByStatus(updateFrom);
         for (int i = 0; i < content.size(); i++) content.get(i).setStatus(updateTo);
 
@@ -186,36 +196,37 @@ public class ObjectBoxDB {
 
         for (long id : contentId) {
             Content c = contentBox.get(id);
-            if (c != null)
+            if (c != null) {
                 store.runInTx(() -> {
-                    if (c.getImageFiles() != null) {
-                        for (ImageFile i : c.getImageFiles())
-                            imageFileBox.remove(i);   // Delete imageFiles
-                        c.getImageFiles().clear();                                      // Clear links to all imageFiles
+                if (c.getImageFiles() != null) {
+                    for (ImageFile i : c.getImageFiles())
+                        imageFileBox.remove(i);   // Delete imageFiles
+                    c.getImageFiles().clear();                                      // Clear links to all imageFiles
+                }
+
+                if (c.getErrorLog() != null) {
+                    for (ErrorRecord e : c.getErrorLog())
+                        errorBox.remove(e);   // Delete error records
+                    c.getErrorLog().clear();                                    // Clear links to all errorRecords
+                }
+
+                // Delete attribute when current content is the only content left on the attribute
+                for (Attribute a : c.getAttributes())
+                    if (1 == a.contents.size()) {
+                        for (AttributeLocation l : a.getLocations())
+                            locationBox.remove(l); // Delete all locations
+                        a.getLocations().clear();                                           // Clear location links
+                        attributeBox.remove(a);                                             // Delete the attribute itself
                     }
+                c.getAttributes().clear();                                      // Clear links to all attributes
 
-                    if (c.getErrorLog() != null) {
-                        for (ErrorRecord e : c.getErrorLog())
-                            errorBox.remove(e);   // Delete error records
-                        c.getErrorLog().clear();                                    // Clear links to all errorRecords
-                    }
-
-                    // Delete attribute when current content is the only content left on the attribute
-                    for (Attribute a : c.getAttributes())
-                        if (1 == a.contents.size()) {
-                            for (AttributeLocation l : a.getLocations())
-                                locationBox.remove(l); // Delete all locations
-                            a.getLocations().clear();                                           // Clear location links
-                            attributeBox.remove(a);                                             // Delete the attribute itself
-                        }
-                    c.getAttributes().clear();                                      // Clear links to all attributes
-
-                    contentBox.remove(c);                                           // Remove the content itself
+                contentBox.remove(c);                                           // Remove the content itself
                 });
+            }
         }
     }
 
-    public List<QueueRecord> selectQueue() {
+    List<QueueRecord> selectQueue() {
         return store.boxFor(QueueRecord.class).query().order(QueueRecord_.rank).build().find();
     }
 
@@ -248,11 +259,11 @@ public class ObjectBoxDB {
         }
     }
 
-    public void deleteQueue(@NonNull Content content) {
+    void deleteQueue(@NonNull Content content) {
         deleteQueue(content.getId());
     }
 
-    public void deleteQueue(int queueIndex) {
+    void deleteQueue(int queueIndex) {
         store.boxFor(QueueRecord.class).remove(selectQueue().get(queueIndex).id);
     }
 
@@ -260,17 +271,11 @@ public class ObjectBoxDB {
         Box<QueueRecord> queueRecordBox = store.boxFor(QueueRecord.class);
         QueueRecord record = queueRecordBox.query().equal(QueueRecord_.contentId, contentId).build().findFirst();
 
-        if (record != null) {
-            queueRecordBox.remove(record);
-        }
+        if (record != null) queueRecordBox.remove(record);
     }
 
     public void deleteAllQueue() {
         store.boxFor(QueueRecord.class).removeAll();
-    }
-
-    long countVisibleContent() {
-        return countContentSearch("", Collections.emptyList(), false);
     }
 
     Query<Content> getVisibleContentQ() {
@@ -351,9 +356,10 @@ public class ObjectBoxDB {
         if (filterFavourites) query.equal(Content_.favourite, true);
         if (hasTitleFilter) query.contains(Content_.title, title);
         if (hasTagFilter) {
-            for (AttributeType attrType : metadataMap.keySet()) {
+            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
+                AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = metadataMap.get(attrType);
+                    List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty()) {
                         query.in(Content_.id, getFilteredContent(attrs, false));
                     }
@@ -508,24 +514,28 @@ public class ObjectBoxDB {
             if (params != null && !params.isEmpty())
                 query.in(Content_.site, getIdsFromAttributes(params));
 
-            for (AttributeType attrType : metadataMap.keySet()) {
+            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
+                AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = metadataMap.get(attrType);
-                    if (attrs != null && !attrs.isEmpty()) {
+                    List<Attribute> attrs = entry.getValue();
+                    if (attrs != null && !attrs.isEmpty())
                         query.in(Content_.id, getFilteredContent(attrs, false));
-                    }
                 }
             }
+
         }
 
         List<Content> content = query.build().find();
 
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by source
         Map<Site, List<Content>> map = Stream.of(content).collect(Collectors.groupingBy(Content::getSite));
-        for (Site s : map.keySet()) {
-            result.add(new Attribute(AttributeType.SOURCE, s.getDescription()).setExternalId(s.getCode()).setCount(map.get(s).size()));
+        for (Map.Entry<Site, List<Content>> entry : map.entrySet()) {
+            Site site = entry.getKey();
+            int size = (null == entry.getValue()) ? 0 : entry.getValue().size();
+            result.add(new Attribute(AttributeType.SOURCE, site.getDescription()).setExternalId(site.getCode()).setCount(size));
         }
         // Order by count desc
         result = Stream.of(result).sortBy(a -> -a.getCount()).collect(toList());
@@ -533,7 +543,10 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, long[] filteredContent) {
+    private Query<Attribute> queryAvailableAttributes(
+            @NonNull final AttributeType type,
+            String filter,
+            long[] filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
@@ -546,13 +559,21 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    long countAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
+    long countAvailableAttributes(AttributeType
+                                          type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
         return queryAvailableAttributes(type, filter, getFilteredContent(attributeFilter, filterFavourites)).count();
     }
 
     @SuppressWarnings("squid:S2184")
         // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
-    List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
+    List<Attribute> selectAvailableAttributes(
+            @NonNull AttributeType type,
+            List<Attribute> attributeFilter,
+            String filter,
+            boolean filterFavourites,
+            int sortOrder,
+            int page,
+            int itemsPerPage) {
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
@@ -563,7 +584,8 @@ public class ObjectBoxDB {
             if (0 == filteredContent.length) count = a.contents.size();
             else {
                 count = 0;
-                for (Content c : a.contents) if (filteredContentAsList.contains(c.getId())) count++;
+                for (Content c : a.contents)
+                    if (filteredContentAsList.contains(c.getId())) count++;
             }
             a.setCount(count);
         }
@@ -603,24 +625,41 @@ public class ObjectBoxDB {
 
         SparseIntArray result = new SparseIntArray();
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
         Map<AttributeType, List<Attribute>> map = Stream.of(attributes).collect(Collectors.groupingBy(Attribute::getType));
-        for (AttributeType t : map.keySet()) {
-            result.append(t.getCode(), map.get(t).size());
+
+        for (Map.Entry<AttributeType, List<Attribute>> entry : map.entrySet()) {
+            AttributeType t = entry.getKey();
+            int size = (null == entry.getValue()) ? 0 : entry.getValue().size();
+            result.append(t.getCode(), size);
         }
 
         return result;
     }
 
-    public void updateImageFileStatusAndParams(ImageFile image) {
+    void updateImageFileStatusParamsMimeType(@NonNull ImageFile image) {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
         if (img != null) {
             img.setStatus(image.getStatus());
             img.setDownloadParams(image.getDownloadParams());
+            img.setMimeType(image.getMimeType());
             imgBox.put(img);
         }
+    }
+
+    void updateImageContentStatus(long contentId, StatusContent
+            updateFrom, @NonNull StatusContent updateTo) {
+        QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
+        if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.getCode());
+        List<ImageFile> imgs = query.equal(ImageFile_.contentId, contentId).build().find();
+
+        if (imgs.isEmpty()) return;
+
+        for (int i = 0; i < imgs.size(); i++) imgs.get(i).setStatus(updateTo);
+        store.boxFor(ImageFile.class).put(imgs);
     }
 
     void updateImageFileUrl(ImageFile image) {
@@ -632,18 +671,22 @@ public class ObjectBoxDB {
         }
     }
 
-    public SparseIntArray countProcessedImagesById(long contentId) {
+    SparseIntArray countProcessedImagesById(long contentId) {
         QueryBuilder<ImageFile> imgQuery = store.boxFor(ImageFile.class).query();
         imgQuery.equal(ImageFile_.contentId, contentId);
         List<ImageFile> images = imgQuery.build().find();
 
         SparseIntArray result = new SparseIntArray();
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
         Map<StatusContent, List<ImageFile>> map = Stream.of(images).collect(Collectors.groupingBy(ImageFile::getStatus));
-        for (StatusContent t : map.keySet()) {
-            result.append(t.getCode(), map.get(t).size());
+
+        for (Map.Entry<StatusContent, List<ImageFile>> entry : map.entrySet()) {
+            StatusContent t = entry.getKey();
+            int size = (null == entry.getValue()) ? 0 : entry.getValue().size();
+            result.append(t.getCode(), size);
         }
 
         return result;
@@ -653,7 +696,11 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
     }
 
-    public void insertErrorRecord(ErrorRecord record) {
+    List<Content> selectContentWithOldTsuminoCovers() {
+        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/").build().find();
+    }
+
+    void insertErrorRecord(@NonNull final ErrorRecord record) {
         store.boxFor(ErrorRecord.class).put(record);
     }
 
@@ -661,19 +708,39 @@ public class ObjectBoxDB {
         return store.boxFor(ErrorRecord.class).query().equal(ErrorRecord_.contentId, contentId).build().find();
     }
 
-    public void deleteErrorRecords(long contentId) {
+    void deleteErrorRecords(long contentId) {
         List<ErrorRecord> records = selectErrorRecordByContentId(contentId);
         store.boxFor(ErrorRecord.class).remove(records);
     }
 
-    public void insertImageFile(@NonNull ImageFile img) {
+    void insertImageFile(@NonNull ImageFile img) {
         if (img.getId() > 0) store.boxFor(ImageFile.class).put(img);
+    }
+
+    void deleteImageFiles(long contentId) {
+        store.boxFor(ImageFile.class).query().equal(ImageFile_.contentId, contentId).build().remove();
+    }
+
+    void deleteImageFile(long imageId) {
+        store.boxFor(ImageFile.class).remove(imageId);
+    }
+
+    void insertImageFiles(@NonNull List<ImageFile> imgs) {
+        store.boxFor(ImageFile.class).put(imgs);
     }
 
     @Nullable
     ImageFile selectImageFile(long id) {
         if (id > 0) return store.boxFor(ImageFile.class).get(id);
         else return null;
+    }
+
+    Query<ImageFile> getDownloadedImagesFromContent(long id) {
+        QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
+        builder.equal(ImageFile_.contentId, id);
+        builder.equal(ImageFile_.status, StatusContent.DOWNLOADED.getCode());
+        builder.order(ImageFile_.order);
+        return builder.build();
     }
 
     void insertSiteHistory(@NonNull Site site, @NonNull String url) {

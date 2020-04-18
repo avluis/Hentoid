@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
@@ -13,9 +15,10 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 public class ASMHentaiParser extends BaseParser {
 
     @Override
-    protected List<String> parseImages(Content content) throws IOException {
+    protected List<String> parseImages(@NonNull Content content) throws IOException {
         List<String> result = new ArrayList<>();
 
+        // Fetch the reader page
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (doc != null) {
             String imgUrl = "https:" +

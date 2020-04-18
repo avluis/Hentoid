@@ -7,8 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,17 +24,17 @@ import org.apache.commons.io.FileUtils;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -56,6 +58,8 @@ public class FileHelper {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
     private static final String PRIMARY_VOLUME_NAME = "primary";
+
+    private static final Charset CHARSET_LATIN_1 = Charset.forName("ISO-8859-1");
 
 
     public static String getFileProviderAuthority() {
@@ -305,7 +309,7 @@ public class FileHelper {
         return FileUtil.getOutputStream(target);
     }
 
-    static InputStream getInputStream(@NonNull final File target) throws IOException {
+    public static InputStream getInputStream(@NonNull final File target) throws IOException {
         return FileUtil.getInputStream(target);
     }
 
@@ -457,9 +461,15 @@ public class FileHelper {
      * @param context Context
      * @param aFile   File to be opened
      */
-    public static void openFile(Context context, File aFile) {
+    public static void openFile(@NonNull Context context, @NonNull File aFile) {
         File file = new File(aFile.getAbsolutePath());
-        Intent myIntent = new Intent(Intent.ACTION_VIEW, FileProvider.getUriForFile(context, AUTHORITY, file));
+        Intent myIntent = new Intent(Intent.ACTION_VIEW);
+        Uri dataUri = FileProvider.getUriForFile(context, AUTHORITY, file);
+        if (file.isDirectory()) {
+            myIntent.setDataAndType(dataUri, DocumentsContract.Document.MIME_TYPE_DIR);
+        } else {
+            myIntent.setDataAndTypeAndNormalize(dataUri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(aFile.getName())));
+        }
         myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         try {
             context.startActivity(myIntent);
@@ -491,17 +501,9 @@ public class FileHelper {
      * @throws IOException If any IOException occurs
      */
     public static void saveBinaryInFile(File file, byte[] binaryContent) throws IOException {
-        byte[] buffer = new byte[1024];
-        int count;
-
         try (InputStream input = new ByteArrayInputStream(binaryContent)) {
             try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
-
-                while ((count = input.read(buffer)) != -1) {
-                    output.write(buffer, 0, count);
-                }
-
-                output.flush();
+                copy(input, output);
             }
         }
     }
@@ -518,27 +520,46 @@ public class FileHelper {
         return false;
     }
 
-    public static String getImageExtensionFromPictureHeader(byte[] header) {
-        if (header.length < 12) return "";
+    public static String getMimeTypeFromPictureBinary(byte[] binary) {
+        if (binary.length < 12) return "";
 
         // In Java, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
-        if ((byte) 0xFF == header[0] && (byte) 0xD8 == header[1] && (byte) 0xFF == header[2])
-            return "jpg";
-        else if ((byte) 0x89 == header[0] && (byte) 0x50 == header[1] && (byte) 0x4E == header[2])
-            return "png";
-        else if ((byte) 0x47 == header[0] && (byte) 0x49 == header[1] && (byte) 0x46 == header[2])
-            return "gif";
-        else if ((byte) 0x52 == header[0] && (byte) 0x49 == header[1] && (byte) 0x46 == header[2] && (byte) 0x46 == header[3]
-                && (byte) 0x57 == header[8] && (byte) 0x45 == header[9] && (byte) 0x42 == header[10] && (byte) 0x50 == header[11])
-            return "webp";
-        else if ((byte) 0x42 == header[0] && (byte) 0x4D == header[1]) return "bmp";
-        else return "";
+        if ((byte) 0xFF == binary[0] && (byte) 0xD8 == binary[1] && (byte) 0xFF == binary[2])
+            return "image/jpeg";
+        else if ((byte) 0x89 == binary[0] && (byte) 0x50 == binary[1] && (byte) 0x4E == binary[2]) {
+            // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
+            int acTlPos = findSequencePosition(binary, 0, "acTL".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
+            if (acTlPos > -1) {
+                long idatPos = findSequencePosition(binary, acTlPos, "IDAT".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.1));
+                if (idatPos > -1) return "image/apng";
+            }
+            return "image/png";
+        } else if ((byte) 0x47 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2])
+            return "image/gif";
+        else if ((byte) 0x52 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2] && (byte) 0x46 == binary[3]
+                && (byte) 0x57 == binary[8] && (byte) 0x45 == binary[9] && (byte) 0x42 == binary[10] && (byte) 0x50 == binary[11])
+            return "image/webp";
+        else if ((byte) 0x42 == binary[0] && (byte) 0x4D == binary[1]) return "image/bmp";
+        else return "image/*";
+    }
+
+    @Nullable
+    public static String getExtensionFromMimeType(@NonNull String mimeType) {
+        if (mimeType.isEmpty()) return null;
+
+        String result = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+        // Exceptions that MimeTypeMap does not support
+        if (null == result) {
+            if (mimeType.equals("image/apng") || mimeType.equals("image/vnd.mozilla.apng"))
+                return "png";
+        }
+        return result;
     }
 
     // Please don't delete this method!
     // I need some way to trace actions when working with SD card features - Robb
-    public static void createFileWithMsg(@Nonnull String file, String msg) {
+    public static void createFileWithMsg(@NonNull String file, String msg) {
         try {
             FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
             Timber.i(">>file %s -> %s", file, msg);
@@ -548,7 +569,7 @@ public class FileHelper {
     }
 
     @Nullable
-    public static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
+    public static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
         return FileUtil.getDocumentFile(file, isDirectory);
     }
 
@@ -558,6 +579,90 @@ public class FileHelper {
         sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
         sharingIntent.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(context, FileHelper.AUTHORITY, f));
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
+    }
+
+    private static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
+//        int BUFFER_SIZE = 64;
+//        byte[] readBuffer = new byte[BUFFER_SIZE];
+
+        int remainingBytes;
+//        int bytesToRead;
+//        int dataPos = 0;
+        int iSequence = 0;
+
+        if (initialPos < 0 || initialPos > data.length) return -1;
+
+        remainingBytes = (limit > 0) ? Math.min(data.length - initialPos, limit) : data.length;
+
+//        while (remainingBytes > 0) {
+//            bytesToRead = Math.min(remainingBytes, BUFFER_SIZE);
+//            System.arraycopy(data, dataPos, readBuffer, 0, bytesToRead);
+//            dataPos += bytesToRead;
+
+//            stream.Read(readBuffer, 0, bytesToRead);
+
+        for (int i = initialPos; i < remainingBytes; i++) {
+            if (sequence[iSequence] == data[i]) iSequence++;
+            else if (iSequence > 0) iSequence = 0;
+
+            if (sequence.length == iSequence) return i - sequence.length;
+        }
+
+//            remainingBytes -= bytesToRead;
+//        }
+
+        // Target sequence not found
+        return -1;
+    }
+
+    public static void copy(@NonNull File src, @NonNull File dst) throws IOException {
+        try (InputStream in = new FileInputStream(src)) {
+            try (OutputStream out = new FileOutputStream(dst)) {
+                copy(in, out);
+            }
+        }
+    }
+
+    public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        out.flush();
+    }
+
+    public static File getDownloadsFolder() {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    }
+
+    public static OutputStream openNewDownloadOutputStream(@NonNull final String fileName) throws IOException {
+        // TODO implement when targetSDK = 29
+        /*
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return openNewDownloadOutputStreamQ(fileName, mimeType)
+        } else {*/
+        return openNewDownloadOutputStreamLegacy(fileName);
+        //}
+    }
+
+    private static OutputStream openNewDownloadOutputStreamLegacy(@NonNull final String fileName) throws IOException {
+        File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        if (null == downloadsFolder) throw new IOException("Downloads folder not found");
+
+        File target = new File(downloadsFolder, fileName);
+        if (!target.exists() && !target.createNewFile())
+            throw new IOException("Could not create new file in downloads folder");
+
+        return FileUtil.getOutputStream(target);
+    }
+
+    @TargetApi(29)
+    private static OutputStream openNewDownloadOutputStreamQ(@NonNull final String fileName, @NonNull final String mimeType) throws IOException {
+        // TODO implement when targetSDK = 29
+        // https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
+        return null;
     }
 
     public static class MemoryUsageFigures {

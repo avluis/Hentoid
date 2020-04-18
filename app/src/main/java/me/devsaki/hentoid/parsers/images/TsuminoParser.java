@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -9,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.exception.CaptchaException;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 
@@ -19,12 +22,13 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 public class TsuminoParser extends BaseParser {
 
     @Override
-    protected List<String> parseImages(Content content) throws Exception {
+    protected List<String> parseImages(@NonNull Content content) throws Exception {
+        // Fetch the reader page
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (null != doc) {
             Elements captcha = doc.select(".g-recaptcha");
             if (captcha != null && !captcha.isEmpty())
-                throw new UnsupportedOperationException("Captcha found");
+                throw new CaptchaException();
 
             Element contents = doc.select("#image-container").first();
             if (null != contents) {

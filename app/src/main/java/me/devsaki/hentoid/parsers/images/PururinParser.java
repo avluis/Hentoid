@@ -1,13 +1,22 @@
 package me.devsaki.hentoid.parsers.images;
 
+import android.util.Pair;
+
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Document;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 
@@ -25,8 +34,28 @@ public class PururinParser extends BaseParser {
     }
 
     @Override
-    protected List<String> parseImages(Content content) throws Exception {
+    protected List<String> parseImages(@NonNull Content content) throws Exception {
         List<String> result = new ArrayList<>();
+
+        String downloadParamsStr = content.getDownloadParams();
+        if (null == downloadParamsStr || downloadParamsStr.isEmpty()) {
+            Timber.e("Download parameters not set");
+            return result;
+        }
+
+        Map<String, String> downloadParams;
+        try {
+            downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
+        } catch (IOException e) {
+            Timber.e(e);
+            return result;
+        }
+
+        List<Pair<String, String>> headers = new ArrayList<>();
+        String cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+        if (null != cookieStr)
+            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+
         String url = content.getReaderUrl();
         String protocol = url.substring(0, 5);
         if ("https".equals(protocol)) protocol = "https:";
@@ -36,7 +65,7 @@ public class PururinParser extends BaseParser {
         // 2- Generate image URL from  imagePath constant, gallery ID, page number and extension
 
         // 1- Get image extension from gallery data (JSON on HTML body)
-        Document doc = getOnlineDocument(url);
+        Document doc = getOnlineDocument(url, headers, Site.PURURIN.canKnowHentoidAgent());
         if (doc != null) {
             String json = doc.select("gallery-read").attr(":gallery");
             PururinInfo info = JsonHelper.jsonToObject(json, PururinInfo.class);

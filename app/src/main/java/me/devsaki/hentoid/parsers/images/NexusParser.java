@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -16,7 +18,7 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 public class NexusParser extends BaseParser {
 
     @Override
-    protected List<String> parseImages(Content content) throws IOException {
+    protected List<String> parseImages(@NonNull Content content) throws IOException {
         List<String> result = new ArrayList<>();
 
         progressStart(content.getQtyPages());
@@ -27,7 +29,7 @@ public class NexusParser extends BaseParser {
             String readerUrl = content.getReaderUrl().replace("001", Helper.formatIntAsStr(i + 1, 3));
             Document doc = getOnlineDocument(readerUrl);
             if (doc != null) {
-                Elements elements = doc.select("a img");
+                Elements elements = doc.select("section a img");
                 if (elements != null && !elements.isEmpty()) {
                     Element e = elements.first();
                     result.add(e.attr("src"));

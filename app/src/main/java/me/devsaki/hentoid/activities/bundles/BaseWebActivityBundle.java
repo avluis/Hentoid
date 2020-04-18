@@ -4,6 +4,12 @@ import android.os.Bundle;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.sources.BaseWebActivity}
+ * through a Bundle
+ *
+ * Use Builder class to set data; use Parser class to get data
+ */
 public class BaseWebActivityBundle {
     private static final String KEY_URL = "url";
 

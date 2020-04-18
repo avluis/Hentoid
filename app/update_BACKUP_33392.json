@@ -1,0 +1,20 @@
+{
+<<<<<<< HEAD
+=======
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.11.4/hentoid1114-204.apk",
+  "versionCode": "204",
+  "updateURL.beta": "https://cdn.discordapp.com/attachments/418817277383671808/647791824500686848/hentoid1100163-beta2.apk",
+  "versionCode.beta": "163",
+  "sourceAlerts":[
+      {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
+      {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"189" },
+	  {"sourceName":"NEXUS", "status":"RED", "fixedByBuild":"199" },
+	  {"sourceName":"FAKKU2", "status":"RED", "fixedByBuild":"199" },
+	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"204" }
+  ],
+  "sourceAlerts.beta":[
+	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
+	  {"sourceName":"FAKKU2", "status":"RED", "fixedByBuild":"162" }
+  ]
+>>>>>>> fdb840c840ceb668fb93eafa409c356906b29298
+}

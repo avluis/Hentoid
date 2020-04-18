@@ -29,10 +29,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -49,6 +49,8 @@ import org.jsoup.nodes.Element;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -70,6 +72,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
@@ -93,7 +96,6 @@ import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import okhttp3.Response;
@@ -114,15 +116,30 @@ import static me.devsaki.hentoid.util.HttpHelper.HEADER_CONTENT_TYPE;
  * this activity's function, it is recommended to request for this permission and show rationale if
  * permission request is denied
  */
-public abstract class BaseWebActivity extends AppCompatActivity implements WebContentListener {
+public abstract class BaseWebActivity extends BaseActivity implements WebContentListener {
 
-    protected static final int MODE_DL = 0;
-    private static final int MODE_QUEUE = 1;
-    private static final int MODE_READ = 2;
+    @IntDef({ActionMode.DOWNLOAD, ActionMode.VIEW_QUEUE, ActionMode.READ})
+    @Retention(RetentionPolicy.SOURCE)
+    protected @interface ActionMode {
+        // Download book
+        int DOWNLOAD = 0;
+        // Go to the queue screen
+        int VIEW_QUEUE = 1;
+        // Read downloaded book (image viewer)
+        int READ = 2;
+    }
 
-    private static final int STATUS_UNKNOWN = 0;
-    private static final int STATUS_IN_COLLECTION = 1;
-    private static final int STATUS_IN_QUEUE = 2;
+    @IntDef({ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface ContentStatus {
+        // Content is unknown (i.e. ready to be downloaded)
+        int UNKNOWN = 0;
+        // Content is already in the library
+        int IN_COLLECTION = 1;
+        // Content is already queued
+        int IN_QUEUE = 2;
+    }
+
 
     // === UI
     // Associated webview
@@ -141,14 +158,15 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     private TextView alertMessage;
 
     // === VARIABLES
+    private CustomWebViewClient webClient;
     // Currently viewed content
-    private Content currentContent;
+    private Content currentContent = null;
     // Database
     private CollectionDAO objectBoxDAO;
     // Indicates which mode the download button is in
-    protected int actionButtonMode;
-    private CustomWebViewClient webClient;
-    // Version iof installed Chrome client
+    protected @ActionMode
+    int actionButtonMode;
+    // Version of installed Chrome client
     private int chromeVersion;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
@@ -181,6 +199,13 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         universalBlockedContent.add("/nutaku/");
         universalBlockedContent.add("trafficjunky");
         universalBlockedContent.add("traffichaus");
+        universalBlockedContent.add("google-analytics.com");
+        universalBlockedContent.add("mc.yandex.ru");
+        universalBlockedContent.add("mc.webvisor.org");
+        universalBlockedContent.add("scorecardresearch.com");
+        universalBlockedContent.add("hadskiz.com");
+        universalBlockedContent.add("pushnotifications.click");
+        universalBlockedContent.add("fingahvf.top");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -211,8 +236,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ThemeHelper.applyTheme(this);
-
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         objectBoxDAO = new ObjectBoxDAO(this);
@@ -227,13 +250,12 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> goHome());
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
+        refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
 
         BottomNavigationView bottomToolbar = findViewById(R.id.bottom_navigation);
         bottomToolbar.setOnNavigationItemSelectedListener(this::onMenuItemSelected);
         bottomToolbar.setItemIconTintList(null); // Hack to make selector resource work
-        refreshStopMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
         backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
         forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
         galleryMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_gallery);
@@ -254,15 +276,23 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         displayAlertBanner();
     }
 
+    /**
+     * Determine the URL the browser will load at startup
+     * - Either an URL specifically given to the activity (e.g. "view source" action)
+     * - Or the last viewed page, if the option is enabled
+     * - If neither of the previous cases, the default URL of the site
+     *
+     * @return URL to load at startup
+     */
     private String getStartUrl() {
-        // Priority 1 : URL specifically given to the activity ("view source" action)
+        // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
         if (getIntent().getExtras() != null) {
             BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
             String intentUrl = parser.getUrl();
             if (!intentUrl.isEmpty()) return intentUrl;
         }
 
-        // Priority 2 : Last viewed position, if option activated
+        // Priority 2 : Last viewed position, if option enabled
         if (Preferences.isBrowserResumeLast()) {
             SiteHistory siteHistory = objectBoxDAO.getHistory(getStartSite());
             if (siteHistory != null && !siteHistory.getUrl().isEmpty()) return siteHistory.getUrl();
@@ -274,6 +304,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     private boolean onMenuItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.web_menu_home:
+                this.goHome();
+                break;
             case R.id.web_menu_back:
                 this.onBackClick();
                 break;
@@ -290,7 +323,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
                 this.onOpenBrowserClick();
                 break;
             case R.id.web_menu_download:
-                this.onActionFabClick();
+                this.onActionClick();
                 break;
             default:
                 return false;
@@ -311,6 +344,10 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         super.onResume();
 
         checkPermissions();
+
+        Timber.i(">> WebActivity resume : %s %s %s", webView.getUrl(), currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
+        if (currentContent != null && getWebClient().isBookGallery(this.webView.getUrl()))
+            processContent(currentContent, false);
     }
 
     @Override
@@ -412,7 +449,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
                     url = message.getData().getString("url");
                 }
 
-                if (url != null && !url.isEmpty() && webClient.isPageFiltered(url)) {
+                if (url != null && !url.isEmpty() && webClient.isBookGallery(url)) {
                     // Launch on a new thread to avoid crashes
                     webClient.parseResponseAsync(url);
                     return true;
@@ -442,14 +479,6 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         if (refreshLayout != null) refreshLayout.addView(webView, layoutParams);
     }
 
-    private void displayAlertBanner() {
-        if (alertMessage != null && alert != null) {
-            alertIcon.setImageResource(alert.getStatus().getIcon());
-            alertMessage.setText(formatAlertMessage(alert));
-            alertBanner.setVisibility(View.VISIBLE);
-        }
-    }
-
     private void initSwipeLayout() {
         swipeLayout = findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(() -> {
@@ -464,26 +493,52 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
                 android.R.color.holo_red_light);
     }
 
-    private void refreshNavigationMenu() {
-        backMenu.setEnabled(webView.canGoBack());
-        forwardMenu.setEnabled(webView.canGoForward());
-        galleryMenu.setEnabled(backListContainsGallery(webView.copyBackForwardList()) > -1);
+    /**
+     * Displays the top alert banner
+     * (the one that contains the alerts when downloads are broken or sites are unavailable)
+     */
+    private void displayAlertBanner() {
+        if (alertMessage != null && alert != null) {
+            alertIcon.setImageResource(alert.getStatus().getIcon());
+            alertMessage.setText(formatAlertMessage(alert));
+            alertBanner.setVisibility(View.VISIBLE);
+        }
     }
 
+    /**
+     * Handler for the close icon of the top alert banner
+     */
+    public void onAlertCloseClick(View view) {
+        alertBanner.setVisibility(View.GONE);
+    }
+
+
+    /**
+     * Handler for the "back" navigation button of the browser
+     */
     private void onBackClick() {
         webView.goBack();
     }
 
+    /**
+     * Handler for the "forward" navigation button of the browser
+     */
     private void onForwardClick() {
         webView.goForward();
     }
 
+    /**
+     * Handler for the "back to gallery page" navigation button of the browser
+     */
     private void onGalleryClick() {
         WebBackForwardList list = webView.copyBackForwardList();
         int galleryIndex = backListContainsGallery(list);
         if (galleryIndex > -1) webView.goBackOrForward(galleryIndex - list.getCurrentIndex());
     }
 
+    /**
+     * Handler for the "refresh page/stop refreshing" button of the browser
+     */
     private void onRefreshStopClick() {
         if (webClient.isLoading()) webView.stopLoading();
         else webView.reload();
@@ -497,16 +552,22 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         } catch(Exception e) {}
     }
 
+    /**
+     * Handler for the "Home" navigation button
+     */
     private void goHome() {
         Intent intent = new Intent(this, LibraryActivity.class);
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
         // it can interfere with Double-Back (press back twice) to exit
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
     }
 
+    /**
+     * Handler for the phone's back button
+     */
     @Override
     public void onBackPressed() {
         if (!webView.canGoBack()) {
@@ -514,17 +575,13 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         }
     }
 
-    public void onAlertCloseClick(View view) {
-        alertBanner.setVisibility(View.GONE);
-    }
-
     /**
-     * Listener for Action floating action button : download content, view queue or read content
+     * Listener for the Action button : download content, view queue or read content
      */
-    public void onActionFabClick() {
-        if (MODE_DL == actionButtonMode) processDownload(false);
-        else if (MODE_QUEUE == actionButtonMode) goToQueue();
-        else if (MODE_READ == actionButtonMode && currentContent != null) {
+    public void onActionClick() {
+        if (ActionMode.DOWNLOAD == actionButtonMode) processDownload(false);
+        else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
+        else if (ActionMode.READ == actionButtonMode && currentContent != null) {
             currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
             if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()
@@ -535,13 +592,18 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         }
     }
 
-    private void changeFabActionMode(int mode) {
+    /**
+     * Switch the action button to either of the available modes
+     *
+     * @param mode Mode to switch to
+     */
+    private void changeActionMode(@ActionMode int mode) {
         @DrawableRes int resId = R.drawable.ic_info;
-        if (MODE_DL == mode) {
+        if (ActionMode.DOWNLOAD == mode) {
             resId = R.drawable.selector_download_action;
-        } else if (MODE_QUEUE == mode) {
+        } else if (ActionMode.VIEW_QUEUE == mode) {
             resId = R.drawable.ic_action_queue;
-        } else if (MODE_READ == mode) {
+        } else if (ActionMode.READ == mode) {
             resId = R.drawable.ic_action_play;
         }
         actionButtonMode = mode;
@@ -551,6 +613,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     /**
      * Add current content (i.e. content of the currently viewed book) to the download queue
+     *
+     * @param quickDownload True if the action has been triggered by a quick download
+     *                      (which means we're not on a book gallery page but on the book list page)
      */
     void processDownload(boolean quickDownload) {
         if (null == currentContent) return;
@@ -562,7 +627,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastUtil.toast(R.string.already_downloaded);
-            if (!quickDownload) changeFabActionMode(MODE_READ);
+            if (!quickDownload) changeActionMode(ActionMode.READ);
             return;
         }
         ToastUtil.toast(R.string.add_to_queue);
@@ -571,17 +636,17 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
 
-        if (!quickDownload) changeFabActionMode(MODE_QUEUE);
+        /*if (!quickDownload) */
+        changeActionMode(ActionMode.VIEW_QUEUE);
     }
 
+    /**
+     * Take the user to the queue screen
+     */
     private void goToQueue() {
         Intent intent = new Intent(this, QueueActivity.class);
-        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
-        // it can interfere with Double-Back (press back twice) to exit
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-        finish();
     }
 
     @Override
@@ -609,10 +674,14 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     /**
      * Display webview controls according to designated content
      *
-     * @param content Currently displayed content
+     * @param content       Currently displayed content
+     * @param quickDownload True if the action has been triggered by a quick download
+     *                      (which means we're not on a book gallery page but on the book list page)
+     * @return The status of the Content after being processed
      */
-    private int processContent(@NonNull Content content, boolean quickDownload) {
-        int result = STATUS_UNKNOWN;
+    private @ContentStatus
+    int processContent(@NonNull Content content, boolean quickDownload) {
+        @ContentStatus int result = ContentStatus.UNKNOWN;
         if (null == content.getUrl()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
@@ -636,16 +705,16 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             } else {
                 content = contentDB;
             }
-            if (!quickDownload) changeFabActionMode(MODE_DL);
+            if (!quickDownload) changeActionMode(ActionMode.DOWNLOAD);
         }
 
         if (isInCollection) {
-            if (!quickDownload) changeFabActionMode(MODE_READ);
-            result = STATUS_IN_COLLECTION;
+            if (!quickDownload) changeActionMode(ActionMode.READ);
+            result = ContentStatus.IN_COLLECTION;
         }
         if (isInQueue) {
-            if (!quickDownload) changeFabActionMode(MODE_QUEUE);
-            result = STATUS_IN_QUEUE;
+            if (!quickDownload) changeActionMode(ActionMode.VIEW_QUEUE);
+            result = ContentStatus.IN_QUEUE;
         }
 
         currentContent = content;
@@ -653,11 +722,12 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
     }
 
     public void onResultReady(@NonNull Content results, boolean quickDownload) {
-        int status = processContent(results, quickDownload);
+        @ContentStatus int status = processContent(results, quickDownload);
         if (quickDownload) {
-            if (STATUS_UNKNOWN == status) processDownload(true);
-            else if (STATUS_IN_COLLECTION == status) ToastUtil.toast(R.string.already_downloaded);
-            else if (STATUS_IN_QUEUE == status) ToastUtil.toast(R.string.already_queued);
+            if (ContentStatus.UNKNOWN == status) processDownload(true);
+            else if (ContentStatus.IN_COLLECTION == status)
+                ToastUtil.toast(R.string.already_downloaded);
+            else if (ContentStatus.IN_QUEUE == status) ToastUtil.toast(R.string.already_queued);
         }
     }
 
@@ -665,10 +735,15 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         runOnUiThread(() -> ToastUtil.toast(R.string.web_unparsable));
     }
 
+    /**
+     * Listener for the events of the download engine
+     * Used to switch the action button to Read when the download of the currently viewed is completed
+     * @param event Event fired by the download engine
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.getId() == currentContent.getId()) {
-            changeFabActionMode(MODE_READ);
+        if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent)) {
+            changeActionMode(ActionMode.READ);
         }
     }
 
@@ -678,14 +753,22 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
      */
     class CustomWebViewClient extends WebViewClient {
 
-        final CompositeDisposable compositeDisposable = new CompositeDisposable();
+        // Used to clear RxJava observers (avoiding memory leaks)
+        protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
+        // Pre-built object to represent an empty input stream
+        // (will be used instead of the actual stream when the requested resource is blocked)
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        // Listener to the results of the page parser
         protected final WebContentListener listener;
+        // List of the URL patterns identifying a parsable book gallery page
         private final List<Pattern> filteredUrlPattern = new ArrayList<>();
+        // Adapter used to parse the HTML code of book gallery pages
         private final HtmlAdapter<ContentParser> htmlAdapter;
-
+        // Domain name for which link navigation is restricted
         private String restrictedDomainName = "";
+        // Loading state of the current webpage (used for the refresh/stop feature)
         private boolean isPageLoading = false;
+        // Loading state of the HTML code of the current webpage (used to trigger the action button)
         boolean isHtmlLoaded = false;
 
 
@@ -705,11 +788,20 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             compositeDisposable.clear();
         }
 
-        void restrictTo(String s) {
+        /**
+         * Restrict link navigation to a given domain name
+         * @param s Domain name to restrict link navigation to
+         */
+        protected void restrictTo(String s) {
             restrictedDomainName = s;
         }
 
-        boolean isPageFiltered(String url) {
+        /**
+         * Indicates if the given URL is a book gallery page
+         * @param url URL to test
+         * @return True if the given URL represents a book gallery page
+         */
+        boolean isBookGallery(@NonNull final String url) {
             if (filteredUrlPattern.isEmpty()) return false;
 
             for (Pattern p : filteredUrlPattern) {
@@ -725,7 +817,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
          * @param url URL to be examinated
          * @return True if URL is forbidden according to current filters; false if not
          */
-        private boolean isUrlForbidden(String url) {
+        private boolean isUrlForbidden(@NonNull String url) {
             for (String s : universalBlockedContent) {
                 if (url.contains(s)) return true;
             }
@@ -753,6 +845,9 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             );
         }
 
+        /**
+         * @deprecated kept for API19-API23
+         */
         @Override
         @Deprecated
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -793,6 +888,18 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             refreshNavigationMenu();
         }
 
+        /**
+         * Refresh the visuals of the buttons of the navigation menu
+         */
+        private void refreshNavigationMenu() {
+            backMenu.setEnabled(webView.canGoBack());
+            forwardMenu.setEnabled(webView.canGoForward());
+            galleryMenu.setEnabled(backListContainsGallery(webView.copyBackForwardList()) > -1);
+        }
+
+        /**
+         * @deprecated kept for API19-API20
+         */
         @Override
         @Deprecated
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
@@ -821,13 +928,20 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             else return super.shouldInterceptRequest(view, request);
         }
 
+        /**
+         * Determines if the page at the given URL is to be processed
+         * @param url Called URL
+         * @param headers Request headers
+         * @return Processed response if the page has been processed;
+         * null if vanilla processing should happen instead
+         */
         @Nullable
-        private WebResourceResponse shouldInterceptRequestInternal(@NonNull String url,
-                                                                   @Nullable Map<String, String> headers) {
+        private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
+                                                                   @Nullable final Map<String, String> headers) {
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (isPageFiltered(url)) return parseResponse(url, headers, true, false);
+                if (isBookGallery(url)) return parseResponse(url, headers, true, false);
                 // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
                 if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
                     return parseResponse(url, headers, false, false);
@@ -836,6 +950,10 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             }
         }
 
+        /**
+         * Process the given webpage in a background thread (used by quick download)
+         * @param urlStr URL of the page to parse
+         */
         void parseResponseAsync(@NonNull String urlStr) {
             compositeDisposable.add(
                     Completable.fromCallable(() -> parseResponse(urlStr, null, true, true))
@@ -846,6 +964,16 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             );
         }
 
+        /**
+         * Process the webpage at the given URL
+         * @param urlStr URL of the page to process
+         * @param requestHeaders Request headers to use
+         * @param analyzeForDownload True if the page has to be analyzed for potential downloads;
+         *                           false if only ad removal should happen
+         * @param quickDownload True if the present call has been triggered by a quick download action
+         * @return Processed response if the page has been actually processed;
+         *         null if vanilla processing should happen instead
+         */
         @SuppressLint("NewApi")
         @WorkerThread
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
@@ -855,8 +983,8 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             List<Pair<String, String>> requestHeadersList = new ArrayList<>();
 
             if (requestHeaders != null)
-                for (String key : requestHeaders.keySet())
-                    requestHeadersList.add(new Pair<>(key, requestHeaders.get(key)));
+                for (Map.Entry<String, String> entry : requestHeaders.entrySet())
+                    requestHeadersList.add(new Pair<>(entry.getKey(), entry.getValue()));
 
             if (canUseSingleOkHttpRequest()) {
                 String cookie = CookieManager.getInstance().getCookie(urlStr);
@@ -933,6 +1061,12 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             return null;
         }
 
+        /**
+         * Process Content parsed from a webpage
+         * @param content Content to be processed
+         * @param headersList HTTP headers of the request that has generated the Content
+         * @param quickDownload True if the present call has been triggered by a quick download action
+         */
         private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList, boolean quickDownload) {
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
@@ -950,7 +1084,7 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
         }
 
         /**
-         * Indicated whether the current webpage is still loading or not
+         * Indicate whether the current webpage is still loading or not
          *
          * @return True if current webpage is being loaded; false if not
          */
@@ -958,6 +1092,13 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
             return isPageLoading;
         }
 
+        /**
+         * Remove nodes from the HTML document contained in the given stream, using a list of CSS selectors to identify them
+         * @param stream Stream containing the HTML document to process
+         * @param baseUri Base URI if the document
+         * @param dirtyElements CSS selectors of the nodes to remove
+         * @return Stream containing the HTML document stripped from the elements to remove
+         */
         private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, @NonNull List<String> dirtyElements) {
             try {
                 Document doc = Jsoup.parse(stream, null, baseUri);
@@ -975,15 +1116,26 @@ public abstract class BaseWebActivity extends AppCompatActivity implements WebCo
 
     }
 
-    private int backListContainsGallery(WebBackForwardList backForwardList) {
+    /**
+     * Indicate if the browser's back list contains a book gallery
+     * Used to determine the display of the "back to latest gallery" button
+     * @param backForwardList Back list to examine
+     * @return Index of the latest book gallery in the list; -1 if none has been detected
+     */
+    private int backListContainsGallery(@NonNull final WebBackForwardList backForwardList) {
         for (int i = backForwardList.getCurrentIndex() - 1; i >= 0; i--) {
             WebHistoryItem item = backForwardList.getItemAtIndex(i);
-            if (webClient.isPageFiltered(item.getUrl())) return i;
+            if (webClient.isBookGallery(item.getUrl())) return i;
         }
         return -1;
     }
 
-    private String formatAlertMessage(@NonNull UpdateInfo.SourceAlert alert) {
+    /**
+     * Format the message to display for the given source alert
+     * @param alert Source alert
+     * @return Message to be displayed for the user for the given source alert
+     */
+    private String formatAlertMessage(@NonNull final UpdateInfo.SourceAlert alert) {
         String result = "";
 
         // Main message body

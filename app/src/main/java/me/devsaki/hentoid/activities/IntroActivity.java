@@ -103,7 +103,6 @@ public class IntroActivity extends AppIntro2 {
         Preferences.setIsFirstRun(false);
         Intent intent = new Intent(this, LibraryActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                | Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);

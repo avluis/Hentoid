@@ -33,8 +33,8 @@ public class TsuminoActivity extends BaseWebActivity {
     }
 
     @Override
-    public void onActionFabClick() {
-        if (MODE_DL == actionButtonMode) {
+    public void onActionClick() {
+        if (ActionMode.DOWNLOAD == actionButtonMode) {
             downloadFabPressed = true;
             historyIndex = webView.copyBackForwardList().getCurrentIndex();
 
@@ -42,7 +42,7 @@ public class TsuminoActivity extends BaseWebActivity {
             String newUrl = webView.getUrl().replace("entry", "Read/Index");
             webView.loadUrl(newUrl);
         } else {
-            super.onActionFabClick();
+            super.onActionClick();
         }
     }
 

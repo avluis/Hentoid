@@ -65,7 +65,7 @@ public class IntentActivity extends AppCompatActivity {
         Content content = new Content();
         content.setSite(site);
         content.setUrl(parsedPath);
-        ContentHelper.viewContent(this, content, true);
+        ContentHelper.viewContentGalleryPage(this, content, true);
     }
 
     @Nullable
@@ -97,9 +97,12 @@ public class IntentActivity extends AppCompatActivity {
                 return toParse.replace("g/", "");
             case NEXUS:
                 return toParse.replace("/view", "");
+            case HBROWSE:
+                return toParse.substring(1);
             case MUSES:
             case DOUJINS:
             case LUSCIOUS:
+            case PORNCOMIX:
                 return toParse;
             default:
                 return null;

@@ -1,0 +1,23 @@
+New sources added:
+Porncomixonline
+Hbrowse
+
+Image viewer improved:
+
+"Picture info" bottom panel with copy, share, delete and favourite actions
+Delete book" action
+"Continuous mode" option to go to the next/previous book when using the next/previous page command on the last/first page
+Option to auto-rotate pictures
+Mode to view only favourite pages
+Fill screen display modes (proportionate and stretched)
+Slideshow mode
+Hold-to-zoom
+Support for APNG
+Option to add separating bars in vertical mode
+Option to set read status only after N pages have been read
+
+Fixed sources:
+Hitomi
+Nexus
+
+Several critical bugfixes and improvements

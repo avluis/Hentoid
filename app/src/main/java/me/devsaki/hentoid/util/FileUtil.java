@@ -222,7 +222,7 @@ class FileUtil {
         try {
             if (Build.VERSION.SDK_INT >= LOLLIPOP) {
                 // Storage Access Framework
-                DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
+                DocumentFile targetDocument = getDocumentFile(target, false);
                 if (targetDocument != null) {
                     Context context = HentoidApp.getInstance();
                     return context.getContentResolver().openInputStream(

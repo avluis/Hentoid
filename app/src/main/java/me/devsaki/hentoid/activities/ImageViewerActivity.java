@@ -3,14 +3,17 @@ package me.devsaki.hentoid.activities;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.View;
 import android.view.WindowManager;
 
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.security.AccessControlException;
 
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
-import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.fragments.viewer.ImageGalleryFragment;
 import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.PermissionUtil;
@@ -21,9 +24,7 @@ import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
 public class ImageViewerActivity extends BaseActivity {
 
-    private ImageViewerViewModel viewModel;
-    private Bundle searchParams = null;
-    private long contentId;
+    private View.OnKeyListener keyListener = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +38,14 @@ public class ImageViewerActivity extends BaseActivity {
             throw new IllegalArgumentException("Required init arguments not found");
 
         ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
-        contentId = parser.getContentId();
+        long contentId = parser.getContentId();
         if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
 
-        searchParams = parser.getSearchParams();
-        viewModel = new ViewModelProvider(this).get(ImageViewerViewModel.class);
-        viewModel.getContent().observe(this, this::onContentChanged);
+        Bundle searchParams = parser.getSearchParams();
+        ImageViewerViewModel viewModel = new ViewModelProvider(this).get(ImageViewerViewModel.class);
+
+        if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
+        else viewModel.loadFromContent(contentId);
 
         if (!PermissionUtil.requestExternalStorageReadPermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             ToastUtil.toast("Storage permission denied - cannot open the viewer");
@@ -56,21 +59,28 @@ public class ImageViewerActivity extends BaseActivity {
         }
 
         if (null == savedInstanceState) {
+            Fragment fragment;
+            if (Preferences.isViewerOpenBookInGalleryMode()) fragment = new ImageGalleryFragment();
+            else fragment = new ImagePagerFragment();
+
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(android.R.id.content, new ImagePagerFragment())
+                    .add(android.R.id.content, fragment)
                     .commit();
         }
 
-        if (!Preferences.getRecentVisibility()) {
+        if (!Preferences.getRecentVisibility())
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
-        }
     }
 
-    private void onContentChanged(Content content) {
-        if (null == content) { // No book has been loaded yet (1st run with this instance)
-            if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
-            else viewModel.loadFromContent(contentId);
-        }
+    public void registerKeyListener(View.OnKeyListener listener) {
+        takeKeyEvents(true);
+        this.keyListener = listener;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyListener != null) return keyListener.onKey(null, keyCode, event);
+        else return super.onKeyDown(keyCode, event);
     }
 }
