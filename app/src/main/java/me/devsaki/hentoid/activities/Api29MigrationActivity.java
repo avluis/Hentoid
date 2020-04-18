@@ -114,7 +114,6 @@ public class Api29MigrationActivity extends AppCompatActivity {
         getContentResolver().takePersistableUriPermission(treeUri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-        // Is this even possible, knowing that we just c
         DocumentFile docFile = DocumentFile.fromTreeUri(this, treeUri);
         if (docFile != null) {
             scanLibrary(docFile);
