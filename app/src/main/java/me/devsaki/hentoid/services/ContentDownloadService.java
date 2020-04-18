@@ -529,7 +529,7 @@ public class ContentDownloadService extends IntentService {
         for (ImageFile img : imgs) {
             img.setId(0);
             img.setStatus(StatusContent.SAVED);
-            img.setContent(content);
+            img.setContentId(content.getId());
         }
 
         return imgs;

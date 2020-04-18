@@ -204,6 +204,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void replaceImageList(long contentId, @NonNull final List<ImageFile> newList) {
         db.deleteImageFiles(contentId);
+        for (ImageFile img : newList) img.setContentId(contentId);
         db.insertImageFiles(newList);
     }
 

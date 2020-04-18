@@ -161,5 +161,5 @@ public class ImageFile {
         this.mimeType = mimeType;
     }
 
-    public void setContent(@NonNull Content content) { this.content.setTargetId(content.getId()); }
+    public void setContentId(long contentId) { this.content.setTargetId(contentId); }
 }
