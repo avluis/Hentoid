@@ -140,24 +140,30 @@ public class Api29MigrationActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void onMigrationEvent(ProcessEvent event) {
-        ProgressBar progressBar = (2 == event.step) ? step2progress : step3progress;
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             Timber.i(">> progress event %s", event.step);
-            progressBar.setMax(event.elementsTotal);
-            progressBar.setProgress(event.elementsOK + event.elementsKO);
+            runOnUiThread(() -> {
+                ProgressBar progressBar = (2 == event.step) ? step2progress : step3progress;
+                progressBar.setMax(event.elementsTotal);
+                progressBar.setProgress(event.elementsOK + event.elementsKO);
+            });
             if (3 == event.step)
-                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
+                runOnUiThread(() -> step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal)));
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             Timber.i(">> complete event %s", event.step);
             if (2 == event.step) {
-                step2check.setVisibility(View.VISIBLE);
-                step3block.setVisibility(View.VISIBLE);
-                step3block.invalidate();
+                runOnUiThread(() -> {
+                    step2check.setVisibility(View.VISIBLE);
+                    step3block.setVisibility(View.VISIBLE);
+                    step3block.invalidate();
+                });
             } else if (3 == event.step) {
-                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
-                step3check.setVisibility(View.VISIBLE);
+                runOnUiThread(() -> {
+                    step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
+                    step3check.setVisibility(View.VISIBLE);
+                });
                 goToLibraryActivity();
             }
         }
