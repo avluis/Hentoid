@@ -87,17 +87,10 @@ public class SkiaImageDecoder implements ImageDecoder {
         } else if (uriString.startsWith(FILE_PREFIX)) {
             bitmap = BitmapFactory.decodeFile(uriString.substring(FILE_PREFIX.length()), options);
         } else {
-            InputStream inputStream = null;
-            try {
-                ContentResolver contentResolver = context.getContentResolver();
-                inputStream = contentResolver.openInputStream(uri);
-                bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (Exception e) { /* Ignore */ }
-                }
+            try (InputStream input = context.getContentResolver().openInputStream(uri)) {
+                if (input == null)
+                    throw new Exception("Content resolver returned null stream. Unable to initialise with uri.");
+                bitmap = BitmapFactory.decodeStream(input, null, options);
             }
         }
         if (bitmap == null) {

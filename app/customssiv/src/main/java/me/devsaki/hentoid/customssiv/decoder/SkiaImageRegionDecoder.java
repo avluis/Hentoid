@@ -100,20 +100,10 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
         } else if (uriString.startsWith(FILE_PREFIX)) {
             decoder = BitmapRegionDecoder.newInstance(uriString.substring(FILE_PREFIX.length()), false);
         } else {
-            InputStream inputStream = null;
-            try {
-                ContentResolver contentResolver = context.getContentResolver();
-                inputStream = contentResolver.openInputStream(uri);
-                if (inputStream == null) {
+            try (InputStream input = context.getContentResolver().openInputStream(uri)) {
+                if (input == null)
                     throw new Exception("Content resolver returned null stream. Unable to initialise with uri.");
-                }
-                decoder = BitmapRegionDecoder.newInstance(inputStream, false);
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (Exception e) { /* Ignore */ }
-                }
+                decoder = BitmapRegionDecoder.newInstance(input, false);
             }
         }
         return new Point(decoder.getWidth(), decoder.getHeight());
