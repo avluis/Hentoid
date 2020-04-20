@@ -88,11 +88,13 @@
     <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
     <string name="permissioncomplaint_snackbar_manual">You must manually grant permissions before you can continue</string>
     <string name="import_canceled">Import canceled</string>
-    <string name="existing_library_error">Please select a custom location.</string>
+    <string name="import_invalid">Invalid folder selected - please select another one</string>
+    <string name="import_other">Import has stopped</string>
     <string name="task_done">Task complete - see details in the log</string>
     <string name="content_not_found">Error - content not found</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
-    <string name="import_dialog">Importing Library</string>
+    <string name="starting_import">Starting import…</string>
+    <string name="importing_library">Importing Library</string>
     <string name="add_dialog">Adding files to DB</string>
     <string name="importing_please_wait">Importing, please wait…</string>
     <string name="updating_please_wait">Updating, please wait…</string>

@@ -32,28 +32,14 @@
         android:text="@string/slide_04_text"
         android:textSize="16sp" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
+        android:layout_weight="5"
         android:minHeight="48dp"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/intro_select_app_folder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?colorSecondary"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:padding="16dp"
-            android:text="@string/api29_migration_step1_select"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <include layout="@layout/include_import_steps" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </LinearLayout>

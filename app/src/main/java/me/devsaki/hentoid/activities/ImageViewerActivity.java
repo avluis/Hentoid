@@ -24,6 +24,8 @@ import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
 public class ImageViewerActivity extends BaseActivity {
 
+    private static final int RQST_STORAGE_PERMISSION = 3;
+
     private View.OnKeyListener keyListener = null;
 
     @Override
@@ -47,7 +49,7 @@ public class ImageViewerActivity extends BaseActivity {
         if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
         else viewModel.loadFromContent(contentId);
 
-        if (!PermissionUtil.requestExternalStorageReadPermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
+        if (!PermissionUtil.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION)) {
             ToastUtil.toast("Storage permission denied - cannot open the viewer");
             throw new AccessControlException("Storage permission denied - cannot open the viewer");
         }

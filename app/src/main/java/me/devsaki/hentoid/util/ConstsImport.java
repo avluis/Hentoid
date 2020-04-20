@@ -9,7 +9,7 @@ public class ConstsImport {
     private ConstsImport() {
         throw new IllegalStateException("Utility class");
     }
-
+/*
     public static final String PERMISSION_GRANTED = "PERMISSION_GRANTED";
     public static final String PERMISSION_DENIED = "PERMISSION_DENIED";
     public static final String PERMISSION_DENIED_FORCED = "PERMISSION_DENIED_FORCED";
@@ -26,4 +26,6 @@ public class ConstsImport {
     public static final int RQST_IMPORT_RESULTS = 1;
     public static final int RQST_APP_SETTINGS = 2;
     public static final int RQST_STORAGE_PERMISSION = 3;
+
+ */
 }

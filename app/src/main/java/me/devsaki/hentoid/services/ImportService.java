@@ -37,6 +37,7 @@ import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.URLBuilder;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
+import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -119,12 +120,13 @@ public class ImportService extends IntentService {
         startImport(doRename, doCleanAbsent, doCleanNoImages, doCleanUnreadable);
     }
 
-    private void eventProgress(int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 1, booksOK, booksKO, nbBooks));
+    private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, step, booksOK, booksKO, nbBooks));
     }
 
-    private void eventComplete(int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 1, booksOK, booksKO, nbBooks, cleanupLogFile));
+    private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
+        // TODO - find a way to replace this stocky post by a regular post, now that ImportActivity is gone
+        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
@@ -160,8 +162,13 @@ public class ImportService extends IntentService {
         // 1st pass : count subfolders of every site folder
         List<DocumentFile> bookFolders = new ArrayList<>();
         List<DocumentFile> siteFolders = FileHelper.listFolders(this, rootFolder);
-        for (DocumentFile f : siteFolders)
+        int foldersProcessed = 1;
+        for (DocumentFile f : siteFolders) {
             bookFolders.addAll(FileHelper.listFolders(this, f));
+            eventProgress(2, siteFolders.size(), foldersProcessed++, 0);
+        }
+        eventComplete(2, siteFolders.size(), siteFolders.size(), 0, null);
+        notificationManager.startForeground(new ImportProgressNotification(this.getResources().getString(R.string.starting_import), 0, 0));
 
         // 2nd pass : scan every folder for a JSON file or subdirectories
         String enabled = getApplication().getResources().getString(R.string.enabled);
@@ -278,15 +285,15 @@ public class ImportService extends IntentService {
                 booksKO++;
                 trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", e.getMessage(), bookFolder.getUri().toString());
             }
-
-            eventProgress(bookFolders.size() - nbFolders, booksOK, booksKO);
+            notificationManager.notify(new ImportProgressNotification(bookFolder.getName(), booksOK + booksKO, bookFolders.size() - nbFolders));
+            eventProgress(3, bookFolders.size() - nbFolders, booksOK, booksKO);
         }
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
 
         // Write cleanup log in root folder
         DocumentFile cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
 
-        eventComplete(bookFolders.size(), booksOK, booksKO, cleanupLogFile);
+        eventComplete(3, bookFolders.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
 
         stopForeground(true);

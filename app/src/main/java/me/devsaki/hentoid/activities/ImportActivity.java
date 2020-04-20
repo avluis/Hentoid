@@ -124,7 +124,7 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     public void customBackPress() {
-        exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
+        //exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
     }
 
     @Override
@@ -159,9 +159,10 @@ public class ImportActivity extends AppCompatActivity {
             DocumentFile downloadFolder = DocumentFile.fromTreeUri(this, Uri.parse(downloadFolderUriStr));
             if (downloadFolder != null && downloadFolder.exists()) currentRootDir = downloadFolder;
         }
-        openFolderPicker();
+        //openFolderPicker();
     }
 
+    /*
     // Try and detect any ".Hentoid" or "Hentoid" folder inside the selected folder
     private DocumentFile getExistingHentoidDirFrom(@NonNull DocumentFile root) {
         if (!root.exists() || !root.isDirectory() || null == root.getName()) return root;
@@ -174,6 +175,8 @@ public class ImportActivity extends AppCompatActivity {
         if (!hentoidDirs.isEmpty()) return hentoidDirs.get(0);
         else return root;
     }
+
+     */
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
@@ -196,6 +199,7 @@ public class ImportActivity extends AppCompatActivity {
     }
 
     // Callback after user has granted I/O permissions
+    /*
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -217,11 +221,9 @@ public class ImportActivity extends AppCompatActivity {
         }
     }
 
-    // TODO to use when processing known folder without selecting it (again) with SAF picker
-    private void initImport() {
-        importFolder(getExistingHentoidDirFrom(currentRootDir));
-    }
+     */
 
+/*
     private void openFolderPicker() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -242,6 +244,9 @@ public class ImportActivity extends AppCompatActivity {
         startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
     }
 
+ */
+
+/*
     // Return from SAF picker
     // TODO - check if the processing can be done on a separate thread to avoid freezing while displaying the SAF dialog
     // TODO - just after a successful import, when the SAF dialog is reopened and another folder is chosen, that method is never called <-- fixed recently ?
@@ -260,7 +265,8 @@ public class ImportActivity extends AppCompatActivity {
             exit(RESULT_CANCELED, ConstsImport.RESULT_CANCELED);
         }
     }
-
+*/
+/*
     // Return from SAF picker
     public void onSelectSAFRootFolder(@NonNull final Uri treeUri) {
 
@@ -270,70 +276,6 @@ public class ImportActivity extends AppCompatActivity {
         // Persist new access permission
         getContentResolver().takePersistableUriPermission(treeUri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-
-
-        /*
-        String treePath = treeUri.getPath();
-
-        if (null == treePath || !treePath.contains(":")) {
-            Timber.w("Invalid treePath : '%s'", treePath);
-            return;
-        }
-
-        int treePathSeparator = treePath.indexOf(':');
-        String folderName = treePath.substring(treePathSeparator + 1);
-
-        // Determine whether the designated file is
-        // - on a removable media (e.g. SD card, OTG)
-        // or
-        // - on the internal phone memory
-
-        File selectedFolder = null;
-        String[] removableMediaFolderRoots = FileHelper.getExtSdCardPaths();
-        /* First test is to compare root names with known roots of removable media
-
-         In many cases, the SD card root name is shared between pre-SAF (File) and SAF (DocumentFile) frameworks
-         (e.g. /storage/3437-3934 vs. /tree/3437-3934)
-
-         This is what the following block is trying to do
-         */
-        /*
-        for (String s : removableMediaFolderRoots) {
-            String sRoot = s.substring(s.lastIndexOf(File.separatorChar));
-            String treeRoot = treePath.substring(0, treePathSeparator);
-            treeRoot = treeRoot.substring(treeRoot.lastIndexOf(File.separatorChar));
-            if (sRoot.equalsIgnoreCase(treeRoot)) {
-                // Persist selected folder URI in shared preferences
-                // NB : calling saveUri populates the preference used by FileHelper.isSAF, which indicates the library storage is on an SD card / an external USB storage device
-                FileHelper.saveUri(treeUri);
-                selectedFolder = new File(s + File.separatorChar + folderName);
-                break;
-            }
-        }
-*/
-        /* In some other cases, there is no common name (e.g. /storage/sdcard1 vs. /tree/3437-3934)
-
-            We can use a slower method to translate the Uri obtained with SAF into a pre-SAF path
-            and compare it to the known removable media volume names */
-        /*
-        if (null == selectedFolder) {
-            for (String s : removableMediaFolderRoots) {
-                String treeRoot = FileHelper.getFullPathFromTreeUri(treeUri, this);
-                if (treeRoot != null && treeRoot.startsWith(s)) {
-                    // Persist selected folder URI in shared preferences
-                    FileHelper.saveUri(treeUri);
-                    selectedFolder = new File(treeRoot);
-                    break;
-                }
-            }
-        }
-
-        // Finally, try with (or fall back to) phone memory
-        if (null == selectedFolder) {
-            FileHelper.clearUri();
-            selectedFolder = new File(Environment.getExternalStorageDirectory(), folderName);
-        }
-         */
 
         // Is this even possible, knowing that we just c
         DocumentFile docFile = DocumentFile.fromTreeUri(this, treeUri);
@@ -348,6 +290,8 @@ public class ImportActivity extends AppCompatActivity {
         importFolder(docFile);
     }
 
+ */
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEventProgress(ProcessEvent event) {
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
@@ -360,10 +304,10 @@ public class ImportActivity extends AppCompatActivity {
     public void onImportEventComplete(ProcessEvent event) {
         if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             if (progressDialog != null) progressDialog.dismiss();
-            exit(RESULT_OK, (event.elementsOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
+            //exit(RESULT_OK, (event.elementsOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
         }
     }
-
+/*
     // Count the elements inside each site's download folder (but not its subfolders)
     //
     // NB : this method works approximately because it doesn't try to count JSON files
@@ -398,6 +342,8 @@ public class ImportActivity extends AppCompatActivity {
         return baseFolder;
     }
 
+ */
+/*
     private void importFolder(@NonNull final DocumentFile targetFolder) {
         DocumentFile hentoidFolder = addHentoidFolder(targetFolder);
         if (!FileHelper.checkAndSetRootFolder(this, hentoidFolder, true)) {
@@ -437,7 +383,7 @@ public class ImportActivity extends AppCompatActivity {
             new Handler().postDelayed(() -> exit(RESULT_OK, ConstsImport.NEW_LIBRARY_CREATED), 100);
         }
     }
-
+*/
     private void runImport() {
         // Prior Library found, drop and recreate db
         cleanUpDB();
@@ -477,7 +423,7 @@ public class ImportActivity extends AppCompatActivity {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.deleteAllBooks();
     }
-
+/*
     private void exit(int resultCode, String data) {
         Timber.d("Import activity exit - Data : %s", data);
 
@@ -487,4 +433,6 @@ public class ImportActivity extends AppCompatActivity {
         setResult(resultCode, returnIntent);
         finish();
     }
+
+ */
 }

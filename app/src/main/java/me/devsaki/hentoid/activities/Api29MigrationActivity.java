@@ -21,12 +21,13 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.API29MigrationService;
-import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 public class Api29MigrationActivity extends AppCompatActivity {
+
+    private static final int RQST_STORAGE_PERMISSION = 3;
 
     // UI
     private View step1button;
@@ -48,17 +49,17 @@ public class Api29MigrationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_api29_migration);
 
         // UI
-        step1button = findViewById(R.id.api29_step1_button);
+        step1button = findViewById(R.id.import_step1_button);
         step1button.setOnClickListener(v -> selectHentoidFolder());
-        step1folderTxt = findViewById(R.id.api29_step1_folder);
-        step1check = findViewById(R.id.api29_step1_check);
-        step2block = findViewById(R.id.api29_step2);
-        step2progress = findViewById(R.id.api29_step2_bar);
-        step2check = findViewById(R.id.api29_step2_check);
-        step3block = findViewById(R.id.api29_step3);
-        step3Txt = findViewById(R.id.api29_step3_text);
-        step3progress = findViewById(R.id.api29_step3_bar);
-        step3check = findViewById(R.id.api29_step3_check);
+        step1folderTxt = findViewById(R.id.import_step1_folder);
+        step1check = findViewById(R.id.import_step1_check);
+        step2block = findViewById(R.id.import_step2);
+        step2progress = findViewById(R.id.import_step2_bar);
+        step2check = findViewById(R.id.import_step2_check);
+        step3block = findViewById(R.id.import_step3);
+        step3Txt = findViewById(R.id.import_step3_text);
+        step3progress = findViewById(R.id.import_step3_bar);
+        step3check = findViewById(R.id.import_step3_check);
 
         EventBus.getDefault().register(this);
         doMigrate();
@@ -87,7 +88,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
         }
         // http://stackoverflow.com/a/31334967/1615876
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-        startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
+        startActivityForResult(intent, RQST_STORAGE_PERMISSION);
     }
 
     @Override
@@ -95,7 +96,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         // Return from the SAF picker
-        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) {
+        if (requestCode == RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
             if (treeUri != null) onSelectSAFRootFolder(treeUri);
@@ -115,9 +116,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
                 Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
         DocumentFile docFile = DocumentFile.fromTreeUri(this, treeUri);
-        if (docFile != null) {
-            scanLibrary(docFile);
-        }
+        if (docFile != null) scanLibrary(docFile);
     }
 
     private void scanLibrary(@NonNull final DocumentFile root) {
