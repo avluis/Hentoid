@@ -12,6 +12,6 @@ class ImportCompleteNotification(private val booksOK: Int, private val booksKO: 
         NotificationCompat.Builder(context, ImportNotificationChannel.ID)
             .setSmallIcon(R.drawable.ic_stat_hentoid)
             .setContentTitle("Import complete")
-            .setContentText("$booksOK imported successfuly; $booksKO failed")
+            .setContentText("$booksOK imported successfully; $booksKO failed")
             .build()
 }
