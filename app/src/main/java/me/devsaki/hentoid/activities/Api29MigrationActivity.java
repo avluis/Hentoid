@@ -109,7 +109,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
     public void onSelectSAFRootFolder(@NonNull final Uri treeUri) {
 
         // Release previous access permissions, if different than the new one
-        FileHelper.revokePreviousPermissions(this, treeUri);
+        FileHelper.revokePreviousPermissions(getContentResolver(), treeUri);
 
         // Persist new access permission
         getContentResolver().takePersistableUriPermission(treeUri,

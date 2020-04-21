@@ -503,10 +503,13 @@ public class FileHelper {
         }
     }
 
-    public static void revokePreviousPermissions(@NonNull final Context context, @NonNull final Uri newUri) {
-        ContentResolver resolver = context.getContentResolver();
+    public static void revokePreviousPermissions(@NonNull final ContentResolver resolver, @NonNull final Uri newUri) {
+        // Unfortunately, the content Uri of the selected resource is not exactly the same as the one stored by ContentResolver
+        // -> solution is to compare their TreeDocumentId instead
+        String treeUriId = DocumentsContract.getTreeDocumentId(newUri);
+
         for (UriPermission p : resolver.getPersistedUriPermissions())
-            if (!p.getUri().equals(newUri))
+            if (!DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId))
                 resolver.releasePersistableUriPermission(p.getUri(),
                         Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         if (resolver.getPersistedUriPermissions().isEmpty()) {

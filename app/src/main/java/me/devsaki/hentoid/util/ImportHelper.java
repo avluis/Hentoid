@@ -1,8 +1,10 @@
 package me.devsaki.hentoid.util;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.DocumentsContract;
@@ -107,30 +109,41 @@ public class ImportHelper {
         if (requestCode == RQST_STORAGE_PERMISSION && resultCode == Activity.RESULT_OK) {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
-            if (treeUri != null) return setAndScanFolder(context, treeUri, options);
+            if (treeUri != null) return setAndScanFolder(context, treeUri, false, options);
             else return Result.INVALID_FOLDER;
         } else if (resultCode == Activity.RESULT_CANCELED) {
             return Result.CANCELED;
         } else return Result.OTHER;
     }
 
-    private static @Result
+    public static @Result
     int setAndScanFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri,
+            boolean askScanExisting,
             @Nullable final ImportOptions options) {
 
-        // Release previous access permissions, if different than the new one
-        FileHelper.revokePreviousPermissions(context, treeUri);
+        boolean isUriPermissionPeristed = false;
+        ContentResolver contentResolver = context.getContentResolver();
+        String treeUriId = DocumentsContract.getTreeDocumentId(treeUri);
 
-        // Persist new access permission
-        context.getContentResolver().takePersistableUriPermission(treeUri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        for (UriPermission p : contentResolver.getPersistedUriPermissions()) {
+            if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {
+                isUriPermissionPeristed = true;
+                break;
+            }
+        }
 
-        // Is this even possible, knowing that we just c
+        if (!isUriPermissionPeristed) {
+            // Release previous access permissions, if different than the new one
+            FileHelper.revokePreviousPermissions(contentResolver, treeUri);
+            // Persist new access permission
+            contentResolver.takePersistableUriPermission(treeUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
+
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
-        if (null == docFile) {
-            // Is that even possible, knowing that we just come from the SAF picker ?
+        if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return Result.INVALID_FOLDER;
         }
@@ -140,20 +153,23 @@ public class ImportHelper {
             return Result.INVALID_FOLDER;
 
         if (hasBooks(context)) {
-            new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
-                    .setIcon(R.drawable.ic_warning)
-                    .setCancelable(false)
-                    .setTitle(R.string.app_name)
-                    .setMessage(R.string.contents_detected)
-                    .setPositiveButton(android.R.string.yes,
-                            (dialog1, which) -> {
-                                dialog1.dismiss();
-                                runImport(context, options);
-                            })
-                    .setNegativeButton(android.R.string.no,
-                            (dialog2, which) -> dialog2.dismiss())
-                    .create()
-                    .show();
+            if (askScanExisting) runImport(context, options);
+            else
+                new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
+                        .setIcon(R.drawable.ic_warning)
+                        .setCancelable(false)
+                        .setTitle(R.string.app_name)
+                        .setMessage(R.string.contents_detected)
+                        .setPositiveButton(android.R.string.yes,
+                                (dialog1, which) -> {
+                                    dialog1.dismiss();
+                                    runImport(context, options);
+                                })
+                        .setNegativeButton(android.R.string.no,
+                                (dialog2, which) -> dialog2.dismiss())
+                        .create()
+                        .show();
+
             return Result.OK_LIBRARY_DETECTED;
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
@@ -220,20 +236,6 @@ public class ImportHelper {
     ) {
         // Prior Library found, drop and recreate db
         cleanUpDB(context);
-
-        // Send results to scan
-        /*
-        // TODO investigate if spawning a dialog in an invisible-themed activity such as this one can generate an invisible dialog on some devices
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setIndeterminate(false);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        progressDialog.setMax(0);
-        progressDialog.setCancelable(false);
-        progressDialog.setColor(ThemeHelper.getColor(this, R.color.secondary_light));
-        progressDialog.setTextColor(R.color.white_opacity_87);
-        progressDialog.setMessage(this.getString(R.string.importing_please_wait));
-        progressDialog.show();
-         */
 
         ImportNotificationChannel.init(context);
         Intent intent = ImportService.makeIntent(context);

@@ -125,8 +125,7 @@ public class ImportService extends IntentService {
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        // TODO - find a way to replace this stocky post by a regular post, now that ImportActivity is gone
-        EventBus.getDefault().postSticky(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {

@@ -202,8 +202,6 @@ dependencies {
     implementation "com.mikepenz:fastadapter-extensions-utils:5.0.0" // needs the `expandable`, `drag` and `scroll` extension.
     implementation "com.mikepenz:materialize:1.2.1"
 
-    // ProgressDialog alternative - https://github.com/Livin21/MissMe
-    implementation 'com.lmntrx.android.library.livin.missme:missme:0.1.5'
     implementation project(path: ':app:customssiv')
 }
 

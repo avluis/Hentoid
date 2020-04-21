@@ -52,7 +52,7 @@ class PrefsActivity : BaseActivity() {
         }
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     fun onImportEventComplete(event: ProcessEvent) {
         if (ProcessEvent.EventType.COMPLETE == event.eventType && event.logFile != null) {
             val contentView = findViewById<View>(android.R.id.content)

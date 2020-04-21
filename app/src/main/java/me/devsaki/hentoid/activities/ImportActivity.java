@@ -1,50 +1,31 @@
 package me.devsaki.hentoid.activities;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.DocumentsContract;
 import android.view.View;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.documentfile.provider.DocumentFile;
-
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.lmntrx.android.library.livin.missme.ProgressDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.ConstsImport;
-import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.O;
-import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
 
 /**
  * Created by avluis on 04/02/2016.
@@ -71,7 +52,7 @@ public class ImportActivity extends AppCompatActivity {
     private boolean isCleanNoImages = false;            // True if user has asked for the cleanup of folders with no images
     private boolean isCleanUnreadable = false;          // True if user has asked for the cleanup of folders with unreadable JSONs
 
-    private ProgressDialog progressDialog;
+    //private ProgressDialog progressDialog;
 
 
     private final static FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
@@ -295,54 +276,58 @@ public class ImportActivity extends AppCompatActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEventProgress(ProcessEvent event) {
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            /*
             progressDialog.setMax(event.elementsTotal);
             progressDialog.setProgress(event.elementsOK + event.elementsKO);
+
+             */
         }
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onImportEventComplete(ProcessEvent event) {
         if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            if (progressDialog != null) progressDialog.dismiss();
+            //if (progressDialog != null) progressDialog.dismiss();
             //exit(RESULT_OK, (event.elementsOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
         }
     }
-/*
-    // Count the elements inside each site's download folder (but not its subfolders)
-    //
-    // NB : this method works approximately because it doesn't try to count JSON files
-    // However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
-    // and might cause freezes -> we stick to that approximate method for ImportActivity
-    private boolean hasBooks() {
-        List<DocumentFile> downloadDirs = new ArrayList<>();
-        for (Site s : Site.values())
-            downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDir(this, s));
 
-        for (DocumentFile downloadDir : downloadDirs) {
-            List<DocumentFile> contentFiles = FileHelper.listFolders(this, downloadDir);
-            if (!contentFiles.isEmpty()) return true;
+    /*
+        // Count the elements inside each site's download folder (but not its subfolders)
+        //
+        // NB : this method works approximately because it doesn't try to count JSON files
+        // However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
+        // and might cause freezes -> we stick to that approximate method for ImportActivity
+        private boolean hasBooks() {
+            List<DocumentFile> downloadDirs = new ArrayList<>();
+            for (Site s : Site.values())
+                downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDir(this, s));
+
+            for (DocumentFile downloadDir : downloadDirs) {
+                List<DocumentFile> contentFiles = FileHelper.listFolders(this, downloadDir);
+                if (!contentFiles.isEmpty()) return true;
+            }
+
+            return false;
         }
 
-        return false;
-    }
+        private DocumentFile addHentoidFolder(@NonNull final DocumentFile baseFolder) {
+            String folderName = baseFolder.getName();
+            if (null == folderName) folderName = "";
 
-    private DocumentFile addHentoidFolder(@NonNull final DocumentFile baseFolder) {
-        String folderName = baseFolder.getName();
-        if (null == folderName) folderName = "";
+            // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
+            if (!hentoidFolderNames.accept(folderName)) {
+                DocumentFile targetFolder = getExistingHentoidDirFrom(baseFolder);
 
-        // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
-        if (!hentoidFolderNames.accept(folderName)) {
-            DocumentFile targetFolder = getExistingHentoidDirFrom(baseFolder);
-
-            // If not, create one
-            if (targetFolder.getUri().equals(baseFolder.getUri()))
-                return targetFolder.createDirectory(Consts.DEFAULT_LOCAL_DIRECTORY);
-            else return targetFolder;
+                // If not, create one
+                if (targetFolder.getUri().equals(baseFolder.getUri()))
+                    return targetFolder.createDirectory(Consts.DEFAULT_LOCAL_DIRECTORY);
+                else return targetFolder;
+            }
+            return baseFolder;
         }
-        return baseFolder;
-    }
 
- */
+     */
 /*
     private void importFolder(@NonNull final DocumentFile targetFolder) {
         DocumentFile hentoidFolder = addHentoidFolder(targetFolder);
@@ -389,6 +374,7 @@ public class ImportActivity extends AppCompatActivity {
         cleanUpDB();
         // Send results to scan
         // TODO investigate if spawning a dialog in an invisible-themed activity such as this one can generate an invisible dialog on some devices
+        /*
         progressDialog = new ProgressDialog(this);
         progressDialog.setIndeterminate(false);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -398,6 +384,8 @@ public class ImportActivity extends AppCompatActivity {
         progressDialog.setTextColor(R.color.white_opacity_87);
         progressDialog.setMessage(this.getString(R.string.importing_please_wait));
         progressDialog.show();
+
+         */
 
         ImportNotificationChannel.init(this);
         Intent intent = ImportService.makeIntent(this);
