@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:parentTag="LinearLayout"
-    tools:orientation="vertical"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
     tools:showIn="@layout/activity_api29_migration">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -85,6 +84,8 @@
         android:layout_height="wrap_content"
         android:padding="16dp"
         android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/import_step1"
         tools:visibility="visible">
 
         <TextView
@@ -141,6 +142,8 @@
         android:layout_height="wrap_content"
         android:padding="16dp"
         android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/import_step2"
         tools:visibility="visible">
 
         <TextView

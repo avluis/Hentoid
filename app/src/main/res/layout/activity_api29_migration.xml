@@ -32,14 +32,13 @@
         android:text="@string/api29_migration_subtitle"
         android:textSize="16sp" />
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="5"
-        android:minHeight="48dp"
-        android:orientation="vertical">
+        android:minHeight="48dp">
 
         <include layout="@layout/include_import_steps" />
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

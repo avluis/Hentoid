@@ -80,16 +80,8 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     private void launchRefreshImport(boolean rename, boolean cleanAbsent, boolean cleanNoImages, boolean cleanUnreadable) {
         // Replace launch options layout with progress layout
-        // TODO merge that properly
-        View importProgress = LayoutInflater.from(getActivity()).inflate(R.layout.intro_slide_04, rootView, false);
-
-        ViewGroup.LayoutParams layoutParams = importProgress.getLayoutParams();
-        layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-        layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-        importProgress.setLayoutParams(layoutParams);
-
         rootView.removeAllViews();
-        rootView.addView(importProgress);
+        LayoutInflater.from(getActivity()).inflate(R.layout.include_import_steps, rootView, true);
 
         // Hentoid folder is known -> Update UI accordingly
         ((TextView)rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
