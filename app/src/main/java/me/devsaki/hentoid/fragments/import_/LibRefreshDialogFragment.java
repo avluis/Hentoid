@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.import_;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +14,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
+
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -32,7 +36,14 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 public class LibRefreshDialogFragment extends DialogFragment {
 
+    private static String SHOW_OPTIONS = "show_options";
+    private static String CHOOSE_FOLDER = "choose_folder";
+
+    private boolean showOptions;
+    private boolean chooseFolder;
+
     private ViewGroup rootView;
+    private View step1FolderButton;
     private ProgressBar step2progress;
     private View step2check;
     private View step3block;
@@ -40,14 +51,25 @@ public class LibRefreshDialogFragment extends DialogFragment {
     private ProgressBar step3progress;
     private View step3check;
 
-    public static void invoke(FragmentManager fragmentManager) {
+    public static void invoke(@NonNull final FragmentManager fragmentManager, boolean showOptions, boolean chooseFolder) {
         LibRefreshDialogFragment fragment = new LibRefreshDialogFragment();
+
+        Bundle args = new Bundle();
+        args.putBoolean(SHOW_OPTIONS, showOptions);
+        args.putBoolean(CHOOSE_FOLDER, chooseFolder);
+        fragment.setArguments(args);
+
         fragment.show(fragmentManager, null);
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
+        showOptions = getArguments().getBoolean(SHOW_OPTIONS, false);
+        chooseFolder = getArguments().getBoolean(CHOOSE_FOLDER, false);
+
         EventBus.getDefault().register(this);
     }
 
@@ -69,25 +91,37 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
         if (rootView instanceof ViewGroup) this.rootView = (ViewGroup) rootView;
 
-        CheckBox renameChk = requireViewById(rootView, R.id.refresh_options_rename);
-        CheckBox cleanAbsentChk = requireViewById(rootView, R.id.refresh_options_remove_1);
-        CheckBox cleanNoImagesChk = requireViewById(rootView, R.id.refresh_options_remove_2);
-        CheckBox cleanUnreadableChk = requireViewById(rootView, R.id.refresh_options_remove_3);
+        if (showOptions) { // Show option screen first
+            CheckBox renameChk = requireViewById(rootView, R.id.refresh_options_rename);
+            CheckBox cleanAbsentChk = requireViewById(rootView, R.id.refresh_options_remove_1);
+            CheckBox cleanNoImagesChk = requireViewById(rootView, R.id.refresh_options_remove_2);
+            CheckBox cleanUnreadableChk = requireViewById(rootView, R.id.refresh_options_remove_3);
 
-        View okBtn = requireViewById(rootView, R.id.refresh_ok);
-        okBtn.setOnClickListener(v -> launchRefreshImport(renameChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked(), cleanUnreadableChk.isChecked()));
+            View okBtn = requireViewById(rootView, R.id.refresh_ok);
+            okBtn.setOnClickListener(v -> launchRefreshImport(renameChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked(), cleanUnreadableChk.isChecked()));
+        } else { // Show import progress layout immediately
+            showImportProgressLayout(chooseFolder);
+        }
     }
 
     private void launchRefreshImport(boolean rename, boolean cleanAbsent, boolean cleanNoImages, boolean cleanUnreadable) {
-        // Replace launch options layout with progress layout
+        showImportProgressLayout(false);
+
+        // Run import
+        ImportHelper.ImportOptions options = new ImportHelper.ImportOptions();
+        options.rename = rename;
+        options.cleanAbsent = cleanAbsent;
+        options.cleanNoImages = cleanNoImages;
+        options.cleanUnreadable = cleanUnreadable;
+
+        Uri rootUri = Uri.parse(Preferences.getStorageUri());
+        ImportHelper.setAndScanFolder(requireContext(), rootUri, true, options);
+    }
+
+    private void showImportProgressLayout(boolean askFolder) {
+        // Replace launch options layout with import progress layout
         rootView.removeAllViews();
         LayoutInflater.from(getActivity()).inflate(R.layout.include_import_steps, rootView, true);
-
-        // Hentoid folder is known -> Update UI accordingly
-        ((TextView)rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
-        rootView.findViewById(R.id.import_step1_button).setVisibility(View.GONE);
-        rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
-        rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
 
         // Memorize UI elements that will be updated during the import events
         step2progress = rootView.findViewById(R.id.import_step2_bar);
@@ -97,16 +131,49 @@ public class LibRefreshDialogFragment extends DialogFragment {
         step3Txt = rootView.findViewById(R.id.import_step3_text);
         step3check = rootView.findViewById(R.id.import_step3_check);
 
-        // Run import
-        // TODO display "refresh" on the notifications
-        ImportHelper.ImportOptions options = new ImportHelper.ImportOptions();
-        options.rename = rename;
-        options.cleanAbsent = cleanAbsent;
-        options.cleanNoImages = cleanNoImages;
-        options.cleanUnreadable = cleanUnreadable;
+        step1FolderButton = rootView.findViewById(R.id.import_step1_button);
+        if (!askFolder) {
+            ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
+            rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
+            rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
+        } else {
+            step1FolderButton.setVisibility(View.VISIBLE);
+            step1FolderButton.setOnClickListener(v -> selectHentoidFolder());
+            selectHentoidFolder(); // Ask right away, there's no reason why the user should click again
+        }
+    }
 
-        Uri rootUri = Uri.parse(Preferences.getStorageUri());
-        ImportHelper.setAndScanFolder(requireContext(), rootUri, true, options);
+    private void selectHentoidFolder() {
+        ImportHelper.openFolderPicker(this);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        @ImportHelper.Result int result = ImportHelper.processPickerResult(requireActivity(), requestCode, resultCode, data, null);
+        switch (result) {
+            case ImportHelper.Result.OK_EMPTY_FOLDER:
+                dismiss();
+                break;
+            case ImportHelper.Result.OK_LIBRARY_DETECTED:
+                // Hentoid folder is finally selected at this point -> Update UI
+                ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
+                step1FolderButton.setVisibility(View.INVISIBLE);
+                rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
+                rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
+                // Nothing else here; a dialog has been opened by ImportHelper
+                break;
+            case ImportHelper.Result.CANCELED:
+                Snackbar.make(rootView, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show();
+                break;
+            case ImportHelper.Result.INVALID_FOLDER:
+                Snackbar.make(rootView, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
+                break;
+            case ImportHelper.Result.OTHER:
+                Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
+                break;
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

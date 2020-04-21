@@ -136,10 +136,6 @@
             android:label="@string/title_activity_search"
             tools:ignore="UnusedAttribute"/>
         <activity
-            android:name=".activities.ImportActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Invisible" />
-        <activity
             android:name=".activities.UnlockActivity"
             android:noHistory="true"
             android:resizeableActivity="false"

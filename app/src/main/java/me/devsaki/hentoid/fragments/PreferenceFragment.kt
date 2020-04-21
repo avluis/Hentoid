@@ -58,7 +58,6 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
-
         onFolderChanged()
     }
 
@@ -79,7 +78,15 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     if (ImportService.isRunning()) {
                         ToastUtil.toast("Import is already running")
                     } else {
-                        LibRefreshDialogFragment.invoke(parentFragmentManager)
+                        LibRefreshDialogFragment.invoke(parentFragmentManager, true, false)
+                    }
+                    true
+                }
+                Preferences.Key.PREF_SETTINGS_FOLDER -> {
+                    if (ImportService.isRunning()) {
+                        ToastUtil.toast("Import is already running")
+                    } else {
+                        LibRefreshDialogFragment.invoke(parentFragmentManager, false, true)
                     }
                     true
                 }

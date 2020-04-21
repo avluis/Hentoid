@@ -53,7 +53,6 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 import_step1_button.visibility = View.INVISIBLE
                 // Hentoid folder is finally selected at this point -> Update UI
                 import_step1_folder.text = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true)
-                import_step1_button.visibility = View.GONE
                 import_step1_check.visibility = View.VISIBLE
                 import_step2.visibility = View.VISIBLE
             }
