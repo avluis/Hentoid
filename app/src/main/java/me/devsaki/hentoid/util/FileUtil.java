@@ -8,7 +8,10 @@ import android.provider.DocumentsContract;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.CachedDocumentFile;
 import androidx.documentfile.provider.DocumentFile;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -150,7 +153,7 @@ class FileUtil {
             final FileHelper.NameFilter nameFilter,
             boolean listFolders,
             boolean listFiles) {
-        final List<Uri> results = new ArrayList<>();
+        final List<ImmutablePair<Uri, String>> results = new ArrayList<>();
 
         ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
         if (null == client) return Collections.emptyList();
@@ -169,7 +172,7 @@ class FileUtil {
 
                         // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                         if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
-                            results.add(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId));
+                            results.add(new ImmutablePair<>(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName));
                     }
             } catch (Exception e) {
                 Timber.w(e, "Failed query");
@@ -180,13 +183,13 @@ class FileUtil {
         return convertFromUris(context, parent, results);
     }
 
-    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final DocumentFile parent, @NonNull final List<Uri> uris) {
+    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final DocumentFile parent, @NonNull final List<ImmutablePair<Uri, String>> uris) {
         final List<DocumentFile> resultFiles = new ArrayList<>();
-        for (Uri uri : uris) {
-            DocumentFile docFile = newTreeDocumentFile(parent, context, uri);
+        for (ImmutablePair<Uri, String> uri : uris) {
+            DocumentFile docFile = newTreeDocumentFile(parent, context, uri.left);
             // Following line should be the proper way to go but it's inefficient as it calls buildDocumentUriUsingTree once again
             //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri);
-            if (docFile != null) resultFiles.add(docFile);
+            if (docFile != null) resultFiles.add(new CachedDocumentFile(docFile, uri.right));
         }
         return resultFiles;
     }
