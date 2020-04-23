@@ -48,6 +48,7 @@ public class HitomiParser implements ImageListParser {
         Timber.d("Parsing: %s", pageUrl);
 
         List<ImageFile> result = new ArrayList<>();
+        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
 
         String galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + content.getUniqueSiteId() + ".js";
 

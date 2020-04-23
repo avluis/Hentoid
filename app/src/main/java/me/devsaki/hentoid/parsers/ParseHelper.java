@@ -74,15 +74,13 @@ public class ParseHelper {
             @Nonnull List<String> imgUrls,
             @NonNull String coverUrl,
             @NonNull final StatusContent status
-            ) {
+    ) {
         List<ImageFile> result = new ArrayList<>();
 
-        int order = 0;
         // Cover
-        ImageFile cover = new ImageFile(order++, coverUrl, StatusContent.SAVED, imgUrls.size());
-        cover.setIsCover(true);
-        result.add(cover);
+        result.add(ImageFile.newCover(coverUrl, status));
         // Images
+        int order = 1;
         for (String s : imgUrls) result.add(urlToImageFile(s, order++, imgUrls.size(), status));
 
         return result;

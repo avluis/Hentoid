@@ -104,6 +104,7 @@ public class FakkuParser implements ImageListParser {
         progress.advance();
 
         result = new ArrayList<>();
+        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
         for (String p : info.getPages().keySet()) {
             int order = Integer.parseInt(p);
             if (pageInfo != null && order > pageInfo.size()) continue;

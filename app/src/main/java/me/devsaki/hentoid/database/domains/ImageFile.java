@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.database.domains;
 
-import androidx.annotation.NonNull;
-
 import java.util.Locale;
 
 import io.objectbox.annotation.Convert;
@@ -10,6 +8,7 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.Consts;
 
 /**
  * Created by DevSaki on 10/05/2015.
@@ -57,6 +56,12 @@ public class ImageFile {
 
         this.url = url;
         this.status = status;
+    }
+
+    public static ImageFile newCover(String url, StatusContent status) {
+        ImageFile result = new ImageFile().setOrder(0).setUrl(url).setStatus(status);
+        result.setName(Consts.THUMB_FILE_NAME).setIsCover(true);
+        return result;
     }
 
     public long getId() {
@@ -161,5 +166,7 @@ public class ImageFile {
         this.mimeType = mimeType;
     }
 
-    public void setContentId(long contentId) { this.content.setTargetId(contentId); }
+    public void setContentId(long contentId) {
+        this.content.setTargetId(contentId);
+    }
 }

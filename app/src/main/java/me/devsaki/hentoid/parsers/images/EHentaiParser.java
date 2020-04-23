@@ -84,6 +84,7 @@ public class EHentaiParser implements ImageListParser {
             // 3- Open all pages and
             //    - grab the URL of the displayed image
             //    - grab the alternate URL of the "Click here if the image fails loading" link
+            result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
             ImageFile img;
             for (String pageUrl : pageUrls) {
                 if (processHalted) break;
