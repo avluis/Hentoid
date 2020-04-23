@@ -94,7 +94,7 @@ public class ImportHelper {
     }
 
     // Return from SAF picker
-    // TODO - check if the processing can be done on a separate thread to avoid freezing while displaying the SAF dialog
+    // TODO - check if the processing can be done on a separate thread to avoid freezing while displaying the SAF dialog (especially during hasBooks())
     // TODO - just after a successful import, when the SAF dialog is reopened and another folder is chosen, that method is never called <-- fixed recently ?
     public static @Result
     int processPickerResult(
@@ -102,6 +102,7 @@ public class ImportHelper {
             int requestCode,
             int resultCode,
             final Intent data,
+            @Nullable Runnable cancelCallback,
             @Nullable final ImportOptions options) {
         HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
 
@@ -109,7 +110,8 @@ public class ImportHelper {
         if (requestCode == RQST_STORAGE_PERMISSION && resultCode == Activity.RESULT_OK) {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
-            if (treeUri != null) return setAndScanFolder(context, treeUri, false, options);
+            if (treeUri != null)
+                return setAndScanFolder(context, treeUri, true, cancelCallback, options);
             else return Result.INVALID_FOLDER;
         } else if (resultCode == Activity.RESULT_CANCELED) {
             return Result.CANCELED;
@@ -121,6 +123,7 @@ public class ImportHelper {
             @NonNull final Context context,
             @NonNull final Uri treeUri,
             boolean askScanExisting,
+            @Nullable Runnable cancelCallback,
             @Nullable final ImportOptions options) {
 
         boolean isUriPermissionPeristed = false;
@@ -153,7 +156,7 @@ public class ImportHelper {
             return Result.INVALID_FOLDER;
 
         if (hasBooks(context)) {
-            if (askScanExisting) runImport(context, options);
+            if (!askScanExisting) runImport(context, options);
             else
                 new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
                         .setIcon(R.drawable.ic_warning)
@@ -166,7 +169,10 @@ public class ImportHelper {
                                     runImport(context, options);
                                 })
                         .setNegativeButton(android.R.string.no,
-                                (dialog2, which) -> dialog2.dismiss())
+                                (dialog2, which) -> {
+                                    dialog2.dismiss();
+                                    if (cancelCallback != null) cancelCallback.run();
+                                })
                         .create()
                         .show();
 

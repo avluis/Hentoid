@@ -35,18 +35,14 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        import_step1_button.setOnClickListener { onCustomStorageSelected() }
+        import_step1_button.setOnClickListener { ImportHelper.openFolderPicker(this) }
         import_step1_button.visibility = View.VISIBLE
-    }
-
-    fun onCustomStorageSelected() {
-        ImportHelper.openFolderPicker(this)
     }
 
     // Callback from the directory chooser
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        @ImportHelper.Result val result = ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data, null)
+        @ImportHelper.Result val result = ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data, this::onCancelExistingLibraryDialog, null)
         when (result) {
             ImportHelper.Result.OK_EMPTY_FOLDER -> nextStep()
             ImportHelper.Result.OK_LIBRARY_DETECTED -> {
@@ -61,16 +57,14 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             ImportHelper.Result.OTHER -> Snackbar.make(main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
         }
     }
-/*
-        if (requestCode == ConstsImport.RQST_IMPORT_RESULTS) {
-            Timber.d("REQUEST RESULT RECEIVED");
-            if (data != null && data.getStringExtra(RESULT_KEY) != null) {
-                String result = data.getStringExtra(RESULT_KEY);
-                resultHandler(resultCode, result);
-            }
-        }
- */
 
+    private fun onCancelExistingLibraryDialog() {
+        // Revert back to initial state where only the "Select folder" button is visible
+        import_step1_button.visibility = View.VISIBLE
+        import_step1_folder.text = ""
+        import_step1_check.visibility = View.INVISIBLE
+        import_step2.visibility = View.INVISIBLE
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMigrationEvent(event: ProcessEvent) {
@@ -91,7 +85,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         }
     }
 
-    fun nextStep() {
+    private fun nextStep() {
         val parentActivity = context as IntroActivity
         parentActivity.nextStep()
     }

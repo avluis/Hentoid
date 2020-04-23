@@ -106,6 +106,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     private void launchRefreshImport(boolean rename, boolean cleanAbsent, boolean cleanNoImages, boolean cleanUnreadable) {
         showImportProgressLayout(false);
+        setCancelable(false);
 
         // Run import
         ImportHelper.ImportOptions options = new ImportHelper.ImportOptions();
@@ -115,7 +116,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         options.cleanUnreadable = cleanUnreadable;
 
         Uri rootUri = Uri.parse(Preferences.getStorageUri());
-        ImportHelper.setAndScanFolder(requireContext(), rootUri, true, options);
+        ImportHelper.setAndScanFolder(requireContext(), rootUri, false, null, options);
     }
 
     private void showImportProgressLayout(boolean askFolder) {
@@ -132,14 +133,14 @@ public class LibRefreshDialogFragment extends DialogFragment {
         step3check = rootView.findViewById(R.id.import_step3_check);
 
         step1FolderButton = rootView.findViewById(R.id.import_step1_button);
-        if (!askFolder) {
-            ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
-            rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
-            rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
-        } else {
+        if (askFolder) {
             step1FolderButton.setVisibility(View.VISIBLE);
             step1FolderButton.setOnClickListener(v -> selectHentoidFolder());
             selectHentoidFolder(); // Ask right away, there's no reason why the user should click again
+        } else {
+            ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
+            rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
+            rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
         }
     }
 
@@ -151,7 +152,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        @ImportHelper.Result int result = ImportHelper.processPickerResult(requireActivity(), requestCode, resultCode, data, null);
+        @ImportHelper.Result int result = ImportHelper.processPickerResult(requireActivity(), requestCode, resultCode, data, this::onCancelExistingLibraryDialog, null);
         switch (result) {
             case ImportHelper.Result.OK_EMPTY_FOLDER:
                 dismiss();
@@ -162,6 +163,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step1FolderButton.setVisibility(View.INVISIBLE);
                 rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
                 rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
+                setCancelable(false);
                 // Nothing else here; a dialog has been opened by ImportHelper
                 break;
             case ImportHelper.Result.CANCELED:
@@ -174,6 +176,15 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
         }
+    }
+
+    private void onCancelExistingLibraryDialog() {
+        // Revert back to initial state where only the "Select folder" button is visible
+        rootView.findViewById(R.id.import_step1_check).setVisibility(View.INVISIBLE);
+        rootView.findViewById(R.id.import_step2).setVisibility(View.INVISIBLE);
+        ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText("");
+        step1FolderButton.setVisibility(View.VISIBLE);
+        setCancelable(true);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
