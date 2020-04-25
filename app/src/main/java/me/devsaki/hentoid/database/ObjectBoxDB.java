@@ -316,7 +316,7 @@ public class ObjectBoxDB {
                 query.orderDesc(Content_.title);
                 break;
             case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
-                query.order(Content_.reads).order(Content_.lastReadDate);
+                query.order(Content_.reads).order(Content_.lastReadDate).orderDesc(Content_.downloadDate);
                 break;
             case Preferences.Constant.ORDER_CONTENT_MOST_READ:
                 query.orderDesc(Content_.reads).orderDesc(Content_.lastReadDate);
