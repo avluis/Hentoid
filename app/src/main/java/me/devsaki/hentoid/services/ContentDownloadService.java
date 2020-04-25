@@ -258,9 +258,14 @@ public class ContentDownloadService extends IntentService {
                 }
 
                 // Manually insert new images (without using insertContent)
-                dao.replaceImageList(content.getId(), images);
-
-                content = dao.selectContent(content.getId()); // Get updated Content with the generated ID of new images
+                long contentId = content.getId();
+                dao.replaceImageList(contentId, images);
+                // Get updated Content with the generated ID of new images
+                content = dao.selectContent(contentId);
+                if (null == content) {
+                    Timber.w("Content ID %s not found", contentId);
+                    return null;
+                }
             } catch (CaptchaException cpe) {
                 Timber.w(cpe, "A captcha has been found while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, "Captcha found");
@@ -342,7 +347,7 @@ public class ContentDownloadService extends IntentService {
         for (ImageFile img : images) {
             if (img.isCover()) img.setDownloadParams(content.getDownloadParams());
             if (img.getStatus().equals(StatusContent.SAVED))
-                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
+                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
         }
 
         return content;
@@ -404,6 +409,10 @@ public class ContentDownloadService extends IntentService {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
         // Get the latest value of Content
         Content content = dao.selectContent(contentId);
+        if (null == content) {
+            Timber.w("Content ID %s not found", contentId);
+            return;
+        }
 
         if (!downloadCanceled && !downloadSkipped) {
             List<ImageFile> images = content.getImageFiles();
@@ -444,7 +453,7 @@ public class ContentDownloadService extends IntentService {
                                 Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
                                 img.setStatus(StatusContent.SAVED);
                                 dao.insertImageFile(img);
-                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
+                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite()));
                             }
                         return;
                     }
@@ -543,10 +552,9 @@ public class ContentDownloadService extends IntentService {
      * @return Volley request and its handler
      */
     private Request<Object> buildDownloadRequest(
-            @NonNull ImageFile img,
-            @NonNull DocumentFile dir,
-            boolean canKnowHentoidAgent,
-            boolean hasImageProcessing) {
+            @NonNull final ImageFile img,
+            @NonNull final DocumentFile dir,
+            @NonNull final Site site) {
 
         String backupUrl = "";
 
@@ -574,14 +582,14 @@ public class ContentDownloadService extends IntentService {
                     backupUrl = downloadParams.get("backupUrl");
             }
         }
-        final String backupUrlFinal = (null == backupUrl) ? "" : backupUrl;
+        final String backupUrlFinal = HttpHelper.fixUrl(backupUrl, site);
 
         return new InputStreamVolleyRequest(
                 Request.Method.GET,
-                img.getUrl(),
+                HttpHelper.fixUrl(img.getUrl(), site),
                 headers,
-                canKnowHentoidAgent,
-                result -> onRequestSuccess(result, img, dir, hasImageProcessing, backupUrlFinal),
+                site.canKnowHentoidAgent(),
+                result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal),
                 error -> onRequestError(error, img, dir, backupUrlFinal));
     }
 
@@ -676,7 +684,7 @@ public class ContentDownloadService extends IntentService {
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
             originalImage.setBackup(true); // Indicates the image is from a backup (for display in error logs)
             dao.insertImageFile(originalImage);
-            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
+            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, site));
         } else Timber.w("Failed to parse backup URL");
     }
 
