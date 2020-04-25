@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -154,7 +155,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
      * Initialises a new {@link BitmapRegionDecoder} and adds it to the pool, unless the pool has
      * been recycled while it was created.
      */
-    private void initialiseDecoder() throws Exception {
+    private void initialiseDecoder() throws IOException, PackageManager.NameNotFoundException {
         String uriString = uri.toString();
         BitmapRegionDecoder decoder;
         long fileLength = Long.MAX_VALUE;

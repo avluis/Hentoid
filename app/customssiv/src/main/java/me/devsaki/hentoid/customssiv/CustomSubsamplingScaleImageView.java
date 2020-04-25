@@ -374,6 +374,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private int screenHeight;
 
     private final CompositeDisposable loadDisposable = new CompositeDisposable();
+//    private static RenderScript rs = null; // TODO handle that one properly, it might create leaks
 
 
     public CustomSubsamplingScaleImageView(Context context, AttributeSet attr) {
@@ -381,6 +382,8 @@ public class CustomSubsamplingScaleImageView extends View {
         density = getResources().getDisplayMetrics().density;
         screenWidth = context.getResources().getDisplayMetrics().widthPixels;
         screenHeight = context.getResources().getDisplayMetrics().heightPixels;
+
+//        if (null == rs) rs = RenderScript.create(context);
 
         setMinimumDpi(160);
         setDoubleTapZoomDpi(160);
@@ -581,6 +584,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 loadDisposable.add(
                         Single.fromCallable(() -> initTiles(this, getContext(), regionDecoderFactory, uri))
                                 .subscribeOn(Schedulers.computation())
+                                .filter(res -> res[0] > -1) // Remove invalid results
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
                                         a -> onTilesInitialized(a[0], a[1], a[2]),
@@ -1830,7 +1834,7 @@ public class CustomSubsamplingScaleImageView extends View {
         int sWidthTile = dimensions.x;
         int sHeightTile = dimensions.y;
         int exifOrientation = view.getExifOrientation(context, sourceUri);
-        if (view.sRegion != null) {
+        if (sWidthTile > -1 && view.sRegion != null) {
             view.sRegion.left = Math.max(0, view.sRegion.left);
             view.sRegion.top = Math.max(0, view.sRegion.top);
             view.sRegion.right = Math.min(sWidthTile, view.sRegion.right);
@@ -1904,8 +1908,9 @@ public class CustomSubsamplingScaleImageView extends View {
             final float targetScale) {
 
         ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
-        loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, resizeParams.left);
-        //workingBitmap = ResizeBitmap.successiveResizeRS(rs, loadedTile.bitmap, resizeParams.left); <-- needs bitmaps decoded as ARGB_8888; demands more memory
+        loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
+        //loadedTile.bitmap = ResizeBitmapHelper.successiveResize(rs, loadedTile.bitmap, resizeParams.left); // <-- needs bitmaps decoded as ARGB_8888; demands more memory
+        //loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, targetScale, targetScale);
 
         loadedTile.loading = false;
         return loadedTile;
@@ -1940,8 +1945,9 @@ public class CustomSubsamplingScaleImageView extends View {
             final float targetScale) {
 
         ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
-        bitmap = ResizeBitmapHelper.successiveResize(bitmap, resizeParams.left);
-        //workingBitmap = ResizeBitmap.successiveResizeRS(rs, bitmap, resizeParams.left); <-- needs bitmaps decoded as ARGB_8888; demands more memory
+        bitmap = ResizeBitmapHelper.successiveResize(bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
+        //bitmap = ResizeBitmapHelper.successiveResize(rs, bitmap, resizeParams.left); // <-- needs bitmaps decoded as ARGB_8888; demands more memory
+        //bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
 
         return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), resizeParams.right);
     }
@@ -1952,8 +1958,8 @@ public class CustomSubsamplingScaleImageView extends View {
      *
      * @param targetScale target scale of the image to display (% of the raw dimensions)
      * @return Pair containing
-     *    - First : Number of half-resizes to perform (see {@link ResizeBitmapHelper})
-     *    - Second : New scale to use to display the resized image at the initial target zoom level
+     * - First : Number of half-resizes to perform (see {@link ResizeBitmapHelper})
+     * - Second : New scale to use to display the resized image at the initial target zoom level
      */
     @WorkerThread
     private ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
@@ -2084,7 +2090,7 @@ public class CustomSubsamplingScaleImageView extends View {
      * The goal is to align the picture's proportions with the phone screen's proportions
      * NB : The result of this method is independent from auto-rotate mode being enabled
      *
-     * @param sWidth Picture width
+     * @param sWidth  Picture width
      * @param sHeight Picture height
      * @return True if the picture needs to be rotated 90°
      */
@@ -3006,6 +3012,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
     /**
      * Set the direction of the viewing (default : Horizontal)
+     *
      * @param direction Direction to set
      */
     public final void setDirection(@Direction int direction) {
@@ -3014,6 +3021,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
     /**
      * Indicate if the image offset should be its left side (default : true)
+     *
      * @param offsetLeftSide True if the image offset is its left side; false for the right side
      */
     public final void setOffsetLeftSide(boolean offsetLeftSide) {
@@ -3023,7 +3031,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
     /**
      * Enable auto-rotate mode (default : false)
-     *
+     * <p>
      * Auto-rotate chooses automatically the most fitting orientation so that the image occupies
      * most of the screen, according to its dimensions and the device's screen dimensions and
      * the device's orientation (see needsRotating method)

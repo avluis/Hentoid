@@ -1,6 +1,11 @@
 package me.devsaki.hentoid.customssiv;
 
 import android.graphics.Bitmap;
+import android.renderscript.Allocation;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
+import android.renderscript.ScriptIntrinsicResize;
+import android.renderscript.Type;
 
 import androidx.annotation.NonNull;
 
@@ -29,10 +34,10 @@ class ResizeBitmapHelper {
         return output;
     }
 
-    // RENDERSCRIPT ALTERNATE IMPLEMENTATION (requires API 21+)
+    // RENDERSCRIPT ALTERNATE IMPLEMENTATIONS (requires API 21+)
 
-    /*
-    static Bitmap successiveResizeRS(@NonNull final RenderScript rs, @NonNull final Bitmap src, int resizeNum) {
+    // Direct equivalent to the 1st method, using RenderScript
+    static Bitmap successiveResize(@NonNull final RenderScript rs, @NonNull final Bitmap src, int resizeNum) {
         if (resizeNum < 1) return src;
 
         int srcWidth = src.getWidth();
@@ -65,7 +70,9 @@ class ResizeBitmapHelper {
         return output;
     }
 
-    static Bitmap resizeBitmap2(@NonNull final RenderScript rs, @NonNull final Bitmap src, float xScale, float yScale) {
+    // Better-looking resizing using RenderScript entirely, in one pass
+    // Apply Gaussian blur to the image and then subsample it using bicubic interpolation.
+    static Bitmap resizeNice(@NonNull final RenderScript rs, @NonNull final Bitmap src, float xScale, float yScale) {
         Bitmap.Config bitmapConfig = src.getConfig();
         int srcWidth = src.getWidth();
         int srcHeight = src.getHeight();
@@ -106,5 +113,5 @@ class ResizeBitmapHelper {
 
         return dst;
     }
-    */
+
 }

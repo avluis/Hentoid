@@ -105,6 +105,11 @@ public class HentoidApp extends Application {
         Preferences.init(this);
         Preferences.performHousekeeping();
 
+        // Image viewer
+        // Needs ARGB_8888 to be able to resize images using RenderScript
+        // (defaults to Bitmap.Config.RGB_565 if not set)
+//        CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.ARGB_8888);
+
         // Init version number on first run
         if (0 == Preferences.getLastKnownAppVersionCode())
             Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);

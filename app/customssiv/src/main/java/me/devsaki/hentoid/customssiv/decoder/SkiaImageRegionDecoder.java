@@ -18,6 +18,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -68,7 +69,7 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
 
     @Override
     @NonNull
-    public Point init(Context context, @NonNull Uri uri) throws Exception {
+    public Point init(Context context, @NonNull Uri uri) throws IOException, PackageManager.NameNotFoundException {
         String uriString = uri.toString();
         if (uriString.startsWith(RESOURCE_PREFIX)) {
             Resources res;
@@ -106,7 +107,8 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
                 decoder = BitmapRegionDecoder.newInstance(input, false);
             }
         }
-        return new Point(decoder.getWidth(), decoder.getHeight());
+        if (decoder != null) return new Point(decoder.getWidth(), decoder.getHeight());
+        else return new Point(-1, -1);
     }
 
     @Override
