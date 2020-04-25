@@ -6,7 +6,9 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ColorSpace;
 import android.net.Uri;
+import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.annotation.Keep;
@@ -58,6 +60,11 @@ public class SkiaImageDecoder implements ImageDecoder {
         BitmapFactory.Options options = new BitmapFactory.Options();
         Bitmap bitmap;
         options.inPreferredConfig = bitmapConfig;
+        // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
+        // which makes resizing buggy (generates a black picture)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
+
         if (uriString.startsWith(RESOURCE_PREFIX)) {
             Resources res;
             String packageName = uri.getAuthority();
@@ -97,6 +104,7 @@ public class SkiaImageDecoder implements ImageDecoder {
         if (bitmap == null) {
             throw new RuntimeException("Skia image region decoder returned null bitmap - image format may not be supported");
         }
+
         return bitmap;
     }
 }
