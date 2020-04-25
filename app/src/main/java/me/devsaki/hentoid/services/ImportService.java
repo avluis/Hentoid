@@ -196,9 +196,7 @@ public class ImportService extends IntentService {
 
             // Detect JSON and try to parse it
             try {
-                Timber.i(">> json start %s", bookFolder.getUri().toString());
                 content = importJson(bookFolder);
-                Timber.i(">> json end %s", bookFolder.getUri().toString());
                 if (content != null) {
                     List<ImageFile> contentImages;
                     if (content.getImageFiles() != null) contentImages = content.getImageFiles();
@@ -223,13 +221,13 @@ public class ImportService extends IntentService {
 
                     // Attach file Uri's to the book's images
                     List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
-                    if (!imageFiles.isEmpty()) {
-                        if (contentImages.isEmpty()) { // No images described in the JSON -> recreate them
+                    if (!imageFiles.isEmpty()) { // No images described in the JSON -> recreate them
+                        if (contentImages.isEmpty()) {
                             contentImages = ContentHelper.createImageListFromFiles(imageFiles);
                             content.setImageFiles(contentImages);
                             content.getCover().setUrl(content.getCoverImageUrl());
                         } else { // Existing images described in the JSON -> map them
-                            content.setImageFiles(ContentHelper.matchFilesToImageList(imageFiles, contentImages));
+                            contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
                             // If no cover is defined, get it too
                             if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) {
                                 Optional<DocumentFile> file = Stream.of(imageFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
@@ -241,10 +239,9 @@ public class ImportService extends IntentService {
                                     contentImages.add(0, cover);
                                 }
                             }
+                            content.setImageFiles(contentImages);
                         }
                     }
-                    Timber.i(">> images %s", bookFolder.getUri().toString());
-
                     dao.insertContent(content);
                     trace(Log.INFO, log, "Import book OK : %s", bookFolder.getUri().toString());
                 } else { // JSON not found

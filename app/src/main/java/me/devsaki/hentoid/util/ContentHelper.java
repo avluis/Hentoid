@@ -375,15 +375,13 @@ public final class ContentHelper {
         for (DocumentFile file : files)
             fileNameUris.put(removeLeadingZeroesAndExtensionCached(file.getName()), file.getUri().toString());
 
-        Timber.i(">> match begin");
         for (ImageFile img : images) {
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
             if (fileNameUris.containsKey(imgName))
-                result.add(img.setFileUri(fileNameUris.get(imgName)));
+                result.add(img.setFileUri(fileNameUris.get(imgName)).setStatus(StatusContent.DOWNLOADED));
             else
                 Timber.i(">> img dropped %s", imgName);
         }
-        Timber.i(">> match end");
         return result;
     }
 
