@@ -86,7 +86,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.71"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.72"
 
     // Firebase
     implementation 'com.google.firebase:firebase-analytics:17.2.3'
