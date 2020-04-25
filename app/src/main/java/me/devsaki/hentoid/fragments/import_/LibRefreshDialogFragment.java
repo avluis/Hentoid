@@ -175,6 +175,8 @@ public class LibRefreshDialogFragment extends DialogFragment {
             case ImportHelper.Result.OTHER:
                 Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
+            default:
+                // Nothing should happen here
         }
     }
 
