@@ -262,10 +262,7 @@ public class ContentDownloadService extends IntentService {
                 dao.replaceImageList(contentId, images);
                 // Get updated Content with the generated ID of new images
                 content = dao.selectContent(contentId);
-                if (null == content) {
-                    Timber.w("Content ID %s not found", contentId);
-                    return null;
-                }
+                if (null == content) return null;
             } catch (CaptchaException cpe) {
                 Timber.w(cpe, "A captcha has been found while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, "Captcha found");
