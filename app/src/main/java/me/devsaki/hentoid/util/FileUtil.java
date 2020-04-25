@@ -4,6 +4,7 @@ import android.content.ContentProviderClient;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.DocumentsContract;
 
 import androidx.annotation.NonNull;
@@ -178,7 +179,11 @@ class FileUtil {
                 Timber.w(e, "Failed query");
             }
         } finally {
-            client.close();
+            // ContentProviderClient.close only available on API level 24+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                client.close();
+            else
+                client.release();
         }
         return convertFromUris(context, parent, results);
     }
