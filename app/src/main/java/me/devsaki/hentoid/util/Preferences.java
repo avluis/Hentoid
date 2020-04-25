@@ -47,7 +47,7 @@ public final class Preferences {
         }
     }
 
-    public static void performHousekeeping(@NonNull final Context context) {
+    public static void performHousekeeping() {
         // Fling factor -> Swipe to fling (v1.9.0)
         if (sharedPreferences.contains(Key.PREF_VIEWER_FLING_FACTOR)) {
             int flingFactor = Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_FLING_FACTOR, "0") + "");
