@@ -202,6 +202,9 @@ dependencies {
     implementation "com.mikepenz:fastadapter-extensions-utils:5.0.0" // needs the `expandable`, `drag` and `scroll` extension.
     implementation "com.mikepenz:materialize:1.2.1"
 
+    // Fast scroller
+    implementation "com.github.pluscubed:recycler-fast-scroll:0.3.2@aar"
+
     implementation project(path: ':app:customssiv')
 }
 

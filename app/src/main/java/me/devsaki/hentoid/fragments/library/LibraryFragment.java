@@ -43,6 +43,7 @@ import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
+import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -317,6 +318,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
+        RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.library_list_fastscroller);
+        fastScroller.attachRecyclerView(recyclerView);
 
         // Disable blink animation on card change (bind holder)
         RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
