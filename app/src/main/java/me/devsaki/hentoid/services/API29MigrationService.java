@@ -99,6 +99,7 @@ public class API29MigrationService extends IntentService {
             performMigration();
         } catch (InterruptedException ie) {
             Timber.e(ie);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -184,6 +185,8 @@ public class API29MigrationService extends IntentService {
                         booksKO++;
                         continue;
                     }
+                    // It's normal to use the deprecated feature here since it's a migration job
+                    //noinspection deprecation
                     String[] contentFolderParts = content.getStorageFolder().split(File.separator);
                     String bookFolderName = contentFolderParts[contentFolderParts.length - 1];
                     DocumentFile bookFolder = siteFolder.get(bookFolderName);
