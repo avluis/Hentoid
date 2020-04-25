@@ -9,7 +9,7 @@
 	  {"sourceName":"NEXUS", "status":"RED", "fixedByBuild":"199" },
 	  {"sourceName":"FAKKU2", "status":"RED", "fixedByBuild":"199" },
 	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"204" },
-	  {"sourceName":"PURURIN", "status":"RED" }
+	  {"sourceName":"LUSCIOUS", "status":"ORANGE" }
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
