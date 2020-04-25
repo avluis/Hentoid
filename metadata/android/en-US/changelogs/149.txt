@@ -1,0 +1,1 @@
+Fixed read/write permission in Android 10
