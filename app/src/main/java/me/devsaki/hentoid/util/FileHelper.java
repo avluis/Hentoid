@@ -465,8 +465,8 @@ public class FileHelper {
             @NonNull final String fileName,
             @NonNull final String mimeType) throws IOException {
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
-        values.put(MediaStore.Downloads.MIME_TYPE, mimeType);
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
 
         ContentResolver resolver = context.getContentResolver();
         Uri targetFileUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
