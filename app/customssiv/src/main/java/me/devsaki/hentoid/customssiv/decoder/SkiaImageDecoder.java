@@ -89,7 +89,7 @@ public class SkiaImageDecoder implements ImageDecoder {
         } else {
             try (InputStream input = context.getContentResolver().openInputStream(uri)) {
                 if (input == null)
-                    throw new Exception("Content resolver returned null stream. Unable to initialise with uri.");
+                    throw new RuntimeException("Content resolver returned null stream. Unable to initialise with uri.");
                 bitmap = BitmapFactory.decodeStream(input, null, options);
             }
         }
