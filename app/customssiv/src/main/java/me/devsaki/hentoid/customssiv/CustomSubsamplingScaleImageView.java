@@ -1504,9 +1504,9 @@ public class CustomSubsamplingScaleImageView extends View {
                                 .flatMap(tile -> Observable.just(tile)
                                         .observeOn(Schedulers.io())
                                         .map(tile2 -> loadTile(this, decoder, tile2))
-                                        .filter(res -> res.bitmap != null)
                                         .observeOn(Schedulers.computation())
-                                        .map(res -> processTile(res, this, targetScale))
+                                        .filter(tile3 -> tile3.bitmap != null && !tile3.bitmap.isRecycled())
+                                        .map(tile4 -> processTile(tile4, this, targetScale))
                                 )
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
