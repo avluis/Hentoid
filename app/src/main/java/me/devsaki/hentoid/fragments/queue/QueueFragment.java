@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
@@ -47,6 +46,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
 
@@ -73,7 +73,6 @@ public class QueueFragment extends Fragment {
     private TextView queueStatus;   // 1st line of text displayed on the right of the queue pause / play button
     private TextView queueInfo;     // 2nd line of text displayed on the right of the queue pause / play button
     private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
-    private Toolbar toolbar;
 
     // Used to keep scroll position when moving items
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
@@ -135,9 +134,6 @@ public class QueueFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_queue, container, false);
-
-        toolbar = requireViewById(rootView, R.id.queue_toolbar);
-        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         mEmptyText = requireViewById(rootView, R.id.queue_empty_txt);
 
@@ -283,7 +279,8 @@ public class QueueFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(QueueViewModel.class);
+        ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
         viewModel.getQueuePaged().observe(getViewLifecycleOwner(), this::onQueueChanged);
     }
 
@@ -405,9 +402,6 @@ public class QueueFragment extends Fragment {
         Timber.i(">>Queue changed ! Size=%s", result.size());
         isEmpty = (result.isEmpty());
         isPaused = (!isEmpty && (ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
-
-        // Update toolbar
-        toolbar.setTitle(getResources().getQuantityString(R.plurals.queue_book_count, result.size(), result.size()));
 
         // Update list visibility
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);

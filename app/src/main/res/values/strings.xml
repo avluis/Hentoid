@@ -50,6 +50,7 @@
     <string name="open_settings">Open settings</string>
 
     <!-- Queue -->
+    <string name="errors">Errors</string>
     <string name="cancel">Cancel</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>

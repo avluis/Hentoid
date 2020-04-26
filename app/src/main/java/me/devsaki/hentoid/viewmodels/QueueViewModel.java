@@ -29,7 +29,7 @@ import timber.log.Timber;
 public class QueueViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final CollectionDAO queueDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO queueDao;
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -38,8 +38,9 @@ public class QueueViewModel extends AndroidViewModel {
     private final MediatorLiveData<PagedList<QueueRecord>> queuePaged = new MediatorLiveData<>();
 
 
-    public QueueViewModel(@NonNull Application application) {
+    public QueueViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
+        queueDao = collectionDAO;
         refresh();
     }
 
