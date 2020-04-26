@@ -40,9 +40,13 @@ public interface CollectionDAO {
 
     void deleteContent(@NonNull final Content content);
 
+    List<ErrorRecord> selectErrorRecordByContentId(long contentId);
+
     void insertErrorRecord(@NonNull final ErrorRecord record);
 
     void deleteErrorRecords(long contentId);
+
+    void deleteAllBooks();
 
 
     // High-level queries

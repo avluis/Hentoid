@@ -25,7 +25,8 @@ import java.util.List;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
-import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
@@ -179,7 +180,7 @@ public class ImportHelper {
             return Result.OK_LIBRARY_DETECTED;
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
-            cleanUpDB(context);
+            new ObjectBoxDAO(context).deleteAllBooks();
             return Result.OK_EMPTY_FOLDER;
         }
     }
@@ -232,8 +233,8 @@ public class ImportHelper {
     }
 
     private static void cleanUpDB(@NonNull final Context context) {
-        Timber.d("Cleaning up DB.");
-        ObjectBoxDB.getInstance(context).deleteAllBooks();
+        CollectionDAO dao = new ObjectBoxDAO(context);
+        dao.deleteAllBooks();
     }
 
     private static void runImport(

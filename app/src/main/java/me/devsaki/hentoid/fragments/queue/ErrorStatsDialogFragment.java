@@ -27,7 +27,6 @@ import java.util.Map;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.enums.ErrorType;
@@ -97,7 +96,8 @@ public class ErrorStatsDialogFragment extends DialogFragment {
     }
 
     private void updateStats(long contentId) {
-        List<ErrorRecord> errors = ObjectBoxDB.getInstance(getContext()).selectErrorRecordByContentId(contentId);
+        CollectionDAO dao = new ObjectBoxDAO(requireContext());
+        List<ErrorRecord> errors = dao.selectErrorRecordByContentId(contentId);
         Map<ErrorType, Integer> errorsByType = new EnumMap<>(ErrorType.class);
 
         for (ErrorRecord error : errors) {

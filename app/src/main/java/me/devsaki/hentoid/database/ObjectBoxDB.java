@@ -103,7 +103,7 @@ public class ObjectBoxDB {
     }
 
 
-    public long insertContent(Content content) {
+    long insertContent(Content content) {
         List<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
         Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
@@ -155,7 +155,7 @@ public class ObjectBoxDB {
     /*
     Remove all books in the library but keep the download queue intact
      */
-    public void deleteAllBooks() {
+    void deleteAllBooks() {
         // All statuses except DOWNLOADING and PAUSED that imply the book is in the download queue
         int[] storedContentStatus = new int[]{
                 StatusContent.SAVED.getCode(),
@@ -168,7 +168,7 @@ public class ObjectBoxDB {
                 StatusContent.ONLINE.getCode()
         };
 
-        // Base content that has to be removed
+        // Remove corresponding content
         long[] deletableContentId = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build().findIds();
         deleteContentById(deletableContentId);
     }
@@ -198,29 +198,29 @@ public class ObjectBoxDB {
             Content c = contentBox.get(id);
             if (c != null) {
                 store.runInTx(() -> {
-                if (c.getImageFiles() != null) {
-                    for (ImageFile i : c.getImageFiles())
-                        imageFileBox.remove(i);   // Delete imageFiles
-                    c.getImageFiles().clear();                                      // Clear links to all imageFiles
-                }
-
-                if (c.getErrorLog() != null) {
-                    for (ErrorRecord e : c.getErrorLog())
-                        errorBox.remove(e);   // Delete error records
-                    c.getErrorLog().clear();                                    // Clear links to all errorRecords
-                }
-
-                // Delete attribute when current content is the only content left on the attribute
-                for (Attribute a : c.getAttributes())
-                    if (1 == a.contents.size()) {
-                        for (AttributeLocation l : a.getLocations())
-                            locationBox.remove(l); // Delete all locations
-                        a.getLocations().clear();                                           // Clear location links
-                        attributeBox.remove(a);                                             // Delete the attribute itself
+                    if (c.getImageFiles() != null) {
+                        for (ImageFile i : c.getImageFiles())
+                            imageFileBox.remove(i);   // Delete imageFiles
+                        c.getImageFiles().clear();                                      // Clear links to all imageFiles
                     }
-                c.getAttributes().clear();                                      // Clear links to all attributes
 
-                contentBox.remove(c);                                           // Remove the content itself
+                    if (c.getErrorLog() != null) {
+                        for (ErrorRecord e : c.getErrorLog())
+                            errorBox.remove(e);   // Delete error records
+                        c.getErrorLog().clear();                                    // Clear links to all errorRecords
+                    }
+
+                    // Delete attribute when current content is the only content left on the attribute
+                    for (Attribute a : c.getAttributes())
+                        if (1 == a.contents.size()) {
+                            for (AttributeLocation l : a.getLocations())
+                                locationBox.remove(l); // Delete all locations
+                            a.getLocations().clear();                                           // Clear location links
+                            attributeBox.remove(a);                                             // Delete the attribute itself
+                        }
+                    c.getAttributes().clear();                                      // Clear links to all attributes
+
+                    contentBox.remove(c);                                           // Remove the content itself
                 });
             }
         }
@@ -272,10 +272,6 @@ public class ObjectBoxDB {
         QueueRecord record = queueRecordBox.query().equal(QueueRecord_.contentId, contentId).build().findFirst();
 
         if (record != null) queueRecordBox.remove(record);
-    }
-
-    public void deleteAllQueue() {
-        store.boxFor(QueueRecord.class).removeAll();
     }
 
     Query<Content> getVisibleContentQ() {
@@ -651,8 +647,10 @@ public class ObjectBoxDB {
         }
     }
 
-    void updateImageContentStatus(long contentId, StatusContent
-            updateFrom, @NonNull StatusContent updateTo) {
+    void updateImageContentStatus(
+            long contentId,
+            @Nullable StatusContent updateFrom,
+            @NonNull StatusContent updateTo) {
         QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
         if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.getCode());
         List<ImageFile> imgs = query.equal(ImageFile_.contentId, contentId).build().find();
@@ -663,7 +661,7 @@ public class ObjectBoxDB {
         store.boxFor(ImageFile.class).put(imgs);
     }
 
-    void updateImageFileUrl(ImageFile image) {
+    void updateImageFileUrl(@NonNull final ImageFile image) {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
         if (img != null) {
@@ -697,7 +695,7 @@ public class ObjectBoxDB {
         store.boxFor(ErrorRecord.class).put(record);
     }
 
-    public List<ErrorRecord> selectErrorRecordByContentId(long contentId) {
+    List<ErrorRecord> selectErrorRecordByContentId(long contentId) {
         return store.boxFor(ErrorRecord.class).query().equal(ErrorRecord_.contentId, contentId).build().find();
     }
 

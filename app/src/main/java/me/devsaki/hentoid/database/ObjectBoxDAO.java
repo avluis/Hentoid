@@ -35,6 +35,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import timber.log.Timber;
 
 public class ObjectBoxDAO implements CollectionDAO {
 
@@ -190,6 +191,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteContent(content);
     }
 
+    public List<ErrorRecord> selectErrorRecordByContentId(long contentId) {
+        return db.selectErrorRecordByContentId(contentId);
+    }
+
     public void insertErrorRecord(@NonNull final ErrorRecord record) {
         db.insertErrorRecord(record);
     }
@@ -197,6 +202,18 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void deleteErrorRecords(long contentId) {
         db.deleteErrorRecords(contentId);
     }
+
+    // Warning : no threads used there; this is a blocking operation
+    public void deleteAllBooks() {
+        Timber.i("Cleaning up DB.");
+        db.deleteAllBooks();
+
+        // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
+        List<Long> remainingContent = contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), Preferences.Constant.ORDER_CONTENT_LAST_READ, false);
+        for (Long contentId : remainingContent)
+            db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
+    }
+
 
     public void insertImageFile(@NonNull ImageFile img) {
         db.insertImageFile(img);

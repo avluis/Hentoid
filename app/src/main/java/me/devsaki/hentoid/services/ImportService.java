@@ -177,7 +177,11 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
         trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
         trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
+
+        // Cleanup DB
         CollectionDAO dao = new ObjectBoxDAO(this);
+        dao.deleteAllBooks();
+
         for (int i = 0; i < bookFolders.size(); i++) {
             DocumentFile bookFolder = bookFolders.get(i);
             Timber.i(">> start %s", bookFolder.getUri().toString());
