@@ -1,13 +1,11 @@
 package me.devsaki.hentoid.widget;
 
 import android.view.View;
-import android.widget.ImageButton;
 
 import androidx.recyclerview.widget.RecyclerView;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.ui.CarouselDecorator;
-import me.devsaki.hentoid.util.ThemeHelper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -55,12 +53,8 @@ public class LibraryPager {
         decorator.decorate(pageCarousel);
         decorator.setOnPageChangeListener(this::pageChanged);
 
-        ImageButton btnPrevious = requireViewById(rootView, R.id.pager_btnPrevious);
-        btnPrevious.setOnClickListener(this::previousPage);
-        btnPrevious.setBackground(ThemeHelper.makeQueueButtonSelector(rootView.getContext()));
-        ImageButton btnNext = requireViewById(rootView, R.id.pager_btnNext);
-        btnNext.setOnClickListener(this::nextPage);
-        btnNext.setBackground(ThemeHelper.makeQueueButtonSelector(rootView.getContext()));
+        requireViewById(rootView, R.id.pager_btnPrevious).setOnClickListener(this::previousPage);
+        requireViewById(rootView, R.id.pager_btnNext).setOnClickListener(this::nextPage);
     }
 
     public void show() {

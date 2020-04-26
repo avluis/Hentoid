@@ -150,9 +150,7 @@ public class QueueFragment extends Fragment {
 
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
-        btnStart.setBackground(ThemeHelper.makeQueueButtonSelector(requireContext()));
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
-        btnPause.setBackground(ThemeHelper.makeQueueButtonSelector(requireContext()));
         btnStats.setOnClickListener(v -> showErrorStats());
 
         // Book list container
