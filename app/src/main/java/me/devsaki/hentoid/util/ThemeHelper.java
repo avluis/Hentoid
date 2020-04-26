@@ -132,21 +132,6 @@ public class ThemeHelper {
      * NB : Replacing "absolute" colors (@color/...) by themed colors (?...) should be the correct solution, but it crashes on KitKat
      * => Universal solution is to create the drawable programmatically
      */
-
-    public static GradientDrawable makeDrawerHeader(Context context) {
-        GradientDrawable shape = new GradientDrawable(
-                GradientDrawable.Orientation.TL_BR,
-                new int[]{
-                        getColor(context, R.color.primary_light),
-                        getColor(context, R.color.drawer_header_diagonal_light),
-                        getColor(context, R.color.primary_light)
-                }
-        );
-        shape.setShape(GradientDrawable.RECTANGLE);
-
-        return shape;
-    }
-
     public static StateListDrawable makeQueueButtonSelector(Context context) {
         int colorPrimary = getColor(context, R.color.primary_light);
         int colorPrimaryVariant = getColor(context, R.color.primary_variant_light);
