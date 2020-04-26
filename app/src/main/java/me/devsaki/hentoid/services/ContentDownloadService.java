@@ -800,6 +800,8 @@ public class ContentDownloadService extends IntentService {
      */
     private static DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
         DocumentFile file = dir.createFile(mimeType, fileName);
+        if (null == file)
+            throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));
         FileHelper.saveBinaryInFile(file, binaryContent);
         return file;
     }
