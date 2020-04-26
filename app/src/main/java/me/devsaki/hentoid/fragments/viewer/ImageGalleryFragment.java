@@ -17,6 +17,7 @@ import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
+import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -92,6 +93,8 @@ public class ImageGalleryFragment extends Fragment {
 
         recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
         recyclerView.setAdapter(fastAdapter);
+        RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.viewer_gallery_fastscroller);
+        fastScroller.attachRecyclerView(recyclerView);
 
         Toolbar toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
