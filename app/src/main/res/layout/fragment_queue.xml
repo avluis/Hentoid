@@ -24,13 +24,21 @@
         android:paddingStart="@dimen/default_cardview_margin"
         android:paddingTop="@dimen/default_cardview_margin"
         android:paddingEnd="@dimen/default_cardview_margin"
-        android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/horizontal_barrier"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/queue_toolbar"
         tools:listitem="@layout/item_queue" />
+
+    <com.pluscubed.recyclerfastscroll.RecyclerFastScroller
+        android:id="@+id/queue_list_fastscroller"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintEnd_toEndOf="@id/queue_list"
+        app:layout_constraintTop_toTopOf="@id/queue_list"
+        app:layout_constraintBottom_toBottomOf="@id/queue_list"
+        android:layout_gravity="end" />
 
     <TextView
         android:id="@+id/queue_empty_txt"

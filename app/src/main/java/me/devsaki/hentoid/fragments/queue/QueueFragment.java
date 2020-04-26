@@ -22,6 +22,7 @@ import com.annimon.stream.function.LongConsumer;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
+import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -44,7 +45,6 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.views.CircularProgressView;
@@ -163,6 +163,10 @@ public class QueueFragment extends Fragment {
         recyclerView.setAdapter(fastAdapter);
 
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
+
+        // Fast scroller
+        RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.queue_list_fastscroller);
+        fastScroller.attachRecyclerView(recyclerView);
 
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
