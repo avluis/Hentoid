@@ -18,7 +18,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -33,9 +32,12 @@ public class QueueViewModel extends AndroidViewModel {
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    // Collection data
-    private LiveData<PagedList<QueueRecord>> currentSource;
+    // Collection data for queue
+    private LiveData<PagedList<QueueRecord>> currentQueueSource;
     private final MediatorLiveData<PagedList<QueueRecord>> queuePaged = new MediatorLiveData<>();
+    // Collection data for errors
+    private LiveData<PagedList<Content>> currentErrorsSource;
+    private final MediatorLiveData<PagedList<Content>> errorsPaged = new MediatorLiveData<>();
 
 
     public QueueViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -55,20 +57,28 @@ public class QueueViewModel extends AndroidViewModel {
         return queuePaged;
     }
 
+    @NonNull
+    public LiveData<PagedList<Content>> getErrorsPaged() {
+        return errorsPaged;
+    }
+
 
     // =========================
     // =========== QUEUE ACTIONS
     // =========================
 
     /**
-     * Perform a new library search
+     * Perform a new search
      */
     private void refresh() {
-        if (currentSource != null) queuePaged.removeSource(currentSource);
-
-        currentSource = queueDao.getQueueContent();
-
-        queuePaged.addSource(currentSource, queuePaged::setValue);
+        // Queue
+        if (currentQueueSource != null) queuePaged.removeSource(currentQueueSource);
+        currentQueueSource = queueDao.getQueueContent();
+        queuePaged.addSource(currentQueueSource, queuePaged::setValue);
+        // Errors
+        if (currentErrorsSource != null) errorsPaged.removeSource(currentErrorsSource);
+        currentErrorsSource = queueDao.getErrorContent();
+        errorsPaged.addSource(currentErrorsSource, errorsPaged::setValue);
     }
 
 

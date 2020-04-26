@@ -140,6 +140,7 @@
     <string name="moving_to_first_page">Moving to first page.</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
     <string name="queue_empty">Why am I empty?</string>
+    <string name="errors_empty">No errors detected among downloads</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
     <string name="downloads_loading">Loading up~</string>
     <string name="masterdata_no_result">No result found :(</string>

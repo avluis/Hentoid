@@ -64,6 +64,10 @@ public interface CollectionDAO {
 
     LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly, boolean loadAll);
 
+
+    LiveData<PagedList<Content>> getErrorContent();
+
+
     LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly);
 
     LiveData<Integer> countAllBooks();

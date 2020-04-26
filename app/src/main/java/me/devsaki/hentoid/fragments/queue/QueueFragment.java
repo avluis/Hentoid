@@ -108,7 +108,7 @@ public class QueueFragment extends Fragment {
         }
     }).build();
 
-    private final PagedModelAdapter<QueueRecord, ContentItem> itemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(true), ContentItem::new);
+    private final PagedModelAdapter<QueueRecord, ContentItem> itemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.QUEUE), ContentItem::new);
 
 
     @Override
@@ -154,7 +154,7 @@ public class QueueFragment extends Fragment {
 
         FastAdapter<ContentItem> fastAdapter = FastAdapter.with(itemAdapter);
         fastAdapter.setHasStableIds(true);
-        ContentItem item = new ContentItem(true);
+        ContentItem item = new ContentItem(ContentItem.ViewType.QUEUE);
         fastAdapter.registerItemFactory(item.getType(), item);
         recyclerView.setAdapter(fastAdapter);
 

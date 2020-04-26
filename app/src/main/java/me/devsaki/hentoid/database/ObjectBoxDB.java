@@ -52,6 +52,9 @@ public class ObjectBoxDB {
 
     // TODO - put indexes
 
+    // TODO be careful when adjusting that not to display content with error
+    // as some search methods are used for other things than simple display on the library view
+    // (check migration and cleaning jobs)
     private static final int[] visibleContentStatus = new int[]{StatusContent.DOWNLOADED.getCode(),
             StatusContent.ERROR.getCode(),
             StatusContent.MIGRATED.getCode()};
@@ -274,7 +277,7 @@ public class ObjectBoxDB {
         if (record != null) queueRecordBox.remove(record);
     }
 
-    Query<Content> getVisibleContentQ() {
+    Query<Content> selectVisibleContentQ() {
         return queryContentSearchContent("", Collections.emptyList(), false, Preferences.Constant.ORDER_CONTENT_NONE);
     }
 
@@ -357,7 +360,7 @@ public class ObjectBoxDB {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty()) {
-                        query.in(Content_.id, getFilteredContent(attrs, false));
+                        query.in(Content_.id, selectFilteredContent(attrs, false));
                     }
                 }
             }
@@ -451,7 +454,7 @@ public class ObjectBoxDB {
         return query.count();
     }
 
-    private long[] getFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
+    private long[] selectFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
         if (null == attrs || attrs.isEmpty()) return new long[0];
 
         // Pre-build queries to reuse them efficiently within the loops
@@ -515,7 +518,7 @@ public class ObjectBoxDB {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty())
-                        query.in(Content_.id, getFilteredContent(attrs, false));
+                        query.in(Content_.id, selectFilteredContent(attrs, false));
                 }
             }
 
@@ -539,6 +542,10 @@ public class ObjectBoxDB {
         return result;
     }
 
+    Query<Content> selectErrorContentQ() {
+        return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.ERROR.getCode()).build();
+    }
+
     private Query<Attribute> queryAvailableAttributes(
             @NonNull final AttributeType type,
             String filter,
@@ -557,7 +564,7 @@ public class ObjectBoxDB {
 
     long countAvailableAttributes(AttributeType
                                           type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
-        return queryAvailableAttributes(type, filter, getFilteredContent(attributeFilter, filterFavourites)).count();
+        return queryAvailableAttributes(type, filter, selectFilteredContent(attributeFilter, filterFavourites)).count();
     }
 
     @SuppressWarnings("squid:S2184")
@@ -570,7 +577,7 @@ public class ObjectBoxDB {
             int sortOrder,
             int page,
             int itemsPerPage) {
-        long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
+        long[] filteredContent = selectFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
 
@@ -608,7 +615,7 @@ public class ObjectBoxDB {
 
     SparseIntArray countAvailableAttributesPerType(List<Attribute> attributeFilter) {
         // Get Content filtered by current selection
-        long[] filteredContent = getFilteredContent(attributeFilter, false);
+        long[] filteredContent = selectFilteredContent(attributeFilter, false);
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
 
@@ -726,7 +733,7 @@ public class ObjectBoxDB {
         else return null;
     }
 
-    Query<ImageFile> getDownloadedImagesFromContent(long id) {
+    Query<ImageFile> selectDownloadedImagesFromContent(long id) {
         QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
         builder.equal(ImageFile_.contentId, id);
         builder.equal(ImageFile_.status, StatusContent.DOWNLOADED.getCode());
@@ -735,7 +742,7 @@ public class ObjectBoxDB {
     }
 
     void insertSiteHistory(@NonNull Site site, @NonNull String url) {
-        SiteHistory siteHistory = getHistory(site);
+        SiteHistory siteHistory = selectHistory(site);
         if (siteHistory != null) {
             siteHistory.setUrl(url);
             store.boxFor(SiteHistory.class).put(siteHistory);
@@ -745,7 +752,7 @@ public class ObjectBoxDB {
     }
 
     @Nullable
-    SiteHistory getHistory(@NonNull Site s) {
+    SiteHistory selectHistory(@NonNull Site s) {
         return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
     }
 

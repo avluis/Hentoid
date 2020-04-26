@@ -804,10 +804,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isEndless) { // Endless mode
             pager.hide();
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(false), ContentItem::new);
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, ContentItem.ViewType.LIBRARY));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
-            ContentItem item = new ContentItem(false);
+            ContentItem item = new ContentItem(ContentItem.ViewType.LIBRARY);
             fastAdapter.registerItemFactory(item.getType(), item);
 
             itemAdapter = null;
@@ -944,7 +944,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         int maxIndex = bounds.getRight();
 
         //noinspection Convert2MethodRef need API24
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(c -> new ContentItem(c, ContentItem.ViewType.LIBRARY)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }

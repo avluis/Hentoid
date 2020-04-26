@@ -17,7 +17,9 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.fragments.queue.ErrorsFragment;
 import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
@@ -28,8 +30,6 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory;
  */
 public class QueueActivity extends BaseActivity {
 
-    private ViewPager2 viewPager;
-    private TabLayout tabLayout;
     private TabLayout.Tab queueTab;
     private TabLayout.Tab errorsTab;
 
@@ -44,12 +44,10 @@ public class QueueActivity extends BaseActivity {
         Toolbar toolbar = findViewById(R.id.queue_toolbar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
-        // TODO tab colors and height
-
         // Instantiate a ViewPager and a PagerAdapter.
-        tabLayout = findViewById(R.id.queue_tabs);
+        TabLayout tabLayout = findViewById(R.id.queue_tabs);
         FragmentStateAdapter pagerAdapter = new ScreenSlidePagerAdapter(this);
-        viewPager = findViewById(R.id.queue_pager);
+        ViewPager2 viewPager = findViewById(R.id.queue_pager);
         viewPager.setUserInputEnabled(false);
         viewPager.setAdapter(pagerAdapter);
         new TabLayoutMediator(tabLayout, viewPager,
@@ -68,6 +66,7 @@ public class QueueActivity extends BaseActivity {
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
         viewModel.getQueuePaged().observe(this, this::onQueueChanged);
+        viewModel.getErrorsPaged().observe(this, this::onErrorsChanged);
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
@@ -81,6 +80,13 @@ public class QueueActivity extends BaseActivity {
         badge.setNumber(result.size());
     }
 
+    private void onErrorsChanged(PagedList<Content> result) {
+        // Update errors tab
+        BadgeDrawable badge = errorsTab.getOrCreateBadge();
+        badge.setVisible(true);
+        badge.setNumber(result.size());
+    }
+
     private static class ScreenSlidePagerAdapter extends FragmentStateAdapter {
         ScreenSlidePagerAdapter(FragmentActivity fa) {
             super(fa);
@@ -90,7 +96,7 @@ public class QueueActivity extends BaseActivity {
         @Override
         public Fragment createFragment(int position) {
             if (0 == position) return new QueueFragment();
-            else return new QueueFragment();
+            else return new ErrorsFragment();
         }
 
         @Override

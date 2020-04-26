@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -26,6 +27,8 @@ import com.mikepenz.fastadapter.items.AbstractItem;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,29 +55,38 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             .centerInside()
             .error(R.drawable.ic_placeholder);
 
+    @IntDef({ViewType.LIBRARY, ViewType.QUEUE, ViewType.ERRORS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ViewType {
+        int LIBRARY = 0;
+        int QUEUE = 1;
+        int ERRORS = 2;
+    }
+
     private Content content;
-    private boolean isQueued;
+    private @ViewType
+    int viewType;
     private boolean isEmpty;
 
     // Constructor for empty placeholder
-    public ContentItem(boolean isQueued) {
+    public ContentItem(@ViewType int viewType) {
         isEmpty = true;
         content = null;
-        this.isQueued = isQueued;
+        this.viewType = viewType;
     }
 
     // Constructor for library item
-    public ContentItem(@NonNull Content content) {
+    public ContentItem(@NonNull Content content, @ViewType int viewType) {
         this.content = content;
-        isQueued = false;
+        this.viewType = viewType;
         setIdentifier(content.getId());
-        setSelectable(!isQueued);
+//        setSelectable(viewType == ViewType.LIBRARY);
         isEmpty = false;
     }
 
     // Constructor for queued item
     public ContentItem(@NonNull QueueRecord record) {
-        isQueued = true;
+        viewType = ViewType.QUEUE;
         setSelectable(false);
         setIdentifier(record.id);
         content = record.content.getTarget();
@@ -89,12 +101,15 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     @NotNull
     @Override
     public ContentItem.ContentViewHolder getViewHolder(@NotNull View view) {
-        return new ContentViewHolder(view, isQueued);
+        return new ContentViewHolder(view, viewType);
     }
 
     @Override
-    public int getLayoutRes() {
-        return isQueued ? R.layout.item_queue : R.layout.item_download;
+    public int getLayoutRes()
+    {
+        if (ViewType.LIBRARY == viewType) return R.layout.item_download;
+        else if (ViewType.QUEUE == viewType) return R.layout.item_queue;
+        else return R.layout.item_queue;
     }
 
     @Override
@@ -128,7 +143,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         private View ivCancel;
 
 
-        ContentViewHolder(View view, boolean isQueued) {
+        ContentViewHolder(View view, @ViewType int viewType) {
             super(view);
 
             baseLayout = requireViewById(itemView, R.id.item);
@@ -140,11 +155,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             tvTags = requireViewById(itemView, R.id.tvTags);
             ivSite = requireViewById(itemView, R.id.ivSite);
 
-            if (!isQueued) {
+            if (viewType == ViewType.LIBRARY) {
                 ivNew = itemView.findViewById(R.id.lineNew);
                 ivError = itemView.findViewById(R.id.ivError);
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
-            } else {
+            } else if (viewType == ViewType.QUEUE) {
                 pbDownload = itemView.findViewById(R.id.pbDownload);
                 ivTop = itemView.findViewById(R.id.queueTopBtn);
                 ivUp = itemView.findViewById(R.id.queueUpBtn);
@@ -178,10 +193,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             attachTitle(item.content);
             attachArtist(item.content);
             attachSeries(item.content);
-            attachPages(item.content, item.isQueued);
+            attachPages(item.content, item.viewType);
             attachTags(item.content);
             attachButtons(item);
-            if (item.isQueued)
+            if (ViewType.QUEUE == item.viewType)
                 updateProgress(item.content, pbDownload, getAdapterPosition(), false);
         }
 
@@ -191,7 +206,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();
-            if (!item.isQueued)
+            if (ViewType.LIBRARY == item.viewType)
                 ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
         }
 
@@ -298,13 +313,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
         }
 
-        private void attachPages(Content content, boolean isQueued) {
+        private void attachPages(Content content, @ViewType int viewType) {
             tvPages.setVisibility(0 == content.getQtyPages() ? View.GONE : View.VISIBLE);
             Context context = tvPages.getContext();
             String template = context.getResources().getString(R.string.work_pages);
             template = template.replace("@pages@", content.getQtyPages() + "");
             long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
-            if (nbMissingPages > 0 && !isQueued)
+            if (nbMissingPages > 0 && viewType != ViewType.QUEUE)
                 template = template.replace("@missing@", " (" + nbMissingPages + " missing)");
             else
                 template = template.replace("@missing@", "");
@@ -345,7 +360,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 ivSite.setImageResource(R.drawable.ic_stat_hentoid);
             }
 
-            if (item.isQueued) {
+            if (ViewType.QUEUE == item.viewType) {
                 boolean isFirstItem = (0 == getAdapterPosition());
                 /*
                 int itemCount = item.adapter.getAdapterItemCount();
@@ -360,7 +375,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
 
                 ivDown.setImageResource(R.drawable.ic_arrow_down);
                 ivDown.setVisibility(/*isLastItem ? View.INVISIBLE :*/ View.VISIBLE);
-            } else {
+            } else if (ViewType.LIBRARY == item.viewType) {
                 // When transitioning to the other state, button blinks with its target state
                 if (content.isBeingFavourited()) {
                     ivFavourite.startAnimation(new BlinkAnimation(500, 250));
