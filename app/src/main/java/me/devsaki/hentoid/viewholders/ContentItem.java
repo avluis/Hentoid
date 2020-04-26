@@ -139,7 +139,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             tvPages = requireViewById(itemView, R.id.tvPages);
             tvTags = requireViewById(itemView, R.id.tvTags);
             ivSite = requireViewById(itemView, R.id.ivSite);
-            view.setBackground(ThemeHelper.makeCardSelector(view.getContext()));
 
             if (!isQueued) {
                 ivNew = itemView.findViewById(R.id.lineNew);
