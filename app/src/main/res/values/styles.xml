@@ -13,7 +13,7 @@
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">48dp</item>
         <item name="android:gravity">center</item>
-        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:background">@drawable/selector_search_card</item>
     </style>
 
     <style name="Chip">
@@ -23,7 +23,7 @@
         <item name="android:layout_marginEnd">8dp</item>
         <item name="android:paddingStart">12dp</item>
         <item name="android:gravity">center</item>
-        <item name="android:background">@drawable/bg_chip</item>
+        <item name="android:background">@drawable/selector_chip</item>
     </style>
 
     <style name="Chip.Choice">
@@ -58,7 +58,7 @@
     </style>
 
     <style name="NumpadDigits" parent="NumpadItem">
-        <item name="android:background">@drawable/bg_button_circle</item>
+        <item name="android:background">@drawable/selector_button_circle</item>
         <item name="android:textSize">32sp</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:gravity">center</item>
