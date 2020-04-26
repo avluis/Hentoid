@@ -24,7 +24,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -89,8 +88,6 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             fastAdapter.setOnClickListener((v, a, i, p) -> onItemSelected(i.getTag()));
 
             RecyclerView sitesRecycler = requireViewById(rootView, R.id.select_sites);
-            // Set programmatically because ?colorPrimary doesn't work here on kitKat
-            sitesRecycler.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.primary_light));
             sitesRecycler.setAdapter(fastAdapter);
         }
     }
