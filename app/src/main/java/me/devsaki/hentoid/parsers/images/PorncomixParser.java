@@ -27,12 +27,17 @@ public class PorncomixParser extends BaseParser {
 
         Element mangaPagesContainer = doc.selectFirst(".reading-content script");
         List<Element> galleryPages = doc.select("#dgwt-jg-2 a"); // same for zone
+        List<Element> galleryPages2 = doc.select(".unite-gallery img"); // same for zone
         List<Element> bestPages = doc.select("#gallery-2 a");
 
-        return parseImages(mangaPagesContainer, galleryPages, bestPages);
+        return parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages);
     }
 
-    public static List<String> parseImages(Element mangaPagesContainer, List<Element> galleryPages, List<Element> bestPages) {
+    public static List<String> parseImages(
+            Element mangaPagesContainer,
+            List<Element> galleryPages,
+            List<Element> galleryPages2,
+            List<Element> bestPages) {
         List<String> result = new ArrayList<>();
 
         if (mangaPagesContainer != null) {
@@ -42,6 +47,9 @@ public class PorncomixParser extends BaseParser {
         } else if (galleryPages != null && !galleryPages.isEmpty()) {
             for (Element e : galleryPages)
                 result.add(e.attr("href"));
+        } else if (galleryPages2 != null && !galleryPages2.isEmpty()) {
+            for (Element e : galleryPages2)
+                result.add(e.attr("data-image"));
         } else if (bestPages != null && !bestPages.isEmpty()) {
             String imgUrl;
             String imgExt;

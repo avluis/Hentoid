@@ -46,6 +46,8 @@ public class PorncomixContent implements ContentParser {
     private Element mangaPagesContainer;
     @Selector(value = "#dgwt-jg-2 a")
     private List<Element> galleryPages; // same for zone
+    @Selector(value = ".unite-gallery img")
+    private List<Element> galleryPages2;
     @Selector(value = "#gallery-2 a")
     private List<Element> bestPages;
 
@@ -86,7 +88,7 @@ public class PorncomixContent implements ContentParser {
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, true, Site.PORNCOMIX);
         result.addAttributes(attributes);
 
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, bestPages), StatusContent.SAVED);
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages), StatusContent.SAVED);
         result.setImageFiles(images);
         result.setQtyPages(images.size());
 
