@@ -75,16 +75,22 @@ public class QueueActivity extends BaseActivity {
 
     private void onQueueChanged(PagedList<QueueRecord> result) {
         // Update queue tab
-        BadgeDrawable badge = queueTab.getOrCreateBadge();
-        badge.setVisible(true);
-        badge.setNumber(result.size());
+        if (result.isEmpty()) queueTab.removeBadge();
+        else {
+            BadgeDrawable badge = queueTab.getOrCreateBadge();
+            badge.setVisible(true);
+            badge.setNumber(result.size());
+        }
     }
 
     private void onErrorsChanged(PagedList<Content> result) {
         // Update errors tab
-        BadgeDrawable badge = errorsTab.getOrCreateBadge();
-        badge.setVisible(true);
-        badge.setNumber(result.size());
+        if (result.isEmpty()) errorsTab.removeBadge();
+        else {
+            BadgeDrawable badge = errorsTab.getOrCreateBadge();
+            badge.setVisible(true);
+            badge.setNumber(result.size());
+        }
     }
 
     private static class ScreenSlidePagerAdapter extends FragmentStateAdapter {
