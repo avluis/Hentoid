@@ -543,7 +543,7 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectErrorContentQ() {
-        return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.ERROR.getCode()).build();
+        return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.ERROR.getCode()).orderDesc(Content_.downloadDate).build();
     }
 
     private Query<Attribute> queryAvailableAttributes(
