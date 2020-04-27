@@ -529,7 +529,8 @@ public class ContentDownloadService extends IntentService {
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
 
-        if (imgs.isEmpty()) throw new EmptyResultException();
+        // If no images found, or just the cover, image detection has failed
+        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover())) throw new EmptyResultException();
 
         // Cleanup generated objects
         for (ImageFile img : imgs) {
