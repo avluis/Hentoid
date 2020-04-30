@@ -18,10 +18,9 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.DragCallback;
+import me.devsaki.hentoid.util.CustomDragCallback;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.SiteItem;
-import timber.log.Timber;
 
 /**
  * Created by Robb on 10/2019
@@ -81,7 +80,7 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
         recyclerView.setHasFixedSize(true);
 
         // Activate drag & drop
-        SimpleDragCallback dragCallback = new DragCallback(SimpleDragCallback.UP_DOWN, this, this::onStartDrag);
+        SimpleDragCallback dragCallback = new CustomDragCallback(SimpleDragCallback.UP_DOWN, this, this::onStartDrag);
         ItemTouchHelper touchHelper = new ItemTouchHelper(dragCallback);
         touchHelper.attachToRecyclerView(recyclerView);
 
@@ -111,25 +110,22 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
     }
 
     @Override
-    public void itemTouchDropped(int oldPosition, int newPosition) {
-        Timber.i(">> itemTouchDropped %s %s", oldPosition, newPosition);
-        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
-        if (vh instanceof SiteItem.SiteViewHolder) {
-            ((SiteItem.SiteViewHolder)vh).onDropped();
-        }
-    }
-
-    @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
-        Timber.i(">> itemTouchOnMove %s %s", oldPosition, newPosition);
         DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
         return true;
     }
 
-    private void onStartDrag(RecyclerView.ViewHolder vh) {
-        Timber.i(">> onStartDrag");
+    @Override
+    public void itemTouchDropped(int oldPosition, int newPosition) {
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
         if (vh instanceof SiteItem.SiteViewHolder) {
-            ((SiteItem.SiteViewHolder)vh).onDragged();
+            ((SiteItem.SiteViewHolder) vh).onDropped();
+        }
+    }
+
+    private void onStartDrag(RecyclerView.ViewHolder vh) {
+        if (vh instanceof SiteItem.SiteViewHolder) {
+            ((SiteItem.SiteViewHolder) vh).onDragged();
         }
     }
 }

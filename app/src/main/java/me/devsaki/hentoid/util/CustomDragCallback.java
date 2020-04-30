@@ -9,17 +9,15 @@ import com.annimon.stream.function.Consumer;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 
-public class DragCallback extends SimpleDragCallback {
+public class CustomDragCallback extends SimpleDragCallback {
 
     private final Consumer<RecyclerView.ViewHolder> onStartDrag;
 
-    public DragCallback(int directions, ItemTouchCallback touchCallback, @NonNull Consumer<RecyclerView.ViewHolder> onStartDrag) {
+    public CustomDragCallback(
+            int directions,
+            ItemTouchCallback touchCallback,
+            @NonNull Consumer<RecyclerView.ViewHolder> onStartDrag) {
         super(directions, touchCallback);
-        this.onStartDrag = onStartDrag;
-    }
-
-    public DragCallback(int directions, @NonNull Consumer<RecyclerView.ViewHolder> onStartDrag) {
-        super(directions);
         this.onStartDrag = onStartDrag;
     }
 
