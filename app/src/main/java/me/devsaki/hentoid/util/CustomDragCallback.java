@@ -24,6 +24,6 @@ public class CustomDragCallback extends SimpleDragCallback {
     @Override
     public void onSelectedChanged(@Nullable RecyclerView.ViewHolder viewHolder, int actionState) {
         super.onSelectedChanged(viewHolder, actionState);
-        if (ItemTouchHelper.ACTION_STATE_DRAG == actionState) onStartDrag.accept(viewHolder);
+        if (ItemTouchHelper.ACTION_STATE_DRAG == actionState && viewHolder != null) onStartDrag.accept(viewHolder);
     }
 }

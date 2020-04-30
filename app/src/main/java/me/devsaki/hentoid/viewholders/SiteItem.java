@@ -96,7 +96,7 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements I
         }
 
         public void onDragged() {
-            rootView.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.primary_light));
+            rootView.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.white_opacity_33));
         }
 
         public void onDropped() {
