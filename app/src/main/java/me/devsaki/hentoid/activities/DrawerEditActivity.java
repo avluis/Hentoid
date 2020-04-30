@@ -20,6 +20,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.CustomDragCallback;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.SiteItem;
 
 /**
@@ -118,14 +119,14 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
     @Override
     public void itemTouchDropped(int oldPosition, int newPosition) {
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
-        if (vh instanceof SiteItem.SiteViewHolder) {
-            ((SiteItem.SiteViewHolder) vh).onDropped();
+        if (vh instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) vh).onDropped();
         }
     }
 
     private void onStartDrag(RecyclerView.ViewHolder vh) {
-        if (vh instanceof SiteItem.SiteViewHolder) {
-            ((SiteItem.SiteViewHolder) vh).onDragged();
+        if (vh instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) vh).onDragged();
         }
     }
 }

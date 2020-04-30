@@ -64,7 +64,7 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements I
     }
 
 
-    public static class SiteViewHolder extends FastAdapter.ViewHolder<SiteItem> {
+    static class SiteViewHolder extends FastAdapter.ViewHolder<SiteItem> implements IDraggableViewHolder {
 
         private final View rootView;
         private final ImageView dragHandle;
