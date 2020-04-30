@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.drag.IDraggable;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
 import org.jetbrains.annotations.NotNull;
@@ -14,8 +15,9 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.ThemeHelper;
 
-public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
+public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements IDraggable {
 
     private final Site site;
     private boolean showHandle = true;
@@ -56,9 +58,15 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
         return R.id.drawer_edit;
     }
 
+    @Override
+    public boolean isDraggable() {
+        return true;
+    }
 
-    static class SiteViewHolder extends FastAdapter.ViewHolder<SiteItem> {
 
+    public static class SiteViewHolder extends FastAdapter.ViewHolder<SiteItem> {
+
+        private final View rootView;
         private final ImageView dragHandle;
         private final ImageView icon;
         private final TextView title;
@@ -66,8 +74,8 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
 
         SiteViewHolder(View view) {
             super(view);
+            rootView = view;
             dragHandle = view.findViewById(R.id.drawer_item_handle);
-
             icon = view.findViewById(R.id.drawer_item_icon);
             title = view.findViewById(R.id.drawer_item_txt);
             chk = view.findViewById(R.id.drawer_item_chk);
@@ -85,6 +93,14 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> {
         @Override
         public void unbindView(@NotNull SiteItem item) {
             // No specific behaviour to implement
+        }
+
+        public void onDragged() {
+            rootView.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.primary_light));
+        }
+
+        public void onDropped() {
+            rootView.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.transparent));
         }
     }
 }
