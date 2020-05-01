@@ -50,7 +50,7 @@ public class QueueActivity extends BaseActivity {
         TabLayout tabLayout = findViewById(R.id.queue_tabs);
         FragmentStateAdapter pagerAdapter = new ScreenSlidePagerAdapter(this);
         ViewPager2 viewPager = findViewById(R.id.queue_pager);
-        viewPager.setUserInputEnabled(false);
+        viewPager.setUserInputEnabled(false); // Disable swipe to change tabs
         viewPager.setAdapter(pagerAdapter);
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> {
