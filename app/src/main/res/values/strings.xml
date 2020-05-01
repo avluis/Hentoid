@@ -65,6 +65,7 @@
         <item quantity="one">Queue has %s book</item>
         <item quantity="other">Queue has %s books</item>
     </plurals>
+    <string name="err_no_content">Book does not exist yet</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>

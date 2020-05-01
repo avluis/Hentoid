@@ -49,6 +49,7 @@ import me.devsaki.hentoid.util.CustomDragCallback;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
@@ -445,7 +446,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback {
         Content c = i.getContent();
         if (c != null) {
             // TODO test long queues to see if a memorization of the top position (as in Library screen) is necessary
-            ContentHelper.openHentoidViewer(requireContext(), c, null);
+            if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
+                ToastUtil.toast(R.string.err_no_content);
             return true;
         } else return false;
     }

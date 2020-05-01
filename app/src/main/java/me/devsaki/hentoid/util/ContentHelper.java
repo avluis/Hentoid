@@ -120,7 +120,10 @@ public final class ContentHelper {
      * @param searchParams Current search parameters (so that the next/previous book feature
      *                     is faithful to the library screen's order)
      */
-    public static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
+    public static boolean openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
+        // Check if the book has at least its own folder
+        if (content.getStorageUri().isEmpty()) return false;
+
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageUri());
 
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
@@ -131,6 +134,7 @@ public final class ContentHelper {
         viewer.putExtras(builder.getBundle());
 
         context.startActivity(viewer);
+        return true;
     }
 
     /**
