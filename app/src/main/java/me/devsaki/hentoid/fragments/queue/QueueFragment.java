@@ -63,6 +63,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Presents the list of works currently downloading to the user.
  */
 // TODO cancel all
+// TODO hold-to-confirm or ask for confirmation when using delete item
 public class QueueFragment extends Fragment implements ItemTouchCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
