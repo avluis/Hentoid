@@ -248,18 +248,13 @@ public class ObjectBoxDB {
         return store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.rank).max();
     }
 
-    public void insertQueue(long id, int order) {
+    void insertQueue(long id, int order) {
         store.boxFor(QueueRecord.class).put(new QueueRecord(id, order));
     }
 
-    void updateQueue(long contentId, int newOrder) {
+    void updateQueue(@NonNull final List<QueueRecord> queue) {
         Box<QueueRecord> queueRecordBox = store.boxFor(QueueRecord.class);
-
-        QueueRecord record = queueRecordBox.query().equal(QueueRecord_.contentId, contentId).order(QueueRecord_.rank).build().findFirst();
-        if (record != null) {
-            record.rank = newOrder;
-            queueRecordBox.put(record);
-        }
+        queueRecordBox.put(queue);
     }
 
     void deleteQueue(@NonNull Content content) {

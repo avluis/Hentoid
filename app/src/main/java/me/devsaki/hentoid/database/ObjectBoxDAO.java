@@ -324,20 +324,16 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
-    public LiveData<PagedList<QueueRecord>> getQueueContent() {
-        Query<QueueRecord> query = db.selectQueueContentsQ();
-
-        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(40).setPageSize(20).build();
-
-        return new LivePagedListBuilder<>(new ObjectBoxDataSource.Factory<>(query), cfg).build();
+    public LiveData<List<QueueRecord>> getQueueContent() {
+        return new ObjectBoxLiveData<>(db.selectQueueContentsQ());
     }
 
     public List<QueueRecord> selectQueue() {
         return db.selectQueue();
     }
 
-    public void updateQueue(long contentId, int newOrder) {
-        db.updateQueue(contentId, newOrder);
+    public void updateQueue(@NonNull List<QueueRecord> queue) {
+        db.updateQueue(queue);
     }
 
     public void deleteQueue(@NonNull Content content) {

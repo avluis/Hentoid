@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_queue" />
+        tools:listitem="@layout/item_queue2" />
 
     <com.pluscubed.recyclerfastscroll.RecyclerFastScroller
         android:id="@+id/queue_list_fastscroller"

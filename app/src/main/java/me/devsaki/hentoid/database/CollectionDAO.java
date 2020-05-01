@@ -96,13 +96,13 @@ public interface CollectionDAO {
 
     List<QueueRecord> selectQueue();
 
-    void updateQueue(long contentId, int newOrder);
+    void updateQueue(@NonNull List<QueueRecord> queue);
 
     void deleteQueue(@NonNull Content content);
 
     void deleteQueue(int index);
 
-    LiveData<PagedList<QueueRecord>> getQueueContent();
+    LiveData<List<QueueRecord>> getQueueContent();
 
     void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
 

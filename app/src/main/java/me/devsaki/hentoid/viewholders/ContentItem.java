@@ -16,13 +16,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.drag.IExtendedDraggable;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -49,7 +53,7 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
-public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
+public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable {
 
     private static final RequestOptions glideRequestOptions = new RequestOptions()
             .centerInside()
@@ -67,12 +71,14 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     private @ViewType
     int viewType;
     private boolean isEmpty;
+    private ItemTouchHelper touchHelper;
 
     // Constructor for empty placeholder
     public ContentItem(@ViewType int viewType) {
         isEmpty = true;
         content = null;
         this.viewType = viewType;
+        touchHelper = null;
     }
 
     // Constructor for library item
@@ -82,15 +88,17 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         setIdentifier(content.getId());
 //        setSelectable(viewType == ViewType.LIBRARY);
         isEmpty = false;
+        touchHelper = null;
     }
 
     // Constructor for queued item
-    public ContentItem(@NonNull QueueRecord record) {
+    public ContentItem(@NonNull QueueRecord record, ItemTouchHelper touchHelper) {
         viewType = ViewType.QUEUE;
         setSelectable(false);
         setIdentifier(record.id);
         content = record.content.getTarget();
         isEmpty = (null == content);
+        this.touchHelper = touchHelper;
     }
 
     @Nullable
@@ -105,11 +113,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     }
 
     @Override
-    public int getLayoutRes()
-    {
+    public int getLayoutRes() {
         if (ViewType.LIBRARY == viewType) return R.layout.item_download;
-        else if (ViewType.QUEUE == viewType) return R.layout.item_queue;
-        else return R.layout.item_queue;
+        else return R.layout.item_queue2;
     }
 
     @Override
@@ -117,8 +123,26 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         return R.id.content;
     }
 
+    @Override
+    public boolean isDraggable() {
+        return true;
+    }
 
-    public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> {
+    @org.jetbrains.annotations.Nullable
+    @Override
+    public ItemTouchHelper getTouchHelper() {
+        return touchHelper;
+    }
+
+    @org.jetbrains.annotations.Nullable
+    @Override
+    public View getDragView(@NotNull RecyclerView.ViewHolder viewHolder) {
+        if (viewHolder instanceof ContentViewHolder)
+            return ((ContentViewHolder) viewHolder).ivReorder;
+        else return null;
+    }
+
+    public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> implements IDraggableViewHolder {
 
         // Common elements
         private View baseLayout;
@@ -140,7 +164,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         private ImageView ivTop;
         private ImageView ivUp;
         private ImageView ivDown;
-        private View ivCancel;
+        private ImageView ivCancel;
+        private View ivReorder;
 
 
         ContentViewHolder(View view, @ViewType int viewType) {
@@ -149,22 +174,23 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             baseLayout = requireViewById(itemView, R.id.item);
             tvTitle = requireViewById(itemView, R.id.tvTitle);
             ivCover = requireViewById(itemView, R.id.ivCover);
-            tvSeries = requireViewById(itemView, R.id.tvSeries);
             tvArtist = requireViewById(itemView, R.id.tvArtist);
             tvPages = requireViewById(itemView, R.id.tvPages);
-            tvTags = requireViewById(itemView, R.id.tvTags);
             ivSite = requireViewById(itemView, R.id.ivSite);
 
             if (viewType == ViewType.LIBRARY) {
                 ivNew = itemView.findViewById(R.id.lineNew);
                 ivError = itemView.findViewById(R.id.ivError);
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
+                tvSeries = requireViewById(itemView, R.id.tvSeries);
+                tvTags = requireViewById(itemView, R.id.tvTags);
             } else if (viewType == ViewType.QUEUE) {
                 pbDownload = itemView.findViewById(R.id.pbDownload);
                 ivTop = itemView.findViewById(R.id.queueTopBtn);
                 ivUp = itemView.findViewById(R.id.queueUpBtn);
                 ivDown = itemView.findViewById(R.id.queueDownBtn);
                 ivCancel = itemView.findViewById(R.id.btnCancel);
+                ivReorder = itemView.findViewById(R.id.ivReorder);
             }
         }
 
@@ -192,12 +218,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             attachCover(item.content);
             attachTitle(item.content);
             attachArtist(item.content);
-            attachSeries(item.content);
+            if (tvSeries != null)
+                attachSeries(item.content);
             attachPages(item.content, item.viewType);
-            attachTags(item.content);
             attachButtons(item);
-            if (ViewType.QUEUE == item.viewType)
+            if (tvTags != null)
+                attachTags(item.content);
+            if (pbDownload != null)
                 updateProgress(item.content, pbDownload, getAdapterPosition(), false);
+            if (ivReorder != null)
+                DragDropUtil.bindDragHandle(this, item);
         }
 
         private void updateLayoutVisibility(ContentItem item) {
@@ -206,7 +236,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();
-            if (ViewType.LIBRARY == item.viewType)
+            if (ivNew != null)
                 ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
         }
 
@@ -314,7 +344,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         }
 
         private void attachPages(Content content, @ViewType int viewType) {
-            tvPages.setVisibility(0 == content.getQtyPages() ? View.GONE : View.VISIBLE);
+            tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
             Context context = tvPages.getContext();
             String template = context.getResources().getString(R.string.work_pages);
             template = template.replace("@pages@", content.getQtyPages() + "");
@@ -361,20 +391,22 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
 
             if (ViewType.QUEUE == item.viewType) {
+                ivCancel.setImageResource(R.drawable.ic_action_delete_forever);
+/*
                 boolean isFirstItem = (0 == getAdapterPosition());
-                /*
                 int itemCount = item.adapter.getAdapterItemCount();
                 boolean isLastItem = itemCount - 1 == getAdapterPosition();
-                 */
 
                 ivUp.setImageResource(R.drawable.ic_arrow_up);
                 ivUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
 
                 ivTop.setImageResource(R.drawable.ic_doublearrowup);
-                ivTop.setVisibility((isFirstItem /*|| itemCount < 3*/) ? View.INVISIBLE : View.VISIBLE);
+                ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
 
                 ivDown.setImageResource(R.drawable.ic_arrow_down);
-                ivDown.setVisibility(/*isLastItem ? View.INVISIBLE :*/ View.VISIBLE);
+                ivDown.setVisibility(View.VISIBLE);
+
+ */
             } else if (ViewType.LIBRARY == item.viewType) {
                 // When transitioning to the other state, button blinks with its target state
                 if (content.isBeingFavourited()) {
@@ -462,6 +494,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         @Override
         public void unbindView(@NotNull ContentItem item) {
             // No specific behaviour to implement
+        }
+
+        @Override
+        public void onDragged() {
+            baseLayout.setBackgroundColor(ThemeHelper.getColor(baseLayout.getContext(), R.color.white_opacity_33));
+        }
+
+        @Override
+        public void onDropped() {
+            baseLayout.setBackground(baseLayout.getContext().getDrawable(R.drawable.bg_book_card));
         }
     }
 }

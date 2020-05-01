@@ -16,6 +16,8 @@ import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.util.List;
+
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -73,7 +75,7 @@ public class QueueActivity extends BaseActivity {
         }
     }
 
-    private void onQueueChanged(PagedList<QueueRecord> result) {
+    private void onQueueChanged(List<QueueRecord> result) {
         // Update queue tab
         if (result.isEmpty()) queueTab.removeBadge();
         else {
