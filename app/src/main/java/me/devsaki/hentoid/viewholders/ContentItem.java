@@ -130,12 +130,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     @Override
     public boolean isDraggable() {
-        return true;
+        return (ViewType.QUEUE == viewType);
     }
 
     @Override
     public boolean isSwipeable() {
-        return true;
+        return (ViewType.LIBRARY != viewType);
     }
 
     @org.jetbrains.annotations.Nullable
@@ -186,6 +186,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private View ivBottom;
         private View ivReorder;
         private View tvUndoSwipe;
+        private View ivRedownload;
 
 
         ContentViewHolder(View view, @ViewType int viewType) {
@@ -196,11 +197,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             ivCover = requireViewById(itemView, R.id.ivCover);
             tvArtist = requireViewById(itemView, R.id.tvArtist);
             tvPages = requireViewById(itemView, R.id.tvPages);
-            ivSite = requireViewById(itemView, R.id.ivSite);
+            ivSite = requireViewById(itemView, R.id.queue_site_button);
+            ivError = itemView.findViewById(R.id.ivError);
 
             if (viewType == ViewType.LIBRARY) {
                 ivNew = itemView.findViewById(R.id.lineNew);
-                ivError = itemView.findViewById(R.id.ivError);
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
@@ -212,6 +213,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivBottom = itemView.findViewById(R.id.queueBottomBtn);
                 ivReorder = itemView.findViewById(R.id.ivReorder);
                 tvUndoSwipe = itemView.findViewById(R.id.undo_swipe);
+                ivRedownload = itemView.findViewById(R.id.ivRedownload);
             }
         }
 
@@ -423,6 +425,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (ViewType.QUEUE == item.viewType) {
                 boolean isFirstItem = (0 == getAdapterPosition());
                 ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
+                ivRedownload.setVisibility(View.GONE);
+                ivError.setVisibility(View.GONE);
             } else if (ViewType.ERRORS == item.viewType) {
                 ivTop.setVisibility(View.GONE);
                 ivBottom.setVisibility(View.GONE);
@@ -501,6 +505,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         public View getBottomButton() {
             return ivBottom;
+        }
+
+        public View getDownloadButton() {
+            return ivRedownload;
         }
 
 

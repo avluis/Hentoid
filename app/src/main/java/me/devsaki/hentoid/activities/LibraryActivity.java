@@ -6,9 +6,12 @@ import android.view.WindowManager;
 import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProvider;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.viewmodels.LibraryViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 
 public class LibraryActivity extends BaseActivity {
 
@@ -38,6 +41,9 @@ public class LibraryActivity extends BaseActivity {
             openNavigationDrawer();
             Preferences.setIsFirstRunProcessComplete(true);
         }
+
+        ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
+        new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);

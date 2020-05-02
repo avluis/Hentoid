@@ -494,7 +494,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     /**
-     * DRAG & DROP METHODS
+     * DRAG, DROP & SWIPE METHODS
      */
 
     @Override

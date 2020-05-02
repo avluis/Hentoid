@@ -20,6 +20,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import timber.log.Timber;
@@ -28,7 +29,7 @@ import timber.log.Timber;
 public class QueueViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final CollectionDAO queueDao;
+    private final CollectionDAO dao;
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -42,7 +43,7 @@ public class QueueViewModel extends AndroidViewModel {
 
     public QueueViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
-        queueDao = collectionDAO;
+        dao = collectionDAO;
         refresh();
     }
 
@@ -73,11 +74,11 @@ public class QueueViewModel extends AndroidViewModel {
     private void refresh() {
         // Queue
         if (currentQueueSource != null) queuePaged.removeSource(currentQueueSource);
-        currentQueueSource = queueDao.getQueueContent();
+        currentQueueSource = dao.getQueueContent();
         queuePaged.addSource(currentQueueSource, queuePaged::setValue);
         // Errors
         if (currentErrorsSource != null) errorsPaged.removeSource(currentErrorsSource);
-        currentErrorsSource = queueDao.getErrorContent();
+        currentErrorsSource = dao.getErrorContent();
         errorsPaged.addSource(currentErrorsSource, errorsPaged::setValue);
     }
 
@@ -90,7 +91,7 @@ public class QueueViewModel extends AndroidViewModel {
         if (oldPosition == newPosition) return;
 
         // Get unpaged data to be sure we have everything in one collection
-        List<QueueRecord> queue = queueDao.selectQueue();
+        List<QueueRecord> queue = dao.selectQueue();
 
         Timber.i(">> queue move %s %s (total %s)", oldPosition, newPosition, queue.size());
 
@@ -110,7 +111,7 @@ public class QueueViewModel extends AndroidViewModel {
         }
 
         // Et voila
-        queueDao.updateQueue(queue);
+        dao.updateQueue(queue);
     }
 
     /**
@@ -137,11 +138,20 @@ public class QueueViewModel extends AndroidViewModel {
     @WorkerThread
     private void doCancel(long contentId) {
         // Remove content altogether from the DB (including queue)
-        Content content = queueDao.selectContent(contentId);
+        Content content = dao.selectContent(contentId);
         if (content != null) {
-            queueDao.deleteQueue(content);
+            dao.deleteQueue(content);
             // Remove the content from the disk and the DB
-            ContentHelper.removeContent(getApplication(), content, queueDao);
+            ContentHelper.removeContent(getApplication(), content, dao);
         }
+    }
+
+    /**
+     * Add the given content to the download queue
+     *
+     * @param content Content to be added to the download queue
+     */
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
+        dao.addContentToQueue(content, targetImageStatus);
     }
 }
