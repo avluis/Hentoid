@@ -52,12 +52,8 @@ public class ObjectBoxDB {
 
     // TODO - put indexes
 
-    // TODO be careful when adjusting that not to display content with error
-    // as some search methods are used for other things than simple display on the library view
-    // (check migration and cleaning jobs)
-    private static final int[] visibleContentStatus = new int[]{StatusContent.DOWNLOADED.getCode(),
-            StatusContent.ERROR.getCode(),
-            StatusContent.MIGRATED.getCode()};
+    // Status displayed in the library view
+    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()};
 
     private static ObjectBoxDB instance;
 
@@ -343,7 +339,7 @@ public class ObjectBoxDB {
         boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter ? 1 : 0);
 
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, visibleContentStatus);
+        query.in(Content_.status, libraryStatus);
 
         if (hasSiteFilter)
             query.in(Content_.site, getIdsFromAttributes(metadataMap.get(AttributeType.SOURCE)));
@@ -367,7 +363,7 @@ public class ObjectBoxDB {
 
     private Query<Content> queryContentUniversalAttributes(String queryStr, boolean filterFavourites) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, visibleContentStatus);
+        query.in(Content_.status, libraryStatus);
 
         if (filterFavourites) query.equal(Content_.favourite, true);
         query.link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
@@ -377,7 +373,7 @@ public class ObjectBoxDB {
 
     private Query<Content> queryContentUniversalContent(String queryStr, boolean filterFavourites, long[] additionalIds, int orderStyle) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, visibleContentStatus);
+        query.in(Content_.status, libraryStatus);
 
         if (filterFavourites) query.equal(Content_.favourite, true);
         query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
@@ -454,13 +450,13 @@ public class ObjectBoxDB {
 
         // Pre-build queries to reuse them efficiently within the loops
         QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
-        contentFromSourceQueryBuilder.in(Content_.status, visibleContentStatus);
+        contentFromSourceQueryBuilder.in(Content_.status, libraryStatus);
         contentFromSourceQueryBuilder.equal(Content_.site, 1);
         if (filterFavourites) contentFromSourceQueryBuilder.equal(Content_.favourite, true);
         Query<Content> contentFromSourceQuery = contentFromSourceQueryBuilder.build();
 
         QueryBuilder<Content> contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
-        contentFromAttributesQueryBuilder.in(Content_.status, visibleContentStatus);
+        contentFromAttributesQueryBuilder.in(Content_.status, libraryStatus);
         if (filterFavourites) contentFromSourceQueryBuilder.equal(Content_.favourite, true);
         contentFromAttributesQueryBuilder.link(Content_.attributes)
                 .equal(Attribute_.type, 0)
@@ -498,7 +494,7 @@ public class ObjectBoxDB {
         List<Attribute> result = new ArrayList<>();
 
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, visibleContentStatus);
+        query.in(Content_.status, libraryStatus);
 
         if (filter != null && !filter.isEmpty()) {
             AttributeMap metadataMap = new AttributeMap();
@@ -550,9 +546,9 @@ public class ObjectBoxDB {
         if (filter != null && !filter.trim().isEmpty())
             query.contains(Attribute_.name, filter.trim(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (filteredContent.length > 0)
-            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus);
+            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, libraryStatus);
         else
-            query.link(Attribute_.contents).in(Content_.status, visibleContentStatus);
+            query.link(Attribute_.contents).in(Content_.status, libraryStatus);
 
         return query.build();
     }
@@ -615,9 +611,9 @@ public class ObjectBoxDB {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
 
         if (filteredContent.length > 0)
-            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus);
+            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, libraryStatus);
         else
-            query.link(Attribute_.contents).in(Content_.status, visibleContentStatus);
+            query.link(Attribute_.contents).in(Content_.status, libraryStatus);
 
         List<Attribute> attributes = query.build().find();
 
