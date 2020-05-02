@@ -72,9 +72,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     private @ViewType
     int viewType;
     private boolean isEmpty;
+
+    // Drag, drop & swipe
     private ItemTouchHelper touchHelper;
-    private Runnable undoSwipeAction;
     private int swipeDirection = 0;
+    private Runnable undoSwipeAction; // Action to run when hitting the "undo" button
+
 
     // Constructor for empty placeholder
     public ContentItem(@ViewType int viewType) {
@@ -89,7 +92,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.content = content;
         this.viewType = viewType;
         setIdentifier(content.getId());
-//        setSelectable(viewType == ViewType.LIBRARY);
         isEmpty = false;
         touchHelper = null;
     }
