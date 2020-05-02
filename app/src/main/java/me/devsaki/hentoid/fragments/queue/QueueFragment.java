@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
-import com.annimon.stream.function.LongConsumer;
+import com.annimon.stream.function.BiConsumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
@@ -217,18 +217,15 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     // Process the move command while keeping scroll position in memory
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
-    private void processMove(@NotNull ContentItem item, @NonNull LongConsumer consumer) {
-        Content c = item.getContent();
-        if (c != null) {
-            topItemPosition = getTopItemPosition();
-            offsetTop = 0;
-            if (topItemPosition >= 0) {
-                View firstView = llm.findViewByPosition(topItemPosition);
-                if (firstView != null)
-                    offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
-            }
-            consumer.accept(c.getId());
+    private void processMove(int from, int to, @NonNull BiConsumer<Integer, Integer> consumer) {
+        topItemPosition = getTopItemPosition();
+        offsetTop = 0;
+        if (topItemPosition >= 0) {
+            View firstView = llm.findViewByPosition(topItemPosition);
+            if (firstView != null)
+                offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
         }
+        consumer.accept(from, to);
     }
 
     private void attachButtons(FastAdapter<ContentItem> fastAdapter) {
@@ -254,7 +251,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                viewModel.move(i, 0);
+                processMove(i, 0, viewModel::move);
+//                viewModel.move(i, 0);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -271,7 +269,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                viewModel.move(i, fastAdapter.getItemCount() - 1);
+                processMove(i, fastAdapter.getItemCount() - 1, viewModel::move);
+//                viewModel.move(i, fastAdapter.getItemCount() - 1);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -404,7 +403,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         int bookDiff = (eventType == DownloadEvent.EV_CANCEL) ? 1 : 0; // Cancel event means a book will be removed very soon from the queue
         isEmpty = (0 == itemAdapter.getAdapterItemCount() - bookDiff);
         isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
-        updateUI();
+        updateControlBar();
     }
 
     private void onQueueChanged(List<QueueRecord> result) {
@@ -418,8 +417,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Update displayed books
         List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper)).toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
+        differEndCallback();
 
-        updateUI();
+        updateControlBar();
     }
 
     /**
@@ -442,7 +442,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         llm.scrollToPositionWithOffset(topItemPosition, offsetTop); // Used to restore position after activity has been stopped and recreated
     }
 
-    private void updateUI() {
+    private void updateControlBar() {
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, itemAdapter.getAdapterItemCount());

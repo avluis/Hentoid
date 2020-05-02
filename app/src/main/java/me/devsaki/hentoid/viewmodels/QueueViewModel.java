@@ -88,8 +88,8 @@ public class QueueViewModel extends AndroidViewModel {
     // ========= CONTENT ACTIONS
     // =========================
 
-    public void move(int oldPosition, int newPosition) {
-        if (oldPosition == newPosition) return;
+    public void move(@NonNull Integer oldPosition, @NonNull Integer newPosition) {
+        if (oldPosition.equals(newPosition)) return;
 
         // Get unpaged data to be sure we have everything in one collection
         List<QueueRecord> queue = dao.selectQueue();
