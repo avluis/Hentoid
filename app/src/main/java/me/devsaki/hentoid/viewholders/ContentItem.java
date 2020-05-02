@@ -120,7 +120,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     @Override
     public int getLayoutRes() {
         if (ViewType.LIBRARY == viewType) return R.layout.item_download;
-        else return R.layout.item_queue2;
+        else return R.layout.item_queue;
     }
 
     @Override
@@ -204,7 +204,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
-            } else if (viewType == ViewType.QUEUE) {
+            } else {
                 swipeResult = itemView.findViewById(R.id.swipe_result_content);
                 bookCard = itemView.findViewById(R.id.item_card);
                 pbDownload = itemView.findViewById(R.id.pbDownload);
@@ -423,6 +423,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (ViewType.QUEUE == item.viewType) {
                 boolean isFirstItem = (0 == getAdapterPosition());
                 ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
+            } else if (ViewType.ERRORS == item.viewType) {
+                ivTop.setVisibility(View.GONE);
+                ivBottom.setVisibility(View.GONE);
+                ivReorder.setVisibility(View.GONE);
             } else if (ViewType.LIBRARY == item.viewType) {
                 // When transitioning to the other state, button blinks with its target state
                 if (content.isBeingFavourited()) {
