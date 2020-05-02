@@ -52,6 +52,7 @@
     <!-- Queue -->
     <string name="errors">Errors</string>
     <string name="cancel_all">Cancel all</string>
+    <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
     <string name="canceled">Canceled</string>
     <string name="undo">Undo</string>

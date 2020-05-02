@@ -115,6 +115,20 @@ public class QueueViewModel extends AndroidViewModel {
         dao.updateQueue(queue);
     }
 
+    public void invertQueue() {
+        // Get unpaged data to be sure we have everything in one collection
+        List<QueueRecord> queue = dao.selectQueue();
+
+        // Renumber everything in reverse order
+        int index = 1;
+        for (int i = queue.size() - 1; i >= 0; i--) {
+            queue.get(i).rank = index++;
+        }
+
+        // Et voila
+        dao.updateQueue(queue);
+    }
+
     /**
      * Cancel download of designated Content
      * NB : Contrary to Pause command, Cancel removes the Content from the download queue

@@ -37,6 +37,7 @@ public class QueueActivity extends BaseActivity {
     private TabLayout.Tab errorsTab;
 
     private Toolbar toolbar;
+    private MenuItem invertQueueMenu;
     private MenuItem cancelAllMenu;
     private MenuItem redownloadAllMenu;
 
@@ -48,6 +49,7 @@ public class QueueActivity extends BaseActivity {
 
         toolbar = findViewById(R.id.queue_toolbar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        invertQueueMenu = toolbar.getMenu().findItem(R.id.action_invert_queue);
         cancelAllMenu = toolbar.getMenu().findItem(R.id.action_cancel_all);
         redownloadAllMenu = toolbar.getMenu().findItem(R.id.action_redownload_all);
 
@@ -89,6 +91,7 @@ public class QueueActivity extends BaseActivity {
     }
 
     private void onTabSelected(int position) {
+        invertQueueMenu.setVisible(0 == position);
         cancelAllMenu.setVisible(0 == position);
         redownloadAllMenu.setVisible(1 == position);
     }

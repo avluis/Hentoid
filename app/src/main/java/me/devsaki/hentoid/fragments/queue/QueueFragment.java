@@ -79,7 +79,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     // UI ELEMENTS
     private View rootView;
-    private MenuItem cancelAllMenu;
     private RecyclerView recyclerView;  // Queued book list
     private TextView mEmptyText;        // "Empty queue" message panel
     private ImageButton btnStart;       // Start / Resume button
@@ -193,7 +192,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void initToolbar() {
         if (!(requireActivity() instanceof QueueActivity)) return;
         QueueActivity activity = (QueueActivity) requireActivity();
-        cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
+        MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
         cancelAllMenu.setOnMenuItemClickListener(item -> {
             new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_warning)
@@ -209,6 +208,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                             (dialog12, which) -> dialog12.dismiss())
                     .create()
                     .show();
+            return true;
+        });
+        MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
+        invertMenu.setOnMenuItemClickListener(item -> {
+            viewModel.invertQueue();
             return true;
         });
     }
