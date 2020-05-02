@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.queue;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.LongConsumer;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
@@ -38,6 +40,7 @@ import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -50,6 +53,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
@@ -65,7 +69,6 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Presents the list of works currently downloading to the user.
  */
 // TODO cancel all
-// TODO hold-to-confirm or ask for confirmation when using delete item
 public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -76,6 +79,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     // UI ELEMENTS
     private View rootView;
+    private MenuItem cancelAllMenu;
     private RecyclerView recyclerView;  // Queued book list
     private TextView mEmptyText;        // "Empty queue" message panel
     private ImageButton btnStart;       // Start / Resume button
@@ -99,7 +103,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     // Used to effectively cancel a download when the user hasn't hit UNDO
     private FastAdapter<ContentItem> fastAdapter;
-    private final Debouncer<Integer> cancelDebouncer = new Debouncer<>(2000, this::onBookCancel);
+    private final Debouncer<Integer> cancelDebouncer = new Debouncer<>(2000, this::onCancelBook);
 
 
     // State
@@ -180,9 +184,33 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
 
+        initToolbar();
         attachButtons(fastAdapter);
 
         return rootView;
+    }
+
+    private void initToolbar() {
+        if (!(requireActivity() instanceof QueueActivity)) return;
+        QueueActivity activity = (QueueActivity) requireActivity();
+        cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
+        cancelAllMenu.setOnMenuItemClickListener(item -> {
+            new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                    .setIcon(R.drawable.ic_warning)
+                    .setCancelable(false)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.confirm_cancel_all)
+                    .setPositiveButton(android.R.string.yes,
+                            (dialog1, which) -> {
+                                dialog1.dismiss();
+                                onCancelAll();
+                            })
+                    .setNegativeButton(android.R.string.no,
+                            (dialog12, which) -> dialog12.dismiss())
+                    .create()
+                    .show();
+            return true;
+        });
     }
 
     // Process the move command while keeping scroll position in memory
@@ -477,11 +505,16 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         } else return false;
     }
 
-    private void onBookCancel(int position) {
+    private void onCancelBook(int position) {
         Content c = itemAdapter.getAdapterItem(position).getContent();
         if (c != null) {
             viewModel.cancel(c);
         }
+    }
+
+    private void onCancelAll() {
+
+        viewModel.cancelAll();
     }
 
     /**

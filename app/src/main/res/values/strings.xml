@@ -51,7 +51,8 @@
 
     <!-- Queue -->
     <string name="errors">Errors</string>
-    <string name="cancel">Cancel</string>
+    <string name="cancel_all">Cancel all</string>
+    <string name="redownload_all">Redownload all</string>
     <string name="canceled">Canceled</string>
     <string name="undo">Undo</string>
     <string name="pause">Pause</string>
@@ -68,6 +69,7 @@
         <item quantity="other">Queue has %s books</item>
     </plurals>
     <string name="err_no_content">Book does not exist yet</string>
+    <string name="confirm_cancel_all">You are about to cancel the whole queue. Continue ?</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>

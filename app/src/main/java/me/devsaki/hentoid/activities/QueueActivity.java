@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
@@ -35,7 +36,9 @@ public class QueueActivity extends BaseActivity {
     private TabLayout.Tab queueTab;
     private TabLayout.Tab errorsTab;
 
-    private QueueViewModel viewModel;
+    private Toolbar toolbar;
+    private MenuItem cancelAllMenu;
+    private MenuItem redownloadAllMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +46,10 @@ public class QueueActivity extends BaseActivity {
 
         setContentView(R.layout.activity_queue);
 
-        Toolbar toolbar = findViewById(R.id.queue_toolbar);
+        toolbar = findViewById(R.id.queue_toolbar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        cancelAllMenu = toolbar.getMenu().findItem(R.id.action_cancel_all);
+        redownloadAllMenu = toolbar.getMenu().findItem(R.id.action_redownload_all);
 
         // Instantiate a ViewPager and a PagerAdapter.
         TabLayout tabLayout = findViewById(R.id.queue_tabs);
@@ -64,15 +69,32 @@ public class QueueActivity extends BaseActivity {
                         tab.setIcon(R.drawable.ic_error);
                     }
                 }).attach();
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                onTabSelected(position);
+            }
+        });
+
+        // TODO test nested scroll for ViewPager2 vs. the fragments' RecyclerViews to try and enable scroll-while-dragging
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
-        viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
+        QueueViewModel viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
         viewModel.getQueuePaged().observe(this, this::onQueueChanged);
         viewModel.getErrorsPaged().observe(this, this::onErrorsChanged);
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
+    }
+
+    private void onTabSelected(int position) {
+        cancelAllMenu.setVisible(0 == position);
+        redownloadAllMenu.setVisible(1 == position);
+    }
+
+    public Toolbar getToolbar() {
+        return toolbar;
     }
 
     private void onQueueChanged(List<QueueRecord> result) {

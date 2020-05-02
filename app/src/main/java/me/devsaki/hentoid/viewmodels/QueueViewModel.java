@@ -14,6 +14,7 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -135,8 +136,28 @@ public class QueueViewModel extends AndroidViewModel {
         );
     }
 
+    public void cancelAll() {
+        List<QueueRecord> queue = dao.selectQueue();
+        if (queue.isEmpty()) return;
+
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
+
+        compositeDisposable.add(
+                Observable.fromIterable(queue)
+                        .observeOn(Schedulers.io())
+                        .map(qr -> doCancel(qr.content.getTargetId()))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                    // Nothing to do here; UI callbacks are handled through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
     @WorkerThread
-    private void doCancel(long contentId) {
+    private boolean doCancel(long contentId) {
         // Remove content altogether from the DB (including queue)
         Content content = dao.selectContent(contentId);
         if (content != null) {
@@ -144,6 +165,7 @@ public class QueueViewModel extends AndroidViewModel {
             // Remove the content from the disk and the DB
             ContentHelper.removeContent(getApplication(), content, dao);
         }
+        return true;
     }
 
     /**
