@@ -20,15 +20,6 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/item_queue" />
 
-    <com.pluscubed.recyclerfastscroll.RecyclerFastScroller
-        android:id="@+id/queue_list_fastscroller"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="@id/queue_list"
-        app:layout_constraintTop_toTopOf="@id/queue_list"
-        app:layout_constraintBottom_toBottomOf="@id/queue_list"
-        android:layout_gravity="end" />
-
     <TextView
         android:id="@+id/errors_empty_txt"
         android:layout_width="wrap_content"

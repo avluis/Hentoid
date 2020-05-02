@@ -29,13 +29,4 @@
         app:spanCount="4"
         tools:listitem="@layout/item_viewer_gallery_image" />
 
-    <com.pluscubed.recyclerfastscroll.RecyclerFastScroller
-        android:id="@+id/viewer_gallery_fastscroller"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="@id/viewer_gallery_recycler"
-        app:layout_constraintTop_toTopOf="@id/viewer_gallery_recycler"
-        app:layout_constraintBottom_toBottomOf="@id/viewer_gallery_recycler"
-        android:layout_gravity="end" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

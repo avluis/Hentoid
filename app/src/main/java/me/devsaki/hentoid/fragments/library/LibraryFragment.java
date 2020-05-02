@@ -43,7 +43,6 @@ import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
-import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -83,6 +82,7 @@ import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.LibraryPager;
+import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -321,8 +321,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
-        RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.library_list_fastscroller);
-        fastScroller.attachRecyclerView(recyclerView);
+        new FastScrollerBuilder(recyclerView).build();
 
         // Disable blink animation on card change (bind holder)
         RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();

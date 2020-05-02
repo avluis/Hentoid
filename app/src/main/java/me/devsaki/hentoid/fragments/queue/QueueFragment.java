@@ -28,7 +28,6 @@ import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
 import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
-import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -60,6 +59,7 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.CircularProgressView;
+import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -165,15 +165,14 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Fast scroller
-        RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.queue_list_fastscroller);
-        fastScroller.attachRecyclerView(recyclerView);
+        new FastScrollerBuilder(recyclerView).build();
 
         // Drag, drop & swiping
         SimpleDragCallback dragCallback = new SimpleSwipeDragCallback(
                 this,
                 this,
                 requireContext().getDrawable(R.drawable.ic_action_delete_forever));
-        dragCallback.setIsDragEnabled(false);
+        dragCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
         touchHelper = new ItemTouchHelper(dragCallback);
         touchHelper.attachToRecyclerView(recyclerView);
@@ -252,7 +251,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
                 processMove(i, 0, viewModel::move);
-//                viewModel.move(i, 0);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -270,7 +268,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
                 processMove(i, fastAdapter.getItemCount() - 1, viewModel::move);
-//                viewModel.move(i, fastAdapter.getItemCount() - 1);
             }
 
             @org.jetbrains.annotations.Nullable

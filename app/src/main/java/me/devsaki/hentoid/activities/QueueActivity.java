@@ -78,8 +78,6 @@ public class QueueActivity extends BaseActivity {
             }
         });
 
-        // TODO test nested scroll for ViewPager2 vs. the fragments' RecyclerViews to try and enable scroll-while-dragging
-
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         QueueViewModel viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
         viewModel.getQueuePaged().observe(this, this::onQueueChanged);

@@ -24,7 +24,6 @@ import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
-import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -45,6 +44,7 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -53,6 +53,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by Robb on 04/2020
  * Presents the list of downloads with errors
  */
+// TODO redownload from scratch
 public class ErrorsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback, ErrorsDialogFragment.Parent {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -116,8 +117,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         recyclerView.setAdapter(fastAdapter);
 
         // Fast scroller
-        RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.queue_list_fastscroller);
-        fastScroller.attachRecyclerView(recyclerView);
+        new FastScrollerBuilder(recyclerView).build();
 
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
