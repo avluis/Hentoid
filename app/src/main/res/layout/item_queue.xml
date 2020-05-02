@@ -129,7 +129,7 @@
             android:background="@color/transparent"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/ic_action_move"
+            android:src="@drawable/ic_reorder"
             android:tint="?colorSecondary"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"
             app:layout_constraintEnd_toEndOf="parent"
