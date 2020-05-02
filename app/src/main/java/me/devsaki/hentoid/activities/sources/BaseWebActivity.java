@@ -206,6 +206,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         universalBlockedContent.add("hadskiz.com");
         universalBlockedContent.add("pushnotifications.click");
         universalBlockedContent.add("fingahvf.top");
+        universalBlockedContent.add("displayvertising.com");
+        universalBlockedContent.add("tsyndicate.com");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -627,7 +629,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (!quickDownload) changeActionMode(ActionMode.READ);
             return;
         }
-        ToastUtil.toast(R.string.add_to_queue);
+        ToastUtil.toast(getResources().getQuantityString(R.plurals.add_to_queue,1));
 
         objectBoxDAO.addContentToQueue(currentContent, null);
 

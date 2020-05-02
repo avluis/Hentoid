@@ -18,7 +18,9 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.CustomDragCallback;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.SiteItem;
 
 /**
@@ -26,6 +28,7 @@ import me.devsaki.hentoid.viewholders.SiteItem;
  */
 public class DrawerEditActivity extends BaseActivity implements ItemTouchCallback {
 
+    private RecyclerView recyclerView;
     private final ItemAdapter<SiteItem> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<SiteItem> fastAdapter = FastAdapter.with(itemAdapter);
 
@@ -73,12 +76,12 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
 
         itemAdapter.add(items);
 
-        RecyclerView recyclerView = findViewById(R.id.drawer_edit_list);
+        recyclerView = findViewById(R.id.drawer_edit_list);
         recyclerView.setAdapter(fastAdapter);
         recyclerView.setHasFixedSize(true);
 
         // Activate drag & drop
-        SimpleDragCallback dragCallback = new SimpleDragCallback(SimpleDragCallback.UP_DOWN);
+        SimpleDragCallback dragCallback = new CustomDragCallback(SimpleDragCallback.UP_DOWN, this, this::onStartDrag);
         ItemTouchHelper touchHelper = new ItemTouchHelper(dragCallback);
         touchHelper.attachToRecyclerView(recyclerView);
 
@@ -108,13 +111,22 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
     }
 
     @Override
-    public void itemTouchDropped(int oldPosition, int newPosition) {
-        // Nothing to do here
-    }
-
-    @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
         DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
         return true;
+    }
+
+    @Override
+    public void itemTouchDropped(int oldPosition, int newPosition) {
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
+        if (vh instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) vh).onDropped();
+        }
+    }
+
+    private void onStartDrag(RecyclerView.ViewHolder vh) {
+        if (vh instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) vh).onDragged();
+        }
     }
 }

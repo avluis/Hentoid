@@ -43,7 +43,6 @@ import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
-import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -81,7 +80,9 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.LibraryPager;
+import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -267,8 +268,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_library, container, false);
 
-        viewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
         Preferences.registerPrefsChangedListener(prefsListener);
+
+        ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
 
         initUI(rootView);
 
@@ -318,8 +321,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
-        RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.library_list_fastscroller);
-        fastScroller.attachRecyclerView(recyclerView);
+        new FastScrollerBuilder(recyclerView).build();
 
         // Disable blink animation on card change (bind holder)
         RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
@@ -804,10 +806,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isEndless) { // Endless mode
             pager.hide();
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(false), ContentItem::new);
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, ContentItem.ViewType.LIBRARY));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
-            ContentItem item = new ContentItem(false);
+            ContentItem item = new ContentItem(ContentItem.ViewType.LIBRARY);
             fastAdapter.registerItemFactory(item.getType(), item);
 
             itemAdapter = null;
@@ -944,7 +946,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         int maxIndex = bounds.getRight();
 
         //noinspection Convert2MethodRef need API24
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(c -> new ContentItem(c, ContentItem.ViewType.LIBRARY)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }
@@ -1102,7 +1104,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (Preferences.isQueueAutostart())
             ContentQueueManager.getInstance().resumeQueue(getContext());
 
-        Snackbar snackbar = Snackbar.make(recyclerView, R.string.add_to_queue, BaseTransientBottomBar.LENGTH_LONG);
+        String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
+        Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
         snackbar.setAction("VIEW QUEUE", v -> viewQueue());
         snackbar.show();
     }

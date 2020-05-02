@@ -47,15 +47,6 @@
         app:layout_constraintTop_toBottomOf="@id/advanced_search_background"
         tools:listitem="@layout/item_download" />
 
-    <com.pluscubed.recyclerfastscroll.RecyclerFastScroller
-        android:id="@+id/library_list_fastscroller"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="@id/library_list"
-        app:layout_constraintTop_toTopOf="@id/library_list"
-        app:layout_constraintBottom_toBottomOf="@id/library_list"
-        android:layout_gravity="end" />
-
     <include layout="@layout/include_library_pager" />
 
     <TextView

@@ -26,7 +26,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -44,23 +43,26 @@ import static me.devsaki.hentoid.util.FileHelper.AUTHORIZED_CHARS;
 public class LibraryViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final CollectionDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO dao;
     // Library search manager
-    private final ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
+    private final ContentSearchManager searchManager;
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
-    private LiveData<Integer> totalContent = collectionDao.countAllBooks();
+    private LiveData<Integer> totalContent;
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
 
     // Updated whenever a new search is performed
     private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
 
 
-    public LibraryViewModel(@NonNull Application application) {
+    public LibraryViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
+        dao = collectionDAO;
+        searchManager = new ContentSearchManager(dao);
+        totalContent = dao.countAllBooks();
     }
 
     public void onSaveState(Bundle outState) {
@@ -181,7 +183,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
         // Flag the content as "being favourited" (triggers blink animation)
         content.setIsBeingFavourited(true);
-        collectionDao.insertContent(content);
+        dao.insertContent(content);
 
         compositeDisposable.add(
                 Single.fromCallable(() -> doToggleContentFavourite(content.getId()))
@@ -205,7 +207,7 @@ public class LibraryViewModel extends AndroidViewModel {
     private Content doToggleContentFavourite(long contentId) {
 
         // Check if given content still exists in DB
-        Content theContent = collectionDao.selectContent(contentId);
+        Content theContent = dao.selectContent(contentId);
 
         if (theContent != null) {
             theContent.setFavourite(!theContent.isFavourite());
@@ -217,7 +219,7 @@ public class LibraryViewModel extends AndroidViewModel {
             else ContentHelper.createJson(getApplication(), theContent);
 
             // Persist in it DB
-            collectionDao.insertContent(theContent);
+            dao.insertContent(theContent);
 
             return theContent;
         }
@@ -231,7 +233,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param content Content to be added to the download queue
      */
     public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
-        collectionDao.addContentToQueue(content, targetImageStatus);
+        dao.addContentToQueue(content, targetImageStatus);
     }
 
     /**
@@ -242,7 +244,7 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void flagContentDelete(@NonNull final Content content, boolean flag) {
         content.setIsBeingDeleted(flag);
-        collectionDao.insertContent(content);
+        dao.insertContent(content);
     }
 
     /**
@@ -281,10 +283,10 @@ public class LibraryViewModel extends AndroidViewModel {
     private Content doDeleteContent(@NonNull final Content content) throws ContentNotRemovedException {
         try {
             // Check if given content still exists in DB
-            Content theContent = collectionDao.selectContent(content.getId());
+            Content theContent = dao.selectContent(content.getId());
 
             if (theContent != null) {
-                ContentHelper.removeContent(getApplication(), theContent, collectionDao);
+                ContentHelper.removeContent(getApplication(), theContent, dao);
                 Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
                 return theContent;
             }

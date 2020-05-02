@@ -50,7 +50,12 @@
     <string name="open_settings">Open settings</string>
 
     <!-- Queue -->
-    <string name="cancel">Cancel</string>
+    <string name="errors">Errors</string>
+    <string name="cancel_all">Cancel all</string>
+    <string name="invert_queue">Invert queue</string>
+    <string name="redownload_all">Redownload all</string>
+    <string name="canceled">Canceled</string>
+    <string name="undo">Undo</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
     <string name="move_up">Move up</string>
@@ -64,6 +69,9 @@
         <item quantity="one">Queue has %s book</item>
         <item quantity="other">Queue has %s books</item>
     </plurals>
+    <string name="err_no_content">Book does not exist yet</string>
+    <string name="confirm_cancel_all">You are about to cancel the whole queue. Continue ?</string>
+    <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
@@ -139,6 +147,7 @@
     <string name="moving_to_first_page">Moving to first page.</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
     <string name="queue_empty">Why am I empty?</string>
+    <string name="errors_empty">No errors detected among downloads</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
     <string name="downloads_loading">Loading up~</string>
     <string name="masterdata_no_result">No result found :(</string>

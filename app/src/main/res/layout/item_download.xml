@@ -50,7 +50,7 @@
         tools:ignore="ContentDescription" />
 
     <ImageView
-        android:id="@+id/ivSite"
+        android:id="@+id/queue_site_button"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="8dp"
@@ -66,6 +66,7 @@
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_menu_nhentai" />
 
+    <!-- TODO remove that image after v1.12 beta if nobody complains -->
     <ImageView
         android:id="@+id/ivError"
         android:layout_width="32dp"
@@ -81,9 +82,10 @@
         android:src="@drawable/ic_exclamation"
         android:tint="@color/card_surface_light"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/ivSite"
+        app:layout_constraintEnd_toStartOf="@id/queue_site_button"
         app:layout_constraintTop_toBottomOf="@id/tvTags"
         app:layout_constraintVertical_bias="1.0"
+        android:visibility="gone"
         tools:ignore="ContentDescription" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

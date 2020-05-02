@@ -51,6 +51,8 @@ public interface CollectionDAO {
 
     // High-level queries
 
+    Single<List<Long>> getStoredBookIds();
+
     Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly);
 
     Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
@@ -63,6 +65,10 @@ public interface CollectionDAO {
     LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, boolean loadAll);
 
     LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly, boolean loadAll);
+
+
+    LiveData<PagedList<Content>> getErrorContent();
+
 
     LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly);
 
@@ -92,13 +98,13 @@ public interface CollectionDAO {
 
     List<QueueRecord> selectQueue();
 
-    void updateQueue(long contentId, int newOrder);
+    void updateQueue(@NonNull List<QueueRecord> queue);
 
     void deleteQueue(@NonNull Content content);
 
     void deleteQueue(int index);
 
-    LiveData<PagedList<QueueRecord>> getQueueContent();
+    LiveData<List<QueueRecord>> getQueueContent();
 
     void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
 

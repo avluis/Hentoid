@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.adapters;
 
-import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.LayoutInflater;

@@ -14,13 +14,14 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import timber.log.Timber;
@@ -29,17 +30,21 @@ import timber.log.Timber;
 public class QueueViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final CollectionDAO queueDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO dao;
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    // Collection data
-    private LiveData<PagedList<QueueRecord>> currentSource;
-    private final MediatorLiveData<PagedList<QueueRecord>> queuePaged = new MediatorLiveData<>();
+    // Collection data for queue
+    private LiveData<List<QueueRecord>> currentQueueSource;
+    private final MediatorLiveData<List<QueueRecord>> queuePaged = new MediatorLiveData<>();
+    // Collection data for errors
+    private LiveData<PagedList<Content>> currentErrorsSource;
+    private final MediatorLiveData<PagedList<Content>> errorsPaged = new MediatorLiveData<>();
 
 
-    public QueueViewModel(@NonNull Application application) {
+    public QueueViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
+        dao = collectionDAO;
         refresh();
     }
 
@@ -50,8 +55,13 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<PagedList<QueueRecord>> getQueuePaged() {
+    public LiveData<List<QueueRecord>> getQueuePaged() {
         return queuePaged;
+    }
+
+    @NonNull
+    public LiveData<PagedList<Content>> getErrorsPaged() {
+        return errorsPaged;
     }
 
 
@@ -60,14 +70,17 @@ public class QueueViewModel extends AndroidViewModel {
     // =========================
 
     /**
-     * Perform a new library search
+     * Perform a new search
      */
     private void refresh() {
-        if (currentSource != null) queuePaged.removeSource(currentSource);
-
-        currentSource = queueDao.getQueueContent();
-
-        queuePaged.addSource(currentSource, queuePaged::setValue);
+        // Queue
+        if (currentQueueSource != null) queuePaged.removeSource(currentQueueSource);
+        currentQueueSource = dao.getQueueContent();
+        queuePaged.addSource(currentQueueSource, queuePaged::setValue);
+        // Errors
+        if (currentErrorsSource != null) errorsPaged.removeSource(currentErrorsSource);
+        currentErrorsSource = dao.getErrorContent();
+        errorsPaged.addSource(currentErrorsSource, errorsPaged::setValue);
     }
 
 
@@ -75,98 +88,45 @@ public class QueueViewModel extends AndroidViewModel {
     // ========= CONTENT ACTIONS
     // =========================
 
+    public void move(@NonNull Integer oldPosition, @NonNull Integer newPosition) {
+        if (oldPosition.equals(newPosition)) return;
 
-    /**
-     * Move designated content up in the download queue (= raise its priority)
-     *
-     * @param contentId ID of Content whose priority has to be raised
-     */
-    public void moveUp(long contentId) {
-        List<QueueRecord> queue = queueDao.selectQueue();
+        // Get unpaged data to be sure we have everything in one collection
+        List<QueueRecord> queue = dao.selectQueue();
 
-        long prevItemId = 0;
-        int prevItemQueuePosition = -1;
-        int prevItemPosition = -1;
-        int loopPosition = 0;
+        Timber.i(">> queue move %s %s (total %s)", oldPosition, newPosition, queue.size());
 
-        for (QueueRecord p : queue) {
-            if (p.content.getTargetId() == contentId && prevItemId != 0) {
-                queueDao.updateQueue(p.content.getTargetId(), prevItemQueuePosition);
-                queueDao.updateQueue(prevItemId, p.rank);
-
-                if (0 == prevItemPosition)
-                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
-                break;
-            } else {
-                prevItemId = p.content.getTargetId();
-                prevItemQueuePosition = p.rank;
-                prevItemPosition = loopPosition;
-            }
-            loopPosition++;
+        // Move the item
+        QueueRecord fromValue = queue.get(oldPosition);
+        int delta = oldPosition < newPosition ? 1 : -1;
+        for (int i = oldPosition; i != newPosition; i += delta) {
+            queue.set(i, queue.get(i + delta));
         }
+        queue.set(newPosition, fromValue);
+
+        // Renumber everything
+        int index = 1;
+        for (QueueRecord qr : queue) {
+            Timber.i(">> renumber queue [%s] %s -> %s", qr.content.getTargetId(), qr.rank, index++);
+            qr.rank = index;
+        }
+
+        // Et voila
+        dao.updateQueue(queue);
     }
 
-    /**
-     * Move designated content on the top of the download queue (= raise its priority)
-     *
-     * @param contentId ID of Content whose priority has to be raised to the top
-     */
-    public void moveTop(long contentId) {
-        List<QueueRecord> queue = queueDao.selectQueue();
-        QueueRecord p;
+    public void invertQueue() {
+        // Get unpaged data to be sure we have everything in one collection
+        List<QueueRecord> queue = dao.selectQueue();
 
-        long topItemId = 0;
-        int topItemQueuePosition = -1;
-
-        for (int i = 0; i < queue.size(); i++) {
-            p = queue.get(i);
-            if (0 == topItemId) {
-                topItemId = p.content.getTargetId();
-                topItemQueuePosition = p.rank;
-            }
-
-            if (p.content.getTargetId() == contentId) {
-                // Put selected item on top of list in the DB
-                queueDao.updateQueue(p.content.getTargetId(), topItemQueuePosition);
-
-                // Skip download for the 1st item of the adapter
-                EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
-
-                break;
-            } else {
-                queueDao.updateQueue(p.content.getTargetId(), p.rank + 1); // Depriorize every item by 1
-            }
+        // Renumber everything in reverse order
+        int index = 1;
+        for (int i = queue.size() - 1; i >= 0; i--) {
+            queue.get(i).rank = index++;
         }
-    }
 
-    /**
-     * Move designated content down in the download queue (= lower its priority)
-     *
-     * @param contentId ID of Content whose priority has to be lowered
-     */
-    public void moveDown(long contentId) {
-        List<QueueRecord> queue = queueDao.selectQueue();
-
-        long itemId = 0;
-        int itemQueuePosition = -1;
-        int itemPosition = -1;
-        int loopPosition = 0;
-
-        for (QueueRecord p : queue) {
-            if (p.content.getTargetId() == contentId) {
-                itemId = p.content.getTargetId();
-                itemQueuePosition = p.rank;
-                itemPosition = loopPosition;
-            } else if (itemId != 0) {
-                queueDao.updateQueue(p.content.getTargetId(), itemQueuePosition);
-                queueDao.updateQueue(itemId, p.rank);
-
-                if (0 == itemPosition)
-                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
-                break;
-            }
-            loopPosition++;
-        }
+        // Et voila
+        dao.updateQueue(queue);
     }
 
     /**
@@ -175,7 +135,7 @@ public class QueueViewModel extends AndroidViewModel {
      *
      * @param content Content whose download has to be canceled
      */
-    public void cancel(Content content) {
+    public void cancel(@NonNull Content content) {
         EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
 
         compositeDisposable.add(
@@ -184,6 +144,27 @@ public class QueueViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 () -> {
+                                    // Nothing to do here; UI callbacks are handled through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    public void cancelAll() {
+        List<QueueRecord> queue = dao.selectQueue();
+        if (queue.isEmpty()) return;
+
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
+
+        compositeDisposable.add(
+                Observable.fromIterable(queue)
+                        .observeOn(Schedulers.io())
+                        .map(qr -> doCancel(qr.content.getTargetId()))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                    // Nothing to do here; UI callbacks are handled through LiveData
                                 },
                                 Timber::e
                         )
@@ -191,13 +172,23 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     @WorkerThread
-    private void doCancel(long contentId) {
+    private boolean doCancel(long contentId) {
         // Remove content altogether from the DB (including queue)
-        Content content = queueDao.selectContent(contentId);
+        Content content = dao.selectContent(contentId);
         if (content != null) {
-            queueDao.deleteQueue(content);
+            dao.deleteQueue(content);
             // Remove the content from the disk and the DB
-            ContentHelper.removeContent(getApplication(), content, queueDao);
+            ContentHelper.removeContent(getApplication(), content, dao);
         }
+        return true;
+    }
+
+    /**
+     * Add the given content to the download queue
+     *
+     * @param content Content to be added to the download queue
+     */
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
+        dao.addContentToQueue(content, targetImageStatus);
     }
 }

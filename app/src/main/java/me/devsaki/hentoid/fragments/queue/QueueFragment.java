@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.queue;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -9,20 +10,24 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.paging.PagedList;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.annimon.stream.function.LongConsumer;
+import com.annimon.stream.Stream;
+import com.annimon.stream.function.BiConsumer;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
+import com.mikepenz.fastadapter.drag.ItemTouchCallback;
+import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
-import com.mikepenz.fastadapter.paged.PagedModelAdapter;
-import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
+import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
+import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
+import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -30,9 +35,11 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -45,9 +52,14 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.ContentItem;
+import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.CircularProgressView;
+import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -56,7 +68,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
  */
-public class QueueFragment extends Fragment {
+public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -66,24 +78,29 @@ public class QueueFragment extends Fragment {
 
     // UI ELEMENTS
     private View rootView;
-    private TextView mEmptyText;    // "Empty queue" message panel
-    private ImageButton btnStart;   // Start / Resume button
-    private ImageButton btnPause;   // Pause button
-    private ImageButton btnStats;   // Error statistics button
-    private TextView queueStatus;   // 1st line of text displayed on the right of the queue pause / play button
-    private TextView queueInfo;     // 2nd line of text displayed on the right of the queue pause / play button
+    private RecyclerView recyclerView;  // Queued book list
+    private TextView mEmptyText;        // "Empty queue" message panel
+    private ImageButton btnStart;       // Start / Resume button
+    private ImageButton btnPause;       // Pause button
+    private ImageButton btnStats;       // Error statistics button
+    private TextView queueStatus;       // 1st line of text displayed on the right of the queue pause / play button
+    private TextView queueInfo;         // 2nd line of text displayed on the right of the queue pause / play button
     private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
-    private Toolbar toolbar;
 
     // Used to keep scroll position when moving items
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
     private int topItemPosition = -1;
     private int offsetTop = 0;
 
+    // RecyclerView utils
     private LinearLayoutManager llm;
+    private ItemTouchHelper touchHelper;
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+
+    // Used to effectively cancel a download when the user hasn't hit UNDO
+    private FastAdapter<ContentItem> fastAdapter;
 
 
     // State
@@ -92,24 +109,8 @@ public class QueueFragment extends Fragment {
     private boolean isEmpty = false;
 
 
-    /**
-     * Diff calculation rules for list items
-     * <p>
-     * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
-     */
-    private final AsyncDifferConfig<QueueRecord> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<QueueRecord>() {
-        @Override
-        public boolean areItemsTheSame(@NonNull QueueRecord oldItem, @NonNull QueueRecord newItem) {
-            return oldItem.id == newItem.id;
-        }
-
-        @Override
-        public boolean areContentsTheSame(@NonNull QueueRecord oldItem, @NonNull QueueRecord newItem) {
-            return oldItem.rank == newItem.rank;
-        }
-    }).build();
-
-    private final PagedModelAdapter<QueueRecord, ContentItem> itemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(true), ContentItem::new);
+    // Use a non-pages model adapter; drag & drop doesn't work with paged content, as Adapter.move is not supported and move from DB refreshes the whole list
+    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
 
 
     @Override
@@ -136,9 +137,6 @@ public class QueueFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
-        toolbar = requireViewById(rootView, R.id.queue_toolbar);
-        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
-
         mEmptyText = requireViewById(rootView, R.id.queue_empty_txt);
 
         btnStart = requireViewById(rootView, R.id.btnStart);
@@ -153,43 +151,80 @@ public class QueueFragment extends Fragment {
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
         btnStats.setOnClickListener(v -> showErrorStats());
 
-        // Book list container
-        RecyclerView recyclerView = requireViewById(rootView, R.id.queue_list);
+        // Book list
+        recyclerView = requireViewById(rootView, R.id.queue_list);
 
-        FastAdapter<ContentItem> fastAdapter = FastAdapter.with(itemAdapter);
+        fastAdapter = FastAdapter.with(itemAdapter);
         fastAdapter.setHasStableIds(true);
-        ContentItem item = new ContentItem(true);
+        ContentItem item = new ContentItem(ContentItem.ViewType.QUEUE);
         fastAdapter.registerItemFactory(item.getType(), item);
         recyclerView.setAdapter(fastAdapter);
+
+        recyclerView.setHasFixedSize(true);
 
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Fast scroller
-        RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.queue_list_fastscroller);
-        fastScroller.attachRecyclerView(recyclerView);
+        new FastScrollerBuilder(recyclerView).build();
+
+        // Drag, drop & swiping
+        SimpleDragCallback dragCallback = new SimpleSwipeDragCallback(
+                this,
+                this,
+                requireContext().getDrawable(R.drawable.ic_action_delete_forever));
+        dragCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
+
+        touchHelper = new ItemTouchHelper(dragCallback);
+        touchHelper.attachToRecyclerView(recyclerView);
 
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
 
+        initToolbar();
         attachButtons(fastAdapter);
 
         return rootView;
     }
 
+    private void initToolbar() {
+        if (!(requireActivity() instanceof QueueActivity)) return;
+        QueueActivity activity = (QueueActivity) requireActivity();
+        MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
+        cancelAllMenu.setOnMenuItemClickListener(item -> {
+            new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                    .setIcon(R.drawable.ic_warning)
+                    .setCancelable(false)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.confirm_cancel_all)
+                    .setPositiveButton(R.string.yes,
+                            (dialog1, which) -> {
+                                dialog1.dismiss();
+                                onCancelAll();
+                            })
+                    .setNegativeButton(R.string.no,
+                            (dialog12, which) -> dialog12.dismiss())
+                    .create()
+                    .show();
+            return true;
+        });
+        MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
+        invertMenu.setOnMenuItemClickListener(item -> {
+            viewModel.invertQueue();
+            return true;
+        });
+    }
+
     // Process the move command while keeping scroll position in memory
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
-    private void processMove(@NotNull ContentItem item, @NonNull LongConsumer consumer) {
-        Content c = item.getContent();
-        if (c != null) {
-            topItemPosition = getTopItemPosition();
-            offsetTop = 0;
-            if (topItemPosition >= 0) {
-                View firstView = llm.findViewByPosition(topItemPosition);
-                if (firstView != null)
-                    offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
-            }
-            consumer.accept(c.getId());
+    private void processMove(int from, int to, @NonNull BiConsumer<Integer, Integer> consumer) {
+        topItemPosition = getTopItemPosition();
+        offsetTop = 0;
+        if (topItemPosition >= 0) {
+            View firstView = llm.findViewByPosition(topItemPosition);
+            if (firstView != null)
+                offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
         }
+        consumer.accept(from, to);
     }
 
     private void attachButtons(FastAdapter<ContentItem> fastAdapter) {
@@ -211,28 +246,11 @@ public class QueueFragment extends Fragment {
             }
         });
 
-        // Up button
-        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
-            @Override
-            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                processMove(item, viewModel::moveUp);
-            }
-
-            @org.jetbrains.annotations.Nullable
-            @Override
-            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
-                if (viewHolder instanceof ContentItem.ContentViewHolder) {
-                    return ((ContentItem.ContentViewHolder) viewHolder).getUpButton();
-                }
-                return super.onBind(viewHolder);
-            }
-        });
-
         // Top button
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                processMove(item, viewModel::moveTop);
+                processMove(i, 0, viewModel::move);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -245,35 +263,18 @@ public class QueueFragment extends Fragment {
             }
         });
 
-        // Down button
+        // Bottom button
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                processMove(item, viewModel::moveDown);
+                processMove(i, fastAdapter.getItemCount() - 1, viewModel::move);
             }
 
             @org.jetbrains.annotations.Nullable
             @Override
             public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
                 if (viewHolder instanceof ContentItem.ContentViewHolder) {
-                    return ((ContentItem.ContentViewHolder) viewHolder).getDownButton();
-                }
-                return super.onBind(viewHolder);
-            }
-        });
-
-        // Cancel button
-        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
-            @Override
-            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                viewModel.cancel(item.getContent());
-            }
-
-            @org.jetbrains.annotations.Nullable
-            @Override
-            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
-                if (viewHolder instanceof ContentItem.ContentViewHolder) {
-                    return ((ContentItem.ContentViewHolder) viewHolder).getCancelButton();
+                    return ((ContentItem.ContentViewHolder) viewHolder).getBottomButton();
                 }
                 return super.onBind(viewHolder);
             }
@@ -283,7 +284,8 @@ public class QueueFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(QueueViewModel.class);
+        ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
         viewModel.getQueuePaged().observe(getViewLifecycleOwner(), this::onQueueChanged);
     }
 
@@ -398,24 +400,23 @@ public class QueueFragment extends Fragment {
         int bookDiff = (eventType == DownloadEvent.EV_CANCEL) ? 1 : 0; // Cancel event means a book will be removed very soon from the queue
         isEmpty = (0 == itemAdapter.getAdapterItemCount() - bookDiff);
         isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
-        updateUI();
+        updateControlBar();
     }
 
-    private void onQueueChanged(PagedList<QueueRecord> result) {
+    private void onQueueChanged(List<QueueRecord> result) {
         Timber.i(">>Queue changed ! Size=%s", result.size());
         isEmpty = (result.isEmpty());
         isPaused = (!isEmpty && (ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
-
-        // Update toolbar
-        toolbar.setTitle(getResources().getQuantityString(R.plurals.queue_book_count, result.size(), result.size()));
 
         // Update list visibility
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        itemAdapter.submitList(result, this::differEndCallback);
+        List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper)).toList();
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
+        differEndCallback();
 
-        updateUI();
+        updateControlBar();
     }
 
     /**
@@ -438,7 +439,7 @@ public class QueueFragment extends Fragment {
         llm.scrollToPositionWithOffset(topItemPosition, offsetTop); // Used to restore position after activity has been stopped and recreated
     }
 
-    private void updateUI() {
+    private void updateControlBar() {
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, itemAdapter.getAdapterItemCount());
@@ -497,9 +498,18 @@ public class QueueFragment extends Fragment {
         Content c = i.getContent();
         if (c != null) {
             // TODO test long queues to see if a memorization of the top position (as in Library screen) is necessary
-            ContentHelper.openHentoidViewer(requireContext(), c, null);
+            if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
+                ToastUtil.toast(R.string.err_no_content);
             return true;
         } else return false;
+    }
+
+    private void onCancelBook(@NonNull Content c) {
+        viewModel.cancel(c);
+    }
+
+    private void onCancelAll() {
+        viewModel.cancelAll();
     }
 
     /**
@@ -509,5 +519,54 @@ public class QueueFragment extends Fragment {
      */
     private int getTopItemPosition() {
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
+    }
+
+    /**
+     * DRAG, DROP & SWIPE METHODS
+     */
+
+    @Override
+    public boolean itemTouchOnMove(int oldPosition, int newPosition) {
+        DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
+        return true;
+    }
+
+    @Override
+    public void itemTouchDropped(int oldPosition, int newPosition) {
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
+        if (vh instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) vh).onDropped();
+        }
+        // Save final position of item in DB
+        viewModel.move(oldPosition, newPosition);
+    }
+
+    // TODO wait for the next release of FastAdapter to handle that when using drag, drop & swipe
+    private void onStartDrag(RecyclerView.ViewHolder vh) {
+        if (vh instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) vh).onDragged();
+        }
+    }
+
+    @Override
+    public void itemSwiped(int position, int direction) {
+        ContentItem item = itemAdapter.getAdapterItem(position);
+        item.setSwipeDirection(direction);
+
+        if (item.getContent() != null) {
+            Debouncer<Content> cancelDebouncer = new Debouncer<>(2000, this::onCancelBook);
+            cancelDebouncer.submit(item.getContent());
+
+            Runnable cancelSwipe = () -> {
+                cancelDebouncer.clear();
+                item.setSwipeDirection(0);
+                int position1 = itemAdapter.getAdapterPosition(item);
+                if (position1 != RecyclerView.NO_POSITION) {
+                    fastAdapter.notifyItemChanged(position1);
+                }
+            };
+            item.setUndoSwipeAction(cancelSwipe);
+            fastAdapter.notifyItemChanged(position);
+        }
     }
 }

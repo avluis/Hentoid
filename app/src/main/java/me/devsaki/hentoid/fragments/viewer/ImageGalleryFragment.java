@@ -17,7 +17,6 @@ import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
-import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +28,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -93,8 +93,7 @@ public class ImageGalleryFragment extends Fragment {
 
         recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
         recyclerView.setAdapter(fastAdapter);
-        RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.viewer_gallery_fastscroller);
-        fastScroller.attachRecyclerView(recyclerView);
+        new FastScrollerBuilder(recyclerView).build();
 
         Toolbar toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());

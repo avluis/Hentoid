@@ -66,6 +66,13 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public Single<List<Long>> getStoredBookIds() {
+        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectStoredContentIds()))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Override
     public Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly) {
         return Single.fromCallable(() -> contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly))
                 .subscribeOn(Schedulers.io())
@@ -109,11 +116,19 @@ public class ObjectBoxDAO implements CollectionDAO {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    public LiveData<PagedList<Content>> getErrorContent() {
+        Query<Content> query = db.selectErrorContentQ();
+
+        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(40).setPageSize(20).build();
+
+        return new LivePagedListBuilder<>(new ObjectBoxDataSource.Factory<>(query), cfg).build();
+    }
+
     public LiveData<Integer> countAllBooks() {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
         // See https://github.com/objectbox/objectbox-java/issues/776
-        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.getVisibleContentQ());
+        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.selectVisibleContentQ());
 
         MediatorLiveData<Integer> result = new MediatorLiveData<>();
         result.addSource(livedata, v -> result.setValue(v.size()));
@@ -243,7 +258,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id) {
-        return new ObjectBoxLiveData<>(db.getDownloadedImagesFromContent(id));
+        return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContent(id));
     }
 
     public SparseIntArray countProcessedImagesById(long contentId) {
@@ -316,20 +331,16 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
-    public LiveData<PagedList<QueueRecord>> getQueueContent() {
-        Query<QueueRecord> query = db.selectQueueContentsQ();
-
-        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(40).setPageSize(20).build();
-
-        return new LivePagedListBuilder<>(new ObjectBoxDataSource.Factory<>(query), cfg).build();
+    public LiveData<List<QueueRecord>> getQueueContent() {
+        return new ObjectBoxLiveData<>(db.selectQueueContentsQ());
     }
 
     public List<QueueRecord> selectQueue() {
         return db.selectQueue();
     }
 
-    public void updateQueue(long contentId, int newOrder) {
-        db.updateQueue(contentId, newOrder);
+    public void updateQueue(@NonNull List<QueueRecord> queue) {
+        db.updateQueue(queue);
     }
 
     public void deleteQueue(@NonNull Content content) {
@@ -341,7 +352,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public SiteHistory getHistory(@NonNull Site s) {
-        return db.getHistory(s);
+        return db.selectHistory(s);
     }
 
     public void insertSiteHistory(@NonNull Site site, @NonNull String url) {

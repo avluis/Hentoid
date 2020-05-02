@@ -11,21 +11,29 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.drag.IExtendedDraggable;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.swipe.ISwipeable;
+import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,39 +54,56 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
-public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
+public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable, ISwipeable {
 
     private static final RequestOptions glideRequestOptions = new RequestOptions()
             .centerInside()
             .error(R.drawable.ic_placeholder);
 
+    @IntDef({ViewType.LIBRARY, ViewType.QUEUE, ViewType.ERRORS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ViewType {
+        int LIBRARY = 0;
+        int QUEUE = 1;
+        int ERRORS = 2;
+    }
+
     private Content content;
-    private boolean isQueued;
+    private @ViewType
+    int viewType;
     private boolean isEmpty;
 
+    // Drag, drop & swipe
+    private ItemTouchHelper touchHelper;
+    private int swipeDirection = 0;
+    private Runnable undoSwipeAction; // Action to run when hitting the "undo" button
+
+
     // Constructor for empty placeholder
-    public ContentItem(boolean isQueued) {
+    public ContentItem(@ViewType int viewType) {
         isEmpty = true;
         content = null;
-        this.isQueued = isQueued;
+        this.viewType = viewType;
+        touchHelper = null;
     }
 
     // Constructor for library item
-    public ContentItem(@NonNull Content content) {
+    public ContentItem(@NonNull Content content, @ViewType int viewType) {
         this.content = content;
-        isQueued = false;
+        this.viewType = viewType;
         setIdentifier(content.getId());
-        setSelectable(!isQueued);
         isEmpty = false;
+        touchHelper = null;
     }
 
     // Constructor for queued item
-    public ContentItem(@NonNull QueueRecord record) {
-        isQueued = true;
+    public ContentItem(@NonNull QueueRecord record, ItemTouchHelper touchHelper) {
+        viewType = ViewType.QUEUE;
         setSelectable(false);
         setIdentifier(record.id);
         content = record.content.getTarget();
         isEmpty = (null == content);
+        this.touchHelper = touchHelper;
     }
 
     @Nullable
@@ -89,12 +114,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
     @NotNull
     @Override
     public ContentItem.ContentViewHolder getViewHolder(@NotNull View view) {
-        return new ContentViewHolder(view, isQueued);
+        return new ContentViewHolder(view, viewType);
     }
 
     @Override
     public int getLayoutRes() {
-        return isQueued ? R.layout.item_queue : R.layout.item_download;
+        if (ViewType.LIBRARY == viewType) return R.layout.item_download;
+        else return R.layout.item_queue;
     }
 
     @Override
@@ -102,8 +128,40 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         return R.id.content;
     }
 
+    @Override
+    public boolean isDraggable() {
+        return (ViewType.QUEUE == viewType);
+    }
 
-    public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> {
+    @Override
+    public boolean isSwipeable() {
+        return (ViewType.LIBRARY != viewType);
+    }
+
+    @org.jetbrains.annotations.Nullable
+    @Override
+    public ItemTouchHelper getTouchHelper() {
+        return touchHelper;
+    }
+
+    @org.jetbrains.annotations.Nullable
+    @Override
+    public View getDragView(@NotNull RecyclerView.ViewHolder viewHolder) {
+        if (viewHolder instanceof ContentViewHolder)
+            return ((ContentViewHolder) viewHolder).ivReorder;
+        else return null;
+    }
+
+    public void setUndoSwipeAction(Runnable undoSwipeAction) {
+        this.undoSwipeAction = undoSwipeAction;
+    }
+
+    public void setSwipeDirection(int direction) {
+        swipeDirection = direction;
+    }
+
+
+    public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> implements IDraggableViewHolder {
 
         // Common elements
         private View baseLayout;
@@ -121,38 +179,43 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
         private ImageView ivFavourite;
 
         // Specific to Queued content
+        private View swipeResult;
+        private View bookCard;
         private ProgressBar pbDownload;
-        private ImageView ivTop;
-        private ImageView ivUp;
-        private ImageView ivDown;
-        private View ivCancel;
+        private View ivTop;
+        private View ivBottom;
+        private View ivReorder;
+        private View tvUndoSwipe;
+        private View ivRedownload;
 
 
-        ContentViewHolder(View view, boolean isQueued) {
+        ContentViewHolder(View view, @ViewType int viewType) {
             super(view);
 
             baseLayout = requireViewById(itemView, R.id.item);
             tvTitle = requireViewById(itemView, R.id.tvTitle);
             ivCover = requireViewById(itemView, R.id.ivCover);
-            tvSeries = requireViewById(itemView, R.id.tvSeries);
             tvArtist = requireViewById(itemView, R.id.tvArtist);
             tvPages = requireViewById(itemView, R.id.tvPages);
-            tvTags = requireViewById(itemView, R.id.tvTags);
-            ivSite = requireViewById(itemView, R.id.ivSite);
+            ivSite = requireViewById(itemView, R.id.queue_site_button);
+            ivError = itemView.findViewById(R.id.ivError);
 
-            if (!isQueued) {
+            if (viewType == ViewType.LIBRARY) {
                 ivNew = itemView.findViewById(R.id.lineNew);
-                ivError = itemView.findViewById(R.id.ivError);
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
+                tvSeries = requireViewById(itemView, R.id.tvSeries);
+                tvTags = requireViewById(itemView, R.id.tvTags);
             } else {
+                swipeResult = itemView.findViewById(R.id.swipe_result_content);
+                bookCard = itemView.findViewById(R.id.item_card);
                 pbDownload = itemView.findViewById(R.id.pbDownload);
                 ivTop = itemView.findViewById(R.id.queueTopBtn);
-                ivUp = itemView.findViewById(R.id.queueUpBtn);
-                ivDown = itemView.findViewById(R.id.queueDownBtn);
-                ivCancel = itemView.findViewById(R.id.btnCancel);
+                ivBottom = itemView.findViewById(R.id.queueBottomBtn);
+                ivReorder = itemView.findViewById(R.id.ivReorder);
+                tvUndoSwipe = itemView.findViewById(R.id.undo_swipe);
+                ivRedownload = itemView.findViewById(R.id.ivRedownload);
             }
         }
-
 
         @Override
         public void bindView(@NotNull ContentItem item, @NotNull List<?> payloads) {
@@ -177,12 +240,18 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             attachCover(item.content);
             attachTitle(item.content);
             attachArtist(item.content);
-            attachSeries(item.content);
-            attachPages(item.content, item.isQueued);
-            attachTags(item.content);
+            if (tvSeries != null)
+                attachSeries(item.content);
+            attachPages(item.content, item.viewType);
             attachButtons(item);
-            if (item.isQueued)
+            if (tvTags != null)
+                attachTags(item.content);
+            if (pbDownload != null)
                 updateProgress(item.content, pbDownload, getAdapterPosition(), false);
+            if (ivReorder != null)
+                DragDropUtil.bindDragHandle(this, item);
+            if (tvUndoSwipe != null)
+                tvUndoSwipe.setOnClickListener(v -> item.undoSwipeAction.run());
         }
 
         private void updateLayoutVisibility(ContentItem item) {
@@ -191,8 +260,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();
-            if (!item.isQueued)
+
+            // Unread indicator
+            if (ivNew != null)
                 ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
+
+            // Queue swipe
+            if (swipeResult != null) {
+                swipeResult.setVisibility((item.swipeDirection != 0) ? View.VISIBLE : View.GONE);
+                bookCard.setVisibility((item.swipeDirection != 0) ? View.GONE : View.VISIBLE);
+            }
         }
 
         private void attachCover(Content content) {
@@ -298,13 +375,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             }
         }
 
-        private void attachPages(Content content, boolean isQueued) {
-            tvPages.setVisibility(0 == content.getQtyPages() ? View.GONE : View.VISIBLE);
+        private void attachPages(Content content, @ViewType int viewType) {
+            tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
             Context context = tvPages.getContext();
             String template = context.getResources().getString(R.string.work_pages);
             template = template.replace("@pages@", content.getQtyPages() + "");
             long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
-            if (nbMissingPages > 0 && !isQueued)
+            if (nbMissingPages > 0 && viewType != ViewType.QUEUE)
                 template = template.replace("@missing@", " (" + nbMissingPages + " missing)");
             else
                 template = template.replace("@missing@", "");
@@ -345,22 +422,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
                 ivSite.setImageResource(R.drawable.ic_stat_hentoid);
             }
 
-            if (item.isQueued) {
+            if (ViewType.QUEUE == item.viewType) {
                 boolean isFirstItem = (0 == getAdapterPosition());
-                /*
-                int itemCount = item.adapter.getAdapterItemCount();
-                boolean isLastItem = itemCount - 1 == getAdapterPosition();
-                 */
-
-                ivUp.setImageResource(R.drawable.ic_arrow_up);
-                ivUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
-
-                ivTop.setImageResource(R.drawable.ic_doublearrowup);
-                ivTop.setVisibility((isFirstItem /*|| itemCount < 3*/) ? View.INVISIBLE : View.VISIBLE);
-
-                ivDown.setImageResource(R.drawable.ic_arrow_down);
-                ivDown.setVisibility(/*isLastItem ? View.INVISIBLE :*/ View.VISIBLE);
-            } else {
+                ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
+                ivRedownload.setVisibility(View.GONE);
+                ivError.setVisibility(View.GONE);
+            } else if (ViewType.ERRORS == item.viewType) {
+                ivTop.setVisibility(View.GONE);
+                ivBottom.setVisibility(View.GONE);
+                ivReorder.setVisibility(View.GONE);
+            } else if (ViewType.LIBRARY == item.viewType) {
                 // When transitioning to the other state, button blinks with its target state
                 if (content.isBeingFavourited()) {
                     ivFavourite.startAnimation(new BlinkAnimation(500, 250));
@@ -432,21 +503,28 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> {
             return ivTop;
         }
 
-        public View getUpButton() {
-            return ivUp;
+        public View getBottomButton() {
+            return ivBottom;
         }
 
-        public View getDownButton() {
-            return ivDown;
+        public View getDownloadButton() {
+            return ivRedownload;
         }
 
-        public View getCancelButton() {
-            return ivCancel;
-        }
 
         @Override
         public void unbindView(@NotNull ContentItem item) {
-            // No specific behaviour to implement
+//            item.setUndoSwipeAction(null);
+        }
+
+        @Override
+        public void onDragged() {
+            baseLayout.setBackgroundColor(ThemeHelper.getColor(baseLayout.getContext(), R.color.white_opacity_33));
+        }
+
+        @Override
+        public void onDropped() {
+            baseLayout.setBackground(baseLayout.getContext().getDrawable(R.drawable.bg_book_card));
         }
     }
 }
