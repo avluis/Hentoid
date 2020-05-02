@@ -51,6 +51,8 @@ public interface CollectionDAO {
 
     // High-level queries
 
+    Single<List<Long>> getStoredBookIds();
+
     Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly);
 
     Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);

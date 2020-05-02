@@ -752,7 +752,7 @@ public class ObjectBoxDB {
     }
 
     /**
-     * ONE-SHOT USE QUERIES
+     * ONE-SHOT USE QUERIES (MIGRATION & MAINTENANCE)
      */
 
     List<Content> selectContentWithOldPururinHost() {
@@ -766,4 +766,18 @@ public class ObjectBoxDB {
     public long countDownloadedImagesWithoutUri() {
         return store.boxFor(ImageFile.class).query().equal(ImageFile_.status, StatusContent.DOWNLOADED.getCode()).isNull(ImageFile_.fileUri).build().count();
     }
+
+    long[] selectStoredContentIds() {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, new int[]{
+                StatusContent.DOWNLOADING.getCode(),
+                StatusContent.PAUSED.getCode(),
+                StatusContent.DOWNLOADED.getCode(),
+                StatusContent.ERROR.getCode(),
+                StatusContent.MIGRATED.getCode()});
+        query.notNull(Content_.storageFolder);
+        query.notEqual(Content_.storageFolder, "");
+        return query.build().findIds();
+    }
+
 }

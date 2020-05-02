@@ -66,6 +66,13 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public Single<List<Long>> getStoredBookIds() {
+        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectStoredContentIds()))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Override
     public Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly) {
         return Single.fromCallable(() -> contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly))
                 .subscribeOn(Schedulers.io())
