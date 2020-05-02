@@ -26,6 +26,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.drag.IExtendedDraggable;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.swipe.ISwipeable;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +54,7 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
-public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable {
+public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable, ISwipeable {
 
     private static final RequestOptions glideRequestOptions = new RequestOptions()
             .centerInside()
@@ -128,6 +129,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         return true;
     }
 
+    @Override
+    public boolean isSwipeable() { return true; }
+
     @org.jetbrains.annotations.Nullable
     @Override
     public ItemTouchHelper getTouchHelper() {
@@ -161,10 +165,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         // Specific to Queued content
         private ProgressBar pbDownload;
-        private ImageView ivTop;
-        private ImageView ivUp;
-        private ImageView ivDown;
-        private ImageView ivCancel;
+        private View ivTop;
+        private View ivBottom;
         private View ivReorder;
 
 
@@ -187,9 +189,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             } else if (viewType == ViewType.QUEUE) {
                 pbDownload = itemView.findViewById(R.id.pbDownload);
                 ivTop = itemView.findViewById(R.id.queueTopBtn);
-                ivUp = itemView.findViewById(R.id.queueUpBtn);
-                ivDown = itemView.findViewById(R.id.queueDownBtn);
-                ivCancel = itemView.findViewById(R.id.btnCancel);
+                ivBottom = itemView.findViewById(R.id.queueBottomBtn);
                 ivReorder = itemView.findViewById(R.id.ivReorder);
             }
         }
@@ -391,22 +391,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
 
             if (ViewType.QUEUE == item.viewType) {
-                ivCancel.setImageResource(R.drawable.ic_action_delete_forever);
-/*
                 boolean isFirstItem = (0 == getAdapterPosition());
-                int itemCount = item.adapter.getAdapterItemCount();
-                boolean isLastItem = itemCount - 1 == getAdapterPosition();
-
-                ivUp.setImageResource(R.drawable.ic_arrow_up);
-                ivUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
-
-                ivTop.setImageResource(R.drawable.ic_doublearrowup);
                 ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
-
-                ivDown.setImageResource(R.drawable.ic_arrow_down);
-                ivDown.setVisibility(View.VISIBLE);
-
- */
             } else if (ViewType.LIBRARY == item.viewType) {
                 // When transitioning to the other state, button blinks with its target state
                 if (content.isBeingFavourited()) {
@@ -479,17 +465,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             return ivTop;
         }
 
-        public View getUpButton() {
-            return ivUp;
+        public View getBottomButton() {
+            return ivBottom;
         }
 
-        public View getDownButton() {
-            return ivDown;
-        }
-
-        public View getCancelButton() {
-            return ivCancel;
-        }
 
         @Override
         public void unbindView(@NotNull ContentItem item) {

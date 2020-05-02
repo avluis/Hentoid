@@ -211,18 +211,35 @@ public class QueueFragment extends Fragment implements ItemTouchCallback {
             }
         });
 
-        // Cancel button
+        // Top button
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
             public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                viewModel.cancel(item.getContent());
+                viewModel.move(i, 0);
             }
 
             @org.jetbrains.annotations.Nullable
             @Override
             public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
                 if (viewHolder instanceof ContentItem.ContentViewHolder) {
-                    return ((ContentItem.ContentViewHolder) viewHolder).getCancelButton();
+                    return ((ContentItem.ContentViewHolder) viewHolder).getTopButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
+        // Bottom button
+        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
+            @Override
+            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                viewModel.move(i, fastAdapter.getItemCount() - 1);
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof ContentItem.ContentViewHolder) {
+                    return ((ContentItem.ContentViewHolder) viewHolder).getBottomButton();
                 }
                 return super.onBind(viewHolder);
             }

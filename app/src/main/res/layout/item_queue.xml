@@ -41,7 +41,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/barrier"
         tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_doublearrowup" />
+        tools:src="@drawable/ic_action_top" />
 
     <ImageView
         android:id="@+id/queueUpBtn"
