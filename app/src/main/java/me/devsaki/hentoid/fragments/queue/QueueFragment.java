@@ -68,7 +68,6 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
  */
-// TODO cancel all
 public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -199,12 +198,12 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     .setCancelable(false)
                     .setTitle(R.string.app_name)
                     .setMessage(R.string.confirm_cancel_all)
-                    .setPositiveButton(android.R.string.yes,
+                    .setPositiveButton(R.string.yes,
                             (dialog1, which) -> {
                                 dialog1.dismiss();
                                 onCancelAll();
                             })
-                    .setNegativeButton(android.R.string.no,
+                    .setNegativeButton(R.string.no,
                             (dialog12, which) -> dialog12.dismiss())
                     .create()
                     .show();

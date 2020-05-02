@@ -11,7 +11,10 @@
     <string name="download_error">Download completed, but had an error</string>
     <string name="unhandled_download_error">Unhandled error trying to read images urls</string>
     <string name="downloading">Downloading</string>
-    <string name="add_to_queue">Adding to queue</string>
+    <plurals name="add_to_queue">
+        <item quantity="one">Item added to queue</item>
+        <item quantity="other">%d items added to queue</item>
+    </plurals>
     <string name="already_downloaded">Already downloaded</string>
     <string name="already_queued">Already queued</string>
 </resources>

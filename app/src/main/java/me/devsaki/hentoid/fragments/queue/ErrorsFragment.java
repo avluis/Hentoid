@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.queue;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
@@ -31,12 +33,14 @@ import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.fragments.library.ErrorsDialogFragment;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
@@ -57,7 +61,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     // Viewmodel
     private QueueViewModel viewModel;
 
-    private View rootView;
     private TextView mEmptyText;    // "No errors" message panel
 
     // Used to effectively cancel a download when the user hasn't hit UNDO
@@ -99,7 +102,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // UI ELEMENTS
-        rootView = inflater.inflate(R.layout.fragment_queue_errors, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_queue_errors, container, false);
 
         mEmptyText = requireViewById(rootView, R.id.errors_empty_txt);
 
@@ -112,8 +115,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         fastAdapter.registerItemFactory(item.getType(), item);
         recyclerView.setAdapter(fastAdapter);
 
-//        LinearLayoutManager llm = (LinearLayoutManager) recyclerView.getLayoutManager();
-
         // Fast scroller
         RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.queue_list_fastscroller);
         fastScroller.attachRecyclerView(recyclerView);
@@ -121,6 +122,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
 
+        initToolbar();
         attachButtons(fastAdapter);
 
         return rootView;
@@ -132,6 +134,38 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
         viewModel.getErrorsPaged().observe(getViewLifecycleOwner(), this::onErrorsChanged);
+    }
+
+    private void initToolbar() {
+        if (!(requireActivity() instanceof QueueActivity)) return;
+        QueueActivity activity = (QueueActivity) requireActivity();
+        MenuItem redownloadAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_redownload_all);
+        redownloadAllMenu.setOnMenuItemClickListener(item -> {
+            if (fastAdapter.getItemCount() <= 1) {
+                redownloadAll();
+            } else if (fastAdapter.getItemCount() > 1) {
+                new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                        .setIcon(R.drawable.ic_warning)
+                        .setCancelable(false)
+                        .setTitle(R.string.app_name)
+                        .setMessage(getString(R.string.confirm_redownload_all, fastAdapter.getItemCount()))
+                        .setPositiveButton(R.string.yes,
+                                (dialog1, which) -> {
+                                    dialog1.dismiss();
+                                    redownloadAll();
+                                })
+                        .setNegativeButton(R.string.no,
+                                (dialog12, which) -> dialog12.dismiss())
+                        .create()
+                        .show();
+            }
+            return true;
+        });
+        MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
+        invertMenu.setOnMenuItemClickListener(item -> {
+            viewModel.invertQueue();
+            return true;
+        });
     }
 
     private void attachButtons(FastAdapter<ContentItem> fastAdapter) {
@@ -255,6 +289,10 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         fastAdapter.notifyItemChanged(position);
     }
 
+    private void redownloadAll() {
+        redownloadContent(new ArrayList<>(itemAdapter.getModels()));
+    }
+
     @Override
     public void redownloadContent(Content content) {
         List<Content> contentList = new ArrayList<>();
@@ -268,7 +306,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         if (Preferences.isQueueAutostart())
             ContentQueueManager.getInstance().resumeQueue(getContext());
 
-        Snackbar snackbar = Snackbar.make(mEmptyText, R.string.add_to_queue, BaseTransientBottomBar.LENGTH_LONG);
+        String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
+        Snackbar snackbar = Snackbar.make(mEmptyText, message, BaseTransientBottomBar.LENGTH_LONG);
         snackbar.show();
     }
 }

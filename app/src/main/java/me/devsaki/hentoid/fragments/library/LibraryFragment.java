@@ -1105,7 +1105,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (Preferences.isQueueAutostart())
             ContentQueueManager.getInstance().resumeQueue(getContext());
 
-        Snackbar snackbar = Snackbar.make(recyclerView, R.string.add_to_queue, BaseTransientBottomBar.LENGTH_LONG);
+        String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
+        Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
         snackbar.setAction("VIEW QUEUE", v -> viewQueue());
         snackbar.show();
     }
