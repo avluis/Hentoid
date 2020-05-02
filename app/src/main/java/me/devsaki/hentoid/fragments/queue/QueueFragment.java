@@ -23,6 +23,8 @@ import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
+import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
+import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 import com.pluscubed.recyclerfastscroll.RecyclerFastScroller;
 
@@ -45,7 +47,6 @@ import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.CustomDragCallback;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -65,7 +66,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 // TODO cancel all
 // TODO hold-to-confirm or ask for confirmation when using delete item
-public class QueueFragment extends Fragment implements ItemTouchCallback {
+public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -95,6 +96,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback {
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+
+    // Used to effectively cancel a download when the user hasn't hit UNDO
+    private FastAdapter<ContentItem> fastAdapter;
+    private final Debouncer<Integer> cancelDebouncer = new Debouncer<>(2000, this::onBookCancel);
 
 
     // State
@@ -148,7 +153,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback {
         // Book list
         recyclerView = requireViewById(rootView, R.id.queue_list);
 
-        FastAdapter<ContentItem> fastAdapter = FastAdapter.with(itemAdapter);
+        fastAdapter = FastAdapter.with(itemAdapter);
         fastAdapter.setHasStableIds(true);
         ContentItem item = new ContentItem(ContentItem.ViewType.QUEUE);
         fastAdapter.registerItemFactory(item.getType(), item);
@@ -162,9 +167,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback {
         RecyclerFastScroller fastScroller = requireViewById(rootView, R.id.queue_list_fastscroller);
         fastScroller.attachRecyclerView(recyclerView);
 
-        // Drag & drop
-        SimpleDragCallback dragCallback = new CustomDragCallback(SimpleDragCallback.UP_DOWN, this, this::onStartDrag);
+        // Drag, drop & swiping
+        SimpleDragCallback dragCallback = new SimpleSwipeDragCallback(
+                this,
+                this,
+                requireContext().getDrawable(R.drawable.ic_action_delete_forever));
         dragCallback.setIsDragEnabled(false);
+
         touchHelper = new ItemTouchHelper(dragCallback);
         touchHelper.attachToRecyclerView(recyclerView);
 
@@ -469,6 +478,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback {
         } else return false;
     }
 
+    private void onBookCancel(int position) {
+        Content c = itemAdapter.getAdapterItem(position).getContent();
+        if (c != null) {
+            viewModel.cancel(c);
+        }
+    }
+
     /**
      * Calculate the position of the top visible item of the book list
      *
@@ -498,9 +514,28 @@ public class QueueFragment extends Fragment implements ItemTouchCallback {
         viewModel.move(oldPosition, newPosition);
     }
 
+    // TODO wait for the next release of FastAdapter to handle that when using drag, drop & swipe
     private void onStartDrag(RecyclerView.ViewHolder vh) {
         if (vh instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) vh).onDragged();
         }
+    }
+
+    @Override
+    public void itemSwiped(int position, int direction) {
+        ContentItem item = itemAdapter.getAdapterItem(position);
+        item.setSwipeDirection(direction);
+        cancelDebouncer.submit(position);
+
+        Runnable cancelSwipe = () -> {
+            cancelDebouncer.clear();
+            item.setSwipeDirection(0);
+            int position1 = itemAdapter.getAdapterPosition(item);
+            if (position1 != RecyclerView.NO_POSITION) {
+                fastAdapter.notifyItemChanged(position1);
+            }
+        };
+        item.setUndoSwipeAction(cancelSwipe);
+        fastAdapter.notifyItemChanged(position);
     }
 }

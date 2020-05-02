@@ -73,6 +73,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     int viewType;
     private boolean isEmpty;
     private ItemTouchHelper touchHelper;
+    private Runnable undoSwipeAction;
+    private int swipeDirection = 0;
 
     // Constructor for empty placeholder
     public ContentItem(@ViewType int viewType) {
@@ -130,7 +132,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     @Override
-    public boolean isSwipeable() { return true; }
+    public boolean isSwipeable() {
+        return true;
+    }
 
     @org.jetbrains.annotations.Nullable
     @Override
@@ -145,6 +149,15 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             return ((ContentViewHolder) viewHolder).ivReorder;
         else return null;
     }
+
+    public void setUndoSwipeAction(Runnable undoSwipeAction) {
+        this.undoSwipeAction = undoSwipeAction;
+    }
+
+    public void setSwipeDirection(int direction) {
+        swipeDirection = direction;
+    }
+
 
     public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> implements IDraggableViewHolder {
 
@@ -164,10 +177,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private ImageView ivFavourite;
 
         // Specific to Queued content
+        private View swipeResult;
+        private View bookCard;
         private ProgressBar pbDownload;
         private View ivTop;
         private View ivBottom;
         private View ivReorder;
+        private View tvUndoSwipe;
 
 
         ContentViewHolder(View view, @ViewType int viewType) {
@@ -187,13 +203,15 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
             } else if (viewType == ViewType.QUEUE) {
+                swipeResult = itemView.findViewById(R.id.swipe_result_content);
+                bookCard = itemView.findViewById(R.id.item_card);
                 pbDownload = itemView.findViewById(R.id.pbDownload);
                 ivTop = itemView.findViewById(R.id.queueTopBtn);
                 ivBottom = itemView.findViewById(R.id.queueBottomBtn);
                 ivReorder = itemView.findViewById(R.id.ivReorder);
+                tvUndoSwipe = itemView.findViewById(R.id.undo_swipe);
             }
         }
-
 
         @Override
         public void bindView(@NotNull ContentItem item, @NotNull List<?> payloads) {
@@ -228,6 +246,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 updateProgress(item.content, pbDownload, getAdapterPosition(), false);
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
+            if (tvUndoSwipe != null)
+                tvUndoSwipe.setOnClickListener(v -> item.undoSwipeAction.run());
         }
 
         private void updateLayoutVisibility(ContentItem item) {
@@ -236,8 +256,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();
+
+            // Unread indicator
             if (ivNew != null)
                 ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
+
+            // Queue swipe
+            if (swipeResult != null) {
+                swipeResult.setVisibility((item.swipeDirection != 0) ? View.VISIBLE : View.GONE);
+                bookCard.setVisibility((item.swipeDirection != 0) ? View.GONE : View.VISIBLE);
+            }
         }
 
         private void attachCover(Content content) {
@@ -472,7 +500,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         @Override
         public void unbindView(@NotNull ContentItem item) {
-            // No specific behaviour to implement
+//            item.setUndoSwipeAction(null);
         }
 
         @Override

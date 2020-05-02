@@ -119,7 +119,7 @@ public class QueueViewModel extends AndroidViewModel {
      *
      * @param content Content whose download has to be canceled
      */
-    public void cancel(Content content) {
+    public void cancel(@NonNull Content content) {
         EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
 
         compositeDisposable.add(
