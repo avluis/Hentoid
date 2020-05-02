@@ -144,6 +144,7 @@ public class QueueViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 () -> {
+                                    // Nothing to do here; UI callbacks are handled through LiveData
                                 },
                                 Timber::e
                         )

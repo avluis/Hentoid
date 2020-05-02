@@ -101,7 +101,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     // Used to effectively cancel a download when the user hasn't hit UNDO
     private FastAdapter<ContentItem> fastAdapter;
-    private final Debouncer<Integer> cancelDebouncer = new Debouncer<>(2000, this::onCancelBook);
 
 
     // State
@@ -508,15 +507,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         } else return false;
     }
 
-    private void onCancelBook(int position) {
-        Content c = itemAdapter.getAdapterItem(position).getContent();
-        if (c != null) {
-            viewModel.cancel(c);
-        }
+    private void onCancelBook(@NonNull Content c) {
+        viewModel.cancel(c);
     }
 
     private void onCancelAll() {
-
         viewModel.cancelAll();
     }
 
@@ -560,17 +555,21 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     public void itemSwiped(int position, int direction) {
         ContentItem item = itemAdapter.getAdapterItem(position);
         item.setSwipeDirection(direction);
-        cancelDebouncer.submit(position);
 
-        Runnable cancelSwipe = () -> {
-            cancelDebouncer.clear();
-            item.setSwipeDirection(0);
-            int position1 = itemAdapter.getAdapterPosition(item);
-            if (position1 != RecyclerView.NO_POSITION) {
-                fastAdapter.notifyItemChanged(position1);
-            }
-        };
-        item.setUndoSwipeAction(cancelSwipe);
-        fastAdapter.notifyItemChanged(position);
+        if (item.getContent() != null) {
+            Debouncer<Content> cancelDebouncer = new Debouncer<>(2000, this::onCancelBook);
+            cancelDebouncer.submit(item.getContent());
+
+            Runnable cancelSwipe = () -> {
+                cancelDebouncer.clear();
+                item.setSwipeDirection(0);
+                int position1 = itemAdapter.getAdapterPosition(item);
+                if (position1 != RecyclerView.NO_POSITION) {
+                    fastAdapter.notifyItemChanged(position1);
+                }
+            };
+            item.setUndoSwipeAction(cancelSwipe);
+            fastAdapter.notifyItemChanged(position);
+        }
     }
 }
