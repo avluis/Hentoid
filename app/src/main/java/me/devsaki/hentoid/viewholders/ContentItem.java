@@ -254,7 +254,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 tvUndoSwipe.setOnClickListener(v -> item.undoSwipeAction.run());
         }
 
-        private void updateLayoutVisibility(ContentItem item) {
+        private void updateLayoutVisibility(@NonNull final ContentItem item) {
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
             if (item.getContent() != null && item.getContent().isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
@@ -272,7 +272,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
         }
 
-        private void attachCover(Content content) {
+        private void attachCover(@NonNull final Content content) {
             String thumbLocation = content.getCover().getFileUri();
             if (thumbLocation.isEmpty()) thumbLocation = content.getCover().getUrl();
             if (thumbLocation.isEmpty()) thumbLocation = content.getCoverImageUrl();
@@ -320,7 +320,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         .into(ivCover);
         }
 
-        private void attachTitle(Content content) {
+        private void attachTitle(@NonNull final Content content) {
             CharSequence title;
             Context context = tvTitle.getContext();
             if (content.getTitle() == null) {
@@ -332,7 +332,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
         }
 
-        private void attachArtist(Content content) {
+        private void attachArtist(@NonNull final Content content) {
             Context context = tvArtist.getContext();
             String templateArtist = context.getResources().getString(R.string.work_artist);
             List<Attribute> attributes = new ArrayList<>();
@@ -357,7 +357,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         }
 
 
-        private void attachSeries(Content content) {
+        private void attachSeries(@NonNull final Content content) {
             Context context = tvSeries.getContext();
             String templateSeries = context.getResources().getString(R.string.work_series);
             List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
@@ -375,7 +375,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
         }
 
-        private void attachPages(Content content, @ViewType int viewType) {
+        private void attachPages(@NonNull final Content content, @ViewType int viewType) {
             tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
             Context context = tvPages.getContext();
             String template = context.getResources().getString(R.string.work_pages);
@@ -389,7 +389,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvPages.setText(template);
         }
 
-        private void attachTags(Content content) {
+        private void attachTags(@NonNull final Content content) {
             Context context = tvTags.getContext();
             List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
             if (tagsAttributes == null) {
@@ -410,7 +410,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
         }
 
-        private void attachButtons(final ContentItem item) {
+        private void attachButtons(@NonNull final ContentItem item) {
             Content content = item.getContent();
             if (null == content) return;
 
@@ -462,7 +462,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
         }
 
-        public static void updateProgress(@NonNull Content content, @NonNull ProgressBar pb, int position, boolean isPausedEvent) {
+        public static void updateProgress(@NonNull final Content content, @NonNull ProgressBar pb, int position, boolean isPausedEvent) {
             boolean isQueueReady = ContentQueueManager.getInstance().isQueueActive() && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
             boolean isFirstItem = (0 == position);
 
