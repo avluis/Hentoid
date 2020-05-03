@@ -78,11 +78,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     // UI ELEMENTS
     private View rootView;
+    private MenuItem errorStatsMenu;    // Toolbar menu item for error stats
     private RecyclerView recyclerView;  // Queued book list
     private TextView mEmptyText;        // "Empty queue" message panel
     private ImageButton btnStart;       // Start / Resume button
     private ImageButton btnPause;       // Pause button
-    private ImageButton btnStats;       // Error statistics button
     private TextView queueStatus;       // 1st line of text displayed on the right of the queue pause / play button
     private TextView queueInfo;         // 2nd line of text displayed on the right of the queue pause / play button
     private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
@@ -141,7 +141,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         btnStart = requireViewById(rootView, R.id.btnStart);
         btnPause = requireViewById(rootView, R.id.btnPause);
-        btnStats = requireViewById(rootView, R.id.btnStats);
         queueStatus = requireViewById(rootView, R.id.queueStatus);
         queueInfo = requireViewById(rootView, R.id.queueInfo);
         dlPreparationProgressBar = requireViewById(rootView, R.id.queueDownloadPreparationProgressBar);
@@ -149,7 +148,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
-        btnStats.setOnClickListener(v -> showErrorStats());
 
         // Book list
         recyclerView = requireViewById(rootView, R.id.queue_list);
@@ -210,6 +208,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
         invertMenu.setOnMenuItemClickListener(item -> {
             viewModel.invertQueue();
+            return true;
+        });
+        errorStatsMenu = activity.getToolbar().getMenu().findItem(R.id.action_error_stats);
+        errorStatsMenu.setOnMenuItemClickListener(item -> {
+            showErrorStats();
             return true;
         });
     }
@@ -298,7 +301,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     public void onDownloadEvent(DownloadEvent event) {
 
         Timber.d("Event received : %s", event.eventType);
-        btnStats.setVisibility((event.pagesKO > 0) ? View.VISIBLE : View.GONE);
+        errorStatsMenu.setVisible(event.pagesKO > 0);
 
         switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
@@ -320,7 +323,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case DownloadEvent.EV_COMPLETE:
                 dlPreparationProgressBar.setVisibility(View.GONE);
-                if (0 == itemAdapter.getAdapterItemCount()) btnStats.setVisibility(View.GONE);
+                if (0 == itemAdapter.getAdapterItemCount()) errorStatsMenu.setVisible(false);
                 update(event.eventType);
                 break;
             default: // EV_PAUSE, EV_CANCEL events
@@ -471,7 +474,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 queueInfo.startAnimation(animation);
             } else { // Empty
                 btnStart.setVisibility(View.GONE);
-                btnStats.setVisibility(View.GONE);
+                errorStatsMenu.setVisible(false);
                 queueStatus.setText("");
             }
         }

@@ -4,6 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".activities.QueueActivity">
     <item
+        android:id="@+id/action_error_stats"
+        android:title="@string/err_stats_title"
+        android:icon="@drawable/ic_error_outline"
+        android:visible="false"
+        tools:visible="true"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_invert_queue"
         android:title="@string/invert_queue"
         app:showAsAction="never" />

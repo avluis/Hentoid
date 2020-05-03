@@ -37,6 +37,7 @@ public class QueueActivity extends BaseActivity {
     private TabLayout.Tab errorsTab;
 
     private Toolbar toolbar;
+    private MenuItem errorStatsMenu;
     private MenuItem invertQueueMenu;
     private MenuItem cancelAllMenu;
     private MenuItem redownloadAllMenu;
@@ -49,6 +50,7 @@ public class QueueActivity extends BaseActivity {
 
         toolbar = findViewById(R.id.queue_toolbar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        errorStatsMenu = toolbar.getMenu().findItem(R.id.action_error_stats);
         invertQueueMenu = toolbar.getMenu().findItem(R.id.action_invert_queue);
         cancelAllMenu = toolbar.getMenu().findItem(R.id.action_cancel_all);
         redownloadAllMenu = toolbar.getMenu().findItem(R.id.action_redownload_all);
@@ -92,6 +94,7 @@ public class QueueActivity extends BaseActivity {
         invertQueueMenu.setVisible(0 == position);
         cancelAllMenu.setVisible(0 == position);
         redownloadAllMenu.setVisible(1 == position);
+        if (1 == position) errorStatsMenu.setVisible(false); // That doesn't mean it should be visible at all times on tab 0 !
     }
 
     public Toolbar getToolbar() {
