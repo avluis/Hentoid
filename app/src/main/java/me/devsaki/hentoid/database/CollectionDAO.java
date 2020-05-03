@@ -51,7 +51,7 @@ public interface CollectionDAO {
 
     // High-level queries
 
-    Single<List<Long>> getStoredBookIds();
+    Single<List<Long>> getStoredBookIds(boolean nonFavouriteOnly, boolean includeQueued);
 
     Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly);
 
@@ -133,6 +133,12 @@ public interface CollectionDAO {
     // RESOURCES
 
     void cleanup();
+
+
+    // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
+
+    Single<List<Long>> getOldStoredBookIds();
+
 
 
     // RESULTS STRUCTURES

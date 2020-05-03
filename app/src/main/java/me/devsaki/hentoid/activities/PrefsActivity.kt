@@ -9,7 +9,7 @@ import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.PreferenceFragment
+import me.devsaki.hentoid.fragments.preferences.PreferenceFragment
 import me.devsaki.hentoid.util.FileHelper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe

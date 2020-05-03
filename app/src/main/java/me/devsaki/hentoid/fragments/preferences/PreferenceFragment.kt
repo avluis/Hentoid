@@ -1,5 +1,6 @@
-package me.devsaki.hentoid.fragments
+package me.devsaki.hentoid.fragments.preferences
 
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -7,10 +8,10 @@ import androidx.fragment.app.commit
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.enums.Theme
-import me.devsaki.hentoid.fragments.import_.LibRefreshDialogFragment
 import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.services.UpdateDownloadService
@@ -82,6 +83,23 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     }
                     true
                 }
+                Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
+                    MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                            .setIcon(R.drawable.ic_warning)
+                            .setCancelable(false)
+                            .setTitle(R.string.app_name)
+                            .setMessage(R.string.pref_ask_delete_all_except_favs)
+                            .setPositiveButton(R.string.yes
+                            ) { dialog1: DialogInterface, _: Int ->
+                                dialog1.dismiss()
+                                LibDeleteFragment.invoke(parentFragmentManager)
+                            }
+                            .setNegativeButton(R.string.no
+                            ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
+                            .create()
+                            .show()
+                    true
+                }
                 Preferences.Key.PREF_SETTINGS_FOLDER -> {
                     if (ImportService.isRunning()) {
                         ToastUtil.toast("Import is already running")
@@ -119,13 +137,13 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         ToastUtil.toast(R.string.restart_needed)
     }
 
-    private fun onPrefColorThemeChanged() {
-        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Preferences.getColorTheme()))
-    }
-
     private fun onFolderChanged() {
         val storageFolderPref: Preference? = findPreference(Preferences.Key.PREF_SETTINGS_FOLDER) as Preference?
         storageFolderPref?.summary = Preferences.getStorageUri()
+    }
+
+    private fun onPrefColorThemeChanged() {
+        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Preferences.getColorTheme()))
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {

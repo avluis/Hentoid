@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.import_;
+package me.devsaki.hentoid.fragments.preferences;
 
 import android.content.Intent;
 import android.net.Uri;

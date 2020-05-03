@@ -66,8 +66,8 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public Single<List<Long>> getStoredBookIds() {
-        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectStoredContentIds()))
+    public Single<List<Long>> getStoredBookIds(boolean nonFavouritesOnly, boolean includeQueued) {
+        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectStoredContentIds(nonFavouritesOnly, includeQueued)))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -357,5 +357,15 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void insertSiteHistory(@NonNull Site site, @NonNull String url) {
         db.insertSiteHistory(site, url);
+    }
+
+
+    // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
+
+    @Override
+    public Single<List<Long>> getOldStoredBookIds() {
+        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectOldStoredContentIds()))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 }

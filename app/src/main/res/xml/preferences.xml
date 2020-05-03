@@ -141,6 +141,11 @@
                 android:summary="@string/pref_refresh_library_summary"
                 android:title="@string/pref_refresh_library_title"
                 app:iconSpaceReserved="false" />
+            <Preference
+                android:key="pref_delete_all_except_favs"
+                android:summary="@string/pref_delete_all_except_favs"
+                android:title="@string/pref_delete_all_except_favs_summary"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
 

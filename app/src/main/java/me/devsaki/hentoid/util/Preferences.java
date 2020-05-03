@@ -391,6 +391,7 @@ public final class Preferences {
         static final String PREF_CHECK_UPDATES = "pref_check_updates";
         public static final String PREF_CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         public static final String PREF_REFRESH_LIBRARY = "pref_refresh_bookshelf";
+        public static final String DELETE_ALL_EXCEPT_FAVS = "pref_delete_all_except_favs";
         static final String PREF_WELCOME_DONE = "pref_welcome_done";
         static final String PREFS_VERSION_KEY = "prefs_version";
         static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";

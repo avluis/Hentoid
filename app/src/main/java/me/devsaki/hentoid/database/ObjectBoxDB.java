@@ -763,7 +763,7 @@ public class ObjectBoxDB {
         return store.boxFor(ImageFile.class).query().equal(ImageFile_.status, StatusContent.DOWNLOADED.getCode()).isNull(ImageFile_.fileUri).build().count();
     }
 
-    long[] selectStoredContentIds() {
+    long[] selectOldStoredContentIds() {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, new int[]{
                 StatusContent.DOWNLOADING.getCode(),
@@ -773,6 +773,26 @@ public class ObjectBoxDB {
                 StatusContent.MIGRATED.getCode()});
         query.notNull(Content_.storageFolder);
         query.notEqual(Content_.storageFolder, "");
+        return query.build().findIds();
+    }
+
+    long[] selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        if (includeQueued)
+            query.in(Content_.status, new int[]{
+                    StatusContent.DOWNLOADING.getCode(),
+                    StatusContent.PAUSED.getCode(),
+                    StatusContent.DOWNLOADED.getCode(),
+                    StatusContent.ERROR.getCode(),
+                    StatusContent.MIGRATED.getCode()});
+        else
+            query.in(Content_.status, new int[]{
+                    StatusContent.DOWNLOADED.getCode(),
+                    StatusContent.ERROR.getCode(),
+                    StatusContent.MIGRATED.getCode()});
+        query.notNull(Content_.storageUri);
+        query.notEqual(Content_.storageUri, "");
+        if (nonFavouritesOnly) query.equal(Content_.favourite, false);
         return query.build().findIds();
     }
 
