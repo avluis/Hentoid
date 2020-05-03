@@ -23,9 +23,9 @@
     <TextView
         android:id="@+id/delete_progress_test"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text=""
+        android:text=" "
         tools:text="@string/delete_progress"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/delete_title" />
@@ -37,7 +37,7 @@
         android:layout_height="4dp"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/delete_progress_test"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/delete_progress_test" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

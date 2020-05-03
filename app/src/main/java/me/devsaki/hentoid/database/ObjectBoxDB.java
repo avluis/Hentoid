@@ -788,7 +788,6 @@ public class ObjectBoxDB {
         else
             query.in(Content_.status, new int[]{
                     StatusContent.DOWNLOADED.getCode(),
-                    StatusContent.ERROR.getCode(),
                     StatusContent.MIGRATED.getCode()});
         query.notNull(Content_.storageUri);
         query.notEqual(Content_.storageUri, "");

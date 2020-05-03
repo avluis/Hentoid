@@ -9,8 +9,10 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.reactivex.disposables.Disposables
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PinPreferenceActivity
+import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.services.UpdateCheckService
@@ -84,20 +86,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     true
                 }
                 Preferences.Key.DELETE_ALL_EXCEPT_FAVS -> {
-                    MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
-                            .setIcon(R.drawable.ic_warning)
-                            .setCancelable(false)
-                            .setTitle(R.string.app_name)
-                            .setMessage(R.string.pref_ask_delete_all_except_favs)
-                            .setPositiveButton(R.string.yes
-                            ) { dialog1: DialogInterface, _: Int ->
-                                dialog1.dismiss()
-                                LibDeleteFragment.invoke(parentFragmentManager)
-                            }
-                            .setNegativeButton(R.string.no
-                            ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
-                            .create()
-                            .show()
+                    onDeleteAllExceptFavourites()
                     true
                 }
                 Preferences.Key.PREF_SETTINGS_FOLDER -> {
@@ -144,6 +133,29 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     private fun onPrefColorThemeChanged() {
         ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Preferences.getColorTheme()))
+    }
+
+    private fun onDeleteAllExceptFavourites() {
+        val dao = ObjectBoxDAO(activity)
+        var searchDisposable = Disposables.empty()
+
+        searchDisposable = dao.getStoredBookIds(true, false).subscribe { list ->
+            MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                    .setIcon(R.drawable.ic_warning)
+                    .setCancelable(false)
+                    .setTitle(R.string.app_name)
+                    .setMessage(getString(R.string.pref_ask_delete_all_except_favs, list.size))
+                    .setPositiveButton(R.string.yes
+                    ) { dialog1: DialogInterface, _: Int ->
+                        dialog1.dismiss()
+                        searchDisposable.dispose()
+                        LibDeleteFragment.invoke(parentFragmentManager, list)
+                    }
+                    .setNegativeButton(R.string.no
+                    ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
+                    .create()
+                    .show()
+        };
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
