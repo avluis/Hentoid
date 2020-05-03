@@ -24,6 +24,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.threeten.bp.Instant;
@@ -89,6 +90,10 @@ import timber.log.Timber;
  * NB : As per IntentService behaviour, only one thread can be active at a time (no parallel runs of ContentDownloadService)
  */
 public class ContentDownloadService extends IntentService {
+
+    private enum QueuingResult {
+        CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
+    }
 
     private CollectionDAO dao;
     private ServiceNotificationManager notificationManager;
@@ -162,10 +167,10 @@ public class ContentDownloadService extends IntentService {
 
         notifyStart();
 
-        Content content = downloadFirstInQueue();
-        while (content != null) {
-            watchProgress(content);
-            content = downloadFirstInQueue();
+        ImmutablePair<QueuingResult, Content> result = downloadFirstInQueue();
+        while (!result.left.equals(QueuingResult.QUEUE_END)) {
+            if (result.left.equals(QueuingResult.CONTENT_FOUND)) watchProgress(result.right);
+            result = downloadFirstInQueue();
         }
         notificationManager.cancel();
     }
@@ -179,8 +184,8 @@ public class ContentDownloadService extends IntentService {
      * @return 1st book of the download queue; null if no book is available to download
      */
     @SuppressLint("TimberExceptionLogging")
-    @Nullable
-    private Content downloadFirstInQueue() {
+    @NonNull
+    private ImmutablePair<QueuingResult, Content> downloadFirstInQueue() {
         final String CONTENT_PART_IMAGE_LIST = "Image list";
 
         // Clear previously created requests
@@ -189,7 +194,7 @@ public class ContentDownloadService extends IntentService {
         // Check if queue has been paused
         if (ContentQueueManager.getInstance().isQueuePaused()) {
             Timber.w("Queue is paused. Download aborted.");
-            return null;
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
         // Work on first item of queue
@@ -198,7 +203,7 @@ public class ContentDownloadService extends IntentService {
         List<QueueRecord> queue = dao.selectQueue();
         if (queue.isEmpty()) {
             Timber.w("Queue is empty. Download aborted.");
-            return null;
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
         Content content = queue.get(0).content.getTarget();
@@ -209,7 +214,7 @@ public class ContentDownloadService extends IntentService {
             content = new Content().setId(queue.get(0).content.getTargetId()); // Must supply content ID to the event for the UI to update properly
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification());
-            return null;
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
 
         if (StatusContent.DOWNLOADED == content.getStatus()) {
@@ -217,7 +222,7 @@ public class ContentDownloadService extends IntentService {
             dao.deleteQueue(0);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification(content));
-            return null;
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
 
         downloadCanceled = false;
@@ -265,7 +270,8 @@ public class ContentDownloadService extends IntentService {
                 dao.replaceImageList(contentId, images);
                 // Get updated Content with the generated ID of new images
                 content = dao.selectContent(contentId);
-                if (null == content) return null;
+                if (null == content)
+                    return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
             } catch (CaptchaException cpe) {
                 Timber.w(cpe, "A captcha has been found while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, "Captcha found");
@@ -288,6 +294,8 @@ public class ContentDownloadService extends IntentService {
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, "No images have been found. Error = " + ere.getMessage());
                 hasError = true;
             } catch (Exception e) {
+                if (null == content)
+                    return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
                 Timber.w(e, "An exception has occurred while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, e.getMessage());
                 hasError = true;
@@ -305,12 +313,13 @@ public class ContentDownloadService extends IntentService {
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             HentoidApp.trackDownloadEvent("Error");
             notificationManager.notify(new DownloadErrorNotification(content));
-            return null;
+            return new ImmutablePair<>(QueuingResult.CONTENT_FAILED, content);
         }
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadCanceled || downloadSkipped) return null;
+        if (downloadCanceled || downloadSkipped)
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
         // Create destination folder for images to be downloaded
         DocumentFile dir = ContentHelper.createContentDownloadDir(this, content);
@@ -328,7 +337,7 @@ public class ContentDownloadService extends IntentService {
             // => Create all images, flag them as failed as well as the book
             dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ERROR);
             completeDownload(content.getId(), content.getTitle(), 0, images.size());
-            return null;
+            return new ImmutablePair<>(QueuingResult.CONTENT_FAILED, content);
         }
 
         // Folder creation succeeds -> memorize its path
@@ -350,7 +359,7 @@ public class ContentDownloadService extends IntentService {
                 requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
         }
 
-        return content;
+        return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);
     }
 
     /**
