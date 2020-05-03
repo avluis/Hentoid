@@ -57,6 +57,7 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
@@ -131,6 +132,8 @@ public class ContentDownloadService extends IntentService {
 
     @Override
     public void onDestroy() {
+        // Tell everyone the service is shutting down
+        EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.DOWNLOAD));
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
@@ -530,7 +533,8 @@ public class ContentDownloadService extends IntentService {
         imgs = parser.parseImageList(content);
 
         // If no images found, or just the cover, image detection has failed
-        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover())) throw new EmptyResultException();
+        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
+            throw new EmptyResultException();
 
         // Cleanup generated objects
         for (ImageFile img : imgs) {

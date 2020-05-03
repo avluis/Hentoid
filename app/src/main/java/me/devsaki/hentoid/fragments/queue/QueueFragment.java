@@ -46,6 +46,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
+import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -350,6 +351,20 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
 
         dlPreparationProgressBar.setProgress(event.total - event.done);
+    }
+
+    /**
+     * Service destroyed event handler
+     *
+     * @param event Broadcasted event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServiceDestroyed(ServiceDestroyedEvent event) {
+        if (event.service != ServiceDestroyedEvent.Service.DOWNLOAD) return;
+
+        isPaused = true;
+        updateProgressFirstItem(true);
+        updateControlBar();
     }
 
     /**
