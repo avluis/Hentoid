@@ -189,7 +189,7 @@
             android:background="@color/transparent"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/ic_info"
+            android:src="@drawable/ic_error_outline"
             android:tint="?colorSecondary"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"
             app:layout_constraintEnd_toStartOf="@id/queue_site_button"
