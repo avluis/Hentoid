@@ -28,21 +28,23 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
+import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -88,7 +90,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent {
+public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent, SimpleSwipeCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -116,6 +118,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
+    // TODO
+    private ItemTouchHelper touchHelper;
 
     // === TOOLBAR
     private Toolbar toolbar;
@@ -184,7 +188,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                     && oldItem.getSite().equals(newItem.getSite())
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
                     && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
-                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
+//                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
                     && oldItem.isFavourite() == newItem.isFavourite();
         }
 
@@ -199,9 +203,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             if (oldItem.isBeingFavourited() != newItem.isBeingFavourited()) {
                 diffBundleBuilder.setIsBeingFavourited(newItem.isBeingFavourited());
             }
+            /*
             if (oldItem.isBeingDeleted() != newItem.isBeingDeleted()) {
                 diffBundleBuilder.setIsBeingDeleted(newItem.isBeingDeleted());
             }
+             */
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
             }
@@ -324,9 +330,21 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         new FastScrollerBuilder(recyclerView).build();
 
         // Disable blink animation on card change (bind holder)
+        // Disabled because with it, swiped undo panel doesn't appear
+        // TODO test if everything's alright with that off
+        /*
         RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator)
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+*/
+
+        // Swiping
+        SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
+                this,
+                requireContext().getDrawable(R.drawable.ic_action_delete_forever));
+
+        touchHelper = new ItemTouchHelper(swipeCallback);
+        touchHelper.attachToRecyclerView(recyclerView);
 
         // Pager
         pager.initUI(rootView);
@@ -621,7 +639,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param items Items to be deleted if the answer is yes
      */
-    private void askDeleteItems(final List<Content> items) {
+    private void askDeleteItems(@NonNull final List<Content> items) {
         Context context = getActivity();
         if (null == context) return;
 
@@ -631,11 +649,15 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
-                            viewModel.deleteItems(items, this::onDeleteSuccess, this::onDeleteError);
+                            onDeleteBooks(items);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog, which) -> selectExtension.deselect())
                 .create().show();
+    }
+
+    private void onDeleteBooks(@NonNull final List<Content> items) {
+        viewModel.deleteItems(items, this::onDeleteSuccess, this::onDeleteError);
     }
 
     /**
@@ -806,7 +828,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isEndless) { // Endless mode
             pager.hide();
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, ContentItem.ViewType.LIBRARY));
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
             ContentItem item = new ContentItem(ContentItem.ViewType.LIBRARY);
@@ -946,7 +968,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         int maxIndex = bounds.getRight();
 
         //noinspection Convert2MethodRef need API24
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(c -> new ContentItem(c, ContentItem.ViewType.LIBRARY)).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }
@@ -1172,5 +1194,36 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private int getTopItemPosition() {
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
+    }
+
+    private IAdapter<ContentItem> getItemAdapter() {
+        if (itemAdapter != null) return itemAdapter;
+        else return pagedItemAdapter;
+    }
+
+    @Override
+    public void itemSwiped(int position, int direction) {
+        ContentItem item = getItemAdapter().getAdapterItem(position);
+
+        item.setSwipeDirection(direction);
+
+        if (item.getContent() != null) {
+            Debouncer<List<Content>> deleteDebouncer = new Debouncer<>(2000, this::onDeleteBooks);
+
+            List<Content> contents = new ArrayList<>();
+            contents.add(item.getContent());
+            deleteDebouncer.submit(contents);
+
+            Runnable cancelSwipe = () -> {
+                deleteDebouncer.clear();
+                item.setSwipeDirection(0);
+
+                int position1 = getItemAdapter().getAdapterPosition(item);
+                if (position1 != RecyclerView.NO_POSITION)
+                    fastAdapter.notifyItemChanged(position1);
+            };
+            item.setUndoSwipeAction(cancelSwipe);
+            fastAdapter.notifyItemChanged(position);
+        }
     }
 }

@@ -137,9 +137,12 @@ public class QueueViewModel extends AndroidViewModel {
      */
     public void cancel(@NonNull Content content) {
         EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+        remove(content);
+    }
 
+    public void remove(@NonNull Content content) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doCancel(content.getId()))
+                Completable.fromRunnable(() -> doRemove(content.getId()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -160,7 +163,7 @@ public class QueueViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(queue)
                         .observeOn(Schedulers.io())
-                        .map(qr -> doCancel(qr.content.getTargetId()))
+                        .map(qr -> doRemove(qr.content.getTargetId()))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> {
@@ -172,7 +175,7 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     @WorkerThread
-    private boolean doCancel(long contentId) {
+    private boolean doRemove(long contentId) {
         // Remove content altogether from the DB (including queue)
         Content content = dao.selectContent(contentId);
         if (content != null) {

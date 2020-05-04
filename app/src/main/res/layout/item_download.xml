@@ -5,87 +5,141 @@
     android:id="@+id/item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/default_cardview_margin"
-    android:background="@drawable/bg_book_card"
-    android:elevation="6dp"
+    android:clickable="true"
+    android:focusable="true"
     android:longClickable="true"
-    tools:targetApi="lollipop">
+    android:layout_marginBottom="@dimen/default_cardview_margin">
 
-    <!-- Dummy UI element to be able to attach to the top in library mode -->
-    <View
-        android:id="@+id/pbDownload"
-        android:layout_width="0dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_book_card"
+        android:clickable="false"
+        android:focusable="false"
+        android:longClickable="false"
+        android:elevation="6dp"
+        android:duplicateParentState="true"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Dummy UI element to be able to attach to the top in library mode -->
+        <View
+            android:id="@+id/pbDownload"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <include layout="@layout/include_item_details" />
+
+        <View
+            android:id="@+id/lineNew"
+            android:layout_width="4dp"
+            android:layout_height="0dp"
+            android:background="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/ivFavourite"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_fav_empty"
+            android:tint="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTags"
+            app:layout_constraintVertical_bias="1.0"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/queue_site_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:tint="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ivFavourite"
+            app:layout_constraintTop_toBottomOf="@id/tvTags"
+            app:layout_constraintVertical_bias="1.0"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_menu_nhentai" />
+
+        <!-- TODO remove that image after v1.12 beta if nobody complains -->
+        <ImageView
+            android:id="@+id/ivError"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:adjustViewBounds="true"
+            android:background="@drawable/bg_round_edges"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_exclamation"
+            android:tint="@color/card_surface_light"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/queue_site_button"
+            app:layout_constraintTop_toBottomOf="@id/tvTags"
+            app:layout_constraintVertical_bias="1.0"
+            tools:ignore="ContentDescription" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/swipe_result_content"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <include layout="@layout/include_item_details" />
-
-    <View
-        android:id="@+id/lineNew"
-        android:layout_width="4dp"
-        android:layout_height="0dp"
-        android:background="?colorSecondary"
+        android:background="@drawable/bg_book_card"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:clickable="false"
+        android:focusable="false"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <ImageView
-        android:id="@+id/ivFavourite"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/ic_fav_empty"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTags"
-        app:layout_constraintVertical_bias="1.0"
-        tools:ignore="ContentDescription" />
+        <TextView
+            android:id="@+id/swiped_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center_vertical|start"
+            android:lines="1"
+            android:singleLine="true"
+            android:text="@string/deleted"
+            android:textColor="@android:color/holo_red_dark"
+            android:textDirection="anyRtl"
+            android:textSize="@dimen/text_subtitle_2" />
 
-    <ImageView
-        android:id="@+id/queue_site_button"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/ivFavourite"
-        app:layout_constraintTop_toBottomOf="@id/tvTags"
-        app:layout_constraintVertical_bias="1.0"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_menu_nhentai" />
-
-    <!-- TODO remove that image after v1.12 beta if nobody complains -->
-    <ImageView
-        android:id="@+id/ivError"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:background="@drawable/bg_round_edges"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="4dp"
-        android:src="@drawable/ic_exclamation"
-        android:tint="@color/card_surface_light"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/queue_site_button"
-        app:layout_constraintTop_toBottomOf="@id/tvTags"
-        app:layout_constraintVertical_bias="1.0"
-        android:visibility="gone"
-        tools:ignore="ContentDescription" />
+        <TextView
+            android:id="@+id/undo_swipe"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical|start"
+            android:lines="1"
+            android:singleLine="true"
+            android:text="@string/undo"
+            android:textAllCaps="true"
+            android:textColor="@android:color/holo_red_dark"
+            android:textDirection="anyRtl"
+            android:textSize="@dimen/text_subtitle_2"
+            android:textStyle="bold" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

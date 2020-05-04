@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -61,12 +62,12 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     // COMMUNICATION
     // Viewmodel
     private QueueViewModel viewModel;
+    private ItemTouchHelper touchHelper;
 
     private TextView mEmptyText;    // "No errors" message panel
 
     // Used to effectively cancel a download when the user hasn't hit UNDO
     private FastAdapter<ContentItem> fastAdapter;
-    private final Debouncer<Integer> cancelDebouncer = new Debouncer<>(2000, this::onBookCancel);
 
 
     /**
@@ -91,7 +92,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         }
     }).build();
 
-    private final PagedModelAdapter<Content, ContentItem> itemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.ERRORS), c -> new ContentItem(c, ContentItem.ViewType.ERRORS));
+    private final PagedModelAdapter<Content, ContentItem> itemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.ERRORS), c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS));
 
 
     @Override
@@ -115,6 +116,14 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         ContentItem item = new ContentItem(ContentItem.ViewType.ERRORS);
         fastAdapter.registerItemFactory(item.getType(), item);
         recyclerView.setAdapter(fastAdapter);
+
+        // Swiping
+        SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
+                this,
+                requireContext().getDrawable(R.drawable.ic_action_delete_forever));
+
+        touchHelper = new ItemTouchHelper(swipeCallback);
+        touchHelper.attachToRecyclerView(recyclerView);
 
         // Fast scroller
         new FastScrollerBuilder(recyclerView).build();
@@ -248,11 +257,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         } else return false;
     }
 
-    private void onBookCancel(int position) {
-        Content c = itemAdapter.getAdapterItem(position).getContent();
-        if (c != null) {
-            viewModel.cancel(c);
-        }
+    private void onDeleteBook(@NonNull Content c) {
+        viewModel.remove(c);
     }
 
 
@@ -275,18 +281,21 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     public void itemSwiped(int position, int direction) {
         ContentItem item = itemAdapter.getAdapterItem(position);
         item.setSwipeDirection(direction);
-        cancelDebouncer.submit(position);
 
-        Runnable cancelSwipe = () -> {
-            cancelDebouncer.clear();
-            item.setSwipeDirection(0);
-            int position1 = itemAdapter.getAdapterPosition(item);
-            if (position1 != RecyclerView.NO_POSITION) {
-                fastAdapter.notifyItemChanged(position1);
-            }
-        };
-        item.setUndoSwipeAction(cancelSwipe);
-        fastAdapter.notifyItemChanged(position);
+        if (item.getContent() != null) {
+            Debouncer<Content> deleteDebouncer = new Debouncer<>(2000, this::onDeleteBook);
+            deleteDebouncer.submit(item.getContent());
+
+            Runnable cancelSwipe = () -> {
+                deleteDebouncer.clear();
+                item.setSwipeDirection(0);
+                int position1 = itemAdapter.getAdapterPosition(item);
+                if (position1 != RecyclerView.NO_POSITION)
+                    fastAdapter.notifyItemChanged(position1);
+            };
+            item.setUndoSwipeAction(cancelSwipe);
+            fastAdapter.notifyItemChanged(position);
+        }
     }
 
     private void redownloadAll() {

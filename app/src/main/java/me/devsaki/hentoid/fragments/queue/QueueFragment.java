@@ -167,13 +167,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         new FastScrollerBuilder(recyclerView).build();
 
         // Drag, drop & swiping
-        SimpleDragCallback dragCallback = new SimpleSwipeDragCallback(
+        SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
                 this,
                 this,
                 requireContext().getDrawable(R.drawable.ic_action_delete_forever));
-        dragCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
+        dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
-        touchHelper = new ItemTouchHelper(dragCallback);
+        touchHelper = new ItemTouchHelper(dragSwipeCallback);
         touchHelper.attachToRecyclerView(recyclerView);
 
         // Item click listener
@@ -579,9 +579,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 cancelDebouncer.clear();
                 item.setSwipeDirection(0);
                 int position1 = itemAdapter.getAdapterPosition(item);
-                if (position1 != RecyclerView.NO_POSITION) {
+                if (position1 != RecyclerView.NO_POSITION)
                     fastAdapter.notifyItemChanged(position1);
-                }
             };
             item.setUndoSwipeAction(cancelSwipe);
             fastAdapter.notifyItemChanged(position);

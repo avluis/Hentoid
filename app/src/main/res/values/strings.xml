@@ -144,7 +144,7 @@
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
     </plurals>
-    <string name="deleted">\@content deleted.</string>
+    <string name="content_deleted">\@content deleted.</string>
     <string name="not_previous_page">First page - can\'t proceed any further.</string>
     <string name="not_next_page">Last page - download more!</string>
     <string name="on_first_page">Already on the first page.</string>
@@ -184,6 +184,7 @@
     <string name="endless_disabled">Loading has been disabled</string>
     <string name="endless_cancel">Loading has been canceled</string>
     <string name="endless_error">Error while loading</string>
+    <string name="deleted">Deleted</string>
 
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>

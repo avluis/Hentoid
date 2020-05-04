@@ -87,21 +87,21 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         touchHelper = null;
     }
 
-    // Constructor for library item
-    public ContentItem(@NonNull Content content, @ViewType int viewType) {
+    // Constructor for library and error item
+    public ContentItem(@NonNull Content content, @NonNull ItemTouchHelper touchHelper, @ViewType int viewType) {
         this.content = content;
         this.viewType = viewType;
         setIdentifier(content.getId());
         isEmpty = false;
-        touchHelper = null;
+        this.touchHelper = touchHelper;
     }
 
     // Constructor for queued item
     public ContentItem(@NonNull QueueRecord record, ItemTouchHelper touchHelper) {
-        viewType = ViewType.QUEUE;
         setSelectable(false);
         setIdentifier(record.id);
         content = record.content.getTarget();
+        viewType = ViewType.QUEUE;
         isEmpty = (null == content);
         this.touchHelper = touchHelper;
     }
@@ -135,7 +135,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     @Override
     public boolean isSwipeable() {
-        return (ViewType.LIBRARY != viewType);
+        return true;
     }
 
     @org.jetbrains.annotations.Nullable
@@ -181,7 +181,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         // Specific to Queued content
         private View swipeResult;
         private View bookCard;
-        private ProgressBar pbDownload;
+        private ProgressBar progressBar;
         private View ivTop;
         private View ivBottom;
         private View ivReorder;
@@ -199,6 +199,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvPages = requireViewById(itemView, R.id.tvPages);
             ivSite = requireViewById(itemView, R.id.queue_site_button);
             ivError = itemView.findViewById(R.id.ivError);
+            // Swipe elements
+            swipeResult = itemView.findViewById(R.id.swipe_result_content);
+            bookCard = itemView.findViewById(R.id.item_card);
+            tvUndoSwipe = itemView.findViewById(R.id.undo_swipe);
 
             if (viewType == ViewType.LIBRARY) {
                 ivNew = itemView.findViewById(R.id.lineNew);
@@ -206,13 +210,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
             } else {
-                swipeResult = itemView.findViewById(R.id.swipe_result_content);
-                bookCard = itemView.findViewById(R.id.item_card);
-                pbDownload = itemView.findViewById(R.id.pbDownload);
+                progressBar = itemView.findViewById(R.id.pbDownload);
                 ivTop = itemView.findViewById(R.id.queueTopBtn);
                 ivBottom = itemView.findViewById(R.id.queueBottomBtn);
                 ivReorder = itemView.findViewById(R.id.ivReorder);
-                tvUndoSwipe = itemView.findViewById(R.id.undo_swipe);
                 ivRedownload = itemView.findViewById(R.id.ivRedownload);
             }
         }
@@ -246,8 +247,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             attachButtons(item);
             if (tvTags != null)
                 attachTags(item.content);
-            if (pbDownload != null)
-                updateProgress(item.content, pbDownload, getAdapterPosition(), false);
+            if (progressBar != null)
+                updateProgress(item.content, progressBar, getAdapterPosition(), false);
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
             if (tvUndoSwipe != null)
@@ -267,8 +268,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
             // Queue swipe
             if (swipeResult != null) {
+                bookCard.setVisibility((item.swipeDirection != 0) ? View.INVISIBLE : View.VISIBLE);
                 swipeResult.setVisibility((item.swipeDirection != 0) ? View.VISIBLE : View.GONE);
-                bookCard.setVisibility((item.swipeDirection != 0) ? View.GONE : View.VISIBLE);
             }
         }
 
