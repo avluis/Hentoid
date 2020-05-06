@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery;
@@ -74,6 +75,8 @@ public class ExHentaiActivity extends BaseWebActivity {
                 if (existingCookiesStr != null && existingCookiesStr.contains("ipb_member_id="))
                     webView.loadUrl("https://exhentai.org/");
             }
+
+            showTooltip(R.string.help_web_exh_account);
         }
 
 

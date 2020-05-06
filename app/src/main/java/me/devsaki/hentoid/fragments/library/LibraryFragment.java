@@ -45,6 +45,7 @@ import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
+import com.skydoves.balloon.ArrowOrientation;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -79,6 +80,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.TooltipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
@@ -298,6 +300,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
 
         viewModel.updateOrder(); // Trigger a blank search
+
+        // Display tooltips
+        TooltipUtil.showTooltip(requireContext(), R.string.help_search, ArrowOrientation.TOP, toolbar, getViewLifecycleOwner());
+        if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
     }
 
     /**

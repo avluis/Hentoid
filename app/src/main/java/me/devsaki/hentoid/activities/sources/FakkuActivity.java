@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities.sources;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 
 public class FakkuActivity extends BaseWebActivity {
@@ -15,6 +16,9 @@ public class FakkuActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
+
+        showTooltip(R.string.help_web_fakku_account); // Kinda hacky, but it's better than creating a whole new class just for that
+
         return client;
     }
 }

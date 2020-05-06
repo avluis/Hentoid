@@ -32,12 +32,14 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.annotation.WorkerThread;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.skydoves.balloon.ArrowOrientation;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -97,6 +99,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.TooltipUtil;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import okhttp3.Response;
 import pl.droidsonroids.jspoon.HtmlAdapter;
@@ -144,7 +147,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // === UI
     // Associated webview
     protected NestedScrollWebView webView;
-    // Toolbar buttons
+    // Bottom toolbar
+    private BottomNavigationView bottomToolbar;
+    // Bottom toolbar buttons
     private MenuItem backMenu;
     private MenuItem forwardMenu;
     private MenuItem galleryMenu;
@@ -255,7 +260,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
 
-        BottomNavigationView bottomToolbar = findViewById(R.id.bottom_navigation);
+        bottomToolbar = findViewById(R.id.bottom_navigation);
         bottomToolbar.setOnNavigationItemSelectedListener(this::onMenuItemSelected);
         bottomToolbar.setItemIconTintList(null); // Hack to make selector resource work
         backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
@@ -629,7 +634,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (!quickDownload) changeActionMode(ActionMode.READ);
             return;
         }
-        ToastUtil.toast(getResources().getQuantityString(R.plurals.add_to_queue,1));
+        ToastUtil.toast(getResources().getQuantityString(R.plurals.add_to_queue, 1));
 
         objectBoxDAO.addContentToQueue(currentContent, null);
 
@@ -745,6 +750,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent)) {
             changeActionMode(ActionMode.READ);
         }
+    }
+
+    void showTooltip(@StringRes int resource) {
+        TooltipUtil.showTooltip(this, resource, ArrowOrientation.BOTTOM, bottomToolbar, this);
     }
 
     /**
@@ -878,6 +887,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 actionMenu.setIcon(R.drawable.selector_download_action);
                 actionMenu.setEnabled(false);
             }
+            // Display download button tooltip if a book page has been reached
+            if (isBookGallery(url)) showTooltip(R.string.help_web_download);
         }
 
         @Override
@@ -897,6 +908,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             galleryMenu.setEnabled(backListContainsGallery(webView.copyBackForwardList()) > -1);
         }
 
+        /**
+         * Note : this method is called by a non-UI thread
+         */
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
