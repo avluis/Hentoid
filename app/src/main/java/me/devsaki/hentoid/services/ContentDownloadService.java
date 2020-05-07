@@ -342,7 +342,7 @@ public class ContentDownloadService extends IntentService {
 
         // Folder creation succeeds -> memorize its path
         content.setStorageUri(dir.getUri().toString());
-        if (0 == content.getQtyPages()) content.setQtyPages(images.size());
+        if (0 == content.getQtyPages()) content.setQtyPages(images.size() - 1);  // Don't count the cover
         content.setStatus(StatusContent.DOWNLOADING);
         dao.insertContent(content);
 

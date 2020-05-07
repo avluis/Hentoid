@@ -79,7 +79,7 @@ public class NhentaiContent implements ContentParser {
 
         List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(result, thumbs), result.getCoverImageUrl(), StatusContent.SAVED);
         result.setImageFiles(images);
-        result.setQtyPages(images.size());
+        result.setQtyPages(images.size() - 1);  // Don't count the cover
 
         return result;
     }

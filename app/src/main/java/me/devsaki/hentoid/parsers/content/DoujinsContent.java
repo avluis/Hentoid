@@ -61,7 +61,7 @@ public class DoujinsContent implements ContentParser {
         }
 
         List<String> imageUrls = DoujinsParser.parseImages(images);
-        result.setQtyPages(imageUrls.size());
+        result.setQtyPages(imageUrls.size() - 1); // Don't count the cover
         result.setImageFiles(ParseHelper.urlsToImageFiles(imageUrls, result.getCoverImageUrl(), StatusContent.SAVED));
 
         // Deduplicate tags

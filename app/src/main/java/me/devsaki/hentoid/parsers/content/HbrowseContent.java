@@ -75,7 +75,7 @@ public class HbrowseContent implements ContentParser {
 
         List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(result, scripts), result.getCoverImageUrl(), StatusContent.SAVED);
         result.setImageFiles(imgs);
-        result.setQtyPages(imgs.size());
+        result.setQtyPages(imgs.size() - 1);  // Don't count the cover
 
         return result;
     }
