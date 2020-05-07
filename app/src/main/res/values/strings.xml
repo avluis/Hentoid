@@ -244,7 +244,7 @@
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
     <string name="web_url_clipboard">URL copied to clipboard</string>
     <string name="help_web_download">You\'ve reached a book page!\nTime to download with the bottom bar…</string>
-    <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won't work without.</string>
+    <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
     <string name="help_web_exh_account">Please use or create an ExHentai account</string>
 
     <!-- SearchActivity -->
