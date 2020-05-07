@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.11.4/hentoid1114-204.apk",
-  "versionCode": "204",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.11.5/hentoid1115-206.apk",
+  "versionCode": "206",
   "updateURL.beta": "https://cdn.discordapp.com/attachments/418817277383671808/647791824500686848/hentoid1100163-beta2.apk",
   "versionCode.beta": "163",
   "sourceAlerts":[
@@ -9,7 +9,8 @@
 	  {"sourceName":"NEXUS", "status":"RED", "fixedByBuild":"199" },
 	  {"sourceName":"FAKKU2", "status":"RED", "fixedByBuild":"199" },
 	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"204" },
-	  {"sourceName":"PURURIN", "status":"RED" }
+	  {"sourceName":"LUSCIOUS", "status":"ORANGE", "fixedByBuild":"206" },
+	  {"sourceName":"PORNCOMIX", "status":"ORANGE", "fixedByBuild":"206" }
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
