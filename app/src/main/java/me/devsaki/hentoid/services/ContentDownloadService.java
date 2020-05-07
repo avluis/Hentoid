@@ -344,10 +344,10 @@ public class ContentDownloadService extends IntentService {
 
         // Queue image download requests
         Site site = content.getSite();
-        requestQueueManager.queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
+        requestQueueManager.queueRequest(buildDownloadRequest(cover, dir, site));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
-                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
+                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
         }
 
         return content;
@@ -448,7 +448,7 @@ public class ContentDownloadService extends IntentService {
                             Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
                             img.setStatus(StatusContent.SAVED);
                             dao.insertImageFile(img);
-                            requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent(), content.getSite().hasImageProcessing()));
+                            requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite()));
                         }
                     return;
                 }
@@ -549,10 +549,9 @@ public class ContentDownloadService extends IntentService {
      * @return Volley request and its handler
      */
     private Request<Object> buildDownloadRequest(
-            @Nonnull ImageFile img,
-            @Nonnull File dir,
-            boolean canKnowHentoidAgent,
-            boolean hasImageProcessing) {
+            @Nonnull final ImageFile img,
+            @Nonnull final File dir,
+            @NonNull final Site site) {
 
         String backupUrl = "";
 
@@ -580,14 +579,15 @@ public class ContentDownloadService extends IntentService {
                     backupUrl = downloadParams.get("backupUrl");
             }
         }
-        final String backupUrlFinal = (null == backupUrl) ? "" : backupUrl;
+        final String backupUrlFinal = HttpHelper.fixUrl(backupUrl, site);
+        final String url = HttpHelper.fixUrl(img.getUrl(), site);
 
         return new InputStreamVolleyRequest(
                 Request.Method.GET,
-                img.getUrl(),
+                url,
                 headers,
-                canKnowHentoidAgent,
-                result -> onRequestSuccess(result, img, dir, hasImageProcessing, backupUrlFinal),
+                site.canKnowHentoidAgent(),
+                result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal),
                 error -> onRequestError(error, img, dir, backupUrlFinal));
     }
 
@@ -681,7 +681,7 @@ public class ContentDownloadService extends IntentService {
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
             originalImage.setBackup(true); // Indicates the image is from a backup (for display in error logs)
             dao.insertImageFile(originalImage);
-            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
+            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, site));
         } else Timber.w("Failed to parse backup URL");
     }
 

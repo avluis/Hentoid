@@ -10,7 +10,7 @@ public class HitomiActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "hitomi.la";
     private static final String[] GALLERY_FILTER = {"//hitomi.la/[A-Za-z0-9\\-]+/[^/]+-[0-9]{2,}.html$"};
-    private static final String[] blockedContent = {"hitomi-horizontal.js", "hitomi-vertical.js"};
+    private static final String[] blockedContent = {"hitomi-horizontal.js", "hitomi-vertical.js", "invoke.js", "ion.sound"};
 
     Site getStartSite() {
         return Site.HITOMI;
