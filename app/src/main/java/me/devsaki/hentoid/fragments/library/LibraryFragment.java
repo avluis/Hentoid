@@ -513,6 +513,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
 
         if (showSort != null) {
+            if (showSort) searchClearButton.setVisibility(View.GONE);
             sortDirectionButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
             sortFieldButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
         }
@@ -531,6 +532,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         sortDirectionButton.setVisibility(View.GONE);
         sortFieldButton.setVisibility(View.GONE);
+
+        // Restore CLEAR button if it's needed
+        if (hideSortOnly && isSearchQueryActive()) searchClearButton.setVisibility(View.VISIBLE);
     }
 
     private void initSelectionToolbar(@NonNull View rootView) {
