@@ -319,7 +319,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             viewModel.updateOrder();
         });
         sortFieldButton = requireViewById(rootView, R.id.sort_field_btn);
-
+        sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
