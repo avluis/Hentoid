@@ -111,7 +111,9 @@ public class LibraryViewModel extends AndroidViewModel {
     private void performSearch() {
         if (currentSource != null) libraryPaged.removeSource(currentSource);
 
-        searchManager.setContentSortOrder(Preferences.getContentSortOrder());
+        searchManager.setContentSortField(Preferences.getContentSortField());
+        searchManager.setContentSortDesc(Preferences.isContentSortDesc());
+
         currentSource = searchManager.getLibrary();
 
         libraryPaged.addSource(currentSource, libraryPaged::setValue);

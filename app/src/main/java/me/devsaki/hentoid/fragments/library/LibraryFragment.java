@@ -14,12 +14,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
@@ -112,10 +115,16 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private TextView emptyText;
     // Action view associated with search menu button
     private SearchView mainSearchView;
-    // Bar with group that has the advancedSearchButton and its background View
+    // TODO
     private View advancedSearchBar;
+    // TODO
+    private View advancedSearchButton;
     // CLEAR button on the filter bar
     private TextView searchClearButton;
+    // TODO
+    private ImageView sortDirectionButton;
+    // TODO
+    private TextView sortFieldButton;
     // Main view where books are displayed
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
@@ -129,8 +138,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
-    // "Sort" button on top menu
-    private MenuItem orderMenu;
     // === SELECTION TOOLBAR
     private Toolbar selectionToolbar;
     private MenuItem itemDelete;
@@ -220,37 +227,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     }).build();
 
-
-    /**
-     * Get the icon resource ID according to the sort order code
-     */
-    private static int getIconFromSortOrder(int sortOrder) {
-        switch (sortOrder) {
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
-                return R.drawable.ic_menu_sort_321;
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
-                return R.drawable.ic_menu_sort_123;
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
-                return R.drawable.ic_menu_sort_az;
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
-                return R.drawable.ic_menu_sort_za;
-            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
-                return R.drawable.ic_menu_sort_unread;
-            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
-                return R.drawable.ic_menu_sort_read;
-            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
-                return R.drawable.ic_menu_sort_last_read;
-            case Preferences.Constant.ORDER_CONTENT_PAGES_DESC:
-                return R.drawable.ic_menu_sort_pages_desc;
-            case Preferences.Constant.ORDER_CONTENT_PAGES_ASC:
-                return R.drawable.ic_menu_sort_pages_asc;
-            case Preferences.Constant.ORDER_CONTENT_RANDOM:
-                return R.drawable.ic_menu_sort_random;
-            default:
-                return R.drawable.ic_error;
-        }
-    }
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -315,20 +291,56 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
 
         // Search bar
-        advancedSearchBar = requireViewById(rootView, R.id.advanced_search_group);
+        advancedSearchBar = requireViewById(rootView, R.id.advanced_search_background);
 
-        TextView advancedSearchButton = requireViewById(rootView, R.id.advanced_search_btn);
+        // Link to advanced search
+        advancedSearchButton = requireViewById(rootView, R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
+        // Clear search
         searchClearButton = requireViewById(rootView, R.id.search_clear_btn);
         searchClearButton.setOnClickListener(v -> {
             query = "";
             mainSearchView.setQuery("", false);
             metadata.clear();
-            searchClearButton.setVisibility(View.GONE);
+            hideSearchSortBar();
             viewModel.searchUniversal("");
-            advancedSearchBar.setVisibility(View.GONE);
         });
+
+        // Sort controls
+        sortDirectionButton = requireViewById(rootView, R.id.sort_direction_btn);
+        sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_up : R.drawable.ic_simple_arrow_down);
+        sortDirectionButton.setOnClickListener(v -> {
+            boolean sortDesc = !Preferences.isContentSortDesc();
+            Preferences.setContentSortDesc(sortDesc);
+            // Update icon
+            sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_up : R.drawable.ic_simple_arrow_down);
+            // Run a new search
+            viewModel.updateOrder();
+        });
+        sortFieldButton = requireViewById(rootView, R.id.sort_field_btn);
+
+        sortFieldButton.setOnClickListener(v -> {
+            // Load and display the field popup menu
+            PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
+            popup.getMenuInflater()
+                    .inflate(R.menu.library_sort_menu, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+                // Update button text
+                sortFieldButton.setText(item.getTitle());
+                item.setChecked(true);
+                int fieldCode = getFieldCodeFromMenuId(item.getItemId());
+                if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM)
+                    RandomSeedSingleton.getInstance().renewSeed();
+
+                Preferences.setContentSortField(fieldCode);
+                // Run a new search
+                viewModel.updateOrder();
+                return true;
+            });
+            // TODO set up the 2s timer
+            popup.show(); //showing popup menu
+        }); //closing the setOnClickListener method
 
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
@@ -362,12 +374,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Activity activity = requireActivity();
         toolbar.setNavigationOnClickListener(v -> ((LibraryActivity) activity).openNavigationDrawer());
 
-        orderMenu = toolbar.getMenu().findItem(R.id.action_order);
         searchMenu = toolbar.getMenu().findItem(R.id.action_search);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                advancedSearchBar.setVisibility(View.VISIBLE);
+                showSearchSortBar(true, false, null);
                 invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
@@ -385,7 +396,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 if (!isSearchQueryActive()) {
-                    advancedSearchBar.setVisibility(View.GONE);
+                    hideSearchSortBar();
                 }
                 invalidateNextQueryTextChange = true;
                 return true;
@@ -422,9 +433,48 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return true;
             }
         });
+    }
 
-        // Set the starting book sort icon according to the current sort order
-        orderMenu.setIcon(getIconFromSortOrder(Preferences.getContentSortOrder()));
+    private int getFieldCodeFromMenuId(@IdRes int menuId) {
+        switch (menuId) {
+            case (R.id.sort_title):
+                return Preferences.Constant.ORDER_FIELD_TITLE;
+            case (R.id.sort_artist):
+                return Preferences.Constant.ORDER_FIELD_ARTIST;
+            case (R.id.sort_pages):
+                return Preferences.Constant.ORDER_FIELD_NB_PAGES;
+            case (R.id.sort_dl_date):
+                return Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE;
+            case (R.id.sort_read_date):
+                return Preferences.Constant.ORDER_FIELD_READ_DATE;
+            case (R.id.sort_reads):
+                return Preferences.Constant.ORDER_FIELD_READS;
+            case (R.id.sort_random):
+                return Preferences.Constant.ORDER_FIELD_RANDOM;
+            default:
+                return Preferences.Constant.ORDER_FIELD_NONE;
+        }
+    }
+
+    private int getNameFromFieldCode(int prefFieldCode) {
+        switch (prefFieldCode) {
+            case (Preferences.Constant.ORDER_FIELD_TITLE):
+                return R.string.sort_title;
+            case (Preferences.Constant.ORDER_FIELD_ARTIST):
+                return R.string.sort_artist;
+            case (Preferences.Constant.ORDER_FIELD_NB_PAGES):
+                return R.string.sort_pages;
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
+                return R.string.sort_dl_date;
+            case (Preferences.Constant.ORDER_FIELD_READ_DATE):
+                return R.string.sort_read_date;
+            case (Preferences.Constant.ORDER_FIELD_READS):
+                return R.string.sort_reads;
+            case (Preferences.Constant.ORDER_FIELD_RANDOM):
+                return R.string.sort_random;
+            default:
+                return R.string.sort_invalid;
+        }
     }
 
     /**
@@ -434,58 +484,41 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param menuItem Toolbar of the fragment
      */
     private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
-        int contentSortOrder;
         switch (menuItem.getItemId()) {
-            case R.id.action_order_AZ:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA;
-                break;
-            case R.id.action_order_321:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST;
-                break;
-            case R.id.action_order_ZA:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED;
-                break;
-            case R.id.action_order_123:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST;
-                break;
-            case R.id.action_order_least_read:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LEAST_READ;
-                break;
-            case R.id.action_order_most_read:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_MOST_READ;
-                break;
-            case R.id.action_order_last_read:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_READ;
-                break;
-            case R.id.action_order_pages_desc:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_PAGES_DESC;
-                break;
-            case R.id.action_order_pages_asc:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_PAGES_ASC;
-                break;
-            case R.id.action_order_random:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_RANDOM;
-                RandomSeedSingleton.getInstance().renewSeed();
-                break;
             case R.id.action_favourites:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_FAVOURITE;
                 menuItem.setChecked(!menuItem.isChecked());
+                updateFavouriteFilter();
+                viewModel.toggleFavouriteFilter();
+                break;
+            case R.id.action_order:
+                showSearchSortBar(null, null, true);
                 break;
             default:
                 return false;
         }
-
-        // If favourite is selected, apply the filter
-        if (Preferences.Constant.ORDER_CONTENT_FAVOURITE == contentSortOrder) {
-            updateFavouriteFilter();
-            viewModel.toggleFavouriteFilter();
-        } else { // Update the order menu icon and run a new search
-            orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
-            Preferences.setContentSortOrder(contentSortOrder);
-            viewModel.updateOrder();
-        }
-
         return true;
+    }
+
+    private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
+        advancedSearchBar.setVisibility(View.VISIBLE);
+        if (showAdvancedSearch != null)
+            advancedSearchButton.setVisibility(showAdvancedSearch ? View.VISIBLE : View.GONE);
+
+        if (showClear != null)
+            searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
+
+        if (showSort != null) {
+            sortDirectionButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
+            sortFieldButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void hideSearchSortBar() {
+        advancedSearchBar.setVisibility(View.GONE);
+        advancedSearchButton.setVisibility(View.GONE);
+        searchClearButton.setVisibility(View.GONE);
+        sortDirectionButton.setVisibility(View.GONE);
+        sortFieldButton.setVisibility(View.GONE);
     }
 
     private void initSelectionToolbar(@NonNull View rootView) {
@@ -1009,8 +1042,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         // Update visibility of advanced search bar
         if (isSearchQueryActive()) {
-            advancedSearchBar.setVisibility(View.VISIBLE);
-            searchClearButton.setVisibility(View.VISIBLE);
+            showSearchSortBar(true, true, false);
             if (!result.isEmpty() && searchMenu != null) searchMenu.collapseActionView();
         } else {
             searchClearButton.setVisibility(View.GONE);

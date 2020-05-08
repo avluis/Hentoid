@@ -14,8 +14,7 @@
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/library_menu"
-        app:navigationIcon="@drawable/ic_drawer"
-        tools:targetApi="lollipop" />
+        app:navigationIcon="@drawable/ic_drawer" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/library_selection_toolbar"
@@ -27,10 +26,9 @@
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/library_selection_menu"
-        app:navigationIcon="@drawable/ic_arrow_back"
-        tools:targetApi="lollipop" />
+        app:navigationIcon="@drawable/ic_arrow_back" />
 
-    <include layout="@layout/include_library_advanced_search" />
+    <include layout="@layout/include_library_seach_sort_bar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/library_list"

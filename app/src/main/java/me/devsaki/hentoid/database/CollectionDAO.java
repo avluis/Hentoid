@@ -53,18 +53,18 @@ public interface CollectionDAO {
 
     Single<List<Long>> getStoredBookIds(boolean nonFavouriteOnly, boolean includeQueued);
 
-    Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly);
+    Single<List<Long>> getRecentBookIds(int orderField, boolean orderDesc, boolean favouritesOnly);
 
-    Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
+    Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly);
 
-    Single<List<Long>> searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly);
+    Single<List<Long>> searchBookIdsUniversal(String query, int orderField, boolean orderDesc, boolean favouritesOnly);
 
 
-    LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly, boolean loadAll);
+    LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
-    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, boolean loadAll);
+    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
-    LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly, boolean loadAll);
+    LiveData<PagedList<Content>> getRecentBooks(int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
 
     LiveData<PagedList<Content>> getErrorContent();

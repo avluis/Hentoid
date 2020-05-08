@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
+import io.objectbox.Property;
 import io.objectbox.android.AndroidObjectBrowser;
 import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
@@ -269,7 +270,7 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectVisibleContentQ() {
-        return queryContentSearchContent("", Collections.emptyList(), false, Preferences.Constant.ORDER_CONTENT_NONE);
+        return queryContentSearchContent("", Collections.emptyList(), false, Preferences.Constant.ORDER_FIELD_NONE, false);
     }
 
     @Nullable
@@ -291,44 +292,51 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private void applyOrderStyle(QueryBuilder<Content> query, int orderStyle) {
-        switch (orderStyle) {
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
-                query.orderDesc(Content_.downloadDate);
-                break;
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
-                query.order(Content_.downloadDate);
-                break;
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
-                query.order(Content_.title);
-                break;
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
-                query.orderDesc(Content_.title);
-                break;
-            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
-                query.order(Content_.reads).order(Content_.lastReadDate).orderDesc(Content_.downloadDate);
-                break;
-            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
-                query.orderDesc(Content_.reads).orderDesc(Content_.lastReadDate);
-                break;
-            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
-                query.orderDesc(Content_.lastReadDate);
-                break;
-            case Preferences.Constant.ORDER_CONTENT_PAGES_DESC:
-                query.orderDesc(Content_.qtyPages);
-                break;
-            case Preferences.Constant.ORDER_CONTENT_PAGES_ASC:
-                query.order(Content_.qtyPages);
-                break;
-            case Preferences.Constant.ORDER_CONTENT_RANDOM:
-                // That one's tricky - see https://github.com/objectbox/objectbox-java/issues/17 => Implemented post-query build
-                break;
-            default:
-                // Nothing
+    private void applySortOrder(QueryBuilder<Content> query, int orderField, boolean orderDesc) {
+        // That one's tricky - see https://github.com/objectbox/objectbox-java/issues/17 => Implemented post-query build
+        if (orderField == Preferences.Constant.ORDER_FIELD_RANDOM) return;
+
+        Property<Content> field = getPropertyFromField(orderField);
+        if (null == field) return;
+
+        if (orderDesc) query.orderDesc(field);
+        else query.order(field);
+
+        // Specifics sub-sorting fields when ordering by reads
+        if (orderField == Preferences.Constant.ORDER_FIELD_READS) {
+            if (orderDesc) query.orderDesc(Content_.lastReadDate);
+            else query.order(Content_.lastReadDate).orderDesc(Content_.downloadDate);
         }
     }
 
-    Query<Content> queryContentSearchContent(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
+    @Nullable
+    private Property<Content> getPropertyFromField(int prefsFieldCode) {
+        switch (prefsFieldCode) {
+            case Preferences.Constant.ORDER_FIELD_TITLE:
+                return Content_.title;
+            case Preferences.Constant.ORDER_FIELD_ARTIST:
+                return Content_.author; // Might not be what users want when there are multiple authors
+            case Preferences.Constant.ORDER_FIELD_NB_PAGES:
+                return Content_.qtyPages;
+            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE:
+                return Content_.downloadDate;
+            case Preferences.Constant.ORDER_FIELD_UPLOAD_DATE:
+                return Content_.uploadDate;
+            case Preferences.Constant.ORDER_FIELD_READ_DATE:
+                return Content_.lastReadDate;
+            case Preferences.Constant.ORDER_FIELD_READS:
+                return Content_.reads;
+            default:
+                return null;
+        }
+    }
+
+    Query<Content> queryContentSearchContent(
+            String title,
+            List<Attribute> metadata,
+            boolean filterFavourites,
+            int orderField,
+            boolean orderDesc) {
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.addAll(metadata);
 
@@ -356,7 +364,7 @@ public class ObjectBoxDB {
                 }
             }
         }
-        applyOrderStyle(query, orderStyle);
+        applySortOrder(query, orderField, orderDesc);
 
         return query.build();
     }
@@ -371,7 +379,12 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    private Query<Content> queryContentUniversalContent(String queryStr, boolean filterFavourites, long[] additionalIds, int orderStyle) {
+    private Query<Content> queryContentUniversalContent(
+            String queryStr,
+            boolean filterFavourites,
+            long[] additionalIds,
+            int orderField,
+            boolean orderDesc) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, libraryStatus);
 
@@ -380,20 +393,24 @@ public class ObjectBoxDB {
         query.or().equal(Content_.uniqueSiteId, queryStr);
 //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         query.or().in(Content_.id, additionalIds);
-        applyOrderStyle(query, orderStyle);
+        applySortOrder(query, orderField, orderDesc);
 
         return query.build();
     }
 
-    Query<Content> queryContentUniversal(String queryStr, boolean filterFavourites, int orderStyle) {
+    Query<Content> queryContentUniversal(
+            String queryStr,
+            boolean filterFavourites,
+            int orderField,
+            boolean orderDesc) {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
         Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
-        return queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
+        return queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc);
     }
 
     long countContentSearch(String title, List<Attribute> tags, boolean filterFavourites) {
-        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, Preferences.Constant.ORDER_CONTENT_NONE);
+        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, Preferences.Constant.ORDER_FIELD_NONE, false);
         return query.count();
     }
 
@@ -410,11 +427,11 @@ public class ObjectBoxDB {
         return Helper.getPrimitiveLongArrayFromList(result);
     }
 
-    long[] selectContentSearchId(String title, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
+    long[] selectContentSearchId(String title, List<Attribute> tags, boolean filterFavourites, int orderField, boolean orderDesc) {
         long[] result;
-        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, orderStyle);
+        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, orderField, orderDesc);
 
-        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
+        if (orderField != Preferences.Constant.ORDER_FIELD_RANDOM) {
             result = query.findIds();
         } else {
             result = shuffleRandomSortId(query);
@@ -422,14 +439,14 @@ public class ObjectBoxDB {
         return result;
     }
 
-    long[] selectContentUniversalId(String queryStr, boolean filterFavourites, int orderStyle) {
+    long[] selectContentUniversalId(String queryStr, boolean filterFavourites, int orderField, boolean orderDesc) {
         long[] result;
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
         Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
-        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
+        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc);
 
-        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
+        if (orderField != Preferences.Constant.ORDER_FIELD_RANDOM) {
             result = query.findIds();
         } else {
             result = shuffleRandomSortId(query);
@@ -441,7 +458,7 @@ public class ObjectBoxDB {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
         Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
-        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.ORDER_CONTENT_NONE);
+        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.ORDER_FIELD_NONE, false);
         return query.count();
     }
 

@@ -73,23 +73,23 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly) {
-        return Single.fromCallable(() -> contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly))
+    public Single<List<Long>> getRecentBookIds(int orderField, boolean orderDesc, boolean favouritesOnly) {
+        return Single.fromCallable(() -> contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderField, orderDesc, favouritesOnly))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
     @Override
-    public Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
-        return Single.fromCallable(() -> contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, query, metadata, orderStyle, favouritesOnly))
+    public Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly) {
+        return Single.fromCallable(() -> contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, query, metadata, orderField, orderDesc, favouritesOnly))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
     @Override
-    public Single<List<Long>> searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly) {
+    public Single<List<Long>> searchBookIdsUniversal(String query, int orderField, boolean orderDesc, boolean favouritesOnly) {
         return
-                Single.fromCallable(() -> contentIdSearch(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderStyle, favouritesOnly))
+                Single.fromCallable(() -> contentIdSearch(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderField, orderDesc, favouritesOnly))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread());
     }
@@ -139,33 +139,40 @@ public class ObjectBoxDAO implements CollectionDAO {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
         // See https://github.com/objectbox/objectbox-java/issues/776
-        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.queryContentSearchContent(query, metadata, favouritesOnly, Preferences.Constant.ORDER_CONTENT_NONE));
+        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.queryContentSearchContent(query, metadata, favouritesOnly, Preferences.Constant.ORDER_FIELD_NONE, false));
 
         MediatorLiveData<Integer> result = new MediatorLiveData<>();
         result.addSource(livedata, v -> result.setValue(v.size()));
         return result;
     }
 
-    public LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly, boolean loadAll) {
-        return getPagedContent(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderStyle, favouritesOnly, loadAll);
+    public LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll) {
+        return getPagedContent(Mode.SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), orderField, orderDesc, favouritesOnly, loadAll);
     }
 
-    public LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, boolean loadAll) {
-        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, query, metadata, orderStyle, favouritesOnly, loadAll);
+    public LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll) {
+        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, query, metadata, orderField, orderDesc, favouritesOnly, loadAll);
     }
 
-    public LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly, boolean loadAll) {
-        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderStyle, favouritesOnly, loadAll);
+    public LiveData<PagedList<Content>> getRecentBooks(int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll) {
+        return getPagedContent(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), orderField, orderDesc, favouritesOnly, loadAll);
     }
 
-    private LiveData<PagedList<Content>> getPagedContent(int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, boolean loadAll) {
-        boolean isRandom = (orderStyle == Preferences.Constant.ORDER_CONTENT_RANDOM);
+    private LiveData<PagedList<Content>> getPagedContent(
+            int mode,
+            String filter,
+            List<Attribute> metadata,
+            int orderField,
+            boolean orderDesc,
+            boolean favouritesOnly,
+            boolean loadAll) {
+        boolean isRandom = (orderField == Preferences.Constant.ORDER_FIELD_RANDOM);
 
         Query<Content> query;
         if (Mode.SEARCH_CONTENT_MODULAR == mode) {
-            query = db.queryContentSearchContent(filter, metadata, favouritesOnly, orderStyle);
+            query = db.queryContentSearchContent(filter, metadata, favouritesOnly, orderField, orderDesc);
         } else { // Mode.SEARCH_CONTENT_UNIVERSAL
-            query = db.queryContentUniversal(filter, favouritesOnly, orderStyle);
+            query = db.queryContentUniversal(filter, favouritesOnly, orderField, orderDesc);
         }
 
         int nbPages = Preferences.getContentPageQuantity();
@@ -224,7 +231,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteAllBooks();
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        List<Long> remainingContent = contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), Preferences.Constant.ORDER_CONTENT_LAST_READ, false);
+        List<Long> remainingContent = contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), Preferences.Constant.ORDER_CONTENT_LAST_READ, false, false);
         for (Long contentId : remainingContent)
             db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
     }
@@ -280,12 +287,12 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.insertQueue(content.getId(), lastIndex);
     }
 
-    private List<Long> contentIdSearch(@Mode int mode, String filter, List<Attribute> metadata, int orderStyle, boolean favouritesOnly) {
+    private List<Long> contentIdSearch(@Mode int mode, String filter, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly) {
 
         if (Mode.SEARCH_CONTENT_MODULAR == mode) {
-            return Helper.getListFromPrimitiveArray(db.selectContentSearchId(filter, metadata, favouritesOnly, orderStyle));
+            return Helper.getListFromPrimitiveArray(db.selectContentSearchId(filter, metadata, favouritesOnly, orderField, orderDesc));
         } else if (Mode.SEARCH_CONTENT_UNIVERSAL == mode) {
-            return Helper.getListFromPrimitiveArray(db.selectContentUniversalId(filter, favouritesOnly, orderStyle));
+            return Helper.getListFromPrimitiveArray(db.selectContentUniversalId(filter, favouritesOnly, orderField, orderDesc));
         } else {
             return Collections.emptyList();
         }

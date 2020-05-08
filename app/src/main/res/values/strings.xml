@@ -187,6 +187,15 @@
     <string name="deleted">Deleted</string>
     <string name="help_search">Search anything : title, author, tag…\n…and launch code too !</string>
     <string name="help_page_slider">You can browse faster by sliding through page numbers</string>
+    <!-- Sorting fields -->
+    <string name="sort_title">Title</string>
+    <string name="sort_artist">Artist</string>
+    <string name="sort_pages">Pages</string>
+    <string name="sort_dl_date">DL date</string>
+    <string name="sort_read_date">Read date</string>
+    <string name="sort_reads">Reads</string>
+    <string name="sort_random">Random</string>
+    <string name="sort_invalid">-invalid-</string>
 
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
