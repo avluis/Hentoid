@@ -171,6 +171,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    // TODO
+    private final Debouncer<Boolean> sortCommandsAutoHide = new Debouncer<>(2500, this::hideSearchSortBar);
 
 
     // === SEARCH PARAMETERS
@@ -303,7 +305,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             query = "";
             mainSearchView.setQuery("", false);
             metadata.clear();
-            hideSearchSortBar();
+            hideSearchSortBar(false);
             viewModel.searchUniversal("");
         });
 
@@ -317,6 +319,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_up : R.drawable.ic_simple_arrow_down);
             // Run a new search
             viewModel.updateOrder();
+            sortCommandsAutoHide.submit(true);
         });
         sortFieldButton = requireViewById(rootView, R.id.sort_field_btn);
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
@@ -336,10 +339,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 Preferences.setContentSortField(fieldCode);
                 // Run a new search
                 viewModel.updateOrder();
+                sortCommandsAutoHide.submit(true);
                 return true;
             });
-            // TODO set up the 2s timer
             popup.show(); //showing popup menu
+            sortCommandsAutoHide.submit(true);
         }); //closing the setOnClickListener method
 
         // RecyclerView
@@ -396,7 +400,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 if (!isSearchQueryActive()) {
-                    hideSearchSortBar();
+                    hideSearchSortBar(false);
                 }
                 invalidateNextQueryTextChange = true;
                 return true;
@@ -492,6 +496,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 break;
             case R.id.action_order:
                 showSearchSortBar(null, null, true);
+                sortCommandsAutoHide.submit(true);
                 break;
             default:
                 return false;
@@ -513,10 +518,17 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
     }
 
-    private void hideSearchSortBar() {
-        advancedSearchBar.setVisibility(View.GONE);
-        advancedSearchButton.setVisibility(View.GONE);
-        searchClearButton.setVisibility(View.GONE);
+    private void hideSearchSortBar(boolean hideSortOnly) {
+        boolean isSearchVisible = (View.VISIBLE == advancedSearchButton.getVisibility() || View.VISIBLE == searchClearButton.getVisibility());
+
+        if (!hideSortOnly || !isSearchVisible)
+            advancedSearchBar.setVisibility(View.GONE);
+
+        if (!hideSortOnly) {
+            advancedSearchButton.setVisibility(View.GONE);
+            searchClearButton.setVisibility(View.GONE);
+        }
+
         sortDirectionButton.setVisibility(View.GONE);
         sortFieldButton.setVisibility(View.GONE);
     }
