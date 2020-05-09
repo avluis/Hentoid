@@ -7,7 +7,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
@@ -86,6 +85,7 @@ public final class ContentHelper {
      * @param content Content whose JSON file to update
      */
     public static void updateJson(@NonNull Context context, @NonNull Content content) {
+        Helper.assertNonUiThread();
         DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
         if (null == file)
             throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
@@ -103,6 +103,7 @@ public final class ContentHelper {
      * @param content Content whose JSON file to create
      */
     public static void createJson(@NonNull Context context, @NonNull Content content) {
+        Helper.assertNonUiThread();
         DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
         if (null == folder || !folder.exists()) return;
         try {
@@ -144,7 +145,6 @@ public final class ContentHelper {
      * @param dao     DAO to use for the action
      * @param content Content to update
      */
-    @WorkerThread
     public static void updateContentReads(@NonNull Context context, @Nonnull CollectionDAO dao, @NonNull Content content) {
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         dao.insertContent(content);
@@ -162,6 +162,7 @@ public final class ContentHelper {
      * @return List of picture files
      */
     public static List<DocumentFile> getPictureFilesFromContent(@NonNull final Context context, @NonNull final Content content) {
+        Helper.assertNonUiThread();
         String storageUri = content.getStorageUri();
 
         Timber.d("Opening: %s from: %s", content.getTitle(), storageUri);
@@ -186,8 +187,8 @@ public final class ContentHelper {
      * @param content Content to be removed
      * @param dao     DAO to be used
      */
-    @WorkerThread
     public static void removeContent(@NonNull Context context, @NonNull Content content, @NonNull CollectionDAO dao) {
+        Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
         dao.deleteContent(content);
@@ -210,8 +211,8 @@ public final class ContentHelper {
      * @param image Page to be removed
      * @param dao   DAO to be used
      */
-    @WorkerThread
     public static void removePage(@NonNull ImageFile image, @NonNull CollectionDAO dao, @NonNull final Context context) {
+        Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
         dao.deleteImageFile(image);
@@ -311,7 +312,7 @@ public final class ContentHelper {
      * @return Download directory of the given Site
      */
     @Nullable
-    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @NonNull Site site) {
+    static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri();
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for the app");

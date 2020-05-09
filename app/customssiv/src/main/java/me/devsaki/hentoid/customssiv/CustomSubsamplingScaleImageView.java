@@ -31,7 +31,6 @@ import androidx.annotation.AnyThread;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
 import androidx.exifinterface.media.ExifInterface;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -1821,12 +1820,12 @@ public class CustomSubsamplingScaleImageView extends View {
         }
     }
 
-    @WorkerThread
     private int[] initTiles(
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull Context context,
             @NonNull DecoderFactory<? extends ImageRegionDecoder> decoderFactory,
             @NonNull Uri source) throws Exception {
+        Helper.mustNotRunOnUiThread();
         String sourceUri = source.toString();
         view.debug("TilesInitTask.doInBackground");
         decoder = decoderFactory.make();
@@ -1877,11 +1876,11 @@ public class CustomSubsamplingScaleImageView extends View {
         requestLayout();
     }
 
-    @WorkerThread
     protected Tile loadTile(
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull ImageRegionDecoder decoder,
             @NonNull Tile tile) {
+        Helper.mustNotRunOnUiThread();
         if (decoder.isReady() && tile.visible) {
             view.decoderLock.readLock().lock();
             try {
@@ -1901,12 +1900,11 @@ public class CustomSubsamplingScaleImageView extends View {
         return tile;
     }
 
-    @WorkerThread
     protected Tile processTile(
             @NonNull Tile loadedTile,
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
-
+        Helper.mustNotRunOnUiThread();
         ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
         loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
         //loadedTile.bitmap = ResizeBitmapHelper.successiveResize(rs, loadedTile.bitmap, resizeParams.left); // <-- needs bitmaps decoded as ARGB_8888; demands more memory
@@ -1936,14 +1934,13 @@ public class CustomSubsamplingScaleImageView extends View {
         invalidate();
     }
 
-    @WorkerThread
     private ProcessBitmapResult processBitmap(
             @NonNull final Uri source,
             @NonNull Context context,
             @NonNull Bitmap bitmap,
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
-
+        Helper.mustNotRunOnUiThread();
         ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
         bitmap = ResizeBitmapHelper.successiveResize(bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
         //bitmap = ResizeBitmapHelper.successiveResize(rs, bitmap, resizeParams.left); // <-- needs bitmaps decoded as ARGB_8888; demands more memory
@@ -1961,8 +1958,8 @@ public class CustomSubsamplingScaleImageView extends View {
      * - First : Number of half-resizes to perform (see {@link ResizeBitmapHelper})
      * - Second : New scale to use to display the resized image at the initial target zoom level
      */
-    @WorkerThread
     private ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
+        Helper.mustNotRunOnUiThread();
         float resultScale = targetScale;
         int nbResize = 0;
 

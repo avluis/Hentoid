@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import androidx.annotation.WorkerThread;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.io.BufferedInputStream;
@@ -28,8 +27,8 @@ public class ZipUtil {
 
     private static final int BUFFER = 32 * 1024;
 
-    @WorkerThread
     public static File zipFiles(List<DocumentFile> files, File dest) throws IOException {
+        Helper.assertNonUiThread();
         try (FileOutputStream out = new FileOutputStream(dest); ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out))) {
             final byte[] data = new byte[BUFFER];
             for (DocumentFile file : files) addFile(file, zipOutputStream, data);

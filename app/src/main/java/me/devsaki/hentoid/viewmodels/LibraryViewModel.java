@@ -6,7 +6,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -31,6 +30,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ZipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -205,8 +205,8 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param contentId ID of the content whose favourite state to toggle
      * @return Resulting content
      */
-    @WorkerThread
     private Content doToggleContentFavourite(long contentId) {
+        Helper.assertNonUiThread();
 
         // Check if given content still exists in DB
         Content theContent = dao.selectContent(contentId);
@@ -281,8 +281,8 @@ public class LibraryViewModel extends AndroidViewModel {
      * @return Content that has been deleted
      * @throws ContentNotRemovedException When any issue occurs during removal
      */
-    @WorkerThread
     private Content doDeleteContent(@NonNull final Content content) throws ContentNotRemovedException {
+        Helper.assertNonUiThread();
         try {
             // Check if given content still exists in DB
             Content theContent = dao.selectContent(content.getId());

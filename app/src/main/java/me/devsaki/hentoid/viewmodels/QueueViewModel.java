@@ -3,7 +3,6 @@ package me.devsaki.hentoid.viewmodels;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.WorkerThread;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -24,6 +23,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 
@@ -174,8 +174,8 @@ public class QueueViewModel extends AndroidViewModel {
         );
     }
 
-    @WorkerThread
     private boolean doRemove(long contentId) {
+        Helper.assertNonUiThread();
         // Remove content altogether from the DB (including queue)
         Content content = dao.selectContent(contentId);
         if (content != null) {

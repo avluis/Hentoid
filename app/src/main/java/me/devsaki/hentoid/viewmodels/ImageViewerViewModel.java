@@ -7,7 +7,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -38,6 +37,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
@@ -237,7 +237,23 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (index == theImages.size() - 1) indexToSet = 0;
 
         theContent.setLastReadPageIndex(indexToSet);
-        if (highestImageIndexReached + 1 >= readThresholdPosition)
+        boolean updateReads =  (highestImageIndexReached + 1 >= readThresholdPosition);
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doLeaveBook(theContent, updateReads))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // No feedback needed
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    private void doLeaveBook(@NonNull final Content theContent, boolean updateReads) {
+        Helper.assertNonUiThread();
+        if (updateReads)
             ContentHelper.updateContentReads(getApplication(), collectionDao, theContent);
         else collectionDao.insertContent(theContent);
     }
@@ -253,7 +269,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void togglePageFavourite(ImageFile file, Consumer<ImageFile> callback) {
         compositeDisposable.add(
-                Single.fromCallable(() -> togglePageFavourite(getApplication().getApplicationContext(), file.getId()))
+                Single.fromCallable(() -> doTogglePageFavourite(getApplication().getApplicationContext(), file.getId()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -283,8 +299,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
      * @param imageId ID of the image whose flag to toggle
      * @return ImageFile with the new state
      */
-    @WorkerThread
-    private ImageFile togglePageFavourite(Context context, long imageId) {
+    private ImageFile doTogglePageFavourite(Context context, long imageId) {
+        Helper.assertNonUiThread();
         ImageFile img = collectionDao.selectImageFile(imageId);
 
         if (img != null) {
@@ -336,8 +352,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    @WorkerThread
     private void doDeleteBook(@NonNull Content targetContent) {
+        Helper.assertNonUiThread();
         collectionDao.deleteQueue(targetContent);
         ContentHelper.removeContent(getApplication(), targetContent, collectionDao);
     }
@@ -355,8 +371,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    @WorkerThread
     private void doDeletePage(int pageIndex) {
+        Helper.assertNonUiThread();
         List<ImageFile> imageFiles = images.getValue();
         if (imageFiles != null && imageFiles.size() > pageIndex)
             ContentHelper.removePage(imageFiles.get(pageIndex), collectionDao, getApplication());
@@ -389,16 +405,16 @@ public class ImageViewerViewModel extends AndroidViewModel {
         images.addSource(currentImageSource, imgs -> setImages(theContent, imgs));
     }
 
-    @WorkerThread
     private Content postLoadProcessing(@NonNull Context context, @NonNull Content content) {
+        Helper.assertNonUiThread();
         cacheJson(context, content);
         ContentHelper.updateContentReads(context, collectionDao, content);
         return content;
     }
 
     // Cache JSON URI in the database to speed up favouriting
-    @WorkerThread
     private void cacheJson(@NonNull Context context, @NonNull Content content) {
+        Helper.assertNonUiThread();
         if (!content.getJsonUri().isEmpty()) return;
 
         DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
