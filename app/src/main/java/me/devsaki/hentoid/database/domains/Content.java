@@ -24,6 +24,7 @@ import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
+import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
@@ -193,6 +194,10 @@ public class Content implements Serializable {
         this.uniqueSiteId = computeUniqueSiteId();
     }
 
+    public void setUniqueSiteId(@NonNull String uniqueSiteId) {
+        this.uniqueSiteId = uniqueSiteId;
+    }
+
     /**
      * @deprecated Used for upgrade purposes from old versions
      */
@@ -261,6 +266,8 @@ public class Content implements Serializable {
                 return PorncomixActivity.class;
             case HBROWSE:
                 return HbrowseActivity.class;
+            case HENTAI2READ:
+                return Hentai2ReadActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -326,6 +333,7 @@ public class Content implements Serializable {
             case MUSES:
             case DOUJINS:
             case HBROWSE:
+            case HENTAI2READ:
             default:
                 galleryConst = "";
         }
@@ -349,6 +357,7 @@ public class Content implements Serializable {
             case PANDA:
             case DOUJINS:
             case HBROWSE:
+            case HENTAI2READ:
                 return getGalleryUrl();
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
