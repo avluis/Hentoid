@@ -50,7 +50,7 @@
             android:layout_height="48dp"
             android:layout_margin="8dp"
             android:src="@drawable/ic_nuclear"
-            android:tint="@color/white_opacity_66"
+            app:tint="@color/white_opacity_66"
             app:layout_constraintStart_toStartOf="@id/web_alert_txt"
             app:layout_constraintTop_toTopOf="@id/web_alert_txt"
             tools:ignore="ContentDescription" />
