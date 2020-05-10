@@ -257,7 +257,6 @@ public class FileHelper {
         DocumentFile rootDir = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
         if (null == rootDir || !rootDir.exists()) return false;
 
-        //DocumentFile nomedia = rootDir.createFile("application/octet-steam", ".nomedia");
         DocumentFile nomedia = findOrCreateDocumentFile(context, rootDir, null, ".nomedia");
         return (null != nomedia && nomedia.exists());
     }
