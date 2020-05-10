@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
@@ -56,9 +58,8 @@ public class JsonHelper {
      * @param <K>    Type of the object to save
      * @throws IOException If anything happens during file I/O
      */
-    public static <K> DocumentFile createJson(K object, Type type, @NonNull DocumentFile dir) throws IOException {
-        DocumentFile file = dir.createFile(JSON_MIME_TYPE, Consts.JSON_FILE_NAME_V2);
-
+    public static <K> DocumentFile createJson(@NonNull final Context context, K object, Type type, @NonNull DocumentFile dir) throws IOException {
+        DocumentFile file = FileHelper.findOrCreateDocumentFile(context, dir, JSON_MIME_TYPE, Consts.JSON_FILE_NAME_V2);
         if (null == file)
             throw new IOException("Failed creating file " + Consts.JSON_FILE_NAME_V2 + " in " + dir.getUri().getPath());
 

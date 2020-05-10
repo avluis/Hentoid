@@ -378,7 +378,7 @@ public class ImportService extends IntentService {
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private static Content importJsonLegacy(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
+    private Content importJsonLegacy(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
         try {
             DoujinBuilder doujinBuilder =
                     JsonHelper.jsonToObject(json, DoujinBuilder.class);
@@ -416,7 +416,7 @@ public class ImportService extends IntentService {
 
             contentV2.setStorageUri(parentFolder.getUri().toString());
 
-            DocumentFile newJson = JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
+            DocumentFile newJson = JsonHelper.createJson(this, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
@@ -428,7 +428,7 @@ public class ImportService extends IntentService {
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private static Content importJsonV1(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
+    private Content importJsonV1(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
         try {
             ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
             if (content.getStatus() != StatusContent.DOWNLOADED
@@ -439,7 +439,7 @@ public class ImportService extends IntentService {
 
             contentV2.setStorageUri(parentFolder.getUri().toString());
 
-            DocumentFile newJson = JsonHelper.createJson(JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
+            DocumentFile newJson = JsonHelper.createJson(this, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
@@ -450,7 +450,7 @@ public class ImportService extends IntentService {
     }
 
     @CheckResult
-    private static Content importJsonV2(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
+    private Content importJsonV2(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
         try {
             JsonContent content = JsonHelper.jsonToObject(json, JsonContent.class);
             Content result = content.toEntity();

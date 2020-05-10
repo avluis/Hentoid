@@ -110,13 +110,7 @@ public class LogUtil {
             DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(settingFolderUriStr));
             if (null == folder || !folder.exists()) return null;
 
-            // Remove previously created log file
-            DocumentFile previousLog = FileHelper.findFile(context, folder, logFileName);
-            if (previousLog != null) previousLog.delete();
-
-            // Create new log file
-            // NB : doing this without deleting the old one results in "log file (1).txt"
-            DocumentFile logDocumentFile = folder.createFile("text/plain", logFileName);
+            DocumentFile logDocumentFile = FileHelper.findOrCreateDocumentFile(context, folder, "text/plain", logFileName);
             FileHelper.saveBinaryInFile(logDocumentFile, log.getBytes());
             return logDocumentFile;
         } catch (Exception e) {

@@ -207,6 +207,26 @@ public class FileHelper {
         }
     }
 
+    /**
+     * Return the DocumentFile with the given display name located in the given folder
+     * If it doesn't exist, create a new one and return it
+     *
+     * @param context     Context to use
+     * @param folder      Containing folder
+     * @param mimeType    Mime-type to use if the document has to be created
+     * @param displayName Display name of the document
+     * @return Usable DocumentFile; null if creation failed
+     */
+    @Nullable
+    public static DocumentFile findOrCreateDocumentFile(@NonNull final Context context, @NonNull final DocumentFile folder, @Nullable String mimeType, @NonNull final String displayName) {
+        // Look for it first
+        DocumentFile file = findFile(context, folder, displayName);
+        if (null == file) { // Create it
+            if (null == mimeType) mimeType = "application/octet-steam";
+            return folder.createFile(mimeType, displayName);
+        } else return file;
+    }
+
     public static boolean checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder, boolean notify) {
         // Validate folder
         if (!folder.exists() && !folder.isDirectory()) {
@@ -215,7 +235,7 @@ public class FileHelper {
             return false;
         }
 
-        DocumentFile nomedia = folder.createFile("application/octet-steam", ".nomedia");
+        DocumentFile nomedia = findOrCreateDocumentFile(context, folder, null, ".nomedia");
         // Clean up (if any) nomedia file
         if (null != nomedia && nomedia.exists()) {
             boolean deleted = nomedia.delete();
@@ -237,7 +257,8 @@ public class FileHelper {
         DocumentFile rootDir = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
         if (null == rootDir || !rootDir.exists()) return false;
 
-        DocumentFile nomedia = rootDir.createFile("application/octet-steam", ".nomedia");
+        //DocumentFile nomedia = rootDir.createFile("application/octet-steam", ".nomedia");
+        DocumentFile nomedia = findOrCreateDocumentFile(context, rootDir, null, ".nomedia");
         return (null != nomedia && nomedia.exists());
     }
 

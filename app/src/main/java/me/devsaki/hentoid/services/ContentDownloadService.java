@@ -479,7 +479,7 @@ public class ContentDownloadService extends IntentService {
 
                 // Save JSON file
                 try {
-                    DocumentFile jsonFile = JsonHelper.createJson(JsonContent.fromEntity(content), JsonContent.class, dir);
+                    DocumentFile jsonFile = JsonHelper.createJson(this, JsonContent.fromEntity(content), JsonContent.class, dir);
                     // Cache its URI to the newly created content
                     if (jsonFile != null) {
                         content.setJsonUri(jsonFile.getUri().toString());
@@ -745,7 +745,7 @@ public class ContentDownloadService extends IntentService {
      * @throws IOException IOException if image cannot be saved at given location
      */
     @Nullable
-    private static DocumentFile processAndSaveImage(@NonNull ImageFile img,
+    private DocumentFile processAndSaveImage(@NonNull ImageFile img,
                                                     @NonNull DocumentFile dir,
                                                     @Nullable String contentType,
                                                     byte[] binaryContent,
@@ -812,8 +812,8 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private static DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
-        DocumentFile file = dir.createFile(mimeType, fileName);
+    private DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
+        DocumentFile file = FileHelper.findOrCreateDocumentFile(this, dir, mimeType, fileName);
         if (null == file)
             throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));
         FileHelper.saveBinaryInFile(file, binaryContent);
