@@ -141,8 +141,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 Single.fromCallable(() -> doSetImages(theContent, imgs))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
+                        .map(p -> initViewer(p.left, p.right))
+                        .observeOn(Schedulers.io())
                         .subscribe(
-                                p -> initViewer(p.left, p.right),
+                                // Cache JSON and record 1 more view for the new content
+                                c -> postLoadProcessing(getApplication().getApplicationContext(), c),
                                 Timber::e
                         )
         );
@@ -165,13 +168,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
             }
         }
 
-        // Cache JSON and record 1 more view for the new content
-        postLoadProcessing(getApplication().getApplicationContext(), theContent);
-
         return new ImmutablePair<>(theContent, imageFiles);
     }
 
-    private void initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
+    private Content initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
 
         if (imageFiles.isEmpty()) { // No pictures found
             // TODO : do something more UX-friendly here; the user is alone with that black screen...
@@ -188,6 +188,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
 
         loadedBookId = theContent.getId();
+        return theContent;
     }
 
     public void onShuffleClick() {
