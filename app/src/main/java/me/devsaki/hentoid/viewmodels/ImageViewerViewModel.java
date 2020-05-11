@@ -17,6 +17,8 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,6 +137,18 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
+        compositeDisposable.add(
+                Single.fromCallable(() -> doSetImages(theContent, imgs))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                p -> initViewer(p.left, p.right),
+                                Timber::e
+                        )
+        );
+    }
+
+    private ImmutablePair<Content, List<ImageFile>> doSetImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
         boolean missingUris = Stream.of(imgs).filter(img -> img.getFileUri().isEmpty()).count() > 0;
         List<ImageFile> imageFiles = new ArrayList<>(imgs);
 
@@ -148,10 +162,20 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     collectionDao.insertContent(theContent);
                 } else
                     ContentHelper.matchFilesToImageList(pictureFiles, imageFiles);
-            } else { // No pictures at all
-                // TODO : do something more UX-friendly here; the user is alone with that black screen...
-                ToastUtil.toast(R.string.no_images);
             }
+        }
+
+        // Cache JSON and record 1 more view for the new content
+        postLoadProcessing(getApplication().getApplicationContext(), theContent);
+
+        return new ImmutablePair<>(theContent, imageFiles);
+    }
+
+    private void initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
+
+        if (imageFiles.isEmpty()) { // No pictures found
+            // TODO : do something more UX-friendly here; the user is alone with that black screen...
+            ToastUtil.toast(R.string.no_images);
         }
 
         sortAndSetImages(imageFiles, isShuffled);
@@ -164,18 +188,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
 
         loadedBookId = theContent.getId();
-
-        // Cache JSON and record 1 more view for the new content
-        compositeDisposable.add(
-                Single.fromCallable(() -> postLoadProcessing(getApplication().getApplicationContext(), theContent))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                v -> {
-                                },
-                                Timber::e
-                        )
-        );
     }
 
     public void onShuffleClick() {
@@ -237,7 +249,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (index == theImages.size() - 1) indexToSet = 0;
 
         theContent.setLastReadPageIndex(indexToSet);
-        boolean updateReads =  (highestImageIndexReached + 1 >= readThresholdPosition);
+        boolean updateReads = (highestImageIndexReached + 1 >= readThresholdPosition);
 
         compositeDisposable.add(
                 Completable.fromRunnable(() -> doLeaveBook(theContent, updateReads))
