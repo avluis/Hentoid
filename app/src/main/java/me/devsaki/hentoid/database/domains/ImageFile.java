@@ -134,7 +134,7 @@ public class ImageFile {
     }
 
     public String getFileUri() {
-        return fileUri;
+        return (null == fileUri) ? "" : fileUri;
     }
 
     public ImageFile setFileUri(String fileUri) {
