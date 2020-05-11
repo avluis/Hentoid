@@ -382,6 +382,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     // Validate permissions
+    // TODO find something better than that - warning, not wild transparent restart
     private void checkPermissions() {
         if (PermissionUtil.checkExternalStoragePermission(this)) {
             Timber.d("Storage permission allowed!");

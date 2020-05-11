@@ -157,6 +157,7 @@ public class HentoidApp extends Application {
         Preferences.setIsFirstRun(true);
         Intent intent = new Intent(activity, IntroActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         instance.startActivity(intent);
         activity.finish();
     }
