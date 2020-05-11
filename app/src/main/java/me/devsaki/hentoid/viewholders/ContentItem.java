@@ -88,12 +88,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     // Constructor for library and error item
-    public ContentItem(@NonNull Content content, @NonNull ItemTouchHelper touchHelper, @ViewType int viewType) {
+    public ContentItem(Content content, @NonNull ItemTouchHelper touchHelper, @ViewType int viewType) {
         this.content = content;
         this.viewType = viewType;
-        setIdentifier(content.getId());
-        isEmpty = false;
         this.touchHelper = touchHelper;
+        isEmpty = (null == content);
+        if (content != null) setIdentifier(content.getId());
     }
 
     // Constructor for queued item
