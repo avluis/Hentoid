@@ -535,8 +535,8 @@ public class Content implements Serializable {
         return storageUri == null ? "" : storageUri;
     }
 
-    public Content setStorageUri(String storageFolder) {
-        this.storageUri = storageFolder;
+    public Content setStorageUri(String storageUri) {
+        this.storageUri = storageUri;
         return this;
     }
 
