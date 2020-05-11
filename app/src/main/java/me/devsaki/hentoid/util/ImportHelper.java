@@ -192,8 +192,10 @@ public class ImportHelper {
     // and might cause freezes -> we stick to that approximate method for ImportActivity
     private static boolean hasBooks(@NonNull final Context context) {
         List<DocumentFile> downloadDirs = new ArrayList<>();
-        for (Site s : Site.values())
-            downloadDirs.add(ContentHelper.getOrCreateSiteDownloadDir(context, s));
+        for (Site s : Site.values()) {
+            DocumentFile downloadDir = ContentHelper.getOrCreateSiteDownloadDir(context, s);
+            if (downloadDir != null) downloadDirs.add(downloadDir);
+        }
 
         for (DocumentFile downloadDir : downloadDirs) {
             List<DocumentFile> contentFiles = FileHelper.listFolders(context, downloadDir);
