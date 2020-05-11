@@ -442,6 +442,8 @@ public class ContentDownloadService extends IntentService {
                 hasError = true;
             }
 
+            if (content.getStorageUri().isEmpty()) return;
+
             DocumentFile dir = DocumentFile.fromTreeUri(this, Uri.parse(content.getStorageUri()));
             if (dir != null && dir.exists()) {
                 // Auto-retry when error pages are remaining and conditions are met
