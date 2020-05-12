@@ -682,7 +682,7 @@ public class ContentDownloadService extends IntentService {
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread()) // <- do we really want to do that on the main thread ?
                         .subscribe(
-                                imageFile -> processBackupImage(imageFile, img, dir, site),
+                                imageFile -> processBackupImage(imageFile.orElse(null), img, dir, site),
                                 throwable ->
                                 {
                                     updateImageStatusAndUri(img, false, "");

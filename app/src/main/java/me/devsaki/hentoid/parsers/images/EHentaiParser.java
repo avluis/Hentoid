@@ -4,6 +4,8 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Optional;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.jsoup.nodes.Document;
@@ -135,7 +137,7 @@ public class EHentaiParser implements ImageListParser {
     }
 
     @Nullable
-    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) throws Exception {
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) throws Exception {
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         Document doc = getOnlineDocument(url, headers, Site.EHENTAI.canKnowHentoidAgent());
@@ -145,7 +147,7 @@ public class EHentaiParser implements ImageListParser {
             if (imageUrl.contains("/509.gif"))
                 throw new LimitReachedException("Bandwidth limit reached");
             if (!imageUrl.isEmpty())
-                return ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED);
+                return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED));
         }
         return null;
     }
