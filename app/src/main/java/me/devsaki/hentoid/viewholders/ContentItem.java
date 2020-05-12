@@ -69,14 +69,15 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         int ERRORS = 2;
     }
 
-    private Content content;
-    private @ViewType
+    private final Content content;
+    private final @ViewType
     int viewType;
-    private boolean isEmpty;
+    private final boolean isEmpty;
 
     // Drag, drop & swipe
-    private ItemTouchHelper touchHelper;
+    private final ItemTouchHelper touchHelper;
     private int swipeDirection = 0;
+    private boolean isSwipeable = true;
     private Runnable undoSwipeAction; // Action to run when hitting the "undo" button
 
 
@@ -138,7 +139,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     @Override
     public boolean isSwipeable() {
-        return true;
+        return isSwipeable;
     }
 
     @org.jetbrains.annotations.Nullable
@@ -161,6 +162,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     public void setSwipeDirection(int direction) {
         swipeDirection = direction;
+        isSwipeable = (0 == direction);
     }
 
     private long generateIdForPlaceholder() {
@@ -168,6 +170,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
         while (result < 1e6) result = new Random().nextLong();
         return result;
+    }
+
+    private void undoSwipe() {
+        isSwipeable = true;
+        undoSwipeAction.run();
     }
 
 
@@ -262,7 +269,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
             if (tvUndoSwipe != null)
-                tvUndoSwipe.setOnClickListener(v -> item.undoSwipeAction.run());
+                tvUndoSwipe.setOnClickListener(v -> item.undoSwipe());
         }
 
         private void updateLayoutVisibility(@NonNull final ContentItem item) {
