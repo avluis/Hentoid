@@ -670,6 +670,8 @@ public class ContentDownloadService extends IntentService {
     private void tryUsingBackupUrl(@NonNull ImageFile img, @NonNull DocumentFile dir, @NonNull String backupUrl) {
         Timber.i("Using backup URL %s", backupUrl);
         Content content = img.content.getTarget();
+        if (null == content) return;
+
         Site site = content.getSite();
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
 
