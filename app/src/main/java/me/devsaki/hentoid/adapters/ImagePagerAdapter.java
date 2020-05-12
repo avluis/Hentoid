@@ -281,7 +281,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                     view.setImageDrawable(apngDrawable);
                 } else {
                     ImageView view = (ImageView) imgView;
-                    Glide.with(imgView)
+                    Glide.with(view)
                             .load(uri)
                             .apply(glideRequestOptions)
                             .listener(this)

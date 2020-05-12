@@ -278,8 +278,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (thumbLocation.isEmpty()) thumbLocation = content.getCover().getUrl();
             if (thumbLocation.isEmpty()) thumbLocation = content.getCoverImageUrl();
 
-            Context context = ivCover.getContext().getApplicationContext();
-
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")
                     && content.getDownloadParams() != null
@@ -300,7 +298,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                                 .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookiesStr);
 
                         GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
-                        Glide.with(context)
+                        Glide.with(ivCover)
                                 .load(glideUrl)
                                 .apply(glideRequestOptions)
                                 .into(ivCover);
@@ -310,12 +308,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
 
             if (thumbLocation.startsWith("http"))
-                Glide.with(context)
+                Glide.with(ivCover)
                         .load(thumbLocation)
                         .apply(glideRequestOptions)
                         .into(ivCover);
             else
-                Glide.with(context)
+                Glide.with(ivCover)
                         .load(Uri.parse(thumbLocation))
                         .apply(glideRequestOptions)
                         .into(ivCover);

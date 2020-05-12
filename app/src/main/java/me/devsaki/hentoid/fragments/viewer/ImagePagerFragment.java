@@ -735,10 +735,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      */
     private void seekToPosition(int position) {
         if (View.VISIBLE == previewImage2.getVisibility()) {
-            Context ctx = previewImage2.getContext().getApplicationContext();
             ImageFile img = adapter.getImageAt(position - 1);
             if (img != null) {
-                Glide.with(ctx)
+                Glide.with(previewImage1)
                         .load(Uri.parse(img.getFileUri()))
                         .apply(glideRequestOptions)
                         .into(previewImage1);
@@ -747,14 +746,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
             img = adapter.getImageAt(position);
             if (img != null)
-                Glide.with(ctx)
+                Glide.with(previewImage2)
                         .load(Uri.parse(img.getFileUri()))
                         .apply(glideRequestOptions)
                         .into(previewImage2);
 
             img = adapter.getImageAt(position + 1);
             if (img != null) {
-                Glide.with(ctx)
+                Glide.with(previewImage3)
                         .load(Uri.parse(img.getFileUri()))
                         .apply(glideRequestOptions)
                         .into(previewImage3);

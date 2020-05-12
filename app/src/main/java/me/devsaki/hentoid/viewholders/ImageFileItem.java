@@ -85,7 +85,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
             pageNumberTxt.setText(String.format("%sPage %s%s", currentBegin, item.image.getOrder(), currentEnd));
             if (item.isCurrent) pageNumberTxt.setTypeface(null, Typeface.BOLD);
             updateFavourite(item.isFavourite());
-            Glide.with(image.getContext().getApplicationContext())
+            Glide.with(image)
                     .load(Uri.parse(item.image.getFileUri()))
                     .apply(glideRequestOptions)
                     .into(image);
