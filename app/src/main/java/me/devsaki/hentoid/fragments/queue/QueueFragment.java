@@ -375,20 +375,25 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      * @param totalPages    Total pages of current (1st in queue) book
      * @param numberRetries Current number of download auto-retries for current (1st in queue) book
      */
-    private void updateProgress(int pagesOK, int pagesKO, int totalPages, int numberRetries) {
+    private void updateProgress(final int pagesOK, final int pagesKO, final int totalPages, final int numberRetries) {
         if (!ContentQueueManager.getInstance().isQueuePaused() && itemAdapter.getAdapterItemCount() > 0) {
             Content content = itemAdapter.getAdapterItem(0).getContent();
 
             // Pages download has started
-            if (content != null && pagesKO + pagesOK > 0) {
+            if (content != null && pagesKO + pagesOK > 1) {
+                // Downloader reports about the cover thumbnail too
+                // Display one less page to avoid confusing the user
+                int totalPagesDisplay = Math.max(0, totalPages - 1);
+                int pagesOKDisplay = Math.max(0, pagesOK - 1);
+
                 // Update book progress bar
-                content.setPercent((pagesOK + pagesKO) * 100.0 / totalPages);
+                content.setPercent((pagesOKDisplay + pagesKO) * 100.0 / totalPagesDisplay);
                 updateProgressFirstItem(false);
 
                 // Update information bar
                 StringBuilder message = new StringBuilder();
-                String processedPagesFmt = Helper.formatIntAsStr(pagesOK, String.valueOf(totalPages).length());
-                message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
+                String processedPagesFmt = Helper.formatIntAsStr(pagesOKDisplay, String.valueOf(totalPagesDisplay).length());
+                message.append(processedPagesFmt).append("/").append(totalPagesDisplay).append(" processed (").append(pagesKO).append(" errors)");
                 if (numberRetries > 0)
                     message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
 
