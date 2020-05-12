@@ -15,17 +15,13 @@ import androidx.documentfile.provider.DocumentFile;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApp;
 import timber.log.Timber;
 
 /**
@@ -56,16 +52,6 @@ class FileUtil {
         }
 
         return false;
-    }
-
-    static OutputStream getOutputStream(@NonNull final DocumentFile target) throws FileNotFoundException {
-        Context context = HentoidApp.getInstance();
-        return context.getContentResolver().openOutputStream(target.getUri());
-    }
-
-    static InputStream getInputStream(@NonNull final DocumentFile target) throws IOException {
-        Context context = HentoidApp.getInstance();
-        return context.getContentResolver().openInputStream(target.getUri());
     }
 
     /**

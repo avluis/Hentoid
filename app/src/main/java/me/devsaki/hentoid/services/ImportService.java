@@ -381,7 +381,7 @@ public class ImportService extends IntentService {
     private Content importJsonLegacy(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
         try {
             DoujinBuilder doujinBuilder =
-                    JsonHelper.jsonToObject(json, DoujinBuilder.class);
+                    JsonHelper.jsonToObject(this, json, DoujinBuilder.class);
             ContentV1 content = new ContentV1();
             content.setUrl(doujinBuilder.getId());
             content.setHtmlDescription(doujinBuilder.getDescription());
@@ -430,7 +430,7 @@ public class ImportService extends IntentService {
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private Content importJsonV1(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
         try {
-            ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
+            ContentV1 content = JsonHelper.jsonToObject(this, json, ContentV1.class);
             if (content.getStatus() != StatusContent.DOWNLOADED
                     && content.getStatus() != StatusContent.ERROR) {
                 content.setMigratedStatus();
@@ -452,7 +452,7 @@ public class ImportService extends IntentService {
     @CheckResult
     private Content importJsonV2(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
         try {
-            JsonContent content = JsonHelper.jsonToObject(json, JsonContent.class);
+            JsonContent content = JsonHelper.jsonToObject(this, json, JsonContent.class);
             Content result = content.toEntity();
             result.setJsonUri(json.getUri().toString());
             result.setStorageUri(parentFolder.getUri().toString());

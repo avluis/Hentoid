@@ -164,7 +164,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             if (null == sourceFile || !sourceFile.exists()) return;
 
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, image.getMimeType())) {
-                try (InputStream input = FileHelper.getInputStream(sourceFile)) {
+                try (InputStream input = FileHelper.getInputStream(requireContext(), sourceFile)) {
                     FileHelper.copy(input, newDownload);
                 }
             }
@@ -214,7 +214,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         try {
-            BitmapFactory.decodeStream(FileHelper.getInputStream(imgFile), null, options);
+            BitmapFactory.decodeStream(FileHelper.getInputStream(context, imgFile), null, options);
             return new Point(options.outWidth, options.outHeight);
         } catch (IOException e) {
             Timber.w(e);

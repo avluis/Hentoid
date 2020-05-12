@@ -63,7 +63,7 @@ public class JsonHelper {
         if (null == file)
             throw new IOException("Failed creating file " + Consts.JSON_FILE_NAME_V2 + " in " + dir.getUri().getPath());
 
-        try (OutputStream output = FileHelper.getOutputStream(file)) {
+        try (OutputStream output = FileHelper.getOutputStream(context, file)) {
             if (output != null) updateJson(object, type, output);
             else Timber.w("JSON file creation failed for %s", file.getUri().getPath());
         }
@@ -78,10 +78,10 @@ public class JsonHelper {
      * @param <K>    Type of the object to save
      * @throws IOException If anything happens during file I/O
      */
-    static <K> void updateJson(K object, Type type, @Nonnull DocumentFile file) throws IOException {
+    static <K> void updateJson(@NonNull final Context context, K object, Type type, @Nonnull DocumentFile file) throws IOException {
         if (!file.exists()) return;
 
-        try (OutputStream output = FileHelper.getOutputStream(file)) {
+        try (OutputStream output = FileHelper.getOutputStream(context, file)) {
             if (output != null) updateJson(object, type, output);
             else Timber.w("JSON file creation failed for %s", file.getUri());
         } catch (FileNotFoundException e) {
@@ -96,11 +96,11 @@ public class JsonHelper {
         output.flush();
     }
 
-    public static <T> T jsonToObject(DocumentFile f, Class<T> type) throws IOException {
+    public static <T> T jsonToObject(@NonNull final Context context, DocumentFile f, Class<T> type) throws IOException {
         StringBuilder json = new StringBuilder();
         String sCurrentLine;
         boolean isFirst = true;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(FileHelper.getInputStream(f)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(FileHelper.getInputStream(context, f)))) {
             while ((sCurrentLine = br.readLine()) != null) {
                 if (isFirst) {
                     // Strip UTF-8 BOMs if any

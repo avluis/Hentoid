@@ -165,12 +165,12 @@ public class FileHelper {
         return FileUtils.openOutputStream(target);
     }
 
-    static OutputStream getOutputStream(@NonNull final DocumentFile target) throws IOException {
-        return FileUtil.getOutputStream(target);
+    static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
+        return context.getContentResolver().openOutputStream(target.getUri());
     }
 
-    public static InputStream getInputStream(@NonNull final DocumentFile target) throws IOException {
-        return FileUtil.getInputStream(target);
+    public static InputStream getInputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
+        return context.getContentResolver().openInputStream(target.getUri());
     }
 
     /**
@@ -310,12 +310,12 @@ public class FileHelper {
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
-    public static void saveBinaryInFile(DocumentFile file, byte[] binaryContent) throws IOException {
+    public static void saveBinaryInFile(@NonNull final Context context, @NonNull final DocumentFile file, byte[] binaryContent) throws IOException {
         byte[] buffer = new byte[1024];
         int count;
 
         try (InputStream input = new ByteArrayInputStream(binaryContent)) {
-            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
+            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(context, file))) {
 
                 while ((count = input.read(buffer)) != -1) {
                     output.write(buffer, 0, count);

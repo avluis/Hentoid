@@ -91,7 +91,7 @@ public final class ContentHelper {
             throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
         try {
-            JsonHelper.updateJson(JsonContent.fromEntity(content), JsonContent.class, file);
+            JsonHelper.updateJson(context, JsonContent.fromEntity(content), JsonContent.class, file);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getJsonUri());
         }

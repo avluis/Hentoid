@@ -330,7 +330,7 @@ public class LibraryViewModel extends AndroidViewModel {
             Timber.d("Destination file: %s", dest);
 
             compositeDisposable.add(
-                    Single.fromCallable(() -> ZipUtil.zipFiles(files, dest))
+                    Single.fromCallable(() -> ZipUtil.zipFiles(getApplication(), files, dest))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(onSuccess::accept,
