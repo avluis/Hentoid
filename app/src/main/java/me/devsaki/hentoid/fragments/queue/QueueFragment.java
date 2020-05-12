@@ -170,7 +170,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
                 this,
                 this,
-                requireContext().getDrawable(R.drawable.ic_action_delete_forever));
+                requireContext().getResources().getDrawable(R.drawable.ic_action_delete_forever, null));
         dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
         touchHelper = new ItemTouchHelper(dragSwipeCallback);
