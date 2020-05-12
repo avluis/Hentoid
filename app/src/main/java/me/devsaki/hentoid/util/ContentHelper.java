@@ -169,7 +169,6 @@ public final class ContentHelper {
         DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(storageUri));
         if (null == folder || !folder.exists()) {
             Timber.d("File not found!! Exiting method.");
-            ToastUtil.toast(R.string.sd_access_error);
             return new ArrayList<>();
         }
 
