@@ -219,7 +219,7 @@ public class HttpHelper {
     }
 
     public static String fixUrl(final String url, final Site source) {
-        if (null == url) return "";
+        if (null == url || url.isEmpty()) return "";
         if (url.startsWith("//")) return "https:" + url;
 
         if (!url.startsWith("http")) {
