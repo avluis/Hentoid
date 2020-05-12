@@ -5,7 +5,7 @@ import android.view.View;
 
 import me.devsaki.hentoid.util.Preferences;
 
-public final class VolumeGestureListener implements View.OnKeyListener {
+public final class VolumeKeyListener implements View.OnKeyListener {
 
     private Runnable onVolumeDownListener;
 
@@ -23,32 +23,32 @@ public final class VolumeGestureListener implements View.OnKeyListener {
     private long nextNotifyTime;
 
 
-    public VolumeGestureListener setOnVolumeDownListener(Runnable onVolumeDownListener) {
+    public VolumeKeyListener setOnVolumeDownListener(Runnable onVolumeDownListener) {
         this.onVolumeDownListener = onVolumeDownListener;
         return this;
     }
 
-    public VolumeGestureListener setOnVolumeUpListener(Runnable onVolumeUpListener) {
+    public VolumeKeyListener setOnVolumeUpListener(Runnable onVolumeUpListener) {
         this.onVolumeUpListener = onVolumeUpListener;
         return this;
     }
 
-    public VolumeGestureListener setOnBackListener(Runnable onBackListener) {
+    public VolumeKeyListener setOnBackListener(Runnable onBackListener) {
         this.onBackListener = onBackListener;
         return this;
     }
 
-    public VolumeGestureListener setCooldown(int cooldown) {
+    public VolumeKeyListener setCooldown(int cooldown) {
         this.cooldown = cooldown;
         return this;
     }
 
-    public VolumeGestureListener setTurboCooldown(int turboCooldown) {
+    public VolumeKeyListener setTurboCooldown(int turboCooldown) {
         this.turboCooldown = turboCooldown;
         return this;
     }
 
-    public VolumeGestureListener setTurboEnabled(boolean isTurboEnabled) {
+    public VolumeKeyListener setTurboEnabled(boolean isTurboEnabled) {
         this.isTurboEnabled = isTurboEnabled;
         return this;
     }
@@ -89,5 +89,11 @@ public final class VolumeGestureListener implements View.OnKeyListener {
             nextNotifyTime = event.getEventTime() + (isTurboEnabled ? turboCooldown : cooldown);
         }
         return true;
+    }
+
+    public void clear() {
+        onVolumeDownListener = null;
+        onVolumeUpListener = null;
+        onBackListener = null;
     }
 }

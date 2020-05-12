@@ -2,7 +2,6 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -57,7 +56,7 @@ import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.PageSnapWidget;
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
-import me.devsaki.hentoid.widget.VolumeGestureListener;
+import me.devsaki.hentoid.widget.VolumeKeyListener;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -125,7 +124,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         Preferences.registerPrefsChangedListener(listener);
 
         ((ImageViewerActivity) requireActivity()).registerKeyListener(
-                new VolumeGestureListener()
+                new VolumeKeyListener()
                         .setOnVolumeDownListener(this::previousPage)
                         .setOnVolumeUpListener(this::nextPage)
                         .setOnBackListener(this::onBackClick));
