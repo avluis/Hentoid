@@ -37,6 +37,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
@@ -85,6 +86,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         content = null;
         this.viewType = viewType;
         touchHelper = null;
+        setIdentifier(generateIdForPlaceholder());
     }
 
     // Constructor for library and error item
@@ -94,6 +96,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.touchHelper = touchHelper;
         isEmpty = (null == content);
         if (content != null) setIdentifier(content.getId());
+        else setIdentifier(generateIdForPlaceholder());
     }
 
     // Constructor for queued item
@@ -158,6 +161,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     public void setSwipeDirection(int direction) {
         swipeDirection = direction;
+    }
+
+    private long generateIdForPlaceholder() {
+        long result = new Random().nextLong();
+        // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
+        while (result < 1e6) result = new Random().nextLong();
+        return result;
     }
 
 
