@@ -27,7 +27,7 @@
         app:tabIconTint="@color/selector_tab_icon"
         app:tabInlineLabel="true"
         app:tabSelectedTextColor="@color/white_opacity_87"
-        app:tabTextColor="@color/white_opacity_33" />
+        app:tabTextColor="@color/white_opacity_25" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/queue_pager"

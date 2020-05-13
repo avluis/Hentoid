@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.queue;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -171,6 +172,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 this,
                 this,
                 requireContext().getResources().getDrawable(R.drawable.ic_action_delete_forever, null));
+        dragSwipeCallback.setNotifyAllDrops(true);
         dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
         touchHelper = new ItemTouchHelper(dragSwipeCallback);
@@ -556,19 +558,17 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     @Override
     public void itemTouchDropped(int oldPosition, int newPosition) {
-        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
-        if (vh instanceof IDraggableViewHolder) {
-            ((IDraggableViewHolder) vh).onDropped();
-        }
         // Save final position of item in DB
         viewModel.move(oldPosition, newPosition);
-    }
 
-    // TODO wait for the next release of FastAdapter to handle that when using drag, drop & swipe
-    private void onStartDrag(RecyclerView.ViewHolder vh) {
-        if (vh instanceof IDraggableViewHolder) {
-            ((IDraggableViewHolder) vh).onDragged();
-        }
+        // Delay execution of findViewHolderForAdapterPosition to give time for the new layout to
+        // be calculated (if not, it might return null under certain circumstances)
+        new Handler().postDelayed(() -> {
+            RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
+            if (vh instanceof IDraggableViewHolder) {
+                ((IDraggableViewHolder) vh).onDropped();
+            }
+        }, 75);
     }
 
     @Override
@@ -589,6 +589,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             };
             item.setUndoSwipeAction(cancelSwipe);
             fastAdapter.notifyItemChanged(position);
+        }
+    }
+
+    @Override
+    public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        if (viewHolder instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) viewHolder).onDragged();
         }
     }
 }

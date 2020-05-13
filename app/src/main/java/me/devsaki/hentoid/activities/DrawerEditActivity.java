@@ -13,12 +13,13 @@ import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.CustomDragCallback;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.SiteItem;
@@ -56,13 +57,17 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
             return true;
         });
 
+        // Activate drag & drop
+        SimpleDragCallback dragCallback = new SimpleDragCallback(this);
+        dragCallback.setNotifyAllDrops(true);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(dragCallback);
 
         // Recycler
         List<SiteItem> items = new ArrayList<>();
         List<Site> activeSites = Preferences.getActiveSites();
 
         // First add active sites
-        for (Site s : activeSites) items.add(new SiteItem(s, true));
+        for (Site s : activeSites) items.add(new SiteItem(s, true, touchHelper));
         // Then add the others
         for (Site s : Site.values())
             // We don't want to show these
@@ -72,7 +77,7 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
                     && s != Site.NONE               // Technical fallback
                     && !activeSites.contains(s)
             )
-                items.add(new SiteItem(s));
+                items.add(new SiteItem(s, false, touchHelper));
 
         itemAdapter.add(items);
 
@@ -80,9 +85,6 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
         recyclerView.setAdapter(fastAdapter);
         recyclerView.setHasFixedSize(true);
 
-        // Activate drag & drop
-        SimpleDragCallback dragCallback = new CustomDragCallback(SimpleDragCallback.UP_DOWN, this, this::onStartDrag);
-        ItemTouchHelper touchHelper = new ItemTouchHelper(dragCallback);
         touchHelper.attachToRecyclerView(recyclerView);
 
         // OK button
@@ -124,9 +126,10 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
         }
     }
 
-    private void onStartDrag(RecyclerView.ViewHolder vh) {
-        if (vh instanceof IDraggableViewHolder) {
-            ((IDraggableViewHolder) vh).onDragged();
+    @Override
+    public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        if (viewHolder instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) viewHolder).onDragged();
         }
     }
 }

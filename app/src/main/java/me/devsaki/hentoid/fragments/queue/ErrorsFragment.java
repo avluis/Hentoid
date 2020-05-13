@@ -319,4 +319,9 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         Snackbar snackbar = Snackbar.make(mEmptyText, message, BaseTransientBottomBar.LENGTH_LONG);
         snackbar.show();
     }
+
+    @Override
+    public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
+    }
 }

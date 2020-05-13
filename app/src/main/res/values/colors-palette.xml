@@ -21,7 +21,7 @@
     <color name="medium_gray">#888888</color>
     <color name="dark_gray">#FF444444</color>
     <color name="black_opacity_50">#80000000</color>
-    <color name="white_opacity_33">#54FFFFFF</color>
+    <color name="white_opacity_25">#40FFFFFF</color>
     <color name="white_opacity_66">#AAFFFFFF</color>
     <color name="white_opacity_87">#DEFFFFFF</color>
 

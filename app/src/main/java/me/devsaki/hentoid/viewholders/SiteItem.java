@@ -5,11 +5,17 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.drag.IDraggable;
+import com.mikepenz.fastadapter.drag.IExtendedDraggable;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -17,24 +23,24 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.ThemeHelper;
 
-public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements IDraggable {
+public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements IExtendedDraggable {
 
     private final Site site;
-    private boolean showHandle = true;
+    private final boolean showHandle;
+    private final ItemTouchHelper touchHelper;
 
-    public SiteItem(Site site) {
-        this.site = site;
-    }
-
-    public SiteItem(Site site, boolean selected) {
+    public SiteItem(Site site, boolean selected, ItemTouchHelper touchHelper) {
         this.site = site;
         this.setSelected(selected);
+        this.showHandle = true;
+        this.touchHelper = touchHelper;
     }
 
     public SiteItem(Site site, boolean selected, boolean showHandle) {
         this.site = site;
         this.showHandle = showHandle;
         this.setSelected(selected);
+        this.touchHelper = null;
     }
 
     public Site getSite() {
@@ -63,6 +69,20 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements I
         return true;
     }
 
+    @Nullable
+    @Override
+    public ItemTouchHelper getTouchHelper() {
+        return touchHelper;
+    }
+
+    @Nullable
+    @Override
+    public View getDragView(@NotNull RecyclerView.ViewHolder viewHolder) {
+        if (viewHolder instanceof SiteItem.SiteViewHolder)
+            return ((SiteItem.SiteViewHolder) viewHolder).dragHandle;
+        else return null;
+    }
+
 
     static class SiteViewHolder extends FastAdapter.ViewHolder<SiteItem> implements IDraggableViewHolder {
 
@@ -84,6 +104,7 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements I
         @Override
         public void bindView(@NotNull SiteItem item, @NotNull List<?> list) {
             dragHandle.setVisibility(item.showHandle ? View.VISIBLE : View.GONE);
+            if (item.showHandle) DragDropUtil.bindDragHandle(this, item);
             title.setText(item.site.getDescription());
             icon.setImageResource(item.site.getIco());
             chk.setChecked(item.isSelected());
@@ -97,7 +118,7 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements I
 
         @Override
         public void onDragged() {
-            rootView.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.white_opacity_33));
+            rootView.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.white_opacity_25));
         }
 
         @Override
