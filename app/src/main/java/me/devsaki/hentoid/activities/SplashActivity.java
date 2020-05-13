@@ -72,7 +72,7 @@ public class SplashActivity extends AppCompatActivity {
     private boolean hasToMigrateAPI29() {
         ObjectBoxDB db = ObjectBoxDB.getInstance(this);
         long imagesKO = db.countDownloadedImagesWithoutUri();
-        Timber.i(">> count10 %s", imagesKO);
+        Timber.d("Splash / API 29 migration detector : %s images KO", imagesKO);
         return imagesKO > 0;
     }
 
