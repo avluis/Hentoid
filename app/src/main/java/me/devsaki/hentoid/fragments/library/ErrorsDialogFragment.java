@@ -93,7 +93,7 @@ public class ErrorsDialogFragment extends DialogFragment {
         if (null == context) return;
         if (null == content.getImageFiles()) return;
 
-        images = content.getImageFiles().size();
+        images = content.getImageFiles().size() - 1; // Don't count the cover
 
         for (ImageFile imgFile : content.getImageFiles())
             if (imgFile.getStatus() == StatusContent.ERROR) imgErrors++;

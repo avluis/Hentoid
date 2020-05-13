@@ -22,6 +22,7 @@ import com.android.volley.Request;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.annimon.stream.Stream;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -428,7 +429,7 @@ public class ContentDownloadService extends IntentService {
         if (!downloadCanceled && !downloadSkipped) {
             List<ImageFile> images = content.getImageFiles();
             if (null == images) images = Collections.emptyList();
-            int nbImages = images.size();
+            int nbImages = (int)Stream.of(images).filter(i -> !i.isCover()).count(); // Don't count the cover
 
             boolean hasError = false;
             // Set error state if less pages than initially detected - More than 10% difference in number of pages
@@ -439,8 +440,11 @@ public class ContentDownloadService extends IntentService {
             }
             // Set error state if there are non-downloaded pages
             // NB : this should not happen theoretically
-            if (content.getNbDownloadedPages() < content.getQtyPages()) {
-                Timber.i(">> downloaded vs. qty KO %s vs %s", content.getNbDownloadedPages(), content.getQtyPages());
+            long nbDownloadedPages = content.getNbDownloadedPages();
+            if (nbDownloadedPages < content.getQtyPages()) {
+                Timber.i(">> downloaded vs. qty KO %s vs %s", nbDownloadedPages, content.getQtyPages());
+                String errorMsg = String.format("The number of downloaded images (%s) does not match the book's number of pages (%s)", nbDownloadedPages, content.getQtyPages());
+                logErrorRecord(contentId, ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
                 hasError = true;
             }
 
