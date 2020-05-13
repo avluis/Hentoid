@@ -41,6 +41,7 @@ import java.util.List;
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -521,8 +522,17 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     private boolean onBookClick(ContentItem i) {
         Content c = i.getContent();
+        if (null == c) {
+            ToastUtil.toast(R.string.err_no_content);
+            return false;
+        }
+
+        // Retrieve the latest version of the content if storage URI is unknown
+        // (may happen when the item is fetched before it is processed by the downloader)
+        if (c.getStorageUri().isEmpty())
+            c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
+
         if (c != null) {
-            // TODO test long queues to see if a memorization of the top position (as in Library screen) is necessary
             if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
                 ToastUtil.toast(R.string.err_no_content);
             return true;
