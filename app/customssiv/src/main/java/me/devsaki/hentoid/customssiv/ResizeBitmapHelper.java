@@ -80,7 +80,7 @@ class ResizeBitmapHelper {
         int dstHeight = Math.round(srcHeight * yScale);
 
         // Calculate gaussian's radius
-        float sigma = xScale / (float) Math.PI;
+        float sigma = (1 / xScale) / (float) Math.PI;
         // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
         float radius = 2.5f * sigma - 1.5f;
         radius = Math.min(25, Math.max(0.0001f, radius));
