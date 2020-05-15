@@ -4,6 +4,8 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Optional;
+
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -34,7 +36,7 @@ public abstract class BaseParser implements ImageListParser {
         return images;
     }
 
-    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) {
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
         return null;
     }
 

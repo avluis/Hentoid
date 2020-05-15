@@ -4,6 +4,8 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Optional;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -132,7 +134,7 @@ public class FakkuParser implements ImageListParser {
         return result;
     }
 
-    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) {
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // This class does not use backup URLs
         return null;
     }
