@@ -332,7 +332,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         @Override
         public void onImageLoadError(Throwable e) {
-            Timber.i(">>>>IMG %s reloaded with Glide", img.getFileUri());
+            Timber.w(e, ">>>>IMG %s reloaded with Glide", img.getFileUri());
             // Manually force mime-type as GIF to fall back to Glide
             img.setMimeType("image/gif");
             // Reload adapter
