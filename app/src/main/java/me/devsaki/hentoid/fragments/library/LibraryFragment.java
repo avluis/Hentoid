@@ -566,7 +566,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 archiveSelectedItems();
                 break;
             case R.id.action_redownload:
-                redownloadSelectedItems();
+                askRedownloadSelectedItemsScratch();
                 keepToolbar = true;
                 break;
             default:
@@ -585,7 +585,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemArchive.setVisible(!isMultipleSelection);
         itemDeleteSwipe.setVisible(isMultipleSelection);
 
-        selectionToolbar.setTitle(selectedCount + (selectedCount > 1 ? " items selected" : " item selected"));
+        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int)selectedCount));
     }
 
     /**
@@ -627,7 +627,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     /**
      * Callback for the "redownload from scratch" action button
      */
-    private void redownloadSelectedItems() {
+    private void askRedownloadSelectedItemsScratch() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
 
         int securedContent = 0;

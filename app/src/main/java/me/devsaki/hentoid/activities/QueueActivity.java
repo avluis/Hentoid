@@ -37,6 +37,7 @@ public class QueueActivity extends BaseActivity {
     private TabLayout.Tab errorsTab;
 
     private Toolbar toolbar;
+    private Toolbar selectionToolbar;
     private MenuItem errorStatsMenu;
     private MenuItem invertQueueMenu;
     private MenuItem cancelAllMenu;
@@ -50,6 +51,9 @@ public class QueueActivity extends BaseActivity {
 
         toolbar = findViewById(R.id.queue_toolbar);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
+        selectionToolbar = findViewById(R.id.queue_selection_toolbar);
+
         errorStatsMenu = toolbar.getMenu().findItem(R.id.action_error_stats);
         invertQueueMenu = toolbar.getMenu().findItem(R.id.action_invert_queue);
         cancelAllMenu = toolbar.getMenu().findItem(R.id.action_cancel_all);
@@ -94,11 +98,16 @@ public class QueueActivity extends BaseActivity {
         invertQueueMenu.setVisible(0 == position);
         cancelAllMenu.setVisible(0 == position);
         redownloadAllMenu.setVisible(1 == position);
-        if (1 == position) errorStatsMenu.setVisible(false); // That doesn't mean it should be visible at all times on tab 0 !
+        if (1 == position)
+            errorStatsMenu.setVisible(false); // That doesn't mean it should be visible at all times on tab 0 !
     }
 
     public Toolbar getToolbar() {
         return toolbar;
+    }
+
+    public Toolbar getSelectionToolbar() {
+        return selectionToolbar;
     }
 
     private void onQueueChanged(List<QueueRecord> result) {
@@ -138,4 +147,6 @@ public class QueueActivity extends BaseActivity {
             return 2;
         }
     }
+
+    // TODO deselect on back button
 }

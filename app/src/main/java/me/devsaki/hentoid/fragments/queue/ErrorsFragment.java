@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.queue;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
@@ -17,6 +19,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -24,17 +27,21 @@ import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
+import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.fragments.library.ErrorsDialogFragment;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -54,20 +61,26 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by Robb on 04/2020
  * Presents the list of downloads with errors
  */
-// TODO redownload from scratch
 public class ErrorsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback, ErrorsDialogFragment.Parent {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    // COMMUNICATION
-    // Viewmodel
+    // === COMMUNICATION
     private QueueViewModel viewModel;
-    private ItemTouchHelper touchHelper;
 
+    // === UI
+    private Toolbar selectionToolbar;
     private TextView mEmptyText;    // "No errors" message panel
 
-    // Used to effectively cancel a download when the user hasn't hit UNDO
+    // == FASTADAPTER COMPONENTS AND HELPERS
     private FastAdapter<ContentItem> fastAdapter;
+    private SelectExtension<ContentItem> selectExtension;
+    // Helper for swiping items
+    private ItemTouchHelper touchHelper;
+
+    // === VARIABLES
+    // Used to ignore native calls to onBookClick right after that book has been deselected
+    private boolean invalidateNextBookClick = false;
 
 
     /**
@@ -115,6 +128,16 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         fastAdapter.setHasStableIds(true);
         ContentItem item = new ContentItem(ContentItem.ViewType.ERRORS);
         fastAdapter.registerItemFactory(item.getType(), item);
+
+        // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
+        selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
+        if (selectExtension != null) {
+            selectExtension.setSelectable(true);
+            selectExtension.setMultiSelect(true);
+            selectExtension.setSelectOnLongClick(true);
+            selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+        }
+
         recyclerView.setAdapter(fastAdapter);
 
         // Swiping
@@ -132,6 +155,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
 
         initToolbar();
+        initSelectionToolbar();
         attachButtons(fastAdapter);
 
         return rootView;
@@ -175,6 +199,44 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
             viewModel.invertQueue();
             return true;
         });
+    }
+
+    private void initSelectionToolbar() {
+        if (!(requireActivity() instanceof QueueActivity)) return;
+        QueueActivity activity = (QueueActivity) requireActivity();
+
+        selectionToolbar = activity.getSelectionToolbar();
+        selectionToolbar.setNavigationOnClickListener(v -> {
+            selectExtension.deselect();
+            selectionToolbar.setVisibility(View.GONE);
+        });
+        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
+    }
+
+    private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
+        boolean keepToolbar = false;
+        switch (menuItem.getItemId()) {
+            case R.id.action_queue_delete:
+                //askDeleteSelected();
+                // TODO
+                break;
+            case R.id.action_download:
+                redownloadSelected();
+                break;
+            case R.id.action_download_scratch:
+                askRedownloadSelectedScratch();
+                keepToolbar = true;
+                break;
+            default:
+                selectionToolbar.setVisibility(View.GONE);
+                return false;
+        }
+        if (!keepToolbar) selectionToolbar.setVisibility(View.GONE);
+        return true;
+    }
+
+    private void updateSelectionToolbar(long selectedCount) {
+        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
     }
 
     private void attachButtons(FastAdapter<ContentItem> fastAdapter) {
@@ -247,14 +309,19 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         itemAdapter.submitList(result/*, this::differEndCallback*/);
     }
 
-    private boolean onBookClick(ContentItem i) {
-        Content c = i.getContent();
-        if (c != null) {
-            // TODO test long queues to see if a memorization of the top position (as in Library screen) is necessary
-            if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
-                ToastUtil.toast(R.string.err_no_content);
+    private boolean onBookClick(ContentItem item) {
+        if (selectExtension.getSelectedItems().isEmpty()) {
+            Content c = item.getContent();
+            if (!invalidateNextBookClick && c != null) {
+                if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
+                    ToastUtil.toast(R.string.err_no_content);
+            } else invalidateNextBookClick = false;
+
             return true;
-        } else return false;
+        } else {
+            selectExtension.setSelectOnLongClick(false);
+        }
+        return false;
     }
 
     private void onDeleteBook(@NonNull Content c) {
@@ -298,19 +365,81 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         }
     }
 
+    /**
+     * Callback for any selection change (item added to or removed from selection)
+     */
+    private void onSelectionChanged() {
+        int selectedCount = selectExtension.getSelectedItems().size();
+
+        if (0 == selectedCount) {
+            selectionToolbar.setVisibility(View.GONE);
+            selectExtension.setSelectOnLongClick(true);
+            invalidateNextBookClick = true;
+            new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
+        } else {
+            updateSelectionToolbar(selectedCount);
+            selectionToolbar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void askRedownloadSelectedScratch() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+
+        int securedContent = 0;
+        List<Content> contents = new ArrayList<>();
+        for (ContentItem ci : selectedItems) {
+            Content c = ci.getContent();
+            if (null == c) continue;
+            if (c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)) {
+                securedContent++;
+            } else {
+                contents.add(c);
+            }
+        }
+
+        String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
+        if (securedContent > 0)
+            message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
+
+        // TODO make it work for secured sites (Fakku, ExHentai) -> open a browser to fetch the relevant cookies ?
+
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            redownloadContent(contents, true);
+                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.deselect();
+                            selectionToolbar.setVisibility(View.GONE);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
+    }
+
+    private void redownloadSelected() {
+        redownloadContent(Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).filter(c -> c != null).toList(), false);
+    }
+
     private void redownloadAll() {
-        redownloadContent(new ArrayList<>(itemAdapter.getModels()));
+        redownloadContent(new ArrayList<>(itemAdapter.getModels()), false);
     }
 
     @Override
     public void redownloadContent(Content content) {
         List<Content> contentList = new ArrayList<>();
         contentList.add(content);
-        redownloadContent(contentList);
+        redownloadContent(contentList, false);
     }
 
-    private void redownloadContent(@NonNull final List<Content> contentList) {
-        for (Content c : contentList) viewModel.addContentToQueue(c, null);
+    private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
+        StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
+        for (Content c : contentList) viewModel.addContentToQueue(c, targetImageStatus);
 
         if (Preferences.isQueueAutostart())
             ContentQueueManager.getInstance().resumeQueue(getContext());

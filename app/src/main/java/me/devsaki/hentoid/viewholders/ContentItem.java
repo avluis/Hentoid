@@ -226,11 +226,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
-            } else {
+            } else if (viewType == ViewType.QUEUE) {
                 progressBar = itemView.findViewById(R.id.pbDownload);
                 ivTop = itemView.findViewById(R.id.queueTopBtn);
                 ivBottom = itemView.findViewById(R.id.queueBottomBtn);
                 ivReorder = itemView.findViewById(R.id.ivReorder);
+            } else if (viewType == ViewType.ERRORS) {
                 ivRedownload = itemView.findViewById(R.id.ivRedownload);
             }
         }
@@ -402,8 +403,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                     template = template.replace("@missing@", " (" + nbMissingPages + " missing)");
                 else
                     template = template.replace("@missing@", "");
-            }
-            else
+            } else
                 template = template.replace("@missing@", "");
 
             tvPages.setText(template);
@@ -445,12 +445,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (ViewType.QUEUE == item.viewType) {
                 boolean isFirstItem = (0 == getAdapterPosition());
                 ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
-                ivRedownload.setVisibility(View.GONE);
-                ivError.setVisibility(View.GONE);
+                ivTop.setVisibility(View.VISIBLE);
+                ivBottom.setVisibility(View.VISIBLE);
+                ivReorder.setVisibility(View.VISIBLE);
             } else if (ViewType.ERRORS == item.viewType) {
-                ivTop.setVisibility(View.GONE);
-                ivBottom.setVisibility(View.GONE);
-                ivReorder.setVisibility(View.GONE);
+                ivRedownload.setVisibility(View.VISIBLE);
+                ivError.setVisibility(View.VISIBLE);
             } else if (ViewType.LIBRARY == item.viewType) {
                 // When transitioning to the other state, button blinks with its target state
                 if (content.isBeingFavourited()) {

@@ -69,6 +69,6 @@ public class LusciousParser implements ImageListParser {
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // This class does not use backup URLs
-        return null;
+        return Optional.of(new ImageFile(order, url, StatusContent.SAVED, maxPages));
     }
 }

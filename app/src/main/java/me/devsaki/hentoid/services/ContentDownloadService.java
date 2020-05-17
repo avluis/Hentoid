@@ -356,7 +356,14 @@ public class ContentDownloadService extends IntentService {
         // Queue image download requests
         Site site = content.getSite();
         for (ImageFile img : images) {
-            if (img.isCover()) img.setDownloadParams(content.getDownloadParams());
+            if (img.isCover()) {
+                // Get the same download parameters as the rest of the content, in case the cover is cookie-protected
+                Map<String, String> downloadParams = ContentHelper.parseDownloadParams(content.getDownloadParams());
+                // Set the 1st image of the list as a backup, if the cover URL is stale (might happen when restarting old downloads)
+                if (images.size() > 1)
+                    downloadParams.put("backupUrl", images.get(1).getUrl());
+                img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+            }
             if (img.getStatus().equals(StatusContent.SAVED))
                 requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
         }
@@ -577,34 +584,24 @@ public class ContentDownloadService extends IntentService {
         String backupUrl = "";
 
         Map<String, String> headers = new HashMap<>();
-        String downloadParamsStr = img.getDownloadParams();
-        if (downloadParamsStr != null && downloadParamsStr.length() > 2) // Avoid empty and "{}"
-        {
-            Map<String, String> downloadParams = null;
-            try {
-                downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
-            } catch (IOException e) {
-                Timber.w(e);
+        Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
+        if (!downloadParams.isEmpty()) {
+            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
+                String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                if (value != null) headers.put(HttpHelper.HEADER_COOKIE_KEY, value);
             }
-
-            if (downloadParams != null) {
-                if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
-                    String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                    if (value != null) headers.put(HttpHelper.HEADER_COOKIE_KEY, value);
-                }
-                if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
-                    String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
-                    if (value != null) headers.put(HttpHelper.HEADER_REFERER_KEY, value);
-                }
-                if (downloadParams.containsKey("backupUrl"))
-                    backupUrl = downloadParams.get("backupUrl");
+            if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
+                String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                if (value != null) headers.put(HttpHelper.HEADER_REFERER_KEY, value);
             }
+            if (downloadParams.containsKey("backupUrl"))
+                backupUrl = downloadParams.get("backupUrl");
         }
-        final String backupUrlFinal = HttpHelper.fixUrl(backupUrl, site);
+        final String backupUrlFinal = HttpHelper.fixUrl(backupUrl, site.getUrl());
 
         return new InputStreamVolleyRequest(
                 Request.Method.GET,
-                HttpHelper.fixUrl(img.getUrl(), site),
+                HttpHelper.fixUrl(img.getUrl(), site.getUrl()),
                 headers,
                 site.canKnowHentoidAgent(),
                 result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal),
@@ -641,8 +638,8 @@ public class ContentDownloadService extends IntentService {
     }
 
     private void onRequestError(VolleyError error, @NonNull ImageFile img, @NonNull DocumentFile dir, @NonNull String backupUrl) {
-        // Try with the backup URL, if it exists
-        if (!backupUrl.isEmpty()) {
+        // Try with the backup URL, if it exists and if the current image isn't a backup itself
+        if (!img.isBackup() && !backupUrl.isEmpty()) {
             tryUsingBackupUrl(img, dir, backupUrl);
             return;
         }
@@ -658,7 +655,7 @@ public class ContentDownloadService extends IntentService {
             cause = "No connection";
         } else if (error instanceof AuthFailureError) {
             cause = "Auth failure";
-        } else if (error instanceof ServerError) {
+        } else if (error instanceof ServerError) { // 404's fall in this category
             cause = "Server error";
         } else if (error instanceof NetworkError) {
             cause = "Network error";

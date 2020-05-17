@@ -5,28 +5,18 @@
     tools:context=".activities.LibraryActivity"
     tools:ignore="AlwaysShowAction">
     <item
-        android:id="@+id/action_delete"
+        android:id="@+id/action_queue_delete"
         android:icon="@drawable/ic_action_delete_forever"
         android:title="@string/menu_delete_single"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_archive"
-        android:icon="@drawable/ic_archive"
-        android:title="@string/menu_archive"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/action_delete_sweep"
-        android:icon="@drawable/ic_delete_sweep"
-        android:title="@string/menu_delete_multi"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/action_share"
-        android:icon="@drawable/ic_action_share"
-        android:title="@string/menu_share"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_redownload"
-        android:icon="@drawable/ic_action_download_scratch"
+        android:id="@+id/action_download"
+        android:icon="@drawable/ic_action_download"
         android:title="@string/menu_redownload"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_download_scratch"
+        android:icon="@drawable/ic_action_download_scratch"
+        android:title="@string/menu_redownload"
+        app:showAsAction="never" />
 </menu>

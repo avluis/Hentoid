@@ -186,6 +186,10 @@
     <string name="deleted">Deleted</string>
     <string name="help_search">Search anything : title, author, tag…\n…and launch code too !</string>
     <string name="help_page_slider">You can browse faster by sliding through page numbers</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d item selected</item>
+        <item quantity="other">%d items selected</item>
+    </plurals>
     <!-- Sorting fields -->
     <string name="sort_title">Title</string>
     <string name="sort_artist">Artist</string>

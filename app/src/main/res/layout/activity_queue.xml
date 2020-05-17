@@ -18,6 +18,18 @@
         app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/queue_selection_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:minHeight="?android:attr/actionBarSize"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/queue_selection_menu"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/queue_tabs"
         android:layout_width="match_parent"

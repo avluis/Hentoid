@@ -404,4 +404,17 @@ public final class ContentHelper {
         }
         return result;
     }
+
+    public static Map<String, String> parseDownloadParams(final String downloadParamsStr) {
+        // Handle empty and {}
+        if (null == downloadParamsStr || downloadParamsStr.trim().length() <= 2)
+            return new HashMap<>();
+
+        try {
+            return JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
+        } catch (IOException e) {
+            Timber.w(e);
+        }
+        return new HashMap<>();
+    }
 }
