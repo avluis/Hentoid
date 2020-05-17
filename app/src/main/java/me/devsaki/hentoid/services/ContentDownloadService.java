@@ -685,8 +685,8 @@ public class ContentDownloadService extends IntentService {
         // -> need to create a new thread to do a network call
         compositeDisposable.add(
                 Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder(), content.getQtyPages()))
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread()) // <- do we really want to do that on the main thread ?
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.computation())
                         .subscribe(
                                 imageFile -> processBackupImage(imageFile.orElse(null), img, dir, site),
                                 throwable ->
