@@ -94,8 +94,6 @@ public class QueueViewModel extends AndroidViewModel {
         // Get unpaged data to be sure we have everything in one collection
         List<QueueRecord> queue = dao.selectQueue();
 
-        Timber.i(">> queue move %s %s (total %s)", oldPosition, newPosition, queue.size());
-
         // Move the item
         QueueRecord fromValue = queue.get(oldPosition);
         int delta = oldPosition < newPosition ? 1 : -1;
@@ -106,18 +104,20 @@ public class QueueViewModel extends AndroidViewModel {
 
         // Renumber everything
         int index = 1;
-        for (QueueRecord qr : queue) {
-            Timber.i(">> renumber queue [%s] %s -> %s", qr.content.getTargetId(), qr.rank, index++);
-            qr.rank = index;
-        }
+        for (QueueRecord qr : queue) qr.rank = index;
 
-        // Et voila
+        // Update queue in DB
         dao.updateQueue(queue);
+
+        // If the 1st item is involved, signal it being skipped
+        if (0 == newPosition || 0 == oldPosition)
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
     }
 
     public void invertQueue() {
         // Get unpaged data to be sure we have everything in one collection
         List<QueueRecord> queue = dao.selectQueue();
+        if (queue.size() < 2) return;
 
         // Renumber everything in reverse order
         int index = 1;
@@ -125,8 +125,9 @@ public class QueueViewModel extends AndroidViewModel {
             queue.get(i).rank = index++;
         }
 
-        // Et voila
+        // Update queue and signal skipping the 1st item
         dao.updateQueue(queue);
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
     }
 
     /**
