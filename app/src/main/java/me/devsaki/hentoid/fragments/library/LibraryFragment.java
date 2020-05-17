@@ -115,22 +115,22 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private TextView emptyText;
     // Action view associated with search menu button
     private SearchView mainSearchView;
-    // TODO
-    private View advancedSearchBar;
-    // TODO
-    private View advancedSearchButton;
-    // CLEAR button on the filter bar
-    private TextView searchClearButton;
-    // TODO
-    private ImageView sortDirectionButton;
-    // TODO
-    private TextView sortFieldButton;
     // Main view where books are displayed
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
-    // TODO
-    private ItemTouchHelper touchHelper;
+
+    // ==== Advanced search / sort bar
+    // Grey background of the advanced search / sort bar
+    private View advancedSearchBar;
+    // Advanced search text button
+    private View advancedSearchButton;
+    // CLEAR button
+    private TextView searchClearButton;
+    // Sort direction button
+    private ImageView sortDirectionButton;
+    // Sort field button
+    private TextView sortFieldButton;
 
     // === TOOLBAR
     private Toolbar toolbar;
@@ -150,6 +150,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
     private FastAdapter<ContentItem> fastAdapter;
     private SelectExtension<ContentItem> selectExtension;
+    // Helper used for swiping items
+    private ItemTouchHelper touchHelper;
 
 
     // ======== VARIABLES
@@ -171,7 +173,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
-    // TODO
+    // Used to auto-hide the sort controls bar when no activity is detected
     private final Debouncer<Boolean> sortCommandsAutoHide = new Debouncer<>(2500, this::hideSearchSortBar);
 
 
