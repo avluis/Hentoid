@@ -112,7 +112,6 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements I
 
         @Override
         public void unbindView(@NotNull SiteItem item) {
-            // No specific behaviour to implement
             chk.setOnCheckedChangeListener(null);
         }
 
