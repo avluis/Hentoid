@@ -23,6 +23,7 @@ import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
+import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;

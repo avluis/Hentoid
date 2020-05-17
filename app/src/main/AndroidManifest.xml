@@ -263,6 +263,10 @@
                     android:pathPrefix="/hentai/"
                     android:scheme="https" />
                 <data
+                    android:host="www.fakku.net"
+                    android:pathPrefix="/hentai/"
+                    android:scheme="https" />
+                <data
                     android:host="fakku.net"
                     android:pathPrefix="/stay-home"
                     android:scheme="https" />
@@ -307,6 +311,28 @@
                 <data
                     android:host="luscious.net"
                     android:pathPattern="..*/..*"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="porncomixonline.net"
+                    android:pathPattern="..*/..*"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="www.hbrowse.com"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>

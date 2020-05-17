@@ -1,0 +1,8 @@
+Updated to Gradle version v6.4.1
+
+Hitomi : Remove the majority of white screens (ad popups)
+Porncomix : Fix several books that were undownloadable
+Luscious.net : Fix several books that were undownloadable
+
+Fix crash when trying to read error logs for old downloads
+Fix certain crashes on the image viewer

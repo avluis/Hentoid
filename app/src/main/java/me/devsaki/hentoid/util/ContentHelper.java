@@ -108,9 +108,10 @@ public final class ContentHelper {
 
     /**
      * Open the given file using the device's app(s) of choice
-     *
-     * @param context Context
+     * @param context Context to use for the action
+     * @param content Content to view
      * @param aFile   File to be opened
+     *                     is faithful to the library screen's order)
      */
     public static void openFile(Context context, File aFile) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
@@ -126,8 +127,6 @@ public final class ContentHelper {
         }
     }
 
-    /**
-     */
     public static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
@@ -204,7 +203,6 @@ public final class ContentHelper {
         if (!content.getJsonUri().isEmpty()) updateJson(context, content);
         else createJson(content);
     }
-
     /**
      * Return the URI string to use to display the given Content's cover in the library screen
      * NB : Method is used by onBindViewHolder(), speed is key

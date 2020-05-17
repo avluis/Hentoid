@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import me.devsaki.hentoid.enums.Site;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -215,5 +216,18 @@ public class HttpHelper {
 
         for (Map.Entry<String, String> entry : cookiesToSet.entrySet())
             mgr.setCookie(domain, entry.getKey() + "=" + entry.getValue());
+    }
+
+    public static String fixUrl(final String url, final Site source) {
+        if (null == url) return "";
+        if (url.startsWith("//")) return "https:" + url;
+
+        if (!url.startsWith("http")) {
+            String sourceUrl = source.getUrl();
+            if (sourceUrl.endsWith("/")) sourceUrl = sourceUrl.substring(0, sourceUrl.length() - 2);
+
+            if (url.startsWith("/")) return sourceUrl + url;
+            else return sourceUrl + "/" + url;
+        } else return url;
     }
 }

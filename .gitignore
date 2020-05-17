@@ -61,3 +61,4 @@ signing.gradle
 /app/fabric.properties
 /app/objectbox-models/default.json.bak
 /objectbox-jni-windows-x64.dll
+/*.trace
