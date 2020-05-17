@@ -41,7 +41,6 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.fakku.FakkuDecode;
@@ -429,7 +428,7 @@ public class ContentDownloadService extends IntentService {
         if (!downloadCanceled && !downloadSkipped) {
             List<ImageFile> images = content.getImageFiles();
             if (null == images) images = Collections.emptyList();
-            int nbImages = (int)Stream.of(images).filter(i -> !i.isCover()).count(); // Don't count the cover
+            int nbImages = (int) Stream.of(images).filter(i -> !i.isCover()).count(); // Don't count the cover
 
             boolean hasError = false;
             // Set error state if less pages than initially detected - More than 10% difference in number of pages
@@ -756,10 +755,10 @@ public class ContentDownloadService extends IntentService {
      */
     @Nullable
     private DocumentFile processAndSaveImage(@NonNull ImageFile img,
-                                                    @NonNull DocumentFile dir,
-                                                    @Nullable String contentType,
-                                                    byte[] binaryContent,
-                                                    boolean hasImageProcessing) throws IOException, UnsupportedContentException {
+                                             @NonNull DocumentFile dir,
+                                             @Nullable String contentType,
+                                             byte[] binaryContent,
+                                             boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
         if (!dir.exists()) {
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getUri().toString());
