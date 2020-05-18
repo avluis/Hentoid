@@ -149,7 +149,7 @@ public class EHentaiParser implements ImageListParser {
             if (!imageUrl.isEmpty())
                 return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED));
         }
-        return null;
+        return Optional.empty();
     }
 
     private void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {

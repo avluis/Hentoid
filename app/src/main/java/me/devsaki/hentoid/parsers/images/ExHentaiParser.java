@@ -179,7 +179,7 @@ public class ExHentaiParser implements ImageListParser {
                 throw new LimitReachedException("Exhentai download points regenerate over time or can be bought on e-hentai if you're in a hurry");
             if (!imageUrl.isEmpty()) return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED));
         }
-        return null;
+        return Optional.empty();
     }
 
     private void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
