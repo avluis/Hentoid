@@ -10,7 +10,8 @@
 	  {"sourceName":"FAKKU2", "status":"RED", "fixedByBuild":"199" },
 	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"204" },
 	  {"sourceName":"LUSCIOUS", "status":"ORANGE", "fixedByBuild":"206" },
-	  {"sourceName":"PORNCOMIX", "status":"ORANGE", "fixedByBuild":"206" }
+	  {"sourceName":"PORNCOMIX", "status":"ORANGE", "fixedByBuild":"206" },
+	  {"sourceName":"MUSES", "status":"RED" }
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
