@@ -37,7 +37,7 @@ public abstract class BaseParser implements ImageListParser {
     }
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
-        return null;
+        return Optional.empty();
     }
 
     void progressStart(int maxSteps) {

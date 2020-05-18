@@ -119,6 +119,6 @@ public class HitomiParser implements ImageListParser {
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // Hitomi does not use backup URLs
-        return null;
+        return Optional.empty();
     }
 }

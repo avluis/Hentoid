@@ -41,7 +41,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.fakku.FakkuDecode;
@@ -636,7 +635,7 @@ public class ContentDownloadService extends IntentService {
 
     private void onRequestError(VolleyError error, @Nonnull ImageFile img, @Nonnull File dir, @Nonnull String backupUrl) {
         // Try with the backup URL, if it exists
-        if (!backupUrl.isEmpty()) {
+        if (!img.isBackup() && !backupUrl.isEmpty()) {
             tryUsingBackupUrl(img, dir, backupUrl);
             return;
         }
@@ -678,8 +677,8 @@ public class ContentDownloadService extends IntentService {
         // -> need to create a new thread to do a network call
         compositeDisposable.add(
                 Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder(), content.getQtyPages()))
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread()) // <- do we really want to do that on the main thread ?
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.computation())
                         .subscribe(
                                 imageFile -> processBackupImage(imageFile.orElse(null), img, dir, site),
                                 throwable ->
