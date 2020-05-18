@@ -306,6 +306,16 @@
                     android:host="8muses.com"
                     android:pathPrefix="/comics/album/"
                     android:scheme="https" />
+
+                <data
+                    android:host="www.8muses.com"
+                    android:pathPrefix="/comics/album/"
+                    android:scheme="https" />
+
+                <data
+                    android:host="comics.8muses.com"
+                    android:pathPrefix="/comics/album/"
+                    android:scheme="https" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
