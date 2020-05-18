@@ -218,10 +218,12 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
         boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
+            /*
             case R.id.action_queue_delete:
                 //askDeleteSelected();
                 // TODO
                 break;
+             */
             case R.id.action_download:
                 redownloadSelected();
                 break;
