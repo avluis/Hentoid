@@ -154,6 +154,11 @@ public class HttpHelper {
         return uriNoParams.substring(extIndex + 1);
     }
 
+    /**
+     * Extract the domain from the given URI
+     * @param uriStr URI to parse, in String form
+     * @return Domain of the URI; null if no domain found
+     */
     @Nullable
     private static String getDomainFromUri(@NonNull String uriStr) {
         Uri uri = Uri.parse(uriStr);
@@ -162,6 +167,11 @@ public class HttpHelper {
         return result;
     }
 
+    /**
+     * Parse the given cookie String
+     * @param cookiesStr Cookie string, as set in HTTP headers
+     * @return Parsed cookies
+     */
     public static Map<String, String> parseCookies(@NonNull String cookiesStr) {
         Map<String, String> result = new HashMap<>();
 
@@ -176,7 +186,7 @@ public class HttpHelper {
     }
 
     /**
-     * Set a new cookie for the domain of the given url
+     * Set a new cookie for the domain of the given url, using the CookieManager
      * If the cookie already exists, replace it
      *
      * @param url     Full URL of the cookie
@@ -214,6 +224,15 @@ public class HttpHelper {
             mgr.setCookie(domain, entry.getKey() + "=" + entry.getValue());
     }
 
+    /**
+     * Fix the given URL if it is incomplete, using the provided base URL
+     * If not given, the method assumes the protocol is HTTPS
+     * e.g. fixUrl("images","http://abc.com") gives "http://abc.com/images"
+     *
+     * @param url URL to fix
+     * @param baseUrl Base URL to use
+     * @return Fixed URL
+     */
     public static String fixUrl(final String url, @NonNull final String baseUrl) {
         if (null == url || url.isEmpty()) return "";
         if (url.startsWith("//")) return "https:" + url;
