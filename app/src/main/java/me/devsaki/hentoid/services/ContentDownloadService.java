@@ -357,8 +357,11 @@ public class ContentDownloadService extends IntentService {
         Site site = content.getSite();
         for (ImageFile img : images) {
             if (img.isCover()) {
-                // Get the same download parameters as the rest of the content, in case the cover is cookie-protected
+                // Get the same download parameters as the rest of the content, in case the cover needs additional parameters to be downloaded
                 Map<String, String> downloadParams = ContentHelper.parseDownloadParams(content.getDownloadParams());
+                // Add the referer back, if unset
+                if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
+                    downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
                 // Set the 1st image of the list as a backup, if the cover URL is stale (might happen when restarting old downloads)
                 if (images.size() > 1)
                     downloadParams.put("backupUrl", images.get(1).getUrl());
@@ -653,7 +656,7 @@ public class ContentDownloadService extends IntentService {
             cause = "Timeout";
         } else if (error instanceof NoConnectionError) {
             cause = "No connection";
-        } else if (error instanceof AuthFailureError) {
+        } else if (error instanceof AuthFailureError) { // 403's fall in this category
             cause = "Auth failure";
         } else if (error instanceof ServerError) { // 404's fall in this category
             cause = "Server error";
