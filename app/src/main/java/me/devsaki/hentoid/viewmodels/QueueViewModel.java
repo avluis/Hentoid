@@ -104,7 +104,7 @@ public class QueueViewModel extends AndroidViewModel {
 
         // Renumber everything
         int index = 1;
-        for (QueueRecord qr : queue) qr.rank = index;
+        for (QueueRecord qr : queue) qr.rank = index++;
 
         // Update queue in DB
         dao.updateQueue(queue);
