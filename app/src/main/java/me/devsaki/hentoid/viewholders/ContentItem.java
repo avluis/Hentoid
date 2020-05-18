@@ -498,9 +498,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         color = ThemeHelper.getColor(pb.getContext(), R.color.secondary_light);
                     else
                         color = ContextCompat.getColor(pb.getContext(), R.color.medium_gray);
-                    pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
+                    // fixes <= Lollipop progressBar tinting
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                        pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+                    else
+                        pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
                 } else {
                     pb.setIndeterminate(true);
+                    // fixes <= Lollipop progressBar tinting
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                        pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
                 }
             } else {
                 pb.setVisibility(View.GONE);
