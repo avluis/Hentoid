@@ -174,9 +174,12 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         QueueActivity activity = (QueueActivity) requireActivity();
         MenuItem redownloadAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_redownload_all);
         redownloadAllMenu.setOnMenuItemClickListener(item -> {
-            if (fastAdapter.getItemCount() <= 1) {
-                redownloadAll();
-            } else if (fastAdapter.getItemCount() > 1) {
+            // Don't do anything if the queue is empty
+            if (0 == itemAdapter.getAdapterItemCount()) return true;
+                // Just do it if the queue has a single item
+            else if (1 == itemAdapter.getAdapterItemCount()) redownloadAll();
+                // Ask if there's more than 1 item
+            else
                 new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                         .setIcon(R.drawable.ic_warning)
                         .setCancelable(false)
@@ -191,7 +194,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
                                 (dialog12, which) -> dialog12.dismiss())
                         .create()
                         .show();
-            }
             return true;
         });
         MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);

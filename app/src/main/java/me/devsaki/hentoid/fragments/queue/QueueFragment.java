@@ -193,20 +193,26 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         QueueActivity activity = (QueueActivity) requireActivity();
         MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
         cancelAllMenu.setOnMenuItemClickListener(item -> {
-            new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
-                    .setIcon(R.drawable.ic_warning)
-                    .setCancelable(false)
-                    .setTitle(R.string.app_name)
-                    .setMessage(R.string.confirm_cancel_all)
-                    .setPositiveButton(R.string.yes,
-                            (dialog1, which) -> {
-                                dialog1.dismiss();
-                                onCancelAll();
-                            })
-                    .setNegativeButton(R.string.no,
-                            (dialog12, which) -> dialog12.dismiss())
-                    .create()
-                    .show();
+            // Don't do anything if the queue is empty
+            if (0 == itemAdapter.getAdapterItemCount()) return true;
+                // Just do it if the queue has a single item
+            else if (1 == itemAdapter.getAdapterItemCount()) onCancelAll();
+                // Ask if there's more than 1 item
+            else
+                new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                        .setIcon(R.drawable.ic_warning)
+                        .setCancelable(false)
+                        .setTitle(R.string.app_name)
+                        .setMessage(R.string.confirm_cancel_all)
+                        .setPositiveButton(R.string.yes,
+                                (dialog1, which) -> {
+                                    dialog1.dismiss();
+                                    onCancelAll();
+                                })
+                        .setNegativeButton(R.string.no,
+                                (dialog12, which) -> dialog12.dismiss())
+                        .create()
+                        .show();
             return true;
         });
         MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
