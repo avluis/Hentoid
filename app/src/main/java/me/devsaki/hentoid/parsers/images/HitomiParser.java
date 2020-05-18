@@ -4,6 +4,8 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Optional;
+
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
@@ -115,8 +117,8 @@ public class HitomiParser implements ImageListParser {
         return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
     }
 
-    public ImageFile parseBackupUrl(@NonNull String url, int order, int maxPages) {
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // Hitomi does not use backup URLs
-        return null;
+        return Optional.empty();
     }
 }

@@ -40,6 +40,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.threeten.bp.Instant;
@@ -57,7 +58,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.HentoidApp;
@@ -72,6 +72,7 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
@@ -102,6 +103,10 @@ import timber.log.Timber;
  * NB : As per IntentService behaviour, only one thread can be active at a time (no parallel runs of ContentDownloadService)
  */
 public class ContentDownloadService extends IntentService {
+
+    private enum QueuingResult {
+        CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
+    }
 
     private CollectionDAO dao;
     private ServiceNotificationManager notificationManager;
@@ -146,6 +151,8 @@ public class ContentDownloadService extends IntentService {
 
     @Override
     public void onDestroy() {
+        // Tell everyone the service is shutting down
+        EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.DOWNLOAD));
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
@@ -176,10 +183,10 @@ public class ContentDownloadService extends IntentService {
         //Crashlytics.log("New intent processed at (s) " + String.format(Locale.US, "%.2f", ticks));
         notifyStart();
 
-        Content content = downloadFirstInQueue();
-        while (content != null) {
-            watchProgress(content);
-            content = downloadFirstInQueue();
+        ImmutablePair<QueuingResult, Content> result = downloadFirstInQueue();
+        while (!result.left.equals(QueuingResult.QUEUE_END)) {
+            if (result.left.equals(QueuingResult.CONTENT_FOUND)) watchProgress(result.right);
+            result = downloadFirstInQueue();
         }
         notificationManager.cancel();
     }
@@ -193,8 +200,8 @@ public class ContentDownloadService extends IntentService {
      * @return 1st book of the download queue; null if no book is available to download
      */
     @SuppressLint("TimberExceptionLogging")
-    @Nullable
-    private Content downloadFirstInQueue() {
+    @NonNull
+    private ImmutablePair<QueuingResult, Content> downloadFirstInQueue() {
         final String CONTENT_PART_IMAGE_LIST = "Image list";
 
         // Clear previously created requests
@@ -203,7 +210,7 @@ public class ContentDownloadService extends IntentService {
         // Check if queue has been paused
         if (ContentQueueManager.getInstance().isQueuePaused()) {
             Timber.w("Queue is paused. Download aborted.");
-            return null;
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
         // Work on first item of queue
@@ -212,7 +219,7 @@ public class ContentDownloadService extends IntentService {
         List<QueueRecord> queue = dao.selectQueue();
         if (queue.isEmpty()) {
             Timber.w("Queue is empty. Download aborted.");
-            return null;
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
         Content content = queue.get(0).content.getTarget();
@@ -223,7 +230,7 @@ public class ContentDownloadService extends IntentService {
             content = new Content().setId(queue.get(0).content.getTargetId()); // Must supply content ID to the event for the UI to update properly
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification());
-            return null;
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
 
         if (StatusContent.DOWNLOADED == content.getStatus()) {
@@ -231,7 +238,7 @@ public class ContentDownloadService extends IntentService {
             dao.deleteQueue(0);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification(content));
-            return null;
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
 
         downloadCanceled = false;
@@ -275,9 +282,12 @@ public class ContentDownloadService extends IntentService {
                 }
 
                 // Manually insert new images (without using insertContent)
-                dao.replaceImageList(content.getId(), images);
-
-                content = dao.selectContent(content.getId()); // Get updated Content with the generated ID of new images
+                long contentId = content.getId();
+                dao.replaceImageList(contentId, images);
+                // Get updated Content with the generated ID of new images
+                content = dao.selectContent(contentId);
+                if (null == content)
+                    return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
             } catch (CaptchaException cpe) {
                 Timber.w(cpe, "A captcha has been found while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, "Captcha found");
@@ -300,6 +310,8 @@ public class ContentDownloadService extends IntentService {
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, "No images have been found. Error = " + ere.getMessage());
                 hasError = true;
             } catch (Exception e) {
+                if (null == content)
+                    return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
                 Timber.w(e, "An exception has occurred while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, e.getMessage());
                 hasError = true;
@@ -317,12 +329,13 @@ public class ContentDownloadService extends IntentService {
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             HentoidApp.trackDownloadEvent("Error");
             notificationManager.notify(new DownloadErrorNotification(content));
-            return null;
+            return new ImmutablePair<>(QueuingResult.CONTENT_FAILED, content);
         }
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadCanceled || downloadSkipped) return null;
+        if (downloadCanceled || downloadSkipped)
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
         // Create destination folder for images to be downloaded
         File dir = ContentHelper.createContentDownloadDir(this, content);
@@ -340,7 +353,7 @@ public class ContentDownloadService extends IntentService {
             // => Create all images, flag them as failed as well as the book
             dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ERROR);
             completeDownload(content.getId(), content.getTitle(), 0, images.size());
-            return null;
+            return new ImmutablePair<>(QueuingResult.CONTENT_FAILED, content);
         }
 
         // Folder creation succeeds -> memorize its path
@@ -367,7 +380,7 @@ public class ContentDownloadService extends IntentService {
                 requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
         }
 
-        return content;
+        return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);
     }
 
     /**
@@ -547,7 +560,8 @@ public class ContentDownloadService extends IntentService {
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
 
-        if (imgs.isEmpty()) throw new EmptyResultException();
+        if (imgs.isEmpty())
+            throw new EmptyResultException();
 
         // Cleanup generated objects
         for (ImageFile img : imgs) {
@@ -639,7 +653,7 @@ public class ContentDownloadService extends IntentService {
 
     private void onRequestError(VolleyError error, @Nonnull ImageFile img, @Nonnull File dir, @Nonnull String backupUrl) {
         // Try with the backup URL, if it exists
-        if (!backupUrl.isEmpty()) {
+        if (!img.isBackup() && !backupUrl.isEmpty()) {
             tryUsingBackupUrl(img, dir, backupUrl);
             return;
         }
@@ -672,6 +686,8 @@ public class ContentDownloadService extends IntentService {
     private void tryUsingBackupUrl(@Nonnull ImageFile img, @Nonnull File dir, @Nonnull String backupUrl) {
         Timber.i("Using backup URL %s", backupUrl);
         Content content = img.content.getTarget();
+        if (null == content) return;
+
         Site site = content.getSite();
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
 
@@ -679,10 +695,10 @@ public class ContentDownloadService extends IntentService {
         // -> need to create a new thread to do a network call
         compositeDisposable.add(
                 Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder(), content.getQtyPages()))
-                        .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread()) // <- do we really want to do that on the main thread ?
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.computation())
                         .subscribe(
-                                imageFile -> processBackupImage(imageFile, img, dir, site),
+                                imageFile -> processBackupImage(imageFile.orElse(null), img, dir, site),
                                 throwable ->
                                 {
                                     updateImage(img, false);

@@ -8,6 +8,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
+import android.graphics.ColorSpace;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -128,10 +129,16 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inSampleSize = sampleSize;
                 options.inPreferredConfig = bitmapConfig;
+                // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
+                // which makes resizing buggy (generates a black picture)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    options.inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
+
                 Bitmap bitmap = decoder.decodeRegion(sRect, options);
                 if (bitmap == null) {
                     throw new RuntimeException("Skia image decoder returned null bitmap - image format may not be supported");
                 }
+
                 return bitmap;
             } else {
                 throw new IllegalStateException("Cannot decode region after decoder has been recycled");

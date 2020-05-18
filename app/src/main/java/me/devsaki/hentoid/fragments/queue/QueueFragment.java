@@ -38,6 +38,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
+import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -346,6 +347,20 @@ public class QueueFragment extends Fragment {
     }
 
     /**
+     * Service destroyed event handler
+     *
+     * @param event Broadcasted event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServiceDestroyed(ServiceDestroyedEvent event) {
+        if (event.service != ServiceDestroyedEvent.Service.DOWNLOAD) return;
+
+        isPaused = true;
+        updateProgressFirstItem(true);
+        updateControlBar();
+    }
+
+    /**
      * Update main progress bar and bottom progress panel for current (1st in queue) book
      *
      * @param pagesOK       Number of pages successfully downloaded for current (1st in queue) book
@@ -396,7 +411,7 @@ public class QueueFragment extends Fragment {
         int bookDiff = (eventType == DownloadEvent.EV_CANCEL) ? 1 : 0; // Cancel event means a book will be removed very soon from the queue
         isEmpty = (0 == itemAdapter.getAdapterItemCount() - bookDiff);
         isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
-        updateUI();
+        updateControlBar();
     }
 
     private void onQueueChanged(PagedList<QueueRecord> result) {
@@ -413,7 +428,7 @@ public class QueueFragment extends Fragment {
         // Update displayed books
         itemAdapter.submitList(result, this::differEndCallback);
 
-        updateUI();
+        updateControlBar();
     }
 
     /**
@@ -436,7 +451,7 @@ public class QueueFragment extends Fragment {
         llm.scrollToPositionWithOffset(topItemPosition, offsetTop); // Used to restore position after activity has been stopped and recreated
     }
 
-    private void updateUI() {
+    private void updateControlBar() {
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, itemAdapter.getAdapterItemCount());

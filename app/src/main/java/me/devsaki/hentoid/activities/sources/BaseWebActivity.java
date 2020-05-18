@@ -750,6 +750,24 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     /**
+     * Indicates if the given URL is forbidden by the current content filters
+     *
+     * @param url URL to be examinated
+     * @return True if URL is forbidden according to current filters; false if not
+     */
+    protected boolean isUrlForbidden(@NonNull String url) {
+        for (String s : universalBlockedContent) {
+            if (url.contains(s)) return true;
+        }
+        if (localBlockedContent != null)
+            for (String s : localBlockedContent) {
+                if (url.contains(s)) return true;
+            }
+        return false;
+    }
+
+
+    /**
      * Analyze loaded HTML to display download button
      * Override blocked content with empty content
      */
@@ -810,23 +828,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 Matcher matcher = p.matcher(url);
                 if (matcher.find()) return true;
             }
-            return false;
-        }
-
-        /**
-         * Indicates if the given URL is forbidden by the current content filters
-         *
-         * @param url URL to be examinated
-         * @return True if URL is forbidden according to current filters; false if not
-         */
-        private boolean isUrlForbidden(@NonNull String url) {
-            for (String s : universalBlockedContent) {
-                if (url.contains(s)) return true;
-            }
-            if (localBlockedContent != null)
-                for (String s : localBlockedContent) {
-                    if (url.contains(s)) return true;
-                }
             return false;
         }
 

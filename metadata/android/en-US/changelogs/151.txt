@@ -1,0 +1,4 @@
+Hitomi : White screen (ad popups) have been annihilated
+Downloader : Stability has been improved
+Fix crashes during downloads
+Image viewer : Fixes black screen for certain content (especially huge PNGs)
