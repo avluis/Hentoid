@@ -45,9 +45,10 @@
 
     <ImageView
         android:id="@+id/sort_direction_btn"
-        android:layout_width="24dp"
+        android:layout_width="32dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
+        android:padding="4dp"
         android:clickable="true"
         android:focusable="true"
         android:src="@drawable/ic_simple_arrow_down"
