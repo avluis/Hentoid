@@ -288,7 +288,8 @@ public class LibImportDialogFragment extends DialogFragment {
         if (null == siteFoldersCache) siteFoldersCache = getSiteFolders();
         DocumentFile siteFolder = siteFoldersCache.get(c.getSite());
         if (siteFolder != null) mapToContent(c, siteFolder);
-        dao.insertContent(c);
+        Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
+        if (null == duplicate) dao.insertContent(c);
 
         return true;
     }
