@@ -69,11 +69,11 @@ public class QueueActivity extends BaseActivity {
                 (tab, position) -> {
                     if (0 == position) {
                         queueTab = tab;
-                        tab.setText(R.string.title_activity_queue);
+                        tab.setText(R.string.queue_queue_tab);
                         tab.setIcon(R.drawable.ic_action_download);
                     } else {
                         errorsTab = tab;
-                        tab.setText(R.string.errors);
+                        tab.setText(R.string.queue_errors_tab);
                         tab.setIcon(R.drawable.ic_error);
                     }
                 }).attach();

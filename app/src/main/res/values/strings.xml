@@ -50,7 +50,8 @@
     <string name="open_settings">Open settings</string>
 
     <!-- Queue -->
-    <string name="errors">Errors</string>
+    <string name="queue_queue_tab">In progress</string>
+    <string name="queue_errors_tab">Errors</string>
     <string name="cancel_all">Cancel all</string>
     <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
