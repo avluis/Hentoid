@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text=" "
-        tools:text="@string/delete_progress"
+        tools:text="@string/book_progress"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/delete_title" />
 

@@ -170,7 +170,6 @@ public class API29MigrationService extends IntentService {
     private void migrateLibrary(@NonNull final List<LogUtil.LogEntry> log, @NonNull final List<Long> contentIds) {
         int booksOK = 0;                        // Number of books imported
         int booksKO = 0;                        // Number of folders found with no valid book inside
-        final FileHelper.NameFilter imageNames = displayName -> Helper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
         trace(Log.DEBUG, log, "Library migration starting - books to process : %s", contentIds.size() + "");
 
@@ -209,7 +208,7 @@ public class API29MigrationService extends IntentService {
                     else contentImages = new ArrayList<>();
 
                     // Attach file Uri's to the book's images
-                    List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, imageNames);
+                    List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, Helper.getImageNamesFilter());
                     if (!imageFiles.isEmpty()) {
                         if (contentImages.isEmpty()) { // No images described in the content (e.g. unread import from old JSON) -> recreate them
                             contentImages = ContentHelper.createImageListFromFiles(imageFiles);

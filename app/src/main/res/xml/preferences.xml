@@ -141,6 +141,16 @@
                 android:summary="@string/pref_delete_all_except_favs"
                 android:title="@string/pref_delete_all_except_favs_summary"
                 app:iconSpaceReserved="false" />
+            <Preference
+                android:key="pref_export_library"
+                android:summary="@string/pref_export_library_summary"
+                android:title="@string/pref_export_library_title"
+                app:iconSpaceReserved="false" />
+            <Preference
+                android:key="pref_import_library"
+                android:summary="@string/pref_import_library_summary"
+                android:title="@string/pref_import_library_title"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
 

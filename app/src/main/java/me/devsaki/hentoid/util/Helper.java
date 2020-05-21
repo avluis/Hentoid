@@ -40,6 +40,8 @@ public final class Helper {
 
     private static int DENSITY_DPI = -1;
 
+    private static FileHelper.NameFilter imageNamesFilter;
+
 
     public static String capitalizeString(String s) {
         if (s == null || s.isEmpty()) return s;
@@ -144,6 +146,12 @@ public final class Helper {
                 || extension.equalsIgnoreCase("gif")
                 || extension.equalsIgnoreCase("png")
                 || extension.equalsIgnoreCase("webp");
+    }
+
+    public static FileHelper.NameFilter getImageNamesFilter() {
+        if (null == imageNamesFilter)
+            imageNamesFilter = displayName -> Helper.isImageExtensionSupported(FileHelper.getExtension(displayName));
+        return imageNamesFilter;
     }
 
     // https://stackoverflow.com/a/18603020/8374722

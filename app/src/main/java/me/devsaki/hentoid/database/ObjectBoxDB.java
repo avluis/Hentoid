@@ -152,25 +152,27 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, statusCodes).build().find();
     }
 
-    /*
-    Remove all books in the library but keep the download queue intact
-     */
-    void deleteAllBooks() {
-        // All statuses except DOWNLOADING and PAUSED that imply the book is in the download queue
+    long[] findAllLibraryBooksIds() {
+        // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
         int[] storedContentStatus = new int[]{
-                StatusContent.SAVED.getCode(),
                 StatusContent.DOWNLOADED.getCode(),
-                StatusContent.ERROR.getCode(),
                 StatusContent.MIGRATED.getCode(),
                 StatusContent.IGNORED.getCode(),
                 StatusContent.UNHANDLED_ERROR.getCode(),
                 StatusContent.CANCELED.getCode(),
                 StatusContent.ONLINE.getCode()
         };
+        return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build().findIds();
+    }
 
-        // Remove corresponding content
-        long[] deletableContentId = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build().findIds();
-        deleteContentById(deletableContentId);
+    long[] findAllQueueBooksIds() {
+        int[] storedContentStatus = new int[]{
+                StatusContent.SAVED.getCode(),
+                StatusContent.DOWNLOADING.getCode(),
+                StatusContent.PAUSED.getCode(),
+                StatusContent.ERROR.getCode()
+        };
+        return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build().findIds();
     }
 
     void deleteContent(Content content) {
@@ -187,7 +189,7 @@ public class ObjectBoxDB {
      *
      * @param contentId IDs of the contents to be removed from the DB
      */
-    private void deleteContentById(long[] contentId) {
+    void deleteContentById(long[] contentId) {
         Box<ErrorRecord> errorBox = store.boxFor(ErrorRecord.class);
         Box<ImageFile> imageFileBox = store.boxFor(ImageFile.class);
         Box<Attribute> attributeBox = store.boxFor(Attribute.class);

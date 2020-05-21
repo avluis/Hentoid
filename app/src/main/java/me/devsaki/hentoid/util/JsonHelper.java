@@ -97,6 +97,14 @@ public class JsonHelper {
     }
 
     public static <T> T jsonToObject(@NonNull final Context context, DocumentFile f, Class<T> type) throws IOException {
+        return jsonToObject(readJsonString(context, f), type);
+    }
+
+    public static <T> T jsonToObject(@NonNull final Context context, @NonNull DocumentFile f, Type type) throws IOException {
+        return jsonToObject(readJsonString(context, f), type);
+    }
+
+    private static String readJsonString(@NonNull final Context context, @NonNull DocumentFile f) {
         StringBuilder json = new StringBuilder();
         String sCurrentLine;
         boolean isFirst = true;
@@ -113,7 +121,7 @@ public class JsonHelper {
         } catch (Exception e) {
             Timber.e(e, "Error while reading %s", f.getUri().toString());
         }
-        return jsonToObject(json.toString(), type);
+        return json.toString();
     }
 
     public static <T> T jsonToObject(String s, Class<T> type) throws IOException {

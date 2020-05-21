@@ -180,7 +180,7 @@ public class ImportService extends IntentService {
 
         // Cleanup DB
         CollectionDAO dao = new ObjectBoxDAO(this);
-        dao.deleteAllBooks();
+        dao.deleteAllLibraryBooks();
 
         for (int i = 0; i < bookFolders.size(); i++) {
             DocumentFile bookFolder = bookFolders.get(i);

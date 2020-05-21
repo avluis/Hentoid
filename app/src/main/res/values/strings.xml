@@ -92,7 +92,24 @@
 
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
-    <string name="delete_progress">%d / %d books</string>
+    <string name="book_progress">%d / %d books</string>
+
+    <!-- Import metadata -->
+    <string name="import_title">Import metadata</string>
+    <string name="import_mode_add">Add to current library</string>
+    <string name="import_mode_replace">Replace library with imported books</string>
+    <string name="import_select_file">Select file to import</string>
+    <string name="import_file_invalid">File %s is invalid</string>
+    <plurals name="import_file_library">
+        <item quantity="one">Import library (%d book)</item>
+        <item quantity="other">Import library (%d books)</item>
+    </plurals>
+    <plurals name="import_file_queue">
+        <item quantity="one">Import queue (%d book)</item>
+        <item quantity="other">Import queue (%d books)</item>
+    </plurals>
+    <string name="import_file_help">If no matching folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue > Errors.</string>
+    <string name="import_run">RUN IMPORT</string>
 
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>

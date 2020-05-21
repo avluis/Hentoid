@@ -16,6 +16,7 @@ import org.threeten.bp.Instant;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,13 @@ public final class ContentHelper {
         if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
+
+    @Nullable
+    public static DocumentFile detectJson(@NonNull final Context context, @NonNull final DocumentFile folder) {
+        Helper.assertNonUiThread();
+        return FileHelper.findFile(context, folder, Consts.JSON_FILE_NAME_V2);
+    }
+
 
     /**
      * Update the given Content's JSON file with its current values
@@ -389,7 +397,15 @@ public final class ContentHelper {
         return result;
     }
 
+    public static List<ImageFile> createImageListFromFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
+        List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(context, folder, Helper.getImageNamesFilter());
+        if (!imageFiles.isEmpty())
+            return createImageListFromFiles(imageFiles);
+        else return Collections.emptyList();
+    }
+
     public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files) {
+        Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
         int order = 0;
         // Sort files by name alpha

@@ -226,13 +226,23 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     // Warning : no threads used there; this is a blocking operation
-    public void deleteAllBooks() {
-        Timber.i("Cleaning up DB.");
-        db.deleteAllBooks();
+    public void deleteAllLibraryBooks() {
+        Timber.i("Cleaning up library");
+        db.deleteContentById(db.findAllLibraryBooksIds());
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        List<Long> remainingContent = contentIdSearch(Mode.SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), Preferences.Constant.ORDER_CONTENT_LAST_READ, false, false);
-        for (Long contentId : remainingContent)
+        long[] remainingContentIds = db.findAllQueueBooksIds();
+        for (long contentId : remainingContentIds)
+            db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
+    }
+
+    public void deleteAllQueuedBooks() {
+        Timber.i("Cleaning up queue");
+        db.deleteContentById(db.findAllQueueBooksIds());
+
+        // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
+        long[] remainingContentIds = db.findAllLibraryBooksIds();
+        for (long contentId : remainingContentIds)
             db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
     }
 

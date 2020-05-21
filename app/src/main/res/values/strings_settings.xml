@@ -67,7 +67,10 @@
     <string name="pref_delete_all_except_favs">Delete all books except favourites</string>
     <string name="pref_delete_all_except_favs_summary">Purge the library; keep favourite books only</string>
     <string name="pref_ask_delete_all_except_favs">Are you sure you wish to delete %d books ?</string>
-
+    <string name="pref_export_library_title">Export metadata</string>
+    <string name="pref_export_library_summary">Export books data to a JSON file (without the images)</string>
+    <string name="pref_import_library_title">Import metadata</string>
+    <string name="pref_import_library_summary">Restore exported books</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>

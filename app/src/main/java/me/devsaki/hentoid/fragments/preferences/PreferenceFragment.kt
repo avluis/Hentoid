@@ -89,6 +89,14 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     onDeleteAllExceptFavourites()
                     true
                 }
+                Preferences.Key.EXPORT_LIBRARY -> {
+                    LibExportDialogFragment.invoke(parentFragmentManager)
+                    true
+                }
+                Preferences.Key.IMPORT_LIBRARY -> {
+                    LibImportDialogFragment.invoke(parentFragmentManager)
+                    true
+                }
                 Preferences.Key.PREF_SETTINGS_FOLDER -> {
                     if (ImportService.isRunning()) {
                         ToastUtil.toast("Import is already running")

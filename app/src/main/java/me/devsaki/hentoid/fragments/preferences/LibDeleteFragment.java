@@ -103,7 +103,7 @@ public class LibDeleteFragment extends DialogFragment {
 
     private void next(boolean b) {
         int currentProgress = progressBar.getProgress() + 1;
-        progressTxt.setText(getString(R.string.delete_progress, currentProgress, progressBar.getMax()));
+        progressTxt.setText(getString(R.string.book_progress, currentProgress, progressBar.getMax()));
         progressBar.setProgress(currentProgress);
     }
 
