@@ -24,6 +24,7 @@ import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.annimon.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -31,6 +32,9 @@ import org.greenrobot.eventbus.Subscribe;
 import org.threeten.bp.Instant;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,6 +64,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
@@ -369,6 +374,30 @@ public class ContentDownloadService extends IntentService {
             }
             if (img.getStatus().equals(StatusContent.SAVED))
                 requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
+        }
+
+        // Save current queue (to be able to restore it in case the app gets uninstalled)
+        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).toList();
+        JsonContentCollection contentCollection = new JsonContentCollection();
+        contentCollection.setQueue(queuedContent);
+        String json = JsonHelper.serializeToJson(contentCollection, JsonContentCollection.class);
+
+        try {
+            Uri rootUri = Uri.parse(Preferences.getStorageUri());
+            DocumentFile rootFolder = DocumentFile.fromTreeUri(this, rootUri);
+            if (rootFolder != null && rootFolder.exists()) {
+                DocumentFile queueJson = rootFolder.createFile(JsonHelper.JSON_MIME_TYPE, "queue.json");
+                if (queueJson != null) {
+                    try (OutputStream newDownload = FileHelper.getOutputStream(this, queueJson)) {
+                        try (InputStream input = IOUtils.toInputStream(json, StandardCharsets.UTF_8)) {
+                            FileHelper.copy(input, newDownload);
+                        }
+                    }
+                    Timber.i("Queue JSON successfully saved");
+                }
+            }
+        } catch (IOException e) {
+            Timber.e(e);
         }
 
         return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);

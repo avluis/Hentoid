@@ -165,7 +165,7 @@ public class FileHelper {
         return FileUtils.openOutputStream(target);
     }
 
-    static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
+    public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
         return context.getContentResolver().openOutputStream(target.getUri());
     }
 
