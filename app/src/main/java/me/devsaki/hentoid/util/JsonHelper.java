@@ -34,7 +34,7 @@ public class JsonHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    private static final String JSON_MIME_TYPE = "application/json";
+    public static final String JSON_MIME_TYPE = "application/json";
 
     public static final Type MAP_STRINGS = Types.newParameterizedType(Map.class, String.class, String.class);
 

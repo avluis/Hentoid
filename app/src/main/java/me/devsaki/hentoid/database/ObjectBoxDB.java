@@ -152,7 +152,7 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, statusCodes).build().find();
     }
 
-    long[] findAllLibraryBooksIds() {
+    Query<Content> selectAllLibraryBooksQ() {
         // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
         int[] storedContentStatus = new int[]{
                 StatusContent.DOWNLOADED.getCode(),
@@ -162,17 +162,17 @@ public class ObjectBoxDB {
                 StatusContent.CANCELED.getCode(),
                 StatusContent.ONLINE.getCode()
         };
-        return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build().findIds();
+        return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build();
     }
 
-    long[] findAllQueueBooksIds() {
+    Query<Content> selectAllQueueBooksQ() {
         int[] storedContentStatus = new int[]{
                 StatusContent.SAVED.getCode(),
                 StatusContent.DOWNLOADING.getCode(),
                 StatusContent.PAUSED.getCode(),
                 StatusContent.ERROR.getCode()
         };
-        return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build().findIds();
+        return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build();
     }
 
     void deleteContent(Content content) {
@@ -262,6 +262,10 @@ public class ObjectBoxDB {
 
     void deleteQueue(int queueIndex) {
         store.boxFor(QueueRecord.class).remove(selectQueue().get(queueIndex).id);
+    }
+
+    void deleteQueue() {
+        store.boxFor(QueueRecord.class).removeAll();
     }
 
     private void deleteQueue(long contentId) {

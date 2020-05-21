@@ -2,14 +2,14 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="350dp"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:clipToPadding="false"
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/delete_title"
+        android:id="@+id/import_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="16dp"
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/delete_title">
+        app:layout_constraintTop_toBottomOf="@id/import_title">
 
         <RadioButton
             android:id="@+id/import_mode_add"
@@ -115,7 +115,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/import_file_help"
+        android:text="@string/import_warning"
         android:textColor="@color/white_opacity_87"
         android:textStyle="bold"
         android:visibility="gone"

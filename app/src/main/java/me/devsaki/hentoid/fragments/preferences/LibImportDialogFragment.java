@@ -23,8 +23,6 @@ import com.annimon.stream.Optional;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
-import org.greenrobot.eventbus.EventBus;
-
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -78,6 +76,9 @@ public class LibImportDialogFragment extends DialogFragment {
     private View selectFileBtn;
     private TextView progressTxt;
     private ProgressBar progressBar;
+    private CheckBox libraryChk;
+    private CheckBox queueChk;
+    private View runBtn;
 
     // Variable used during the selection process
     private Uri selectedFileUri;
@@ -92,21 +93,10 @@ public class LibImportDialogFragment extends DialogFragment {
     // Disposable for RxJava
     private Disposable importDisposable = Disposables.empty();
 
+
     public static void invoke(@NonNull final FragmentManager fragmentManager) {
         LibImportDialogFragment fragment = new LibImportDialogFragment();
         fragment.show(fragmentManager, null);
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onDestroyView() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroyView();
     }
 
     @Nullable
@@ -207,25 +197,33 @@ public class LibImportDialogFragment extends DialogFragment {
             errorTxt.setVisibility(View.GONE);
 
             JsonContentCollection collection = collectionOptional.get();
-            CheckBox libraryChk = requireViewById(rootView, R.id.import_file_library_chk);
+            libraryChk = requireViewById(rootView, R.id.import_file_library_chk);
             int librarySize = collection.getLibrary().size();
             if (librarySize > 0) {
                 libraryChk.setText(getResources().getQuantityString(R.plurals.import_file_library, librarySize, librarySize));
+                libraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
                 libraryChk.setVisibility(View.VISIBLE);
             }
-            CheckBox queueChk = requireViewById(rootView, R.id.import_file_queue_chk);
+            queueChk = requireViewById(rootView, R.id.import_file_queue_chk);
             int queueSize = collection.getQueue().size();
             if (queueSize > 0) {
                 queueChk.setText(getResources().getQuantityString(R.plurals.import_file_queue, queueSize, queueSize));
+                queueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
                 queueChk.setVisibility(View.VISIBLE);
             }
             requireViewById(rootView, R.id.import_warning_img).setVisibility(View.VISIBLE);
             requireViewById(rootView, R.id.import_file_help_text).setVisibility(View.VISIBLE);
-            View runImportBtn = requireViewById(rootView, R.id.import_mode_add);
-            runImportBtn.setVisibility(View.VISIBLE);
+            runBtn = requireViewById(rootView, R.id.import_mode_add);
+            runBtn.setVisibility(View.VISIBLE);
+
             RadioButton addChk = requireViewById(rootView, R.id.import_mode_add);
-            runImportBtn.setOnClickListener(v -> runImport(collection, addChk.isChecked(), libraryChk.isChecked(), queueChk.isChecked()));
+            runBtn.setOnClickListener(v -> runImport(collection, addChk.isChecked(), libraryChk.isChecked(), queueChk.isChecked()));
         }
+    }
+
+    // Gray out run button if no option is selected
+    private void refreshDisplay() {
+        runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked());
     }
 
     private Optional<JsonContentCollection> deserialiseJson(@NonNull DocumentFile jsonFile) {
@@ -241,9 +239,9 @@ public class LibImportDialogFragment extends DialogFragment {
 
     private void runImport(@NonNull JsonContentCollection collection, boolean add, boolean importLibrary, boolean importQueue) {
         requireViewById(rootView, R.id.import_mode).setEnabled(false);
-        requireViewById(rootView, R.id.import_file_library_chk).setEnabled(false);
-        requireViewById(rootView, R.id.import_file_queue_chk).setEnabled(false);
-        requireViewById(rootView, R.id.import_run_btn).setVisibility(View.GONE);
+        libraryChk.setEnabled(false);
+        queueChk.setEnabled(false);
+        runBtn.setVisibility(View.GONE);
 
         dao = new ObjectBoxDAO(requireContext());
         if (!add) {

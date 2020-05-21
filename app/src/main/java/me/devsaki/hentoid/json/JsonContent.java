@@ -56,6 +56,10 @@ public class JsonContent {
     }
 
     public static JsonContent fromEntity(Content c) {
+        return fromEntity(c, true);
+    }
+
+    public static JsonContent fromEntity(Content c, boolean keepImages) {
         JsonContent result = new JsonContent();
         result.url = c.getUrl();
         result.title = Helper.removeNonPrintableChars(c.getTitle());
@@ -77,7 +81,7 @@ public class JsonContent {
             result.addAttribute(attr);
         }
 
-        if (c.getImageFiles() != null)
+        if (keepImages && c.getImageFiles() != null)
             for (ImageFile img : c.getImageFiles())
                 result.imageFiles.add(JsonImageFile.fromEntity(img));
 

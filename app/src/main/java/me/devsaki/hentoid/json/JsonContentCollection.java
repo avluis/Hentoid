@@ -14,7 +14,7 @@ public class JsonContentCollection {
     private List<JsonContent> library = new ArrayList<>();
     private List<JsonContent> queue = new ArrayList<>();
 
-    private JsonContentCollection() {
+    public JsonContentCollection() {
     }
 
     public List<Content> getLibrary() {
@@ -22,7 +22,7 @@ public class JsonContentCollection {
     }
 
     public void setLibrary(@NonNull List<Content> library) {
-        this.library = Stream.of(library).map(JsonContent::fromEntity).toList();
+        this.library = Stream.of(library).map(c -> JsonContent.fromEntity(c, false)).toList();
     }
 
     public List<Content> getQueue() {
@@ -30,6 +30,6 @@ public class JsonContentCollection {
     }
 
     public void setQueue(@NonNull List<Content> queue) {
-        this.queue = Stream.of(queue).map(JsonContent::fromEntity).toList();
+        this.queue = Stream.of(queue).map(c -> JsonContent.fromEntity(c, false)).toList();
     }
 }

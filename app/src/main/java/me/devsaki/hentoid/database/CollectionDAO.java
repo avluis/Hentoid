@@ -46,7 +46,18 @@ public interface CollectionDAO {
 
     void deleteErrorRecords(long contentId);
 
+
+    // MASS OPERATIONS
+
+    long countAllLibraryBooks();
+
+    List<Content> selectAllLibraryBooks();
+
     void deleteAllLibraryBooks();
+
+    long countAllQueueBooks();
+
+    List<Content> selectAllQueueBooks();
 
     void deleteAllQueuedBooks();
 

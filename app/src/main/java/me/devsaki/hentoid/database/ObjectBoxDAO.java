@@ -225,23 +225,39 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteErrorRecords(contentId);
     }
 
-    // Warning : no threads used there; this is a blocking operation
+    public long countAllLibraryBooks() {
+        return db.selectAllLibraryBooksQ().count();
+    }
+
+    public long countAllQueueBooks() {
+        return db.selectAllQueueBooksQ().count();
+    }
+
+    public List<Content> selectAllLibraryBooks() {
+        return db.selectAllLibraryBooksQ().find();
+    }
+
+    public List<Content> selectAllQueueBooks() {
+        return db.selectAllQueueBooksQ().find();
+    }
+
     public void deleteAllLibraryBooks() {
         Timber.i("Cleaning up library");
-        db.deleteContentById(db.findAllLibraryBooksIds());
+        db.deleteContentById(db.selectAllLibraryBooksQ().findIds());
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        long[] remainingContentIds = db.findAllQueueBooksIds();
+        long[] remainingContentIds = db.selectAllQueueBooksQ().findIds();
         for (long contentId : remainingContentIds)
             db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
     }
 
     public void deleteAllQueuedBooks() {
         Timber.i("Cleaning up queue");
-        db.deleteContentById(db.findAllQueueBooksIds());
+        db.deleteContentById(db.selectAllQueueBooksQ().findIds());
+        db.deleteQueue();
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        long[] remainingContentIds = db.findAllLibraryBooksIds();
+        long[] remainingContentIds = db.selectAllLibraryBooksQ().findIds();
         for (long contentId : remainingContentIds)
             db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
     }
