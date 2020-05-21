@@ -386,7 +386,7 @@ public class ContentDownloadService extends IntentService {
             Uri rootUri = Uri.parse(Preferences.getStorageUri());
             DocumentFile rootFolder = DocumentFile.fromTreeUri(this, rootUri);
             if (rootFolder != null && rootFolder.exists()) {
-                DocumentFile queueJson = rootFolder.createFile(JsonHelper.JSON_MIME_TYPE, "queue.json");
+                DocumentFile queueJson = FileHelper.findOrCreateDocumentFile(this, rootFolder, JsonHelper.JSON_MIME_TYPE, Consts.QUEUE_JSON_FILE_NAME);
                 if (queueJson != null) {
                     try (OutputStream newDownload = FileHelper.getOutputStream(this, queueJson)) {
                         try (InputStream input = IOUtils.toInputStream(json, StandardCharsets.UTF_8)) {

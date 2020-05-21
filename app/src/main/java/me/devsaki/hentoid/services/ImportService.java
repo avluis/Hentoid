@@ -18,6 +18,7 @@ import com.annimon.stream.Stream;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -35,6 +37,7 @@ import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.json.ContentV1;
 import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.json.URLBuilder;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
@@ -290,7 +293,11 @@ public class ImportService extends IntentService {
         }
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
 
-        // Write cleanup log in root folder
+        // 3rd pass : Import queue JSON
+        DocumentFile queueFile = FileHelper.findFile(this, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
+        if (queueFile != null) importQueue(queueFile, dao, log);
+
+        // Write log in root folder
         DocumentFile cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
 
         eventComplete(3, bookFolders.size(), booksOK, booksKO, cleanupLogFile);
@@ -324,6 +331,36 @@ public class ImportService extends IntentService {
             Timber.e(e);
         }
         return false;
+    }
+
+    private void importQueue(@NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogUtil.LogEntry> log) {
+        trace(Log.INFO, log, "Queue JSON found", "");
+        JsonContentCollection contentCollection = deserialiseQueueJson(queueFile);
+        if (null != contentCollection) {
+            int queueSize = (int) dao.countAllQueueBooks();
+            List<Content> queuedContent = contentCollection.getQueue();
+            trace(Log.INFO, log, "Queue JSON deserialized : %s books detected", queuedContent.size() + "");
+            List<QueueRecord> lst = new ArrayList<>();
+            for (Content c : queuedContent) {
+                Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
+                if (null == duplicate) {
+                    long newContentId = dao.insertContent(c);
+                    lst.add(new QueueRecord(newContentId, queueSize++));
+                }
+            }
+            dao.updateQueue(lst);
+        }
+    }
+
+    private JsonContentCollection deserialiseQueueJson(@NonNull DocumentFile jsonFile) {
+        JsonContentCollection result;
+        try {
+            result = JsonHelper.jsonToObject(this, jsonFile, JsonContentCollection.class);
+        } catch (IOException e) {
+            Timber.w(e);
+            return null;
+        }
+        return result;
     }
 
     @Nullable
