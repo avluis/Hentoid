@@ -201,8 +201,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectContentBySourceAndUrl(site, url);
     }
 
-    public void insertContent(@NonNull final Content content) {
-        db.insertContent(content);
+    public long insertContent(@NonNull final Content content) {
+        return db.insertContent(content);
     }
 
     public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
@@ -241,27 +241,23 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectAllQueueBooksQ().find();
     }
 
-    public void deleteAllLibraryBooks() {
+    public void deleteAllLibraryBooks(boolean resetRemainingImagesStatus) {
         Timber.i("Cleaning up library");
         db.deleteContentById(db.selectAllLibraryBooksQ(false).findIds());
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        long[] remainingContentIds = db.selectAllQueueBooksQ().findIds();
-        for (long contentId : remainingContentIds)
-            db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
+        if (resetRemainingImagesStatus) {
+            long[] remainingContentIds = db.selectAllQueueBooksQ().findIds();
+            for (long contentId : remainingContentIds)
+                db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
+        }
     }
 
     public void deleteAllQueuedBooks() {
         Timber.i("Cleaning up queue");
         db.deleteContentById(db.selectAllQueueBooksQ().findIds());
         db.deleteQueue();
-
-        // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        long[] remainingContentIds = db.selectAllLibraryBooksQ(false).findIds();
-        for (long contentId : remainingContentIds)
-            db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
     }
-
 
     public void insertImageFile(@NonNull ImageFile img) {
         db.insertImageFile(img);

@@ -34,7 +34,7 @@ public interface CollectionDAO {
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url);
 
-    void insertContent(@NonNull final Content content);
+    long insertContent(@NonNull final Content content);
 
     void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo);
 
@@ -53,7 +53,7 @@ public interface CollectionDAO {
 
     List<Content> selectAllLibraryBooks(boolean favsOnly);
 
-    void deleteAllLibraryBooks();
+    void deleteAllLibraryBooks(boolean resetRemainingImagesStatus);
 
     long countAllQueueBooks();
 
@@ -151,7 +151,6 @@ public interface CollectionDAO {
     // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
 
     Single<List<Long>> getOldStoredBookIds();
-
 
 
     // RESULTS STRUCTURES

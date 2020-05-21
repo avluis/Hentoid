@@ -180,7 +180,7 @@ public class ImportHelper {
             return Result.OK_LIBRARY_DETECTED;
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
-            new ObjectBoxDAO(context).deleteAllLibraryBooks();
+            new ObjectBoxDAO(context).deleteAllLibraryBooks(true);
             return Result.OK_EMPTY_FOLDER;
         }
     }
@@ -236,7 +236,7 @@ public class ImportHelper {
 
     private static void cleanUpDB(@NonNull final Context context) {
         CollectionDAO dao = new ObjectBoxDAO(context);
-        dao.deleteAllLibraryBooks();
+        dao.deleteAllLibraryBooks(true);
     }
 
     private static void runImport(

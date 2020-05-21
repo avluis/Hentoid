@@ -46,6 +46,7 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -95,6 +96,7 @@ public class LibImportDialogFragment extends DialogFragment {
     private int totalBooks;
     private int currentProgress;
     private int nbSuccess;
+    private int queueSize;
     private Map<Site, DocumentFile> siteFoldersCache = null;
     private Map<Site, List<DocumentFile>> bookFoldersCache = new HashMap<>();
 
@@ -258,7 +260,7 @@ public class LibImportDialogFragment extends DialogFragment {
 
         dao = new ObjectBoxDAO(requireContext());
         if (!add) {
-            if (importLibrary) dao.deleteAllLibraryBooks();
+            if (importLibrary) dao.deleteAllLibraryBooks(false);
             if (importQueue) dao.deleteAllQueuedBooks();
         }
 
@@ -270,6 +272,7 @@ public class LibImportDialogFragment extends DialogFragment {
         currentProgress = 0;
         nbSuccess = 0;
         progressBar.setMax(totalBooks);
+        queueSize = (int) dao.countAllQueueBooks();
 
         importDisposable = Observable.fromIterable(all)
                 .observeOn(Schedulers.io())
@@ -289,7 +292,15 @@ public class LibImportDialogFragment extends DialogFragment {
         DocumentFile siteFolder = siteFoldersCache.get(c.getSite());
         if (siteFolder != null) mapToContent(c, siteFolder);
         Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
-        if (null == duplicate) dao.insertContent(c);
+        if (null == duplicate) {
+            long newContentId = dao.insertContent(c);
+            // Insert queued content into the queue
+            if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
+                List<QueueRecord> lst = new ArrayList<>();
+                lst.add(new QueueRecord(newContentId, queueSize++));
+                dao.updateQueue(lst);
+            }
+        }
 
         return true;
     }
@@ -319,9 +330,10 @@ public class LibImportDialogFragment extends DialogFragment {
                     break;
                 }
         }
-        // If no local storage found for the book, it goes in the errors queue
+        // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
         if (!filesFound) {
-            c.setStatus(StatusContent.ERROR);
+            if (!c.getStatus().equals(StatusContent.DOWNLOADING) && !c.getStatus().equals(StatusContent.PAUSED))
+                c.setStatus(StatusContent.ERROR);
             List<ErrorRecord> errors = new ArrayList<>();
             errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
             c.setErrorLog(errors);
