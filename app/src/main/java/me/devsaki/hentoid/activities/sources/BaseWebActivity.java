@@ -640,7 +640,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
 
-        /*if (!quickDownload) */
         changeActionMode(ActionMode.VIEW_QUEUE);
     }
 

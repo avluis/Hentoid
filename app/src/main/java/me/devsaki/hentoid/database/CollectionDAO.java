@@ -111,15 +111,15 @@ public interface CollectionDAO {
 
     List<QueueRecord> selectQueue();
 
+    LiveData<List<QueueRecord>> getQueueContent();
+
+    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
+
     void updateQueue(@NonNull List<QueueRecord> queue);
 
     void deleteQueue(@NonNull Content content);
 
     void deleteQueue(int index);
-
-    LiveData<List<QueueRecord>> getQueueContent();
-
-    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
 
 
     // ATTRIBUTES

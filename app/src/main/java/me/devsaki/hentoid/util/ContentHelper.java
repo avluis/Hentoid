@@ -47,6 +47,7 @@ public final class ContentHelper {
 
     // TODO empty this cache at some point
     private static final Map<String, String> fileNameMatchCache = new HashMap<>();
+    private static final Uri queueJsonUri = null;
 
 
     private ContentHelper() {
@@ -78,13 +79,6 @@ public final class ContentHelper {
         if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
-
-    @Nullable
-    public static DocumentFile detectJson(@NonNull final Context context, @NonNull final DocumentFile folder) {
-        Helper.assertNonUiThread();
-        return FileHelper.findFile(context, folder, Consts.JSON_FILE_NAME_V2);
-    }
-
 
     /**
      * Update the given Content's JSON file with its current values
