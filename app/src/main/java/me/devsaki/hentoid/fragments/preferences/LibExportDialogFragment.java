@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.preferences;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -89,20 +90,24 @@ public class LibExportDialogFragment extends DialogFragment {
             libraryChk = requireViewById(rootView, R.id.export_file_library_chk);
             libraryChk.setText(getResources().getQuantityString(R.plurals.export_file_library, (int) nbLibraryBooks, (int) nbLibraryBooks));
             libraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+            libraryChk.setVisibility(View.VISIBLE);
         }
         if (nbQueueBooks > 0) {
             queueChk = requireViewById(rootView, R.id.export_file_queue_chk);
             queueChk.setText(getResources().getQuantityString(R.plurals.export_file_queue, (int) nbQueueBooks, (int) nbQueueBooks));
             queueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+            queueChk.setVisibility(View.VISIBLE);
         }
 
         runBtn = requireViewById(rootView, R.id.export_run_btn);
+        runBtn.setEnabled(false);
         if (0 == nbLibraryBooks + nbLibraryBooks) runBtn.setVisibility(View.GONE);
         else
             runBtn.setOnClickListener(v -> runExport(libraryChk.isChecked(), queueChk.isChecked()));
     }
 
     // Gray out run button if no option is selected
+    // TODO create a custom style to visually gray out the button when it's disabled
     private void refreshDisplay() {
         runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked());
     }
@@ -168,6 +173,8 @@ public class LibExportDialogFragment extends DialogFragment {
         } catch (IOException e) {
             Snackbar.make(rootView, R.string.viewer_copy_fail, LENGTH_LONG).show();
         }
-        dismiss();
+
+        // Dismiss after 3s, for the user to be able to see and use the snackbar
+        new Handler().postDelayed(this::dismiss, 3000);
     }
 }

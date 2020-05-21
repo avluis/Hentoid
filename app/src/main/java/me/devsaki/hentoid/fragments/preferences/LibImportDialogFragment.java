@@ -215,6 +215,7 @@ public class LibImportDialogFragment extends DialogFragment {
             requireViewById(rootView, R.id.import_file_help_text).setVisibility(View.VISIBLE);
             runBtn = requireViewById(rootView, R.id.import_mode_add);
             runBtn.setVisibility(View.VISIBLE);
+            runBtn.setEnabled(false);
 
             RadioButton addChk = requireViewById(rootView, R.id.import_mode_add);
             runBtn.setOnClickListener(v -> runImport(collection, addChk.isChecked(), libraryChk.isChecked(), queueChk.isChecked()));
@@ -222,6 +223,7 @@ public class LibImportDialogFragment extends DialogFragment {
     }
 
     // Gray out run button if no option is selected
+    // TODO create a custom style to visually gray out the button when it's disabled
     private void refreshDisplay() {
         runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked());
     }
