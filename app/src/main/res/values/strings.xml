@@ -110,6 +110,7 @@
     </plurals>
     <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue > Errors.</string>
     <string name="import_run">RUN IMPORT</string>
+    <string name="import_result">%d books imported successfully</string>
 
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>

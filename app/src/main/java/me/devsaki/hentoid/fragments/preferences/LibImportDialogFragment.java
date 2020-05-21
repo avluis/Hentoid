@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +54,7 @@ import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 /**
  * Created by Robb on 05/2020
@@ -87,6 +89,7 @@ public class LibImportDialogFragment extends DialogFragment {
     private CollectionDAO dao;
     private int totalBooks;
     private int currentProgress;
+    private int nbSuccess;
     private Map<Site, DocumentFile> siteFoldersCache = null;
     private Map<Site, List<DocumentFile>> bookFoldersCache = new HashMap<>();
 
@@ -260,6 +263,7 @@ public class LibImportDialogFragment extends DialogFragment {
 
         totalBooks = all.size();
         currentProgress = 0;
+        nbSuccess = 0;
         progressBar.setMax(totalBooks);
 
         importDisposable = Observable.fromIterable(all)
@@ -267,8 +271,8 @@ public class LibImportDialogFragment extends DialogFragment {
                 .map(c -> importContent(c, dao))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        this::next,
-                        Timber::w,
+                        this::nextOK,
+                        this::nextKO,
                         this::finish
                 );
     }
@@ -334,7 +338,17 @@ public class LibImportDialogFragment extends DialogFragment {
         return result;
     }
 
-    private void next(boolean success) {
+    private void nextOK(boolean dummy) {
+        nbSuccess++;
+        updateProgress();
+    }
+
+    private void nextKO(Throwable e) {
+        Timber.w(e);
+        updateProgress();
+    }
+
+    private void updateProgress() {
         currentProgress++;
         progressTxt.setText(getResources().getString(R.string.book_progress, currentProgress, totalBooks));
         progressBar.setProgress(currentProgress);
@@ -344,6 +358,9 @@ public class LibImportDialogFragment extends DialogFragment {
 
     private void finish() {
         importDisposable.dispose();
-        dismiss();
+        Snackbar.make(rootView, getResources().getString(R.string.import_result, nbSuccess), LENGTH_LONG).show();
+
+        // Dismiss after 3s, for the user to be able to see the snackbar
+        new Handler().postDelayed(this::dismiss, 3000);
     }
 }
