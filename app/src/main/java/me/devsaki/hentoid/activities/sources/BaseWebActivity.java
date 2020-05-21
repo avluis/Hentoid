@@ -694,10 +694,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         boolean isInCollection = (contentDB != null && (
                 contentDB.getStatus().equals(StatusContent.DOWNLOADED)
                         || contentDB.getStatus().equals(StatusContent.MIGRATED)
-                        || contentDB.getStatus().equals(StatusContent.ERROR)
         ));
         boolean isInQueue = (contentDB != null && (
                 contentDB.getStatus().equals(StatusContent.DOWNLOADING)
+                        || contentDB.getStatus().equals(StatusContent.ERROR)
                         || contentDB.getStatus().equals(StatusContent.PAUSED)
         ));
 
