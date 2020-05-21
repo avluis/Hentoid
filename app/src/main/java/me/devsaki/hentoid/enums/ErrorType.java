@@ -11,6 +11,7 @@ public enum ErrorType {
     IMG_PROCESSING(4, "Image processing"),
     SITE_LIMIT(5, "Downloads/bandwidth limit reached"),
     ACCOUNT(6, "No account or insufficient credentials"),
+    IMPORT(7, "No local file found after import"),
     UNDEFINED(99, "Undefined");
 
     private final int code;

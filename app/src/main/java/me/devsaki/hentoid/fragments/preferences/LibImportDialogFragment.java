@@ -24,6 +24,8 @@ import com.annimon.stream.Optional;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.threeten.bp.Instant;
+
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -43,7 +45,10 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -296,6 +301,7 @@ public class LibImportDialogFragment extends DialogFragment {
             bookfolders = FileHelper.listFolders(requireContext(), siteFolder);
             bookFoldersCache.put(c.getSite(), bookfolders);
         }
+        boolean filesFound = false;
         if (bookfolders != null) {
             // Look for the book ID
             c.populateUniqueSiteId();
@@ -308,8 +314,16 @@ public class LibImportDialogFragment extends DialogFragment {
                     if (json != null) c.setJsonUri(json.getUri().toString());
                     // Create the images from detected files
                     c.setImageFiles(ContentHelper.createImageListFromFolder(requireContext(), f));
+                    filesFound = true;
                     break;
                 }
+        }
+        // If no local storage found for the book, it goes in the errors queue
+        if (!filesFound) {
+            c.setStatus(StatusContent.ERROR);
+            List<ErrorRecord> errors = new ArrayList<>();
+            errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
+            c.setErrorLog(errors);
         }
     }
 
