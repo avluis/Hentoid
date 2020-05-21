@@ -86,14 +86,14 @@ public class LibExportDialogFragment extends DialogFragment {
         long nbLibraryBooks = dao.countAllLibraryBooks();
         long nbQueueBooks = dao.countAllQueueBooks();
 
+        libraryChk = requireViewById(rootView, R.id.export_file_library_chk);
         if (nbLibraryBooks > 0) {
-            libraryChk = requireViewById(rootView, R.id.export_file_library_chk);
             libraryChk.setText(getResources().getQuantityString(R.plurals.export_file_library, (int) nbLibraryBooks, (int) nbLibraryBooks));
             libraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
             libraryChk.setVisibility(View.VISIBLE);
         }
+        queueChk = requireViewById(rootView, R.id.export_file_queue_chk);
         if (nbQueueBooks > 0) {
-            queueChk = requireViewById(rootView, R.id.export_file_queue_chk);
             queueChk.setText(getResources().getQuantityString(R.plurals.export_file_queue, (int) nbQueueBooks, (int) nbQueueBooks));
             queueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
             queueChk.setVisibility(View.VISIBLE);
