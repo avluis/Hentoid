@@ -148,7 +148,6 @@ public class LibImportDialogFragment extends DialogFragment {
                 DocumentFile doc = DocumentFile.fromSingleUri(requireContext(), selectedFileUri);
                 if (null == doc) return;
                 selectFileBtn.setVisibility(View.GONE);
-                setCancelable(false);
                 checkFile(doc);
                 break;
             case Result.CANCELED:
@@ -255,6 +254,7 @@ public class LibImportDialogFragment extends DialogFragment {
         libraryChk.setEnabled(false);
         queueChk.setEnabled(false);
         runBtn.setVisibility(View.GONE);
+        setCancelable(false);
 
         dao = new ObjectBoxDAO(requireContext());
         if (!add) {
