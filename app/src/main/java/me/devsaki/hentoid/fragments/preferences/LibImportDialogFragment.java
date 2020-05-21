@@ -120,6 +120,8 @@ public class LibImportDialogFragment extends DialogFragment {
 
     private void askFile() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(JsonHelper.JSON_MIME_TYPE);
         // http://stackoverflow.com/a/31334967/1615876
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
         HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
@@ -176,6 +178,7 @@ public class LibImportDialogFragment extends DialogFragment {
     }
 
     private void checkFile(@NonNull DocumentFile jsonFile) {
+        // TODO display an indefinite progress bar just in case ?
         importDisposable = Single.fromCallable(() -> deserialiseJson(jsonFile))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -213,7 +216,7 @@ public class LibImportDialogFragment extends DialogFragment {
             }
             requireViewById(rootView, R.id.import_warning_img).setVisibility(View.VISIBLE);
             requireViewById(rootView, R.id.import_file_help_text).setVisibility(View.VISIBLE);
-            runBtn = requireViewById(rootView, R.id.import_mode_add);
+            runBtn = requireViewById(rootView, R.id.import_run_btn);
             runBtn.setVisibility(View.VISIBLE);
             runBtn.setEnabled(false);
 

@@ -55,11 +55,9 @@
         android:gravity="center"
         android:padding="8dp"
         android:text="@string/import_select_file"
-        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/import_mode"
-        tools:visibility="visible" />
+        app:layout_constraintTop_toBottomOf="@id/import_mode" />
 
     <TextView
         android:id="@+id/import_file_invalid_text"
