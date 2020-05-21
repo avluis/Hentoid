@@ -49,9 +49,9 @@ public interface CollectionDAO {
 
     // MASS OPERATIONS
 
-    long countAllLibraryBooks();
+    long countAllLibraryBooks(boolean favsOnly);
 
-    List<Content> selectAllLibraryBooks();
+    List<Content> selectAllLibraryBooks(boolean favsOnly);
 
     void deleteAllLibraryBooks();
 

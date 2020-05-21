@@ -152,7 +152,7 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, statusCodes).build().find();
     }
 
-    Query<Content> selectAllLibraryBooksQ() {
+    Query<Content> selectAllLibraryBooksQ(boolean favsOnly) {
         // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
         int[] storedContentStatus = new int[]{
                 StatusContent.DOWNLOADED.getCode(),
@@ -162,7 +162,9 @@ public class ObjectBoxDB {
                 StatusContent.CANCELED.getCode(),
                 StatusContent.ONLINE.getCode()
         };
-        return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build();
+        QueryBuilder<Content> query = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus);
+        if (favsOnly) query.equal(Content_.favourite, true);
+        return query.build();
     }
 
     Query<Content> selectAllQueueBooksQ() {

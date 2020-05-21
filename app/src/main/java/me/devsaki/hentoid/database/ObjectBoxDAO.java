@@ -225,16 +225,16 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteErrorRecords(contentId);
     }
 
-    public long countAllLibraryBooks() {
-        return db.selectAllLibraryBooksQ().count();
+    public long countAllLibraryBooks(boolean favsOnly) {
+        return db.selectAllLibraryBooksQ(favsOnly).count();
     }
 
     public long countAllQueueBooks() {
         return db.selectAllQueueBooksQ().count();
     }
 
-    public List<Content> selectAllLibraryBooks() {
-        return db.selectAllLibraryBooksQ().find();
+    public List<Content> selectAllLibraryBooks(boolean favsOnly) {
+        return db.selectAllLibraryBooksQ(favsOnly).find();
     }
 
     public List<Content> selectAllQueueBooks() {
@@ -243,7 +243,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteAllLibraryBooks() {
         Timber.i("Cleaning up library");
-        db.deleteContentById(db.selectAllLibraryBooksQ().findIds());
+        db.deleteContentById(db.selectAllLibraryBooksQ(false).findIds());
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
         long[] remainingContentIds = db.selectAllQueueBooksQ().findIds();
@@ -257,7 +257,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteQueue();
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
-        long[] remainingContentIds = db.selectAllLibraryBooksQ().findIds();
+        long[] remainingContentIds = db.selectAllLibraryBooksQ(false).findIds();
         for (long contentId : remainingContentIds)
             db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
     }

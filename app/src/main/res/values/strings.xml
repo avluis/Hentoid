@@ -119,6 +119,7 @@
         <item quantity="one">Export library (%d book)</item>
         <item quantity="other">Export library (%d books)</item>
     </plurals>
+    <string name="export_favs_only">Only export favourites</string>
     <plurals name="export_file_queue">
         <item quantity="one">Export queue (%d book)</item>
         <item quantity="other">Export queue (%d books)</item>

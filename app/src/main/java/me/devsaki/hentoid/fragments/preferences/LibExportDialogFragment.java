@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -56,6 +57,7 @@ public class LibExportDialogFragment extends DialogFragment {
     private ViewGroup rootView;
     private CheckBox queueChk;
     private CheckBox libraryChk;
+    private Switch favsChk;
     private View runBtn;
 
     // Variable used during the import process
@@ -83,10 +85,12 @@ public class LibExportDialogFragment extends DialogFragment {
 
         dao = new ObjectBoxDAO(requireContext());
 
-        long nbLibraryBooks = dao.countAllLibraryBooks();
+        long nbLibraryBooks = dao.countAllLibraryBooks(false);
         long nbQueueBooks = dao.countAllQueueBooks();
 
         libraryChk = requireViewById(rootView, R.id.export_file_library_chk);
+        favsChk = requireViewById(rootView, R.id.export_favs_only);
+        favsChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshFavsDisplay());
         if (nbLibraryBooks > 0) {
             libraryChk.setText(getResources().getQuantityString(R.plurals.export_file_library, (int) nbLibraryBooks, (int) nbLibraryBooks));
             libraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
@@ -103,16 +107,22 @@ public class LibExportDialogFragment extends DialogFragment {
         runBtn.setEnabled(false);
         if (0 == nbLibraryBooks + nbLibraryBooks) runBtn.setVisibility(View.GONE);
         else
-            runBtn.setOnClickListener(v -> runExport(libraryChk.isChecked(), queueChk.isChecked()));
+            runBtn.setOnClickListener(v -> runExport(libraryChk.isChecked(), favsChk.isChecked(), queueChk.isChecked()));
     }
 
     // Gray out run button if no option is selected
-    // TODO create a custom style to visually gray out the button when it's disabled
+    // TODO create a custom style to visually gray out the run button when it's disabled
     private void refreshDisplay() {
         runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked());
+        favsChk.setVisibility(libraryChk.isChecked() ? View.VISIBLE : View.GONE);
     }
 
-    private void runExport(boolean exportLibrary, boolean exportQueue) {
+    private void refreshFavsDisplay() {
+        long nbLibraryBooks = dao.countAllLibraryBooks(favsChk.isChecked());
+        libraryChk.setText(getResources().getQuantityString(R.plurals.export_file_library, (int) nbLibraryBooks, (int) nbLibraryBooks));
+    }
+
+    private void runExport(boolean exportLibrary, boolean exportFavsOnly, boolean exportQueue) {
         queueChk.setEnabled(false);
         libraryChk.setEnabled(false);
         runBtn.setVisibility(View.GONE);
@@ -125,20 +135,20 @@ public class LibExportDialogFragment extends DialogFragment {
             progressBar.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(requireContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
         progressBar.setVisibility(View.VISIBLE);
 
-        exportDisposable = Single.fromCallable(() -> getExportedCollection(exportLibrary, exportQueue))
+        exportDisposable = Single.fromCallable(() -> getExportedCollection(exportLibrary, exportFavsOnly, exportQueue))
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .map(c -> serializeJson(c.left, c.right))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        s -> onJsonSerialized(s, exportLibrary, exportQueue),
+                        s -> onJsonSerialized(s, exportLibrary, exportFavsOnly, exportQueue),
                         Timber::w
                 );
     }
 
-    private ImmutablePair<List<Content>, List<Content>> getExportedCollection(boolean exportLibrary, boolean exportQueue) {
+    private ImmutablePair<List<Content>, List<Content>> getExportedCollection(boolean exportLibrary, boolean exportFavsOnly, boolean exportQueue) {
         List<Content> library = new ArrayList<>();
-        if (exportLibrary) library.addAll(dao.selectAllLibraryBooks());
+        if (exportLibrary) library.addAll(dao.selectAllLibraryBooks(exportFavsOnly));
         List<Content> queue = new ArrayList<>();
         if (exportQueue) queue.addAll(dao.selectAllQueueBooks());
         return new ImmutablePair<>(library, queue);
@@ -151,13 +161,14 @@ public class LibExportDialogFragment extends DialogFragment {
         return JsonHelper.serializeToJson(jsonContentCollection, JsonContentCollection.class);
     }
 
-    private void onJsonSerialized(@NonNull String json, boolean exportLibrary, boolean exportQueue) {
+    private void onJsonSerialized(@NonNull String json, boolean exportLibrary, boolean exportFavsOnly, boolean exportQueue) {
         exportDisposable.dispose();
 
         // Use a random number to avoid erasing older exports by mistake
         String targetFileName = new Random().nextInt(9999) + ".json";
         if (exportQueue) targetFileName = "queue-" + targetFileName;
-        if (exportLibrary) targetFileName = "library-" + targetFileName;
+        if (exportLibrary && !exportFavsOnly) targetFileName = "library-" + targetFileName;
+        else if (exportLibrary) targetFileName = "favs-" + targetFileName;
         targetFileName = "export-" + targetFileName;
 
         try {
