@@ -585,7 +585,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemArchive.setVisible(!isMultipleSelection);
         itemDeleteSwipe.setVisible(isMultipleSelection);
 
-        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int)selectedCount));
+        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int)selectedCount, (int)selectedCount));
     }
 
     /**
