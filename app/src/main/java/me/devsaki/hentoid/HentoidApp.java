@@ -140,13 +140,16 @@ public class HentoidApp extends Application {
             }
         }
 
+        // Build Android shortcuts
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             ShortcutHelper.buildShortcuts(this);
         }
 
+        // Send stats to Firebase
         FirebaseAnalytics.getInstance(this).setUserProperty("color_theme", Integer.toString(Preferences.getColorTheme()));
         FirebaseAnalytics.getInstance(this).setUserProperty("endless", Boolean.toString(Preferences.getEndlessScroll()));
 
+        // Plug the lifecycle listener to handle locking
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
     }
 
