@@ -253,10 +253,9 @@ public class LibraryViewModel extends AndroidViewModel {
      * Delete the given list of content
      *
      * @param contents   List of content to be deleted
-     * @param onComplete Callback to run when the whole operation succeeds
      * @param onError    Callback to run when an error occurs
      */
-    public void deleteItems(@NonNull final List<Content> contents, Runnable onComplete, Consumer<Throwable> onError) {
+    public void deleteItems(@NonNull final List<Content> contents, Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contents) flagContentDelete(c, true);
 
@@ -268,8 +267,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> {
                                 },
-                                onError::accept,
-                                onComplete::run
+                                onError::accept
                         )
         );
     }

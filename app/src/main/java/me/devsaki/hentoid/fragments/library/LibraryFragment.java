@@ -585,7 +585,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemArchive.setVisible(!isMultipleSelection);
         itemDeleteSwipe.setVisible(isMultipleSelection);
 
-        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int)selectedCount, (int)selectedCount));
+        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
     }
 
     /**
@@ -714,14 +714,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     private void onDeleteBooks(@NonNull final List<Content> items) {
-        viewModel.deleteItems(items, this::onDeleteSuccess, this::onDeleteError);
-    }
-
-    /**
-     * Callback for the success of the "delete item" action
-     */
-    private void onDeleteSuccess() {
-        ToastUtil.toast("Selected items have been deleted.");
+        viewModel.deleteItems(items, this::onDeleteError);
     }
 
     /**
@@ -735,7 +728,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             viewModel.flagContentDelete(e.getContent(), false);
             List<Content> contents = new ArrayList<>();
             contents.add(e.getContent());
-            snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::onDeleteSuccess, this::onDeleteError));
+            snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::onDeleteError));
             snackbar.show();
         }
     }
