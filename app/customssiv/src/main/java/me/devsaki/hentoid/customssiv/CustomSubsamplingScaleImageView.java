@@ -1483,7 +1483,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
             // Whole image is required at native resolution, and is smaller than the canvas max bitmap size.
             // Use BitmapDecoder for better image support.
-            decoder.recycle();
+            if (decoder != null) decoder.recycle();
             decoder = null;
 
             loadDisposable.add(
