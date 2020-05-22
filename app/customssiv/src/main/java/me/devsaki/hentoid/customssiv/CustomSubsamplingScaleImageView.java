@@ -1464,6 +1464,9 @@ public class CustomSubsamplingScaleImageView extends View {
     @SuppressLint("NewApi")
     private synchronized void initialiseBaseLayer(@NonNull Point maxTileDimensions) {
         debug("initialiseBaseLayer maxTileDimensions=%dx%d", maxTileDimensions.x, maxTileDimensions.y);
+        // null Uri's may happen when sliding fast, which causes views to be reset when recycled by the RecyclerView
+        // they reset faster than their initialization can process them, hence initialiseBaseLayer being called (e.g. through onDraw) _after_ recycle has been called
+        if (null == uri) return;
 
         satTemp = new ScaleAndTranslate(0f, new PointF(0, 0));
         fitToBounds(true, satTemp, new Point(sWidth(), sHeight()));
