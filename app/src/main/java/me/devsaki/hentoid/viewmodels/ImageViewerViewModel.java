@@ -420,9 +420,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private Content postLoadProcessing(@NonNull Context context, @NonNull Content content) {
-        Helper.assertNonUiThread();
         cacheJson(context, content);
-        ContentHelper.updateContentReads(context, collectionDao, content);
         return content;
     }
 
