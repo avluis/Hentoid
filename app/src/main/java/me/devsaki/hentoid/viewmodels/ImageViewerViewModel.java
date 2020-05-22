@@ -351,7 +351,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                         contentIds.remove(currentContentIndex);
                                         if (currentContentIndex >= contentIds.size() && currentContentIndex > 0)
                                             currentContentIndex--;
-                                        loadFromContent(contentIds.get(currentContentIndex));
+                                        if (contentIds.size() > currentContentIndex)
+                                            loadFromContent(contentIds.get(currentContentIndex));
                                     } else { // Close the viewer if the list is empty (single book)
                                         content.setValue(null);
                                     }
