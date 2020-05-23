@@ -281,8 +281,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         viewModel.updateOrder(); // Trigger a blank search
 
-        // Display tooltips
-        TooltipUtil.showTooltip(requireContext(), R.string.help_search, ArrowOrientation.TOP, toolbar, getViewLifecycleOwner());
+        // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
+        if (Preferences.isFirstRunProcessComplete())
+            TooltipUtil.showTooltip(requireContext(), R.string.help_search, ArrowOrientation.TOP, toolbar, getViewLifecycleOwner());
+        // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
     }
 
