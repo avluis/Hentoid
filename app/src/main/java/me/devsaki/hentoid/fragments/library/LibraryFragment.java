@@ -1068,7 +1068,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                     .map(Site::getCode)
                     .collect(toCollection(ArrayList::new));
 
-            SearchBookIdDialogFragment.invoke(getParentFragmentManager(), query, siteCodes);
+            SearchBookIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
         }
 
         // If the update is the result of a new search, get back on top of the list

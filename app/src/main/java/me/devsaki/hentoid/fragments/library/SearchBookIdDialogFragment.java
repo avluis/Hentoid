@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.library;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -39,12 +41,13 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
     private String bookId;
 
-    public static void invoke(FragmentManager fragmentManager, String id, ArrayList<Integer> siteCodes) {
+    public static void invoke(Context context, FragmentManager fragmentManager, String id, ArrayList<Integer> siteCodes) {
         Bundle args = new Bundle();
         args.putString(ID, id);
         args.putIntegerArrayList(FOUND_SITES, siteCodes);
 
         SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
+        ThemeHelper.setStyle(context, fragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         fragment.setArguments(args);
         fragment.show(fragmentManager, null);
     }
