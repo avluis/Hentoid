@@ -129,9 +129,11 @@ public class API29MigrationService extends IntentService {
             Timber.e("rootFolder is not defined (%s)", Preferences.getStorageUri());
             return;
         }
+        trace(Log.INFO, log, "Using root folder %s", rootFolder.getUri().toString());
 
         // 1st pass : cache all book folders
         List<DocumentFile> siteFolders = FileHelper.listFolders(this, rootFolder);
+        trace(Log.INFO, log, "%s site folders detected", siteFolders.size() + "");
 
         List<DocumentFile> bookFolders;
         int foldersCount = 1;
@@ -141,6 +143,7 @@ public class API29MigrationService extends IntentService {
             for (DocumentFile bookFolder : bookFolders)
                 siteFoldersCache.put(bookFolder.getName(), bookFolder);
             bookFoldersCache.put(siteFolder.getName(), siteFoldersCache);
+            trace(Log.INFO, log, "Site %s : %s book folders detected", siteFolder.getName(), siteFoldersCache.size() + "");
             eventProgress(2, siteFolders.size(), foldersCount++, 0);
         }
 
