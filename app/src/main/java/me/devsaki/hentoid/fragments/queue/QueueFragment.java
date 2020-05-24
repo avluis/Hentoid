@@ -493,7 +493,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         } else {
             btnPause.setVisibility(View.GONE);
 
-            if (isPaused) {
+            if (isEmpty) {
+                btnStart.setVisibility(View.GONE);
+                errorStatsMenu.setVisible(false);
+                queueStatus.setText("");
+            } else if (isPaused) {
                 btnStart.setVisibility(View.VISIBLE);
                 queueStatus.setText(R.string.queue_paused);
 
@@ -501,10 +505,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 BlinkAnimation animation = new BlinkAnimation(750, 20);
                 queueStatus.startAnimation(animation);
                 queueInfo.startAnimation(animation);
-            } else { // Empty
-                btnStart.setVisibility(View.GONE);
-                errorStatsMenu.setVisible(false);
-                queueStatus.setText("");
             }
         }
     }
