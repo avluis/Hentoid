@@ -1,7 +1,0 @@
-<resources>
-    <!-- browser -->
-    <dimen name="download_fab_margin">24dp</dimen>
-
-    <!-- about -->
-    <dimen name="about_ic_group_layout_margin_top">20dp</dimen>
-</resources>
