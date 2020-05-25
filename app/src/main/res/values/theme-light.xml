@@ -25,6 +25,7 @@
         <!-- Toolbar as ActionBar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:navigationBarColor">@color/white</item>
     </style>
 
     <style name="Theme.Invisible" parent="Theme.Light">

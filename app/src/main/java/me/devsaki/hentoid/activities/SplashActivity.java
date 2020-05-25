@@ -24,6 +24,7 @@ import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import timber.log.Timber;
 
@@ -39,6 +40,7 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //ThemeHelper.applyTheme(this); <-- this won't help; the starting activity is shown with the default theme, aka Light
 
         Timber.d("Splash / Init");
 
