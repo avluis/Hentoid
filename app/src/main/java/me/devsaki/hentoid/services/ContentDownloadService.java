@@ -23,6 +23,7 @@ import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.annimon.stream.Stream;
+import com.crashlytics.android.Crashlytics;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -396,8 +397,12 @@ public class ContentDownloadService extends IntentService {
                     Timber.i("Queue JSON successfully saved");
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
             Timber.e(e);
+            Crashlytics.logException(e);
         }
 
         return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);
