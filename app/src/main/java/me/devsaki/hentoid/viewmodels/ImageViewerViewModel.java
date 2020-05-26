@@ -51,7 +51,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private static final String KEY_IS_SHUFFLED = "is_shuffled";
 
     // Collection DAO
-    private final CollectionDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO collectionDao;
 
     // Settings
     private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
@@ -73,8 +73,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
 
-    public ImageViewerViewModel(@NonNull Application application) {
+    public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
+        collectionDao = collectionDAO;
     }
 
 

@@ -17,6 +17,7 @@ class ViewModelFactory(val application: Application): ViewModelProvider.Factory 
             LibraryViewModel::class.java -> LibraryViewModel(application, ObjectBoxDAO(application))
             SearchViewModel::class.java -> SearchViewModel(ObjectBoxDAO(application), Preferences.getAttributesSortOrder())
             QueueViewModel::class.java -> QueueViewModel(application, ObjectBoxDAO(application))
+            ImageViewerViewModel::class.java -> ImageViewerViewModel(application, ObjectBoxDAO(application))
             else -> throw RuntimeException()
         } as T
     }
