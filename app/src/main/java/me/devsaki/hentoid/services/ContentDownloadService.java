@@ -377,7 +377,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Save current queue (to be able to restore it in case the app gets uninstalled)
-        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).toList();
+        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).filter(c -> c != null).toList();
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setQueue(queuedContent);
         String json = JsonHelper.serializeToJson(contentCollection, JsonContentCollection.class);
