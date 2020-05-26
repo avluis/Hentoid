@@ -443,7 +443,9 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
     private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
-        for (Content c : contentList) viewModel.addContentToQueue(c, targetImageStatus);
+        for (Content c : contentList)
+            if (c != null)
+                viewModel.addContentToQueue(c, targetImageStatus);
 
         if (Preferences.isQueueAutostart())
             ContentQueueManager.getInstance().resumeQueue(getContext());
