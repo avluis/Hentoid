@@ -5,6 +5,7 @@ import android.app.Application;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -22,6 +23,7 @@ import org.threeten.bp.Instant;
 
 import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.activities.IntroActivity;
+import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
 import me.devsaki.hentoid.notification.maintenance.MaintenanceNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
@@ -108,7 +110,7 @@ public class HentoidApp extends Application {
         // Image viewer
         // Needs ARGB_8888 to be able to resize images using RenderScript
         // (defaults to Bitmap.Config.RGB_565 if not set)
-//        CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.ARGB_8888);
+        CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.ARGB_8888);
 
         // Init version number on first run
         if (0 == Preferences.getLastKnownAppVersionCode())

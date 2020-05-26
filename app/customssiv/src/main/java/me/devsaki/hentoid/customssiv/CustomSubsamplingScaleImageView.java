@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.renderscript.RenderScript;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -373,7 +374,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private int screenHeight;
 
     private final CompositeDisposable loadDisposable = new CompositeDisposable();
-//    private static RenderScript rs = null; // TODO handle that one properly, it might create leaks
+    private static RenderScript rs = null; // TODO handle that one properly, it might create leaks
 
 
     public CustomSubsamplingScaleImageView(Context context, AttributeSet attr) {
@@ -382,7 +383,7 @@ public class CustomSubsamplingScaleImageView extends View {
         screenWidth = context.getResources().getDisplayMetrics().widthPixels;
         screenHeight = context.getResources().getDisplayMetrics().heightPixels;
 
-//        if (null == rs) rs = RenderScript.create(context);
+        if (null == rs) rs = RenderScript.create(context);
 
         setMinimumDpi(160);
         setDoubleTapZoomDpi(160);
@@ -1909,9 +1910,9 @@ public class CustomSubsamplingScaleImageView extends View {
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
         ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
-        loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
+        //loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
         //loadedTile.bitmap = ResizeBitmapHelper.successiveResize(rs, loadedTile.bitmap, resizeParams.left); // <-- needs bitmaps decoded as ARGB_8888; demands more memory
-        //loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, targetScale, targetScale);
+        loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, targetScale, targetScale);
 
         loadedTile.loading = false;
         return loadedTile;
@@ -1945,9 +1946,9 @@ public class CustomSubsamplingScaleImageView extends View {
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
         ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
-        bitmap = ResizeBitmapHelper.successiveResize(bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
+        //bitmap = ResizeBitmapHelper.successiveResize(bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
         //bitmap = ResizeBitmapHelper.successiveResize(rs, bitmap, resizeParams.left); // <-- needs bitmaps decoded as ARGB_8888; demands more memory
-        //bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
+        bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
 
         return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), resizeParams.right);
     }
