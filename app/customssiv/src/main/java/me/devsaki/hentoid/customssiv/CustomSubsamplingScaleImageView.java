@@ -670,7 +670,7 @@ public class CustomSubsamplingScaleImageView extends View {
             for (Map.Entry<Integer, List<Tile>> tileMapEntry : tileMap.entrySet()) {
                 for (Tile tile : tileMapEntry.getValue()) {
                     tile.visible = false;
-                    if (tile.bitmap != null) {
+                    if (tile.bitmap != null && !tile.loading) {
                         tile.bitmap.recycle();
                         tile.bitmap = null;
                     }
@@ -1547,7 +1547,7 @@ public class CustomSubsamplingScaleImageView extends View {
             for (Tile tile : tileMapEntry.getValue()) {
                 if (tile.sampleSize < sampleSize || (tile.sampleSize > sampleSize && tile.sampleSize != fullImageSampleSize)) {
                     tile.visible = false;
-                    if (tile.bitmap != null) {
+                    if (tile.bitmap != null && !tile.loading) {
                         tile.bitmap.recycle();
                         tile.bitmap = null;
                     }
@@ -1571,7 +1571,7 @@ public class CustomSubsamplingScaleImageView extends View {
                         }
                     } else if (tile.sampleSize != fullImageSampleSize) {
                         tile.visible = false;
-                        if (tile.bitmap != null) {
+                        if (tile.bitmap != null && !tile.loading) {
                             tile.bitmap.recycle();
                             tile.bitmap = null;
                         }
