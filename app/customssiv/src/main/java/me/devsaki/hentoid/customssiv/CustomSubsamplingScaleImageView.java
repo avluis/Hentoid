@@ -1561,7 +1561,7 @@ public class CustomSubsamplingScaleImageView extends View {
                                             .subscribeOn(Schedulers.io())
                                             .filter(res -> res.bitmap != null)
                                             .observeOn(Schedulers.computation())
-                                            .map(res -> processTile(res, this, scale))
+                                            .map(res1 -> processTile(res1, this, scale))
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .subscribe(
                                                     this::onTileLoaded,
@@ -1909,10 +1909,12 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
-        ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
-        //loadedTile.bitmap = ResizeBitmapHelper.successiveResize(loadedTile.bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
-        //loadedTile.bitmap = ResizeBitmapHelper.successiveResize(rs, loadedTile.bitmap, resizeParams.left); // <-- needs bitmaps decoded as ARGB_8888; demands more memory
-        loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, targetScale, targetScale);
+        // Take any prior subsampling into consideration _before_ processing the tile
+        float currentScale = 1f / loadedTile.sampleSize;
+        float resizeScale = targetScale / currentScale;
+
+        ImmutablePair<Integer, Float> resizeParams = computeResizeParams(resizeScale);
+        loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, resizeScale, resizeScale);
 
         loadedTile.loading = false;
         return loadedTile;
@@ -1945,12 +1947,10 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
-        ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
-        //bitmap = ResizeBitmapHelper.successiveResize(bitmap, resizeParams.left);  // <-- accepts input bitmaps decoded as RGB_565
-        //bitmap = ResizeBitmapHelper.successiveResize(rs, bitmap, resizeParams.left); // <-- needs bitmaps decoded as ARGB_8888; demands more memory
-        bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
 
-        return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), resizeParams.right);
+        ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
+        bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
+        return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), 1f);
     }
 
     /**

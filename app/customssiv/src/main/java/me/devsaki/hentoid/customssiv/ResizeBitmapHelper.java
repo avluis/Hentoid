@@ -9,6 +9,8 @@ import android.renderscript.Type;
 
 import androidx.annotation.NonNull;
 
+import timber.log.Timber;
+
 // Credits go to https://medium.com/@petrakeas/alias-free-resize-with-renderscript-5bf15a86ce3
 class ResizeBitmapHelper {
 
@@ -78,12 +80,14 @@ class ResizeBitmapHelper {
         int srcHeight = src.getHeight();
         int dstWidth = Math.round(srcWidth * xScale);
         int dstHeight = Math.round(srcHeight * yScale);
+        src.setHasAlpha(false);
 
         // Calculate gaussian's radius
         float sigma = (1 / xScale) / (float) Math.PI;
         // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
-        float radius = 2.5f * sigma - 1.5f;
+        float radius = 2.5f * sigma/* - 1.5f*/; // Works better that way
         radius = Math.min(25, Math.max(0.0001f, radius));
+        Timber.d(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius);
 
         // Gaussian filter
         Allocation tmpIn = Allocation.createFromBitmap(rs, src);
@@ -97,6 +101,7 @@ class ResizeBitmapHelper {
         tmpIn.destroy();
         blurInstrinsic.destroy();
 
+
         // Resize
         Bitmap dst = Bitmap.createBitmap(dstWidth, dstHeight, bitmapConfig);
         Type t = Type.createXY(rs, tmpFiltered.getElement(), dstWidth, dstHeight);
@@ -108,10 +113,33 @@ class ResizeBitmapHelper {
         tmpOut.copyTo(dst);
 
         tmpFiltered.destroy();
-        tmpOut.destroy();
         resizeIntrinsic.destroy();
+        tmpOut.destroy();
+/*
+        // Additional sharpen script just in case (WIP)
+        Allocation tmpSharpOut = Allocation.createTyped(rs, t);
+        //ScriptIntrinsicConvolve3x3 sharpen = ScriptIntrinsicConvolve3x3.create(rs, tmpOut.getElement());
+        ScriptIntrinsicConvolve3x3 sharpen = ScriptIntrinsicConvolve3x3.create(rs, Element.U8_4(rs));
+        sharpen.setCoefficients(getSharpenCoefficients());
+        sharpen.setInput(tmpOut);
+        sharpen.forEach(tmpSharpOut);
+
+        tmpSharpOut.copyTo(dst);
+
+        tmpOut.destroy();
+        tmpSharpOut.destroy();
+        sharpen.destroy();
+*/
 
         return dst;
     }
-
+/*
+    private static float[] getSharpenCoefficients() {
+        return new float[]{
+                0f, -1f, 0f,
+                -1f, -5f, -1f,
+                0f, -1f, 0f
+        };
+    }
+*/
 }
