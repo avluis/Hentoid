@@ -101,6 +101,7 @@ class ResizeBitmapHelper {
         blurInstrinsic.setInput(tmpIn);
         blurInstrinsic.forEach(tmpFiltered);
 
+        src.recycle();
         tmpIn.destroy();
         blurInstrinsic.destroy();
 
