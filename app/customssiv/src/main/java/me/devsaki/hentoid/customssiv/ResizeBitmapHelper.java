@@ -74,20 +74,23 @@ class ResizeBitmapHelper {
 
     // Better-looking resizing using RenderScript entirely, in one pass
     // Apply Gaussian blur to the image and then subsample it using bicubic interpolation.
-    static Bitmap resizeNice(@NonNull final RenderScript rs, @NonNull final Bitmap src, float xScale, float yScale) {
-        Bitmap.Config bitmapConfig = src.getConfig();
-        int srcWidth = src.getWidth();
-        int srcHeight = src.getHeight();
-        int dstWidth = Math.round(srcWidth * xScale);
-        int dstHeight = Math.round(srcHeight * yScale);
-        src.setHasAlpha(false);
-
+    static Bitmap resizeNice(@NonNull final RenderScript rs, final Bitmap src, float xScale, float yScale) {
         // Calculate gaussian's radius
         float sigma = (1 / xScale) / (float) Math.PI;
         // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
         float radius = 2.5f * sigma/* - 1.5f*/; // Works better that way
         radius = Math.min(25, Math.max(0.0001f, radius));
         Timber.d(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius);
+
+        // Defensive programming in case the threading/view recycling recycles a bitmap just before that methods is reached
+        if (null == src || src.isRecycled()) return src;
+
+        Bitmap.Config bitmapConfig = src.getConfig();
+        int srcWidth = src.getWidth();
+        int srcHeight = src.getHeight();
+        int dstWidth = Math.round(srcWidth * xScale);
+        int dstHeight = Math.round(srcHeight * yScale);
+        src.setHasAlpha(false);
 
         // Gaussian filter
         Allocation tmpIn = Allocation.createFromBitmap(rs, src);

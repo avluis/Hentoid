@@ -1559,8 +1559,8 @@ public class CustomSubsamplingScaleImageView extends View {
                             loadDisposable.add(
                                     Single.fromCallable(() -> loadTile(this, decoder, tile))
                                             .subscribeOn(Schedulers.io())
-                                            .filter(res -> res.bitmap != null)
                                             .observeOn(Schedulers.computation())
+                                            .filter(res -> res.bitmap != null && !res.bitmap.isRecycled())
                                             .map(res1 -> processTile(res1, this, scale))
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .subscribe(
@@ -1912,8 +1912,6 @@ public class CustomSubsamplingScaleImageView extends View {
         // Take any prior subsampling into consideration _before_ processing the tile
         float currentScale = 1f / loadedTile.sampleSize;
         float resizeScale = targetScale / currentScale;
-
-        ImmutablePair<Integer, Float> resizeParams = computeResizeParams(resizeScale);
         loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, resizeScale, resizeScale);
 
         loadedTile.loading = false;
