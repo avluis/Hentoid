@@ -33,7 +33,6 @@ import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Consts;

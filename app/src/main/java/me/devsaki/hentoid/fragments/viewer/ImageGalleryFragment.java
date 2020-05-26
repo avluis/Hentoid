@@ -28,6 +28,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -114,7 +115,9 @@ public class ImageGalleryFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         firstLoadDone = false;
-        viewModel = new ViewModelProvider(requireActivity()).get(ImageViewerViewModel.class);
+
+        ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
     }

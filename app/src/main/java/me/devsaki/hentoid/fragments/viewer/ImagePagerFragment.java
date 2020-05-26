@@ -50,6 +50,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.ZoomableFrame;
 import me.devsaki.hentoid.views.ZoomableRecyclerView;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
@@ -175,7 +176,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel = new ViewModelProvider(requireActivity()).get(ImageViewerViewModel.class);
+        ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
 
         viewModel.onRestoreState(savedInstanceState);
 

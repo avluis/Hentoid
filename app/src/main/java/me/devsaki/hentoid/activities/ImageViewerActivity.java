@@ -17,6 +17,7 @@ import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.VolumeKeyListener;
 
 
@@ -41,9 +42,11 @@ public class ImageViewerActivity extends BaseActivity {
         long contentId = parser.getContentId();
         if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
 
-        Bundle searchParams = parser.getSearchParams();
-        ImageViewerViewModel viewModel = new ViewModelProvider(this).get(ImageViewerViewModel.class);
 
+        ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
+        ImageViewerViewModel viewModel = new ViewModelProvider(this, vmFactory).get(ImageViewerViewModel.class);
+
+        Bundle searchParams = parser.getSearchParams();
         if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
         else viewModel.loadFromContent(contentId);
 
