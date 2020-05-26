@@ -667,7 +667,7 @@ public class ContentDownloadService extends IntentService {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
             updateImageStatusAndUri(img, false, "");
             logErrorRecord(img.content.getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), "Download params : " + img.getDownloadParams());
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
             updateImageStatusAndUri(img, false, "");
             logErrorRecord(img.content.getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
@@ -792,7 +792,7 @@ public class ContentDownloadService extends IntentService {
                                              @NonNull DocumentFile dir,
                                              @Nullable String contentType,
                                              byte[] binaryContent,
-                                             boolean hasImageProcessing) throws IOException, UnsupportedContentException {
+                                             boolean hasImageProcessing) throws IOException, UnsupportedContentException, IllegalArgumentException {
 
         if (!dir.exists()) {
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getUri().toString());
@@ -855,7 +855,7 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
+    private DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException, IllegalArgumentException {
         DocumentFile file = FileHelper.findOrCreateDocumentFile(this, dir, mimeType, fileName);
         if (null == file)
             throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));

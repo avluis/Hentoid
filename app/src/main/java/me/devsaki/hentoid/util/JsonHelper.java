@@ -58,7 +58,7 @@ public class JsonHelper {
      * @param <K>    Type of the object to save
      * @throws IOException If anything happens during file I/O
      */
-    public static <K> DocumentFile createJson(@NonNull final Context context, K object, Type type, @NonNull DocumentFile dir) throws IOException {
+    public static <K> DocumentFile createJson(@NonNull final Context context, K object, Type type, @NonNull DocumentFile dir) throws IOException, IllegalArgumentException {
         DocumentFile file = FileHelper.findOrCreateDocumentFile(context, dir, JSON_MIME_TYPE, Consts.JSON_FILE_NAME_V2);
         if (null == file)
             throw new IOException("Failed creating file " + Consts.JSON_FILE_NAME_V2 + " in " + dir.getUri().getPath());
@@ -78,7 +78,7 @@ public class JsonHelper {
      * @param <K>    Type of the object to save
      * @throws IOException If anything happens during file I/O
      */
-    static <K> void updateJson(@NonNull final Context context, K object, Type type, @Nonnull DocumentFile file) throws IOException {
+    static <K> void updateJson(@NonNull final Context context, K object, Type type, @Nonnull DocumentFile file) throws IOException, IllegalArgumentException {
         if (!file.exists()) return;
 
         try (OutputStream output = FileHelper.getOutputStream(context, file)) {
@@ -118,7 +118,7 @@ public class JsonHelper {
                 }
                 json.append(sCurrentLine);
             }
-        } catch (Exception e) {
+        } catch (IOException | IllegalArgumentException e) {
             Timber.e(e, "Error while reading %s", f.getUri().toString());
         }
         return json.toString();

@@ -172,7 +172,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             Snackbar.make(rootView, R.string.viewer_copy_success, LENGTH_LONG)
                     .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                     .show();
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             Snackbar.make(rootView, R.string.viewer_copy_fail, LENGTH_LONG).show();
         }
     }
@@ -216,7 +216,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         try {
             BitmapFactory.decodeStream(FileHelper.getInputStream(context, imgFile), null, options);
             return new Point(options.outWidth, options.outHeight);
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             Timber.w(e);
             return new Point(0, 0);
         }

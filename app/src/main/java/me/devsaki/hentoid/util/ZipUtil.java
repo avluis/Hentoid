@@ -30,7 +30,7 @@ public class ZipUtil {
 
     private static final int BUFFER = 32 * 1024;
 
-    public static File zipFiles(@NonNull final Context context, List<DocumentFile> files, File dest) throws IOException {
+    public static File zipFiles(@NonNull final Context context, List<DocumentFile> files, File dest) throws IOException, IllegalArgumentException {
         Helper.assertNonUiThread();
         try (FileOutputStream out = new FileOutputStream(dest); ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out))) {
             final byte[] data = new byte[BUFFER];
@@ -44,7 +44,7 @@ public class ZipUtil {
     private static void addFile(@NonNull final Context context,
                                 @NonNull final DocumentFile file,
                                 final ZipOutputStream stream,
-                                final byte[] data) throws IOException {
+                                final byte[] data) throws IOException, IllegalArgumentException {
         Timber.d("Adding: %s", file);
         try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)) {
 

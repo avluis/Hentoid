@@ -181,7 +181,7 @@ public class LibExportDialogFragment extends DialogFragment {
             Snackbar.make(rootView, R.string.viewer_copy_success, LENGTH_LONG)
                     .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                     .show();
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             Snackbar.make(rootView, R.string.viewer_copy_fail, LENGTH_LONG).show();
         }
 
