@@ -22,7 +22,7 @@ public class TsuminoContent implements ContentParser {
     private String galleryUrl;
     @Selector(value = "img.book-page-image", attr = "src", defValue = "")
     private String coverUrl;
-    @Selector("div#Title")
+    @Selector(value = "div#Title", defValue = "")
     private String title;
     @Selector(value = "div#Pages", defValue = "")
     private String pages;

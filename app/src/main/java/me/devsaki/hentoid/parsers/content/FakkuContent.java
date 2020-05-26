@@ -21,7 +21,7 @@ public class FakkuContent implements ContentParser {
     private String galleryUrl;
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
-    @Selector(".content-name h1")
+    @Selector(value = ".content-name h1", defValue = "<no title>")
     private String title;
     @Selector(".content-right .row")
     private List<Element> information;

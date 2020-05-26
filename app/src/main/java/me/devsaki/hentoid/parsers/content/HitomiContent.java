@@ -20,7 +20,7 @@ public class HitomiContent implements ContentParser {
     private String galleryUrl;
     @Selector(value = ".cover img", attr = "src")
     private String coverUrl;
-    @Selector(value = "h1 a[href*='/reader/']", defValue = "")
+    @Selector(value = "h1 a[href*='/reader/']", defValue = "<no title>")
     private String title;
     //    @Selector(".thumbnail-container")
 //    private List<Element> pages;

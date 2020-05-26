@@ -27,7 +27,7 @@ public class NhentaiContent implements ContentParser {
     @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
     private String title;
     // Fallback value for title (see #449)
-    @Selector(value = "#info h1", defValue = "")
+    @Selector(value = "#info h1", defValue = "<no title>")
     private String titleAlt;
 
     @Selector(value = "#info a[href*='/artist']")

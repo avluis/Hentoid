@@ -34,8 +34,10 @@ public class Hentai2ReadContent implements ContentParser {
 
         result.setUrl(url.replace(Site.HENTAI2READ.getUrl(), ""));
         result.setCoverImageUrl(coverUrl);
-        String titleStr = title.get(title.size() - 1).text();
-        result.setTitle(!titleStr.isEmpty() ? Helper.removeNonPrintableChars(titleStr) : "");
+        if (!title.isEmpty()) {
+            String titleStr = title.get(title.size() - 1).text();
+            result.setTitle(!titleStr.isEmpty() ? Helper.removeNonPrintableChars(titleStr) : "");
+        } else result.setTitle("<no title>");
         result.setUniqueSiteId(uniqueId);
 
         AttributeMap attributes = new AttributeMap();
