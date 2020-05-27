@@ -318,7 +318,7 @@ public class LibImportDialogFragment extends DialogFragment {
             // Look for the book ID
             c.populateUniqueSiteId();
             for (DocumentFile f : bookfolders)
-                if (f.getName() != null && f.getName().contains("[" + c.getUniqueSiteId() + "]")) {
+                if (f.getName() != null && f.getName().contains(ContentHelper.formatBookId(c))) {
                     // Cache folder Uri
                     c.setStorageUri(f.getUri().toString());
                     // Cache JSON Uri

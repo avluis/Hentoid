@@ -297,7 +297,7 @@ public final class ContentHelper {
      * @return Formatted Content ID
      */
     @SuppressWarnings("squid:S2676") // Math.abs is used for formatting purposes only
-    private static String formatBookId(@NonNull final Content content) {
+    public static String formatBookId(@NonNull final Content content) {
         String id = content.getUniqueSiteId();
         // For certain sources (8muses, fakku), unique IDs are strings that may be very long
         // => shorten them by using their hashCode
