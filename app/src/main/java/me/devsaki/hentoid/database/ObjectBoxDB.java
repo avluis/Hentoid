@@ -167,6 +167,10 @@ public class ObjectBoxDB {
         return query.build();
     }
 
+    Query<Content> selectAllErrorJsonBooksQ() {
+        return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.ERROR.getCode()).notNull(Content_.jsonUri).notEqual(Content_.jsonUri, "").build();
+    }
+
     Query<Content> selectAllQueueBooksQ() {
         int[] storedContentStatus = new int[]{
                 StatusContent.SAVED.getCode(),

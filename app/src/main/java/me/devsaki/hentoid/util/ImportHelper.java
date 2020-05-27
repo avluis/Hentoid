@@ -134,11 +134,13 @@ public class ImportHelper {
         for (UriPermission p : contentResolver.getPersistedUriPermissions()) {
             if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {
                 isUriPermissionPeristed = true;
+                Timber.d("Uri permission already persisted for %s", treeUri);
                 break;
             }
         }
 
         if (!isUriPermissionPeristed) {
+            Timber.d("Persisting Uri permission for %s", treeUri);
             // Release previous access permissions, if different than the new one
             FileHelper.revokePreviousPermissions(contentResolver, treeUri);
             // Persist new access permission
@@ -153,8 +155,10 @@ public class ImportHelper {
         }
 
         DocumentFile hentoidFolder = addHentoidFolder(context, docFile);
-        if (!FileHelper.checkAndSetRootFolder(context, hentoidFolder, true))
+        if (!FileHelper.checkAndSetRootFolder(context, hentoidFolder, true)) {
+            Timber.e("Could not set the selected root folder %s", hentoidFolder.getUri().toString());
             return Result.INVALID_FOLDER;
+        }
 
         if (hasBooks(context)) {
             if (!askScanExisting) runImport(context, options);

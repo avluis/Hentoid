@@ -55,6 +55,8 @@ public interface CollectionDAO {
 
     void deleteAllLibraryBooks(boolean resetRemainingImagesStatus);
 
+    void deleteAllErrorBooksWithJson();
+
     long countAllQueueBooks();
 
     List<Content> selectAllQueueBooks();

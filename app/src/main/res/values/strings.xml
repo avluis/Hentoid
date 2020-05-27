@@ -16,7 +16,7 @@
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
 
-    <!-- API29 migration screen -->
+    <!-- API29 migration / library refresh screen -->
     <string name="api29_migration_title">File management update</string>
     <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
     <string name="api29_migration_step1">Hentoid folder</string>
@@ -24,6 +24,7 @@
     <string name="api29_migration_step2">Scan site folders</string>
     <string name="api29_migration_step3_init">Library scan starting…</string>
     <string name="api29_migration_step3">Scan library (%1$d / %2$d)</string>
+    <string name="api29_migration_step4_init">Importing queue…</string>
 
     <!-- Library screen toolbar -->
     <string name="menu_tags">Tags</string>

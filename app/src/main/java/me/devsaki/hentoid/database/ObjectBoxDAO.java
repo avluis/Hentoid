@@ -242,7 +242,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void deleteAllLibraryBooks(boolean resetRemainingImagesStatus) {
-        Timber.i("Cleaning up library");
         db.deleteContentById(db.selectAllLibraryBooksQ(false).findIds());
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
@@ -251,6 +250,10 @@ public class ObjectBoxDAO implements CollectionDAO {
             for (long contentId : remainingContentIds)
                 db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
         }
+    }
+
+    public void deleteAllErrorBooksWithJson() {
+        db.deleteContentById(db.selectAllErrorJsonBooksQ().findIds());
     }
 
     public void deleteAllQueuedBooks() {

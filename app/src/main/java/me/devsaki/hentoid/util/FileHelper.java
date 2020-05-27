@@ -235,8 +235,11 @@ public class FileHelper {
             return false;
         }
 
-        DocumentFile nomedia = findOrCreateDocumentFile(context, folder, null, ".nomedia");
-        // Clean up (if any) nomedia file
+        // Remove and add back the nomedia file to test if the user has the I/O rights to the selected folder
+        DocumentFile nomedia = findFile(context, folder, ".nomedia");
+        if (nomedia != null) nomedia.delete();
+
+        nomedia = folder.createFile("application/octet-steam", ".nomedia");
         if (null != nomedia && nomedia.exists()) {
             boolean deleted = nomedia.delete();
             if (deleted) Timber.d(".nomedia file deleted");

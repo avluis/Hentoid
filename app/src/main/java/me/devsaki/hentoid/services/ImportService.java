@@ -184,6 +184,7 @@ public class ImportService extends IntentService {
         // Cleanup DB
         CollectionDAO dao = new ObjectBoxDAO(this);
         dao.deleteAllLibraryBooks(true);
+        dao.deleteAllErrorBooksWithJson();
 
         for (int i = 0; i < bookFolders.size(); i++) {
             DocumentFile bookFolder = bookFolders.get(i);
@@ -292,6 +293,7 @@ public class ImportService extends IntentService {
             eventProgress(3, bookFolders.size() - nbFolders, booksOK, booksKO);
         }
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
+        eventComplete(3, bookFolders.size(), booksOK, booksKO, null);
 
         // 3rd pass : Import queue JSON
         DocumentFile queueFile = FileHelper.findFile(this, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
@@ -300,7 +302,7 @@ public class ImportService extends IntentService {
         // Write log in root folder
         DocumentFile cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
 
-        eventComplete(3, bookFolders.size(), booksOK, booksKO, cleanupLogFile);
+        eventComplete(4, bookFolders.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
 
         stopForeground(true);
@@ -335,18 +337,22 @@ public class ImportService extends IntentService {
 
     private void importQueue(@NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogUtil.LogEntry> log) {
         trace(Log.INFO, log, "Queue JSON found", "");
+        eventProgress(4, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseQueueJson(queueFile);
         if (null != contentCollection) {
             int queueSize = (int) dao.countAllQueueBooks();
+            eventProgress(4, queueSize, 0, 0);
             List<Content> queuedContent = contentCollection.getQueue();
             trace(Log.INFO, log, "Queue JSON deserialized : %s books detected", queuedContent.size() + "");
             List<QueueRecord> lst = new ArrayList<>();
+            int count = 1;
             for (Content c : queuedContent) {
                 Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
                 if (null == duplicate) {
                     long newContentId = dao.insertContent(c);
                     lst.add(new QueueRecord(newContentId, queueSize++));
                 }
+                eventProgress(4, queueSize, count++, 0);
             }
             dao.updateQueue(lst);
         }

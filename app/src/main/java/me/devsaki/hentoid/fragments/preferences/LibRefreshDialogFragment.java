@@ -50,6 +50,9 @@ public class LibRefreshDialogFragment extends DialogFragment {
     private TextView step3Txt;
     private ProgressBar step3progress;
     private View step3check;
+    private View step4block;
+    private ProgressBar step4progress;
+    private View step4check;
 
     public static void invoke(@NonNull final FragmentManager fragmentManager, boolean showOptions, boolean chooseFolder) {
         LibRefreshDialogFragment fragment = new LibRefreshDialogFragment();
@@ -116,7 +119,8 @@ public class LibRefreshDialogFragment extends DialogFragment {
         options.cleanUnreadable = cleanUnreadable;
 
         Uri rootUri = Uri.parse(Preferences.getStorageUri());
-        ImportHelper.setAndScanFolder(requireContext(), rootUri, false, null, options);
+        if (ImportHelper.setAndScanFolder(requireContext(), rootUri, false, null, options) == ImportHelper.Result.INVALID_FOLDER)
+            dismiss();
     }
 
     private void showImportProgressLayout(boolean askFolder) {
@@ -131,6 +135,9 @@ public class LibRefreshDialogFragment extends DialogFragment {
         step3progress = rootView.findViewById(R.id.import_step3_bar);
         step3Txt = rootView.findViewById(R.id.import_step3_text);
         step3check = rootView.findViewById(R.id.import_step3_check);
+        step4block = rootView.findViewById(R.id.import_step4);
+        step4progress = rootView.findViewById(R.id.import_step4_bar);
+        step4check = rootView.findViewById(R.id.import_step4_check);
 
         step1FolderButton = rootView.findViewById(R.id.import_step1_button);
         if (askFolder) {
@@ -193,19 +200,43 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEvent(ProcessEvent event) {
-        ProgressBar progressBar = (2 == event.step) ? step2progress : step3progress;
+        ProgressBar progressBar;
+        switch (event.step) {
+            case (2):
+                progressBar = step2progress;
+                break;
+            case (3):
+                progressBar = step3progress;
+                break;
+            default:
+                progressBar = step4progress;
+                break;
+        }
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            progressBar.setMax(event.elementsTotal);
-            progressBar.setProgress(event.elementsOK + event.elementsKO);
+            if (event.elementsTotal > -1) {
+                progressBar.setIndeterminate(false);
+                progressBar.setMax(event.elementsTotal);
+                progressBar.setProgress(event.elementsOK + event.elementsKO);
+            } else {
+                progressBar.setIndeterminate(true);
+            }
             if (3 == event.step) {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
+            } else if (4 == event.step) {
+                step3check.setVisibility(View.VISIBLE);
+                step4block.setVisibility(View.VISIBLE);
             }
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType && 3 == event.step) {
-            step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
-            step3check.setVisibility(View.VISIBLE);
-            dismiss();
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            if (3 == event.step) {
+                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
+                step3check.setVisibility(View.VISIBLE);
+                step4block.setVisibility(View.VISIBLE);
+            } else if (4 == event.step) {
+                step4check.setVisibility(View.VISIBLE);
+                dismiss();
+            }
         }
     }
 }
