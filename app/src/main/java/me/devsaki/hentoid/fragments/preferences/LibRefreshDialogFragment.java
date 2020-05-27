@@ -195,17 +195,15 @@ public class LibRefreshDialogFragment extends DialogFragment {
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             progressBar.setMax(event.elementsTotal);
             progressBar.setProgress(event.elementsOK + event.elementsKO);
-            if (3 == event.step)
-                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            if (2 == event.step) {
+            if (3 == event.step) {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
-            } else if (3 == event.step) {
-                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
-                step3check.setVisibility(View.VISIBLE);
-                dismiss();
+                step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
             }
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType && 3 == event.step) {
+            step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
+            step3check.setVisibility(View.VISIBLE);
+            dismiss();
         }
     }
 }
