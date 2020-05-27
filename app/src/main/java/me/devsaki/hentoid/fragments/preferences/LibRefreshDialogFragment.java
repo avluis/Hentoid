@@ -171,9 +171,11 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 break;
             case ImportHelper.Result.INVALID_FOLDER:
                 Snackbar.make(rootView, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
+                setCancelable(true);
                 break;
             case ImportHelper.Result.OTHER:
                 Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
+                setCancelable(true);
                 break;
             default:
                 // Nothing should happen here
