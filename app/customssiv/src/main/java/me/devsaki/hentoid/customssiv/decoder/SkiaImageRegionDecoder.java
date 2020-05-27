@@ -108,7 +108,7 @@ public class SkiaImageRegionDecoder implements ImageRegionDecoder {
                 decoder = BitmapRegionDecoder.newInstance(input, false);
             }
         }
-        if (decoder != null) return new Point(decoder.getWidth(), decoder.getHeight());
+        if (decoder != null && !decoder.isRecycled()) return new Point(decoder.getWidth(), decoder.getHeight());
         else return new Point(-1, -1);
     }
 
