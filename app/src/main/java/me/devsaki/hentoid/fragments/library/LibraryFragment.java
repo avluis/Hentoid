@@ -26,6 +26,7 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
@@ -143,6 +144,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem itemDelete;
     private MenuItem itemShare;
     private MenuItem itemArchive;
+    private MenuItem itemFolder;
     private MenuItem itemDeleteSwipe;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
@@ -551,6 +553,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemDelete = selectionToolbar.getMenu().findItem(R.id.action_delete);
         itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
         itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
+        itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         itemDeleteSwipe = selectionToolbar.getMenu().findItem(R.id.action_delete_sweep);
     }
 
@@ -566,6 +569,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 break;
             case R.id.action_archive:
                 archiveSelectedItems();
+                break;
+            case R.id.action_open_folder:
+                openItemFolder();
                 break;
             case R.id.action_redownload:
                 askRedownloadSelectedItemsScratch();
@@ -585,6 +591,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemDelete.setVisible(!isMultipleSelection);
         itemShare.setVisible(!isMultipleSelection);
         itemArchive.setVisible(!isMultipleSelection);
+        itemFolder.setVisible(!isMultipleSelection);
         itemDeleteSwipe.setVisible(isMultipleSelection);
 
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
@@ -623,6 +630,26 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             ToastUtil.toast(R.string.packaging_content);
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
             if (c != null) viewModel.archiveContent(c, this::onContentArchiveSuccess);
+        }
+    }
+
+    /**
+     * Callback for the "open containing folder" action button
+     */
+    private void openItemFolder() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        Context context = getActivity();
+        if (1 == selectedItems.size() && context != null) {
+            Content c = Stream.of(selectedItems).findFirst().get().getContent();
+            if (c != null) {
+                Uri folderUri = Uri.parse(c.getStorageUri());
+                DocumentFile folder = DocumentFile.fromTreeUri(requireContext(), folderUri);
+                if (folder != null && folder.exists()) {
+                    selectExtension.deselect();
+                    selectionToolbar.setVisibility(View.GONE);
+                    FileHelper.openFile(requireContext(), folder);
+                }
+            }
         }
     }
 

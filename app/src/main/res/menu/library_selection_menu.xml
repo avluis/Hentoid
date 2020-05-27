@@ -25,6 +25,11 @@
         android:title="@string/menu_share"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_open_folder"
+        android:icon="@drawable/ic_folder"
+        android:title="@string/menu_open_folder"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_redownload"
         android:icon="@drawable/ic_action_download_scratch"
         android:title="@string/menu_redownload"
