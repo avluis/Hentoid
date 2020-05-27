@@ -93,6 +93,7 @@ public class QueueViewModel extends AndroidViewModel {
 
         // Get unpaged data to be sure we have everything in one collection
         List<QueueRecord> queue = dao.selectQueue();
+        if (oldPosition < 0 || oldPosition >= queue.size()) return;
 
         // Move the item
         QueueRecord fromValue = queue.get(oldPosition);
