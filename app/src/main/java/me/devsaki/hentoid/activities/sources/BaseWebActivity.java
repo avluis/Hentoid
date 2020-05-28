@@ -56,6 +56,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -212,6 +213,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         universalBlockedContent.add("fingahvf.top");
         universalBlockedContent.add("displayvertising.com");
         universalBlockedContent.add("tsyndicate.com");
+        universalBlockedContent.add("semireproji.pro");
+        universalBlockedContent.add("defutohi.pro");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -813,7 +816,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         // Adapter used to parse the HTML code of book gallery pages
         private final HtmlAdapter<ContentParser> htmlAdapter;
         // Domain name for which link navigation is restricted
-        private String restrictedDomainName = "";
+        private List<String> restrictedDomainNames = new ArrayList<>();
         // Loading state of the current webpage (used for the refresh/stop feature)
         private boolean isPageLoading = false;
         // Loading state of the HTML code of the current webpage (used to trigger the action button)
@@ -842,7 +845,22 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          * @param s Domain name to restrict link navigation to
          */
         protected void restrictTo(String s) {
-            restrictedDomainName = s;
+            restrictedDomainNames.add(s);
+        }
+
+        void restrictTo(String... s) {
+            restrictedDomainNames.addAll(Arrays.asList(s));
+        }
+
+        private boolean isHostNotInRestrictedDomains(@NonNull String host) {
+            if (restrictedDomainNames.isEmpty()) return false;
+
+            for (String s : restrictedDomainNames) {
+                if (host.contains(s)) return false;
+            }
+
+            Timber.i("Unrestricted host detected : %s", host);
+            return true;
         }
 
         /**
@@ -883,15 +901,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Override
         @Deprecated
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            String hostStr = Uri.parse(url).getHost();
-            return hostStr != null && !hostStr.contains(restrictedDomainName);
+            String host = Uri.parse(url).getHost();
+            return host != null && isHostNotInRestrictedDomains(host);
         }
 
         @TargetApi(Build.VERSION_CODES.N)
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            String hostStr = Uri.parse(request.getUrl().toString()).getHost();
-            return hostStr != null && !hostStr.contains(restrictedDomainName);
+            String host = Uri.parse(request.getUrl().toString()).getHost();
+            return host != null && isHostNotInRestrictedDomains(host);
         }
 
         /**
