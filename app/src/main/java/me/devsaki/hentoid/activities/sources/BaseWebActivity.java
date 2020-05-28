@@ -349,6 +349,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
+        // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
+        // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(webView.getUrl());
         outState.putAll(builder.getBundle());
@@ -358,6 +360,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
+        // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
+        // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
         String url = new BaseWebActivityBundle.Parser(savedInstanceState).getUrl();
         if (url != null && !url.isEmpty())
             webView.loadUrl(url);
