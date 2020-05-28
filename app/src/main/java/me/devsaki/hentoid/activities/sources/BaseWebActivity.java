@@ -346,6 +346,24 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
+        builder.setUrl(webView.getUrl());
+        outState.putAll(builder.getBundle());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        String url = new BaseWebActivityBundle.Parser(savedInstanceState).getUrl();
+        if (url != null && !url.isEmpty())
+            webView.loadUrl(url);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
