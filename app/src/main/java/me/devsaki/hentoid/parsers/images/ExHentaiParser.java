@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
 import android.util.Pair;
+import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
@@ -141,8 +142,7 @@ public class ExHentaiParser implements ImageListParser {
                                 else pageUrl += "?";
                                 pageUrl += "nl=" + arg;
                                 // Get the final URL
-                                doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
-                                if (doc != null) {
+                                if (URLUtil.isValidUrl(pageUrl)) {
                                     targetDownloadParams.put("backupUrl", pageUrl);
                                     downloadParamsStr = JsonHelper.serializeToJson(targetDownloadParams, JsonHelper.MAP_STRINGS);
                                     img.setDownloadParams(downloadParamsStr);
