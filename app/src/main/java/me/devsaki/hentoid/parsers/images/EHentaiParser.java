@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
 import android.util.Pair;
+import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
@@ -115,8 +116,7 @@ public class EHentaiParser implements ImageListParser {
                             else pageUrl += "?";
                             pageUrl += "nl=" + arg;
                             // Get the final URL
-                            doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
-                            if (doc != null) {
+                            if (URLUtil.isValidUrl(pageUrl)) {
                                 downloadParams.put("backupUrl", pageUrl);
                                 String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
                                 img.setDownloadParams(downloadParamsStr);
@@ -154,7 +154,8 @@ public class EHentaiParser implements ImageListParser {
 
     private void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
         Elements imageLinks = doc.select(".gdtm div a"); // Normal thumbs
-        if (null == imageLinks || imageLinks.isEmpty()) imageLinks = doc.select(".gdtl a"); // Large thumbs
+        if (null == imageLinks || imageLinks.isEmpty())
+            imageLinks = doc.select(".gdtl a"); // Large thumbs
         for (Element e : imageLinks) pageUrls.add(e.attr("href"));
     }
 
