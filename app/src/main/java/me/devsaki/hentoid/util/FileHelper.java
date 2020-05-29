@@ -289,7 +289,13 @@ public class FileHelper {
     }
 
     public static void openFile(@NonNull Context context, @NonNull DocumentFile aFile) {
-        Intent myIntent = new Intent(Intent.ACTION_VIEW, aFile.getUri());
+        Intent myIntent = new Intent(Intent.ACTION_VIEW);
+        if (aFile.isDirectory()) {
+            myIntent.setDataAndType(aFile.getUri(), DocumentsContract.Document.MIME_TYPE_DIR);
+        } else {
+            String fileName = (null == aFile.getName()) ? "" : aFile.getName();
+            myIntent.setDataAndTypeAndNormalize(aFile.getUri(), MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(fileName)));
+        }
         myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         try {
             context.startActivity(myIntent);

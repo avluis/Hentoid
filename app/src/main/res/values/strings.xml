@@ -161,9 +161,9 @@
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
-    <string name="error_open">Error opening image : no image viewer found.</string>
+    <string name="error_open">Error opening file : no relevant application found</string>
     <string name="error_browser">Error opening link: no browser found</string>
-    <string name="error_send">Error sending archive : no relevant application found.</string>
+    <string name="error_send">Error sending archive : no relevant application found</string>
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
