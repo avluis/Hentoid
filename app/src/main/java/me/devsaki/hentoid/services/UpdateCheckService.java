@@ -119,6 +119,7 @@ public class UpdateCheckService extends Service {
 
     private void onCheckError(Throwable t) {
         Timber.w(t, "Failed to get update info");
+        notificationManager.cancel();
 
         if (shouldShowToast) {
             String message = "Could not check for updates. Check your connection or try again later.";
