@@ -1,6 +1,10 @@
 package me.devsaki.hentoid.events;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import me.devsaki.hentoid.database.domains.Content;
 
@@ -9,6 +13,14 @@ import me.devsaki.hentoid.database.domains.Content;
  * Tracks downloads events for interested subscribers.
  */
 public class DownloadEvent {
+    @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Motive {
+        int NONE = -1;
+        int NO_INTERNET = 0;
+        int NO_WIFI = 1;
+    }
+
     public static final int EV_PROGRESS = 0;    // Download progress of current book (always one book at a time)
     public static final int EV_PAUSE = 1;       // Queue is paused
     public static final int EV_UNPAUSE = 2;     // Queue is unpaused
@@ -21,6 +33,8 @@ public class DownloadEvent {
     public final int pagesOK;                   // Number of pages that have been downloaded successfully for current book
     public final int pagesKO;                   // Number of pages that have been downloaded with errors for current book
     public final int pagesTotal;                // Number of pages to download for current book
+    public final @Motive
+    int motive;            // Motive for certain events (EV_PAUSE)
 
     /**
      * Use for EV_PROGRESS and EV_COMPLETE events
@@ -37,6 +51,7 @@ public class DownloadEvent {
         this.pagesOK = pagesOK;
         this.pagesKO = pagesKO;
         this.pagesTotal = pagesTotal;
+        this.motive = Motive.NONE;
     }
 
     /**
@@ -51,6 +66,22 @@ public class DownloadEvent {
         this.pagesOK = 0;
         this.pagesKO = 0;
         this.pagesTotal = 0;
+        this.motive = Motive.NONE;
+    }
+
+    /**
+     * Use for EV_PAUSE event
+     *
+     * @param eventType event type code (among DownloadEvent public static EV_ values)
+     * @param motive    motive for the event
+     */
+    public DownloadEvent(int eventType, @Motive int motive) {
+        this.content = null;
+        this.eventType = eventType;
+        this.pagesOK = 0;
+        this.pagesKO = 0;
+        this.pagesTotal = 0;
+        this.motive = motive;
     }
 
     /**
@@ -64,6 +95,7 @@ public class DownloadEvent {
         this.pagesOK = 0;
         this.pagesKO = 0;
         this.pagesTotal = 0;
+        this.motive = Motive.NONE;
     }
 
     public int getNumberRetries() {

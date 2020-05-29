@@ -79,6 +79,10 @@
     <string name="pref_queue_autostart_default" translatable="false">true</string>
     <string name="pref_queue_autostart_on">Download queue will start as soon as a download is done</string>
     <string name="pref_queue_autostart_off">Download queue must be started manually</string>
+    <string name="pref_queue_wifi_only_title">Only download on wi-fi</string>
+    <string name="pref_queue_wifi_only_default" translatable="false">false</string>
+    <string name="pref_queue_wifi_only_on">Downloads will only start if connected to wi-fi</string>
+    <string name="pref_queue_wifi_only_off">Downloads will start if the device is connected to any network</string>
     <string name="download_retries_screen_title">Automated download retries</string>
     <string name="download_retries_active_title">Retries activated</string>
     <string name="pref_dl_retries_active_default" translatable="false">false</string>

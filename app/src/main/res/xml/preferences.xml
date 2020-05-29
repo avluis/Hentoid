@@ -165,6 +165,13 @@
             android:summaryOn="@string/pref_queue_autostart_on"
             android:title="@string/pref_queue_autostart_title"
             app:iconSpaceReserved="false" />
+        <CheckBoxPreference
+            android:defaultValue="@string/pref_queue_wifi_only_default"
+            android:key="pref_queue_wifi_only"
+            android:summaryOff="@string/pref_queue_wifi_only_off"
+            android:summaryOn="@string/pref_queue_wifi_only_on"
+            android:title="@string/pref_queue_wifi_only_title"
+            app:iconSpaceReserved="false" />
         <PreferenceCategory
             android:title="@string/download_retries_screen_title"
             app:iconSpaceReserved="false">

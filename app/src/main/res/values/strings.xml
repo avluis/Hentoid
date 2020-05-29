@@ -75,6 +75,8 @@
     <string name="err_no_content">Book does not exist yet</string>
     <string name="confirm_cancel_all">You are about to cancel the whole queue. Continue ?</string>
     <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
+    <string name="paused_no_internet">Cannot download - No internet</string>
+    <string name="paused_no_wifi">Cannot download - No wi-fi</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>

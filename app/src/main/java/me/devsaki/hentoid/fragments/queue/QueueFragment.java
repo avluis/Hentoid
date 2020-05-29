@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiConsumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
@@ -313,6 +315,16 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         Timber.d("Event received : %s", event.eventType);
         errorStatsMenu.setVisible(event.pagesKO > 0);
 
+        // Display motive, if any
+        if (event.motive != DownloadEvent.Motive.NONE) {
+            String motiveMsg = "";
+            if (event.motive == DownloadEvent.Motive.NO_INTERNET)
+                motiveMsg = getString(R.string.paused_no_internet);
+            else if (event.motive == DownloadEvent.Motive.NO_WIFI)
+                motiveMsg = getString(R.string.paused_no_wifi);
+            Snackbar.make(recyclerView, motiveMsg, BaseTransientBottomBar.LENGTH_SHORT).show();
+        }
+
         switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
                 updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal, event.getNumberRetries());
@@ -336,7 +348,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 if (0 == itemAdapter.getAdapterItemCount()) errorStatsMenu.setVisible(false);
                 update(event.eventType);
                 break;
-            default: // EV_PAUSE, EV_CANCEL events
+            default: // EV_PAUSE, EV_CANCEL
                 dlPreparationProgressBar.setVisibility(View.GONE);
                 updateProgressFirstItem(true);
                 update(event.eventType);

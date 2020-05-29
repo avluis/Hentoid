@@ -78,6 +78,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.NetworkHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.exception.CaptchaException;
@@ -202,6 +203,22 @@ public class ContentDownloadService extends IntentService {
             Timber.w("Queue is paused. Download aborted.");
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
+
+        @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(this);
+        // Check for network connectivity
+        if (NetworkHelper.Connectivity.NO_INTERNET == connectivity) {
+            Timber.w("No internet connection available. Queue paused.");
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_INTERNET));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
+
+        // Check for wifi if wifi-only mode is on
+        if (Preferences.isQueueWifiOnly() && NetworkHelper.Connectivity.WIFI != connectivity) {
+            Timber.w("No wi-fi connection available. Queue paused.");
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_WIFI));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
+
 
         // Work on first item of queue
 
