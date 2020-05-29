@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.CachedDocumentFile;
 import androidx.documentfile.provider.DocumentFile;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -140,7 +140,7 @@ class FileUtil {
             final FileHelper.NameFilter nameFilter,
             boolean listFolders,
             boolean listFiles) {
-        final List<ImmutablePair<Uri, String>> results = new ArrayList<>();
+        final List<ImmutableTriple<Uri, String, Long>> results = new ArrayList<>();
 
         ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
         if (null == client) return Collections.emptyList();
@@ -150,16 +150,18 @@ class FileUtil {
             try (Cursor c = client.query(searchUri, new String[]{
                     DocumentsContract.Document.COLUMN_DOCUMENT_ID,
                     DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                    DocumentsContract.Document.COLUMN_MIME_TYPE}, null, null, null)) {
+                    DocumentsContract.Document.COLUMN_MIME_TYPE,
+                    DocumentsContract.Document.COLUMN_SIZE}, null, null, null)) {
                 if (c != null)
                     while (c.moveToNext()) {
                         final String documentId = c.getString(0);
                         final String documentName = c.getString(1);
                         boolean isFolder = c.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
+                        final Long documentSize = c.getLong(3);
 
                         // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                         if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
-                            results.add(new ImmutablePair<>(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName));
+                            results.add(new ImmutableTriple<>(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName, documentSize));
                     }
             } catch (Exception e) {
                 Timber.w(e, "Failed query");
@@ -174,13 +176,14 @@ class FileUtil {
         return convertFromUris(context, parent, results);
     }
 
-    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final DocumentFile parent, @NonNull final List<ImmutablePair<Uri, String>> uris) {
+    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final DocumentFile parent, @NonNull final List<ImmutableTriple<Uri, String, Long>> uris) {
         final List<DocumentFile> resultFiles = new ArrayList<>();
-        for (ImmutablePair<Uri, String> uri : uris) {
+        for (ImmutableTriple<Uri, String, Long> uri : uris) {
             DocumentFile docFile = newTreeDocumentFile(parent, context, uri.left);
             // Following line should be the proper way to go but it's inefficient as it calls buildDocumentUriUsingTree once again
             //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri);
-            if (docFile != null) resultFiles.add(new CachedDocumentFile(docFile, uri.right));
+            if (docFile != null)
+                resultFiles.add(new CachedDocumentFile(docFile, uri.middle, uri.right));
         }
         return resultFiles;
     }

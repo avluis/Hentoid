@@ -174,7 +174,8 @@ public class ImageFile {
         return size;
     }
 
-    public void setSize(long size) {
+    public ImageFile setSize(long size) {
         this.size = size;
+        return this;
     }
 }

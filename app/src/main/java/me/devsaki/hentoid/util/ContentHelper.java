@@ -11,6 +11,7 @@ import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
 
 import java.io.IOException;
@@ -375,17 +376,19 @@ public final class ContentHelper {
     }
 
     public static List<ImageFile> matchFilesToImageList(@NonNull final List<DocumentFile> files, @NonNull final List<ImageFile> images) {
-        Map<String, String> fileNameUris = new HashMap<>(files.size());
+        Map<String, ImmutablePair<String, Long>> fileNameProperties = new HashMap<>(files.size());
         List<ImageFile> result = new ArrayList<>();
 
         for (DocumentFile file : files)
-            fileNameUris.put(removeLeadingZeroesAndExtensionCached(file.getName()), file.getUri().toString());
+            fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
 
         for (ImageFile img : images) {
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
-            if (fileNameUris.containsKey(imgName))
-                result.add(img.setFileUri(fileNameUris.get(imgName)).setStatus(StatusContent.DOWNLOADED));
-            else
+            if (fileNameProperties.containsKey(imgName)) {
+                ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
+                if (property != null)
+                    result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
+            } else
                 Timber.i(">> img dropped %s", imgName);
         }
         return result;
@@ -409,7 +412,7 @@ public final class ContentHelper {
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString());
+            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString()).setSize(f.length());
             result.add(img);
         }
         return result;
