@@ -36,7 +36,7 @@ public class OkHttpClientSingleton {
                     int CACHE_SIZE = 2 * 1024 * 1024; // 2 MB
 
                     OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
-                            .addInterceptor(OkHttpClientSingleton::onIntercept)
+                            .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
                             .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                             .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                             .writeTimeout(timeoutMs, TimeUnit.MILLISECONDS)
@@ -50,7 +50,7 @@ public class OkHttpClientSingleton {
         return OkHttpClientSingleton.instance.get(timeoutMs);
     }
 
-    private static okhttp3.Response onIntercept(Interceptor.Chain chain) throws IOException {
+    private static okhttp3.Response rewriteUserAgentInterceptor(Interceptor.Chain chain) throws IOException {
         Request request = chain.request()
                 .newBuilder()
                 .header("User-Agent", Consts.USER_AGENT_NEUTRAL)
