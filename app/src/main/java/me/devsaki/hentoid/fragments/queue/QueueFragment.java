@@ -40,8 +40,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
@@ -62,6 +67,8 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
+import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
@@ -110,6 +117,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     // Used to effectively cancel a download when the user hasn't hit UNDO
     private FastAdapter<ContentItem> fastAdapter;
 
+    // Download speed calculator
+    private final DownloadSpeedCalculator downloadSpeedCalulator = new DownloadSpeedCalculator();
 
     // State
     private boolean isPreparingDownload = false;
@@ -189,6 +198,15 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         initToolbar();
         attachButtons(fastAdapter);
+
+        // Network usage display refresh
+        compositeDisposable.add(Observable.timer(1, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.computation())
+                .repeat()
+                .observeOn(Schedulers.computation())
+                .map(v -> NetworkHelper.getIncomingNetworkUsage(requireContext()))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::updateNetworkUsage));
 
         return rootView;
     }
@@ -422,9 +440,12 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 // Update information bar
                 StringBuilder message = new StringBuilder();
                 String processedPagesFmt = Helper.formatIntAsStr(pagesOKDisplay, String.valueOf(totalPagesDisplay).length());
-                message.append(processedPagesFmt).append("/").append(totalPagesDisplay).append(" processed (").append(pagesKO).append(" errors)");
+                message.append(processedPagesFmt).append("/").append(totalPagesDisplay).append(" processed");
+                if (pagesKO > 0)
+                    message.append(" (").append(pagesKO).append(" errors)");
                 if (numberRetries > 0)
                     message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
+                message.append(String.format(Locale.US, " @ %d KBps", (int)downloadSpeedCalulator.getAvgSpeedKbps()));
 
                 queueInfo.setText(message.toString());
                 isPreparingDownload = false;
@@ -646,5 +667,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         intent.putExtras(builder.getBundle());
 
         requireContext().startActivity(intent);
+    }
+
+    private void updateNetworkUsage(long bytesReceived) {
+        downloadSpeedCalulator.addSampleNow(bytesReceived);
     }
 }

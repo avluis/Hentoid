@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.network;
 
 import androidx.annotation.Nullable;
 
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.util.network.OkHttpClientSingleton;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.MediaType;

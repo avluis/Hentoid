@@ -14,7 +14,7 @@ import com.crashlytics.android.Crashlytics;
 import java.io.File;
 
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.VolleyOkHttp3Stack;
+import me.devsaki.hentoid.util.network.VolleyOkHttp3Stack;
 import timber.log.Timber;
 
 /**

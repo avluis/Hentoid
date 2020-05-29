@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.network;
 
 import android.net.Uri;
 import android.text.TextUtils;
@@ -19,6 +19,9 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.network.OkHttpClientSingleton;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

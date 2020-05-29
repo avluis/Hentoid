@@ -1,16 +1,22 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.network;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
+import android.net.TrafficStats;
 import android.os.Build;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 public class NetworkHelper {
 
@@ -58,5 +64,21 @@ public class NetworkHelper {
                     return Connectivity.NO_INTERNET; // Others (e.g. TYPE_MOBILE_MMS)
             }
         }
+    }
+
+    public static long getIncomingNetworkUsage(@NonNull final Context context) {
+        // Get running processes
+        ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+        if (null == manager) return -1;
+
+        long totalReceived = 0;
+
+        List<ActivityManager.RunningAppProcessInfo> runningApps = manager.getRunningAppProcesses();
+        for (ActivityManager.RunningAppProcessInfo runningApp : runningApps) {
+            long received = TrafficStats.getUidRxBytes(runningApp.uid);
+            totalReceived += received;
+//            Timber.d(">> proc uid: %1d - name: %s - pkg %s: Rcvd = %1d", runningApp.uid, runningApp.processName, runningApp.pkgList, received);
+        }
+        return totalReceived;
     }
 }
