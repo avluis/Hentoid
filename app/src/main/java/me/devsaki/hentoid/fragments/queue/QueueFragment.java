@@ -83,6 +83,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
  */
+// TODO update page display when QtyPage has been updated by the downloader (Hitomi)
 public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -353,7 +354,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
-                updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal, event.getNumberRetries());
+                updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal, event.getNumberRetries(), event.downloadedSizeB);
                 break;
             case DownloadEvent.EV_UNPAUSE:
                 ContentQueueManager.getInstance().unpauseQueue();
@@ -417,12 +418,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     /**
      * Update main progress bar and bottom progress panel for current (1st in queue) book
      *
-     * @param pagesOK       Number of pages successfully downloaded for current (1st in queue) book
-     * @param pagesKO       Number of pages whose download has failed for current (1st in queue) book
-     * @param totalPages    Total pages of current (1st in queue) book
-     * @param numberRetries Current number of download auto-retries for current (1st in queue) book
+     * @param pagesOK           Number of pages successfully downloaded for current (1st in queue) book
+     * @param pagesKO           Number of pages whose download has failed for current (1st in queue) book
+     * @param totalPages        Total pages of current (1st in queue) book
+     * @param numberRetries     Current number of download auto-retries for current (1st in queue) book
+     * @param downloadedSizeB   Current size of downloaded content (in bytes)
      */
-    private void updateProgress(final int pagesOK, final int pagesKO, final int totalPages, final int numberRetries) {
+    private void updateProgress(final int pagesOK, final int pagesKO, final int totalPages, final int numberRetries, final long downloadedSizeB) {
         if (!ContentQueueManager.getInstance().isQueuePaused() && itemAdapter.getAdapterItemCount() > 0) {
             Content content = itemAdapter.getAdapterItem(0).getContent();
 
@@ -434,7 +436,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 int pagesOKDisplay = Math.max(0, pagesOK - 1);
 
                 // Update book progress bar
-                content.setPercent((pagesOKDisplay + pagesKO) * 100.0 / totalPagesDisplay);
+                Timber.i(">> setProgress %s",pagesOKDisplay + pagesKO);
+                content.setProgress(pagesOKDisplay + pagesKO);
+                content.setDownloadedBytes(downloadedSizeB);
                 updateProgressFirstItem(false);
 
                 // Update information bar
@@ -562,8 +566,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             Content content = itemAdapter.getAdapterItem(0).getContent();
             if (null == content) return;
 
-            // Hack to update the progress bar of the 1st visible card even though it is controlled by the PagedList
-            ContentItem.ContentViewHolder.updateProgress(content, requireViewById(rootView, R.id.pbDownload), 0, isPausedevent);
+            // Hack to update the 1st visible card even though it is controlled by the PagedList
+            ContentItem.ContentViewHolder.updateProgress(content, requireViewById(rootView, R.id.item_card), 0, isPausedevent);
         }
     }
 

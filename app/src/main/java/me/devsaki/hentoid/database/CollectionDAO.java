@@ -6,8 +6,11 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.paging.PagedList;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -98,7 +101,7 @@ public interface CollectionDAO {
 
     void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo);
 
-    void updateImageFileStatusParamsMimeTypeUri(@NonNull ImageFile image);
+    void updateImageFileStatusParamsMimeTypeUriSize(@NonNull ImageFile image);
 
     void deleteImageFile(@NonNull ImageFile img);
 
@@ -106,7 +109,7 @@ public interface CollectionDAO {
 
     LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id);
 
-    SparseIntArray countProcessedImagesById(long contentId);
+    Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId);
 
 
     // QUEUE

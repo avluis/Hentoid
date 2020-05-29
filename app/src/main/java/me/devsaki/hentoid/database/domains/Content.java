@@ -84,11 +84,13 @@ public class Content implements Serializable {
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
-    private double percent;     // % progress to display the progress bar on the queue screen
+    private long progress;          // number of downloaded pages; used to display the progress bar on the queue screen
     @Transient
-    private boolean isFirst;    // True if current content is the first of its set in the DB query
+    private long downloadedBytes = 0;// Number of downloaded bytes; used to display the size estimate on the queue screen
     @Transient
-    private boolean isLast;     // True if current content is the last of its set in the DB query
+    private boolean isFirst;        // True if current content is the first of its set in the DB query
+    @Transient
+    private boolean isLast;         // True if current content is the last of its set in the DB query
     @Transient
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
 
@@ -493,18 +495,33 @@ public class Content implements Serializable {
     }
 
     public double getPercent() {
-        return percent;
+        return progress * 1.0 / qtyPages;
     }
 
-    public void setPercent(double percent) {
-        this.percent = percent;
+    public void setProgress(long progress) {
+        this.progress = progress;
     }
 
-    public void computePercent() {
-        if (imageFiles != null && 0 == percent && qtyPages > 0) {
-            long progress = Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.ERROR).count();
-            percent = progress * 100.0 / qtyPages;
+    public void computeProgress() {
+        if (0 == progress && imageFiles != null)
+            progress = Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.ERROR).count();
+    }
+
+    public double getBookSizeEstimate() {
+        if (downloadedBytes > 0) {
+            computeProgress();
+            if (progress > 3) return (long) (downloadedBytes / getPercent());
         }
+        return 0;
+    }
+
+    public void setDownloadedBytes(long downloadedBytes) {
+        this.downloadedBytes = downloadedBytes;
+    }
+
+    public void computeDownloadedBytes() {
+        if (0 == downloadedBytes)
+            downloadedBytes = Stream.of(imageFiles).mapToLong(ImageFile::getSize).sum();
     }
 
     public long getNbDownloadedPages() {

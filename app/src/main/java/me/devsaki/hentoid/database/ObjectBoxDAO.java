@@ -10,10 +10,13 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -276,8 +279,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.updateImageContentStatus(contentId, updateFrom, updateTo);
     }
 
-    public void updateImageFileStatusParamsMimeTypeUri(@NonNull ImageFile image) {
-        db.updateImageFileStatusParamsMimeTypeUri(image);
+    public void updateImageFileStatusParamsMimeTypeUriSize(@NonNull ImageFile image) {
+        db.updateImageFileStatusParamsMimeTypeUriSize(image);
     }
 
     public void deleteImageFile(@NonNull ImageFile img) {
@@ -293,7 +296,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContent(id));
     }
 
-    public SparseIntArray countProcessedImagesById(long contentId) {
+    public Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId) {
         return db.countProcessedImagesById(contentId);
     }
 

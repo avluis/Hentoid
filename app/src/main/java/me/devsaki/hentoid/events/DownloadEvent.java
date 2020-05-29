@@ -33,6 +33,7 @@ public class DownloadEvent {
     public final int pagesOK;                   // Number of pages that have been downloaded successfully for current book
     public final int pagesKO;                   // Number of pages that have been downloaded with errors for current book
     public final int pagesTotal;                // Number of pages to download for current book
+    public final long downloadedSizeB;          // Total size of downloaded content (bytes)
     public final @Motive
     int motive;            // Motive for certain events (EV_PAUSE)
 
@@ -45,12 +46,13 @@ public class DownloadEvent {
      * @param pagesKO    pages downloaded with errors
      * @param pagesTotal total pages to download
      */
-    public DownloadEvent(@NonNull Content content, int eventType, int pagesOK, int pagesKO, int pagesTotal) {
+    public DownloadEvent(@NonNull Content content, int eventType, int pagesOK, int pagesKO, int pagesTotal, long downloadedSizeB) {
         this.content = content;
         this.eventType = eventType;
         this.pagesOK = pagesOK;
         this.pagesKO = pagesKO;
         this.pagesTotal = pagesTotal;
+        this.downloadedSizeB = downloadedSizeB;
         this.motive = Motive.NONE;
     }
 
@@ -66,6 +68,7 @@ public class DownloadEvent {
         this.pagesOK = 0;
         this.pagesKO = 0;
         this.pagesTotal = 0;
+        this.downloadedSizeB = 0;
         this.motive = Motive.NONE;
     }
 
@@ -81,6 +84,7 @@ public class DownloadEvent {
         this.pagesOK = 0;
         this.pagesKO = 0;
         this.pagesTotal = 0;
+        this.downloadedSizeB = 0;
         this.motive = motive;
     }
 
@@ -95,6 +99,7 @@ public class DownloadEvent {
         this.pagesOK = 0;
         this.pagesKO = 0;
         this.pagesTotal = 0;
+        this.downloadedSizeB = 0;
         this.motive = Motive.NONE;
     }
 

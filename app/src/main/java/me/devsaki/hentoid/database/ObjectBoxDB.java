@@ -8,8 +8,11 @@ import androidx.annotation.NonNull;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -662,7 +665,7 @@ public class ObjectBoxDB {
         return result;
     }
 
-    void updateImageFileStatusParamsMimeTypeUri(@NonNull ImageFile image) {
+    void updateImageFileStatusParamsMimeTypeUriSize(@NonNull ImageFile image) {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
         if (img != null) {
@@ -670,6 +673,7 @@ public class ObjectBoxDB {
             img.setDownloadParams(image.getDownloadParams());
             img.setMimeType(image.getMimeType());
             img.setFileUri(image.getFileUri());
+            img.setSize(image.getSize());
             imgBox.put(img);
         }
     }
@@ -697,22 +701,27 @@ public class ObjectBoxDB {
         }
     }
 
-    SparseIntArray countProcessedImagesById(long contentId) {
+    // Returns a list of processed images grouped by status, with count and filesize
+    Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId) {
         QueryBuilder<ImageFile> imgQuery = store.boxFor(ImageFile.class).query();
         imgQuery.equal(ImageFile_.contentId, contentId);
         List<ImageFile> images = imgQuery.build().find();
 
-        SparseIntArray result = new SparseIntArray();
+        Map<StatusContent, ImmutablePair<Integer, Long>> result = new HashMap<>();
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
         // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
         Map<StatusContent, List<ImageFile>> map = Stream.of(images).collect(Collectors.groupingBy(ImageFile::getStatus));
-
         for (Map.Entry<StatusContent, List<ImageFile>> entry : map.entrySet()) {
             StatusContent t = entry.getKey();
-            int size = (null == entry.getValue()) ? 0 : entry.getValue().size();
-            result.append(t.getCode(), size);
+            int count = 0;
+            long size = 0;
+            if (entry.getValue() != null) {
+                count = entry.getValue().size();
+                for (ImageFile img : entry.getValue()) size += img.getSize();
+            }
+            result.put(t, new ImmutablePair<>(count, size));
         }
 
         return result;

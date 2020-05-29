@@ -36,6 +36,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -48,9 +49,9 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
-import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -482,16 +483,21 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
         }
 
-        public static void updateProgress(@NonNull final Content content, @NonNull ProgressBar pb, int position, boolean isPausedEvent) {
+        public static void updateProgress(@NonNull final Content content, @NonNull View rootCardView, int position, boolean isPausedEvent) {
             boolean isQueueReady = ContentQueueManager.getInstance().isQueueActive() && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
             boolean isFirstItem = (0 == position);
+            ProgressBar pb = rootCardView.findViewById(R.id.pbDownload);
 
-            content.computePercent();
+            content.computeProgress();
+            content.computeDownloadedBytes();
+
+            Timber.i(">> pc %s", content.getPercent());
             if ((isFirstItem && isQueueReady) || content.getPercent() > 0) {
+                TextView tvPages = rootCardView.findViewById(R.id.tvPages);
                 pb.setVisibility(View.VISIBLE);
                 if (content.getPercent() > 0) {
                     pb.setIndeterminate(false);
-                    pb.setProgress((int) content.getPercent());
+                    pb.setProgress((int)(content.getPercent() * 100));
 
                     int color;
                     if (isFirstItem && isQueueReady)
@@ -503,6 +509,18 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.SRC_IN);
                     else
                         pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
+
+                    Timber.i(">> estimate %s", content.getBookSizeEstimate());
+
+                    if (content.getBookSizeEstimate() > 0 && tvPages != null && View.VISIBLE == tvPages.getVisibility()) {
+                        String pagesText = tvPages.getText().toString();
+                        Timber.i(">> text1 %s", pagesText);
+                        int separator = pagesText.indexOf(";");
+                        if (separator > -1) pagesText = pagesText.substring(0, separator);
+                        pagesText = pagesText + String.format(Locale.US, "; %.1f MB (est.)", content.getBookSizeEstimate() / (1024 * 1024));
+                        tvPages.setText(pagesText);
+                        Timber.i(">> text2 %s", pagesText);
+                    }
                 } else {
                     pb.setIndeterminate(true);
                     // fixes <= Lollipop progressBar tinting

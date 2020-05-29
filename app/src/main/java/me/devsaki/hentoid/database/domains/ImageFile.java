@@ -29,7 +29,7 @@ public class ImageFile {
     private StatusContent status = StatusContent.UNHANDLED_ERROR;
     public ToOne<Content> content;
     private String mimeType;
-
+    private long size = 0;
 
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
     private String downloadParams = "";
@@ -168,5 +168,13 @@ public class ImageFile {
 
     public void setContentId(long contentId) {
         this.content.setTargetId(contentId);
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
     }
 }
