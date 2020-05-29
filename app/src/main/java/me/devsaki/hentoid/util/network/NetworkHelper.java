@@ -74,11 +74,12 @@ public class NetworkHelper {
         long totalReceived = 0;
 
         List<ActivityManager.RunningAppProcessInfo> runningApps = manager.getRunningAppProcesses();
-        for (ActivityManager.RunningAppProcessInfo runningApp : runningApps) {
-            long received = TrafficStats.getUidRxBytes(runningApp.uid);
-            totalReceived += received;
+        if (runningApps != null)
+            for (ActivityManager.RunningAppProcessInfo runningApp : runningApps) {
+                long received = TrafficStats.getUidRxBytes(runningApp.uid);
+                totalReceived += received;
 //            Timber.d(">> proc uid: %1d - name: %s - pkg %s: Rcvd = %1d", runningApp.uid, runningApp.processName, runningApp.pkgList, received);
-        }
+            }
         return totalReceived;
     }
 }
