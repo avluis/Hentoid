@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.queue;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -42,7 +43,9 @@ import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -215,6 +218,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                                 (dialog12, which) -> dialog12.dismiss())
                         .create()
                         .show();
+            return true;
+        });
+        MenuItem settingsMenu = activity.getToolbar().getMenu().findItem(R.id.action_queue_prefs);
+        settingsMenu.setOnMenuItemClickListener(item -> {
+            onSettingsClick();
             return true;
         });
         MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
@@ -625,5 +633,18 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         if (viewHolder instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) viewHolder).onDragged();
         }
+    }
+
+    /**
+     * Show the viewer settings dialog
+     */
+    private void onSettingsClick() {
+        Intent intent = new Intent(requireActivity(), PrefsActivity.class);
+
+        PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
+        builder.setIsDownloaderPrefs(true);
+        intent.putExtras(builder.getBundle());
+
+        requireContext().startActivity(intent);
     }
 }

@@ -11,6 +11,12 @@
         tools:visible="true"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_queue_prefs"
+        android:title="@string/title_activity_preferences"
+        android:icon="@drawable/ic_settings"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_invert_queue"
         android:title="@string/invert_queue"
         app:showAsAction="never" />
