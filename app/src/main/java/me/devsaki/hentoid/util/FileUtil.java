@@ -4,7 +4,6 @@ import android.content.ContentProviderClient;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.DocumentsContract;
 
 import androidx.annotation.NonNull;
@@ -19,7 +18,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import timber.log.Timber;
@@ -137,42 +135,33 @@ class FileUtil {
     static List<DocumentFile> listDocumentFiles(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
+            @NonNull final ContentProviderClient client,
             final FileHelper.NameFilter nameFilter,
             boolean listFolders,
             boolean listFiles) {
         final List<ImmutableTriple<Uri, String, Long>> results = new ArrayList<>();
 
-        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
-        if (null == client) return Collections.emptyList();
+        final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
+        try (Cursor c = client.query(searchUri, new String[]{
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE,
+                DocumentsContract.Document.COLUMN_SIZE}, null, null, null)) {
+            if (c != null)
+                while (c.moveToNext()) {
+                    final String documentId = c.getString(0);
+                    final String documentName = c.getString(1);
+                    boolean isFolder = c.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
+                    final Long documentSize = c.getLong(3);
 
-        try {
-            final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
-            try (Cursor c = client.query(searchUri, new String[]{
-                    DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-                    DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                    DocumentsContract.Document.COLUMN_MIME_TYPE,
-                    DocumentsContract.Document.COLUMN_SIZE}, null, null, null)) {
-                if (c != null)
-                    while (c.moveToNext()) {
-                        final String documentId = c.getString(0);
-                        final String documentName = c.getString(1);
-                        boolean isFolder = c.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
-                        final Long documentSize = c.getLong(3);
-
-                        // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
-                        if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
-                            results.add(new ImmutableTriple<>(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName, documentSize));
-                    }
-            } catch (Exception e) {
-                Timber.w(e, "Failed query");
-            }
-        } finally {
-            // ContentProviderClient.close only available on API level 24+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                client.close();
-            else
-                client.release();
+                    // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
+                    if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
+                        results.add(new ImmutableTriple<>(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName, documentSize));
+                }
+        } catch (Exception e) {
+            Timber.w(e, "Failed query");
         }
+
         return convertFromUris(context, parent, results);
     }
 

@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
+import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -35,6 +36,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -383,15 +385,39 @@ public class FileHelper {
     // TODO Performance leverage ContentProviderClient when doing repeated calls to listXXX for all file accessors
     // see https://stackoverflow.com/questions/5084896/using-contentproviderclient-vs-contentresolver-to-access-content-provider
     public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
-        return FileUtil.listDocumentFiles(context, parent, null, true, false);
+        return listFolders(context, parent, null);
     }
 
     public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
-        return FileUtil.listDocumentFiles(context, parent, filter, true, false);
+        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
+        if (null == client) return Collections.emptyList();
+        try {
+            return FileUtil.listDocumentFiles(context, parent, client, filter, true, false);
+        } finally {
+            // ContentProviderClient.close only available on API level 24+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                client.close();
+            else
+                client.release();
+        }
     }
 
     public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
-        return FileUtil.listDocumentFiles(context, parent, filter, false, true);
+        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
+        if (null == client) return Collections.emptyList();
+        try {
+            return listDocumentFiles(context, parent, client, filter);
+        } finally {
+            // ContentProviderClient.close only available on API level 24+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                client.close();
+            else
+                client.release();
+        }
+    }
+
+    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
+        return FileUtil.listDocumentFiles(context, parent, client, filter, false, true);
     }
 
     @Nullable
@@ -413,7 +439,17 @@ public class FileHelper {
                                                         final String nameFilter,
                                                         boolean listFolders,
                                                         boolean listFiles) {
-        return FileUtil.listDocumentFiles(context, parent, FileHelper.createNameFilterEquals(nameFilter), listFolders, listFiles);
+        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
+        if (null == client) return Collections.emptyList();
+        try {
+            return FileUtil.listDocumentFiles(context, parent, client, FileHelper.createNameFilterEquals(nameFilter), listFolders, listFiles);
+        } finally {
+            // ContentProviderClient.close only available on API level 24+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                client.close();
+            else
+                client.release();
+        }
     }
 
     private static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {

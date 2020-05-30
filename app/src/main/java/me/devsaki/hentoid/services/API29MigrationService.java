@@ -1,9 +1,11 @@
 package me.devsaki.hentoid.services;
 
 import android.app.IntentService;
+import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -176,75 +178,86 @@ public class API29MigrationService extends IntentService {
 
         trace(Log.DEBUG, log, "Library migration starting - books to process : %s", contentIds.size() + "");
 
-        for (long contentId : contentIds) {
-            Content content = dao.selectContent(contentId);
-            if (content != null) {
-                try {
-                    // Set the book's storage URI
-                    Map<String, DocumentFile> siteFolder = bookFoldersCache.get(content.getSite().getDescription());
-                    if (null == siteFolder) {
-                        trace(Log.WARN, log, "Migrate book KO : site folder %s not found for %s [%s]", content.getSite().getDescription(), content.getTitle(), contentId + "");
-                        booksKO++;
-                        continue;
-                    }
-                    // It's normal to use the deprecated feature here since it's a migration job
-                    //noinspection deprecation
-                    String[] contentFolderParts = content.getStorageFolder().split(File.separator);
-                    String bookFolderName = contentFolderParts[contentFolderParts.length - 1];
-                    DocumentFile bookFolder = siteFolder.get(bookFolderName);
-                    if (null == bookFolder) {
-                        trace(Log.WARN, log, "Migrate book KO : book folder %s not found in %s for %s [%s]", bookFolderName, content.getSite().getDescription(), content.getTitle(), contentId + "");
-                        booksKO++;
-                        continue;
-                    }
-                    content.setStorageUri(bookFolder.getUri().toString());
-
-                    // Delete the JSON URI if not in the correct format (file:// instead of content://)
-                    // (might be the case when the migrated collection was stored on phone memory)
-                    if (content.getJsonUri().isEmpty() || !content.getJsonUri().startsWith("content"))
-                        content.setJsonUri("");
-
-                    dao.insertContent(content);
-
-                    List<ImageFile> contentImages;
-                    if (content.getImageFiles() != null) contentImages = content.getImageFiles();
-                    else contentImages = new ArrayList<>();
-
-                    // Attach file Uri's to the book's images
-                    List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, Helper.getImageNamesFilter());
-                    if (!imageFiles.isEmpty()) {
-                        if (contentImages.isEmpty()) { // No images described in the content (e.g. unread import from old JSON) -> recreate them
-                            contentImages = ContentHelper.createImageListFromFiles(imageFiles);
-                            content.setImageFiles(contentImages);
-                            content.getCover().setUrl(content.getCoverImageUrl());
-                        } else { // Existing images -> map them
-                            contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
-                            // If no cover is defined, get it too
-                            if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) {
-                                Optional<DocumentFile> file = Stream.of(imageFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
-                                if (file.isPresent()) {
-                                    ImageFile cover = new ImageFile(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
-                                    cover.setName(Consts.THUMB_FILE_NAME);
-                                    cover.setFileUri(file.get().getUri().toString());
-                                    cover.setIsCover(true);
-                                    contentImages.add(0, cover);
-                                }
-                            }
-                            content.setImageFiles(contentImages);
+        ContentProviderClient client = this.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
+        if (null == client) return;
+        try {
+            for (long contentId : contentIds) {
+                Content content = dao.selectContent(contentId);
+                if (content != null) {
+                    try {
+                        // Set the book's storage URI
+                        Map<String, DocumentFile> siteFolder = bookFoldersCache.get(content.getSite().getDescription());
+                        if (null == siteFolder) {
+                            trace(Log.WARN, log, "Migrate book KO : site folder %s not found for %s [%s]", content.getSite().getDescription(), content.getTitle(), contentId + "");
+                            booksKO++;
+                            continue;
                         }
+                        // It's normal to use the deprecated feature here since it's a migration job
+                        //noinspection deprecation
+                        String[] contentFolderParts = content.getStorageFolder().split(File.separator);
+                        String bookFolderName = contentFolderParts[contentFolderParts.length - 1];
+                        DocumentFile bookFolder = siteFolder.get(bookFolderName);
+                        if (null == bookFolder) {
+                            trace(Log.WARN, log, "Migrate book KO : book folder %s not found in %s for %s [%s]", bookFolderName, content.getSite().getDescription(), content.getTitle(), contentId + "");
+                            booksKO++;
+                            continue;
+                        }
+                        content.setStorageUri(bookFolder.getUri().toString());
+
+                        // Delete the JSON URI if not in the correct format (file:// instead of content://)
+                        // (might be the case when the migrated collection was stored on phone memory)
+                        if (content.getJsonUri().isEmpty() || !content.getJsonUri().startsWith("content"))
+                            content.setJsonUri("");
+
+                        dao.insertContent(content);
+
+                        List<ImageFile> contentImages;
+                        if (content.getImageFiles() != null)
+                            contentImages = content.getImageFiles();
+                        else contentImages = new ArrayList<>();
+
+                        // Attach file Uri's to the book's images
+                        List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, client, Helper.getImageNamesFilter());
+                        if (!imageFiles.isEmpty()) {
+                            if (contentImages.isEmpty()) { // No images described in the content (e.g. unread import from old JSON) -> recreate them
+                                contentImages = ContentHelper.createImageListFromFiles(imageFiles);
+                                content.setImageFiles(contentImages);
+                                content.getCover().setUrl(content.getCoverImageUrl());
+                            } else { // Existing images -> map them
+                                contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
+                                // If images are set and no cover is defined, get it too
+                                if (!contentImages.isEmpty() && StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) {
+                                    Optional<DocumentFile> file = Stream.of(imageFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
+                                    if (file.isPresent()) {
+                                        ImageFile cover = new ImageFile(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
+                                        cover.setName(Consts.THUMB_FILE_NAME);
+                                        cover.setFileUri(file.get().getUri().toString());
+                                        cover.setIsCover(true);
+                                        contentImages.add(0, cover);
+                                    }
+                                }
+                                content.setImageFiles(contentImages);
+                            }
+                        }
+                        dao.replaceImageList(contentId, contentImages);
+
+                        booksOK++;
+                        trace(Log.INFO, log, "Migrate book OK : %s", bookFolder.getUri().toString());
+                    } catch (Exception e) {
+                        Timber.w(e);
+                        booksKO++;
+                        trace(Log.ERROR, log, "Migrate book ERROR : %s for Content %s [%s]", e.getMessage(), content.getTitle(), contentId + "");
                     }
-                    dao.replaceImageList(contentId, contentImages);
+                } else booksKO++; // null books (content ID not found in DB)
 
-                    booksOK++;
-                    trace(Log.INFO, log, "Migrate book OK : %s", bookFolder.getUri().toString());
-                } catch (Exception e) {
-                    Timber.w(e);
-                    booksKO++;
-                    trace(Log.ERROR, log, "Migrate book ERROR : %s for Content %s [%s]", e.getMessage(), content.getTitle(), contentId + "");
-                }
-            } else booksKO++; // null books (content ID not found in DB)
-
-            eventProgress(3, contentIds.size(), booksOK, booksKO);
+                eventProgress(3, contentIds.size(), booksOK, booksKO);
+            }
+        } finally {
+            // ContentProviderClient.close only available on API level 24+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                client.close();
+            else
+                client.release();
         }
         trace(Log.INFO, log, "Migration complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", contentIds.size() + "");
 
