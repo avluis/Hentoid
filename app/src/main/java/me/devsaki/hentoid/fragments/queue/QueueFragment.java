@@ -437,7 +437,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
                 // Update book progress bar
                 Timber.i(">> setProgress %s", pagesOKDisplay + pagesKO);
-                content.setProgress(pagesOKDisplay + pagesKO);
+                content.setProgress((long)pagesOKDisplay + pagesKO);
                 content.setDownloadedBytes(downloadedSizeB);
                 updateProgressFirstItem(false);
 
