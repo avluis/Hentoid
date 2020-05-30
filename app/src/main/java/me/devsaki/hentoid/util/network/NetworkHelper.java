@@ -40,17 +40,13 @@ public class NetworkHelper {
         if (null == connectivityManager) return Connectivity.NO_INTERNET;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Network networkCapabilities = connectivityManager.getActiveNetwork();
-            if (null == networkCapabilities) return Connectivity.NO_INTERNET;
-            NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(networkCapabilities);
+            Network activeNetwork = connectivityManager.getActiveNetwork();
+            if (null == activeNetwork) return Connectivity.NO_INTERNET;
+            NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(activeNetwork);
             if (null == actNw) return Connectivity.NO_INTERNET;
 
             if (actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return Connectivity.WIFI;
-            else if (actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
-                return Connectivity.OTHER;
-            else if (actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))
-                return Connectivity.OTHER;
-            else return Connectivity.NO_INTERNET; // Bluetooth, LoWPAN
+            else return Connectivity.OTHER;
         } else {
             NetworkInfo info = connectivityManager.getActiveNetworkInfo();
             if (null == info) return Connectivity.NO_INTERNET;
@@ -58,11 +54,10 @@ public class NetworkHelper {
             switch (info.getType()) {
                 case (ConnectivityManager.TYPE_WIFI):
                     return Connectivity.WIFI;
-                case (ConnectivityManager.TYPE_MOBILE):
-                case (ConnectivityManager.TYPE_ETHERNET):
-                    return Connectivity.OTHER;
+                case (ConnectivityManager.TYPE_MOBILE_MMS):
+                    return Connectivity.NO_INTERNET;
                 default:
-                    return Connectivity.NO_INTERNET; // Others (e.g. TYPE_MOBILE_MMS)
+                    return Connectivity.OTHER; // Others (e.g. TYPE_MOBILE_MMS)
             }
         }
     }
