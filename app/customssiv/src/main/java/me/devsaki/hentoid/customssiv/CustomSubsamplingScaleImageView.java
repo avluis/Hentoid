@@ -1909,13 +1909,14 @@ public class CustomSubsamplingScaleImageView extends View {
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
 
-        if (rs != null) {
-            // Take any prior subsampling into consideration _before_ processing the tile
-            float currentScale = 1f / loadedTile.sampleSize;
-            float resizeScale = targetScale / currentScale;
+        // Take any prior subsampling into consideration _before_ processing the tile
+        // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
+        float resizeScale = targetScale * loadedTile.sampleSize;
+        if (rs != null && resizeScale < 0.75) {
             loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, resizeScale, resizeScale);
-        } else
+        } else if (null == rs) {
             Timber.w("Cannot process images; RenderScript not set");
+        }
 
         loadedTile.loading = false;
         return loadedTile;
@@ -1954,16 +1955,18 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
+        float useScale = targetScale;
 
-        if (rs != null) {
+        // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
+        if (rs != null && targetScale < 0.75) {
             bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
-            bitmapIsLoading = false;
-            return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), 1f);
-        } else {
+            useScale = 1f;
+        } else if (null == rs) {
             Timber.w("Cannot process images; RenderScript not set");
-            bitmapIsLoading = false;
-            return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), targetScale);
         }
+
+        bitmapIsLoading = false;
+        return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), useScale);
     }
 
     /**
