@@ -106,6 +106,16 @@ public class ErrorsDialogFragment extends DialogFragment {
         TextView details = rootView.findViewById(R.id.redownload_detail);
         String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
         details.setText(message);
+
+        if (content.getErrorLog() != null && !content.getErrorLog().isEmpty()) {
+            TextView firstErrorTxt = rootView.findViewById(R.id.redownload_detail_first_error);
+            ErrorRecord firstError = content.getErrorLog().get(0);
+            message = String.format("First error : %s", firstError.getType().getName());
+            if (!firstError.getDescription().isEmpty())
+                message += String.format(" - %s", firstError.getDescription());
+            firstErrorTxt.setText(message);
+            firstErrorTxt.setVisibility(View.VISIBLE);
+        }
     }
 
     private LogUtil.LogInfo createLog(@NonNull final Content content) {
