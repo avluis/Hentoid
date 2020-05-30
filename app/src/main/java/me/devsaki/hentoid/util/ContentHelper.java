@@ -387,7 +387,7 @@ public final class ContentHelper {
             if (fileNameProperties.containsKey(imgName)) {
                 ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
                 if (property != null)
-                    result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
+                    result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED).setIsCover(imgName.equals(Consts.THUMB_FILE_NAME)));
             } else
                 Timber.i(">> img dropped %s", imgName);
         }

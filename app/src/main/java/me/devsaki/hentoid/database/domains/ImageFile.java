@@ -121,8 +121,9 @@ public class ImageFile {
         return isCover;
     }
 
-    public void setIsCover(boolean isCover) {
+    public ImageFile setIsCover(boolean isCover) {
         this.isCover = isCover;
+        return this;
     }
 
     public boolean isFavourite() {
