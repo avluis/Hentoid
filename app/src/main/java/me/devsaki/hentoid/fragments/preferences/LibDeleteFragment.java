@@ -33,7 +33,7 @@ import timber.log.Timber;
  */
 public class LibDeleteFragment extends DialogFragment {
 
-    private static String BOOK_LIST = "book_list";
+    private static final String BOOK_LIST = "book_list";
 
     private long[] booksList;
 

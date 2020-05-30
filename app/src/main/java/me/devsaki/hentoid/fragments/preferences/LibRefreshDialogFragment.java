@@ -36,8 +36,8 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 public class LibRefreshDialogFragment extends DialogFragment {
 
-    private static String SHOW_OPTIONS = "show_options";
-    private static String CHOOSE_FOLDER = "choose_folder";
+    private static final String SHOW_OPTIONS = "show_options";
+    private static final String CHOOSE_FOLDER = "choose_folder";
 
     private boolean showOptions;
     private boolean chooseFolder;
