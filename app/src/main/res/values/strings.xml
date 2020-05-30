@@ -97,7 +97,7 @@
 
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
-    <string name="book_progress">%d / %d books</string>
+    <string name="book_progress">%1$d / %2$d books</string>
 
     <!-- Import metadata -->
     <string name="import_title">Import metadata</string>
