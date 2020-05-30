@@ -491,7 +491,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             content.computeProgress();
             content.computeDownloadedBytes();
 
-            Timber.i(">> pc %s", content.getPercent());
             if ((isFirstItem && isQueueReady) || content.getPercent() > 0) {
                 TextView tvPages = rootCardView.findViewById(R.id.tvPages);
                 pb.setVisibility(View.VISIBLE);
@@ -510,16 +509,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                     else
                         pb.getProgressDrawable().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
 
-                    Timber.i(">> estimate %s", content.getBookSizeEstimate());
-
                     if (content.getBookSizeEstimate() > 0 && tvPages != null && View.VISIBLE == tvPages.getVisibility()) {
                         String pagesText = tvPages.getText().toString();
-                        Timber.i(">> text1 %s", pagesText);
                         int separator = pagesText.indexOf(";");
                         if (separator > -1) pagesText = pagesText.substring(0, separator);
                         pagesText = pagesText + String.format(Locale.US, "; %.1f MB (est.)", content.getBookSizeEstimate() / (1024 * 1024));
                         tvPages.setText(pagesText);
-                        Timber.i(">> text2 %s", pagesText);
                     }
                 } else {
                     pb.setIndeterminate(true);
