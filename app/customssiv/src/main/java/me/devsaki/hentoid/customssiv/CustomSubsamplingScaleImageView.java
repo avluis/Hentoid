@@ -374,16 +374,14 @@ public class CustomSubsamplingScaleImageView extends View {
     private int screenHeight;
 
     private final CompositeDisposable loadDisposable = new CompositeDisposable();
-    private static RenderScript rs = null; // TODO handle that one properly, it might create leaks
+    private RenderScript rs;
 
 
-    public CustomSubsamplingScaleImageView(Context context, AttributeSet attr) {
+    public CustomSubsamplingScaleImageView(@NonNull Context context, @Nullable AttributeSet attr) {
         super(context, attr);
         density = getResources().getDisplayMetrics().density;
         screenWidth = context.getResources().getDisplayMetrics().widthPixels;
         screenHeight = context.getResources().getDisplayMetrics().heightPixels;
-
-        if (null == rs) rs = RenderScript.create(context);
 
         setMinimumDpi(160);
         setDoubleTapZoomDpi(160);
@@ -1909,10 +1907,14 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
-        // Take any prior subsampling into consideration _before_ processing the tile
-        float currentScale = 1f / loadedTile.sampleSize;
-        float resizeScale = targetScale / currentScale;
-        loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, resizeScale, resizeScale);
+
+        if (rs != null) {
+            // Take any prior subsampling into consideration _before_ processing the tile
+            float currentScale = 1f / loadedTile.sampleSize;
+            float resizeScale = targetScale / currentScale;
+            loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, resizeScale, resizeScale);
+        } else
+            Timber.w("Cannot process images; RenderScript not set");
 
         loadedTile.loading = false;
         return loadedTile;
@@ -1946,9 +1948,14 @@ public class CustomSubsamplingScaleImageView extends View {
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
 
-        ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
-        bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
-        return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), 1f);
+        if (rs != null) {
+            ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
+            bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
+            return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), 1f);
+        } else {
+            Timber.w("Cannot process images; RenderScript not set");
+            return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), targetScale);
+        }
     }
 
     /**
@@ -3039,6 +3046,10 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     public final void setAutoRotate(boolean autoRotate) {
         this.autoRotate = autoRotate;
+    }
+
+    public final void setRenderScript(@NonNull RenderScript rs) {
+        this.rs = rs;
     }
 
     /**

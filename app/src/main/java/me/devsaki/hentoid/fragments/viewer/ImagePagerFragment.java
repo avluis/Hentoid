@@ -239,7 +239,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
 
     private void initPager(View rootView) {
-        adapter = new ImagePagerAdapter();
+        adapter = new ImagePagerAdapter(requireContext());
 
         zoomFrame = requireViewById(rootView, R.id.image_viewer_zoom_frame);
 
@@ -346,6 +346,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(listener);
+        adapter.destroy();
         super.onDestroy();
     }
 

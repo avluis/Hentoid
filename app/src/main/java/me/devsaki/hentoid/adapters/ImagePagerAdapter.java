@@ -1,7 +1,9 @@
 package me.devsaki.hentoid.adapters;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.renderscript.RenderScript;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,6 +74,9 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     private boolean isScrollLTR = true;
 
+    // Single instance of RenderScript
+    private RenderScript rs;
+
     // Cached prefs
     private int separatingBarsHeight;
     private int viewerOrientation;
@@ -80,9 +85,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private boolean autoRotate;
 
 
-    public ImagePagerAdapter() {
+    public ImagePagerAdapter(Context context) {
         super(DIFF_CALLBACK);
         refreshPrefs();
+        rs = RenderScript.create(context);
     }
 
     public void refreshPrefs() {
@@ -163,8 +169,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
             ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
             ((CustomSubsamplingScaleImageView) view).setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL);
+            ((CustomSubsamplingScaleImageView) view).setRenderScript(rs);
         } else {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
+            ((CustomSubsamplingScaleImageView) view).setRenderScript(rs);
         }
 
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
@@ -208,6 +216,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     @Nullable
     public ImageFile getImageAt(int position) {
         return (position >= 0 && position < getItemCount()) ? getItem(position) : null;
+    }
+
+    public void destroy() {
+        if (rs != null) rs.destroy();
     }
 
     public void resetScaleAtPosition(int position) {
