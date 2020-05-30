@@ -203,6 +203,9 @@ public class CustomSubsamplingScaleImageView extends View {
     // Specifies if a cache handler is also referencing the bitmap. Do not recycle if so.
     private boolean bitmapIsCached;
 
+    // To signal the bitmap being currently loading and avoid freeing it
+    private boolean bitmapIsLoading;
+
     // Uri of full size image
     private Uri uri;
 
@@ -551,7 +554,7 @@ public class CustomSubsamplingScaleImageView extends View {
                 }
                 if (previewSourceUri != null) {
                     loadDisposable.add(
-                            Single.fromCallable(() -> bitmapDecoderFactory.make().decode(getContext(), uri))
+                            Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(Schedulers.computation())
                                     .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
@@ -592,7 +595,7 @@ public class CustomSubsamplingScaleImageView extends View {
             } else {
                 // Load the bitmap as a single image.
                 loadDisposable.add(
-                        Single.fromCallable(() -> bitmapDecoderFactory.make().decode(getContext(), uri))
+                        Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(Schedulers.computation())
                                 .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
@@ -647,7 +650,7 @@ public class CustomSubsamplingScaleImageView extends View {
             } finally {
                 decoderLock.writeLock().unlock();
             }
-            if (bitmap != null && !bitmapIsCached) {
+            if (bitmap != null && !bitmapIsCached && !bitmapIsLoading) {
                 bitmap.recycle();
             }
             if (bitmap != null && bitmapIsCached && onImageEventListener != null) {
@@ -660,9 +663,9 @@ public class CustomSubsamplingScaleImageView extends View {
             pRegion = null;
             readySent = false;
             imageLoadedSent = false;
-            bitmap = null;
             bitmapIsPreview = false;
             bitmapIsCached = false;
+            if (!bitmapIsLoading) bitmap = null;
         }
         if (tileMap != null) {
             for (Map.Entry<Integer, List<Tile>> tileMapEntry : tileMap.entrySet()) {
@@ -1489,7 +1492,7 @@ public class CustomSubsamplingScaleImageView extends View {
             decoder = null;
 
             loadDisposable.add(
-                    Single.fromCallable(() -> bitmapDecoderFactory.make().decode(getContext(), uri))
+                    Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
@@ -1855,7 +1858,7 @@ public class CustomSubsamplingScaleImageView extends View {
         if (this.sWidth > 0 && this.sHeight > 0 && (this.sWidth != sWidth || this.sHeight != sHeight)) {
             reset(false);
             if (bitmap != null) {
-                if (!bitmapIsCached) {
+                if (!bitmapIsCached && !bitmapIsLoading) {
                     bitmap.recycle();
                 }
                 bitmap = null;
@@ -1927,7 +1930,7 @@ public class CustomSubsamplingScaleImageView extends View {
         checkReady();
         checkImageLoaded();
         if (isBaseLayerReady()) {
-            if (!bitmapIsCached && bitmap != null) {
+            if (!bitmapIsCached && bitmap != null && !bitmapIsLoading) {
                 bitmap.recycle();
             }
             bitmap = null;
@@ -1938,6 +1941,12 @@ public class CustomSubsamplingScaleImageView extends View {
             bitmapIsCached = false;
         }
         invalidate();
+    }
+
+    private Bitmap loadBitmap(@NonNull Context context, @NonNull DecoderFactory<? extends ImageDecoder> factory, @NonNull Uri uri) throws Exception {
+        bitmapIsLoading = true;
+        Helper.mustNotRunOnUiThread();
+        return factory.make().decode(getContext(), uri);
     }
 
     private ProcessBitmapResult processBitmap(
@@ -1951,9 +1960,11 @@ public class CustomSubsamplingScaleImageView extends View {
         if (rs != null) {
             ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
             bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
+            bitmapIsLoading = false;
             return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), 1f);
         } else {
             Timber.w("Cannot process images; RenderScript not set");
+            bitmapIsLoading = false;
             return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), targetScale);
         }
     }
@@ -1997,7 +2008,7 @@ public class CustomSubsamplingScaleImageView extends View {
             orientation = ORIENTATION_90;
         else orientation = ORIENTATION_0;
 
-        if (this.bitmap != null && !this.bitmapIsCached) {
+        if (this.bitmap != null && !this.bitmapIsCached && !this.bitmapIsLoading) {
             this.bitmap.recycle();
         }
 
