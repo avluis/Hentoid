@@ -389,7 +389,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Save current queue (to be able to restore it in case the app gets uninstalled)
-        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).filter(c -> c != null).toList();
+        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).withoutNulls().toList();
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setQueue(queuedContent);
         String json = JsonHelper.serializeToJson(contentCollection, JsonContentCollection.class);
@@ -827,7 +827,7 @@ public class ContentDownloadService extends IntentService {
                                              @NonNull DocumentFile dir,
                                              @Nullable String contentType,
                                              byte[] binaryContent,
-                                             boolean hasImageProcessing) throws IOException, UnsupportedContentException, IllegalArgumentException {
+                                             boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
         if (!dir.exists()) {
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getUri().toString());
@@ -891,7 +891,7 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException, IllegalArgumentException {
+    private DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
         DocumentFile file = FileHelper.findOrCreateDocumentFile(this, dir, mimeType, fileName);
         if (null == file)
             throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));

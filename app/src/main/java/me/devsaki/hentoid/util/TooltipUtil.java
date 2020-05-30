@@ -16,6 +16,11 @@ import me.devsaki.hentoid.R;
 
 public class TooltipUtil {
 
+    private TooltipUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
+
     public static void showTooltip(
             @NonNull Context context,
             @StringRes int message,

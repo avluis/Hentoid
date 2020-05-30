@@ -12,7 +12,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -707,7 +707,7 @@ public class ObjectBoxDB {
         imgQuery.equal(ImageFile_.contentId, contentId);
         List<ImageFile> images = imgQuery.build().find();
 
-        Map<StatusContent, ImmutablePair<Integer, Long>> result = new HashMap<>();
+        Map<StatusContent, ImmutablePair<Integer, Long>> result = new EnumMap<>(StatusContent.class);
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
         // (see https://github.com/objectbox/objectbox-java/issues/422)
         // => Group by and count have to be done manually (thanks God Stream exists !)

@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -92,13 +92,12 @@ public class LibImportDialogFragment extends DialogFragment {
     private Uri selectedFileUri;
 
     // Variable used during the import process
-    private CollectionDAO dao;
     private int totalBooks;
     private int currentProgress;
     private int nbSuccess;
     private int queueSize;
     private Map<Site, DocumentFile> siteFoldersCache = null;
-    private Map<Site, List<DocumentFile>> bookFoldersCache = new HashMap<>();
+    private Map<Site, List<DocumentFile>> bookFoldersCache = new EnumMap<>(Site.class);
 
     // Disposable for RxJava
     private Disposable importDisposable = Disposables.empty();
@@ -217,9 +216,9 @@ public class LibImportDialogFragment extends DialogFragment {
                 libraryChk.setVisibility(View.VISIBLE);
             }
             queueChk = requireViewById(rootView, R.id.import_file_queue_chk);
-            int queueSize = collection.getQueue().size();
-            if (queueSize > 0) {
-                queueChk.setText(getResources().getQuantityString(R.plurals.import_file_queue, queueSize, queueSize));
+            int mQueueSize = collection.getQueue().size();
+            if (mQueueSize > 0) {
+                queueChk.setText(getResources().getQuantityString(R.plurals.import_file_queue, mQueueSize, mQueueSize));
                 queueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
                 queueChk.setVisibility(View.VISIBLE);
             }
@@ -258,7 +257,7 @@ public class LibImportDialogFragment extends DialogFragment {
         runBtn.setVisibility(View.GONE);
         setCancelable(false);
 
-        dao = new ObjectBoxDAO(requireContext());
+        CollectionDAO dao = new ObjectBoxDAO(requireContext());
         if (!add) {
             if (importLibrary) dao.deleteAllLibraryBooks(false);
             if (importQueue) dao.deleteAllQueuedBooks();
@@ -342,7 +341,7 @@ public class LibImportDialogFragment extends DialogFragment {
 
     private Map<Site, DocumentFile> getSiteFolders() {
         Helper.assertNonUiThread();
-        Map<Site, DocumentFile> result = new HashMap<>();
+        Map<Site, DocumentFile> result = new EnumMap<>(Site.class);
 
         if (!Preferences.getStorageUri().isEmpty()) {
             Uri rootUri = Uri.parse(Preferences.getStorageUri());
@@ -354,7 +353,7 @@ public class LibImportDialogFragment extends DialogFragment {
                     if (f.getName() != null) {
                         folderName = f.getName().toLowerCase();
                         for (Site s : Site.values()) {
-                            if (folderName.equals(s.getFolder().toLowerCase())) {
+                            if (folderName.equalsIgnoreCase(s.getFolder())) {
                                 result.put(s, f);
                                 break;
                             }

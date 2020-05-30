@@ -15,6 +15,7 @@ public class JsonContentCollection {
     private List<JsonContent> queue = new ArrayList<>();
 
     public JsonContentCollection() {
+        // Nothing special do to here
     }
 
     public List<Content> getLibrary() {

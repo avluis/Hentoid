@@ -1046,8 +1046,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         int minIndex = bounds.getLeft();
         int maxIndex = bounds.getRight();
 
-        //noinspection Convert2MethodRef need API24
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY)).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }

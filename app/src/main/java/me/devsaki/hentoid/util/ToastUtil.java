@@ -15,6 +15,11 @@ import timber.log.Timber;
 
 public class ToastUtil {
 
+    private ToastUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
+
     public static void toast(@StringRes int resource) {
         toast(HentoidApp.getInstance(), resource);
     }

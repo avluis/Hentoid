@@ -34,8 +34,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -1944,9 +1942,9 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     private Bitmap loadBitmap(@NonNull Context context, @NonNull DecoderFactory<? extends ImageDecoder> factory, @NonNull Uri uri) throws Exception {
-        bitmapIsLoading = true;
         Helper.mustNotRunOnUiThread();
-        return factory.make().decode(getContext(), uri);
+        bitmapIsLoading = true;
+        return factory.make().decode(context, uri);
     }
 
     private ProcessBitmapResult processBitmap(
@@ -1958,7 +1956,6 @@ public class CustomSubsamplingScaleImageView extends View {
         Helper.mustNotRunOnUiThread();
 
         if (rs != null) {
-            ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
             bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
             bitmapIsLoading = false;
             return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), 1f);
@@ -1967,31 +1964,6 @@ public class CustomSubsamplingScaleImageView extends View {
             bitmapIsLoading = false;
             return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), targetScale);
         }
-    }
-
-    /**
-     * Compute resizing parameters according to the given target scale
-     * TODO can that algorithm be merged with calculateInSampleSize ?
-     *
-     * @param targetScale target scale of the image to display (% of the raw dimensions)
-     * @return Pair containing
-     * - First : Number of half-resizes to perform (see {@link ResizeBitmapHelper})
-     * - Second : New scale to use to display the resized image at the initial target zoom level
-     */
-    private ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
-        Helper.mustNotRunOnUiThread();
-        float resultScale = targetScale;
-        int nbResize = 0;
-
-        // Resize when approaching the target scale by 1/3 because there may already be artifacts displayed at that point
-        // (seen with full-res pictures resized to 65% with Android's default bilinear filtering)
-        for (int i = 1; i < 10; i++) if (targetScale < Math.pow(0.5, i) * 1.33) nbResize++;
-
-        if (nbResize > 0) {
-            float newScale = (float) Math.pow(0.5, nbResize);
-            resultScale = resultScale / newScale;
-        }
-        return new ImmutablePair<>(nbResize, resultScale);
     }
 
     /**

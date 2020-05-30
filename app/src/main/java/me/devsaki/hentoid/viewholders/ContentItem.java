@@ -469,17 +469,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         ivFavourite.setImageResource(R.drawable.ic_fav_empty);
                     }
                 }
-
-                // Error icon
-                if (content.getStatus() != null) {
-                    StatusContent status = content.getStatus();
-                    if (status == StatusContent.ERROR) {
-                        ivError.setVisibility(View.VISIBLE);
-                    } else {
-                        ivError.setVisibility(View.GONE);
-                    }
-                    ImageViewCompat.setImageTintList(ivError, ColorStateList.valueOf(ThemeHelper.getColor(ivError.getContext(), R.color.card_surface_light)));
-                }
             }
         }
 

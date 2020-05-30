@@ -70,13 +70,4 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/advanced_search_background"
         tools:visibility="visible" />
-    <!--
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/search_sort_bar_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:constraint_referenced_ids="advanced_search_background,advanced_search_btn"
-            tools:visibility="visible" />
-            -->
 </merge>

@@ -48,7 +48,6 @@ public final class ContentHelper {
 
     // TODO empty this cache at some point
     private static final Map<String, String> fileNameMatchCache = new HashMap<>();
-    private static final Uri queueJsonUri = null;
 
 
     private ContentHelper() {

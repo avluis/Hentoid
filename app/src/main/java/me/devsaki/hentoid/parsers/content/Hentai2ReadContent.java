@@ -68,6 +68,8 @@ public class Hentai2ReadContent implements ContentParser {
                         case "category":
                             ParseHelper.parseAttribute(attributes, AttributeType.TAG, child, true, Site.HENTAI2READ);
                             break;
+                        default:
+                            // Other cases aren't interesting
                     }
                 }
             }

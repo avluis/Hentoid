@@ -33,6 +33,7 @@ public class NetworkHelper {
     }
 
 
+    @SuppressWarnings({"squid:CallToDeprecatedMethod"})
     public static @Connectivity
     int getConnectivity(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -78,7 +79,6 @@ public class NetworkHelper {
             for (ActivityManager.RunningAppProcessInfo runningApp : runningApps) {
                 long received = TrafficStats.getUidRxBytes(runningApp.uid);
                 totalReceived += received;
-//            Timber.d(">> proc uid: %1d - name: %s - pkg %s: Rcvd = %1d", runningApp.uid, runningApp.processName, runningApp.pkgList, received);
             }
         return totalReceived;
     }

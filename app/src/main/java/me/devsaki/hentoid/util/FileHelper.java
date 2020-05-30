@@ -59,6 +59,7 @@ public class FileHelper {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
     private static final String PRIMARY_VOLUME_NAME = "primary";
+    private static final String NOMEDIA_FILE_NAME = ".nomedia";
 
     private static final Charset CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1;
 
@@ -163,15 +164,15 @@ public class FileHelper {
      * @param target The file.
      * @return FileOutputStream.
      */
-    private static OutputStream getOutputStream(@NonNull final File target) throws IOException, IllegalArgumentException {
+    private static OutputStream getOutputStream(@NonNull final File target) throws IOException {
         return FileUtils.openOutputStream(target);
     }
 
-    public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException, IllegalArgumentException {
+    public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
         return context.getContentResolver().openOutputStream(target.getUri());
     }
 
-    public static InputStream getInputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException, IllegalArgumentException {
+    public static InputStream getInputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
         return context.getContentResolver().openInputStream(target.getUri());
     }
 
@@ -238,10 +239,10 @@ public class FileHelper {
         }
 
         // Remove and add back the nomedia file to test if the user has the I/O rights to the selected folder
-        DocumentFile nomedia = findFile(context, folder, ".nomedia");
+        DocumentFile nomedia = findFile(context, folder, NOMEDIA_FILE_NAME);
         if (nomedia != null) nomedia.delete();
 
-        nomedia = folder.createFile("application/octet-steam", ".nomedia");
+        nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
         if (null != nomedia && nomedia.exists()) {
             boolean deleted = nomedia.delete();
             if (deleted) Timber.d(".nomedia file deleted");
@@ -262,7 +263,7 @@ public class FileHelper {
         DocumentFile rootDir = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
         if (null == rootDir || !rootDir.exists()) return false;
 
-        DocumentFile nomedia = findOrCreateDocumentFile(context, rootDir, null, ".nomedia");
+        DocumentFile nomedia = findOrCreateDocumentFile(context, rootDir, null, NOMEDIA_FILE_NAME);
         return (null != nomedia && nomedia.exists());
     }
 
@@ -321,7 +322,7 @@ public class FileHelper {
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
-    public static void saveBinaryInFile(@NonNull final Context context, @NonNull final DocumentFile file, byte[] binaryContent) throws IOException, IllegalArgumentException {
+    public static void saveBinaryInFile(@NonNull final Context context, @NonNull final DocumentFile file, byte[] binaryContent) throws IOException {
         byte[] buffer = new byte[1024];
         int count;
 
@@ -504,7 +505,7 @@ public class FileHelper {
             @NonNull final Context context,
             @NonNull final String fileName,
             @NonNull final String mimeType
-    ) throws IOException, IllegalArgumentException {
+    ) throws IOException {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             return openNewDownloadOutputStreamQ(context, fileName, mimeType);
         } else {
@@ -512,7 +513,7 @@ public class FileHelper {
         }
     }
 
-    private static OutputStream openNewDownloadOutputStreamLegacy(@NonNull final String fileName) throws IOException, IllegalArgumentException {
+    private static OutputStream openNewDownloadOutputStreamLegacy(@NonNull final String fileName) throws IOException {
         File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         if (null == downloadsFolder) throw new IOException("Downloads folder not found");
 

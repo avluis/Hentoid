@@ -21,7 +21,6 @@ import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.network.OkHttpClientSingleton;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -159,6 +158,7 @@ public class HttpHelper {
 
     /**
      * Extract the domain from the given URI
+     *
      * @param uriStr URI to parse, in String form
      * @return Domain of the URI; null if no domain found
      */
@@ -172,6 +172,7 @@ public class HttpHelper {
 
     /**
      * Parse the given cookie String
+     *
      * @param cookiesStr Cookie string, as set in HTTP headers
      * @return Parsed cookies
      */
@@ -232,7 +233,7 @@ public class HttpHelper {
      * If not given, the method assumes the protocol is HTTPS
      * e.g. fixUrl("images","http://abc.com") gives "http://abc.com/images"
      *
-     * @param url URL to fix
+     * @param url     URL to fix
      * @param baseUrl Base URL to use
      * @return Fixed URL
      */

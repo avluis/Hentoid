@@ -427,7 +427,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     }
 
     private void redownloadSelected() {
-        redownloadContent(Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).filter(c -> c != null).toList(), false);
+        redownloadContent(Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).withoutNulls().toList(), false);
     }
 
     private void redownloadAll() {
