@@ -21,9 +21,9 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.FakkuGalleryMetadata;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.AccountException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 

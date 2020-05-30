@@ -27,10 +27,10 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
