@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.util.Preferences
-import java.lang.RuntimeException
 
 /**
  * Responsible for creating ViewModels and supplying their dependencies
