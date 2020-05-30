@@ -12,6 +12,7 @@ public enum ErrorType {
     SITE_LIMIT(5, "Downloads/bandwidth limit reached"),
     ACCOUNT(6, "No account or insufficient credentials"),
     IMPORT(7, "No local file found after import"),
+    WIFI(8, "Book skipped because of wi-fi download size limitations"),
     UNDEFINED(99, "Undefined");
 
     private final int code;

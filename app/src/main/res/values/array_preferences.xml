@@ -15,6 +15,19 @@
         <item>100</item>
     </string-array>
 
+    <string-array name="pref_dl_size_wifi_threshold_entries">
+        <item>20 MB</item>
+        <item>40 MB</item>
+        <item>100 MB</item>
+        <item>200 MB</item>
+    </string-array>
+    <string-array name="pref_dl_size_wifi_threshold_values">
+        <item>20</item>
+        <item>40</item>
+        <item>100</item>
+        <item>200</item>
+    </string-array>
+
     <string-array name="pref_dl_threads_quantity_entries">
         <item>Auto (default)</item>
         <item>2 (slow internet)</item>

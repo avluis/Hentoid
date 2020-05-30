@@ -328,13 +328,8 @@ public class ContentDownloadService extends IntentService {
         }
 
         if (hasError) {
-            content.setStatus(StatusContent.ERROR);
-            content.setDownloadDate(Instant.now().toEpochMilli()); // Needs a download date to appear the right location when sorted by download date
-            dao.insertContent(content);
-            dao.deleteQueue(content);
+            moveToErrors(content.getId());
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0, 0));
-            HentoidApp.trackDownloadEvent("Error");
-            notificationManager.notify(new DownloadErrorNotification(content));
             return new ImmutablePair<>(QueuingResult.CONTENT_FAILED, content);
         }
 
@@ -454,9 +449,26 @@ public class ContentDownloadService extends IntentService {
 
             int progress = pagesOK + pagesKO;
             isDone = progress == totalPages;
-            Timber.i("Progress: OK:%s size:%sMB - KO:%s - Total:%s", pagesOK, sizeDownloaded / (1024*1024), pagesKO, totalPages);
+            Timber.d("Progress: OK:%s size:%sMB - KO:%s - Total:%s", pagesOK, sizeDownloaded / (1024 * 1024), pagesKO, totalPages);
             notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages));
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages, sizeDownloaded));
+
+            // If the "skip large downloads on mobile data" is on, estimate book size and skip if needed
+            if (Preferences.isDownloadLargeOnlyWifi() && pagesOK > 3) {
+                // Estimate book size first because it's cheaper than checking current connectivity
+                double estimateBookSize = (sizeDownloaded / (1024.0 * 1024)) / (progress * 1.0 / totalPages);
+                Timber.d("Estimate book size calculated for wifi check : %s MB", estimateBookSize);
+
+                if (estimateBookSize > Preferences.getDownloadLargeOnlyWifiThreshold()) {
+                    @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(this);
+                    if (NetworkHelper.Connectivity.WIFI != connectivity) {
+                        // Move the book to the errors queue and signal it as skipped
+                        logErrorRecord(content.getId(), ErrorType.WIFI, content.getUrl(), "Book", "");
+                        moveToErrors(content.getId());
+                        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+                    }
+                }
+            }
 
             // We're polling the DB because we can't observe LiveData from a background service
             try {
@@ -936,5 +948,17 @@ public class ContentDownloadService extends IntentService {
     private void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
         ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description, Instant.now());
         if (contentId > 0) dao.insertErrorRecord(record);
+    }
+
+    private void moveToErrors(long contentId) {
+        Content content = dao.selectContent(contentId);
+        if (null == content) return;
+
+        content.setStatus(StatusContent.ERROR);
+        content.setDownloadDate(Instant.now().toEpochMilli()); // Needs a download date to appear the right location when sorted by download date
+        dao.insertContent(content);
+        dao.deleteQueue(content);
+        HentoidApp.trackDownloadEvent("Error");
+        notificationManager.notify(new DownloadErrorNotification(content));
     }
 }

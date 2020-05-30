@@ -418,11 +418,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     /**
      * Update main progress bar and bottom progress panel for current (1st in queue) book
      *
-     * @param pagesOK           Number of pages successfully downloaded for current (1st in queue) book
-     * @param pagesKO           Number of pages whose download has failed for current (1st in queue) book
-     * @param totalPages        Total pages of current (1st in queue) book
-     * @param numberRetries     Current number of download auto-retries for current (1st in queue) book
-     * @param downloadedSizeB   Current size of downloaded content (in bytes)
+     * @param pagesOK         Number of pages successfully downloaded for current (1st in queue) book
+     * @param pagesKO         Number of pages whose download has failed for current (1st in queue) book
+     * @param totalPages      Total pages of current (1st in queue) book
+     * @param numberRetries   Current number of download auto-retries for current (1st in queue) book
+     * @param downloadedSizeB Current size of downloaded content (in bytes)
      */
     private void updateProgress(final int pagesOK, final int pagesKO, final int totalPages, final int numberRetries, final long downloadedSizeB) {
         if (!ContentQueueManager.getInstance().isQueuePaused() && itemAdapter.getAdapterItemCount() > 0) {
@@ -436,7 +436,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 int pagesOKDisplay = Math.max(0, pagesOK - 1);
 
                 // Update book progress bar
-                Timber.i(">> setProgress %s",pagesOKDisplay + pagesKO);
+                Timber.i(">> setProgress %s", pagesOKDisplay + pagesKO);
                 content.setProgress(pagesOKDisplay + pagesKO);
                 content.setDownloadedBytes(downloadedSizeB);
                 updateProgressFirstItem(false);
@@ -449,7 +449,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     message.append(" (").append(pagesKO).append(" errors)");
                 if (numberRetries > 0)
                     message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
-                message.append(String.format(Locale.US, " @ %d KBps", (int)downloadSpeedCalulator.getAvgSpeedKbps()));
+                message.append(String.format(Locale.US, " @ %d KBps", (int) downloadSpeedCalulator.getAvgSpeedKbps()));
 
                 queueInfo.setText(message.toString());
                 isPreparingDownload = false;

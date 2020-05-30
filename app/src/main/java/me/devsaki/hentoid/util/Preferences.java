@@ -382,6 +382,14 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_QUEUE_WIFI_ONLY, Default.PREF_QUEUE_WIFI_ONLY);
     }
 
+    public static boolean isDownloadLargeOnlyWifi() {
+        return sharedPreferences.getBoolean(Key.PREF_DL_SIZE_WIFI, Default.PREF_DL_SIZE_WIFI);
+    }
+
+    public static int getDownloadLargeOnlyWifiThreshold() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_SIZE_WIFI_THRESHOLD, Integer.toString(Default.PREF_DL_SIZE_WIFI_THRESHOLD)) + "");
+    }
+
     public static boolean isDlRetriesActive() {
         return sharedPreferences.getBoolean(Key.PREF_DL_RETRIES_ACTIVE, Default.PREF_DL_RETRIES_ACTIVE);
     }
@@ -499,6 +507,8 @@ public final class Preferences {
         public static final String PREF_COLOR_THEME = "pref_color_theme";
         static final String PREF_QUEUE_AUTOSTART = "pref_queue_autostart";
         static final String PREF_QUEUE_WIFI_ONLY = "pref_queue_wifi_only";
+        static final String PREF_DL_SIZE_WIFI = "pref_dl_size_wifi";
+        static final String PREF_DL_SIZE_WIFI_THRESHOLD = "pref_dl_size_wifi_threshold";
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
@@ -560,6 +570,8 @@ public final class Preferences {
         static final int PREF_COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean PREF_QUEUE_AUTOSTART = true;
         static final boolean PREF_QUEUE_WIFI_ONLY = false;
+        static final boolean PREF_DL_SIZE_WIFI = false;
+        static final int PREF_DL_SIZE_WIFI_THRESHOLD = 40;
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
