@@ -7,6 +7,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 
 import androidx.annotation.IntDef;
@@ -35,7 +36,7 @@ public class NetworkHelper {
 
     @SuppressWarnings({"squid:CallToDeprecatedMethod"})
     public static @Connectivity
-    int getConnectivity(Context context) {
+    int getConnectivity(@NonNull Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         if (null == connectivityManager) return Connectivity.NO_INTERNET;
 
@@ -45,20 +46,22 @@ public class NetworkHelper {
             NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(activeNetwork);
             if (null == actNw) return Connectivity.NO_INTERNET;
 
+            // Below code _does not_ detect wifi properly when there's a VPN on -> using WifiManager instead (!)
+            /*
             if (actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return Connectivity.WIFI;
+            else return Connectivity.OTHER;
+             */
+            WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+            if (wifiManager != null && wifiManager.isWifiEnabled() && wifiManager.getConnectionInfo().getBSSID() != null)
+                return Connectivity.WIFI;
             else return Connectivity.OTHER;
         } else {
             NetworkInfo info = connectivityManager.getActiveNetworkInfo();
             if (null == info) return Connectivity.NO_INTERNET;
 
-            switch (info.getType()) {
-                case (ConnectivityManager.TYPE_WIFI):
-                    return Connectivity.WIFI;
-                case (ConnectivityManager.TYPE_MOBILE_MMS):
-                    return Connectivity.NO_INTERNET;
-                default:
-                    return Connectivity.OTHER; // Others (e.g. TYPE_MOBILE_MMS)
-            }
+            NetworkInfo mWifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            if (mWifi != null && mWifi.isConnected()) return Connectivity.WIFI;
+            else return Connectivity.OTHER;
         }
     }
 
