@@ -454,7 +454,7 @@ public class ContentDownloadService extends IntentService {
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages, sizeDownloaded));
 
             // If the "skip large downloads on mobile data" is on, estimate book size and skip if needed
-            if (Preferences.isDownloadLargeOnlyWifi() && pagesOK > 3) {
+            if (Preferences.isDownloadLargeOnlyWifi() && pagesOK > 3 && progress > 0 && totalPages > 0) {
                 // Estimate book size first because it's cheaper than checking current connectivity
                 double estimateBookSize = (sizeDownloaded / (1024.0 * 1024)) / (progress * 1.0 / totalPages);
                 Timber.d("Estimate book size calculated for wifi check : %s MB", estimateBookSize);
