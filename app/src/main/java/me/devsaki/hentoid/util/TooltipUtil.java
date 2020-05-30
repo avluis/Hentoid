@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 
@@ -28,6 +29,9 @@ public class TooltipUtil {
             @NonNull View anchor,
             @NonNull LifecycleOwner lifecycleOwner
     ) {
+        String prefName = "tooltip." + getViewName(anchor);
+        if (context instanceof Activity) prefName += "." + ((Activity)context).getLocalClassName();
+
         Balloon balloon = new Balloon.Builder(context)
                 .setArrowSize(10)
                 .setArrowOrientation(orientation)
@@ -46,7 +50,7 @@ public class TooltipUtil {
                 .setDismissWhenTouchOutside(true)
                 .setBalloonAnimation(BalloonAnimation.OVERSHOOT)
                 .setLifecycleOwner(lifecycleOwner)
-                .setPreferenceName("tooltip." + getViewName(anchor))
+                .setPreferenceName(prefName)
                 .build();
 
         if (orientation.equals(ArrowOrientation.BOTTOM)) balloon.showAlignTop(anchor);
