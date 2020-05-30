@@ -27,6 +27,7 @@ public class DownloadEvent {
     public static final int EV_CANCEL = 3;      // One book has been "canceled" (ordered to be removed from the queue)
     public static final int EV_COMPLETE = 4;    // Current book download has been completed
     public static final int EV_SKIP = 5;        // Cancel without removing the Content; used when the 2nd book is prioritized to end up in the first place of the queue or when 1st book is deprioritized
+    // /!\ Using EV_SKIP without moving the position of the book won't have any effect
 
     public final int eventType;                 // Event type (see constants EV_XXX above)
     public final Content content;               // Corresponding book (for EV_CANCEL events that are the only ones not concerning the 1st book of the queue + EV_COMPLETE to update the proper book in library view)
