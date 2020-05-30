@@ -18,6 +18,7 @@ class ResizeBitmapHelper {
         throw new IllegalStateException("Utility class");
     }
 
+    /*
     static Bitmap successiveResize(@NonNull final Bitmap src, int resizeNum) {
         if (0 == resizeNum) return src;
 
@@ -71,6 +72,8 @@ class ResizeBitmapHelper {
 
         return output;
     }
+
+     */
 
     // Better-looking resizing using RenderScript entirely, in one pass
     // Apply Gaussian blur to the image and then subsample it using bicubic interpolation.
