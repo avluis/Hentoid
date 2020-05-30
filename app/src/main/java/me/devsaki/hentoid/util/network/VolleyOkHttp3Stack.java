@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.util.network;
 
-import androidx.annotation.Nullable;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Header;
 import com.android.volley.Request;
@@ -14,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import me.devsaki.hentoid.util.network.OkHttpClientSingleton;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -35,6 +32,7 @@ import okhttp3.ResponseBody;
 public class VolleyOkHttp3Stack extends BaseHttpStack {
 
     private final OkHttpClient client;
+    private static final RequestBody EMPTY_REQUEST = RequestBody.create(new byte[0]);
 
     public VolleyOkHttp3Stack(int timeoutMs) {
         client = OkHttpClientSingleton.getInstance(timeoutMs);
@@ -47,7 +45,7 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
                 // Ensure backwards compatibility.  Volley assumes a request with a null body is a GET.
                 byte[] postBody = request.getBody();
                 if (postBody != null) {
-                    builder.post(RequestBody.create(MediaType.parse(request.getBodyContentType()), postBody));
+                    builder.post(RequestBody.create(postBody, MediaType.parse(request.getBodyContentType())));
                 }
                 break;
             case Request.Method.GET:
@@ -79,11 +77,10 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
         }
     }
 
-    @Nullable
-    private static RequestBody createRequestBody(Request r) throws AuthFailureError {
+    private static RequestBody createRequestBody(Request<?> r) throws AuthFailureError {
         final byte[] body = r.getBody();
-        if (body == null) return null;
-        return RequestBody.create(MediaType.parse(r.getBodyContentType()), body);
+        if (body == null) return EMPTY_REQUEST;
+        return RequestBody.create(body, MediaType.parse(r.getBodyContentType()));
     }
 
     @Override
