@@ -395,10 +395,14 @@ public class FileHelper {
 
     // see https://stackoverflow.com/questions/5084896/using-contentproviderclient-vs-contentresolver-to-access-content-provider
     public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
-        return listFolders(context, parent, null);
+        return listFoldersFilter(context, parent, null);
     }
 
-    public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
+    public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client) {
+        return FileUtil.listDocumentFiles(context, parent, client, null, true, false);
+    }
+
+    public static List<DocumentFile> listFoldersFilter(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
         ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
         if (null == client) return Collections.emptyList();
         try {
@@ -412,11 +416,15 @@ public class FileHelper {
         }
     }
 
+    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
+        return FileUtil.listDocumentFiles(context, parent, client, filter, false, true);
+    }
+
     public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
         ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
         if (null == client) return Collections.emptyList();
         try {
-            return listDocumentFiles(context, parent, client, filter);
+            return FileUtil.listDocumentFiles(context, parent, client, filter, false, true);
         } finally {
             // ContentProviderClient.close only available on API level 24+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -426,13 +434,16 @@ public class FileHelper {
         }
     }
 
-    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
-        return FileUtil.listDocumentFiles(context, parent, client, filter, false, true);
-    }
-
     @Nullable
     public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
         List<DocumentFile> result = listDocumentFiles(context, parent, subfolderName, true, false);
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
+    }
+
+    @Nullable
+    public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, @NonNull String fileName) {
+        List<DocumentFile> result = FileUtil.listDocumentFiles(context, parent, client, FileHelper.createNameFilterEquals(fileName), false, true);
         if (!result.isEmpty()) return result.get(0);
         else return null;
     }

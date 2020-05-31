@@ -107,7 +107,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.2'
     implementation "androidx.fragment:fragment-ktx:1.2.4"
-    implementation "androidx.documentfile:documentfile:1.0.1" // Fixes DocumentFile.fromTreeUri
+    implementation "androidx.documentfile:documentfile:1.0.1" // <-- if this evolves, please examine FileUtil.fromTreeUriOptimized for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
 
     // For ViewModel to work

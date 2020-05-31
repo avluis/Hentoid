@@ -25,7 +25,6 @@ import java.util.List;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
-import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
@@ -233,23 +232,15 @@ public class ImportHelper {
         if (hentoidFolderNames.accept(root.getName())) return root;
 
         // If not, look for it in its children
-        List<DocumentFile> hentoidDirs = FileHelper.listFolders(context, root, hentoidFolderNames);
+        List<DocumentFile> hentoidDirs = FileHelper.listFoldersFilter(context, root, hentoidFolderNames);
         if (!hentoidDirs.isEmpty()) return hentoidDirs.get(0);
         else return root;
-    }
-
-    private static void cleanUpDB(@NonNull final Context context) {
-        CollectionDAO dao = new ObjectBoxDAO(context);
-        dao.deleteAllLibraryBooks(true);
     }
 
     private static void runImport(
             @NonNull final Context context,
             @Nullable final ImportOptions options
     ) {
-        // Prior Library found, drop and recreate db
-        cleanUpDB(context);
-
         ImportNotificationChannel.init(context);
         Intent intent = ImportService.makeIntent(context);
 

@@ -1,7 +1,10 @@
 package me.devsaki.hentoid.util;
 
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.DocumentsContract;
@@ -18,7 +21,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import timber.log.Timber;
 
@@ -32,7 +37,12 @@ class FileUtil {
         throw new IllegalStateException("Utility class");
     }
 
-    private static Constructor treeDocumentFileConstructor = null;
+    private static Constructor<?> treeDocumentFileConstructor = null;
+
+    private static final String DOCPROVIDER_PATH_DOCUMENT = "document";
+    private static final String DOCPROVIDER_PATH_TREE = "tree";
+
+    private static final Map<String, Boolean> providersCache = new HashMap<>();
 
 
     /**
@@ -169,16 +179,69 @@ class FileUtil {
         final List<DocumentFile> resultFiles = new ArrayList<>();
         for (ImmutableTriple<Uri, String, Long> uri : uris) {
             //DocumentFile docFile = newTreeDocumentFile(parent, context, uri.left);
-            // Following line should be the proper way to go but it's inefficient as it calls buildDocumentUriUsingTree once again
-            DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
+            DocumentFile docFile = fromTreeUriCached(context, uri.left);
+            // Following line should be the proper way to go but it's inefficient as it calls queryIntentContentProviders from scratch repeatedly
+            //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
             if (docFile != null)
                 resultFiles.add(new CachedDocumentFile(docFile, uri.middle, uri.right));
         }
         return resultFiles;
     }
 
+    /**
+     * WARNING This is a tweak of internal Android code to make it faster by caching calls to queryIntentContentProviders
+     * Original (uncached) is DocumentFile.fromTreeUri
+     */
     @Nullable
-    private static DocumentFile newTreeDocumentFile(@NonNull final DocumentFile parent, @NonNull final Context context, @NonNull final Uri uri) {
+    private static DocumentFile fromTreeUriCached(@NonNull final Context context, @NonNull final Uri treeUri) {
+        String documentId = DocumentsContract.getTreeDocumentId(treeUri);
+        if (isDocumentUriCached(context, treeUri)) {
+            documentId = DocumentsContract.getDocumentId(treeUri);
+        }
+        return newTreeDocumentFile(null, context,
+                DocumentsContract.buildDocumentUriUsingTree(treeUri,
+                        documentId));
+    }
+
+    // Original (uncached) : DocumentsContract.isDocumentUri
+    private static boolean isDocumentUriCached(@NonNull final Context context, @Nullable final Uri uri) {
+        if (isContentUri(uri) && isDocumentsProviderCached(context, uri.getAuthority())) {
+            final List<String> paths = uri.getPathSegments();
+            if (paths.size() == 2) {
+                return DOCPROVIDER_PATH_DOCUMENT.equals(paths.get(0));
+            } else if (paths.size() == 4) {
+                return DOCPROVIDER_PATH_TREE.equals(paths.get(0)) && DOCPROVIDER_PATH_DOCUMENT.equals(paths.get(2));
+            }
+        }
+        return false;
+    }
+
+    // Original (uncached) : DocumentsContract.isDocumentsProvider
+    private static boolean isDocumentsProviderCached(Context context, String authority) {
+        if (providersCache.containsKey(authority)) {
+            Boolean b = providersCache.get(authority);
+            if (b != null) return b;
+        }
+        final Intent intent = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+        final List<ResolveInfo> infos = context.getPackageManager()
+                .queryIntentContentProviders(intent, 0);
+        for (ResolveInfo info : infos) {
+            if (authority.equals(info.providerInfo.authority)) {
+                providersCache.put(authority, true);
+                return true;
+            }
+        }
+        providersCache.put(authority, false);
+        return false;
+    }
+
+    // Original : DocumentsContract.isContentUri
+    private static boolean isContentUri(Uri uri) {
+        return uri != null && ContentResolver.SCHEME_CONTENT.equals(uri.getScheme());
+    }
+
+    @Nullable
+    private static DocumentFile newTreeDocumentFile(@Nullable final DocumentFile parent, @NonNull final Context context, @NonNull final Uri uri) {
         //resultFiles[i] = new TreeDocumentFile(this, context, result[i]); <-- not visible
         try {
             if (null == treeDocumentFileConstructor) {

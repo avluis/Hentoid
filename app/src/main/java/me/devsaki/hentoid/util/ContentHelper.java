@@ -174,7 +174,7 @@ public final class ContentHelper {
             return new ArrayList<>();
         }
 
-        return FileHelper.listFolders(context,
+        return FileHelper.listFoldersFilter(context,
                 folder,
                 displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME)
                         && Helper.isImageExtensionSupported(FileHelper.getExtension(displayName))
