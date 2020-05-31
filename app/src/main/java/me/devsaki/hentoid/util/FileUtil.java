@@ -162,15 +162,15 @@ class FileUtil {
             Timber.w(e, "Failed query");
         }
 
-        return convertFromUris(context, parent, results);
+        return convertFromUris(context, results);
     }
 
-    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final DocumentFile parent, @NonNull final List<ImmutableTriple<Uri, String, Long>> uris) {
+    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final List<ImmutableTriple<Uri, String, Long>> uris) {
         final List<DocumentFile> resultFiles = new ArrayList<>();
         for (ImmutableTriple<Uri, String, Long> uri : uris) {
-            DocumentFile docFile = newTreeDocumentFile(parent, context, uri.left);
+            //DocumentFile docFile = newTreeDocumentFile(parent, context, uri.left);
             // Following line should be the proper way to go but it's inefficient as it calls buildDocumentUriUsingTree once again
-            //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri);
+            DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
             if (docFile != null)
                 resultFiles.add(new CachedDocumentFile(docFile, uri.middle, uri.right));
         }
