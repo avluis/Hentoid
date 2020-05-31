@@ -154,10 +154,6 @@
     <string name="enabled">ENABLED</string>
     <string name="disabled">DISABLED</string>
 
-    <string name="kitkat_dialog_return_0">Folder $s created successfully</string>
-    <string name="kitkat_dialog_return_1">Folder $s created but not writable</string>
-    <string name="kitkat_dialog_return_2">Folder $s could not be created</string>
-
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
