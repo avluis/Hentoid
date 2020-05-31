@@ -178,7 +178,6 @@ class FileUtil {
     private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final List<ImmutableTriple<Uri, String, Long>> uris) {
         final List<DocumentFile> resultFiles = new ArrayList<>();
         for (ImmutableTriple<Uri, String, Long> uri : uris) {
-            //DocumentFile docFile = newTreeDocumentFile(parent, context, uri.left);
             DocumentFile docFile = fromTreeUriCached(context, uri.left);
             // Following line should be the proper way to go but it's inefficient as it calls queryIntentContentProviders from scratch repeatedly
             //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
