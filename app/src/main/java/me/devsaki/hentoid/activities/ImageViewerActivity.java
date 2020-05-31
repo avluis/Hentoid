@@ -87,7 +87,7 @@ public class ImageViewerActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        volumeKeyListener.clear();
+        if (volumeKeyListener != null) volumeKeyListener.clear();
         super.onDestroy();
     }
 }
