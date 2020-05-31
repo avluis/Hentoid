@@ -188,7 +188,7 @@ public class ImportService extends IntentService {
 
         for (int i = 0; i < bookFolders.size(); i++) {
             DocumentFile bookFolder = bookFolders.get(i);
-            Timber.i(">> start %s", bookFolder.getUri().toString());
+            Timber.d(">> start %s", bookFolder.getUri().toString());
 
             // Detect the presence of images if the corresponding cleanup option has been enabled
             if (cleanNoImages) {
