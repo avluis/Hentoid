@@ -275,37 +275,47 @@ public class FileHelper {
      */
     public static void openFile(@NonNull Context context, @NonNull File aFile) {
         File file = new File(aFile.getAbsolutePath());
-        Intent myIntent = new Intent(Intent.ACTION_VIEW);
         Uri dataUri = FileProvider.getUriForFile(context, AUTHORITY, file);
-        if (file.isDirectory()) {
-            myIntent.setDataAndType(dataUri, DocumentsContract.Document.MIME_TYPE_DIR);
-        } else {
-            myIntent.setDataAndTypeAndNormalize(dataUri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(aFile.getName())));
-        }
-        myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        tryOpenFile(context, dataUri, aFile.getName(), aFile.isDirectory());
+    }
+
+    /**
+     * Open the given file using the device's app(s) of choice
+     *
+     * @param context Context
+     * @param aFile   File to be opened
+     */
+    public static void openFile(@NonNull Context context, @NonNull DocumentFile aFile) {
+        String fileName = (null == aFile.getName()) ? "" : aFile.getName();
+        tryOpenFile(context, aFile.getUri(), fileName, aFile.isDirectory());
+    }
+
+    private static void tryOpenFile(@NonNull Context context, @NonNull Uri uri, @NonNull String fileName, boolean isDirectory) {
         try {
-            context.startActivity(myIntent);
+            if (isDirectory) {
+                try {
+                    openFileWithIntent(context, uri, DocumentsContract.Document.MIME_TYPE_DIR);
+                } catch (ActivityNotFoundException e1) {
+                    try {
+                        openFileWithIntent(context, uri, "resource/folder");
+                    } catch (ActivityNotFoundException e2) {
+                        ToastUtil.toast(R.string.select_file_manager);
+                        openFileWithIntent(context, uri, "*/*");
+                    }
+                }
+            } else
+                openFileWithIntent(context, uri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(fileName)));
         } catch (ActivityNotFoundException e) {
-            Timber.e(e, "No activity found to open %s", aFile.getAbsolutePath());
+            Timber.e(e, "No activity found to open %s", uri.toString());
             ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
 
-    public static void openFile(@NonNull Context context, @NonNull DocumentFile aFile) {
+    private static void openFileWithIntent(@NonNull Context context, @NonNull Uri uri, @Nullable String mimeType) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
-        if (aFile.isDirectory()) {
-            myIntent.setDataAndType(aFile.getUri(), DocumentsContract.Document.MIME_TYPE_DIR);
-        } else {
-            String fileName = (null == aFile.getName()) ? "" : aFile.getName();
-            myIntent.setDataAndTypeAndNormalize(aFile.getUri(), MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(fileName)));
-        }
+        myIntent.setDataAndTypeAndNormalize(uri, mimeType);
         myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        try {
-            context.startActivity(myIntent);
-        } catch (ActivityNotFoundException e) {
-            Timber.e(e, "No activity found to open %s", aFile.getUri());
-            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
-        }
+        context.startActivity(myIntent);
     }
 
     /**
@@ -383,7 +393,6 @@ public class FileHelper {
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
-    // TODO Performance leverage ContentProviderClient when doing repeated calls to listXXX for all file accessors
     // see https://stackoverflow.com/questions/5084896/using-contentproviderclient-vs-contentresolver-to-access-content-provider
     public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
         return listFolders(context, parent, null);

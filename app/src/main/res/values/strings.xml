@@ -345,4 +345,7 @@
 
     <!-- Edit drawer -->
     <string name="title_activity_drawer_edit">Edit menu</string>
+
+    <!-- Misc -->
+    <string name="select_file_manager">Select your file manager</string>
 </resources>
