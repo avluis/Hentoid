@@ -56,8 +56,10 @@
     <string name="undo">Undo</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
+    <string name="move_top">Move to top</string>
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
+    <string name="move_bottom">Move to bottom</string>
     <string name="queue_empty2" />
     <string name="queue_paused">Queue paused</string>
     <string name="queue_preparing">Preparing download</string>
@@ -205,6 +207,10 @@
     <string name="sort_reads">Reads</string>
     <string name="sort_random">Random</string>
     <string name="sort_invalid">-invalid-</string>
+    <!-- Item card tooltips -->
+    <string name="drag_help">Drag item</string>
+    <string name="view_source_help">View source in browser</string>
+    <string name="book_fav_help">Mark/unmark book as favourite</string>
 
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>

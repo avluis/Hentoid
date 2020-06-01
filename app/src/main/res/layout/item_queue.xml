@@ -7,7 +7,8 @@
     android:layout_height="105dp"
     android:clickable="true"
     android:focusable="true"
-    android:paddingBottom="@dimen/default_cardview_margin">
+    android:paddingBottom="@dimen/default_cardview_margin"
+    tools:targetApi="o">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/item_card"
@@ -95,6 +96,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_reorder"
+            android:tooltipText="@string/drag_help"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"
             app:layout_constraintEnd_toEndOf="parent"
@@ -112,6 +114,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_action_bottom"
+            android:tooltipText="@string/move_bottom"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"
             app:layout_constraintEnd_toStartOf="@id/ivReorder"
@@ -129,6 +132,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_action_top"
+            android:tooltipText="@string/move_top"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"
             app:layout_constraintEnd_toStartOf="@id/queueBottomBtn"
@@ -146,6 +150,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_menu_nhentai"
+            android:tooltipText="@string/view_source_help"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"
             app:layout_constraintEnd_toStartOf="@id/queueTopBtn"
             app:layout_constraintVertical_bias="1.0"
@@ -161,6 +166,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_error_outline"
+            android:tooltipText="@string/err_stats_help"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"
             app:layout_constraintEnd_toStartOf="@id/queue_site_button"
@@ -178,6 +184,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/selector_download_action"
+            android:tooltipText="@string/menu_redownload"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"
             app:layout_constraintEnd_toStartOf="@id/ivError"

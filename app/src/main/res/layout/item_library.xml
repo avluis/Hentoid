@@ -8,7 +8,8 @@
     android:layout_marginBottom="@dimen/default_cardview_margin"
     android:clickable="true"
     android:focusable="true"
-    android:longClickable="true">
+    android:longClickable="true"
+    tools:targetApi="o">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/item_card"
@@ -57,6 +58,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTags"
             app:layout_constraintVertical_bias="1.0"
+            android:tooltipText="@string/book_fav_help"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription" />
 
@@ -73,6 +75,7 @@
             app:layout_constraintEnd_toStartOf="@id/ivFavourite"
             app:layout_constraintTop_toBottomOf="@id/tvTags"
             app:layout_constraintVertical_bias="1.0"
+            android:tooltipText="@string/view_source_help"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_nhentai" />
