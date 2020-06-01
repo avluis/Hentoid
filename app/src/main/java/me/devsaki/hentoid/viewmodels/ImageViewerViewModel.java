@@ -244,16 +244,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
             default:
                 readThresholdPosition = 1;
         }
-
-        int indexToSet = index;
-        // Reset the memorized page index if it represents the last page
-        if (index == theImages.size() - 1) indexToSet = 0;
-
-        theContent.setLastReadPageIndex(indexToSet);
         boolean updateReads = (highestImageIndexReached + 1 >= readThresholdPosition);
 
+        // Reset the memorized page index if it represents the last page
+        int indexToSet = (index == theImages.size() - 1) ? 0 : index;
+
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doLeaveBook(theContent, updateReads))
+                Completable.fromRunnable(() -> doLeaveBook(theContent.getId(), indexToSet, updateReads))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -264,11 +261,18 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doLeaveBook(@NonNull final Content theContent, boolean updateReads) {
+    private void doLeaveBook(final long contentId, int indexToSet, boolean updateReads) {
         Helper.assertNonUiThread();
+
+        // Get a fresh version of current content in case it has been updated since the initial load
+        // (that can be the case when viewing a book that is being downloaded)
+        Content savedContent = collectionDao.selectContent(contentId);
+        if (null == savedContent) return;
+
+        savedContent.setLastReadPageIndex(indexToSet);
         if (updateReads)
-            ContentHelper.updateContentReads(getApplication(), collectionDao, theContent);
-        else collectionDao.insertContent(theContent);
+            ContentHelper.updateContentReads(getApplication(), collectionDao, savedContent);
+        else collectionDao.insertContent(savedContent);
     }
 
     public void toggleShowFavouritePages(Consumer<Boolean> callback) {
