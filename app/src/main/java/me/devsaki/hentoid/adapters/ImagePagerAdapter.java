@@ -185,7 +185,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) { // TODO make all that method less ugly
         if (holder.getItemViewType() == ViewType.SSIV_HORIZONTAL) {
             CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) holder.imgView;
-            ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
+            if (recyclerView != null)
+                ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
             if (!Preferences.isViewerZoomTransitions()) ssView.setDoubleTapZoomDuration(10);
             ssView.setOffsetLeftSide(isScrollLTR);
         }

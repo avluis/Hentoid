@@ -123,6 +123,13 @@ public class ImageGalleryFragment extends Fragment {
         viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
     }
 
+    @Override
+    public void onStop() {
+        recyclerView.setAdapter(null);
+        recyclerView = null;
+        super.onStop();
+    }
+
     private void onImagesChanged(List<ImageFile> images) {
         List<ImageFileItem> imgs = new ArrayList<>();
         for (ImageFile img : images) {

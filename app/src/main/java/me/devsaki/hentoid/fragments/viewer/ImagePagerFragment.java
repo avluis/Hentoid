@@ -2,7 +2,6 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -236,6 +235,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onStop() {
         viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
         if (slideshowTimer != null) slideshowTimer.dispose();
+        adapter.setRecyclerView(null);
+        recyclerView.setAdapter(null);
+        recyclerView = null;
         ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
         super.onStop();
     }
@@ -444,7 +446,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // -> activate scroll listener manually
         if (currentPosition == startingIndex) onScrollPositionChange(startingIndex);
         else {
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation() && recyclerView != null)
                 recyclerView.scrollToPosition(startingIndex);
             else
                 llm.scrollToPositionWithOffset(startingIndex, 0);
