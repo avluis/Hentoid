@@ -1,8 +1,8 @@
 {
   "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.11.6/hentoid1116-211.apk",
   "versionCode": "211",
-  "updateURL.beta": "https://cdn.discordapp.com/attachments/418817277383671808/716295116150800414/hentoid1120-221-beta3.apk",
-  "versionCode.beta": "221",
+  "updateURL.beta": "https://cdn.discordapp.com/attachments/418817277383671808/717001334703783946/hentoid1120-224-beta4.apk",
+  "versionCode.beta": "224",
   "sourceAlerts":[
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"189" },
