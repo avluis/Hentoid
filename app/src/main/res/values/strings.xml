@@ -37,9 +37,12 @@
     <string name="menu_delete_single">Delete</string>
     <string name="menu_delete_multi">Delete Items</string>
     <string name="menu_open_folder">Open containing folder</string>
-    <string name="menu_redownload">Redownload from scratch</string>
+    <string name="menu_redownload">Redownload</string>
+    <string name="menu_redownload_scratch">Redownload from scratch</string>
     <string name="menu_share">Share</string>
+    <string name="menu_share_help">Share book URL and title using another app</string>
     <string name="menu_archive">Archive</string>
+    <string name="menu_archive_help">Archive the book in a ZIP file</string>
     <string name="search_hint">Title, author, tag or book ID</string>
     <string name="send_to">Share with:</string>
     <string name="open_settings">Open settings</string>
@@ -61,6 +64,7 @@
     <string name="queue_preparing">Preparing download</string>
     <string name="queue_dl">Downloading {0}</string>
     <string name="err_stats_title">Error stats</string>
+    <string name="err_stats_help">Show detailed stats about current download errors</string>
     <plurals name="queue_book_count">
         <item quantity="one">Queue has %s book</item>
         <item quantity="other">Queue has %s books</item>
@@ -220,7 +224,7 @@
     <string name="sort_title">Title</string>
     <string name="sort_artist">Artist</string>
     <string name="sort_pages">Pages</string>
-    <string name="sort_dl_date">DL date</string>
+    <string name="sort_dl_date">Download date</string>
     <string name="sort_read_date">Read date</string>
     <string name="sort_reads">Reads</string>
     <string name="sort_random">Random</string>
@@ -272,7 +276,7 @@
     <string name="about_chrome_version">Chrome v%1$d</string>
 
     <!-- Web viewer -->
-    <string name="web_gallery">Back to gallery page</string>
+    <string name="web_gallery">Back to latest gallery page</string>
     <string name="web_home">Back to library</string>
     <string name="web_back">Back</string>
     <string name="web_forward">Forward</string>
@@ -314,11 +318,15 @@
     <string name="viewer_prefs_display_fit">Fit (image is entirely displayed on screen)</string>
     <string name="viewer_prefs_display_fill">Fill (image takes up all screen)</string>
     <string name="viewer_slideshow">Slideshow</string>
+    <string name="viewer_slideshow_help">Slideshow mode</string>
     <string name="viewer_order_shuffle">Shuffle pages</string>
     <string name="viewer_order_123">Reorder pages</string>
+    <string name="viewer_order_shuffle_help">Toggle page shuffling</string>
     <string name="viewer_filter_favourite_off">Only show favourite pages</string>
     <string name="viewer_filter_favourite_on">Show all pages</string>
+    <string name="viewer_filter_favourite_help">Toggle display of favourite page</string>
     <string name="viewer_page_menu">Page menu</string>
+    <string name="viewer_page_menu_help">Open page properties</string>
     <string name="viewer_favourite_off">Mark page as favourite</string>
     <string name="viewer_favourite_on">Unmark page as favourite</string>
     <string name="viewer_delete_book">Delete book</string>
