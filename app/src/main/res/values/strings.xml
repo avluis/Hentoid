@@ -335,6 +335,14 @@
     <string name="viewer_copy_fail">Could not write to Downloads folder</string>
     <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
     <string name="viewer_ask_delete_page">Are you sure you wish to delete this page?</string>
+    <string name="previous_book_help">Previous book</string>
+    <string name="next_book_help">Next book</string>
+    <string name="gallery_help">Book gallery</string>
+    <string name="gallery_fav_help">Book gallery / favourites only</string>
+    <string name="page_fav_help">Add page to favourites</string>
+    <string name="page_copy_help">Copy page to the Android Downloads folder</string>
+    <string name="page_share_help">Share page using another app</string>
+    <string name="page_delete_help">Delete page</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>
