@@ -65,10 +65,6 @@
     <string name="queue_dl">Downloading {0}</string>
     <string name="err_stats_title">Error stats</string>
     <string name="err_stats_help">Show detailed stats about current download errors</string>
-    <plurals name="queue_book_count">
-        <item quantity="one">Queue has %s book</item>
-        <item quantity="other">Queue has %s books</item>
-    </plurals>
     <string name="err_no_content">Book does not exist yet</string>
     <string name="confirm_cancel_all">You are about to cancel the whole queue. Continue ?</string>
     <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
@@ -304,19 +300,14 @@
     <string name="search_select_a_filter">Select a filter</string>
 
     <!-- DB migration & Maintenance -->
-    <string name="migrate_db">Migrating the database</string>
     <string name="maintenance">Performing maintenance</string>
 
     <!-- Image viewer -->
     <string name="no_images">Could not load the book : No image found</string>
-    <string name="image_file_not_found">File not found in @dir</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
     <string name="viewer_direction_ttb">Top to bottom</string>
-    <string name="viewer_prefs_title">Viewer preferences</string>
-    <string name="viewer_prefs_display_fit">Fit (image is entirely displayed on screen)</string>
-    <string name="viewer_prefs_display_fill">Fill (image takes up all screen)</string>
     <string name="viewer_slideshow">Slideshow</string>
     <string name="viewer_slideshow_help">Slideshow mode</string>
     <string name="viewer_order_shuffle">Shuffle pages</string>
@@ -327,10 +318,7 @@
     <string name="viewer_filter_favourite_help">Toggle display of favourite page</string>
     <string name="viewer_page_menu">Page menu</string>
     <string name="viewer_page_menu_help">Open page properties</string>
-    <string name="viewer_favourite_off">Mark page as favourite</string>
-    <string name="viewer_favourite_on">Unmark page as favourite</string>
     <string name="viewer_delete_book">Delete book</string>
-    <string name="pref_viewer_image_display">Image display mode</string>
     <string name="viewer_copy_success">Copied to Downloads folder</string>
     <string name="viewer_copy_fail">Could not write to Downloads folder</string>
     <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
@@ -339,7 +327,7 @@
     <string name="next_book_help">Next book</string>
     <string name="gallery_help">Book gallery</string>
     <string name="gallery_fav_help">Book gallery / favourites only</string>
-    <string name="page_fav_help">Add page to favourites</string>
+    <string name="page_fav_help">Mark/unmark page as favourite</string>
     <string name="page_copy_help">Copy page to the Android Downloads folder</string>
     <string name="page_share_help">Share page using another app</string>
     <string name="page_delete_help">Delete page</string>
