@@ -94,8 +94,7 @@ public class ImportHelper {
     }
 
     // Return from SAF picker
-    // TODO - check if the processing can be done on a separate thread to avoid freezing while displaying the SAF dialog (especially during hasBooks())
-    // TODO - just after a successful import, when the SAF dialog is reopened and another folder is chosen, that method is never called <-- fixed recently ?
+    // TODO - check if the processing can be simplified and/or done on a separate thread to avoid freezing while displaying the SAF dialog (especially during hasBooks())
     public static @Result
     int processPickerResult(
             @NonNull final Context context,
