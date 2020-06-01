@@ -1,4 +1,5 @@
 <resources>
+    <!-- Generic usage -->
     <string name="app_name">Hentoid</string>
     <string name="app_id">me.devsaki.hentoid</string>
     <string name="app_intro">Welcome</string>
@@ -6,6 +7,8 @@
     <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
     <string name="on">On</string>
     <string name="off">Off</string>
+    <string name="select_all">Select all</string>
+    <string name="select_none">Select none</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -29,17 +32,7 @@
     <!-- Library screen toolbar -->
     <string name="menu_tags">Tags</string>
     <string name="menu_search">Search</string>
-    <string name="menu_order">order books</string>
-    <string name="menu_order_AZ">alphabetically</string>
-    <string name="menu_order_ZA">alphabetically (inverted)</string>
-    <string name="menu_order_123">by download date (oldest 1st)</string>
-    <string name="menu_order_321">by download date (newest 1st)</string>
-    <string name="menu_order_unread">by reads (unread 1st)</string>
-    <string name="menu_order_read">by reads (most read 1st)</string>
-    <string name="menu_order_last_read">by read date (latest read 1st)</string>
-    <string name="menu_order_pages_desc">by pages (most first)</string>
-    <string name="menu_order_pages_asc">by pages (least first)</string>
-    <string name="menu_order_random">random order</string>
+    <string name="menu_order">Order books</string>
     <string name="menu_fav">Toggle favourite filter</string>
     <string name="menu_delete_single">Delete</string>
     <string name="menu_delete_multi">Delete Items</string>

@@ -3,11 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".activities.LibraryActivity"
-    tools:ignore="AlwaysShowAction">
+    tools:ignore="AlwaysShowAction"
+    tools:targetApi="o">
     <item
         android:id="@+id/action_search"
         android:icon="@drawable/ic_menu_search"
         android:title="@string/menu_search"
+        android:tooltipText="@string/menu_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="collapseActionView|always" />
     <item
@@ -16,10 +18,12 @@
         android:checked="false"
         android:icon="@drawable/ic_filter_favs_off"
         android:title="@string/menu_fav"
+        android:tooltipText="@string/menu_fav"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_order"
         android:icon="@drawable/ic_sort"
         android:title="@string/menu_order"
+        android:tooltipText="@string/menu_order"
         app:showAsAction="always" />
 </menu>
