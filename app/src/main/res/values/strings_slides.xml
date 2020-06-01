@@ -6,14 +6,9 @@
     <!-- Slide 02 -->
     <string name="slide_02_header">Permissions</string>
     <string name="slide_02_text">We need to ask for your permission to store files on your device.</string>
-    <!-- Slide 03 -->
-    <string name="slide_03_header">Importing</string>
-    <string name="slide_03_text">Do you have an existing library?\nMake sure to set that as your storage folder.</string>
     <!-- Slide 04 -->
     <string name="slide_04_header">Library</string>
     <string name="slide_04_text">Hentoid requires a dedicated folder for storing your media.</string>
-    <string name="slide_04_library_default">Default\nSave to internal device storage</string>
-    <string name="slide_04_library_custom">Custom\nSave to a custom storage location</string>
     <!-- Slide 05 -->
     <string name="slide_05_header">Theme</string>
     <string name="slide_05_text">Choose a display theme.</string>

@@ -30,7 +30,6 @@
     <string name="api29_migration_step4_init">Importing queue…</string>
 
     <!-- Library screen toolbar -->
-    <string name="menu_tags">Tags</string>
     <string name="menu_search">Search</string>
     <string name="menu_order">Order books</string>
     <string name="menu_fav">Toggle favourite filter</string>
@@ -126,7 +125,6 @@
 
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
-    <string name="permission_granted">Permission set, restarting library import.</string>
     <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
     <string name="permissioncomplaint_snackbar_manual">You must manually grant permissions before you can continue</string>
     <string name="import_canceled">Import canceled</string>
@@ -137,13 +135,8 @@
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="starting_import">Starting import…</string>
     <string name="importing_library">Importing Library</string>
-    <string name="add_dialog">Adding files to DB</string>
     <string name="importing_please_wait">Importing, please wait…</string>
     <string name="updating_please_wait">Updating, please wait…</string>
-    <string name="scanning_files">Scanning files…</string>
-    <string name="adding_to_db">Adding files to database…</string>
-    <string name="kitkat_rationale">Unable to modify contents of the SD Card. This is caused by the external storage policy by Google in Android 4.4.\nTo bypass this limitation, you can try using one of the \'sd fix\' tools available in the Google Play Store (Root Required).</string>
-    <string name="no_sd_support">Your device is not currently supported.\nPlease join our Discord Server if you wish to help us add support for your device.</string>
     <string name="enabled">ENABLED</string>
     <string name="disabled">DISABLED</string>
 
@@ -160,20 +153,13 @@
     <string name="redownload_action">REDOWNLOAD</string>
     <string name="redownload_open_log">Open error log</string>
     <string name="redownload_share_log">Share error log</string>
-    <string name="redownload_get_log">Get error log</string>
     <string name="redownload_generating_log_file">Generating log file…</string>
-    <string name="redownload_log_clipboard">Log copied to clipboard</string>
 
     <!-- Library fragment -->
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
     </plurals>
-    <string name="content_deleted">\@content deleted.</string>
-    <string name="not_previous_page">First page - can\'t proceed any further.</string>
-    <string name="not_next_page">Last page - download more!</string>
-    <string name="on_first_page">Already on the first page.</string>
-    <string name="moving_to_first_page">Moving to first page.</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
     <string name="queue_empty">Why am I empty?</string>
     <string name="errors_empty">No errors detected among downloads</string>
@@ -182,8 +168,6 @@
     <string name="masterdata_no_result">No result found :(</string>
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
-    <string name="sd_access_error">SD Access Error!\nPlease check or replace SD Card!!</string>
-    <string name="sd_access_fatal_error">Hentoid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="book_title">"This is a rather long title, just because we need it to be."</string>
@@ -205,10 +189,6 @@
         <item quantity="one">One of the selected books has secured content and cannot be redownloaded\nThis book will be ignored.</item>
         <item quantity="other">Some of the selected books have secured content and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
-    <string name="no_more_load_retry">No more items to load. Refresh to retry</string>
-    <string name="endless_disabled">Loading has been disabled</string>
-    <string name="endless_cancel">Loading has been canceled</string>
-    <string name="endless_error">Error while loading</string>
     <string name="deleted">Deleted</string>
     <string name="help_search">Search anything : title, author, tag\nand launch code too !</string>
     <string name="help_page_slider">You can browse faster by sliding through page numbers</string>
