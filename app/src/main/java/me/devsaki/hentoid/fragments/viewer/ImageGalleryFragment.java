@@ -58,7 +58,6 @@ public class ImageGalleryFragment extends Fragment {
         return fragment;
     }
 
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
@@ -69,7 +68,9 @@ public class ImageGalleryFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        fastAdapter.setHasStableIds(true);
+        if (!fastAdapter.hasObservers())
+            fastAdapter.setHasStableIds(true);
+
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p));
         // Favourite button click listener
@@ -141,7 +142,15 @@ public class ImageGalleryFragment extends Fragment {
     private boolean onItemClick(int position) {
         ImageFileItem imgFile = itemAdapter.getAdapterItem(position);
         viewModel.setStartingIndex(imgFile.getImage().getDisplayOrder());
-        getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Clear back stack
+        if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, new ImagePagerFragment())
+                    .addToBackStack(null)
+                    .commit();
+        } else { // Pager mode (Library -> pager -> gallery -> pager)
+            getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
+        }
 
         return true;
     }

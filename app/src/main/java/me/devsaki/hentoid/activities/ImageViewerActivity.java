@@ -79,6 +79,11 @@ public class ImageViewerActivity extends BaseActivity {
         this.volumeKeyListener = listener;
     }
 
+    public void unregisterKeyListener() {
+        if (volumeKeyListener != null) volumeKeyListener.clear();
+        volumeKeyListener = null;
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (volumeKeyListener != null) return volumeKeyListener.onKey(null, keyCode, event);
@@ -86,8 +91,14 @@ public class ImageViewerActivity extends BaseActivity {
     }
 
     @Override
+    protected void onStop() {
+        unregisterKeyListener();
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
-        if (volumeKeyListener != null) volumeKeyListener.clear();
+        unregisterKeyListener();
         super.onDestroy();
     }
 }

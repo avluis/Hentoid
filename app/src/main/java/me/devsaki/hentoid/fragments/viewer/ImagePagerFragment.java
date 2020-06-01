@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -20,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
@@ -234,9 +236,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onStop() {
         viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
         if (slideshowTimer != null) slideshowTimer.dispose();
+        ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
         super.onStop();
     }
 
+    @Override
+    public void onDestroy() {
+        Preferences.unregisterPrefsChangedListener(listener);
+        adapter.destroy();
+        super.onDestroy();
+    }
 
     private void initPager(View rootView) {
         adapter = new ImagePagerAdapter(requireContext());
@@ -341,13 +350,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         galleryBtn.setOnClickListener(v -> displayGallery(false));
         favouritesGalleryBtn = requireViewById(rootView, R.id.viewer_favourites_btn);
         favouritesGalleryBtn.setOnClickListener(v -> displayGallery(true));
-    }
-
-    @Override
-    public void onDestroy() {
-        Preferences.unregisterPrefsChangedListener(listener);
-        adapter.destroy();
-        super.onDestroy();
     }
 
     /**
@@ -877,11 +879,27 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void displayGallery(boolean filterFavourites) {
         hasGalleryBeenShown = true;
         viewModel.setStartingIndex(imageIndex); // Memorize the current page
+
+        if (getParentFragmentManager().getBackStackEntryCount() > 0) { // Gallery mode (Library -> gallery -> pager)
+            getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
+        } else { // Pager mode (Library -> pager -> gallery -> pager)
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
+                    .addToBackStack(null)
+                    .commit();
+        }
+
+        /*
         getParentFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
                 .addToBackStack(null)
                 .commit();
+        if (getParentFragmentManager().getBackStackEntryCount() > 0) // Library -> gallery -> pager navigation
+            getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
+
+         */
     }
 
     /**
