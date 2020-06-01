@@ -76,8 +76,10 @@ public class Api29MigrationActivity extends AppCompatActivity {
         String storageUri = Preferences.getStorageUri();
         DocumentFile storageDoc = (storageUri.isEmpty()) ? null : DocumentFile.fromTreeUri(this, Uri.parse(storageUri));
 
-        // Folder already set to a content:// URI (previous use of SAF picker)
+        // If the root folder is already set to a content:// URI (previous use of SAF picker), start scanning at once
         if (storageDoc != null && storageDoc.exists()) scanLibrary(storageDoc);
+        // else ask for the Hentoid folder, as PersistableUriPermission might not have been granted at all
+        // (case of v11- app running on Android 10 with API28- target)
         else step1button.setVisibility(View.VISIBLE);
     }
 
