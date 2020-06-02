@@ -169,7 +169,7 @@ public class FileHelper {
     }
 
     public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
-        return context.getContentResolver().openOutputStream(target.getUri());
+        return context.getContentResolver().openOutputStream(target.getUri(), "rwt"); // Always truncate file to whatever data needs to be written
     }
 
     public static InputStream getInputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
