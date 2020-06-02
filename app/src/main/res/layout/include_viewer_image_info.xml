@@ -21,7 +21,7 @@
             android:textSize="@dimen/caption"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/app_intro" />
+            tools:text="root/path1/path2/image_name.jpg" />
 
         <TextView
             android:id="@+id/image_dimensions"
@@ -30,7 +30,7 @@
             android:textSize="@dimen/caption"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/image_path"
-            tools:text="@string/app_intro" />
+            tools:text="1600 x 2300 (scale 86%)" />
 
         <View
             android:id="@+id/img_divider"
