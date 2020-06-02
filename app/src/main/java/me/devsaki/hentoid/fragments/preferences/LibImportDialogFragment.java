@@ -384,7 +384,7 @@ public class LibImportDialogFragment extends DialogFragment {
 
     private void finish() {
         importDisposable.dispose();
-        Snackbar.make(rootView, getResources().getString(R.string.import_result, nbSuccess), LENGTH_LONG).show();
+        Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result, nbSuccess, nbSuccess), LENGTH_LONG).show();
 
         // Dismiss after 3s, for the user to be able to see the snackbar
         new Handler().postDelayed(this::dismiss, 3000);
