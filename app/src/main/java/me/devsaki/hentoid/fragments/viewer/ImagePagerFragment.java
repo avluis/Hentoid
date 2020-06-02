@@ -236,7 +236,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
         if (slideshowTimer != null) slideshowTimer.dispose();
         adapter.setRecyclerView(null);
-        recyclerView.setAdapter(null);
+        if (recyclerView != null) recyclerView.setAdapter(null);
         recyclerView = null;
         ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
         super.onStop();
