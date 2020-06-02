@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
@@ -43,6 +44,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private ImageViewerViewModel viewModel;
 
     private int imageIndex = -1;
+    private float scale = -1;
     private ImageFile image = null;
 
     // UI
@@ -53,10 +55,11 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private ImageView favoriteButton;
 
 
-    public static void show(Context context, FragmentManager fragmentManager, int imageIndex) {
+    public static void show(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
 
         builder.setImageIndex(imageIndex);
+        builder.setScale(currentScale);
 
         ImageBottomSheetFragment imageBottomSheetFragment = new ImageBottomSheetFragment();
         imageBottomSheetFragment.setArguments(builder.getBundle());
@@ -73,6 +76,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(bundle);
             imageIndex = parser.getImageIndex();
             if (-1 == imageIndex) throw new IllegalArgumentException("Initialization failed");
+            scale = parser.getScale();
         }
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
@@ -118,7 +122,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
 
         imgPath.setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false));
         Point size = getImageSize(requireContext(), image.getFileUri());
-        imgDimensions.setText(String.format("%s x %s", size.x, size.y));
+        imgDimensions.setText(String.format(Locale.US, "%s x %s (scale %.0f%%)", size.x, size.y, scale * 100));
 
         updateFavouriteDisplay(image.isFavourite());
     }

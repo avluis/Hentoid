@@ -223,6 +223,14 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if (rs != null) rs.destroy();
     }
 
+    public float getScaleAtPosition(int position) {
+        if (recyclerView != null) {
+            ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+            if (holder != null) return holder.getScale();
+        }
+        return 0f;
+    }
+
     public void resetScaleAtPosition(int position) {
         if (recyclerView != null) {
             ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
@@ -309,6 +317,17 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             } else {
                 return CustomSubsamplingScaleImageView.ScaleType.CENTER_INSIDE;
             }
+        }
+
+        private float getScale() {
+            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType) {
+                CustomSubsamplingScaleImageView view = (CustomSubsamplingScaleImageView) imgView;
+                return view.getScale();
+            } else { // ImageView
+                ImageView view = (ImageView) imgView;
+                return view.getScaleX();
+            }
+            // TODO do the same for the other ViewType's
         }
 
         void resetScale() {

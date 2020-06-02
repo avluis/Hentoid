@@ -393,7 +393,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Handle click on "Page menu" action button
      */
     private void onPageMenuClick() {
-        ImageBottomSheetFragment.show(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex);
+        float currentScale = adapter.getScaleAtPosition(imageIndex);
+        ImageBottomSheetFragment.show(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
     }
 
     /**
