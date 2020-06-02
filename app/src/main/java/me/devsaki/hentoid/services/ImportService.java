@@ -193,7 +193,6 @@ public class ImportService extends IntentService {
 
             for (int i = 0; i < bookFolders.size(); i++) {
                 DocumentFile bookFolder = bookFolders.get(i);
-                Timber.d(">> start %s", bookFolder.getUri().toString());
 
                 // Detect the presence of images if the corresponding cleanup option has been enabled
                 if (cleanNoImages) {
@@ -211,6 +210,15 @@ public class ImportService extends IntentService {
                 try {
                     content = importJson(bookFolder, client);
                     if (content != null) {
+
+                        // If the very same books already exists in the DB, don't import it even though it has a JSON file
+                        // that means it has been re-queued after being downloaded or viewed once
+                        if (dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl()) != null) {
+                            booksKO++;
+                            trace(Log.INFO, log, "Import book KO! (already in queue) : %s", bookFolder.getUri().toString());
+                            continue;
+                        }
+
                         List<ImageFile> contentImages;
                         if (content.getImageFiles() != null)
                             contentImages = content.getImageFiles();
