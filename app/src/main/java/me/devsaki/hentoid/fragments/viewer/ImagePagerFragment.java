@@ -125,12 +125,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         Preferences.registerPrefsChangedListener(listener);
 
-        ((ImageViewerActivity) requireActivity()).registerKeyListener(
-                new VolumeKeyListener()
-                        .setOnVolumeDownListener(this::previousPage)
-                        .setOnVolumeUpListener(this::nextPage)
-                        .setOnBackListener(this::onBackClick));
-
         initPager(rootView);
         initControlsOverlay(rootView);
 
@@ -220,6 +214,17 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+
+        ((ImageViewerActivity) requireActivity()).registerKeyListener(
+                new VolumeKeyListener()
+                        .setOnVolumeDownListener(this::previousPage)
+                        .setOnVolumeUpListener(this::nextPage)
+                        .setOnBackListener(this::onBackClick));
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
@@ -235,9 +240,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onStop() {
         viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
         if (slideshowTimer != null) slideshowTimer.dispose();
-        adapter.setRecyclerView(null);
-        if (recyclerView != null) recyclerView.setAdapter(null);
-        recyclerView = null;
         ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
         super.onStop();
     }
@@ -245,7 +247,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(listener);
+        adapter.setRecyclerView(null);
         adapter.destroy();
+        if (recyclerView != null) recyclerView.setAdapter(null);
+        recyclerView = null;
         super.onDestroy();
     }
 
