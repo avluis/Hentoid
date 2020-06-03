@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
 import android.app.Activity;
+import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -145,7 +146,7 @@ public class ImportHelper {
             contentResolver.takePersistableUriPermission(treeUri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         }
-
+        
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
         if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
@@ -194,14 +195,25 @@ public class ImportHelper {
     // and might cause freezes -> we stick to that approximate method for ImportActivity
     private static boolean hasBooks(@NonNull final Context context) {
         List<DocumentFile> downloadDirs = new ArrayList<>();
-        for (Site s : Site.values()) {
-            DocumentFile downloadDir = ContentHelper.getOrCreateSiteDownloadDir(context, s);
-            if (downloadDir != null) downloadDirs.add(downloadDir);
-        }
 
-        for (DocumentFile downloadDir : downloadDirs) {
-            List<DocumentFile> contentFiles = FileHelper.listFolders(context, downloadDir);
-            if (!contentFiles.isEmpty()) return true;
+        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
+        if (null == client) return false;
+        try {
+            for (Site s : Site.values()) {
+                DocumentFile downloadDir = ContentHelper.getOrCreateSiteDownloadDir(context, client, s);
+                if (downloadDir != null) downloadDirs.add(downloadDir);
+            }
+
+            for (DocumentFile downloadDir : downloadDirs) {
+                List<DocumentFile> contentFiles = FileHelper.listFolders(context, downloadDir, client);
+                if (!contentFiles.isEmpty()) return true;
+            }
+        } finally {
+            // ContentProviderClient.close only available on API level 24+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                client.close();
+            else
+                client.release();
         }
 
         return false;

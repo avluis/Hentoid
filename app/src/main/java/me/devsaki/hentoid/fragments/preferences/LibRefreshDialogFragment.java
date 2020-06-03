@@ -32,7 +32,9 @@ import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 11/2018
- * Launcher dialog for the library refresh feature
+ * Launcher dialog for the following features :
+ * - Set download folder
+ * - Library refresh
  */
 public class LibRefreshDialogFragment extends DialogFragment {
 
@@ -119,6 +121,8 @@ public class LibRefreshDialogFragment extends DialogFragment {
         options.cleanUnreadable = cleanUnreadable;
 
         Uri rootUri = Uri.parse(Preferences.getStorageUri());
+
+        // TODO make following call on io thread
         if (ImportHelper.setAndScanFolder(requireContext(), rootUri, false, null, options) == ImportHelper.Result.INVALID_FOLDER)
             dismiss();
     }
@@ -159,6 +163,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // TODO make following call on io thread
         @ImportHelper.Result int result = ImportHelper.processPickerResult(requireActivity(), requestCode, resultCode, data, this::onCancelExistingLibraryDialog, null);
         switch (result) {
             case ImportHelper.Result.OK_EMPTY_FOLDER:

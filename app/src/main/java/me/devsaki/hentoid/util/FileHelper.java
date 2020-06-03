@@ -435,8 +435,8 @@ public class FileHelper {
     }
 
     @Nullable
-    public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
-        List<DocumentFile> result = listDocumentFiles(context, parent, subfolderName, true, false);
+    public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, @NonNull String subfolderName) {
+        List<DocumentFile> result = FileUtil.listDocumentFiles(context, parent, client, FileHelper.createNameFilterEquals(subfolderName), true, false);
         if (!result.isEmpty()) return result.get(0);
         else return null;
     }
@@ -444,6 +444,13 @@ public class FileHelper {
     @Nullable
     public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, @NonNull String fileName) {
         List<DocumentFile> result = FileUtil.listDocumentFiles(context, parent, client, FileHelper.createNameFilterEquals(fileName), false, true);
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
+    }
+
+    @Nullable
+    public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
+        List<DocumentFile> result = listDocumentFiles(context, parent, subfolderName, true, false);
         if (!result.isEmpty()) return result.get(0);
         else return null;
     }

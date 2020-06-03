@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util;
 
+import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -240,7 +241,7 @@ public final class ContentHelper {
      */
     @Nullable
     public static DocumentFile createContentDownloadDir(@NonNull Context context, @NonNull Content content) {
-        DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, content.getSite());
+        DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
         if (null == siteDownloadDir) return null;
 
         String bookFolderName = formatBookFolderName(content);
@@ -313,7 +314,7 @@ public final class ContentHelper {
      * @return Download directory of the given Site
      */
     @Nullable
-    static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @NonNull Site site) {
+    static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @Nullable ContentProviderClient client, @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri();
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for the app");
@@ -327,7 +328,12 @@ public final class ContentHelper {
         }
 
         String siteFolderName = site.getFolder();
-        DocumentFile siteFolder = FileHelper.findFolder(context, appFolder, siteFolderName);
+        DocumentFile siteFolder;
+        if (null == client)
+            siteFolder = FileHelper.findFolder(context, appFolder, siteFolderName);
+        else
+            siteFolder = FileHelper.findFolder(context, appFolder, client, siteFolderName);
+
         if (null == siteFolder) // Create
             return appFolder.createDirectory(siteFolderName);
         else return siteFolder;
