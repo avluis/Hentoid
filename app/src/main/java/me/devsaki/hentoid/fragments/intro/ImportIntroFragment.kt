@@ -42,20 +42,26 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     // Callback from the directory chooser
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        @ImportHelper.Result val result = ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data, this::onCancelExistingLibraryDialog, null)
+        @ImportHelper.Result val result = ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data)
         when (result) {
             ImportHelper.Result.OK_EMPTY_FOLDER -> nextStep()
-            ImportHelper.Result.OK_LIBRARY_DETECTED -> {
-                import_step1_button.visibility = View.INVISIBLE
-                // Hentoid folder is finally selected at this point -> Update UI
-                import_step1_folder.text = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true)
-                import_step1_check.visibility = View.VISIBLE
-                import_step2.visibility = View.VISIBLE
+            ImportHelper.Result.OK_LIBRARY_DETECTED -> updateOnSelectFolder() // Import service is already launched by the Helper; nothing else to do
+            ImportHelper.Result.OK_LIBRARY_DETECTED_ASK -> {
+                updateOnSelectFolder()
+                ImportHelper.showExistingLibraryDialog(requireContext()) { onCancelExistingLibraryDialog() }
             }
             ImportHelper.Result.CANCELED -> Snackbar.make(main, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.INVALID_FOLDER -> Snackbar.make(main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.OTHER -> Snackbar.make(main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
         }
+    }
+
+    private fun updateOnSelectFolder() {
+        import_step1_button.visibility = View.INVISIBLE
+        import_step1_folder.text = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true)
+        import_step1_check.visibility = View.VISIBLE
+        import_step2.visibility = View.VISIBLE
+        import_step2_bar.isIndeterminate = true
     }
 
     private fun onCancelExistingLibraryDialog() {
@@ -70,9 +76,19 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     fun onMigrationEvent(event: ProcessEvent) {
         val progressBar: ProgressBar = if (2 == event.step) import_step2_bar else import_step3_bar
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            progressBar.max = event.elementsTotal
-            progressBar.progress = event.elementsOK + event.elementsKO
-            if (3 == event.step) import_step3_text.text = resources.getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal)
+            if (event.elementsTotal > -1) {
+                progressBar.isIndeterminate = false
+                progressBar.max = event.elementsTotal
+                progressBar.progress = event.elementsOK + event.elementsKO
+            } else progressBar.isIndeterminate = true
+            if (3 == event.step) {
+                import_step2_check.visibility = View.VISIBLE
+                import_step3.visibility = View.VISIBLE
+                import_step3_text.text = resources.getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal)
+            } else if (4 == event.step) {
+                import_step3_check.visibility = View.VISIBLE
+                import_step4.visibility = View.VISIBLE
+            }
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             if (2 == event.step) {
                 import_step2_check.visibility = View.VISIBLE
@@ -80,6 +96,9 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             } else if (3 == event.step) {
                 import_step3_text.text = resources.getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal)
                 import_step3_check.visibility = View.VISIBLE
+                import_step4.visibility = View.VISIBLE
+            } else if (4 == event.step) {
+                import_step4_check.visibility = View.VISIBLE
                 nextStep()
             }
         }

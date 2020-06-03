@@ -44,14 +44,15 @@ public class ImportHelper {
 
     private static final int RQST_STORAGE_PERMISSION = 3;
 
-    @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.CANCELED, Result.INVALID_FOLDER, Result.OTHER})
+    @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Result {
         int OK_EMPTY_FOLDER = 0;
         int OK_LIBRARY_DETECTED = 1;
-        int CANCELED = 2;
-        int INVALID_FOLDER = 3;
-        int OTHER = 4;
+        int OK_LIBRARY_DETECTED_ASK = 2;
+        int CANCELED = 3;
+        int INVALID_FOLDER = 4;
+        int OTHER = 5;
     }
 
     private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
@@ -95,15 +96,12 @@ public class ImportHelper {
     }
 
     // Return from SAF picker
-    // TODO - check if the processing can be simplified and/or done on a separate thread to avoid freezing while displaying the SAF dialog (especially during hasBooks())
     public static @Result
     int processPickerResult(
             @NonNull final Context context,
             int requestCode,
             int resultCode,
-            final Intent data,
-            @Nullable Runnable cancelCallback,
-            @Nullable final ImportOptions options) {
+            final Intent data) {
         HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
 
         // Return from the SAF picker
@@ -111,7 +109,7 @@ public class ImportHelper {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
             if (treeUri != null)
-                return setAndScanFolder(context, treeUri, true, cancelCallback, options);
+                return setAndScanFolder(context, treeUri, true, null);
             else return Result.INVALID_FOLDER;
         } else if (resultCode == Activity.RESULT_CANCELED) {
             return Result.CANCELED;
@@ -123,7 +121,6 @@ public class ImportHelper {
             @NonNull final Context context,
             @NonNull final Uri treeUri,
             boolean askScanExisting,
-            @Nullable Runnable cancelCallback,
             @Nullable final ImportOptions options) {
 
         boolean isUriPermissionPeristed = false;
@@ -146,7 +143,7 @@ public class ImportHelper {
             contentResolver.takePersistableUriPermission(treeUri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         }
-        
+
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
         if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
@@ -160,32 +157,38 @@ public class ImportHelper {
         }
 
         if (hasBooks(context)) {
-            if (!askScanExisting) runImport(context, options);
-            else
-                new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
-                        .setIcon(R.drawable.ic_warning)
-                        .setCancelable(false)
-                        .setTitle(R.string.app_name)
-                        .setMessage(R.string.contents_detected)
-                        .setPositiveButton(android.R.string.yes,
-                                (dialog1, which) -> {
-                                    dialog1.dismiss();
-                                    runImport(context, options);
-                                })
-                        .setNegativeButton(android.R.string.no,
-                                (dialog2, which) -> {
-                                    dialog2.dismiss();
-                                    if (cancelCallback != null) cancelCallback.run();
-                                })
-                        .create()
-                        .show();
-
-            return Result.OK_LIBRARY_DETECTED;
+            if (!askScanExisting) {
+                runImport(context, options);
+                return Result.OK_LIBRARY_DETECTED;
+            } else return Result.OK_LIBRARY_DETECTED_ASK;
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
             new ObjectBoxDAO(context).deleteAllLibraryBooks(true);
             return Result.OK_EMPTY_FOLDER;
         }
+    }
+
+    public static void showExistingLibraryDialog(
+            @NonNull final Context context,
+            @Nullable Runnable cancelCallback
+    ) {
+        new MaterialAlertDialogBuilder(context, ThemeHelper.getIdForCurrentTheme(context, R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.contents_detected)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            runImport(context, null);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog2, which) -> {
+                            dialog2.dismiss();
+                            if (cancelCallback != null) cancelCallback.run();
+                        })
+                .create()
+                .show();
     }
 
     // Count the elements inside each site's download folder (but not its subfolders)

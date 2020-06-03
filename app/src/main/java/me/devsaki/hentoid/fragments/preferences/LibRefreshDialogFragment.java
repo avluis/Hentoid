@@ -22,11 +22,16 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
+import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -56,6 +61,10 @@ public class LibRefreshDialogFragment extends DialogFragment {
     private ProgressBar step4progress;
     private View step4check;
 
+    // Disposable for RxJava
+    protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+
     public static void invoke(@NonNull final FragmentManager fragmentManager, boolean showOptions, boolean chooseFolder) {
         LibRefreshDialogFragment fragment = new LibRefreshDialogFragment();
 
@@ -81,6 +90,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
     @Override
     public void onDestroyView() {
         EventBus.getDefault().unregister(this);
+        compositeDisposable.clear();
         super.onDestroyView();
     }
 
@@ -119,12 +129,18 @@ public class LibRefreshDialogFragment extends DialogFragment {
         options.cleanAbsent = cleanAbsent;
         options.cleanNoImages = cleanNoImages;
         options.cleanUnreadable = cleanUnreadable;
-
         Uri rootUri = Uri.parse(Preferences.getStorageUri());
 
-        // TODO make following call on io thread
-        if (ImportHelper.setAndScanFolder(requireContext(), rootUri, false, null, options) == ImportHelper.Result.INVALID_FOLDER)
-            dismiss();
+        compositeDisposable.add(Single.fromCallable(() -> ImportHelper.setAndScanFolder(requireContext(), rootUri, false, options))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        res -> {
+                            if (ImportHelper.Result.INVALID_FOLDER == res) dismiss();
+                        },
+                        Timber::w
+                )
+        );
     }
 
     private void showImportProgressLayout(boolean askFolder) {
@@ -152,6 +168,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
             ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
             rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
             rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
+            step2progress.setIndeterminate(true);
         }
     }
 
@@ -163,20 +180,29 @@ public class LibRefreshDialogFragment extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // TODO make following call on io thread
-        @ImportHelper.Result int result = ImportHelper.processPickerResult(requireActivity(), requestCode, resultCode, data, this::onCancelExistingLibraryDialog, null);
+        compositeDisposable.add(Single.fromCallable(() -> ImportHelper.processPickerResult(requireActivity(), requestCode, resultCode, data))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        this::processPickerResult,
+                        Timber::w
+                )
+        );
+    }
+
+    public void processPickerResult(@ImportHelper.Result int result) {
         switch (result) {
             case ImportHelper.Result.OK_EMPTY_FOLDER:
                 dismiss();
                 break;
             case ImportHelper.Result.OK_LIBRARY_DETECTED:
                 // Hentoid folder is finally selected at this point -> Update UI
-                ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
-                step1FolderButton.setVisibility(View.INVISIBLE);
-                rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
-                rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
-                setCancelable(false);
-                // Nothing else here; a dialog has been opened by ImportHelper
+                updateOnSelectFolder();
+                // Import service is already launched by the Helper; nothing else to do
+                break;
+            case ImportHelper.Result.OK_LIBRARY_DETECTED_ASK:
+                updateOnSelectFolder();
+                ImportHelper.showExistingLibraryDialog(requireContext(), this::onCancelExistingLibraryDialog);
                 break;
             case ImportHelper.Result.CANCELED:
                 Snackbar.make(rootView, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show();
@@ -203,6 +229,15 @@ public class LibRefreshDialogFragment extends DialogFragment {
         setCancelable(true);
     }
 
+    private void updateOnSelectFolder() {
+        ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
+        step1FolderButton.setVisibility(View.INVISIBLE);
+        rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
+        rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
+        step2progress.setIndeterminate(true);
+        setCancelable(false);
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEvent(ProcessEvent event) {
         ProgressBar progressBar;
@@ -222,9 +257,8 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 progressBar.setIndeterminate(false);
                 progressBar.setMax(event.elementsTotal);
                 progressBar.setProgress(event.elementsOK + event.elementsKO);
-            } else {
+            } else
                 progressBar.setIndeterminate(true);
-            }
             if (3 == event.step) {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
@@ -234,7 +268,10 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step4block.setVisibility(View.VISIBLE);
             }
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            if (3 == event.step) {
+            if (2 == event.step) {
+                step2check.setVisibility(View.VISIBLE);
+                step3block.setVisibility(View.VISIBLE);
+            } else if (3 == event.step) {
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
                 step3check.setVisibility(View.VISIBLE);
                 step4block.setVisibility(View.VISIBLE);
