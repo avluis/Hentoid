@@ -8,12 +8,11 @@ import javax.annotation.Nullable;
 /**
  * Helper class to transfer payload data to {@link me.devsaki.hentoid.viewholders.ContentItem}
  * through a Bundle
- *
+ * <p>
  * Use Builder class to set data; use Parser class to get data
  */
 public class ContentItemBundle {
     private static final String KEY_DELETE_PROCESSING = "is_being_deleted";
-    private static final String KEY_FAV_PROCESSING = "is_being_favourited";
     private static final String KEY_FAV_STATE = "favourite";
     private static final String KEY_READS = "reads";
 
@@ -24,10 +23,6 @@ public class ContentItemBundle {
     public static final class Builder {
 
         private final Bundle bundle = new Bundle();
-
-        public void setIsBeingFavourited(boolean isBeingFavourited) {
-            bundle.putBoolean(KEY_FAV_PROCESSING, isBeingFavourited);
-        }
 
         public void setIsBeingDeleted(boolean isBeingDeleted) {
             bundle.putBoolean(KEY_DELETE_PROCESSING, isBeingDeleted);
@@ -56,13 +51,6 @@ public class ContentItemBundle {
 
         public Parser(@Nonnull Bundle bundle) {
             this.bundle = bundle;
-        }
-
-        @Nullable
-        public Boolean isBeingFavourited() {
-            if (bundle.containsKey(KEY_FAV_PROCESSING))
-                return bundle.getBoolean(KEY_FAV_PROCESSING);
-            else return null;
         }
 
         @Nullable

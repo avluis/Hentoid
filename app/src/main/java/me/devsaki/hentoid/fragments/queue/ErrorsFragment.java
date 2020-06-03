@@ -99,8 +99,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
             return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
                     && oldItem.getSite().equals(newItem.getSite())
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
-                    && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
-                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
                     && oldItem.isFavourite() == newItem.isFavourite();
         }
     }).build();

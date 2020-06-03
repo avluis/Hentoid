@@ -243,9 +243,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 Bundle bundle = (Bundle) payloads.get(0);
                 ContentItemBundle.Parser bundleParser = new ContentItemBundle.Parser(bundle);
 
-                Boolean boolValue = bundleParser.isBeingFavourited();
-                if (boolValue != null) item.content.setIsBeingFavourited(boolValue);
-                boolValue = bundleParser.isBeingDeleted();
+                Boolean boolValue = bundleParser.isBeingDeleted();
                 if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
                 boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.content.setFavourite(boolValue);
@@ -450,21 +448,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivRedownload.setVisibility(View.VISIBLE);
                 ivError.setVisibility(View.VISIBLE);
             } else if (ViewType.LIBRARY == item.viewType) {
-                // When transitioning to the other state, button blinks with its target state
-                if (content.isBeingFavourited()) {
-                    ivFavourite.startAnimation(new BlinkAnimation(500, 250));
-                    if (content.isFavourite()) {
-                        ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                    } else {
-                        ivFavourite.setImageResource(R.drawable.ic_fav_full);
-                    }
+                if (content.isFavourite()) {
+                    ivFavourite.setImageResource(R.drawable.ic_fav_full);
                 } else {
-                    ivFavourite.clearAnimation();
-                    if (content.isFavourite()) {
-                        ivFavourite.setImageResource(R.drawable.ic_fav_full);
-                    } else {
-                        ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                    }
+                    ivFavourite.setImageResource(R.drawable.ic_fav_empty);
                 }
             }
         }
@@ -482,7 +469,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 pb.setVisibility(View.VISIBLE);
                 if (content.getPercent() > 0) {
                     pb.setIndeterminate(false);
-                    pb.setProgress((int)(content.getPercent() * 100));
+                    pb.setProgress((int) (content.getPercent() * 100));
 
                     int color;
                     if (isFirstItem && isQueueReady)

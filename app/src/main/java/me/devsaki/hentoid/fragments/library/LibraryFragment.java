@@ -202,7 +202,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
                     && oldItem.getSite().equals(newItem.getSite())
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
-                    && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
 //                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
                     && oldItem.isFavourite() == newItem.isFavourite();
         }
@@ -214,9 +213,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
-            }
-            if (oldItem.isBeingFavourited() != newItem.isBeingFavourited()) {
-                diffBundleBuilder.setIsBeingFavourited(newItem.isBeingFavourited());
             }
             /*
             if (oldItem.isBeingDeleted() != newItem.isBeingDeleted()) {

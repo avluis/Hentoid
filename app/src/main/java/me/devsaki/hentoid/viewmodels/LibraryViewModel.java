@@ -183,10 +183,6 @@ public class LibraryViewModel extends AndroidViewModel {
     public void toggleContentFavourite(@NonNull final Content content) {
         if (content.isBeingDeleted()) return;
 
-        // Flag the content as "being favourited" (triggers blink animation)
-        content.setIsBeingFavourited(true);
-        dao.insertContent(content);
-
         compositeDisposable.add(
                 Single.fromCallable(() -> doToggleContentFavourite(content.getId()))
                         .subscribeOn(Schedulers.io())
@@ -213,7 +209,6 @@ public class LibraryViewModel extends AndroidViewModel {
 
         if (theContent != null) {
             theContent.setFavourite(!theContent.isFavourite());
-            theContent.setIsBeingFavourited(false);
 
             // Persist in it JSON
             if (!theContent.getJsonUri().isEmpty())

@@ -74,10 +74,9 @@ public class Content implements Serializable {
     // Temporary during ERROR state only; no need to expose them for JSON persistence
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
-    // Needs to be in the DB to keep the information when deletion/favouriting takes a long time
+    // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON
     private boolean isBeingDeleted = false;
-    private boolean isBeingFavourited = false;
     // Needs to be in the DB to optimize I/O
     // No need to save that into the JSON file itself, obviously
     private String jsonUri;
@@ -628,14 +627,6 @@ public class Content implements Serializable {
 
     public void setIsBeingDeleted(boolean isBeingDeleted) {
         this.isBeingDeleted = isBeingDeleted;
-    }
-
-    public boolean isBeingFavourited() {
-        return isBeingFavourited;
-    }
-
-    public void setIsBeingFavourited(boolean isBeingFavourited) {
-        this.isBeingFavourited = isBeingFavourited;
     }
 
     public String getJsonUri() {
