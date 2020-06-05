@@ -625,7 +625,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (1 == selectedItems.size() && context != null) {
             ToastUtil.toast(R.string.packaging_content);
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
-            if (c != null) viewModel.archiveContent(c, this::onContentArchiveSuccess);
+            if (c != null) {
+                if (c.getStorageUri().isEmpty()) {
+                    ToastUtil.toast(R.string.folder_undefined);
+                    return;
+                }
+                viewModel.archiveContent(c, this::onContentArchiveSuccess);
+            }
         }
     }
 
