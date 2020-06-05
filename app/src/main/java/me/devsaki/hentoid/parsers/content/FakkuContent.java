@@ -57,15 +57,16 @@ public class FakkuContent implements ContentParser {
         AttributeMap attributes = new AttributeMap();
         int qtyPages = 0;
         String elementName;
-        for (Element e : information) {
-            elementName = e.child(0).text().trim().toLowerCase();
-            if (elementName.equals("language")) {
-                ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, e.child(1).children(), true, Site.FAKKU2); // Language elements are A links
+        if (information != null)
+            for (Element e : information) {
+                elementName = e.child(0).text().trim().toLowerCase();
+                if (elementName.equals("language")) {
+                    ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, e.child(1).children(), true, Site.FAKKU2); // Language elements are A links
+                }
+                if (elementName.equals("pages")) {
+                    qtyPages = Integer.parseInt(e.child(1).text().toLowerCase().replace("pages", "").replace("page", "").trim());
+                }
             }
-            if (elementName.equals("pages")) {
-                qtyPages = Integer.parseInt(e.child(1).text().toLowerCase().replace("pages", "").replace("page", "").trim());
-            }
-        }
         result.setQtyPages(qtyPages);
 
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.FAKKU2);
