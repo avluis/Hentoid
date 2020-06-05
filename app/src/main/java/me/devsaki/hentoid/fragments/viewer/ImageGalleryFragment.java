@@ -125,7 +125,8 @@ public class ImageGalleryFragment extends Fragment {
 
     @Override
     public void onStop() {
-        recyclerView.setAdapter(null);
+        if (recyclerView != null)
+            recyclerView.setAdapter(null);
         recyclerView = null;
         super.onStop();
     }
