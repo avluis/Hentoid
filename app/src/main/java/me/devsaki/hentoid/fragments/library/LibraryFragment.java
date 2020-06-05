@@ -638,6 +638,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (1 == selectedItems.size() && context != null) {
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
             if (c != null) {
+                if (c.getStorageUri().isEmpty()) {
+                    ToastUtil.toast(R.string.folder_undefined);
+                    return;
+                }
+
                 Uri folderUri = Uri.parse(c.getStorageUri());
                 DocumentFile folder = DocumentFile.fromTreeUri(requireContext(), folderUri);
                 if (folder != null && folder.exists()) {

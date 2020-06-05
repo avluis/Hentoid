@@ -202,6 +202,7 @@
         <item quantity="one">%d item selected</item>
         <item quantity="other">%d items selected</item>
     </plurals>
+    <string name="folder_undefined">Error - containing folder undefined</string>
     <!-- Sorting fields -->
     <string name="sort_title">Title</string>
     <string name="sort_artist">Artist</string>
