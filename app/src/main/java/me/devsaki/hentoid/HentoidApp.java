@@ -1,6 +1,5 @@
 package me.devsaki.hentoid;
 
-import android.app.Activity;
 import android.app.Application;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -21,8 +20,11 @@ import com.jakewharton.threetenabp.AndroidThreeTen;
 
 import org.threeten.bp.Instant;
 
+import java.io.IOException;
+
 import io.fabric.sdk.android.Fabric;
-import me.devsaki.hentoid.activities.IntroActivity;
+import io.reactivex.exceptions.UndeliverableException;
+import io.reactivex.plugins.RxJavaPlugins;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
 import me.devsaki.hentoid.notification.maintenance.MaintenanceNotificationChannel;
@@ -153,12 +155,28 @@ public class HentoidApp extends Application {
 
         // Plug the lifecycle listener to handle locking
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
+
+        // Set RxJava's default error handler for unprocessed network and IO errors
+        RxJavaPlugins.setErrorHandler(e -> {
+            if (e instanceof UndeliverableException) {
+                e = e.getCause();
+            }
+            if (e instanceof IOException) {
+                // fine, irrelevant network problem or API that throws on cancellation
+                return;
+            }
+            if (e instanceof InterruptedException) {
+                // fine, some blocking code was interrupted by a dispose call
+                return;
+            }
+            Timber.w(e, "Undeliverable exception received, not sure what to do");
+        });
     }
 
     /**
      * Clean up and upgrade database
      */
-    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
+    @SuppressWarnings({"squid:CallToDeprecatedMethod"})
     private void performDatabaseHousekeeping() {
         // Launch a service that will perform non-structural DB housekeeping tasks
         Intent intent = DatabaseMaintenanceService.makeIntent(this);
