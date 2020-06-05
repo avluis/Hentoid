@@ -547,6 +547,8 @@ public class Content implements Serializable {
         return storageFolder == null ? "" : storageFolder;
     }
 
+    public void resetStorageFolder() { storageFolder = ""; }
+
     public String getStorageUri() {
         return storageUri == null ? "" : storageUri;
     }
