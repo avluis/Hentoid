@@ -8,8 +8,6 @@ import android.view.WindowManager;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import java.security.AccessControlException;
-
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.fragments.viewer.ImageGalleryFragment;
 import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
@@ -20,10 +18,10 @@ import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.VolumeKeyListener;
 
+import static me.devsaki.hentoid.util.PermissionUtil.RQST_STORAGE_PERMISSION;
+
 
 public class ImageViewerActivity extends BaseActivity {
-
-    private static final int RQST_STORAGE_PERMISSION = 3;
 
     private VolumeKeyListener volumeKeyListener = null;
 
@@ -52,7 +50,7 @@ public class ImageViewerActivity extends BaseActivity {
 
         if (!PermissionUtil.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION)) {
             ToastUtil.toast("Storage permission denied - cannot open the viewer");
-            throw new AccessControlException("Storage permission denied - cannot open the viewer");
+            return;
         }
 
         // Allows an full recolor of the status bar with the custom color defined in the activity's theme

@@ -156,18 +156,6 @@ public class HentoidApp extends Application {
     }
 
     /**
-     * Reset the app and close caller activity
-     */
-    public static void reset(Activity activity) {
-        Preferences.setIsFirstRun(true);
-        Intent intent = new Intent(activity, IntroActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        instance.startActivity(intent);
-        activity.finish();
-    }
-
-    /**
      * Clean up and upgrade database
      */
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})

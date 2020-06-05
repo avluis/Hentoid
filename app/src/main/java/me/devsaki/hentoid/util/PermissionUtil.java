@@ -11,6 +11,9 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class PermissionUtil {
 
+    public static final int RQST_STORAGE_PERMISSION = 3;
+
+
     private PermissionUtil() {
         throw new IllegalStateException("Utility class");
     }
@@ -42,9 +45,5 @@ public class PermissionUtil {
 
             return false;
         }
-    }
-
-    public static boolean checkExternalStoragePermission(Context context) {
-        return ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED;
     }
 }

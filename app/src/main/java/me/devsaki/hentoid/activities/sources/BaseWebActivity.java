@@ -72,7 +72,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
@@ -107,6 +106,7 @@ import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.getChromeVersion;
+import static me.devsaki.hentoid.util.PermissionUtil.RQST_STORAGE_PERMISSION;
 import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 
 /**
@@ -407,15 +407,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     // Validate permissions
-    // TODO find something better than that - warning, not wild transparent restart
+    // TODO find something better than that
     private void checkPermissions() {
-        if (PermissionUtil.checkExternalStoragePermission(this)) {
-            Timber.d("Storage permission allowed!");
-        } else {
-            Timber.d("Storage permission denied!");
-            ToastUtil.toast(R.string.reset);
-            HentoidApp.reset(this);
-        }
+        if (!PermissionUtil.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION))
+            ToastUtil.toast("Storage permission denied - cannot use the downloader");
     }
 
     @SuppressLint("SetJavaScriptEnabled")
