@@ -115,6 +115,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private int itemToRefreshIndex = -1;
 
     // Used to effectively cancel a download when the user hasn't hit UNDO
     private FastAdapter<ContentItem> fastAdapter;
@@ -268,6 +269,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
         }
         consumer.accept(from, to);
+        recordMoveFromFirstPos(from, to);
     }
 
     private void attachButtons(FastAdapter<ContentItem> fastAdapter) {
@@ -510,10 +512,16 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
+        // Reposition the list on the initial top item position
         if (topItemPosition >= 0) {
             int targetPos = topItemPosition;
             listRefreshDebouncer.submit(targetPos);
             topItemPosition = -1;
+        }
+        // Refresh the item that moved from the 1st position
+        if (itemToRefreshIndex > -1) {
+            fastAdapter.notifyAdapterItemChanged(itemToRefreshIndex);
+            itemToRefreshIndex = -1;
         }
     }
 
@@ -623,6 +631,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
         DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
+        recordMoveFromFirstPos(oldPosition, newPosition);
         return true;
     }
 
@@ -630,6 +639,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     public void itemTouchDropped(int oldPosition, int newPosition) {
         // Save final position of item in DB
         viewModel.move(oldPosition, newPosition);
+        recordMoveFromFirstPos(oldPosition, newPosition);
 
         // Delay execution of findViewHolderForAdapterPosition to give time for the new layout to
         // be calculated (if not, it might return null under certain circumstances)
@@ -684,5 +694,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     private void updateNetworkUsage(long bytesReceived) {
         downloadSpeedCalulator.addSampleNow(bytesReceived);
+    }
+
+    private void recordMoveFromFirstPos(int from, int to) {
+        if (0 == from) itemToRefreshIndex = to;
     }
 }
