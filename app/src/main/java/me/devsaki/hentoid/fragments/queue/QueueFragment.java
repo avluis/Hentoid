@@ -396,6 +396,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             dlPreparationProgressBar.setVisibility(View.VISIBLE);
             queueInfo.setText(R.string.queue_preparing);
             isPreparingDownload = true;
+            updateProgressFirstItem(false);
         } else if (dlPreparationProgressBar.isShown() && event.isCompleted()) {
             dlPreparationProgressBar.setVisibility(View.GONE);
         }
@@ -441,6 +442,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 Timber.i(">> setProgress %s", pagesOKDisplay + pagesKO);
                 content.setProgress((long) pagesOKDisplay + pagesKO);
                 content.setDownloadedBytes(downloadedSizeB);
+                content.setQtyPages(totalPagesDisplay);
                 updateProgressFirstItem(false);
 
                 // Update information bar

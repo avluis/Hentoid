@@ -262,7 +262,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (tvTags != null)
                 attachTags(item.content);
             if (progressBar != null)
-                updateProgress(item.content, progressBar, getAdapterPosition(), false);
+                updateProgress(item.content, baseLayout, getAdapterPosition(), false);
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
             if (tvUndoSwipe != null)
@@ -469,6 +469,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 pb.setVisibility(View.VISIBLE);
                 if (content.getPercent() > 0) {
                     pb.setIndeterminate(false);
+                    pb.setMax(100);
                     pb.setProgress((int) (content.getPercent() * 100));
 
                     int color;
@@ -490,10 +491,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         tvPages.setText(pagesText);
                     }
                 } else {
-                    pb.setIndeterminate(true);
-                    // fixes <= Lollipop progressBar tinting
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
+                    if (isFirstItem && isQueueReady) {
+                        pb.setIndeterminate(true);
+                        // fixes <= Lollipop progressBar tinting
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                            pb.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(pb.getContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
+                    } else pb.setVisibility(View.GONE);
                 }
             } else {
                 pb.setVisibility(View.GONE);
