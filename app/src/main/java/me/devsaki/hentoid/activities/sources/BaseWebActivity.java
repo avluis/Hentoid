@@ -113,11 +113,6 @@ import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
  * Browser activity which allows the user to navigate a supported source.
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
- * <p>
- * todo issue:
- * {@link #checkPermissions()} causes the app to reset unexpectedly. If permission is integral to
- * this activity's function, it is recommended to request for this permission and show rationale if
- * permission request is denied
  */
 public abstract class BaseWebActivity extends BaseActivity implements WebContentListener {
 
