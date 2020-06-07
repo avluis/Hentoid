@@ -749,6 +749,19 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 .create().show();
     }
 
+    private void onDeleteSwipedBook(@NonNull final ContentItem item) {
+        // Deleted book is the last selected books => disable selection mode
+        if (item.isSelected()) {
+            selectExtension.deselect(item);
+            if (selectExtension.getSelectedItems().isEmpty())
+                selectionToolbar.setVisibility(View.GONE);
+        }
+
+        List<Content> items = new ArrayList<>();
+        items.add(item.getContent());
+        onDeleteBooks(items);
+    }
+
     private void onDeleteBooks(@NonNull final List<Content> items) {
         viewModel.deleteItems(items, this::onDeleteError);
     }
@@ -1292,11 +1305,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         item.setSwipeDirection(direction);
 
         if (item.getContent() != null) {
-            Debouncer<List<Content>> deleteDebouncer = new Debouncer<>(2000, this::onDeleteBooks);
-
-            List<Content> contents = new ArrayList<>();
-            contents.add(item.getContent());
-            deleteDebouncer.submit(contents);
+            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(2000, this::onDeleteSwipedBook);
+            deleteDebouncer.submit(item);
 
             Runnable cancelSwipe = () -> {
                 deleteDebouncer.clear();
