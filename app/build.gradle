@@ -206,7 +206,7 @@ dependencies {
     implementation "me.zhanghai.android.fastscroll:library:1.1.4"
 
     // Popups
-    implementation "com.github.skydoves:balloon:1.1.5"
+    implementation "com.github.skydoves:balloon:1.1.7"
 
     implementation project(path: ':app:customssiv')
 }
