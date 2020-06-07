@@ -535,12 +535,14 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         @Override
         public void onDragged() {
-            bookCard.setBackgroundColor(ThemeHelper.getColor(bookCard.getContext(), R.color.white_opacity_25));
+            // TODO fix incorrect visual behaviour when dragging an item to 1st position
+            //bookCard.setBackgroundColor(ThemeHelper.getColor(bookCard.getContext(), R.color.white_opacity_25));
         }
 
         @Override
         public void onDropped() {
-            bookCard.setBackground(bookCard.getContext().getDrawable(R.drawable.bg_book_card));
+            // TODO fix incorrect visual behaviour when dragging an item to 1st position
+            //bookCard.setBackground(bookCard.getContext().getDrawable(R.drawable.bg_book_card));
         }
     }
 }
