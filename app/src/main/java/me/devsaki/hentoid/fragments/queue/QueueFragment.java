@@ -85,7 +85,6 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
  */
-// TODO update page display when QtyPage has been updated by the downloader (Hitomi)
 public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
