@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.preferences
 
 import android.content.DialogInterface
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
@@ -136,7 +137,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     private fun onFolderChanged() {
         val storageFolderPref: Preference? = findPreference(Preferences.Key.PREF_SETTINGS_FOLDER) as Preference?
-        storageFolderPref?.summary = Preferences.getStorageUri()
+        val uri = Uri.parse(Preferences.getStorageUri())
+        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri, true)
     }
 
     private fun onPrefColorThemeChanged() {
