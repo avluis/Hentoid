@@ -27,9 +27,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
-import static android.os.Build.VERSION_CODES.O;
-import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
-
 public class Api29MigrationActivity extends AppCompatActivity {
 
     private static final int RQST_STORAGE_PERMISSION = 3;
@@ -95,7 +92,6 @@ public class Api29MigrationActivity extends AppCompatActivity {
         }
         // http://stackoverflow.com/a/31334967/1615876
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-
 
         startActivityForResult(intent, RQST_STORAGE_PERMISSION);
     }
