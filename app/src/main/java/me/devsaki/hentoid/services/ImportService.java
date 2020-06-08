@@ -164,10 +164,12 @@ public class ImportService extends IntentService {
         }
 
         ContentProviderClient client = this.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
+        List<DocumentFile> bookFolders = new ArrayList<>();
+        DocumentFile cleanupLogFile = null;
+
         if (null == client) return;
         try {
             // 1st pass : count subfolders of every site folder
-            List<DocumentFile> bookFolders = new ArrayList<>();
             List<DocumentFile> siteFolders = FileHelper.listFolders(this, rootFolder, client);
             int foldersProcessed = 1;
             for (DocumentFile f : siteFolders) {
@@ -317,15 +319,16 @@ public class ImportService extends IntentService {
             } else trace(Log.INFO, log, "No queue file found");
 
             // Write log in root folder
-            DocumentFile cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
-            eventComplete(4, bookFolders.size(), booksOK, booksKO, cleanupLogFile);
-            notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
+            cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
         } finally {
             // ContentProviderClient.close only available on API level 24+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
                 client.close();
             else
                 client.release();
+
+            eventComplete(4, bookFolders.size(), booksOK, booksKO, cleanupLogFile);
+            notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
         }
 
         stopForeground(true);
