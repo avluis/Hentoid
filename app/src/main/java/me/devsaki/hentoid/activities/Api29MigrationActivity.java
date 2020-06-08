@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.activities;
 
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +26,9 @@ import me.devsaki.hentoid.services.API29MigrationService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
+
+import static android.os.Build.VERSION_CODES.O;
+import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
 
 public class Api29MigrationActivity extends AppCompatActivity {
 
@@ -78,8 +83,8 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
         // If the root folder is already set to a content:// URI (previous use of SAF picker), start scanning at once
         if (storageDoc != null && storageDoc.exists()) scanLibrary(storageDoc);
-        // else ask for the Hentoid folder, as PersistableUriPermission might not have been granted at all
-        // (case of v11- app running on Android 10 with API28- target)
+            // else ask for the Hentoid folder, as PersistableUriPermission might not have been granted at all
+            // (case of v11- app running on Android 10 with API28- target)
         else step1button.setVisibility(View.VISIBLE);
     }
 
@@ -90,6 +95,8 @@ public class Api29MigrationActivity extends AppCompatActivity {
         }
         // http://stackoverflow.com/a/31334967/1615876
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+
+
         startActivityForResult(intent, RQST_STORAGE_PERMISSION);
     }
 
@@ -110,12 +117,26 @@ public class Api29MigrationActivity extends AppCompatActivity {
     // Return from SAF picker
     public void onSelectSAFRootFolder(@NonNull final Uri treeUri) {
 
-        // Release previous access permissions, if different than the new one
-        FileHelper.revokePreviousPermissions(getContentResolver(), treeUri);
+        boolean isUriPermissionPeristed = false;
+        ContentResolver contentResolver = getContentResolver();
+        String treeUriId = DocumentsContract.getTreeDocumentId(treeUri);
 
-        // Persist new access permission
-        getContentResolver().takePersistableUriPermission(treeUri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        for (UriPermission p : contentResolver.getPersistedUriPermissions()) {
+            if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {
+                isUriPermissionPeristed = true;
+                Timber.d("Uri permission already persisted for %s", treeUri);
+                break;
+            }
+        }
+
+        if (!isUriPermissionPeristed) {
+            Timber.d("Persisting Uri permission for %s", treeUri);
+            // Release previous access permissions, if different than the new one
+            FileHelper.revokePreviousPermissions(contentResolver, treeUri);
+            // Persist new access permission
+            contentResolver.takePersistableUriPermission(treeUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
 
         DocumentFile docFile = DocumentFile.fromTreeUri(this, treeUri);
         if (docFile != null) scanLibrary(docFile);
