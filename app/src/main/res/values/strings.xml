@@ -22,6 +22,7 @@
     <!-- API29 migration / library refresh screen -->
     <string name="api29_migration_title">Hentoid v12\nFile management update</string>
     <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
+    <string name="api29_migration_location">Current Hentoid folder location\n%s</string>
     <string name="api29_migration_step1">Hentoid folder</string>
     <string name="api29_migration_step1_select">Select Hentoid folder</string>
     <string name="api29_migration_step2">Scan site folders</string>

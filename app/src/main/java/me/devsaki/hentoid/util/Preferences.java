@@ -46,6 +46,7 @@ public final class Preferences {
         }
     }
 
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     public static void performHousekeeping() {
         // Fling factor -> Swipe to fling (v1.9.0)
         if (sharedPreferences.contains(Key.PREF_VIEWER_FLING_FACTOR)) {
@@ -77,11 +78,6 @@ public final class Preferences {
             int colorTheme = (0 == darkMode) ? Constant.COLOR_THEME_LIGHT : Constant.COLOR_THEME_DARK;
             sharedPreferences.edit().putString(Key.PREF_COLOR_THEME, colorTheme + "").apply();
             sharedPreferences.edit().remove(Key.DARK_MODE).apply();
-        }
-
-        if (sharedPreferences.contains(Key.PREF_SETTINGS_FOLDER)) {
-            // Can't migrate file:// URIs into content:// URIs => remove entirely
-            sharedPreferences.edit().remove(Key.PREF_SETTINGS_FOLDER).apply();
         }
 
         if (sharedPreferences.contains(Key.PREF_ORDER_CONTENT_LISTS)) {
@@ -171,6 +167,10 @@ public final class Preferences {
         sharedPreferences.edit()
                 .putBoolean(Key.PREF_FIRST_RUN, isFirstRun)
                 .apply();
+    }
+
+    public static String getSettingsFolder() {
+        return sharedPreferences.getString(Key.PREF_SETTINGS_FOLDER, "");
     }
 
     public static int getContentSortField() {

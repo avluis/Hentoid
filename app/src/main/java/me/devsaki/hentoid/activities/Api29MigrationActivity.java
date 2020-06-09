@@ -50,6 +50,15 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_api29_migration);
 
+        String locationStr = Preferences.getStorageUri();
+        if (locationStr.isEmpty())
+            locationStr = Preferences.getSettingsFolder();
+        else
+            locationStr = FileHelper.getFullPathFromTreeUri(this, Uri.parse(locationStr), true);
+
+        TextView location = findViewById(R.id.api29_location_txt);
+        location.setText(getResources().getString(R.string.api29_migration_location, locationStr));
+
         // UI
         step1button = findViewById(R.id.import_step1_button);
         step1button.setOnClickListener(v -> selectHentoidFolder());

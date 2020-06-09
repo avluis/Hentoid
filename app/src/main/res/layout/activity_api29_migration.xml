@@ -32,6 +32,19 @@
         android:text="@string/api29_migration_subtitle"
         android:textSize="16sp" />
 
+    <TextView
+        android:id="@+id/api29_location_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:text="@string/api29_migration_location"
+        android:textStyle="bold"
+        android:textSize="16sp" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"

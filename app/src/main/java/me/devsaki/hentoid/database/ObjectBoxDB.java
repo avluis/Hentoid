@@ -797,11 +797,7 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/").build().find();
     }
 
-    public long countDownloadedImagesWithoutUri() {
-        return store.boxFor(ImageFile.class).query().equal(ImageFile_.status, StatusContent.DOWNLOADED.getCode()).isNull(ImageFile_.fileUri).build().count();
-    }
-
-    long[] selectOldStoredContentIds() {
+    public Query<Content> selectOldStoredContentQ() {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, new int[]{
                 StatusContent.DOWNLOADING.getCode(),
@@ -811,7 +807,7 @@ public class ObjectBoxDB {
                 StatusContent.MIGRATED.getCode()});
         query.notNull(Content_.storageFolder);
         query.notEqual(Content_.storageFolder, "");
-        return query.build().findIds();
+        return query.build();
     }
 
     long[] selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued) {

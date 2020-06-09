@@ -19,7 +19,8 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -71,9 +72,9 @@ public class SplashActivity extends AppCompatActivity {
      * @return True if a migration has to happen; false if not
      */
     private boolean hasToMigrateAPI29() {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(this);
-        long imagesKO = db.countDownloadedImagesWithoutUri();
-        Timber.d("Splash / API 29 migration detector : %s images KO", imagesKO);
+        CollectionDAO dao = new ObjectBoxDAO(this);
+        long imagesKO = dao.countOldStoredContent();
+        Timber.d("Splash / API 29 migration detector : %s books KO", imagesKO);
         return imagesKO > 0;
     }
 

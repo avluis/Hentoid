@@ -157,6 +157,8 @@ public interface CollectionDAO {
 
     Single<List<Long>> getOldStoredBookIds();
 
+    long countOldStoredContent();
+
 
     // RESULTS STRUCTURES
     @SuppressWarnings("squid:S1104")

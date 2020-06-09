@@ -399,8 +399,13 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public Single<List<Long>> getOldStoredBookIds() {
-        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectOldStoredContentIds()))
+        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectOldStoredContentQ().findIds()))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Override
+    public long countOldStoredContent() {
+        return db.selectOldStoredContentQ().count();
     }
 }
