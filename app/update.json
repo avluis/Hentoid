@@ -11,7 +11,8 @@
 	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"204" },
 	  {"sourceName":"LUSCIOUS", "status":"ORANGE", "fixedByBuild":"206" },
 	  {"sourceName":"PORNCOMIX", "status":"ORANGE", "fixedByBuild":"206" },
-	  {"sourceName":"MUSES", "status":"RED" }
+	  {"sourceName":"MUSES", "status":"RED" },
+	  {"sourceName":"NHENTAI", "status":"ORANGE" }
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
