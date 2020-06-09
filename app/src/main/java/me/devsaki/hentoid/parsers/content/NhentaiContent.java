@@ -22,7 +22,7 @@ public class NhentaiContent implements ContentParser {
 
     @Selector(value = "#bigcontainer #cover a", attr = "href", defValue = "")
     private String galleryUrl;
-    @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
+    @Selector(value = "#cover img", attr = "data-src", defValue = "")
     private String coverUrl;
     @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
     private String title;
@@ -68,13 +68,13 @@ public class NhentaiContent implements ContentParser {
         result.setTitle(Helper.removeNonPrintableChars(titleDef));
 
         AttributeMap attributes = new AttributeMap();
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, "name", Site.NHENTAI);
         result.addAttributes(attributes);
 
         List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(result, thumbs), result.getCoverImageUrl(), StatusContent.SAVED);
