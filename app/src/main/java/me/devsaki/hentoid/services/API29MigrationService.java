@@ -185,13 +185,11 @@ public class API29MigrationService extends IntentService {
                 Content content = dao.selectContent(contentId);
                 if (content != null) {
                     try {
-                        // Reset the book's storage folder to avoid running the migration service again and again
-                        content.resetStorageFolder();
-
                         // Set the book's storage URI
                         Map<String, DocumentFile> siteFolder = bookFoldersCache.get(content.getSite().getDescription());
                         if (null == siteFolder) {
                             trace(Log.WARN, log, "Migrate book KO : site folder %s not found for %s [%s]", content.getSite().getDescription(), content.getTitle(), contentId + "");
+                            content.resetStorageFolder();
                             dao.insertContent(content);
                             booksKO++;
                             continue;
@@ -203,11 +201,13 @@ public class API29MigrationService extends IntentService {
                         DocumentFile bookFolder = siteFolder.get(bookFolderName);
                         if (null == bookFolder) {
                             trace(Log.WARN, log, "Migrate book KO : book folder %s not found in %s for %s [%s]", bookFolderName, content.getSite().getDescription(), content.getTitle(), contentId + "");
+                            content.resetStorageFolder();
                             dao.insertContent(content);
                             booksKO++;
                             continue;
                         }
                         content.setStorageUri(bookFolder.getUri().toString());
+                        content.resetStorageFolder();
 
                         // Delete the JSON URI if not in the correct format (file:// instead of content://)
                         // (might be the case when the migrated collection was stored on phone memory)
