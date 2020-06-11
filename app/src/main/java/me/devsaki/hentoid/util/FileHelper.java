@@ -75,6 +75,8 @@ public class FileHelper {
 
     // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
     public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri, boolean isFolder) {
+        if (uri.toString().isEmpty()) return "";
+        
         String volumePath = getVolumePath(getVolumeIdFromUri(uri, isFolder), context);
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
