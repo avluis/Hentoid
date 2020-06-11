@@ -201,14 +201,14 @@ public class CustomSubsamplingScaleImageView extends View {
     // Specifies if a cache handler is also referencing the bitmap. Do not recycle if so.
     private boolean bitmapIsCached;
 
-    // To signal the bitmap being currently loading and avoid freeing it
-    private boolean bitmapIsLoading;
-
     // Uri of full size image
     private Uri uri;
 
     // Sample size used to display the whole image when fully zoomed out
     private int fullImageSampleSize;
+
+    // TODO doc
+    private final SingleImage singleImage = new SingleImage();
 
     // Map of zoom level to tile grid
     private Map<Integer, List<Tile>> tileMap;
@@ -648,7 +648,7 @@ public class CustomSubsamplingScaleImageView extends View {
             } finally {
                 decoderLock.writeLock().unlock();
             }
-            if (bitmap != null && !bitmapIsCached && !bitmapIsLoading) {
+            if (bitmap != null && !bitmapIsCached && !singleImage.loading) {
                 bitmap.recycle();
             }
             if (bitmap != null && bitmapIsCached && onImageEventListener != null) {
@@ -663,7 +663,7 @@ public class CustomSubsamplingScaleImageView extends View {
             imageLoadedSent = false;
             bitmapIsPreview = false;
             bitmapIsCached = false;
-            if (!bitmapIsLoading) bitmap = null;
+            if (!singleImage.loading) bitmap = null;
         }
         if (tileMap != null) {
             for (Map.Entry<Integer, List<Tile>> tileMapEntry : tileMap.entrySet()) {
@@ -949,7 +949,7 @@ public class CustomSubsamplingScaleImageView extends View {
                             }
 
                             fitToBounds(true);
-                            refreshRequiredTiles(eagerLoadingEnabled);
+                            refreshRequiredResource(eagerLoadingEnabled);
                         }
                         // ONE-FINGER GESTURES
                     } else if (isQuickScaling) {
@@ -1004,7 +1004,7 @@ public class CustomSubsamplingScaleImageView extends View {
                         quickScaleLastDistance = dist;
 
                         fitToBounds(true);
-                        refreshRequiredTiles(eagerLoadingEnabled);
+                        refreshRequiredResource(eagerLoadingEnabled);
 
                         consumed = true;
                     } else if (!isZooming) {
@@ -1064,7 +1064,7 @@ public class CustomSubsamplingScaleImageView extends View {
                                 requestDisallowInterceptTouchEvent(false);
                             }
 
-                            refreshRequiredTiles(eagerLoadingEnabled);
+                            refreshRequiredResource(eagerLoadingEnabled);
                         }
                     }
                 }
@@ -1111,7 +1111,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     }
 
                     // Trigger load of tiles now required
-                    refreshRequiredTiles(true);
+                    refreshRequiredResource(true);
                     return true;
                 }
                 if (touchCount == 1) {
@@ -1218,7 +1218,7 @@ public class CustomSubsamplingScaleImageView extends View {
             // For translate anims, showing the image non-centered is never allowed, for scaling anims it is during the animation.
             fitToBounds(finished || (anim.scaleStart == anim.scaleEnd));
             sendStateChanged(scaleBefore, vTranslateBefore, anim.origin);
-            refreshRequiredTiles(finished);
+            refreshRequiredResource(finished);
             if (finished) {
                 if (anim.listener != null) {
                     try {
@@ -1483,7 +1483,6 @@ public class CustomSubsamplingScaleImageView extends View {
         }
 
         if (fullImageSampleSize == 1 && sRegion == null && sWidth() < maxTileDimensions.x && sHeight() < maxTileDimensions.y) {
-
             // Whole image is required at native resolution, and is smaller than the canvas max bitmap size.
             // Use BitmapDecoder for better image support.
             if (decoder != null) decoder.recycle();
@@ -1518,7 +1517,7 @@ public class CustomSubsamplingScaleImageView extends View {
                                 .subscribe(
                                         this::onTileLoaded,
                                         onImageEventListener::onTileLoadError,
-                                        () -> refreshRequiredTiles(true)
+                                        () -> refreshRequiredResource(true)
                                 )
                 );
             }
@@ -1527,19 +1526,38 @@ public class CustomSubsamplingScaleImageView extends View {
 
     }
 
+    // TODO doc
+    private void refreshRequiredResource(boolean load) {
+        int sampleSize = Math.min(fullImageSampleSize, calculateInSampleSize(scale));
+
+        if (decoder == null || tileMap == null) refreshSingle(load, sampleSize);
+        else refreshRequiredTiles(load, sampleSize);
+    }
+
+    // TODO doc
+    private void refreshSingle(boolean load, int sampleSize) {
+        if (!singleImage.loading && load) {
+            loadDisposable.add(
+                    Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.computation())
+                            .map(b -> processBitmap(uri, getContext(), b, this, scale))
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    p -> onImageLoaded(p.bitmap, p.orientation, p.scale, false),
+                                    e -> onImageEventListener.onImageLoadError(e)
+                            )
+            );
+        }
+    }
+
     /**
      * Loads the optimum tiles for display at the current scale and translate, so the screen can be filled with tiles
      * that are at least as high resolution as the screen. Frees up bitmaps that are now off the screen.
      *
      * @param load Whether to load the new tiles needed. Use false while scrolling/panning for performance.
      */
-    private void refreshRequiredTiles(boolean load) {
-        if (decoder == null || tileMap == null) {
-            return;
-        }
-
-        int sampleSize = Math.min(fullImageSampleSize, calculateInSampleSize(scale));
-
+    private void refreshRequiredTiles(boolean load, int sampleSize) {
         // Load tiles of the correct sample size that are on screen. Discard tiles off screen, and those that are higher
         // resolution than required, or lower res than required but not the base layer, so the base layer is always present.
         for (Map.Entry<Integer, List<Tile>> tileMapEntry : tileMap.entrySet()) {
@@ -1617,7 +1635,7 @@ public class CustomSubsamplingScaleImageView extends View {
             sPendingCenter = null;
             pendingScale = null;
             fitToBounds(true);
-            refreshRequiredTiles(true);
+            refreshRequiredResource(true);
         }
 
         // On first display of base image set up position, and in other cases make sure scale is correct.
@@ -1856,7 +1874,7 @@ public class CustomSubsamplingScaleImageView extends View {
         if (this.sWidth > 0 && this.sHeight > 0 && (this.sWidth != sWidth || this.sHeight != sHeight)) {
             reset(false);
             if (bitmap != null) {
-                if (!bitmapIsCached && !bitmapIsLoading) {
+                if (!bitmapIsCached && !singleImage.loading) {
                     bitmap.recycle();
                 }
                 bitmap = null;
@@ -1929,7 +1947,7 @@ public class CustomSubsamplingScaleImageView extends View {
         checkReady();
         checkImageLoaded();
         if (isBaseLayerReady()) {
-            if (!bitmapIsCached && bitmap != null && !bitmapIsLoading) {
+            if (!bitmapIsCached && bitmap != null && !singleImage.loading) {
                 bitmap.recycle();
             }
             bitmap = null;
@@ -1944,7 +1962,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
     private Bitmap loadBitmap(@NonNull Context context, @NonNull DecoderFactory<? extends ImageDecoder> factory, @NonNull Uri uri) throws Exception {
         Helper.mustNotRunOnUiThread();
-        bitmapIsLoading = true;
+        singleImage.loading = true;
         return factory.make().decode(context, uri);
     }
 
@@ -1965,7 +1983,7 @@ public class CustomSubsamplingScaleImageView extends View {
             Timber.w("Cannot process images; RenderScript not set");
         }
 
-        bitmapIsLoading = false;
+        singleImage.loading = false;
         return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), useScale);
     }
 
@@ -1983,7 +2001,7 @@ public class CustomSubsamplingScaleImageView extends View {
             orientation = ORIENTATION_90;
         else orientation = ORIENTATION_0;
 
-        if (this.bitmap != null && !this.bitmapIsCached && !this.bitmapIsLoading) {
+        if (this.bitmap != null && !this.bitmapIsCached && !this.singleImage.loading) {
             this.bitmap.recycle();
         }
 
@@ -2095,8 +2113,13 @@ public class CustomSubsamplingScaleImageView extends View {
         return (isSourceLandscape != isScreenLandscape);
     }
 
-    private static class Tile {
+    private static class SingleImage {
+        private int sampleSize;
+        private Bitmap bitmap;
+        private boolean loading;
+    }
 
+    private static class Tile {
         private Rect sRect;
         private int sampleSize;
         private Bitmap bitmap;
@@ -2996,7 +3019,7 @@ public class CustomSubsamplingScaleImageView extends View {
             vTranslate.x = (getWidthInternal() / 2f) - (scale * (sWidth() / 2f));
             vTranslate.y = (getHeightInternal() / 2f) - (scale * (sHeight() / 2f));
             if (isReady()) {
-                refreshRequiredTiles(true);
+                refreshRequiredResource(true);
                 invalidate();
             }
         }
