@@ -9,6 +9,7 @@ import android.util.DisplayMetrics;
 import android.webkit.WebSettings;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -155,7 +156,9 @@ public final class Helper {
     }
 
     // https://stackoverflow.com/a/18603020/8374722
-    public static String removeNonPrintableChars(@NonNull final String s) {
+    public static String removeNonPrintableChars(@Nullable final String s) {
+        if (null == s) return "";
+
         StringBuilder newString = new StringBuilder(s.length());
         for (int offset = 0; offset < s.length(); ) {
             int codePoint = s.codePointAt(offset);
