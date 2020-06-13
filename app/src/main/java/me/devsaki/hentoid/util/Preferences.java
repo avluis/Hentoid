@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.text.TextUtils;
 
 import androidx.preference.PreferenceManager;
@@ -304,6 +305,14 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isViewerSmoothRendering() {
+        return (getViewerRenderingMode() == Constant.PREF_VIEWER_RENDERING_SMOOTH && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
+    }
+
+    private static int getViewerRenderingMode() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_RENDERING, Integer.toString(Default.PREF_VIEWER_RENDERING)) + "");
+    }
+
     public static boolean isViewerDisplayPageNum() {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_DISPLAY_PAGENUM, Default.PREF_VIEWER_DISPLAY_PAGENUM);
     }
@@ -487,6 +496,7 @@ public final class Preferences {
         static final String PREF_VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
         public static final String PREF_VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
         public static final String PREF_VIEWER_IMAGE_DISPLAY = "pref_viewer_image_display";
+        public static final String PREF_VIEWER_RENDERING = "pref_viewer_rendering";
         public static final String PREF_VIEWER_BROWSE_MODE = "pref_viewer_browse_mode";
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         public static final String PREF_VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling";
@@ -551,6 +561,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_RESUME_LAST_LEFT = true;
         static final boolean PREF_VIEWER_KEEP_SCREEN_ON = true;
         static final int PREF_VIEWER_IMAGE_DISPLAY = Constant.PREF_VIEWER_DISPLAY_FIT;
+        static final int PREF_VIEWER_RENDERING = Constant.PREF_VIEWER_RENDERING_SHARP;
         static final int PREF_VIEWER_BROWSE_MODE = Constant.PREF_VIEWER_BROWSE_NONE;
         static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
@@ -616,6 +627,8 @@ public final class Preferences {
         public static final int PREF_VIEWER_DISPLAY_FIT = 0;
         public static final int PREF_VIEWER_DISPLAY_FILL = 1;
         public static final int PREF_VIEWER_DISPLAY_STRETCH = 2;
+        public static final int PREF_VIEWER_RENDERING_SHARP = 0;
+        public static final int PREF_VIEWER_RENDERING_SMOOTH = 1;
         public static final int PREF_VIEWER_BROWSE_NONE = -1;
         public static final int PREF_VIEWER_BROWSE_LTR = 0;
         public static final int PREF_VIEWER_BROWSE_RTL = 1;

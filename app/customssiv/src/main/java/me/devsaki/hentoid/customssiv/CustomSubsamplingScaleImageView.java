@@ -377,6 +377,7 @@ public class CustomSubsamplingScaleImageView extends View {
     private int screenHeight;
 
     private final CompositeDisposable loadDisposable = new CompositeDisposable();
+    // RenderScript instance to use to smoothen images; sharp mode will be used if not set
     private RenderScript rs;
 
 

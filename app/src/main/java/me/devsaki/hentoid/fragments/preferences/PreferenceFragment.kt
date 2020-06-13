@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.preferences
 import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
@@ -96,6 +97,11 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.IMPORT_LIBRARY -> {
                     LibImportDialogFragment.invoke(parentFragmentManager)
+                    true
+                }
+                Preferences.Key.PREF_VIEWER_RENDERING -> {
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
+                        ToastUtil.toast("Smooth rendering is not available on Android 5")
                     true
                 }
                 Preferences.Key.PREF_SETTINGS_FOLDER -> {

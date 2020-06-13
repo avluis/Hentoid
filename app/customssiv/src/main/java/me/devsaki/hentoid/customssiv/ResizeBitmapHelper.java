@@ -23,16 +23,15 @@ class ResizeBitmapHelper {
 
 
     static ImmutablePair<Bitmap, Float> resizeBitmap(final RenderScript rs, @NonNull final Bitmap src, float targetScale) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) { // Because Renderscript is super unstable on Android 5 (see https://issuetracker.google.com/issues/119582492; reported by users)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || null == rs) { // Because Renderscript is super unstable on Android 5 (see https://issuetracker.google.com/issues/119582492; reported by users)
             ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
             Timber.d(">> resizing successively to scale %s", resizeParams.right);
             return new ImmutablePair<>(successiveResize(src, resizeParams.left), resizeParams.right);
         } else {
-            if (rs != null && targetScale < 0.75) {
+            if (targetScale < 0.75) {
                 // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
                 return new ImmutablePair<>(resizeNice(rs, src, targetScale, targetScale), targetScale);
             } else {
-                if (null == rs) Timber.w("Cannot process images; RenderScript not set");
                 return new ImmutablePair<>(src, 1f);
             }
         }

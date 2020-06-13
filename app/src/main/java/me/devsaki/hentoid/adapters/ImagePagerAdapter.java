@@ -3,7 +3,6 @@ package me.devsaki.hentoid.adapters;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.renderscript.RenderScript;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,8 +88,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public ImagePagerAdapter(Context context) {
         super(DIFF_CALLBACK);
         refreshPrefs();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            rs = RenderScript.create(context);
+        if (Preferences.isViewerSmoothRendering()) rs = RenderScript.create(context);
     }
 
     public void refreshPrefs() {
@@ -171,10 +169,12 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
             ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
             ((CustomSubsamplingScaleImageView) view).setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL);
-            ((CustomSubsamplingScaleImageView) view).setRenderScript(rs);
+            if (Preferences.isViewerSmoothRendering())
+                ((CustomSubsamplingScaleImageView) view).setRenderScript(rs);
         } else {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
-            ((CustomSubsamplingScaleImageView) view).setRenderScript(rs);
+            if (Preferences.isViewerSmoothRendering())
+                ((CustomSubsamplingScaleImageView) view).setRenderScript(rs);
         }
 
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
