@@ -25,6 +25,7 @@ class ResizeBitmapHelper {
     static ImmutablePair<Bitmap, Float> resizeBitmap(final RenderScript rs, @NonNull final Bitmap src, float targetScale) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) { // Because Renderscript is super unstable on Android 5 (see https://issuetracker.google.com/issues/119582492; reported by users)
             ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
+            Timber.i(">> resizing successively to scale %s", resizeParams.right);
             return new ImmutablePair<>(successiveResize(src, resizeParams.left), resizeParams.right);
         } else {
             if (rs != null && targetScale < 0.75) {
@@ -74,6 +75,7 @@ class ResizeBitmapHelper {
             }
             output = temp;
         }
+
         return output;
     }
 
