@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.customssiv;
 
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.renderscript.Allocation;
 import android.renderscript.RenderScript;
 import android.renderscript.ScriptIntrinsicBlur;
@@ -20,32 +21,44 @@ class ResizeBitmapHelper {
         throw new IllegalStateException("Utility class");
     }
 
+
+    static ImmutablePair<Bitmap, Float> resizeBitmap(final RenderScript rs, @NonNull final Bitmap src, float targetScale) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) { // Because Renderscript is super unstable on Android 5 (see https://issuetracker.google.com/issues/119582492; reported by users)
+            ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
+            return new ImmutablePair<>(successiveResize(src, resizeParams.left), resizeParams.right);
+        } else {
+            if (rs != null && targetScale < 0.75) {
+                // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
+                return new ImmutablePair<>(resizeNice(rs, src, targetScale, targetScale), targetScale);
+            } else {
+                if (null == rs) Timber.w("Cannot process images; RenderScript not set");
+                return new ImmutablePair<>(src, 1f);
+            }
+        }
+    }
+
     /**
      * Compute resizing parameters according to the given target scale
-     * TODO can that algorithm be merged with calculateInSampleSize ?
+     * TODO can that algorithm be merged with CustomSubsamplingScaleImageView.calculateInSampleSize ?
      *
      * @param targetScale target scale of the image to display (% of the raw dimensions)
      * @return Pair containing
      * - First : Number of half-resizes to perform (see {@link ResizeBitmapHelper})
-     * - Second : New scale to use to display the resized image at the initial target zoom level
+     * - Second : Corresponding scale
      */
-    private ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
+    private static ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
         Helper.mustNotRunOnUiThread();
-        float resultScale = targetScale;
+        float resultScale = 1f;
         int nbResize = 0;
 
         // Resize when approaching the target scale by 1/3 because there may already be artifacts displayed at that point
         // (seen with full-res pictures resized to 65% with Android's default bilinear filtering)
         for (int i = 1; i < 10; i++) if (targetScale < Math.pow(0.5, i) * 1.33) nbResize++;
+        if (nbResize > 0) resultScale = (float) Math.pow(0.5, nbResize);
 
-        if (nbResize > 0) {
-            float newScale = (float) Math.pow(0.5, nbResize);
-            resultScale = resultScale / newScale;
-        }
         return new ImmutablePair<>(nbResize, resultScale);
     }
 
-    /*
     static Bitmap successiveResize(@NonNull final Bitmap src, int resizeNum) {
         if (0 == resizeNum) return src;
 
@@ -66,6 +79,7 @@ class ResizeBitmapHelper {
 
     // RENDERSCRIPT ALTERNATE IMPLEMENTATIONS (requires API 21+)
 
+/*
     // Direct equivalent to the 1st method, using RenderScript
     static Bitmap successiveResize(@NonNull final RenderScript rs, @NonNull final Bitmap src, int resizeNum) {
         if (resizeNum < 1) return src;

@@ -34,6 +34,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -1989,14 +1991,9 @@ public class CustomSubsamplingScaleImageView extends View {
         singleImage.rawWidth = bitmap.getWidth();
         singleImage.rawHeight = bitmap.getHeight();
 
-        // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
-        if (rs != null && targetScale < 0.75) {
-            bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
-            singleImage.scale = targetScale;
-        } else {
-            if (null == rs) Timber.w("Cannot process images; RenderScript not set");
-            singleImage.scale = 1;
-        }
+        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(rs, bitmap, targetScale);
+        bitmap = resizeResult.left;
+        singleImage.scale = resizeResult.right;
 
         singleImage.loading = false;
         return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()));
