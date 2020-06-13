@@ -664,7 +664,6 @@ public class CustomSubsamplingScaleImageView extends View {
             imageLoadedSent = false;
             bitmapIsPreview = false;
             bitmapIsCached = false;
-            singleImage.resampled = false;
             singleImage.rawWidth = -1;
             singleImage.rawHeight = -1;
             singleImage.scale = 1;
@@ -1298,7 +1297,6 @@ public class CustomSubsamplingScaleImageView extends View {
 
         } else if (bitmap != null) {
             float usedScale = scale / singleImage.scale;
-//            if (singleImage.resampled && !isZooming && !isLongTapZooming) usedScale = 1f;
 
             Timber.i(">> draw scale = %s", usedScale);
             // TODO use that to implement fit to screen
@@ -1994,12 +1992,10 @@ public class CustomSubsamplingScaleImageView extends View {
         // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
         if (rs != null && targetScale < 0.75) {
             bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
-            singleImage.resampled = true;
             singleImage.scale = targetScale;
         } else {
             if (null == rs) Timber.w("Cannot process images; RenderScript not set");
             singleImage.scale = 1;
-            singleImage.resampled = false;
         }
 
         singleImage.loading = false;
@@ -2136,7 +2132,6 @@ public class CustomSubsamplingScaleImageView extends View {
         private int sampleSize;
         private Bitmap bitmap;
         private boolean loading;
-        private boolean resampled;
         private float scale = 1;
         private int rawWidth = -1;
         private int rawHeight = -1;
