@@ -665,6 +665,9 @@ public class CustomSubsamplingScaleImageView extends View {
             bitmapIsPreview = false;
             bitmapIsCached = false;
             singleImage.resampled = false;
+            singleImage.rawWidth = -1;
+            singleImage.rawHeight = -1;
+            singleImage.scale = 1;
             if (!singleImage.loading) bitmap = null;
         }
         if (tileMap != null) {
@@ -1294,7 +1297,7 @@ public class CustomSubsamplingScaleImageView extends View {
             }
 
         } else if (bitmap != null) {
-            float usedScale = scale;
+            float usedScale = scale / singleImage.scale;
 //            if (singleImage.resampled && !isZooming && !isLongTapZooming) usedScale = 1f;
 
             Timber.i(">> draw scale = %s", usedScale);
@@ -1984,7 +1987,6 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
-        float useScale = targetScale;
 
         singleImage.rawWidth = bitmap.getWidth();
         singleImage.rawHeight = bitmap.getHeight();
@@ -1993,8 +1995,11 @@ public class CustomSubsamplingScaleImageView extends View {
         if (rs != null && targetScale < 0.75) {
             bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
             singleImage.resampled = true;
-        } else if (null == rs) {
-            Timber.w("Cannot process images; RenderScript not set");
+            singleImage.scale = targetScale;
+        } else {
+            if (null == rs) Timber.w("Cannot process images; RenderScript not set");
+            singleImage.scale = 1;
+            singleImage.resampled = false;
         }
 
         singleImage.loading = false;
@@ -2132,6 +2137,7 @@ public class CustomSubsamplingScaleImageView extends View {
         private Bitmap bitmap;
         private boolean loading;
         private boolean resampled;
+        private float scale = 1;
         private int rawWidth = -1;
         private int rawHeight = -1;
     }
