@@ -19,7 +19,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.renderscript.RenderScript;
+import androidx.renderscript.RenderScript;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -544,7 +544,7 @@ public class CustomSubsamplingScaleImageView extends View {
             this.pRegion = previewSource.getSRegion();
             if (previewSource.getBitmap() != null) {
                 this.bitmapIsCached = previewSource.isCached();
-                onPreviewLoaded(previewSource.getBitmap(), scale);
+                onPreviewLoaded(previewSource.getBitmap());
             } else {
                 Uri previewSourceUri = previewSource.getUri();
                 if (previewSourceUri == null && previewSource.getResource() != null) {
@@ -558,7 +558,7 @@ public class CustomSubsamplingScaleImageView extends View {
                                     .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
-                                            p -> onPreviewLoaded(p.bitmap, p.scale),
+                                            p -> onPreviewLoaded(p.bitmap),
                                             e -> onImageEventListener.onImageLoadError(e)
                                     )
                     );
@@ -569,9 +569,9 @@ public class CustomSubsamplingScaleImageView extends View {
         }
 
         if (imageSource.getBitmap() != null && imageSource.getSRegion() != null) {
-            onImageLoaded(Bitmap.createBitmap(imageSource.getBitmap(), imageSource.getSRegion().left, imageSource.getSRegion().top, imageSource.getSRegion().width(), imageSource.getSRegion().height()), ORIENTATION_0, scale, false);
+            onImageLoaded(Bitmap.createBitmap(imageSource.getBitmap(), imageSource.getSRegion().left, imageSource.getSRegion().top, imageSource.getSRegion().width(), imageSource.getSRegion().height()), ORIENTATION_0, false);
         } else if (imageSource.getBitmap() != null) {
-            onImageLoaded(imageSource.getBitmap(), ORIENTATION_0, scale, imageSource.isCached());
+            onImageLoaded(imageSource.getBitmap(), ORIENTATION_0, imageSource.isCached());
         } else {
             sRegion = imageSource.getSRegion();
             uri = imageSource.getUri();
@@ -599,7 +599,7 @@ public class CustomSubsamplingScaleImageView extends View {
                                 .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
-                                        p -> onImageLoaded(p.bitmap, p.orientation, p.scale, false),
+                                        p -> onImageLoaded(p.bitmap, p.orientation, false),
                                         e -> onImageEventListener.onImageLoadError(e)
                                 )
                 );
@@ -612,6 +612,7 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private void reset(boolean newImage) {
         debug("reset newImage=" + newImage);
+        Timber.i("reset newImage=%s", newImage);
         scale = 0f;
         scaleStart = 0f;
         vTranslate = null;
@@ -663,6 +664,7 @@ public class CustomSubsamplingScaleImageView extends View {
             imageLoadedSent = false;
             bitmapIsPreview = false;
             bitmapIsCached = false;
+            singleImage.resampled = false;
             if (!singleImage.loading) bitmap = null;
         }
         if (tileMap != null) {
@@ -915,6 +917,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
                             double previousScale = scale;
                             scale = Math.min(maxScale, (vDistEnd / vDistStart) * scaleStart);
+                            Timber.i(">> MotionEvent.ACTION_MOVE %s", scale);
 
                             if (scale <= minScale()) {
                                 // Minimum scale reached so don't pan. Adjust start settings so any expand will zoom in.
@@ -975,6 +978,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
                             double previousScale = scale;
                             scale = Math.max(minScale(), Math.min(maxScale, scale * multiplier));
+                            Timber.i(">> MotionEvent.ACTION_MOVE2 %s", scale);
 
                             if (panEnabled) {
                                 float vLeftStart = vCenterStart.x - vTranslateStart.x;
@@ -1207,6 +1211,7 @@ public class CustomSubsamplingScaleImageView extends View {
             boolean finished = scaleElapsed > anim.duration;
             scaleElapsed = Math.min(scaleElapsed, anim.duration);
             scale = ease(anim.easing, scaleElapsed, anim.scaleStart, anim.scaleEnd - anim.scaleStart, anim.duration);
+            Timber.i(">> onDraw %s", scale);
 
             // Apply required animation to the focal point
             float vFocusNowX = ease(anim.easing, scaleElapsed, anim.vFocusStart.x, anim.vFocusEnd.x - anim.vFocusStart.x, anim.duration);
@@ -1289,14 +1294,17 @@ public class CustomSubsamplingScaleImageView extends View {
             }
 
         } else if (bitmap != null) {
+            float usedScale = scale;
+//            if (singleImage.resampled && !isZooming && !isLongTapZooming) usedScale = 1f;
 
+            Timber.i(">> draw scale = %s", usedScale);
             // TODO use that to implement fit to screen
-            float xScale = scale;
-            float yScale = scale;
+            float xScale = usedScale;
+            float yScale = usedScale;
 
             if (bitmapIsPreview) {
-                xScale = scale * ((float) sWidth / bitmap.getWidth());
-                yScale = scale * ((float) sHeight / bitmap.getHeight());
+                xScale = usedScale * ((float) sWidth / bitmap.getWidth());
+                yScale = usedScale * ((float) sHeight / bitmap.getHeight());
             }
 
             if (matrix == null) {
@@ -1308,11 +1316,11 @@ public class CustomSubsamplingScaleImageView extends View {
             matrix.postTranslate(vTranslate.x, vTranslate.y);
 
             if (getRequiredRotation() == ORIENTATION_180) {
-                matrix.postTranslate(scale * sWidth, scale * sHeight);
+                matrix.postTranslate(usedScale * sWidth, usedScale * sHeight);
             } else if (getRequiredRotation() == ORIENTATION_90) {
-                matrix.postTranslate(scale * sHeight, 0);
+                matrix.postTranslate(usedScale * sHeight, 0);
             } else if (getRequiredRotation() == ORIENTATION_270) {
-                matrix.postTranslate(0, scale * sWidth);
+                matrix.postTranslate(0, usedScale * sWidth);
             }
 
             if (tileBgPaint != null) {
@@ -1495,7 +1503,7 @@ public class CustomSubsamplingScaleImageView extends View {
                             .map(b -> processBitmap(uri, getContext(), b, this, targetScale))
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
-                                    p -> onImageLoaded(p.bitmap, p.orientation, p.scale, false),
+                                    p -> onImageLoaded(p.bitmap, p.orientation, false),
                                     e -> onImageEventListener.onImageLoadError(e)
                             )
             );
@@ -1537,6 +1545,7 @@ public class CustomSubsamplingScaleImageView extends View {
     // TODO doc
     private void refreshSingle(boolean load, int sampleSize) {
         if (!singleImage.loading && load) {
+            Timber.i(">> refreshSingle");
             loadDisposable.add(
                     Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
                             .subscribeOn(Schedulers.io())
@@ -1544,7 +1553,7 @@ public class CustomSubsamplingScaleImageView extends View {
                             .map(b -> processBitmap(uri, getContext(), b, this, scale))
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
-                                    p -> onImageLoaded(p.bitmap, p.orientation, p.scale, false),
+                                    p -> onImageLoaded(p.bitmap, p.orientation, false),
                                     e -> onImageEventListener.onImageLoadError(e)
                             )
             );
@@ -1627,6 +1636,7 @@ public class CustomSubsamplingScaleImageView extends View {
         // If waiting to translate to new center position, set translate now
         if (sPendingCenter != null && pendingScale != null) {
             scale = pendingScale;
+            Timber.i(">> preDraw %s", scale);
             if (vTranslate == null) {
                 vTranslate = new PointF();
             }
@@ -1756,6 +1766,7 @@ public class CustomSubsamplingScaleImageView extends View {
         satTemp.scale = scale;
         satTemp.vTranslate.set(vTranslate);
         fitToBounds(center, satTemp, sSize);
+        Timber.i(">> fitToBounds %s/%s => %s", scale, minScale(), satTemp.scale);
         scale = satTemp.scale;
         vTranslate.set(satTemp.vTranslate);
 
@@ -1975,27 +1986,32 @@ public class CustomSubsamplingScaleImageView extends View {
         Helper.mustNotRunOnUiThread();
         float useScale = targetScale;
 
+        singleImage.rawWidth = bitmap.getWidth();
+        singleImage.rawHeight = bitmap.getHeight();
+
         // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
         if (rs != null && targetScale < 0.75) {
             bitmap = ResizeBitmapHelper.resizeNice(rs, bitmap, targetScale, targetScale);
-            useScale = 1f;
+            singleImage.resampled = true;
         } else if (null == rs) {
             Timber.w("Cannot process images; RenderScript not set");
         }
 
         singleImage.loading = false;
-        return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()), useScale);
+        return new ProcessBitmapResult(bitmap, view.getExifOrientation(context, source.toString()));
     }
 
     /**
      * Called by worker task when full size image bitmap is ready (tiling is disabled).
      */
-    private synchronized void onImageLoaded(@NonNull Bitmap bitmap, int sOrientation, float scale, boolean bitmapIsCached) {
+    private synchronized void onImageLoaded(@NonNull Bitmap bitmap, int sOrientation, boolean bitmapIsCached) {
         debug("onImageLoaded");
         // If actual dimensions don't match the declared size, reset everything.
+        /*
         if (this.sWidth > 0 && this.sHeight > 0 && (this.sWidth != bitmap.getWidth() || this.sHeight != bitmap.getHeight())) {
             reset(false);
         }
+         */
 
         if (autoRotate && needsRotating(bitmap.getWidth(), bitmap.getHeight()))
             orientation = ORIENTATION_90;
@@ -2015,7 +2031,6 @@ public class CustomSubsamplingScaleImageView extends View {
         this.sWidth = bitmap.getWidth();
         this.sHeight = bitmap.getHeight();
         this.sOrientation = sOrientation;
-        this.scale = scale;
         boolean ready = checkReady();
         boolean imageLoaded = checkImageLoaded();
         if (ready || imageLoaded) {
@@ -2027,7 +2042,7 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Called by worker task when preview image is loaded.
      */
-    private synchronized void onPreviewLoaded(@NonNull Bitmap previewBitmap, float scale) {
+    private synchronized void onPreviewLoaded(@NonNull Bitmap previewBitmap) {
         debug("onPreviewLoaded");
         if (bitmap != null || imageLoadedSent) {
             previewBitmap.recycle();
@@ -2039,7 +2054,6 @@ public class CustomSubsamplingScaleImageView extends View {
             bitmap = previewBitmap;
         }
         bitmapIsPreview = true;
-        this.scale = scale;
         if (checkReady()) {
             invalidate();
             requestLayout();
@@ -2117,6 +2131,9 @@ public class CustomSubsamplingScaleImageView extends View {
         private int sampleSize;
         private Bitmap bitmap;
         private boolean loading;
+        private boolean resampled;
+        private int rawWidth = -1;
+        private int rawHeight = -1;
     }
 
     private static class Tile {
@@ -2210,9 +2227,9 @@ public class CustomSubsamplingScaleImageView extends View {
     private int sWidth() {
         int rotation = getRequiredRotation();
         if (rotation == 90 || rotation == 270) {
-            return sHeight;
+            return (singleImage.rawHeight > -1) ? singleImage.rawHeight : sHeight;
         } else {
-            return sWidth;
+            return (singleImage.rawWidth > -1) ? singleImage.rawWidth : sWidth;
         }
     }
 
@@ -2223,9 +2240,9 @@ public class CustomSubsamplingScaleImageView extends View {
     private int sHeight() {
         int rotation = getRequiredRotation();
         if (rotation == 90 || rotation == 270) {
-            return sWidth;
+            return (singleImage.rawWidth > -1) ? singleImage.rawWidth : sWidth;
         } else {
-            return sHeight;
+            return (singleImage.rawHeight > -1) ? singleImage.rawHeight : sHeight;
         }
     }
 
@@ -3631,12 +3648,10 @@ public class CustomSubsamplingScaleImageView extends View {
     static class ProcessBitmapResult {
         final Bitmap bitmap;
         final Integer orientation;
-        final float scale;
 
-        ProcessBitmapResult(Bitmap bitmap, Integer orientation, float scale) {
+        ProcessBitmapResult(Bitmap bitmap, Integer orientation) {
             this.bitmap = bitmap;
             this.orientation = orientation;
-            this.scale = scale;
         }
     }
 }

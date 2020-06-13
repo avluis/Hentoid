@@ -1,13 +1,15 @@
 package me.devsaki.hentoid.customssiv;
 
 import android.graphics.Bitmap;
-import android.renderscript.Allocation;
-import android.renderscript.RenderScript;
-import android.renderscript.ScriptIntrinsicBlur;
-import android.renderscript.ScriptIntrinsicResize;
-import android.renderscript.Type;
+import androidx.renderscript.Allocation;
+import androidx.renderscript.RenderScript;
+import androidx.renderscript.ScriptIntrinsicBlur;
+import androidx.renderscript.ScriptIntrinsicResize;
+import androidx.renderscript.Type;
 
 import androidx.annotation.NonNull;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import timber.log.Timber;
 
@@ -16,6 +18,31 @@ class ResizeBitmapHelper {
 
     private ResizeBitmapHelper() {
         throw new IllegalStateException("Utility class");
+    }
+
+    /**
+     * Compute resizing parameters according to the given target scale
+     * TODO can that algorithm be merged with calculateInSampleSize ?
+     *
+     * @param targetScale target scale of the image to display (% of the raw dimensions)
+     * @return Pair containing
+     * - First : Number of half-resizes to perform (see {@link ResizeBitmapHelper})
+     * - Second : New scale to use to display the resized image at the initial target zoom level
+     */
+    private ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
+        Helper.mustNotRunOnUiThread();
+        float resultScale = targetScale;
+        int nbResize = 0;
+
+        // Resize when approaching the target scale by 1/3 because there may already be artifacts displayed at that point
+        // (seen with full-res pictures resized to 65% with Android's default bilinear filtering)
+        for (int i = 1; i < 10; i++) if (targetScale < Math.pow(0.5, i) * 1.33) nbResize++;
+
+        if (nbResize > 0) {
+            float newScale = (float) Math.pow(0.5, nbResize);
+            resultScale = resultScale / newScale;
+        }
+        return new ImmutablePair<>(nbResize, resultScale);
     }
 
     /*
@@ -83,7 +110,7 @@ class ResizeBitmapHelper {
         // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
         float radius = 2.5f * sigma/* - 1.5f*/; // Works better that way
         radius = Math.min(25, Math.max(0.0001f, radius));
-        Timber.d(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius);
+        Timber.i(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius);
 
         // Defensive programming in case the threading/view recycling recycles a bitmap just before that methods is reached
         if (null == src || src.isRecycled()) return src;

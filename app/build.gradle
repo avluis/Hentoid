@@ -20,13 +20,14 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
+    buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 29
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.12.1-viewer-1'
+        versionName '1.12.1-dev'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN")?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -35,6 +36,9 @@ android {
         buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+        renderscriptTargetApi 21
+        renderscriptSupportModeEnabled true
 
         javaCompileOptions {
             annotationProcessorOptions {
