@@ -1942,13 +1942,9 @@ public class CustomSubsamplingScaleImageView extends View {
         Helper.mustNotRunOnUiThread();
 
         // Take any prior subsampling into consideration _before_ processing the tile
-        // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
         float resizeScale = targetScale * loadedTile.sampleSize;
-        if (rs != null && resizeScale < 0.75) {
-            loadedTile.bitmap = ResizeBitmapHelper.resizeNice(rs, loadedTile.bitmap, resizeScale, resizeScale);
-        } else if (null == rs) {
-            Timber.w("Cannot process images; RenderScript not set");
-        }
+        ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(rs, loadedTile.bitmap, resizeScale);
+        loadedTile.bitmap = resizeResult.left;
 
         loadedTile.loading = false;
         return loadedTile;
