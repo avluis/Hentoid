@@ -15,7 +15,7 @@ android {
         versionName "1.0"
 
         renderscriptTargetApi 21
-        renderscriptSupportModeEnabled true
+        renderscriptSupportModeEnabled false
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'

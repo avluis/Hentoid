@@ -38,7 +38,7 @@ android {
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
         renderscriptTargetApi 21
-        renderscriptSupportModeEnabled true
+        renderscriptSupportModeEnabled false
 
         javaCompileOptions {
             annotationProcessorOptions {

@@ -19,7 +19,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import androidx.renderscript.RenderScript;
+import android.renderscript.RenderScript;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;

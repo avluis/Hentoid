@@ -1,11 +1,11 @@
 package me.devsaki.hentoid.customssiv;
 
 import android.graphics.Bitmap;
-import androidx.renderscript.Allocation;
-import androidx.renderscript.RenderScript;
-import androidx.renderscript.ScriptIntrinsicBlur;
-import androidx.renderscript.ScriptIntrinsicResize;
-import androidx.renderscript.Type;
+import android.renderscript.Allocation;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
+import android.renderscript.ScriptIntrinsicResize;
+import android.renderscript.Type;
 
 import androidx.annotation.NonNull;
 
