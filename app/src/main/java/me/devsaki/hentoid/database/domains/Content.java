@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.annimon.stream.Stream;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -16,6 +18,7 @@ import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
+import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
@@ -38,6 +41,10 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.JsonHelper;
+import timber.log.Timber;
+
+import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -69,6 +76,9 @@ public class Content implements Serializable {
     private long reads = 0;
     private long lastReadDate;
     private int lastReadPageIndex = 0;
+    @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
+    private Map<String, String> bookPreferences = new HashMap<>();
+
     // Temporary during SAVED state only; no need to expose them for JSON persistence
     private String downloadParams;
     // Temporary during ERROR state only; no need to expose them for JSON persistence
@@ -547,7 +557,9 @@ public class Content implements Serializable {
         return storageFolder == null ? "" : storageFolder;
     }
 
-    public void resetStorageFolder() { storageFolder = ""; }
+    public void resetStorageFolder() {
+        storageFolder = "";
+    }
 
     public String getStorageUri() {
         return storageUri == null ? "" : storageUri;
@@ -615,6 +627,18 @@ public class Content implements Serializable {
         return this;
     }
 
+    public Map<String, String> getBookPreferences() {
+        return bookPreferences;
+    }
+
+    public void setBookPreferences(Map<String, String> bookPreferences) {
+        this.bookPreferences = bookPreferences;
+    }
+
+    public void putBookPreferenceMap(String key, String value) {
+        bookPreferences.put(key, value);
+    }
+
     public int getLastReadPageIndex() {
         return lastReadPageIndex;
     }
@@ -645,6 +669,25 @@ public class Content implements Serializable {
 
     public void increaseNumberDownloadRetries() {
         this.numberDownloadRetries++;
+    }
+
+    public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {
+        @Override
+        public Map<String, String> convertToEntityProperty(String databaseValue) {
+            if (null == databaseValue) return new HashMap<>();
+
+            try {
+                return JsonHelper.jsonToObject(databaseValue, MAP_STRINGS);
+            } catch (IOException e) {
+                Timber.w(e);
+                return new HashMap<>();
+            }
+        }
+
+        @Override
+        public String convertToDatabaseValue(Map<String, String> entityProperty) {
+            return JsonHelper.serializeToJson(entityProperty, MAP_STRINGS);
+        }
     }
 
     @Override

@@ -12,8 +12,10 @@ import com.annimon.stream.Stream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.Theme;
 import timber.log.Timber;
@@ -305,8 +307,21 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isContentSmoothRendering(Content c) {
+        Map<String, String> bookPrefs = c.getBookPreferences();
+        if (bookPrefs.containsKey(Key.PREF_VIEWER_RENDERING)) {
+            String value = bookPrefs.get(Key.PREF_VIEWER_RENDERING);
+            if (value != null) return isSmoothRendering(Integer.parseInt(value));
+        }
+        return isViewerSmoothRendering();
+    }
+
     public static boolean isViewerSmoothRendering() {
-        return (getViewerRenderingMode() == Constant.PREF_VIEWER_RENDERING_SMOOTH && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
+        return isSmoothRendering(getViewerRenderingMode());
+    }
+
+    public static boolean isSmoothRendering(int mode) {
+        return (mode == Constant.PREF_VIEWER_RENDERING_SMOOTH && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
     }
 
     private static int getViewerRenderingMode() {

@@ -4,6 +4,7 @@ import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ public class JsonContent {
     private long reads;
     private long lastReadDate;
     private int lastReadPageIndex;
+    private Map<String, String> bookPreferences = new HashMap<>();
 
     private Map<AttributeType, List<JsonAttribute>> attributes;
     private List<JsonImageFile> imageFiles = new ArrayList<>();
@@ -74,6 +76,7 @@ public class JsonContent {
         result.reads = c.getReads();
         result.lastReadDate = c.getLastReadDate();
         result.lastReadPageIndex = c.getLastReadPageIndex();
+        result.bookPreferences = c.getBookPreferences();
 
         result.attributes = new EnumMap<>(AttributeType.class);
         for (Attribute a : c.getAttributes()) {
@@ -109,6 +112,7 @@ public class JsonContent {
         result.setReads(reads);
         result.setLastReadDate(lastReadDate);
         result.setLastReadPageIndex(lastReadPageIndex);
+        result.setBookPreferences(bookPreferences);
 
         if (attributes != null) {
             result.clearAttributes();
