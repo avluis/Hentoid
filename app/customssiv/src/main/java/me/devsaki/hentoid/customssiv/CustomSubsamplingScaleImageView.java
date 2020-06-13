@@ -1982,6 +1982,7 @@ public class CustomSubsamplingScaleImageView extends View {
         singleImage.rawWidth = bitmap.getWidth();
         singleImage.rawHeight = bitmap.getHeight();
 
+        // TODO sharp mode - don't ask to resize when the image in memory already has the correct target scale
         ImmutablePair<Bitmap, Float> resizeResult = ResizeBitmapHelper.resizeBitmap(rs, bitmap, targetScale);
         bitmap = resizeResult.left;
 
@@ -3065,7 +3066,7 @@ public class CustomSubsamplingScaleImageView extends View {
         this.autoRotate = autoRotate;
     }
 
-    public final void setRenderScript(@NonNull RenderScript rs) {
+    public final void setRenderScript(RenderScript rs) {
         this.rs = rs;
     }
 

@@ -32,6 +32,7 @@ class ResizeBitmapHelper {
                 // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
                 return new ImmutablePair<>(resizeNice(rs, src, targetScale, targetScale), targetScale);
             } else {
+                Timber.d(">> No resize needed; keeping raw image");
                 return new ImmutablePair<>(src, 1f);
             }
         }
