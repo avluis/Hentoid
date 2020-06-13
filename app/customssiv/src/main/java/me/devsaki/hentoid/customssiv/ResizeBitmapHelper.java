@@ -25,7 +25,7 @@ class ResizeBitmapHelper {
     static ImmutablePair<Bitmap, Float> resizeBitmap(final RenderScript rs, @NonNull final Bitmap src, float targetScale) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) { // Because Renderscript is super unstable on Android 5 (see https://issuetracker.google.com/issues/119582492; reported by users)
             ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
-            Timber.i(">> resizing successively to scale %s", resizeParams.right);
+            Timber.d(">> resizing successively to scale %s", resizeParams.right);
             return new ImmutablePair<>(successiveResize(src, resizeParams.left), resizeParams.right);
         } else {
             if (rs != null && targetScale < 0.75) {
@@ -126,7 +126,7 @@ class ResizeBitmapHelper {
         // https://android.googlesource.com/platform/frameworks/rs/+/master/cpu_ref/rsCpuIntrinsicBlur.cpp
         float radius = 2.5f * sigma/* - 1.5f*/; // Works better that way
         radius = Math.min(25, Math.max(0.0001f, radius));
-        Timber.i(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius);
+        Timber.d(">> using sigma=%s for xScale=%s => radius=%s", sigma, xScale, radius);
 
         // Defensive programming in case the threading/view recycling recycles a bitmap just before that methods is reached
         if (null == src || src.isRecycled()) return src;
