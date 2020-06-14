@@ -44,96 +44,98 @@ public class EHentaiParser implements ImageListParser {
     public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
-        List<ImageFile> result = new ArrayList<>();
-        boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
-        Map<String, String> downloadParams = new HashMap<>();
-        int order = 1;
+        try {
+            List<ImageFile> result = new ArrayList<>();
+            boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
+            Map<String, String> downloadParams = new HashMap<>();
+            int order = 1;
 
-        /*
-         * 1- Detect the number of pages of the gallery
-         *
-         * 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
-         *
-         * 3- Open all pages and grab the URL of the displayed image
-         */
+            /*
+             * 1- Detect the number of pages of the gallery
+             *
+             * 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
+             *
+             * 3- Open all pages and grab the URL of the displayed image
+             */
 
-        // 1- Detect the number of pages of the gallery
-        Element e;
-        List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
-        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
-        if (doc != null) {
-            Elements elements = doc.select("table.ptt a");
-            if (null == elements || elements.isEmpty()) return result;
+            // 1- Detect the number of pages of the gallery
+            Element e;
+            List<Pair<String, String>> headers = new ArrayList<>();
+            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
+            Document doc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
+            if (doc != null) {
+                Elements elements = doc.select("table.ptt a");
+                if (null == elements || elements.isEmpty()) return result;
 
-            int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
-            int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
+                int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
+                int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
-            progress.start(nbGalleryPages + content.getQtyPages());
+                progress.start(nbGalleryPages + content.getQtyPages());
 
-            // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
-            List<String> pageUrls = new ArrayList<>();
+                // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
+                List<String> pageUrls = new ArrayList<>();
 
-            fetchPageUrls(doc, pageUrls);
+                fetchPageUrls(doc, pageUrls);
 
-            if (nbGalleryPages > 1) {
-                for (int i = 1; i < nbGalleryPages && !processHalted; i++) {
-                    doc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent);
-                    if (doc != null) fetchPageUrls(doc, pageUrls);
-                    progress.advance();
+                if (nbGalleryPages > 1) {
+                    for (int i = 1; i < nbGalleryPages && !processHalted; i++) {
+                        doc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent);
+                        if (doc != null) fetchPageUrls(doc, pageUrls);
+                        progress.advance();
+                    }
                 }
-            }
 
-            // 3- Open all pages and
-            //    - grab the URL of the displayed image
-            //    - grab the alternate URL of the "Click here if the image fails loading" link
-            result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
-            ImageFile img;
-            for (String pageUrl : pageUrls) {
-                if (processHalted) break;
-                doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
-                if (doc != null) {
-                    // Displayed image
-                    String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
-                    if (!imageUrl.isEmpty()) {
-                        // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
-                        if (imageUrl.contains("/509.gif"))
-                            throw new LimitReachedException("E-hentai download points regenerate over time or can be bought on e-hentai if you're in a hurry");
-                        img = ParseHelper.urlToImageFile(imageUrl, order++, pageUrls.size(), StatusContent.SAVED);
-                        result.add(img);
+                // 3- Open all pages and
+                //    - grab the URL of the displayed image
+                //    - grab the alternate URL of the "Click here if the image fails loading" link
+                result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+                ImageFile img;
+                for (String pageUrl : pageUrls) {
+                    if (processHalted) break;
+                    doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
+                    if (doc != null) {
+                        // Displayed image
+                        String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
+                        if (!imageUrl.isEmpty()) {
+                            // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
+                            if (imageUrl.contains("/509.gif"))
+                                throw new LimitReachedException("E-hentai download points regenerate over time or can be bought on e-hentai if you're in a hurry");
+                            img = ParseHelper.urlToImageFile(imageUrl, order++, pageUrls.size(), StatusContent.SAVED);
+                            result.add(img);
 
-                        // "Click here if the image fails loading" link
-                        elements = doc.select("#loadfail");
-                        if (!elements.isEmpty()) {
-                            e = elements.first();
-                            String arg = e.attr("onclick");
-                            // Get the argument between 's
-                            int quoteBegin = arg.indexOf('\'');
-                            int quoteEnd = arg.indexOf('\'', quoteBegin + 1);
-                            arg = arg.substring(quoteBegin + 1, quoteEnd);
-                            // Get the query URL
-                            if (pageUrl.contains("?")) pageUrl += "&";
-                            else pageUrl += "?";
-                            pageUrl += "nl=" + arg;
-                            // Get the final URL
-                            if (URLUtil.isValidUrl(pageUrl)) {
-                                downloadParams.put("backupUrl", pageUrl);
-                                String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
-                                img.setDownloadParams(downloadParamsStr);
+                            // "Click here if the image fails loading" link
+                            elements = doc.select("#loadfail");
+                            if (!elements.isEmpty()) {
+                                e = elements.first();
+                                String arg = e.attr("onclick");
+                                // Get the argument between 's
+                                int quoteBegin = arg.indexOf('\'');
+                                int quoteEnd = arg.indexOf('\'', quoteBegin + 1);
+                                arg = arg.substring(quoteBegin + 1, quoteEnd);
+                                // Get the query URL
+                                if (pageUrl.contains("?")) pageUrl += "&";
+                                else pageUrl += "?";
+                                pageUrl += "nl=" + arg;
+                                // Get the final URL
+                                if (URLUtil.isValidUrl(pageUrl)) {
+                                    downloadParams.put("backupUrl", pageUrl);
+                                    String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
+                                    img.setDownloadParams(downloadParamsStr);
+                                }
                             }
                         }
                     }
+                    progress.advance();
                 }
-                progress.advance();
             }
+            progress.complete();
+
+            // If the process has been halted manually, the result is incomplete and should not be returned as is
+            if (processHalted) throw new PreparationInterruptedException();
+            return result;
+        } finally {
+            EventBus.getDefault().unregister(this);
         }
-        progress.complete();
-
-        // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted) throw new PreparationInterruptedException();
-
-        EventBus.getDefault().unregister(this);
-        return result;
     }
 
     @Nullable
