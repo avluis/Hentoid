@@ -226,7 +226,7 @@ public final class Preferences {
         return sharedPreferences.getString(Key.PREF_SD_STORAGE_URI, "");
     }
 
-    static void setStorageUri(String uri) {
+    public static void setStorageUri(String uri) {
         sharedPreferences.edit()
                 .putString(Key.PREF_SD_STORAGE_URI, uri)
                 .apply();
