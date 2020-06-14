@@ -440,7 +440,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 int pagesOKDisplay = Math.max(0, pagesOK - 1);
 
                 // Update book progress bar
-                Timber.i(">> setProgress %s", pagesOKDisplay + pagesKO);
+                Timber.d(">> setProgress %s", pagesOKDisplay + pagesKO);
                 content.setProgress((long) pagesOKDisplay + pagesKO);
                 content.setDownloadedBytes(downloadedSizeB);
                 content.setQtyPages(totalPagesDisplay);
@@ -488,7 +488,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void onQueueChanged(List<QueueRecord> result) {
-        Timber.i(">>Queue changed ! Size=%s", result.size());
+        Timber.d(">>Queue changed ! Size=%s", result.size());
         isEmpty = (result.isEmpty());
         isPaused = (!isEmpty && (ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
 
