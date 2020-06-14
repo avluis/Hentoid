@@ -66,6 +66,9 @@ public class ImportHelper {
         public boolean cleanUnreadable;
     }
 
+    public static boolean isHentoidFolderName(@NonNull final String folderName) {
+        return hentoidFolderNames.accept(folderName);
+    }
 
     public static void openFolderPicker(@NonNull final Fragment caller) {
         Intent intent = getFolderPickerIntent(caller.requireContext());
@@ -232,7 +235,7 @@ public class ImportHelper {
         if (null == folderName) folderName = "";
 
         // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
-        if (!hentoidFolderNames.accept(folderName)) {
+        if (!isHentoidFolderName(folderName)) {
             DocumentFile targetFolder = getExistingHentoidDirFrom(context, baseFolder);
 
             // If not, create one
@@ -248,7 +251,7 @@ public class ImportHelper {
         if (!root.exists() || !root.isDirectory() || null == root.getName()) return root;
 
         // Selected folder _is_ the Hentoid folder
-        if (hentoidFolderNames.accept(root.getName())) return root;
+        if (isHentoidFolderName(root.getName())) return root;
 
         // If not, look for it in its children
         List<DocumentFile> hentoidDirs = FileHelper.listFoldersFilter(context, root, hentoidFolderNames);
