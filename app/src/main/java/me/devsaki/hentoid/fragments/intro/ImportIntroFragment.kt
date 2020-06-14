@@ -52,6 +52,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             }
             ImportHelper.Result.CANCELED -> Snackbar.make(main, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.INVALID_FOLDER -> Snackbar.make(main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.Result.CREATE_FAIL -> Snackbar.make(main, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.OTHER -> Snackbar.make(main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
         }
     }

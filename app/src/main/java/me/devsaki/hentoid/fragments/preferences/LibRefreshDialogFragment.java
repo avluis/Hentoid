@@ -136,7 +136,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         res -> {
-                            if (ImportHelper.Result.INVALID_FOLDER == res) dismiss();
+                            if (ImportHelper.Result.INVALID_FOLDER == res || ImportHelper.Result.CREATE_FAIL == res) dismiss();
                         },
                         Timber::w
                 )
@@ -209,6 +209,10 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 break;
             case ImportHelper.Result.INVALID_FOLDER:
                 Snackbar.make(rootView, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
+                setCancelable(true);
+                break;
+            case ImportHelper.Result.CREATE_FAIL:
+                Snackbar.make(rootView, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show();
                 setCancelable(true);
                 break;
             case ImportHelper.Result.OTHER:
