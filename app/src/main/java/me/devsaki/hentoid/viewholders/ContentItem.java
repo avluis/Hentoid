@@ -487,7 +487,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         String pagesText = tvPages.getText().toString();
                         int separator = pagesText.indexOf(";");
                         if (separator > -1) pagesText = pagesText.substring(0, separator);
-                        pagesText = pagesText + String.format(Locale.US, "; %.1f MB (est.)", content.getBookSizeEstimate() / (1024 * 1024));
+                        pagesText = pagesText + String.format(Locale.US, "; estimated %.1f MB", content.getBookSizeEstimate() / (1024 * 1024));
                         tvPages.setText(pagesText);
                     }
                 } else {
