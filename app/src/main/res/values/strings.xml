@@ -46,6 +46,8 @@
     <string name="search_hint">Title, author, tag or book ID</string>
     <string name="send_to">Share with:</string>
     <string name="open_settings">Open settings</string>
+    <string name="app_settings">App settings</string>
+    <string name="book_settings">Book settings</string>
 
     <!-- Queue -->
     <string name="queue_queue_tab">In progress</string>

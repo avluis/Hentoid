@@ -31,6 +31,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
@@ -69,7 +70,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant;
 //   - paper roll mode (currently used for vertical display)
 //   - independent page mode (currently used for horizontal display)
 public class ImagePagerFragment extends Fragment implements GoToPageDialogFragment.Parent,
-        BrowseModeDialogFragment.Parent {
+        BrowseModeDialogFragment.Parent, BookPrefsDialogFragment.Parent {
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
@@ -79,7 +80,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
-    private ZoomableFrame zoomFrame;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private ImageViewerViewModel viewModel;
     private int imageIndex = -1; // 0-based image index
@@ -87,9 +87,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private int maxPosition; // For navigation
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
-    private RecyclerView.SmoothScroller smoothScroller;
     private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
     private Disposable slideshowTimer = null;
+
+    private Map<String, String> bookPreferences; // Preferences of current book; to feed the book prefs dialog
+    private long contentId;
 
     private final Debouncer<Integer> indexRefreshDebouncer = new Debouncer<>(75, this::applyStartingIndexInternal);
 
@@ -97,12 +99,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private boolean isComputingImageList = false;
     private int targetStartingIndex = -1;
 
-    // Controls
+    // == CONTROLS ==
     private TextView pageNumberOverlay;
+    private ZoomableFrame zoomFrame;
     private ZoomableRecyclerView recyclerView;
-    // == CONTROLS OVERLAY ==
+    private RecyclerView.SmoothScroller smoothScroller;
+
+    // Controls overlay
     private View controlsOverlay;
 
+    // Top menu items
     private MenuItem showFavoritePagesButton;
     private MenuItem shuffleButton;
 
@@ -144,8 +150,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 case R.id.action_page_menu:
                     onPageMenuClick();
                     break;
-                case R.id.action_settings:
-                    onSettingsClick();
+                case R.id.action_app_settings:
+                    onAppSettingsClick();
+                    break;
+                case R.id.action_book_settings:
+                    onBookSettingsClick();
                     break;
                 case R.id.action_shuffle:
                     onShuffleClick();
@@ -367,9 +376,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     /**
-     * Show the viewer settings dialog
+     * Show the app viewer settings dialog
      */
-    private void onSettingsClick() {
+    private void onAppSettingsClick() {
         Intent intent = new Intent(requireActivity(), PrefsActivity.class);
 
         PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
@@ -377,6 +386,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         intent.putExtras(builder.getBundle());
 
         requireContext().startActivity(intent);
+    }
+
+    /**
+     * Show the book viewer settings dialog
+     */
+    private void onBookSettingsClick() {
+        BookPrefsDialogFragment.invoke(this, bookPreferences);
     }
 
     /**
@@ -469,6 +485,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             onBackClick();
             return;
         }
+        bookPreferences = content.getBookPreferences();
+        // Updating the same book may mean its preferences have changed and the display has to be updated
+        // Don't do that when content has changed since display is always updated when new images come in
+        if (contentId == content.getId())
+        {
+            //        onBrowseModeChange();
+            onUpdateImageDisplay();
+        }
+        contentId = content.getId();
+
         updateBookNavigation(content);
     }
 
@@ -596,7 +622,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * @param prefs Shared preferences object
      * @param key   Key that has been changed
      */
-    private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         switch (key) {
             case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
             case Preferences.Key.PREF_VIEWER_HOLD_TO_ZOOM:
@@ -610,6 +636,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             case Preferences.Key.PREF_VIEWER_SEPARATING_BARS:
             case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY:
             case Preferences.Key.PREF_VIEWER_AUTO_ROTATE: // TODO maybe use onBrowseModeChange which is supposed to recreate all viewholders
+            case Preferences.Key.PREF_VIEWER_RENDERING:
                 onUpdateImageDisplay();
                 break;
             case Preferences.Key.PREF_VIEWER_SWIPE_TO_FLING:
@@ -621,6 +648,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             default:
                 // Other changes aren't handled here
         }
+    }
+
+    public void onBookPreferenceChanged(@NonNull final Map<String,String> newPrefs) {
+        viewModel.updateBookPreferences(newPrefs);
     }
 
     private void onUpdatePrefsScreenOn() {

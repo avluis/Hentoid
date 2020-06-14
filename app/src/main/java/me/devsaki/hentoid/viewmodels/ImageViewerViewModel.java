@@ -23,6 +23,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -323,10 +324,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (img != null) {
             img.setFavourite(!img.isFavourite());
 
-            // Persist it in DB
+            // Persist in DB
             collectionDao.insertImageFile(img);
 
-            // Persist in it JSON
+            // Persist in JSON
             Content theContent = img.content.getTarget();
             if (!theContent.getJsonUri().isEmpty()) ContentHelper.updateJson(context, theContent);
             else ContentHelper.createJson(context, theContent);
@@ -423,9 +424,37 @@ public class ImageViewerViewModel extends AndroidViewModel {
         images.addSource(currentImageSource, imgs -> setImages(theContent, imgs));
     }
 
-    private Content postLoadProcessing(@NonNull Context context, @NonNull Content content) {
+    private void postLoadProcessing(@NonNull Context context, @NonNull Content content) {
         cacheJson(context, content);
-        return content;
+    }
+
+    public void updateBookPreferences(@NonNull final Map<String, String> newPrefs) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+        theContent.setBookPreferences(newPrefs);
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doUpdateContent(getApplication().getApplicationContext(), theContent))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Update is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    private void doUpdateContent(@NonNull final Context context, @NonNull final Content c) {
+        Helper.assertNonUiThread();
+
+        // Persist in DB
+        collectionDao.insertContent(c);
+        content.postValue(c);
+
+        // Persist in JSON
+        if (!c.getJsonUri().isEmpty()) ContentHelper.updateJson(context, c);
+        else ContentHelper.createJson(context, c);
     }
 
     // Cache JSON URI in the database to speed up favouriting

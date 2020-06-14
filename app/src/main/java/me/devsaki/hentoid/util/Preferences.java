@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.Theme;
 import timber.log.Timber;
@@ -307,8 +306,7 @@ public final class Preferences {
                 .apply();
     }
 
-    public static boolean isContentSmoothRendering(Content c) {
-        Map<String, String> bookPrefs = c.getBookPreferences();
+    public static boolean isContentSmoothRendering(Map<String, String> bookPrefs) {
         if (bookPrefs.containsKey(Key.PREF_VIEWER_RENDERING)) {
             String value = bookPrefs.get(Key.PREF_VIEWER_RENDERING);
             if (value != null) return isSmoothRendering(Integer.parseInt(value));
@@ -324,7 +322,7 @@ public final class Preferences {
         return (mode == Constant.PREF_VIEWER_RENDERING_SMOOTH && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
     }
 
-    private static int getViewerRenderingMode() {
+    public static int getViewerRenderingMode() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_RENDERING, Integer.toString(Default.PREF_VIEWER_RENDERING)) + "");
     }
 
