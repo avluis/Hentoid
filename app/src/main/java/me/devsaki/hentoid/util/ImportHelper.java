@@ -239,7 +239,7 @@ public class ImportHelper {
     }
 
     // Try and detect any ".Hentoid" or "Hentoid" folder inside the selected folder
-    private static DocumentFile getExistingHentoidDirFrom(@NonNull final Context context, @NonNull final DocumentFile root) {
+    public static DocumentFile getExistingHentoidDirFrom(@NonNull final Context context, @NonNull final DocumentFile root) {
         if (!root.exists() || !root.isDirectory() || null == root.getName()) return root;
 
         // Selected folder _is_ the Hentoid folder

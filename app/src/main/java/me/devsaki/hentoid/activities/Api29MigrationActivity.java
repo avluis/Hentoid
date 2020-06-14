@@ -24,6 +24,7 @@ import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.API29MigrationService;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -88,7 +89,11 @@ public class Api29MigrationActivity extends AppCompatActivity {
         DocumentFile storageDoc = (storageUri.isEmpty()) ? null : DocumentFile.fromTreeUri(this, Uri.parse(storageUri));
 
         // If the root folder is already set to a content:// URI (previous use of SAF picker), start scanning at once
-        if (storageDoc != null && storageDoc.exists()) scanLibrary(storageDoc);
+        if (storageDoc != null && storageDoc.exists()) {
+            // Make certain we have the actual Hentoid/.Hentoid folder (root URI can be set to its parent on certain devices)
+            storageDoc = ImportHelper.getExistingHentoidDirFrom(this, storageDoc);
+            scanLibrary(storageDoc);
+        }
             // else ask for the Hentoid folder, as PersistableUriPermission might not have been granted at all
             // (case of v11- app running on Android 10 with API28- target)
         else step1button.setVisibility(View.VISIBLE);
