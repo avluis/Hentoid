@@ -291,7 +291,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssView.setLongTapZoomEnabled(longTapZoomEnabled);
                 ssView.setAutoRotate(autoRotate);
                 if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
-                if (Preferences.isContentSmoothRendering(img.content.getTarget().getBookPreferences()))
+                if (img.content.getTarget() != null && Preferences.isContentSmoothRendering(img.content.getTarget().getBookPreferences()))
                     ssView.setRenderScript(rs);
                 else
                     ssView.setRenderScript(null);
