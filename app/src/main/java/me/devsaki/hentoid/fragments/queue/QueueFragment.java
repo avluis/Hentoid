@@ -472,7 +472,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         Content content = itemAdapter.getAdapterItem(0).getContent();
         if (null == content) return;
 
-        queueStatus.setText(MessageFormat.format(requireActivity().getString(R.string.queue_dl), content.getTitle()));
+        queueStatus.setText(getResources().getString(R.string.queue_dl, content.getTitle()));
     }
 
     /**
