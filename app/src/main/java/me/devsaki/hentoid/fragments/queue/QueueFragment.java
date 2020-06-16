@@ -39,7 +39,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -369,7 +368,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case DownloadEvent.EV_SKIP:
                 // Books switch / display handled directly by the adapter
-                updateBookTitle();
                 queueInfo.setText("");
                 dlPreparationProgressBar.setVisibility(View.GONE);
                 break;
