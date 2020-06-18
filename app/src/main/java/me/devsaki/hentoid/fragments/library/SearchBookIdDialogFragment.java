@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.library;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -40,12 +41,13 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
     private String bookId;
 
-    public static void invoke(FragmentManager fragmentManager, String id, ArrayList<Integer> siteCodes) {
+    public static void invoke(Context context, FragmentManager fragmentManager, String id, ArrayList<Integer> siteCodes) {
         Bundle args = new Bundle();
         args.putString(ID, id);
         args.putIntegerArrayList(FOUND_SITES, siteCodes);
 
         SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
+        ThemeHelper.setStyle(context, fragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         fragment.setArguments(args);
         fragment.show(fragmentManager, null);
     }
@@ -89,8 +91,6 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             fastAdapter.setOnClickListener((v, a, i, p) -> onItemSelected(i.getTag()));
 
             RecyclerView sitesRecycler = requireViewById(rootView, R.id.select_sites);
-            // Set programmatically because ?colorPrimary doesn't work here on kitKat
-            sitesRecycler.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.primary_light));
             sitesRecycler.setAdapter(fastAdapter);
         }
     }

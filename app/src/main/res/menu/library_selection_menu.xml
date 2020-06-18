@@ -2,31 +2,43 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".activities.DownloadsActivity"
-    tools:ignore="AlwaysShowAction">
+    tools:context=".activities.LibraryActivity"
+    tools:ignore="AlwaysShowAction"
+    tools:targetApi="o">
     <item
         android:id="@+id/action_delete"
         android:icon="@drawable/ic_action_delete_forever"
         android:title="@string/menu_delete_single"
+        android:tooltipText="@string/menu_delete_single"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_archive"
         android:icon="@drawable/ic_archive"
         android:title="@string/menu_archive"
+        android:tooltipText="@string/menu_archive_help"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_delete_sweep"
         android:icon="@drawable/ic_delete_sweep"
         android:title="@string/menu_delete_multi"
+        android:tooltipText="@string/menu_delete_multi"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_share"
         android:icon="@drawable/ic_action_share"
         android:title="@string/menu_share"
+        android:tooltipText="@string/menu_share_help"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_open_folder"
+        android:icon="@drawable/ic_folder"
+        android:title="@string/menu_open_folder"
+        android:tooltipText="@string/menu_open_folder"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_redownload"
-        android:icon="@drawable/ic_action_download"
-        android:title="@string/menu_redownload"
+        android:icon="@drawable/ic_action_download_scratch"
+        android:title="@string/menu_redownload_scratch"
+        android:tooltipText="@string/menu_redownload_scratch"
         app:showAsAction="ifRoom" />
 </menu>

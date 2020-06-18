@@ -17,9 +17,15 @@
         <item name="materialAlertDialogTheme">@style/Theme.Black.Dialog</item>
         <item name="dialogTheme">@style/Theme.Black.DialogFragment</item>
         <item name="android:dialogTheme">@style/Theme.Black.DialogFragment</item>
+        <!-- Custom items for specific places of the app -->
+        <item name="drawer_header_diagonal">@color/drawer_header_diagonal_black</item>
+        <item name="card_surface">@color/card_surface_black</item>
+        <item name="card_pressed">@color/card_pressed_black</item>
+        <item name="card_selected">@color/card_selected_black</item>
         <!-- Toolbar as ActionBar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:navigationBarColor">@color/black</item>
     </style>
 
     <!-- Picture viewer -->

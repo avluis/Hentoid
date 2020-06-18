@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Background drawable for standalone items that need focus/pressed states. -->
-    <attr name="item_background" format="reference" />
+    <!-- Custom style items -->
+    <attr name="drawer_header_diagonal" format="reference" />
+    <attr name="card_surface" format="reference" />
+    <attr name="card_pressed" format="reference" />
+    <attr name="card_selected" format="reference" />
 
     <declare-styleable name="MaxHeightRecyclerView">
         <attr name="maxHeight" format="dimension" />

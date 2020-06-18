@@ -29,7 +29,7 @@ public abstract class BaseParser implements ImageListParser {
         Timber.d("Gallery URL: %s", readerUrl);
 
         List<String> imgUrls = parseImages(content);
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(imgUrls, StatusContent.SAVED);
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(imgUrls, content.getCoverImageUrl(), StatusContent.SAVED);
 
         Timber.d("%s", images);
 
@@ -37,7 +37,7 @@ public abstract class BaseParser implements ImageListParser {
     }
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
-        return Optional.empty();
+        return Optional.of(new ImageFile(order, url, StatusContent.SAVED, maxPages));
     }
 
     void progressStart(int maxSteps) {

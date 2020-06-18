@@ -72,7 +72,7 @@ public class ErrorRecord {
     }
 
     public String getDescription() {
-        return description;
+        return (null == description) ? "" : description;
     }
 
     public Instant getTimestamp() {

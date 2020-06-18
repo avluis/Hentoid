@@ -8,8 +8,8 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle
-import me.devsaki.hentoid.events.ImportEvent
-import me.devsaki.hentoid.fragments.PreferenceFragment
+import me.devsaki.hentoid.events.ProcessEvent
+import me.devsaki.hentoid.fragments.preferences.PreferenceFragment
 import me.devsaki.hentoid.util.FileHelper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -22,6 +22,7 @@ class PrefsActivity : BaseActivity() {
 
         var rootKey: String? = null
         if (isViewerPrefs()) rootKey = "viewer"
+        else if (isDownloaderPrefs()) rootKey = "downloader"
         val fragment = PreferenceFragment.newInstance(rootKey)
 
         supportFragmentManager.commit {
@@ -35,6 +36,13 @@ class PrefsActivity : BaseActivity() {
         return if (intent.extras != null) {
             val parser = PrefsActivityBundle.Parser(intent.extras!!)
             parser.isViewerPrefs
+        } else false
+    }
+
+    private fun isDownloaderPrefs(): Boolean {
+        return if (intent.extras != null) {
+            val parser = PrefsActivityBundle.Parser(intent.extras!!)
+            parser.isDownloaderPrefs
         } else false
     }
 
@@ -52,9 +60,9 @@ class PrefsActivity : BaseActivity() {
         }
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onImportEventComplete(event: ImportEvent) {
-        if (ImportEvent.EV_COMPLETE == event.eventType && event.logFile != null) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onImportEventComplete(event: ProcessEvent) {
+        if (ProcessEvent.EventType.COMPLETE == event.eventType && event.logFile != null) {
             val contentView = findViewById<View>(android.R.id.content)
             val snackbar = Snackbar.make(contentView, R.string.task_done, BaseTransientBottomBar.LENGTH_LONG)
             snackbar.setAction("READ LOG") { FileHelper.openFile(this, event.logFile) }

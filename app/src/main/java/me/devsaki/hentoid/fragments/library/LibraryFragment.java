@@ -14,35 +14,42 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SimpleItemAnimator;
 
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
+import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
+import com.skydoves.balloon.ArrowOrientation;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -56,6 +63,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
@@ -77,16 +87,19 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.TooltipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.LibraryPager;
+import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent {
+public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent, SimpleSwipeCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -106,14 +119,22 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private TextView emptyText;
     // Action view associated with search menu button
     private SearchView mainSearchView;
-    // Bar with group that has the advancedSearchButton and its background View
-    private View advancedSearchBar;
-    // CLEAR button on the filter bar
-    private TextView searchClearButton;
     // Main view where books are displayed
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
+
+    // ==== Advanced search / sort bar
+    // Grey background of the advanced search / sort bar
+    private View advancedSearchBar;
+    // Advanced search text button
+    private View advancedSearchButton;
+    // CLEAR button
+    private TextView searchClearButton;
+    // Sort direction button
+    private ImageView sortDirectionButton;
+    // Sort field button
+    private TextView sortFieldButton;
 
     // === TOOLBAR
     private Toolbar toolbar;
@@ -121,13 +142,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
-    // "Sort" button on top menu
-    private MenuItem orderMenu;
     // === SELECTION TOOLBAR
     private Toolbar selectionToolbar;
     private MenuItem itemDelete;
     private MenuItem itemShare;
     private MenuItem itemArchive;
+    private MenuItem itemFolder;
     private MenuItem itemDeleteSwipe;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
@@ -135,6 +155,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
     private FastAdapter<ContentItem> fastAdapter;
     private SelectExtension<ContentItem> selectExtension;
+    // Helper used for swiping items
+    private ItemTouchHelper touchHelper;
 
 
     // ======== VARIABLES
@@ -156,6 +178,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    // Used to auto-hide the sort controls bar when no activity is detected
+    private final Debouncer<Boolean> sortCommandsAutoHide = new Debouncer<>(2500, this::hideSearchSortBar);
 
 
     // === SEARCH PARAMETERS
@@ -181,8 +205,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
                     && oldItem.getSite().equals(newItem.getSite())
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
-                    && oldItem.isBeingFavourited() == newItem.isBeingFavourited()
-                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
+//                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
                     && oldItem.isFavourite() == newItem.isFavourite();
         }
 
@@ -194,12 +217,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
             }
-            if (oldItem.isBeingFavourited() != newItem.isBeingFavourited()) {
-                diffBundleBuilder.setIsBeingFavourited(newItem.isBeingFavourited());
-            }
+            /*
             if (oldItem.isBeingDeleted() != newItem.isBeingDeleted()) {
                 diffBundleBuilder.setIsBeingDeleted(newItem.isBeingDeleted());
             }
+             */
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
             }
@@ -209,37 +231,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         }
 
     }).build();
-
-
-    /**
-     * Get the icon resource ID according to the sort order code
-     */
-    private static int getIconFromSortOrder(int sortOrder) {
-        switch (sortOrder) {
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
-                return R.drawable.ic_menu_sort_321;
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
-                return R.drawable.ic_menu_sort_123;
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
-                return R.drawable.ic_menu_sort_az;
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
-                return R.drawable.ic_menu_sort_za;
-            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
-                return R.drawable.ic_menu_sort_unread;
-            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
-                return R.drawable.ic_menu_sort_read;
-            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
-                return R.drawable.ic_menu_sort_last_read;
-            case Preferences.Constant.ORDER_CONTENT_PAGES_DESC:
-                return R.drawable.ic_menu_sort_pages_desc;
-            case Preferences.Constant.ORDER_CONTENT_PAGES_ASC:
-                return R.drawable.ic_menu_sort_pages_asc;
-            case Preferences.Constant.ORDER_CONTENT_RANDOM:
-                return R.drawable.ic_menu_sort_random;
-            default:
-                return R.drawable.ic_error;
-        }
-    }
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -266,8 +257,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_library, container, false);
 
-        viewModel = new ViewModelProvider(requireActivity()).get(LibraryViewModel.class);
         Preferences.registerPrefsChangedListener(prefsListener);
+
+        ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
 
         initUI(rootView);
 
@@ -288,6 +281,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
 
         viewModel.updateOrder(); // Trigger a blank search
+
+        // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
+        if (Preferences.isFirstRunProcessComplete())
+            TooltipUtil.showTooltip(requireContext(), R.string.help_search, ArrowOrientation.TOP, toolbar, getViewLifecycleOwner());
+        // Display pager tooltip
+        if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
     }
 
     /**
@@ -299,29 +298,80 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
 
         // Search bar
-        advancedSearchBar = requireViewById(rootView, R.id.advanced_search_group);
+        advancedSearchBar = requireViewById(rootView, R.id.advanced_search_background);
 
-        TextView advancedSearchButton = requireViewById(rootView, R.id.advanced_search_btn);
+        // Link to advanced search
+        advancedSearchButton = requireViewById(rootView, R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
+        // Clear search
         searchClearButton = requireViewById(rootView, R.id.search_clear_btn);
         searchClearButton.setOnClickListener(v -> {
             query = "";
             mainSearchView.setQuery("", false);
             metadata.clear();
-            searchClearButton.setVisibility(View.GONE);
+            hideSearchSortBar(false);
             viewModel.searchUniversal("");
-            advancedSearchBar.setVisibility(View.GONE);
         });
+
+        // Sort controls
+        sortDirectionButton = requireViewById(rootView, R.id.sort_direction_btn);
+        sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_up : R.drawable.ic_simple_arrow_down);
+        sortDirectionButton.setOnClickListener(v -> {
+            boolean sortDesc = !Preferences.isContentSortDesc();
+            Preferences.setContentSortDesc(sortDesc);
+            // Update icon
+            sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_up : R.drawable.ic_simple_arrow_down);
+            // Run a new search
+            viewModel.updateOrder();
+            sortCommandsAutoHide.submit(true);
+        });
+        sortFieldButton = requireViewById(rootView, R.id.sort_field_btn);
+        sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
+        sortFieldButton.setOnClickListener(v -> {
+            // Load and display the field popup menu
+            PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
+            popup.getMenuInflater()
+                    .inflate(R.menu.library_sort_menu, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+                // Update button text
+                sortFieldButton.setText(item.getTitle());
+                item.setChecked(true);
+                int fieldCode = getFieldCodeFromMenuId(item.getItemId());
+                if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM)
+                    RandomSeedSingleton.getInstance().renewSeed();
+
+                Preferences.setContentSortField(fieldCode);
+                // Run a new search
+                viewModel.updateOrder();
+                sortCommandsAutoHide.submit(true);
+                return true;
+            });
+            popup.show(); //showing popup menu
+            sortCommandsAutoHide.submit(true);
+        }); //closing the setOnClickListener method
 
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
+        new FastScrollerBuilder(recyclerView).build();
 
         // Disable blink animation on card change (bind holder)
+        // Disabled because with it, swiped undo panel doesn't appear
+        // TODO test if everything's alright with that off
+        /*
         RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
         if (animator instanceof SimpleItemAnimator)
             ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+*/
+
+        // Swiping
+        SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
+                this,
+                requireContext().getDrawable(R.drawable.ic_action_delete_forever));
+
+        touchHelper = new ItemTouchHelper(swipeCallback);
+        touchHelper.attachToRecyclerView(recyclerView);
 
         // Pager
         pager.initUI(rootView);
@@ -333,12 +383,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Activity activity = requireActivity();
         toolbar.setNavigationOnClickListener(v -> ((LibraryActivity) activity).openNavigationDrawer());
 
-        orderMenu = toolbar.getMenu().findItem(R.id.action_order);
         searchMenu = toolbar.getMenu().findItem(R.id.action_search);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                advancedSearchBar.setVisibility(View.VISIBLE);
+                showSearchSortBar(true, false, null);
                 invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
@@ -356,7 +405,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 if (!isSearchQueryActive()) {
-                    advancedSearchBar.setVisibility(View.GONE);
+                    hideSearchSortBar(false);
                 }
                 invalidateNextQueryTextChange = true;
                 return true;
@@ -393,9 +442,48 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return true;
             }
         });
+    }
 
-        // Set the starting book sort icon according to the current sort order
-        orderMenu.setIcon(getIconFromSortOrder(Preferences.getContentSortOrder()));
+    private int getFieldCodeFromMenuId(@IdRes int menuId) {
+        switch (menuId) {
+            case (R.id.sort_title):
+                return Preferences.Constant.ORDER_FIELD_TITLE;
+            case (R.id.sort_artist):
+                return Preferences.Constant.ORDER_FIELD_ARTIST;
+            case (R.id.sort_pages):
+                return Preferences.Constant.ORDER_FIELD_NB_PAGES;
+            case (R.id.sort_dl_date):
+                return Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE;
+            case (R.id.sort_read_date):
+                return Preferences.Constant.ORDER_FIELD_READ_DATE;
+            case (R.id.sort_reads):
+                return Preferences.Constant.ORDER_FIELD_READS;
+            case (R.id.sort_random):
+                return Preferences.Constant.ORDER_FIELD_RANDOM;
+            default:
+                return Preferences.Constant.ORDER_FIELD_NONE;
+        }
+    }
+
+    private int getNameFromFieldCode(int prefFieldCode) {
+        switch (prefFieldCode) {
+            case (Preferences.Constant.ORDER_FIELD_TITLE):
+                return R.string.sort_title;
+            case (Preferences.Constant.ORDER_FIELD_ARTIST):
+                return R.string.sort_artist;
+            case (Preferences.Constant.ORDER_FIELD_NB_PAGES):
+                return R.string.sort_pages;
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
+                return R.string.sort_dl_date;
+            case (Preferences.Constant.ORDER_FIELD_READ_DATE):
+                return R.string.sort_read_date;
+            case (Preferences.Constant.ORDER_FIELD_READS):
+                return R.string.sort_reads;
+            case (Preferences.Constant.ORDER_FIELD_RANDOM):
+                return R.string.sort_random;
+            default:
+                return R.string.sort_invalid;
+        }
     }
 
     /**
@@ -405,58 +493,53 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * @param menuItem Toolbar of the fragment
      */
     private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
-        int contentSortOrder;
         switch (menuItem.getItemId()) {
-            case R.id.action_order_AZ:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA;
-                break;
-            case R.id.action_order_321:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST;
-                break;
-            case R.id.action_order_ZA:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED;
-                break;
-            case R.id.action_order_123:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST;
-                break;
-            case R.id.action_order_least_read:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LEAST_READ;
-                break;
-            case R.id.action_order_most_read:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_MOST_READ;
-                break;
-            case R.id.action_order_last_read:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_READ;
-                break;
-            case R.id.action_order_pages_desc:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_PAGES_DESC;
-                break;
-            case R.id.action_order_pages_asc:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_PAGES_ASC;
-                break;
-            case R.id.action_order_random:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_RANDOM;
-                RandomSeedSingleton.getInstance().renewSeed();
-                break;
             case R.id.action_favourites:
-                contentSortOrder = Preferences.Constant.ORDER_CONTENT_FAVOURITE;
                 menuItem.setChecked(!menuItem.isChecked());
+                updateFavouriteFilter();
+                viewModel.toggleFavouriteFilter();
+                break;
+            case R.id.action_order:
+                showSearchSortBar(null, null, true);
+                sortCommandsAutoHide.submit(true);
                 break;
             default:
                 return false;
         }
+        return true;
+    }
 
-        // If favourite is selected, apply the filter
-        if (Preferences.Constant.ORDER_CONTENT_FAVOURITE == contentSortOrder) {
-            updateFavouriteFilter();
-            viewModel.toggleFavouriteFilter();
-        } else { // Update the order menu icon and run a new search
-            orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
-            Preferences.setContentSortOrder(contentSortOrder);
-            viewModel.updateOrder();
+    private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
+        advancedSearchBar.setVisibility(View.VISIBLE);
+        if (showAdvancedSearch != null)
+            advancedSearchButton.setVisibility(showAdvancedSearch ? View.VISIBLE : View.GONE);
+
+        if (showClear != null)
+            searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
+
+        if (showSort != null) {
+            if (showSort) searchClearButton.setVisibility(View.GONE);
+            sortDirectionButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
+            sortFieldButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    private void hideSearchSortBar(boolean hideSortOnly) {
+        boolean isSearchVisible = (View.VISIBLE == advancedSearchButton.getVisibility() || View.VISIBLE == searchClearButton.getVisibility());
+
+        if (!hideSortOnly || !isSearchVisible)
+            advancedSearchBar.setVisibility(View.GONE);
+
+        if (!hideSortOnly) {
+            advancedSearchButton.setVisibility(View.GONE);
+            searchClearButton.setVisibility(View.GONE);
         }
 
-        return true;
+        sortDirectionButton.setVisibility(View.GONE);
+        sortFieldButton.setVisibility(View.GONE);
+
+        // Restore CLEAR button if it's needed
+        if (hideSortOnly && isSearchQueryActive()) searchClearButton.setVisibility(View.VISIBLE);
     }
 
     private void initSelectionToolbar(@NonNull View rootView) {
@@ -469,6 +552,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemDelete = selectionToolbar.getMenu().findItem(R.id.action_delete);
         itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
         itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
+        itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         itemDeleteSwipe = selectionToolbar.getMenu().findItem(R.id.action_delete_sweep);
     }
 
@@ -485,8 +569,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             case R.id.action_archive:
                 archiveSelectedItems();
                 break;
+            case R.id.action_open_folder:
+                openItemFolder();
+                break;
             case R.id.action_redownload:
-                redownloadSelectedItems();
+                askRedownloadSelectedItemsScratch();
                 keepToolbar = true;
                 break;
             default:
@@ -503,9 +590,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemDelete.setVisible(!isMultipleSelection);
         itemShare.setVisible(!isMultipleSelection);
         itemArchive.setVisible(!isMultipleSelection);
+        itemFolder.setVisible(!isMultipleSelection);
         itemDeleteSwipe.setVisible(isMultipleSelection);
 
-        selectionToolbar.setTitle(selectedCount + (selectedCount > 1 ? " items selected" : " item selected"));
+        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
     }
 
     /**
@@ -540,14 +628,45 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (1 == selectedItems.size() && context != null) {
             ToastUtil.toast(R.string.packaging_content);
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
-            if (c != null) viewModel.archiveContent(c, this::onContentArchiveSuccess);
+            if (c != null) {
+                if (c.getStorageUri().isEmpty()) {
+                    ToastUtil.toast(R.string.folder_undefined);
+                    return;
+                }
+                viewModel.archiveContent(c, this::onContentArchiveSuccess);
+            }
+        }
+    }
+
+    /**
+     * Callback for the "open containing folder" action button
+     */
+    private void openItemFolder() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        Context context = getActivity();
+        if (1 == selectedItems.size() && context != null) {
+            Content c = Stream.of(selectedItems).findFirst().get().getContent();
+            if (c != null) {
+                if (c.getStorageUri().isEmpty()) {
+                    ToastUtil.toast(R.string.folder_undefined);
+                    return;
+                }
+
+                Uri folderUri = Uri.parse(c.getStorageUri());
+                DocumentFile folder = DocumentFile.fromTreeUri(requireContext(), folderUri);
+                if (folder != null && folder.exists()) {
+                    selectExtension.deselect();
+                    selectionToolbar.setVisibility(View.GONE);
+                    FileHelper.openFile(requireContext(), folder);
+                }
+            }
         }
     }
 
     /**
      * Callback for the "redownload from scratch" action button
      */
-    private void redownloadSelectedItems() {
+    private void askRedownloadSelectedItemsScratch() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
 
         int securedContent = 0;
@@ -618,7 +737,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      *
      * @param items Items to be deleted if the answer is yes
      */
-    private void askDeleteItems(final List<Content> items) {
+    private void askDeleteItems(@NonNull final List<Content> items) {
         Context context = getActivity();
         if (null == context) return;
 
@@ -628,18 +747,28 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
-                            viewModel.deleteItems(items, this::onDeleteSuccess, this::onDeleteError);
+                            onDeleteBooks(items);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog, which) -> selectExtension.deselect())
                 .create().show();
     }
 
-    /**
-     * Callback for the success of the "delete item" action
-     */
-    private void onDeleteSuccess() {
-        ToastUtil.toast("Selected items have been deleted.");
+    private void onDeleteSwipedBook(@NonNull final ContentItem item) {
+        // Deleted book is the last selected books => disable selection mode
+        if (item.isSelected()) {
+            selectExtension.deselect(item);
+            if (selectExtension.getSelectedItems().isEmpty())
+                selectionToolbar.setVisibility(View.GONE);
+        }
+
+        List<Content> items = new ArrayList<>();
+        items.add(item.getContent());
+        onDeleteBooks(items);
+    }
+
+    private void onDeleteBooks(@NonNull final List<Content> items) {
+        viewModel.deleteItems(items, this::onDeleteError);
     }
 
     /**
@@ -653,7 +782,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             viewModel.flagContentDelete(e.getContent(), false);
             List<Content> contents = new ArrayList<>();
             contents.add(e.getContent());
-            snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::onDeleteSuccess, this::onDeleteError));
+            snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::onDeleteError));
             snackbar.show();
         }
     }
@@ -805,10 +934,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isEndless) { // Endless mode
             pager.hide();
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(false), ContentItem::new);
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
-            ContentItem item = new ContentItem(false);
+            ContentItem item = new ContentItem(ContentItem.ViewType.LIBRARY);
             fastAdapter.registerItemFactory(item.getType(), item);
 
             itemAdapter = null;
@@ -944,8 +1073,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         int minIndex = bounds.getLeft();
         int maxIndex = bounds.getRight();
 
-        //noinspection Convert2MethodRef need API24
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).filter(c -> c != null).map(ContentItem::new).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }
@@ -980,8 +1108,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         // Update visibility of advanced search bar
         if (isSearchQueryActive()) {
-            advancedSearchBar.setVisibility(View.VISIBLE);
-            searchClearButton.setVisibility(View.VISIBLE);
+            showSearchSortBar(true, true, false);
             if (!result.isEmpty() && searchMenu != null) searchMenu.collapseActionView();
         } else {
             searchClearButton.setVisibility(View.GONE);
@@ -996,7 +1123,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                     .map(Site::getCode)
                     .collect(toCollection(ArrayList::new));
 
-            SearchBookIdDialogFragment.invoke(getParentFragmentManager(), query, siteCodes);
+            SearchBookIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
         }
 
         // If the update is the result of a new search, get back on top of the list
@@ -1050,7 +1177,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             if (!invalidateNextBookClick && item.getContent() != null && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
                 //ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
-        	    ContentHelper.open(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
+                //ContentHelper.open(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
+                Single.fromCallable(() -> ContentHelper.open(requireContext(), item.getContent(), viewModel.getSearchManagerBundle()))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe();
             } else invalidateNextBookClick = false;
 
             return true;
@@ -1105,7 +1236,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (Preferences.isQueueAutostart())
             ContentQueueManager.getInstance().resumeQueue(getContext());
 
-        Snackbar snackbar = Snackbar.make(recyclerView, R.string.add_to_queue, BaseTransientBottomBar.LENGTH_LONG);
+        String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
+        Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
         snackbar.setAction("VIEW QUEUE", v -> viewQueue());
         snackbar.show();
     }
@@ -1172,5 +1304,33 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private int getTopItemPosition() {
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
+    }
+
+    private IAdapter<ContentItem> getItemAdapter() {
+        if (itemAdapter != null) return itemAdapter;
+        else return pagedItemAdapter;
+    }
+
+    @Override
+    public void itemSwiped(int position, int direction) {
+        ContentItem item = getItemAdapter().getAdapterItem(position);
+
+        item.setSwipeDirection(direction);
+
+        if (item.getContent() != null) {
+            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(2000, this::onDeleteSwipedBook);
+            deleteDebouncer.submit(item);
+
+            Runnable cancelSwipe = () -> {
+                deleteDebouncer.clear();
+                item.setSwipeDirection(0);
+
+                int position1 = getItemAdapter().getAdapterPosition(item);
+                if (position1 != RecyclerView.NO_POSITION)
+                    fastAdapter.notifyItemChanged(position1);
+            };
+            item.setUndoSwipeAction(cancelSwipe);
+            fastAdapter.notifyItemChanged(position);
+        }
     }
 }

@@ -15,6 +15,19 @@
         <item>100</item>
     </string-array>
 
+    <string-array name="pref_dl_size_wifi_threshold_entries">
+        <item>20 MB</item>
+        <item>40 MB</item>
+        <item>100 MB</item>
+        <item>200 MB</item>
+    </string-array>
+    <string-array name="pref_dl_size_wifi_threshold_values">
+        <item>20</item>
+        <item>40</item>
+        <item>100</item>
+        <item>200</item>
+    </string-array>
+
     <string-array name="pref_dl_threads_quantity_entries">
         <item>Auto (default)</item>
         <item>2 (slow internet)</item>
@@ -183,6 +196,15 @@
         <item>0</item>
         <item>1</item>
         <item>2</item>
+    </string-array>
+
+    <string-array name="pref_viewer_rendering_entries">
+        <item>Sharp rendering (default)</item>
+        <item>Smooth rendering</item>
+    </string-array>
+    <string-array name="pref_viewer_rendering_values">
+        <item>0</item>
+        <item>1</item>
     </string-array>
 
     <string-array name="pref_lock_timer_entries">

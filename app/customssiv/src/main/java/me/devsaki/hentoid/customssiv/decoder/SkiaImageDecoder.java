@@ -15,6 +15,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class SkiaImageDecoder implements ImageDecoder {
 
     @Override
     @NonNull
-    public Bitmap decode(@NonNull final Context context, @NonNull final Uri uri) throws Exception {
+    public Bitmap decode(@NonNull final Context context, @NonNull final Uri uri) throws IOException, PackageManager.NameNotFoundException {
         String uriString = uri.toString();
         BitmapFactory.Options options = new BitmapFactory.Options();
         Bitmap bitmap;
@@ -94,17 +95,10 @@ public class SkiaImageDecoder implements ImageDecoder {
         } else if (uriString.startsWith(FILE_PREFIX)) {
             bitmap = BitmapFactory.decodeFile(uriString.substring(FILE_PREFIX.length()), options);
         } else {
-            InputStream inputStream = null;
-            try {
-                ContentResolver contentResolver = context.getContentResolver();
-                inputStream = contentResolver.openInputStream(uri);
-                bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (Exception e) { /* Ignore */ }
-                }
+            try (InputStream input = context.getContentResolver().openInputStream(uri)) {
+                if (input == null)
+                    throw new RuntimeException("Content resolver returned null stream. Unable to initialise with uri.");
+                bitmap = BitmapFactory.decodeStream(input, null, options);
             }
         }
         if (bitmap == null) {

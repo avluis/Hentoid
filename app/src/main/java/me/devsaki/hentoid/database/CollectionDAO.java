@@ -3,12 +3,16 @@ package me.devsaki.hentoid.database;
 import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.paging.PagedList;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -27,35 +31,62 @@ public interface CollectionDAO {
 
     // Low-level operations
 
+    @Nullable
     Content selectContent(long id);
 
+    @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url);
 
-    void insertContent(@NonNull final Content content);
+    long insertContent(@NonNull final Content content);
 
     void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo);
 
     void deleteContent(@NonNull final Content content);
+
+    List<ErrorRecord> selectErrorRecordByContentId(long contentId);
 
     void insertErrorRecord(@NonNull final ErrorRecord record);
 
     void deleteErrorRecords(long contentId);
 
 
+    // MASS OPERATIONS
+
+    long countAllLibraryBooks(boolean favsOnly);
+
+    List<Content> selectAllLibraryBooks(boolean favsOnly);
+
+    void deleteAllLibraryBooks(boolean resetRemainingImagesStatus);
+
+    void deleteAllErrorBooksWithJson();
+
+    long countAllQueueBooks();
+
+    List<Content> selectAllQueueBooks();
+
+    void deleteAllQueuedBooks();
+
+
     // High-level queries
 
-    Single<List<Long>> getRecentBookIds(int orderStyle, boolean favouritesOnly);
+    Single<List<Long>> getStoredBookIds(boolean nonFavouriteOnly, boolean includeQueued);
 
-    Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly);
+    Single<List<Long>> getRecentBookIds(int orderField, boolean orderDesc, boolean favouritesOnly);
 
-    Single<List<Long>> searchBookIdsUniversal(String query, int orderStyle, boolean favouritesOnly);
+    Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly);
+
+    Single<List<Long>> searchBookIdsUniversal(String query, int orderField, boolean orderDesc, boolean favouritesOnly);
 
 
-    LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderStyle, boolean favouritesOnly, boolean loadAll);
+    LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
-    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderStyle, boolean favouritesOnly, boolean loadAll);
+    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
-    LiveData<PagedList<Content>> getRecentBooks(int orderStyle, boolean favouritesOnly, boolean loadAll);
+    LiveData<PagedList<Content>> getRecentBooks(int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
+
+
+    LiveData<PagedList<Content>> getErrorContent();
+
 
     LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly);
 
@@ -70,7 +101,7 @@ public interface CollectionDAO {
 
     void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo);
 
-    void updateImageFileStatusParamsMimeType(@NonNull ImageFile image);
+    void updateImageFileStatusParamsMimeTypeUriSize(@NonNull ImageFile image);
 
     void deleteImageFile(@NonNull ImageFile img);
 
@@ -78,22 +109,22 @@ public interface CollectionDAO {
 
     LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id);
 
-    SparseIntArray countProcessedImagesById(long contentId);
+    Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId);
 
 
     // QUEUE
 
     List<QueueRecord> selectQueue();
 
-    void updateQueue(long contentId, int newOrder);
+    LiveData<List<QueueRecord>> getQueueContent();
+
+    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
+
+    void updateQueue(@NonNull List<QueueRecord> queue);
 
     void deleteQueue(@NonNull Content content);
 
     void deleteQueue(int index);
-
-    LiveData<PagedList<QueueRecord>> getQueueContent();
-
-    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
 
 
     // ATTRIBUTES
@@ -122,8 +153,16 @@ public interface CollectionDAO {
     void cleanup();
 
 
+    // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
+
+    Single<List<Long>> getOldStoredBookIds();
+
+    long countOldStoredContent();
+
+
     // RESULTS STRUCTURES
-    @SuppressWarnings("squid:S1104") // This is a dumb struct class, nothing more
+    @SuppressWarnings("squid:S1104")
+            // This is a dumb struct class, nothing more
     class AttributeQueryResult {
         public List<Attribute> attributes = new ArrayList<>();
         public long totalSelectedAttributes = 0;

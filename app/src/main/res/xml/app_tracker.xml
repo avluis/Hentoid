@@ -34,7 +34,6 @@
     <screenName name="me.devsaki.hentoid.activities.UnlockActivity">Launch: App Lock</screenName>
 
     <screenName name="me.devsaki.hentoid.activities.AboutActivity">Misc: About</screenName>
-    <screenName name="me.devsaki.hentoid.activities.ImportActivity">Misc: Import</screenName>
     <screenName name="me.devsaki.hentoid.activities.PrefsActivity">Misc: Prefs</screenName>
 
     <!-- See Project Structure -> Analytics -> Google Analytics -> Learn More

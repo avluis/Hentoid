@@ -9,10 +9,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,7 +93,7 @@ public class ErrorsDialogFragment extends DialogFragment {
         if (null == context) return;
         if (null == content.getImageFiles()) return;
 
-        images = content.getImageFiles().size();
+        images = content.getImageFiles().size() - 1; // Don't count the cover
 
         for (ImageFile imgFile : content.getImageFiles())
             if (imgFile.getStatus() == StatusContent.ERROR) imgErrors++;
@@ -106,6 +106,16 @@ public class ErrorsDialogFragment extends DialogFragment {
         TextView details = rootView.findViewById(R.id.redownload_detail);
         String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
         details.setText(message);
+
+        if (content.getErrorLog() != null && !content.getErrorLog().isEmpty()) {
+            TextView firstErrorTxt = rootView.findViewById(R.id.redownload_detail_first_error);
+            ErrorRecord firstError = content.getErrorLog().get(0);
+            message = String.format("First error : %s", firstError.getType().getName());
+            if (!firstError.getDescription().isEmpty())
+                message += String.format(" - %s", firstError.getDescription());
+            firstErrorTxt.setText(message);
+            firstErrorTxt.setVisibility(View.VISIBLE);
+        }
     }
 
     private LogUtil.LogInfo createLog(@NonNull final Content content) {
@@ -131,13 +141,13 @@ public class ErrorsDialogFragment extends DialogFragment {
         ToastUtil.toast(R.string.redownload_generating_log_file);
 
         LogUtil.LogInfo logInfo = createLog(content);
-        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null) FileHelper.openFile(requireContext(), logFile);
     }
 
     private void shareErrorLog(@NonNull final Content content) {
         LogUtil.LogInfo logInfo = createLog(content);
-        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null)
             FileHelper.shareFile(requireContext(), logFile, "Error log for book ID " + content.getUniqueSiteId());
     }

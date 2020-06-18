@@ -22,7 +22,7 @@ public class ASMHentaiContent implements ContentParser {
     private String galleryUrl;
     @Selector(value = "div.cover a img", attr = "src")
     private String coverUrl;
-    @Selector("div.info h1:first-child")
+    @Selector(value = "div.info h1:first-child", defValue = "<no title>")
     private String title;
     @Selector("div.pages h3")
     private List<String> pages;

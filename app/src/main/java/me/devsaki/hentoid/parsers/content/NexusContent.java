@@ -21,7 +21,7 @@ public class NexusContent implements ContentParser {
     private String galleryUrl;
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
-    @Selector("h1.title")
+    @Selector(value = "h1.title", defValue = "<no title>")
     private String title;
     @Selector("table.view-page-details")
     private List<Element> information;

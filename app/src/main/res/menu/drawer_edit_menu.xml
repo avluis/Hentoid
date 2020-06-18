@@ -3,15 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".activities.DrawerEditActivity"
-    tools:ignore="AlwaysShowAction">
+    tools:ignore="AlwaysShowAction"
+    tools:targetApi="o">
     <item
         android:id="@+id/action_check_all"
-        android:icon="@drawable/ic_check"
-        android:title="@string/menu_search"
+        android:icon="@drawable/ic_check_square"
+        android:title="@string/select_all"
+        android:tooltipText="@string/select_all"
         app:showAsAction="collapseActionView|always" />
     <item
         android:id="@+id/action_uncheck_all"
         android:icon="@drawable/ic_uncheck"
-        android:title="@string/menu_fav"
+        android:title="@string/select_none"
+        android:tooltipText="@string/select_none"
         app:showAsAction="collapseActionView|always" />
 </menu>

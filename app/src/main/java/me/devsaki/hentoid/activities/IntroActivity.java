@@ -1,20 +1,16 @@
 package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro2;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
-import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.fragments.intro.EndIntroFragment;
@@ -23,15 +19,8 @@ import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment;
 import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment;
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment;
-import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
-import timber.log.Timber;
-
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_INDEFINITE;
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_SHORT;
-import static me.devsaki.hentoid.util.ConstsImport.RESULT_KEY;
 
 /**
  * Created by avluis on 03/20/2016.
@@ -77,15 +66,9 @@ public class IntroActivity extends AppIntro2 {
         getPager().goToNextSlide();
     }
 
-    public void onDefaultStorageSelected() {
-        Intent defaultDir = new Intent(this, ImportActivity.class);
-        defaultDir.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
-    }
-
-    public void onCustomStorageSelected() {
-        Intent customDir = new Intent(this, ImportActivity.class);
-        startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
+    public void nextStep() {
+        getPager().goToNextSlide();
+        setButtonState(nextButton, false);
     }
 
     public void setThemePrefs(int pref) {
@@ -108,21 +91,7 @@ public class IntroActivity extends AppIntro2 {
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
     }
-
-    // Callback from the directory chooser
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == ConstsImport.RQST_IMPORT_RESULTS) {
-            Timber.d("REQUEST RESULT RECEIVED");
-            if (data != null && data.getStringExtra(RESULT_KEY) != null) {
-                String result = data.getStringExtra(RESULT_KEY);
-                resultHandler(resultCode, result);
-            }
-        }
-    }
-
+/*
     private void resultHandler(int resultCode, String result) {
         if (resultCode == RESULT_OK) {
             Timber.d("RESULT_OK: %s", result);
@@ -162,4 +131,5 @@ public class IntroActivity extends AppIntro2 {
         Intent appSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, uri);
         startActivityForResult(appSettings, ConstsImport.RQST_APP_SETTINGS);
     }
+    */
 }

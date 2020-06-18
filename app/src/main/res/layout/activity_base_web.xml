@@ -43,7 +43,7 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/please_wait" />
+            tools:text="@string/importing_please_wait" />
 
         <ImageView
             android:id="@+id/web_alert_icon"
@@ -51,9 +51,9 @@
             android:layout_height="48dp"
             android:layout_margin="8dp"
             android:src="@drawable/ic_nuclear"
-            android:tint="@color/white_opacity_66"
             app:layout_constraintStart_toStartOf="@id/web_alert_txt"
             app:layout_constraintTop_toTopOf="@id/web_alert_txt"
+            app:tint="@color/white_opacity_66"
             tools:ignore="ContentDescription" />
 
         <ImageView
@@ -95,10 +95,8 @@
         android:background="?colorPrimary"
         app:itemIconTint="@color/white"
         app:itemTextColor="@color/white"
-        app:menu="@menu/web_menu_bottom"
         app:labelVisibilityMode="unlabeled"
-        app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"
-        app:layout_scrollFlags="scroll|enterAlways"
-        />
+        app:layout_behavior="me.devsaki.hentoid.widget.BottomNavigationBehavior"
+        app:menu="@menu/web_menu_bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

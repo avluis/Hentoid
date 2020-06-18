@@ -7,11 +7,12 @@ import javax.annotation.Nonnull;
 /**
  * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.PrefsActivity}
  * through a Bundle
- *
+ * <p>
  * Use Builder class to set data; use Parser class to get data
  */
 public class PrefsActivityBundle {
     private static final String KEY_IS_VIEWER_PREFS = "isViewer";
+    private static final String KEY_IS_DOWNLOADER_PREFS = "isDownloader";
 
     private PrefsActivityBundle() {
         throw new UnsupportedOperationException();
@@ -23,6 +24,10 @@ public class PrefsActivityBundle {
 
         public void setIsViewerPrefs(boolean isViewerPrefs) {
             bundle.putBoolean(KEY_IS_VIEWER_PREFS, isViewerPrefs);
+        }
+
+        public void setIsDownloaderPrefs(boolean isDownloaderPrefs) {
+            bundle.putBoolean(KEY_IS_DOWNLOADER_PREFS, isDownloaderPrefs);
         }
 
         public Bundle getBundle() {
@@ -40,6 +45,10 @@ public class PrefsActivityBundle {
 
         public boolean isViewerPrefs() {
             return bundle.getBoolean(KEY_IS_VIEWER_PREFS, false);
+        }
+
+        public boolean isDownloaderPrefs() {
+            return bundle.getBoolean(KEY_IS_DOWNLOADER_PREFS, false);
         }
     }
 }

@@ -19,7 +19,7 @@
         android:id="@+id/btnStart"
         android:layout_width="?android:attr/actionBarSize"
         android:layout_height="?android:attr/actionBarSize"
-        android:background="@drawable/selector_button_bg"
+        android:background="@drawable/selector_button_solid"
         android:scaleType="fitXY"
         android:src="@drawable/ic_action_play"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -30,7 +30,7 @@
         android:id="@+id/btnPause"
         android:layout_width="?android:attr/actionBarSize"
         android:layout_height="?android:attr/actionBarSize"
-        android:background="@drawable/selector_button_bg"
+        android:background="@drawable/selector_button_solid"
         android:scaleType="fitXY"
         android:src="@drawable/ic_action_pause"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -74,21 +74,6 @@
         app:layout_constraintStart_toStartOf="@id/queueStatus"
         app:layout_constraintTop_toBottomOf="@id/queueStatus"
         tools:text="@string/app_intro" />
-
-    <ImageButton
-        android:id="@+id/btnStats"
-        android:layout_width="18dp"
-        android:layout_height="18dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/selector_button_bg"
-        android:scaleType="fitXY"
-        android:src="@drawable/ic_error"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:ignore="ContentDescription"
-        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/horizontal_barrier"

@@ -9,7 +9,7 @@
         android:id="@+id/drawer_header"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@drawable/nav_header_bg"
+        android:background="@drawable/bg_nav_header"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintBottom_toBottomOf="@id/app_logo"

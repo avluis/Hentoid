@@ -103,6 +103,7 @@ public class IntentActivity extends AppCompatActivity {
             case DOUJINS:
             case LUSCIOUS:
             case PORNCOMIX:
+            case HENTAI2READ:
                 return toParse;
             default:
                 return null;

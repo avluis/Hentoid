@@ -21,14 +21,14 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ParseException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 /**
  * Created by neko on 08/07/2015.
@@ -50,6 +50,7 @@ public class HitomiParser implements ImageListParser {
         Timber.d("Parsing: %s", pageUrl);
 
         List<ImageFile> result = new ArrayList<>();
+        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
 
         String galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + content.getUniqueSiteId() + ".js";
 
@@ -119,6 +120,6 @@ public class HitomiParser implements ImageListParser {
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
         // Hitomi does not use backup URLs
-        return Optional.empty();
+        return Optional.of(new ImageFile(order, url, StatusContent.SAVED, maxPages));
     }
 }

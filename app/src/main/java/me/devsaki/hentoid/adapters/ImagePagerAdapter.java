@@ -1,7 +1,10 @@
 package me.devsaki.hentoid.adapters;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
+import android.renderscript.RenderScript;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +31,6 @@ import com.github.penfeizhou.animation.io.Reader;
 import com.github.penfeizhou.animation.io.StreamReader;
 import com.github.penfeizhou.animation.loader.Loader;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
@@ -73,6 +75,9 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     private boolean isScrollLTR = true;
 
+    // Single instance of RenderScript
+    private RenderScript rs;
+
     // Cached prefs
     private int separatingBarsHeight;
     private int viewerOrientation;
@@ -81,9 +86,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private boolean autoRotate;
 
 
-    public ImagePagerAdapter() {
+    public ImagePagerAdapter(Context context) {
         super(DIFF_CALLBACK);
         refreshPrefs();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) rs = RenderScript.create(context);
     }
 
     public void refreshPrefs() {
@@ -125,7 +131,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private int getImageType(ImageFile img) {
         if (null == img) return IMG_TYPE_OTHER;
 
-        String extension = FileHelper.getExtension(img.getAbsolutePath());
+        String extension = FileHelper.getExtension(img.getFileUri());
 
         if ("gif".equalsIgnoreCase(extension) || img.getMimeType().contains("gif")) {
             return IMG_TYPE_GIF;
@@ -178,7 +184,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) { // TODO make all that method less ugly
         if (holder.getItemViewType() == ViewType.SSIV_HORIZONTAL) {
             CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) holder.imgView;
-            ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
+            if (recyclerView != null)
+                ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
             if (!Preferences.isViewerZoomTransitions()) ssView.setDoubleTapZoomDuration(10);
             ssView.setOffsetLeftSide(isScrollLTR);
         }
@@ -209,6 +216,18 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     @Nullable
     public ImageFile getImageAt(int position) {
         return (position >= 0 && position < getItemCount()) ? getItem(position) : null;
+    }
+
+    public void destroy() {
+        if (rs != null) rs.destroy();
+    }
+
+    public float getScaleAtPosition(int position) {
+        if (recyclerView != null) {
+            ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+            if (holder != null) return holder.getScale();
+        }
+        return 0f;
     }
 
     public void resetScaleAtPosition(int position) {
@@ -261,8 +280,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         void setImage(@NonNull ImageFile img) {
             this.img = img;
             int imgType = getImageType(img);
-
-            String uri = img.getAbsolutePath();
+            Uri uri = Uri.parse(img.getFileUri());
             Timber.i(">>>>IMG %s %s", imgType, uri);
 
             if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType) { // SubsamplingScaleImageView
@@ -273,6 +291,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssView.setLongTapZoomEnabled(longTapZoomEnabled);
                 ssView.setAutoRotate(autoRotate);
                 if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
+                if (Preferences.isContentSmoothRendering(img.content.getTarget().getBookPreferences()))
+                    ssView.setRenderScript(rs);
+                else
+                    ssView.setRenderScript(null);
                 ssView.setImage(ImageSource.uri(uri));
             } else { // ImageView
                 if (IMG_TYPE_APNG == imgType) {
@@ -283,7 +305,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                     view.setImageDrawable(apngDrawable);
                 } else {
                     ImageView view = (ImageView) imgView;
-                    Glide.with(imgView)
+                    Glide.with(view)
                             .load(uri)
                             .apply(glideRequestOptions)
                             .listener(this)
@@ -298,6 +320,17 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             } else {
                 return CustomSubsamplingScaleImageView.ScaleType.CENTER_INSIDE;
             }
+        }
+
+        private float getScale() {
+            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType) {
+                CustomSubsamplingScaleImageView view = (CustomSubsamplingScaleImageView) imgView;
+                return view.getScale();
+            } else { // ImageView
+                ImageView view = (ImageView) imgView;
+                return view.getScaleX();
+            }
+            // TODO do the same for the other ViewType's
         }
 
         void resetScale() {
@@ -334,7 +367,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         @Override
         public void onImageLoadError(Throwable e) {
-            Timber.i(">>>>IMG %s reloaded with Glide", img.getAbsolutePath());
+            Timber.w(e, ">>>>IMG %s reloaded with Glide", img.getFileUri());
             // Manually force mime-type as GIF to fall back to Glide
             img.setMimeType("image/gif");
             // Reload adapter
@@ -381,15 +414,15 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
      */
     static class ImgLoader implements Loader {
 
-        private String path;
+        private Uri uri;
 
-        ImgLoader(String path) {
-            this.path = path;
+        ImgLoader(Uri uri) {
+            this.uri = uri;
         }
 
         @Override
         public synchronized Reader obtain() throws IOException {
-            DocumentFile file = FileHelper.getDocumentFile(new File(path), false); // Helper to get a DocumentFile out of the given File
+            DocumentFile file = DocumentFile.fromSingleUri(HentoidApp.getInstance().getApplicationContext(), uri);
             if (null == file || !file.exists()) return null; // Not triggered
             return new ImgReader(file.getUri());
         }

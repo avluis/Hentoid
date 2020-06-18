@@ -6,6 +6,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -14,7 +15,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- Required to install update packages when targeting API 29 or higher -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-
 
 
     <application
@@ -33,13 +33,15 @@
             android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".activities.IntroActivity"
             android:label="@string/app_intro" />
+        <activity
+            android:name=".activities.Api29MigrationActivity"
+            android:label="@string/title_activity_api29_migration" />
         <activity
             android:name=".activities.sources.HitomiActivity"
             android:configChanges="orientation|screenSize" />
@@ -81,6 +83,9 @@
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.HbrowseActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
+            android:name=".activities.sources.Hentai2ReadActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.LibraryActivity"
@@ -129,10 +134,6 @@
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
             tools:ignore="UnusedAttribute"/>
-        <activity
-            android:name=".activities.ImportActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/Theme.Invisible" />
         <activity
             android:name=".activities.UnlockActivity"
             android:noHistory="true"
@@ -290,6 +291,16 @@
                     android:host="8muses.com"
                     android:pathPrefix="/comics/album/"
                     android:scheme="https" />
+
+                <data
+                    android:host="www.8muses.com"
+                    android:pathPrefix="/comics/album/"
+                    android:scheme="https" />
+
+                <data
+                    android:host="comics.8muses.com"
+                    android:pathPrefix="/comics/album/"
+                    android:scheme="https" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -321,7 +332,11 @@
 
                 <data
                     android:host="porncomixonline.net"
-                    android:pathPattern="..*/..*"
+                    android:pathPattern="..*/.*"
+                    android:scheme="https" />
+                <data
+                    android:host="www.porncomixonline.net"
+                    android:pathPattern="..*/.*"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -342,8 +357,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="porncomixonline.net"
-                    android:pathPattern="..*/..*"
+                    android:host="hentai2read.com"
+                    android:pathPattern="/..*/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -381,7 +396,7 @@
 
         <service android:name=".services.DatabaseMaintenanceService" />
 
-        <service android:name=".services.DatabaseMigrationService" />
+        <service android:name=".services.API29MigrationService" />
 
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 

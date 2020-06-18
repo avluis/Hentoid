@@ -58,4 +58,7 @@
 
     <!-- image viewer -->
     <dimen name="tap_zone_width">64dp</dimen>
+
+    <!-- fast scroller -->
+    <dimen name="afs_min_touch_target_size">24dp</dimen>
 </resources>

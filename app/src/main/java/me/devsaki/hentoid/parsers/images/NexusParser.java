@@ -13,7 +13,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.Helper;
 
-import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class NexusParser extends BaseParser {
 

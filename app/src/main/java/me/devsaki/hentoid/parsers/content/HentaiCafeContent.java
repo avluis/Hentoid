@@ -20,7 +20,7 @@ public class HentaiCafeContent implements ContentParser {
     private String galleryUrl;
     @Selector(value = "div.entry-content img", attr = "src")
     private Element coverImg;
-    @Selector("div.x-column.x-sm.x-1-2.last h3")
+    @Selector(value = "div.x-column.x-sm.x-1-2.last h3", defValue = "<no title>")
     private String title;
     @Selector(value = "div.x-column.x-sm.x-1-2.last a[href*='/artist/']")
     private List<Element> artists;

@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
@@ -18,7 +19,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -27,7 +27,6 @@ import java.util.Map;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.enums.ErrorType;
@@ -97,7 +96,8 @@ public class ErrorStatsDialogFragment extends DialogFragment {
     }
 
     private void updateStats(long contentId) {
-        List<ErrorRecord> errors = ObjectBoxDB.getInstance(getContext()).selectErrorRecordByContentId(contentId);
+        CollectionDAO dao = new ObjectBoxDAO(requireContext());
+        List<ErrorRecord> errors = dao.selectErrorRecordByContentId(contentId);
         Map<ErrorType, Integer> errorsByType = new EnumMap<>(ErrorType.class);
 
         for (ErrorRecord error : errors) {
@@ -169,13 +169,13 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         ToastUtil.toast(R.string.redownload_generating_log_file);
 
         LogUtil.LogInfo logInfo = createLog();
-        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null) FileHelper.openFile(requireContext(), logFile);
     }
 
     private void shareErrorLog() {
         LogUtil.LogInfo logInfo = createLog();
-        File logFile = LogUtil.writeLog(requireContext(), logInfo);
+        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null)
             FileHelper.shareFile(requireContext(), logFile, "Error log for queue");
     }

@@ -3,11 +3,9 @@ package me.devsaki.hentoid.views;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
@@ -139,7 +137,6 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     public void onScrollStateChanged(int state) {
         super.onScrollStateChanged(state);

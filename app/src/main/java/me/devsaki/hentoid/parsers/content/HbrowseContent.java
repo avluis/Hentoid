@@ -73,9 +73,9 @@ public class HbrowseContent implements ContentParser {
         }
         result.addAttributes(attributes);
 
-        List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(result, scripts), StatusContent.SAVED);
+        List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(result, scripts), result.getCoverImageUrl(), StatusContent.SAVED);
         result.setImageFiles(imgs);
-        result.setQtyPages(imgs.size());
+        result.setQtyPages(imgs.size() - 1);  // Don't count the cover
 
         return result;
     }
@@ -89,7 +89,7 @@ public class HbrowseContent implements ContentParser {
             List<Element> links = metaContent.select("a");
             if (links != null && !links.isEmpty())
                 for (Element e : links)
-                    ParseHelper.parseAttribute(attributes, type, e, true, Site.HBROWSE, prefix);
+                    ParseHelper.parseAttribute(attributes, type, e, true, null, Site.HBROWSE, prefix);
         } else
             attributes.add(new Attribute(type, prefix.isEmpty() ? "" : prefix + ":" + metaContent.childNode(0).toString(), metaContent.childNode(0).toString(), Site.HBROWSE));
     }

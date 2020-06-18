@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
@@ -42,18 +43,65 @@ public class ParseHelper {
         return s;
     }
 
-    public static void parseAttributes(@NonNull AttributeMap map, @NonNull AttributeType type, List<Element> elements, boolean filterCount, @NonNull Site site) {
+    public static void parseAttributes(
+            @NonNull AttributeMap map,
+            @NonNull AttributeType type,
+            List<Element> elements,
+            boolean filterCount,
+            @NonNull Site site) {
         if (elements != null)
             for (Element a : elements) parseAttribute(map, type, a, filterCount, site);
     }
 
-    public static void parseAttribute(@NonNull AttributeMap map, @NonNull AttributeType type, @NonNull Element element, boolean filterCount, @NonNull Site site) {
-        parseAttribute(map, type, element, filterCount, site, "");
+    public static void parseAttributes(
+            @NonNull AttributeMap map,
+            @NonNull AttributeType type,
+            List<Element> elements,
+            boolean filterCount,
+            @NonNull String childElementClass,
+            @NonNull Site site) {
+        if (elements != null)
+            for (Element a : elements)
+                parseAttribute(map, type, a, filterCount, childElementClass, site);
     }
 
-    public static void parseAttribute(@NonNull AttributeMap map, @NonNull AttributeType type, @NonNull Element element, boolean filterCount, @NonNull Site site, @NonNull final String prefix) {
-        String name = Helper.removeNonPrintableChars(element.text());
+    public static void parseAttribute(
+            @NonNull AttributeMap map,
+            @NonNull AttributeType type,
+            @NonNull Element element,
+            boolean filterCount,
+            @NonNull Site site) {
+        parseAttribute(map, type, element, filterCount, null, site, "");
+    }
+
+    public static void parseAttribute(
+            @NonNull AttributeMap map,
+            @NonNull AttributeType type,
+            @NonNull Element element,
+            boolean filterCount,
+            @NonNull String childElementClass,
+            @NonNull Site site) {
+        parseAttribute(map, type, element, filterCount, childElementClass, site, "");
+    }
+
+    public static void parseAttribute(
+            @NonNull AttributeMap map,
+            @NonNull AttributeType type,
+            @NonNull Element element,
+            boolean filterCount,
+            @Nullable String childElementClass,
+            @NonNull Site site,
+            @NonNull final String prefix) {
+        String name;
+        if (null == childElementClass) {
+            name = element.text();
+        } else {
+            name = element.selectFirst("." + childElementClass).text();
+        }
+        name = Helper.removeNonPrintableChars(name);
         if (filterCount) name = removeBrackets(name);
+        if (name.isEmpty() || name.equals("-") || name.equals("/")) return;
+
         if (!prefix.isEmpty()) name = prefix + ":" + name;
         Attribute attribute = new Attribute(type, name, element.attr("href"), site);
 
@@ -70,9 +118,16 @@ public class ParseHelper {
         return result;
     }
 
-    public static List<ImageFile> urlsToImageFiles(@Nonnull List<String> imgUrls, @NonNull final StatusContent status) {
+    public static List<ImageFile> urlsToImageFiles(
+            @Nonnull List<String> imgUrls,
+            @NonNull String coverUrl,
+            @NonNull final StatusContent status
+    ) {
         List<ImageFile> result = new ArrayList<>();
 
+        // Cover
+        result.add(ImageFile.newCover(coverUrl, status));
+        // Images
         int order = 1;
         for (String s : imgUrls) result.add(urlToImageFile(s, order++, imgUrls.size(), status));
 

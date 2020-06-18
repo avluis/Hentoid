@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- about -->
-    <dimen name="about_ic_group_layout_margin_top">10dp</dimen>
     <dimen name="about_ic_hentoid_width">120dp</dimen>
     <dimen name="about_ic_hentoid_height">120dp</dimen>
     <dimen name="about_ic_icons_width">30dp</dimen>

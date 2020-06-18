@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="350dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:clipToPadding="false"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/export_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="@string/export_title"
+        android:textAlignment="center"
+        android:textSize="@dimen/text_header_6"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <CheckBox
+        android:id="@+id/export_file_library_chk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_title"
+        tools:text="Export library (235 books)"
+        tools:visibility="visible" />
+
+    <Switch
+        android:id="@+id/export_favs_only"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginStart="32dp"
+        android:switchPadding = "10dp"
+        android:text="@string/export_favs_only"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_file_library_chk"
+        tools:visibility="visible"
+        />
+
+    <CheckBox
+        android:id="@+id/export_file_queue_chk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_favs_only"
+        tools:text="Export queue (235 books)"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/export_warning_img"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:adjustViewBounds="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_warning"
+        app:layout_constraintBottom_toBottomOf="@id/export_file_help_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/export_file_help_text"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/export_file_help_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/export_warning"
+        android:textColor="@color/white_opacity_87"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/export_warning_img"
+        app:layout_constraintTop_toBottomOf="@id/export_file_queue_chk" />
+
+    <TextView
+        android:id="@+id/export_run_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="?colorSecondary"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="@string/export_run"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_file_help_text" />
+
+    <ProgressBar
+        android:id="@+id/export_progress_bar"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_run_btn"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

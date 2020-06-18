@@ -1,29 +1,37 @@
 package me.devsaki.hentoid.util;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ResolveInfo;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
-import android.webkit.MimeTypeMap;
+import android.os.storage.StorageManager;
+import android.provider.DocumentsContract;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.CachedDocumentFile;
 import androidx.documentfile.provider.DocumentFile;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import javax.annotation.Nonnull;
-
-import me.devsaki.hentoid.HentoidApp;
 import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 /**
  * Created by avluis on 08/25/2016.
@@ -31,10 +39,17 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
  */
 class FileUtil {
 
-
     private FileUtil() {
         throw new IllegalStateException("Utility class");
     }
+
+    private static Constructor<?> treeDocumentFileConstructor = null;
+
+    private static final String DOCPROVIDER_PATH_DOCUMENT = "document";
+    private static final String DOCPROVIDER_PATH_TREE = "tree";
+
+    private static final Map<String, Boolean> providersCache = new HashMap<>();
+
 
     /**
      * Method ensures file creation from stream.
@@ -54,262 +69,18 @@ class FileUtil {
     }
 
     /**
-     * Get the DocumentFile corresponding to the given file.
-     * If the file does not exist, null is returned.
-     *
-     * @param file        The file.
-     * @param isDirectory flag indicating if the given file should be a directory.
-     * @return The DocumentFile.
-     */
-    @Nullable
-    static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
-        return getOrCreateDocumentFile(file, isDirectory, false);
-    }
-
-    @Nullable
-    private static DocumentFile getOrCreateDocumentFile(@Nonnull final File file, boolean isDirectory) {
-        return getOrCreateDocumentFile(file, isDirectory, true);
-    }
-
-    /**
-     * Get the DocumentFile corresponding to the given file.
-     * If the file does not exist, null is returned.
-     *
-     * @param file        The file.
-     * @param isDirectory flag indicating if the given file should be a directory.
-     * @return The DocumentFile.
-     */
-    @Nullable
-    private static DocumentFile getOrCreateDocumentFile(@Nonnull final File file, boolean isDirectory, boolean canCreate) {
-        String baseFolder = FileHelper.getExtSdCardFolder(file);
-        boolean returnSDRoot = false;
-
-        // File is from phone memory
-        if (baseFolder == null) return DocumentFile.fromFile(file);
-
-        String relativePath = ""; // Path of the file relative to baseFolder
-        try {
-            String fullPath = file.getCanonicalPath();
-
-            if (!baseFolder.equals(fullPath)) { // Selected file _is_ the base folder
-                relativePath = fullPath.substring(baseFolder.length() + 1);
-            } else {
-                returnSDRoot = true;
-            }
-        } catch (IOException e) {
-            return null;
-        } catch (Exception f) {
-            returnSDRoot = true;
-            //continue
-        }
-
-        String sdStorageUriStr = Preferences.getSdStorageUri();
-        if (sdStorageUriStr.isEmpty()) return null;
-
-        Uri sdStorageUri = Uri.parse(sdStorageUriStr);
-
-        // Shorten relativePath if part of it is already in sdStorageUri
-        String[] uriContents = sdStorageUri.getPath().split(":");
-        if (uriContents.length > 1) {
-            String relativeUriPath = uriContents[1];
-            if (relativePath.equals(relativeUriPath)) {
-                relativePath = "";
-            } else if (relativePath.startsWith(relativeUriPath)) {
-                relativePath = relativePath.substring(relativeUriPath.length() + 1);
-            }
-        }
-
-        return getOrCreateFromComponents(sdStorageUri, returnSDRoot, relativePath, isDirectory, canCreate);
-    }
-
-    /**
-     * Get the DocumentFile corresponding to the given elements.
-     * If it does not exist, it is created.
-     *
-     * @param rootURI      Uri representing root
-     * @param returnRoot   True if method has just to return the DocumentFile representing the given root
-     * @param relativePath Relative path to the Document to be found/created (relative to given root)
-     * @param isDirectory  True if the given elements are supposed to be a directory; false if they are supposed to be a file
-     * @param canCreate    Behaviour when not found : True => creates a new file/folder / False => returns null
-     * @return DocumentFile corresponding to the given file.
-     */
-    @Nullable
-    private static DocumentFile getOrCreateFromComponents(@Nonnull Uri rootURI, boolean returnRoot,
-                                                          String relativePath, boolean isDirectory,
-                                                          boolean canCreate) {
-        // start with root and then parse through document tree.
-        DocumentFile document = DocumentFile.fromTreeUri(HentoidApp.getInstance(), rootURI);
-        if (null == document) return null;
-
-        if (returnRoot || null == relativePath || relativePath.isEmpty()) return document;
-
-        String[] parts = relativePath.split(File.separator);
-        for (int i = 0; i < parts.length; i++) {
-            DocumentFile nextDocument = document.findFile(parts[i]);
             // The folder might exist in its capitalized version (might happen with legacy installs
-            if (null == nextDocument)
-                nextDocument = document.findFile(Helper.capitalizeString(parts[i]));
-
-            // The folder definitely doesn't exist at all
-            if (null == nextDocument) {
-                if (canCreate) {
-                    Timber.d("Document %s - part #%s : '%s' not found; creating", document.getName(), String.valueOf(i), parts[i]);
-
-                    if ((i < parts.length - 1) || isDirectory) {
-                        nextDocument = document.createDirectory(parts[i]);
-                        if (null == nextDocument) {
-                            Timber.e("Failed to create subdirectory %s/%s", document.getName(), parts[i]);
-                        }
-                    } else {
-                        nextDocument = document.createFile("image", parts[i]);
-                        if (null == nextDocument) {
-                            Timber.e("Failed to create file %s/image%s", document.getName(), parts[i]);
-                        }
-                    }
-                } else {
-                    return null;
-                }
-            }
-            document = nextDocument;
-            if (null == document) break;
-        }
-
-        return document;
-    }
-
-    /**
-     * Get OutputStream from file.
-     *
-     * @param target The file.
-     * @return FileOutputStream.
-     */
-    static OutputStream getOutputStream(@NonNull final File target) throws IOException {
-        try {
-            return FileUtils.openOutputStream(target);
-        } catch (IOException e) {
-            Timber.d("Could not open file (expected)");
-        }
-        try {
-            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-                // Storage Access Framework
-                DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
-                if (targetDocument != null) {
-                    Context context = HentoidApp.getInstance();
-                    return context.getContentResolver().openOutputStream(
-                            targetDocument.getUri());
-                }
-            }
-        } catch (Exception e) {
-            Timber.e(e, "Error [%s] while attempting to get file: %s ", e.getMessage(), target.getAbsolutePath());
-            throw new IOException(e);
-        }
-
-        throw new IOException("Error while attempting to get file : " + target.getAbsolutePath());
-    }
-
-    static OutputStream getOutputStream(@NonNull final DocumentFile target) throws FileNotFoundException {
-        Context context = HentoidApp.getInstance();
-        return context.getContentResolver().openOutputStream(target.getUri());
-    }
-
-    static InputStream getInputStream(@NonNull final File target) throws IOException {
-        try {
-            return FileUtils.openInputStream(target);
-        } catch (IOException e) {
-            Timber.d("Could not open file (expected)");
-        }
-
-        try {
-            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-                // Storage Access Framework
-                DocumentFile targetDocument = getDocumentFile(target, false);
-                if (targetDocument != null) {
-                    Context context = HentoidApp.getInstance();
-                    return context.getContentResolver().openInputStream(
-                            targetDocument.getUri());
-                }
-            }
-            throw new IOException("Error while attempting to get file : " + target.getAbsolutePath());
-        } catch (Exception e) {
-            Timber.e(e, "Error while attempting to get file: %s", target.getAbsolutePath());
-            throw new IOException(e);
-        }
-    }
-
-
-    /**
-     * Create a file.
-     *
-     * @param file       The file to be created.
-     * @param forceWrite Force writing operation even if an existing file is found (useful for I/O tests)
-     * @return true if creation was successful.
-     */
-    static boolean makeFile(@NonNull final File file, boolean forceWrite) {
-        if (file.exists()) {
-            // nothing to create.
-            return !file.isDirectory();
-        }
-
-        // Try the normal way
-        try {
-            return file.createNewFile();
-        } catch (IOException e) {
-            // Fail silently
-        }
-
-        // Try with Storage Access Framework.
-        if (Build.VERSION.SDK_INT >= LOLLIPOP && file.getParentFile() != null) {
-            DocumentFile folder = getOrCreateDocumentFile(file.getParentFile(), true);
-            // getOrCreateDocumentFile implicitly creates the directory.
-            try {
-                if (folder != null) {
-                    DocumentFile existingFile = folder.findFile(file.getName());
-                    if (null == existingFile || forceWrite) {
-                        // If file exists (force write), delete it
-                        if (existingFile != null && !existingFile.delete()) return false;
-
-                        // Creating a new file
-                        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(file.getName()));
-                        if (null == mimeType) mimeType = "application/octet-stream";
-
-                        return folder.createFile(mimeType, file.getName()) != null;
-                    } else return true; // File already exists
-                }
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Create a folder.
      *
      * @param file The folder to be created.
      * @return true if creation was successful or the folder already exists
      */
     static boolean makeDir(@NonNull final File file) {
-        if (file.exists()) {
-            // nothing to create.
-            return file.isDirectory();
-        }
+        // Nothing to create ?
+        if (file.exists()) return file.isDirectory();
 
         // Try the normal way
-        if (file.mkdirs()) {
-            return true;
-        }
-
-        // Try with Storage Access Framework.
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile document = getOrCreateDocumentFile(file, true);
-            // getOrCreateDocumentFile implicitly creates the directory.
-            if (document != null) {
-                return document.exists();
-            }
-        }
-
-        return false;
+        return file.mkdirs();
     }
 
     /**
@@ -319,7 +90,7 @@ class FileUtil {
      * @return true if successfully deleted or if the file does not exist.
      */
     static boolean deleteFile(@NonNull final File file) {
-        return !file.exists() || deleteQuietly(file) || deleteWithSAF(file);
+        return !file.exists() || deleteQuietly(file);
     }
 
     /**
@@ -337,7 +108,7 @@ class FileUtil {
      * @return {@code true} if the file or directory was deleted, otherwise
      * {@code false}
      */
-    static boolean deleteQuietly(final File file) {
+    private static boolean deleteQuietly(final File file) {
         if (file == null) {
             return false;
         }
@@ -378,19 +149,116 @@ class FileUtil {
         return isSuccess;
     }
 
-    static boolean deleteWithSAF(File file) {
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile document = getDocumentFile(file, true);
-            if (document != null) return document.delete();
+    static List<DocumentFile> listDocumentFiles(
+            @NonNull final Context context,
+            @NonNull final DocumentFile parent,
+            @NonNull final ContentProviderClient client,
+            final FileHelper.NameFilter nameFilter,
+            boolean listFolders,
+            boolean listFiles) {
+        final List<ImmutableTriple<Uri, String, Long>> results = new ArrayList<>();
+
+        final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
+        try (Cursor c = client.query(searchUri, new String[]{
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE,
+                DocumentsContract.Document.COLUMN_SIZE}, null, null, null)) {
+            if (c != null)
+                while (c.moveToNext()) {
+                    final String documentId = c.getString(0);
+                    final String documentName = c.getString(1);
+                    boolean isFolder = c.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
+                    final Long documentSize = c.getLong(3);
+
+                    // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
+                    if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
+                        results.add(new ImmutableTriple<>(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName, documentSize));
+                }
+        } catch (Exception e) {
+            Timber.w(e, "Failed query");
+        }
+
+        return convertFromUris(context, results);
+    }
+
+    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final List<ImmutableTriple<Uri, String, Long>> uris) {
+        final List<DocumentFile> resultFiles = new ArrayList<>();
+        for (ImmutableTriple<Uri, String, Long> uri : uris) {
+            DocumentFile docFile = fromTreeUriCached(context, uri.left);
+            // Following line should be the proper way to go but it's inefficient as it calls queryIntentContentProviders from scratch repeatedly
+            //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
+            if (docFile != null)
+                resultFiles.add(new CachedDocumentFile(docFile, uri.middle, uri.right));
+        }
+        return resultFiles;
+    }
+
+    /**
+     * WARNING This is a tweak of internal Android code to make it faster by caching calls to queryIntentContentProviders
+     * Original (uncached) is DocumentFile.fromTreeUri
+     */
+    @Nullable
+    private static DocumentFile fromTreeUriCached(@NonNull final Context context, @NonNull final Uri treeUri) {
+        String documentId = DocumentsContract.getTreeDocumentId(treeUri);
+        if (isDocumentUriCached(context, treeUri)) {
+            documentId = DocumentsContract.getDocumentId(treeUri);
+        }
+        return newTreeDocumentFile(null, context,
+                DocumentsContract.buildDocumentUriUsingTree(treeUri,
+                        documentId));
+    }
+
+    // Original (uncached) : DocumentsContract.isDocumentUri
+    private static boolean isDocumentUriCached(@NonNull final Context context, @Nullable final Uri uri) {
+        if (isContentUri(uri) && isDocumentsProviderCached(context, uri.getAuthority())) {
+            final List<String> paths = uri.getPathSegments();
+            if (paths.size() == 2) {
+                return DOCPROVIDER_PATH_DOCUMENT.equals(paths.get(0));
+            } else if (paths.size() == 4) {
+                return DOCPROVIDER_PATH_TREE.equals(paths.get(0)) && DOCPROVIDER_PATH_DOCUMENT.equals(paths.get(2));
+            }
         }
         return false;
     }
 
-    static boolean renameWithSAF(File srcDir, String newName) {
-        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile srcDocument = getDocumentFile(srcDir, true);
-            if (srcDocument != null) return srcDocument.renameTo(newName);
+    // Original (uncached) : DocumentsContract.isDocumentsProvider
+    private static boolean isDocumentsProviderCached(Context context, String authority) {
+        if (providersCache.containsKey(authority)) {
+            Boolean b = providersCache.get(authority);
+            if (b != null) return b;
         }
+        final Intent intent = new Intent(DocumentsContract.PROVIDER_INTERFACE);
+        final List<ResolveInfo> infos = context.getPackageManager()
+                .queryIntentContentProviders(intent, 0);
+        for (ResolveInfo info : infos) {
+            if (authority.equals(info.providerInfo.authority)) {
+                providersCache.put(authority, true);
+                return true;
+            }
+        }
+        providersCache.put(authority, false);
         return false;
+    }
+
+    // Original : DocumentsContract.isContentUri
+    private static boolean isContentUri(Uri uri) {
+        return uri != null && ContentResolver.SCHEME_CONTENT.equals(uri.getScheme());
+    }
+
+    @Nullable
+    private static DocumentFile newTreeDocumentFile(@Nullable final DocumentFile parent, @NonNull final Context context, @NonNull final Uri uri) {
+        //resultFiles[i] = new TreeDocumentFile(this, context, result[i]); <-- not visible
+        try {
+            if (null == treeDocumentFileConstructor) {
+                Class<?> treeDocumentFileClazz = Class.forName("androidx.documentfile.provider.TreeDocumentFile");
+                treeDocumentFileConstructor = treeDocumentFileClazz.getDeclaredConstructor(DocumentFile.class, Context.class, Uri.class);
+                treeDocumentFileConstructor.setAccessible(true);
+            }
+            return (DocumentFile) treeDocumentFileConstructor.newInstance(parent, context, uri);
+        } catch (Exception ex) {
+            Timber.e(ex);
+        }
+        return null;
     }
 }

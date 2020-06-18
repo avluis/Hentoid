@@ -5,11 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
-    tools:showIn="@layout/item_download">
-    <!-- This is the basic book card layout that is used in both item_download and item_queue
-         you can use tools:showIn="@layout/item_download" and tools:showIn="@layout/item_queue"
-         to have a reference in AS editor to their parent, but keep in mind that the actual way
-         they are being displayed is show in their parent only and not here-->
+    tools:showIn="@layout/item_library">
+    <!-- This is the basic book card layout that is used in item_library
+         keep in mind that the actual way they are being displayed
+         is shown in their parent only and not here-->
 
     <ImageView
         android:id="@+id/ivCover"
@@ -22,24 +21,27 @@
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_placeholder" />
 
-    <include
+    <TextView
         android:id="@+id/tvTitle"
-        layout="@layout/include_item_title"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_subtitle_1"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/pbDownload" />
+        app:layout_constraintTop_toBottomOf="@id/pbDownload"
+        tools:text="@string/book_title" />
 
     <TextView
         android:id="@+id/tvArtist"
         android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@color/card_tags_light"
         android:textStyle="bold"

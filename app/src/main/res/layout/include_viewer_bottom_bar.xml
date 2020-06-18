@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/transparent"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    tools:targetApi="o">
 
     <View
         android:layout_width="match_parent"
@@ -26,12 +27,13 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_action_previous_item"
         android:tint="?colorOnPrimary"
+        android:tooltipText="@string/previous_book_help"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
-        android:visibility="invisible"
-        tools:visibility="visible"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/viewer_current_page_text"
@@ -86,6 +88,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_action_gallery"
         android:tint="?colorOnPrimary"
+        android:tooltipText="@string/gallery_help"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_favourites_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
@@ -101,6 +104,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_fav_full"
         android:tint="?colorSecondary"
+        android:tooltipText="@string/gallery_fav_help"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_next_book_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
@@ -116,12 +120,13 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_action_next_item"
         android:tint="?colorOnPrimary"
+        android:tooltipText="@string/next_book_help"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
-        android:visibility="invisible"
-        tools:visibility="visible"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <!-- Image previews used when tracking -->
 

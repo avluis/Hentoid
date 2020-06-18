@@ -12,6 +12,11 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.viewholders.AttributeViewHolder;
 
+/**
+ * Adapter for the selected attributes list displayed in the advanced search screen
+ *
+ * Can only be removed when prerequisites are met : see comments in {@link me.devsaki.hentoid.fragments.SearchBottomSheetFragment}
+ */
 public class SelectedAttributeAdapter extends ListAdapter<Attribute, AttributeViewHolder> {
 
     private View.OnClickListener onClickListener = null;

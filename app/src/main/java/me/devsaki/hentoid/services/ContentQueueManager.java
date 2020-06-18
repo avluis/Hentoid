@@ -3,6 +3,8 @@ package me.devsaki.hentoid.services;
 import android.content.Context;
 import android.content.Intent;
 
+import timber.log.Timber;
+
 /**
  * Created by Robb_w on 2018/04
  * Manager class for Content (book) download queue
@@ -53,12 +55,18 @@ public class ContentQueueManager {
         return isQueueActive;
     }
 
-    void setInactive() { isQueueActive = false; }
+    void setInactive() {
+        isQueueActive = false;
+    }
 
     public void resumeQueue(Context context) {
         Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
-        context.startService(intent);
-        isQueueActive = true;
+        try {
+            context.startService(intent);
+            isQueueActive = true;
+        } catch (IllegalStateException e) { // May happen if the app is in background
+            Timber.e(e);
+        }
     }
 
 

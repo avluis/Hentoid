@@ -1,117 +1,238 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/default_cardview_margin"
-    android:background="@drawable/bg_book_card"
-    android:elevation="6dp"
-    tools:targetApi="lollipop">
+    android:layout_height="105dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingBottom="@dimen/default_cardview_margin"
+    tools:targetApi="o">
 
-    <ProgressBar
-        android:id="@+id/pbDownload"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_card"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:indeterminate="true"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible" />
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_book_card"
+        android:clickable="false"
+        android:elevation="6dp"
+        android:focusable="false">
 
-    <include layout="@layout/include_item_details" />
+        <ImageView
+            android:id="@+id/ivCover"
+            android:layout_width="75dp"
+            android:layout_height="100dp"
+            android:adjustViewBounds="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pbDownload"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_placeholder" />
 
-    <ImageView
-        android:id="@+id/queueTopBtn"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="16dp"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/queueUpBtn"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barrier"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_doublearrowup" />
+        <ProgressBar
+            android:id="@+id/pbDownload"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivCover"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
 
-    <ImageView
-        android:id="@+id/queueUpBtn"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="16dp"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/queueDownBtn"
-        app:layout_constraintStart_toEndOf="@id/queueTopBtn"
-        app:layout_constraintTop_toBottomOf="@id/barrier"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_arrow_up" />
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="middle"
+            android:singleLine="true"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_subtitle_2"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivCover"
+            app:layout_constraintTop_toBottomOf="@id/pbDownload"
+            tools:text="@string/book_title" />
 
-    <ImageView
-        android:id="@+id/queueDownBtn"
-        android:layout_width="0dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="16dp"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btnCancel"
-        app:layout_constraintStart_toEndOf="@id/queueUpBtn"
-        app:layout_constraintTop_toBottomOf="@id/barrier"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_arrow_down" />
+        <TextView
+            android:id="@+id/tvArtist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/card_tags_light"
+            android:textSize="@dimen/caption"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivCover"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            tools:text="@string/book_artist" />
 
-    <TextView
-        android:id="@+id/btnCancel"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="16dp"
-        android:gravity="center"
-        android:text="@string/cancel"
-        android:textColor="?colorSecondary"
-        android:textSize="@dimen/text_body_1"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/ivSite"
-        app:layout_constraintStart_toEndOf="@id/queueDownBtn"
-        app:layout_constraintTop_toBottomOf="@id/barrier" />
+        <TextView
+            android:id="@+id/tvPages"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/card_tags_light"
+            android:textSize="@dimen/caption"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@id/tvArtist"
+            app:layout_constraintStart_toStartOf="@id/tvArtist"
+            app:layout_constraintTop_toBottomOf="@id/tvArtist"
+            tools:text="@string/book_pages" />
 
-    <ImageView
-        android:id="@+id/ivSite"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:adjustViewBounds="true"
-        android:clickable="true"
-        android:focusable="true"
-        android:tint="?colorSecondary"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barrier"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_menu_nhentai" />
+        <ImageView
+            android:id="@+id/ivReorder"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="24dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_reorder"
+            android:tooltipText="@string/drag_help"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/ivCover"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="ivCover,tvTags" />
+        <ImageView
+            android:id="@+id/queueBottomBtn"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_action_bottom"
+            android:tooltipText="@string/move_bottom"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/ivCover"
+            app:layout_constraintEnd_toStartOf="@id/ivReorder"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageView
+            android:id="@+id/queueTopBtn"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_action_top"
+            android:tooltipText="@string/move_top"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/ivCover"
+            app:layout_constraintEnd_toStartOf="@id/queueBottomBtn"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/queue_site_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_menu_nhentai"
+            android:tooltipText="@string/view_source_help"
+            app:layout_constraintBottom_toBottomOf="@id/ivCover"
+            app:layout_constraintEnd_toStartOf="@id/queueTopBtn"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/ivError"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_error_outline"
+            android:tooltipText="@string/err_stats_help"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/ivCover"
+            app:layout_constraintEnd_toStartOf="@id/queue_site_button"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/ivRedownload"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/selector_download_action"
+            android:tooltipText="@string/menu_redownload"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/ivCover"
+            app:layout_constraintEnd_toStartOf="@id/ivError"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:id="@+id/swipe_result_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FF0000"
+        android:clickable="false"
+        android:focusable="false"
+        android:gravity="center_vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/swiped_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center_vertical|start"
+            android:lines="1"
+            android:singleLine="true"
+            android:text="@string/canceled"
+            android:textColor="@android:color/primary_text_dark"
+            android:textDirection="anyRtl"
+            android:textSize="@dimen/text_subtitle_2" />
+
+        <TextView
+            android:id="@+id/undo_swipe"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical|start"
+            android:lines="1"
+            android:singleLine="true"
+            android:text="@string/undo"
+            android:textAllCaps="true"
+            android:textColor="@android:color/primary_text_dark"
+            android:textDirection="anyRtl"
+            android:textSize="@dimen/text_subtitle_2"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</FrameLayout>

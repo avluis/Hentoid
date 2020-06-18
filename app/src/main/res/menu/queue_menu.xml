@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.QueueActivity"
+    tools:targetApi="o">
+    <item
+        android:id="@+id/action_error_stats"
+        android:icon="@drawable/ic_error_outline"
+        android:title="@string/err_stats_title"
+        android:tooltipText="@string/err_stats_help"
+        android:visible="false"
+        app:showAsAction="ifRoom"
+        tools:visible="true" />
+    <item
+        android:id="@+id/action_queue_prefs"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/title_activity_preferences"
+        android:tooltipText="@string/title_activity_preferences"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_invert_queue"
+        android:title="@string/invert_queue"
+        android:tooltipText="@string/invert_queue"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_cancel_all"
+        android:title="@string/cancel_all"
+        android:tooltipText="@string/cancel_all"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_redownload_all"
+        android:title="@string/redownload_all"
+        android:tooltipText="@string/redownload_all"
+        app:showAsAction="never" />
+</menu>

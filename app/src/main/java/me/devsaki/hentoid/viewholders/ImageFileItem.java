@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.viewholders;
 
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -84,8 +85,8 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
             pageNumberTxt.setText(String.format("%sPage %s%s", currentBegin, item.image.getOrder(), currentEnd));
             if (item.isCurrent) pageNumberTxt.setTypeface(null, Typeface.BOLD);
             updateFavourite(item.isFavourite());
-            Glide.with(image.getContext().getApplicationContext())
-                    .load(item.image.getAbsolutePath())
+            Glide.with(image)
+                    .load(Uri.parse(item.image.getFileUri()))
                     .apply(glideRequestOptions)
                     .into(image);
         }

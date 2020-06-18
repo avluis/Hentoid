@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
+    tools:showIn="@layout/activity_api29_migration">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/import_step1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/import_step1_number"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_header_6"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/import_step1_text"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:text="@string/api29_migration_step1"
+            app:layout_constraintLeft_toRightOf="@id/import_step1_number"
+            app:layout_constraintTop_toTopOf="@id/import_step1_number" />
+
+        <TextView
+            android:id="@+id/import_step1_folder"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:textSize="@dimen/caption"
+            app:layout_constraintBottom_toBottomOf="@id/import_step1_number"
+            app:layout_constraintStart_toEndOf="@id/import_step1_number"
+            app:layout_constraintTop_toBottomOf="@id/import_step1_text"
+            tools:text="@string/app_name" />
+
+        <ImageView
+            android:id="@+id/import_step1_check"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@id/import_step1_number"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/import_step1_number"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/import_step1_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="?colorSecondary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:padding="8dp"
+            android:text="@string/api29_migration_step1_select"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/import_step1_number"
+            app:layout_constraintLeft_toRightOf="@id/import_step1_number"
+            app:layout_constraintTop_toTopOf="@id/import_step1_number"
+            tools:visibility="visible" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/import_step2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/import_step1"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/import_step2_number"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="2"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_header_6"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/import_step2_text"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:text="@string/api29_migration_step2"
+            app:layout_constraintLeft_toRightOf="@id/import_step2_number"
+            app:layout_constraintTop_toTopOf="@id/import_step2_number" />
+
+        <ProgressBar
+            android:id="@+id/import_step2_bar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="@id/import_step2_number"
+            app:layout_constraintEnd_toStartOf="@id/import_step2_check"
+            app:layout_constraintStart_toEndOf="@id/import_step2_number"
+            app:layout_constraintTop_toBottomOf="@id/import_step2_text" />
+
+        <ImageView
+            android:id="@+id/import_step2_check"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@id/import_step2_number"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/import_step2_number"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/import_step3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/import_step2"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/import_step3_number"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="3"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_header_6"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/import_step3_text"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:text="@string/api29_migration_step3_init"
+            app:layout_constraintLeft_toRightOf="@id/import_step3_number"
+            app:layout_constraintTop_toTopOf="@id/import_step3_number" />
+
+        <ProgressBar
+            android:id="@+id/import_step3_bar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="@id/import_step3_number"
+            app:layout_constraintEnd_toStartOf="@id/import_step3_check"
+            app:layout_constraintStart_toEndOf="@id/import_step3_number"
+            app:layout_constraintTop_toBottomOf="@id/import_step3_text" />
+
+        <ImageView
+            android:id="@+id/import_step3_check"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@id/import_step3_number"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/import_step3_number"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/import_step4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/import_step3"
+        tools:visibility="visible">
+
+    <TextView
+            android:id="@+id/import_step4_number"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="4"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_header_6"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/import_step4_text"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="16dp"
+            android:text="@string/api29_migration_step4_init"
+            app:layout_constraintLeft_toRightOf="@id/import_step4_number"
+            app:layout_constraintTop_toTopOf="@id/import_step4_number" />
+
+        <ProgressBar
+            android:id="@+id/import_step4_bar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            app:layout_constraintBottom_toBottomOf="@id/import_step4_number"
+            app:layout_constraintEnd_toStartOf="@id/import_step4_check"
+            app:layout_constraintStart_toEndOf="@id/import_step4_number"
+            app:layout_constraintTop_toBottomOf="@id/import_step4_text" />
+
+        <ImageView
+            android:id="@+id/import_step4_check"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_check"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@id/import_step4_number"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/import_step4_number"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</merge>

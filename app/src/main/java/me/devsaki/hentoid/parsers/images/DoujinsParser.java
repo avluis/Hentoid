@@ -11,7 +11,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.exception.ParseException;
 
-import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class DoujinsParser extends BaseParser {
 

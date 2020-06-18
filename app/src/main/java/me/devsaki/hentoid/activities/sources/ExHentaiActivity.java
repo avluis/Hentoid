@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -14,12 +13,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery;
 import me.devsaki.hentoid.retrofit.sources.ExHentaiServer;
-import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 /**
@@ -44,8 +44,7 @@ public class ExHentaiActivity extends BaseWebActivity {
         CustomWebViewClient client = new ExHentaiWebClient(GALLERY_FILTER, this);
         CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");
         // ExH serves images through hosts that use http connections, which is detected as "mixed content" by the app
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         return client;
     }
 
@@ -63,11 +62,7 @@ public class ExHentaiActivity extends BaseWebActivity {
                 CookieManager mgr = CookieManager.getInstance();
                 String existingCookiesStr = mgr.getCookie(".exhentai.org");
                 if (existingCookiesStr != null && !existingCookiesStr.contains("ipb_member_id=")) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        mgr.removeAllCookies(null);
-                    } else {
-                        mgr.removeAllCookie();
-                    }
+                    mgr.removeAllCookies(null);
                     webView.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/");
                 } else {
                     exhCookiesStr = existingCookiesStr;
@@ -80,6 +75,8 @@ public class ExHentaiActivity extends BaseWebActivity {
                 if (existingCookiesStr != null && existingCookiesStr.contains("ipb_member_id="))
                     webView.loadUrl("https://exhentai.org/");
             }
+
+            showTooltip(R.string.help_web_exh_account);
         }
 
 

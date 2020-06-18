@@ -32,36 +32,13 @@
         android:text="@string/slide_04_text"
         android:textSize="16sp" />
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
-        android:minHeight="48dp"
-        android:orientation="vertical">
+        android:layout_weight="5"
+        android:minHeight="48dp">
 
-        <TextView
-            android:id="@+id/tv_library_default"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:drawablePadding="8dp"
-            android:drawableStart="@drawable/ic_action_sd_storage"
-            android:focusable="true"
-            android:padding="20dp"
-            android:text="@string/slide_04_library_default" />
+        <include layout="@layout/include_import_steps" />
 
-        <TextView
-            android:id="@+id/tv_library_custom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:drawablePadding="8dp"
-            android:drawableStart="@drawable/ic_action_sd_storage"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:padding="20dp"
-            android:text="@string/slide_04_library_custom" />
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

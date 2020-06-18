@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.database;
 
 import android.content.Context;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -30,12 +29,6 @@ public class DatabaseMaintenance {
 
         // Perform functional data updates
         performDatabaseCleanups(db);
-
-        HentoidDB oldDb = HentoidDB.getInstance(context);
-        // Perform technical data updates on the old database engine
-        if (oldDb.countContentEntries() > 0) {
-            oldDb.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-        }
     }
 
     private static void performDatabaseCleanups(@NonNull ObjectBoxDB db) {
@@ -87,44 +80,5 @@ public class DatabaseMaintenance {
             db.insertContent(c);
         }
         Timber.i("Upgrading Tsumino covers : done");
-    }
-
-    /**
-     * Handles complex DB version updates at startup
-     */
-    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    public static void performOldDatabaseUpdate(@NonNull HentoidDB db) {
-        // Update all "storage_folder" fields in CONTENT table (mandatory) (since versionCode 44 / v1.2.2)
-        List<Content> contents = db.selectContentEmptyFolder();
-        if (contents != null && !contents.isEmpty()) {
-            for (int i = 0; i < contents.size(); i++) {
-                Content content = contents.get(i);
-                content.setStorageFolder("/" + content.getSite().getDescription() + "/" + content.getOldUniqueSiteId()); // This line must use deprecated code, as it migrates it to newest version
-                db.updateContentStorageFolder(content);
-            }
-        }
-
-        // Migrate the old download queue (books in DOWNLOADING or PAUSED status) in the queue table (since versionCode 60 / v1.3.7)
-        // Gets books that should be in the queue but aren't
-        List<Integer> contentToMigrate = db.selectContentsForQueueMigration();
-
-        if (!contentToMigrate.isEmpty()) {
-            // Gets last index of the queue
-            List<Pair<Integer, Integer>> queue = db.selectQueue();
-            int lastIndex = 1;
-            if (!queue.isEmpty()) {
-                lastIndex = queue.get(queue.size() - 1).second + 1;
-            }
-
-            for (int i : contentToMigrate) {
-                db.insertQueue(i, lastIndex++);
-            }
-        }
-    }
-
-    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    public static boolean hasToMigrate(@NonNull Context context) {
-        HentoidDB oldDb = HentoidDB.getInstance(context);
-        return (oldDb.countContentEntries() > 0);
     }
 }

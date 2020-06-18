@@ -19,7 +19,7 @@ class UpdateAvailableNotification(private val updateUrl: String) : Notification 
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setVibrate(longArrayOf(1, 1, 1))
-            .setContentTitle("An update is available!")
+            .setContentTitle("An update is available!") // TODO find the kotlin way of using string resources
             .setContentText("Tap to download")
             .setContentIntent(pendingIntent)
             .build()

@@ -4,6 +4,7 @@ import me.devsaki.hentoid.enums.Site;
 
 public class PorncomixActivity extends BaseWebActivity {
 
+    private static final String[] DOMAIN_FILTER = {"www.porncomixonline.net", "porncomicszone.net", "porncomixinfo.com", "bestporncomix.com"};
     private static final String[] GALLERY_FILTER = {
             "//www.porncomixonline.net/manga/[A-Za-z0-9\\-]+/[A-Za-z0-9\\-]+$",
             "//www.porncomixonline.net/[A-Za-z0-9\\-]+/$",
@@ -20,6 +21,8 @@ public class PorncomixActivity extends BaseWebActivity {
     @Override
     protected CustomWebViewClient getWebClient() {
         addDirtyElements(DIRTY_ELEMENTS);
-        return new CustomWebViewClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
+        client.restrictTo(DOMAIN_FILTER);
+        return client;
     }
 }

@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ import static android.content.Context.ACTIVITY_SERVICE;
  * <p>
  * An implementation of {@link ImageRegionDecoder} using a pool of {@link BitmapRegionDecoder}s,
  * to provide true parallel loading of tiles. This is only effective if parallel loading has been
- * enabled in the view by calling {@link me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView#setExecutor(Executor)}
+ * enabled in the view by calling me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.setExecutor(Executor)
  * with a multi-threaded {@link Executor} instance.
  * </p><p>
  * One decoder is initialised when the class is initialised. This is enough to decode base layer tiles.
@@ -156,7 +157,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
      * Initialises a new {@link BitmapRegionDecoder} and adds it to the pool, unless the pool has
      * been recycled while it was created.
      */
-    private void initialiseDecoder() throws Exception {
+    private void initialiseDecoder() throws IOException, PackageManager.NameNotFoundException {
         String uriString = uri.toString();
         BitmapRegionDecoder decoder;
         long fileLength = Long.MAX_VALUE;
@@ -207,23 +208,17 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
                 // Pooling disabled
             }
         } else {
-            InputStream inputStream = null;
-            try {
-                ContentResolver contentResolver = context.getContentResolver();
-                inputStream = contentResolver.openInputStream(uri);
-                decoder = BitmapRegionDecoder.newInstance(inputStream, false);
+            ContentResolver contentResolver = context.getContentResolver();
+            try (InputStream input = contentResolver.openInputStream(uri)) {
+                if (input == null)
+                    throw new RuntimeException("Content resolver returned null stream. Unable to initialise with uri.");
+                decoder = BitmapRegionDecoder.newInstance(input, false);
                 try (AssetFileDescriptor descriptor = contentResolver.openAssetFileDescriptor(uri, "r")) {
                     if (descriptor != null) {
                         fileLength = descriptor.getLength();
                     }
                 } catch (Exception e) {
                     // Stick with MAX_LENGTH
-                }
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (Exception e) { /* Ignore */ }
                 }
             }
         }

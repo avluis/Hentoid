@@ -88,9 +88,9 @@ public class PorncomixContent implements ContentParser {
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, true, Site.PORNCOMIX);
         result.addAttributes(attributes);
 
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages), StatusContent.SAVED);
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages), result.getCoverImageUrl(), StatusContent.SAVED);
         result.setImageFiles(images);
-        result.setQtyPages(images.size());
+        result.setQtyPages(images.size() - 1);  // Don't count the cover
 
         return result;
     }

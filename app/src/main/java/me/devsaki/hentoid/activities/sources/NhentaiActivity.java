@@ -9,7 +9,7 @@ import me.devsaki.hentoid.enums.Site;
 public class NhentaiActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "nhentai.net";
-    private static final String[] GALLERY_FILTER = {"nhentai.net/g/"};
+    private static final String[] GALLERY_FILTER = {"nhentai.net/g/", "nhentai.net/search/\\?q=[0-9]+$"};
     private static final String[] DIRTY_ELEMENTS = {"section.advertisement"};
 
     Site getStartSite() {

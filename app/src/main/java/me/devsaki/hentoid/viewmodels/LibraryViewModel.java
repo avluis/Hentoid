@@ -1,11 +1,12 @@
 package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
@@ -16,8 +17,6 @@ import com.annimon.stream.function.Consumer;
 
 import java.io.File;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -26,12 +25,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ZipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -44,23 +43,26 @@ import static me.devsaki.hentoid.util.FileHelper.AUTHORIZED_CHARS;
 public class LibraryViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final CollectionDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO dao;
     // Library search manager
-    private final ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
+    private final ContentSearchManager searchManager;
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
-    private LiveData<Integer> totalContent = collectionDao.countAllBooks();
+    private LiveData<Integer> totalContent;
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
 
     // Updated whenever a new search is performed
     private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
 
 
-    public LibraryViewModel(@NonNull Application application) {
+    public LibraryViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
+        dao = collectionDAO;
+        searchManager = new ContentSearchManager(dao);
+        totalContent = dao.countAllBooks();
     }
 
     public void onSaveState(Bundle outState) {
@@ -109,7 +111,9 @@ public class LibraryViewModel extends AndroidViewModel {
     private void performSearch() {
         if (currentSource != null) libraryPaged.removeSource(currentSource);
 
-        searchManager.setContentSortOrder(Preferences.getContentSortOrder());
+        searchManager.setContentSortField(Preferences.getContentSortField());
+        searchManager.setContentSortDesc(Preferences.isContentSortDesc());
+
         currentSource = searchManager.getLibrary();
 
         libraryPaged.addSource(currentSource, libraryPaged::setValue);
@@ -179,10 +183,6 @@ public class LibraryViewModel extends AndroidViewModel {
     public void toggleContentFavourite(@NonNull final Content content) {
         if (content.isBeingDeleted()) return;
 
-        // Flag the content as "being favourited" (triggers blink animation)
-        content.setIsBeingFavourited(true);
-        collectionDao.insertContent(content);
-
         compositeDisposable.add(
                 Single.fromCallable(() -> doToggleContentFavourite(content.getId()))
                         .subscribeOn(Schedulers.io())
@@ -201,23 +201,22 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param contentId ID of the content whose favourite state to toggle
      * @return Resulting content
      */
-    @WorkerThread
     private Content doToggleContentFavourite(long contentId) {
+        Helper.assertNonUiThread();
 
         // Check if given content still exists in DB
-        Content theContent = collectionDao.selectContent(contentId);
+        Content theContent = dao.selectContent(contentId);
 
         if (theContent != null) {
             theContent.setFavourite(!theContent.isFavourite());
-            theContent.setIsBeingFavourited(false);
 
             // Persist in it JSON
             if (!theContent.getJsonUri().isEmpty())
                 ContentHelper.updateJson(getApplication(), theContent);
-            else ContentHelper.createJson(theContent);
+            else ContentHelper.createJson(getApplication(), theContent);
 
             // Persist in it DB
-            collectionDao.insertContent(theContent);
+            dao.insertContent(theContent);
 
             return theContent;
         }
@@ -231,7 +230,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param content Content to be added to the download queue
      */
     public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
-        collectionDao.addContentToQueue(content, targetImageStatus);
+        dao.addContentToQueue(content, targetImageStatus);
     }
 
     /**
@@ -242,17 +241,16 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void flagContentDelete(@NonNull final Content content, boolean flag) {
         content.setIsBeingDeleted(flag);
-        collectionDao.insertContent(content);
+        dao.insertContent(content);
     }
 
     /**
      * Delete the given list of content
      *
      * @param contents   List of content to be deleted
-     * @param onComplete Callback to run when the whole operation succeeds
      * @param onError    Callback to run when an error occurs
      */
-    public void deleteItems(@NonNull final List<Content> contents, Runnable onComplete, Consumer<Throwable> onError) {
+    public void deleteItems(@NonNull final List<Content> contents, Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contents) flagContentDelete(c, true);
 
@@ -264,8 +262,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> {
                                 },
-                                onError::accept,
-                                onComplete::run
+                                onError::accept
                         )
         );
     }
@@ -277,14 +274,14 @@ public class LibraryViewModel extends AndroidViewModel {
      * @return Content that has been deleted
      * @throws ContentNotRemovedException When any issue occurs during removal
      */
-    @WorkerThread
     private Content doDeleteContent(@NonNull final Content content) throws ContentNotRemovedException {
+        Helper.assertNonUiThread();
         try {
             // Check if given content still exists in DB
-            Content theContent = collectionDao.selectContent(content.getId());
+            Content theContent = dao.selectContent(content.getId());
 
             if (theContent != null) {
-                ContentHelper.removeContent(theContent, collectionDao);
+                ContentHelper.removeContent(getApplication(), theContent, dao);
                 Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
                 return theContent;
             }
@@ -304,20 +301,11 @@ public class LibraryViewModel extends AndroidViewModel {
     public void archiveContent(@NonNull final Content content, Consumer<File> onSuccess) {
         Timber.d("Building file list for: %s", content.getTitle());
 
-        File dir = ContentHelper.getContentDownloadDir(content);
+        DocumentFile bookFolder = DocumentFile.fromTreeUri(getApplication(), Uri.parse(content.getStorageUri()));
+        if (null == bookFolder || !bookFolder.exists()) return;
 
-        File[] files = dir.listFiles();
-        if (files != null && files.length > 0) {
-            Arrays.sort(files);
-            ArrayList<File> fileList = new ArrayList<>();
-            for (File file : files) {
-                String filename = file.getName();
-                if (filename.endsWith(".json") || filename.contains("thumb")) {
-                    break;
-                }
-                fileList.add(file);
-            }
-
+        List<DocumentFile> files = FileHelper.listDocumentFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive
+        if (!files.isEmpty()) {
             // Create folder to share from
             File sharedDir = new File(getApplication().getExternalCacheDir() + "/shared");
             if (FileHelper.createDirectory(sharedDir)) {
@@ -335,7 +323,7 @@ public class LibraryViewModel extends AndroidViewModel {
             Timber.d("Destination file: %s", dest);
 
             compositeDisposable.add(
-                    Single.fromCallable(() -> ZipUtil.zipFiles(fileList, dest))
+                    Single.fromCallable(() -> ZipUtil.zipFiles(getApplication(), files, dest))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(onSuccess::accept,

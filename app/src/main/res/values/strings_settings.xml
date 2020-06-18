@@ -64,10 +64,18 @@
     <string name="pref_add_no_media_file_title">Hide Downloaded Images</string>
     <string name="pref_add_no_media_file_summary">Prevents downloaded images from showing up in gallery apps.</string>
     <string name="nomedia_file_created">.nomedia file created.</string>
+    <string name="nomedia_file_failed">Failed to create .nomedia file.</string>
 
     <string name="pref_cat_advanced">Advanced</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
+    <string name="pref_delete_all_except_favs">Delete all books except favourites</string>
+    <string name="pref_delete_all_except_favs_summary">Purge the library; keep favourite books only</string>
+    <string name="pref_ask_delete_all_except_favs">Are you sure you wish to delete %d books ?</string>
+    <string name="pref_export_library_title">Export metadata</string>
+    <string name="pref_export_library_summary">Export books to a JSON file</string>
+    <string name="pref_import_library_title">Import metadata</string>
+    <string name="pref_import_library_summary">Restore exported books from a JSON file</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>
@@ -76,6 +84,17 @@
     <string name="pref_queue_autostart_default" translatable="false">true</string>
     <string name="pref_queue_autostart_on">Download queue will start as soon as a download is done</string>
     <string name="pref_queue_autostart_off">Download queue must be started manually</string>
+    <string name="pref_queue_wifi_only_title">Only download on WiFi</string>
+    <string name="pref_queue_wifi_only_default" translatable="false">false</string>
+    <string name="pref_queue_wifi_only_on">Download queue will only start if connected to WiFi</string>
+    <string name="pref_queue_wifi_only_off">Download queue will start if the device is connected to any network</string>
+    <string name="download_size_wifi_title">Skip large downloads on mobile data</string>
+    <string name="pref_dl_size_wifi_default" translatable="false">false</string>
+    <string name="pref_dl_size_wifi_on">Large downloads will be skipped if not connected to WiFi</string>
+    <string name="pref_dl_size_wifi_off">All downloads will be processed</string>
+    <string name="pref_dl_size_wifi_threshold_title">Large downloads threshold</string>
+    <string name="pref_dl_size_wifi_threshold_default" translatable="false">40</string>
+
     <string name="download_retries_screen_title">Automated download retries</string>
     <string name="download_retries_active_title">Retries activated</string>
     <string name="pref_dl_retries_active_default" translatable="false">false</string>
@@ -140,6 +159,8 @@
     <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
     <string name="pref_viewer_display_mode">Display mode for horizontal viewing</string>
     <string name="pref_viewer_display_mode_default" translatable="false">0</string>
+    <string name="pref_viewer_rendering">Rendering mode</string>
+    <string name="pref_viewer_rendering_default" translatable="false">0</string>
     <string name="pref_viewer_auto_rotate">Auto-rotate pictures</string>
     <bool name="pref_viewer_auto_rotate_default" translatable="false">false</bool>
     <string name="pref_viewer_auto_rotate_summary_off">Pictures are not rotated</string>

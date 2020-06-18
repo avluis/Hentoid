@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities.sources;
 
-import android.os.Build;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -35,8 +34,7 @@ public class EHentaiActivity extends BaseWebActivity {
         CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "sl=dm_2");
         client.restrictTo(DOMAIN_FILTER);
         // E-h serves images through hosts that use http connections, which is detected as "mixed content" by the app
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         return client;
     }
 

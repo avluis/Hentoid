@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.HttpHelper;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import timber.log.Timber;
 

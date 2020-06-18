@@ -2,6 +2,8 @@ package me.devsaki.hentoid.util;
 
 import org.junit.Test;
 
+import me.devsaki.hentoid.util.network.HttpHelper;
+
 import static org.junit.Assert.assertEquals;
 
 public class HttpHelperTest {

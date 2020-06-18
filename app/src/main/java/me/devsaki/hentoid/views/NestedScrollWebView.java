@@ -5,7 +5,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.webkit.WebView;
 
-import androidx.core.view.MotionEventCompat;
 import androidx.core.view.NestedScrollingChildHelper;
 import androidx.core.view.ViewCompat;
 
@@ -49,8 +48,7 @@ public class NestedScrollWebView extends WebView {
         boolean result = false;
 
         MotionEvent trackedEvent = MotionEvent.obtain(event);
-
-        final int action = MotionEventCompat.getActionMasked(event);
+        final int action = event.getActionMasked();
 
         if (action == MotionEvent.ACTION_DOWN) {
             mNestedYOffset = 0;

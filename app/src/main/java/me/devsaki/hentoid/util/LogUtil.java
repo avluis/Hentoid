@@ -1,15 +1,16 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
 
 import org.threeten.bp.Instant;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
@@ -96,22 +97,22 @@ public class LogUtil {
     }
 
     @Nullable
-    public static File writeLog(@Nonnull Context context, @Nonnull LogInfo info) {
+    public static DocumentFile writeLog(@Nonnull Context context, @Nonnull LogInfo info) {
         // Create the log
         String log = buildLog(info);
+        String logFileName = info.fileName + ".txt";
 
         // Save it
-        File rootFolder;
         try {
-            String settingDir = Preferences.getRootFolderName();
-            if (!settingDir.isEmpty() && FileHelper.isWritable(new File(settingDir))) {
-                rootFolder = new File(settingDir); // Use selected and output-tested location (possibly SD card)
-            } else {
-                rootFolder = FileHelper.getDefaultDir(context, ""); // Fallback to default location (phone memory)
-            }
-            File cleanupLogFile = new File(rootFolder, info.fileName + ".txt");
-            FileHelper.saveBinaryInFile(cleanupLogFile, log.getBytes());
-            return cleanupLogFile;
+            String settingFolderUriStr = Preferences.getStorageUri();
+            if (settingFolderUriStr.isEmpty()) return null;
+
+            DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(settingFolderUriStr));
+            if (null == folder || !folder.exists()) return null;
+
+            DocumentFile logDocumentFile = FileHelper.findOrCreateDocumentFile(context, folder, "text/plain", logFileName);
+            FileHelper.saveBinaryInFile(context, logDocumentFile, log.getBytes());
+            return logDocumentFile;
         } catch (Exception e) {
             Timber.e(e);
         }

@@ -15,6 +15,9 @@ import me.devsaki.hentoid.util.Preferences;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
+/**
+ * First-time use dialog for the choice of default app browse mode
+ */
 public class BrowseModeDialogFragment extends DialogFragment {
 
     public static void invoke(Fragment parent) {

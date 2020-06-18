@@ -1,13 +1,16 @@
 package me.devsaki.hentoid.widget;
 
 import android.view.View;
-import android.widget.ImageButton;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.skydoves.balloon.ArrowOrientation;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.ui.CarouselDecorator;
-import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.util.TooltipUtil;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -23,6 +26,7 @@ public class LibraryPager {
     // == UI
     // Bottom panel with page controls
     private View pagerPanel;
+    private RecyclerView pageCarousel;
     // Decorator for the page number carousel
     private CarouselDecorator decorator;
 
@@ -48,19 +52,15 @@ public class LibraryPager {
     public void initUI(View rootView) {
         pagerPanel = requireViewById(rootView, R.id.library_pager_group);
 
-        RecyclerView pageCarousel = requireViewById(rootView, R.id.pager_pageCarousel);
+        pageCarousel = requireViewById(rootView, R.id.pager_pageCarousel);
         pageCarousel.setHasFixedSize(true);
 
         decorator = new CarouselDecorator(rootView.getContext(), R.layout.item_pagecarousel);
         decorator.decorate(pageCarousel);
         decorator.setOnPageChangeListener(this::pageChanged);
 
-        ImageButton btnPrevious = requireViewById(rootView, R.id.pager_btnPrevious);
-        btnPrevious.setOnClickListener(this::previousPage);
-        btnPrevious.setBackground(ThemeHelper.makeQueueButtonSelector(rootView.getContext()));
-        ImageButton btnNext = requireViewById(rootView, R.id.pager_btnNext);
-        btnNext.setOnClickListener(this::nextPage);
-        btnNext.setBackground(ThemeHelper.makeQueueButtonSelector(rootView.getContext()));
+        requireViewById(rootView, R.id.pager_btnPrevious).setOnClickListener(this::previousPage);
+        requireViewById(rootView, R.id.pager_btnNext).setOnClickListener(this::nextPage);
     }
 
     public void show() {
@@ -69,6 +69,10 @@ public class LibraryPager {
 
     public void hide() {
         pagerPanel.setVisibility(View.GONE);
+    }
+
+    public boolean isVisible() {
+        return View.VISIBLE == pagerPanel.getVisibility();
     }
 
     /**
@@ -132,5 +136,9 @@ public class LibraryPager {
      */
     public int getCurrentPageNumber() {
         return currentPageNumber;
+    }
+
+    public void showTooltip(@NonNull final LifecycleOwner lifecycleOwner) {
+        TooltipUtil.showTooltip(pageCarousel.getContext(), R.string.help_page_slider, ArrowOrientation.BOTTOM, pageCarousel, lifecycleOwner);
     }
 }

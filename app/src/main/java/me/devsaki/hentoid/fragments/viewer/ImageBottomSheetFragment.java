@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.viewer;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -19,11 +21,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
@@ -32,6 +34,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
@@ -41,6 +44,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private ImageViewerViewModel viewModel;
 
     private int imageIndex = -1;
+    private float scale = -1;
     private ImageFile image = null;
 
     // UI
@@ -51,10 +55,11 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private ImageView favoriteButton;
 
 
-    public static void show(Context context, FragmentManager fragmentManager, int imageIndex) {
+    public static void show(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
 
         builder.setImageIndex(imageIndex);
+        builder.setScale(currentScale);
 
         ImageBottomSheetFragment imageBottomSheetFragment = new ImageBottomSheetFragment();
         imageBottomSheetFragment.setArguments(builder.getBundle());
@@ -71,6 +76,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(bundle);
             imageIndex = parser.getImageIndex();
             if (-1 == imageIndex) throw new IllegalArgumentException("Initialization failed");
+            scale = parser.getScale();
         }
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
@@ -110,12 +116,13 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * @param images Book's list of images
      */
     private void onImagesChanged(List<ImageFile> images) {
-        if (imageIndex >= images.size()) imageIndex = images.size() -1; // Might happen when deleting the last page
+        if (imageIndex >= images.size())
+            imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
 
-        imgPath.setText(image.getAbsolutePath());
-        Point size = getImageSize(image.getAbsolutePath());
-        imgDimensions.setText(String.format("%s x %s", size.x, size.y));
+        imgPath.setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false));
+        Point size = getImageSize(requireContext(), image.getFileUri());
+        imgDimensions.setText(String.format(Locale.US, "%s x %s (scale %.0f%%)", size.x, size.y, scale * 100));
 
         updateFavouriteDisplay(image.isFavourite());
     }
@@ -155,11 +162,13 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Copy" action button
      */
     private void onCopyClick() {
-        String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getAbsolutePath());
+        String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getFileUri());
         try {
-            File sourceFile = new File(image.getAbsolutePath());
-            try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(targetFileName)) {
-                try (InputStream input = FileHelper.getInputStream(sourceFile)) {
+            DocumentFile sourceFile = FileHelper.getFileFromUriString(requireContext(), image.getFileUri());
+            if (null == sourceFile || !sourceFile.exists()) return;
+
+            try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, image.getMimeType())) {
+                try (InputStream input = FileHelper.getInputStream(requireContext(), sourceFile)) {
                     FileHelper.copy(input, newDownload);
                 }
             }
@@ -167,7 +176,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             Snackbar.make(rootView, R.string.viewer_copy_success, LENGTH_LONG)
                     .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                     .show();
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             Snackbar.make(rootView, R.string.viewer_copy_fail, LENGTH_LONG).show();
         }
     }
@@ -176,8 +185,9 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Share" action button
      */
     private void onShareClick() {
-        File sourceFile = new File(image.getAbsolutePath());
-        FileHelper.shareFile(requireContext(), sourceFile, "Share picture");
+        DocumentFile docFile = FileHelper.getFileFromUriString(requireContext(), image.getFileUri());
+        if (docFile != null && docFile.exists())
+            FileHelper.shareFile(requireContext(), docFile, "Share picture");
     }
 
     /**
@@ -201,10 +211,18 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
                 .show();
     }
 
-    private static Point getImageSize(String path) {
+    private static Point getImageSize(@NonNull final Context context, @NonNull final String uri) {
+        DocumentFile imgFile = FileHelper.getFileFromUriString(context, uri);
+        if (null == imgFile || !imgFile.exists()) return new Point(0, 0);
+
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, options);
-        return new Point(options.outWidth, options.outHeight);
+        try {
+            BitmapFactory.decodeStream(FileHelper.getInputStream(context, imgFile), null, options);
+            return new Point(options.outWidth, options.outHeight);
+        } catch (IOException | IllegalArgumentException e) {
+            Timber.w(e);
+            return new Point(0, 0);
+        }
     }
 }

@@ -3,10 +3,7 @@ package me.devsaki.hentoid.util;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.StateListDrawable;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.StyleRes;
@@ -17,13 +14,10 @@ import androidx.fragment.app.DialogFragment;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Theme;
 
 public class ThemeHelper {
 
-    private static final int PX_4_DP = Helper.dpToPixel(HentoidApp.getInstance(), 4);
     private static final Map<String, Integer> COLOR_CACHE = new HashMap<>();
 
     private ThemeHelper() {
@@ -124,58 +118,5 @@ public class ThemeHelper {
         int result = ContextCompat.getColor(context, getColorId(context, colorName));
         COLOR_CACHE.put(key, result);
         return result;
-    }
-
-    /**
-     * SPECIFIC HELPER METHODS FOR DRAWABLE RESOURCES THAT CONTAIN COLORS
-     * <p>
-     * NB : Replacing "absolute" colors (@color/...) by themed colors (?...) should be the correct solution, but it crashes on KitKat
-     * => Universal solution is to create the drawable programmatically
-     */
-
-    public static GradientDrawable makeDrawerHeader(Context context) {
-        GradientDrawable shape = new GradientDrawable(
-                GradientDrawable.Orientation.TL_BR,
-                new int[]{
-                        getColor(context, R.color.primary_light),
-                        getColor(context, R.color.drawer_header_diagonal_light),
-                        getColor(context, R.color.primary_light)
-                }
-        );
-        shape.setShape(GradientDrawable.RECTANGLE);
-
-        return shape;
-    }
-
-    public static StateListDrawable makeQueueButtonSelector(Context context) {
-        int colorPrimary = getColor(context, R.color.primary_light);
-        int colorPrimaryVariant = getColor(context, R.color.primary_variant_light);
-
-        StateListDrawable res = new StateListDrawable();
-        res.addState(new int[]{android.R.attr.state_pressed}, makeCardSelectorShape(colorPrimaryVariant, false, 0));
-        res.addState(new int[]{-android.R.attr.state_pressed}, makeCardSelectorShape(colorPrimary, false, 0));
-        return res;
-    }
-
-    public static StateListDrawable makeCardSelector(Context context) {
-        int colorBase = getColor(context, R.color.card_surface_light);
-        int colorPressed = getColor(context, R.color.card_pressed_light);
-        int colorSelected = getColor(context, R.color.card_selected_light);
-        int colorSecondary = getColor(context, R.color.secondary_light);
-
-        StateListDrawable res = new StateListDrawable();
-        res.addState(new int[]{-android.R.attr.state_selected}, makeCardSelectorShape(colorBase, false, 0));
-        res.addState(new int[]{android.R.attr.state_pressed}, makeCardSelectorShape(colorPressed, false, 0));
-        res.addState(new int[]{-android.R.attr.state_pressed, android.R.attr.state_selected}, makeCardSelectorShape(colorSelected, true, colorSecondary));
-        return res;
-    }
-
-    private static GradientDrawable makeCardSelectorShape(@ColorInt int bgColor, boolean stroke, @ColorInt int strokeColor) {
-        GradientDrawable shape = new GradientDrawable();
-        shape.setShape(GradientDrawable.RECTANGLE);
-        shape.setCornerRadius(PX_4_DP);
-        shape.setColor(bgColor);
-        if (stroke) shape.setStroke(PX_4_DP, strokeColor);
-        return shape;
     }
 }

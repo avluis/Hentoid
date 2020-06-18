@@ -28,6 +28,8 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -56,7 +58,6 @@ public class ImageGalleryFragment extends Fragment {
         return fragment;
     }
 
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
@@ -67,7 +68,9 @@ public class ImageGalleryFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        fastAdapter.setHasStableIds(true);
+        if (!fastAdapter.hasObservers())
+            fastAdapter.setHasStableIds(true);
+
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p));
         // Favourite button click listener
@@ -92,6 +95,7 @@ public class ImageGalleryFragment extends Fragment {
 
         recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
         recyclerView.setAdapter(fastAdapter);
+        new FastScrollerBuilder(recyclerView).build();
 
         Toolbar toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
@@ -112,9 +116,19 @@ public class ImageGalleryFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         firstLoadDone = false;
-        viewModel = new ViewModelProvider(requireActivity()).get(ImageViewerViewModel.class);
+
+        ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
+    }
+
+    @Override
+    public void onStop() {
+        if (recyclerView != null)
+            recyclerView.setAdapter(null);
+        recyclerView = null;
+        super.onStop();
     }
 
     private void onImagesChanged(List<ImageFile> images) {
@@ -136,12 +150,15 @@ public class ImageGalleryFragment extends Fragment {
     private boolean onItemClick(int position) {
         ImageFileItem imgFile = itemAdapter.getAdapterItem(position);
         viewModel.setStartingIndex(imgFile.getImage().getDisplayOrder());
-        getParentFragmentManager()
-                .beginTransaction()
-                .replace(android.R.id.content, new ImagePagerFragment())
-                .commit();
-
-        getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Clear back stack
+        if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, new ImagePagerFragment())
+                    .addToBackStack(null)
+                    .commit();
+        } else { // Pager mode (Library -> pager -> gallery -> pager)
+            getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
+        }
 
         return true;
     }

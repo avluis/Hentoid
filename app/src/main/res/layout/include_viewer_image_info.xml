@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp"
-    android:theme="@style/Theme.Light.BottomSheetDialog">
+    android:theme="@style/Theme.Light.BottomSheetDialog"
+    tools:targetApi="o">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -20,7 +21,7 @@
             android:textSize="@dimen/caption"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/app_intro" />
+            tools:text="root/path1/path2/image_name.jpg" />
 
         <TextView
             android:id="@+id/image_dimensions"
@@ -29,7 +30,7 @@
             android:textSize="@dimen/caption"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/image_path"
-            tools:text="@string/app_intro" />
+            tools:text="1600 x 2300 (scale 86%)" />
 
         <View
             android:id="@+id/img_divider"
@@ -49,6 +50,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_fav_empty"
+            android:tooltipText="@string/page_fav_help"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
             tools:ignore="ContentDescription" />
@@ -64,6 +66,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_action_copy"
+            android:tooltipText="@string/page_copy_help"
             app:layout_constraintEnd_toStartOf="@id/img_action_share"
             app:layout_constraintStart_toEndOf="@id/img_action_favourite"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
@@ -80,6 +83,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_action_share"
+            android:tooltipText="@string/page_share_help"
             app:layout_constraintEnd_toStartOf="@id/img_action_delete"
             app:layout_constraintStart_toEndOf="@id/img_action_copy"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
@@ -96,6 +100,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_action_delete_forever"
+            android:tooltipText="@string/page_delete_help"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
             tools:ignore="ContentDescription" />

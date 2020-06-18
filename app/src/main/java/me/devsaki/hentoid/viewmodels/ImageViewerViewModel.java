@@ -2,12 +2,11 @@ package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
 import android.content.Context;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.WorkerThread;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -18,13 +17,13 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
-import java.io.File;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.annotation.Nonnull;
+import java.util.Map;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -35,19 +34,16 @@ import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 
 public class ImageViewerViewModel extends AndroidViewModel {
@@ -55,7 +51,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private static final String KEY_IS_SHUFFLED = "is_shuffled";
 
     // Collection DAO
-    private final CollectionDAO collectionDao = new ObjectBoxDAO(getApplication().getApplicationContext());
+    private final CollectionDAO collectionDao;
 
     // Settings
     private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
@@ -77,8 +73,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
 
-    public ImageViewerViewModel(@NonNull Application application) {
+    public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
+        collectionDao = collectionDAO;
     }
 
 
@@ -118,7 +115,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    public void loadFromSearchParams(long contentId, @Nonnull Bundle bundle) {
+    public void loadFromSearchParams(long contentId, @NonNull Bundle bundle) {
         // Technical
         ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
         searchManager.loadFromBundle(bundle);
@@ -140,44 +137,59 @@ public class ImageViewerViewModel extends AndroidViewModel {
         startingIndex.setValue(index);
     }
 
-    private void setImages(@NonNull Content content, @NonNull List<ImageFile> imgs) {
-        // Load new content
-        File[] pictureFiles = ContentHelper.getPictureFilesFromContent(content); // TODO this is called too often when viewing a queued book -> optimize !
-        if (pictureFiles != null && pictureFiles.length > 0) {
-            List<ImageFile> imageFiles;
-            if (imgs.isEmpty()) {
-                imageFiles = filesToImageList(pictureFiles);
-                content.setImageFiles(imageFiles);
-                collectionDao.insertContent(content);
-            } else {
-                imageFiles = new ArrayList<>(imgs);
-                matchFilesToImageList(pictureFiles, imageFiles);
+    private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
+        compositeDisposable.add(
+                Single.fromCallable(() -> doSetImages(theContent, imgs))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .map(p -> initViewer(p.left, p.right))
+                        .observeOn(Schedulers.io())
+                        .subscribe(
+                                // Cache JSON and record 1 more view for the new content
+                                c -> postLoadProcessing(getApplication().getApplicationContext(), c),
+                                Timber::e
+                        )
+        );
+    }
+
+    private ImmutablePair<Content, List<ImageFile>> doSetImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
+        boolean missingUris = Stream.of(imgs).filter(img -> img.getFileUri().isEmpty()).count() > 0;
+        List<ImageFile> imageFiles = new ArrayList<>(imgs);
+
+        // Reattach actual files to the book's pictures if they are empty or have no URI's
+        if (missingUris || imgs.isEmpty()) {
+            List<DocumentFile> pictureFiles = ContentHelper.getPictureFilesFromContent(getApplication(), theContent);
+            if (!pictureFiles.isEmpty()) {
+                if (imgs.isEmpty()) {
+                    imageFiles = ContentHelper.createImageListFromFiles(pictureFiles);
+                    theContent.setImageFiles(imageFiles);
+                    collectionDao.insertContent(theContent);
+                } else
+                    ContentHelper.matchFilesToImageList(pictureFiles, imageFiles);
             }
-            sortAndSetImages(imageFiles, isShuffled);
+        }
 
-            if (content.getId() != loadedBookId) { // To be done once per book only
-                if (Preferences.isViewerResumeLastLeft())
-                    setStartingIndex(content.getLastReadPageIndex());
-                else
-                    setStartingIndex(0);
-            }
+        return new ImmutablePair<>(theContent, imageFiles);
+    }
 
-            loadedBookId = content.getId();
+    private Content initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
 
-            // Cache JSON and record 1 more view for the new content
-            compositeDisposable.add(
-                    Single.fromCallable(() -> postLoadProcessing(content))
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(
-                                    v -> {
-                                    },
-                                    Timber::e
-                            )
-            );
-        } else {
+        if (imageFiles.isEmpty()) { // No pictures found
+            // TODO : do something more UX-friendly here; the user is alone with that black screen...
             ToastUtil.toast(R.string.no_images);
         }
+
+        sortAndSetImages(imageFiles, isShuffled);
+
+        if (theContent.getId() != loadedBookId) { // To be done once per book only
+            if (Preferences.isViewerResumeLastLeft())
+                setStartingIndex(theContent.getLastReadPageIndex());
+            else
+                setStartingIndex(0);
+        }
+
+        loadedBookId = theContent.getId();
+        return theContent;
     }
 
     public void onShuffleClick() {
@@ -188,12 +200,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (imgs != null) sortAndSetImages(imgs, isShuffled);
     }
 
-    private void sortAndSetImages(@Nonnull List<ImageFile> imgs, boolean shuffle) {
+    private void sortAndSetImages(@NonNull List<ImageFile> imgs, boolean shuffle) {
         if (shuffle) {
             Collections.shuffle(imgs);
+            // Don't keep the cover
+            imgs = Stream.of(imgs).filter(img -> !img.isCover()).toList();
         } else {
-            // Sort images according to their Order
-            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).toList();
+            // Sort images according to their Order; don't keep the cover
+            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).filter(img -> !img.isCover()).toList();
         }
 
         if (showFavourites)
@@ -231,15 +245,35 @@ public class ImageViewerViewModel extends AndroidViewModel {
             default:
                 readThresholdPosition = 1;
         }
+        boolean updateReads = (highestImageIndexReached + 1 >= readThresholdPosition);
 
-        int indexToSet = index;
         // Reset the memorized page index if it represents the last page
-        if (index == theImages.size() - 1) indexToSet = 0;
+        int indexToSet = (index == theImages.size() - 1) ? 0 : index;
 
-        theContent.setLastReadPageIndex(indexToSet);
-        if (highestImageIndexReached + 1 >= readThresholdPosition)
-            ContentHelper.updateContentReads(getApplication(), collectionDao, theContent);
-        else collectionDao.insertContent(theContent);
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doLeaveBook(theContent.getId(), indexToSet, updateReads))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // No feedback needed
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    private void doLeaveBook(final long contentId, int indexToSet, boolean updateReads) {
+        Helper.assertNonUiThread();
+
+        // Get a fresh version of current content in case it has been updated since the initial load
+        // (that can be the case when viewing a book that is being downloaded)
+        Content savedContent = collectionDao.selectContent(contentId);
+        if (null == savedContent) return;
+
+        savedContent.setLastReadPageIndex(indexToSet);
+        if (updateReads)
+            ContentHelper.updateContentReads(getApplication(), collectionDao, savedContent);
+        else collectionDao.insertContent(savedContent);
     }
 
     public void toggleShowFavouritePages(Consumer<Boolean> callback) {
@@ -253,7 +287,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void togglePageFavourite(ImageFile file, Consumer<ImageFile> callback) {
         compositeDisposable.add(
-                Single.fromCallable(() -> togglePageFavourite(getApplication().getApplicationContext(), file.getId()))
+                Single.fromCallable(() -> doTogglePageFavourite(getApplication().getApplicationContext(), file.getId()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -283,20 +317,20 @@ public class ImageViewerViewModel extends AndroidViewModel {
      * @param imageId ID of the image whose flag to toggle
      * @return ImageFile with the new state
      */
-    @WorkerThread
-    private ImageFile togglePageFavourite(Context context, long imageId) {
+    private ImageFile doTogglePageFavourite(Context context, long imageId) {
+        Helper.assertNonUiThread();
         ImageFile img = collectionDao.selectImageFile(imageId);
 
         if (img != null) {
             img.setFavourite(!img.isFavourite());
 
-            // Persist it in DB
+            // Persist in DB
             collectionDao.insertImageFile(img);
 
-            // Persist in it JSON
+            // Persist in JSON
             Content theContent = img.content.getTarget();
             if (!theContent.getJsonUri().isEmpty()) ContentHelper.updateJson(context, theContent);
-            else ContentHelper.createJson(theContent);
+            else ContentHelper.createJson(context, theContent);
 
             return img;
         } else
@@ -322,7 +356,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                         contentIds.remove(currentContentIndex);
                                         if (currentContentIndex >= contentIds.size() && currentContentIndex > 0)
                                             currentContentIndex--;
-                                        loadFromContent(contentIds.get(currentContentIndex));
+                                        if (contentIds.size() > currentContentIndex)
+                                            loadFromContent(contentIds.get(currentContentIndex));
                                     } else { // Close the viewer if the list is empty (single book)
                                         content.setValue(null);
                                     }
@@ -336,10 +371,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    @WorkerThread
     private void doDeleteBook(@NonNull Content targetContent) {
+        Helper.assertNonUiThread();
         collectionDao.deleteQueue(targetContent);
-        ContentHelper.removeContent(targetContent, collectionDao);
+        ContentHelper.removeContent(getApplication(), targetContent, collectionDao);
     }
 
     public void deletePage(int pageIndex) {
@@ -355,8 +390,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    @WorkerThread
     private void doDeletePage(int pageIndex) {
+        Helper.assertNonUiThread();
         List<ImageFile> imageFiles = images.getValue();
         if (imageFiles != null && imageFiles.size() > pageIndex)
             ContentHelper.removePage(imageFiles.get(pageIndex), collectionDao, getApplication());
@@ -389,73 +424,55 @@ public class ImageViewerViewModel extends AndroidViewModel {
         images.addSource(currentImageSource, imgs -> setImages(theContent, imgs));
     }
 
-    private static void matchFilesToImageList(File[] files, @Nonnull List<ImageFile> images) {
-        int i = 0;
-        while (i < images.size()) {
-            boolean matchFound = false;
-            for (File f : files) {
-                // Image and file name match => store absolute path
-                if (fileNamesMatch(images.get(i).getName(), f.getName())) {
-                    matchFound = true;
-                    images.get(i).setAbsolutePath(f.getAbsolutePath());
-                    break;
-                }
-            }
-            // Image is not among detected files => remove it
-            if (!matchFound) {
-                images.remove(i);
-            } else i++;
-        }
+    private void postLoadProcessing(@NonNull Context context, @NonNull Content content) {
+        cacheJson(context, content);
     }
 
-    // Match when the names are exactly the same, or when their value is
-    private static boolean fileNamesMatch(@NonNull String name1, @NonNull String name2) {
-        name1 = FileHelper.getFileNameWithoutExtension(name1);
-        name2 = FileHelper.getFileNameWithoutExtension(name2);
-        if (name1.equalsIgnoreCase(name2)) return true;
+    public void updateBookPreferences(@NonNull final Map<String, String> newPrefs) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+        theContent.setBookPreferences(newPrefs);
 
-        try {
-            return (Integer.parseInt(name1) == Integer.parseInt(name2));
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doUpdateContent(getApplication().getApplicationContext(), theContent))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Update is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
     }
 
-    private List<ImageFile> filesToImageList(@NonNull File[] files) {
-        List<ImageFile> result = new ArrayList<>();
-        int order = 1;
-        // Sort files by name alpha
-        List<File> fileList = Stream.of(files).sortBy(File::getName).toList();
-        for (File f : fileList) {
-            ImageFile img = new ImageFile();
-            String name = FileHelper.getFileNameWithoutExtension(f.getName());
-            img.setName(name).setOrder(order++).setUrl("").setStatus(StatusContent.DOWNLOADED).setAbsolutePath(f.getAbsolutePath());
-            result.add(img);
-        }
-        return result;
-    }
+    private void doUpdateContent(@NonNull final Context context, @NonNull final Content c) {
+        Helper.assertNonUiThread();
 
-    @WorkerThread
-    private Content postLoadProcessing(@Nonnull Content content) {
-        cacheJson(content);
-        return ContentHelper.open(getApplication().getApplicationContext(), content, null);
-        //return content;
+        // Persist in DB
+        collectionDao.insertContent(c);
+        content.postValue(c);
+
+        // Persist in JSON
+        if (!c.getJsonUri().isEmpty()) ContentHelper.updateJson(context, c);
+        else ContentHelper.createJson(context, c);
     }
 
     // Cache JSON URI in the database to speed up favouriting
-    // NB : Lollipop only because it must have _full_ support for SAF
-    @WorkerThread
-    private void cacheJson(@Nonnull Content content) {
-        if (content.getJsonUri().isEmpty() && Build.VERSION.SDK_INT >= LOLLIPOP) {
-            File bookFolder = ContentHelper.getContentDownloadDir(content);
-            DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
-            if (file != null) {
-                // Cache the URI of the JSON to the database
-                content.setJsonUri(file.getUri().toString());
-                collectionDao.insertContent(content);
-            } else {
-                Timber.e("File not detected : %s", content.getStorageFolder());
-            }
+    private void cacheJson(@NonNull Context context, @NonNull Content content) {
+        Helper.assertNonUiThread();
+        if (!content.getJsonUri().isEmpty()) return;
+
+        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
+        if (null == folder || !folder.exists()) return;
+
+        DocumentFile foundFile = FileHelper.findFile(getApplication(), folder, Consts.JSON_FILE_NAME_V2);
+        if (null == foundFile) {
+            Timber.e("JSON file not detected in %s", content.getStorageUri());
+            return;
         }
+
+        // Cache the URI of the JSON to the database
+        content.setJsonUri(foundFile.getUri().toString());
+        collectionDao.insertContent(content);
     }
 }

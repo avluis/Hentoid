@@ -6,8 +6,11 @@
     <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
     <string name="on">On</string>
     <string name="off">Off</string>
+    <string name="select_all">Select all</string>
+    <string name="select_none">Select none</string>
 
     <!-- Activities -->
+    <string name="title_activity_api29_migration">API 29 migration</string>
     <string name="title_activity_downloads">Library</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
@@ -15,45 +18,62 @@
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
 
+    <!-- API29 migration / library refresh screen -->
+    <string name="api29_migration_title">Hentoid v12\nFile management update</string>
+    <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
+    <string name="api29_migration_location">Current Hentoid folder location\n%s</string>
+    <string name="api29_migration_step1">Hentoid folder</string>
+    <string name="api29_migration_step1_select">Select Hentoid folder</string>
+    <string name="api29_migration_step2">Scan site folders</string>
+    <string name="api29_migration_step3_init">Library scan starting…</string>
+    <string name="api29_migration_step3">Scan library (%1$d / %2$d)</string>
+    <string name="api29_migration_step4_init">Importing queue…</string>
+
     <!-- Library screen toolbar -->
-    <string name="menu_tags">Tags</string>
     <string name="menu_search">Search</string>
-    <string name="menu_order">order books</string>
-    <string name="menu_order_AZ">alphabetically</string>
-    <string name="menu_order_ZA">alphabetically (inverted)</string>
-    <string name="menu_order_123">by download date (oldest 1st)</string>
-    <string name="menu_order_321">by download date (newest 1st)</string>
-    <string name="menu_order_unread">by reads (unread 1st)</string>
-    <string name="menu_order_read">by reads (most read 1st)</string>
-    <string name="menu_order_last_read">by read date (latest read 1st)</string>
-    <string name="menu_order_pages_desc">by pages (most first)</string>
-    <string name="menu_order_pages_asc">by pages (least first)</string>
-    <string name="menu_order_random">random order</string>
+    <string name="menu_order">Order books</string>
     <string name="menu_fav">Toggle favourite filter</string>
     <string name="menu_delete_single">Delete</string>
     <string name="menu_delete_multi">Delete Items</string>
-    <string name="menu_redownload">Redownload from scratch</string>
+    <string name="menu_open_folder">Open containing folder</string>
+    <string name="menu_redownload">Redownload</string>
+    <string name="menu_redownload_scratch">Redownload from scratch</string>
     <string name="menu_share">Share</string>
+    <string name="menu_share_help">Share book URL and title using another app</string>
     <string name="menu_archive">Archive</string>
+    <string name="menu_archive_help">Archive the book in a ZIP file</string>
     <string name="search_hint">Title, author, tag or book ID</string>
     <string name="send_to">Share with:</string>
     <string name="open_settings">Open settings</string>
+    <string name="app_settings">App settings</string>
+    <string name="book_settings">Book settings</string>
 
     <!-- Queue -->
-    <string name="cancel">Cancel</string>
+    <string name="queue_queue_tab">In progress</string>
+    <string name="queue_errors_tab">Errors</string>
+    <string name="cancel_all">Cancel all</string>
+    <string name="invert_queue">Invert queue</string>
+    <string name="redownload_all">Redownload all</string>
+    <string name="canceled">Canceled</string>
+    <string name="undo">Undo</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
+    <string name="move_top">Move to top</string>
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
+    <string name="move_bottom">Move to bottom</string>
     <string name="queue_empty2" />
     <string name="queue_paused">Queue paused</string>
     <string name="queue_preparing">Preparing download</string>
     <string name="queue_dl">Downloading {0}</string>
     <string name="err_stats_title">Error stats</string>
-    <plurals name="queue_book_count">
-        <item quantity="one">Queue has %s book</item>
-        <item quantity="other">Queue has %s books</item>
-    </plurals>
+    <string name="err_stats_help">Show detailed stats about current download errors</string>
+    <string name="err_no_content">Book does not exist yet</string>
+    <string name="confirm_cancel_all">You are about to cancel the whole queue. Continue ?</string>
+    <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
+    <string name="paused_no_internet">Cannot download - No internet</string>
+    <string name="paused_no_wifi">Cannot download - No WiFi</string>
+    <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
@@ -72,43 +92,70 @@
     <string name="refresh_options_remove_3">JSON file is unreadable (not recommended)</string>
     <string name="refresh_options_remove_or">or</string>
 
+    <!-- Delete all except favs -->
+    <string name="delete_title">Delete all except favourites</string>
+    <string name="book_progress">%1$d / %2$d books</string>
+
+    <!-- Import metadata -->
+    <string name="import_title">Import metadata</string>
+    <string name="import_mode_add">Add to current library</string>
+    <string name="import_mode_replace">Replace library with imported books</string>
+    <string name="import_select_file">Select file to import</string>
+    <string name="import_file_invalid">File %s is invalid</string>
+    <plurals name="import_file_library">
+        <item quantity="one">Import library (%d book)</item>
+        <item quantity="other">Import library (%d books)</item>
+    </plurals>
+    <plurals name="import_file_queue">
+        <item quantity="one">Import queue (%d book)</item>
+        <item quantity="other">Import queue (%d books)</item>
+    </plurals>
+    <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue > Errors.</string>
+    <string name="import_run">RUN IMPORT</string>
+    <plurals name="import_result">
+        <item quantity="one">%d book imported successfully</item>
+        <item quantity="other">%d books imported successfully</item>
+    </plurals>
+
+    <!-- Export metadata -->
+    <string name="export_title">Export metadata</string>
+    <plurals name="export_file_library">
+        <item quantity="one">Export library (%d book)</item>
+        <item quantity="other">Export library (%d books)</item>
+    </plurals>
+    <string name="export_favs_only">Only export favourites</string>
+    <plurals name="export_file_queue">
+        <item quantity="one">Export queue (%d book)</item>
+        <item quantity="other">Export queue (%d books)</item>
+    </plurals>
+    <string name="export_warning">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
+    <string name="export_run">RUN EXPORT</string>
+
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
-    <string name="permission_granted">Permission set, restarting library import.</string>
     <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
     <string name="permissioncomplaint_snackbar_manual">You must manually grant permissions before you can continue</string>
     <string name="import_canceled">Import canceled</string>
-    <string name="existing_library_error">Please select a custom location.</string>
+    <string name="import_invalid">Invalid folder selected - please select another one</string>
+    <string name="import_create_fail">Hentoid folder creation failed - please select another location</string>
+    <string name="import_other">Import has stopped</string>
     <string name="task_done">Task complete - see details in the log</string>
     <string name="content_not_found">Error - content not found</string>
     <string name="contents_detected">Hendroid has recognized an existing library in this location.\nDo you want to import this library?</string>
-    <string name="import_dialog">Importing Library</string>
-    <string name="add_dialog">Adding files to DB</string>
-    <string name="please_wait">Please wait…</string>
-    <string name="scanning_files">Scanning files…</string>
-    <string name="adding_to_db">Adding files to database…</string>
-    <string name="kitkat_rationale">Unable to modify contents of the SD Card. This is caused by the external storage policy by Google in Android 4.4.\nTo bypass this limitation, you can try using one of the \'sd fix\' tools available in the Google Play Store (Root Required).</string>
-    <string name="no_sd_support">Your device is not currently supported.\nPlease join our Discord Server if you wish to help us add support for your device.</string>
+    <string name="starting_import">Starting import…</string>
+    <string name="importing_library">Importing Library</string>
+    <string name="importing_please_wait">Importing, please wait…</string>
+    <string name="updating_please_wait">Updating, please wait…</string>
     <string name="enabled">ENABLED</string>
     <string name="disabled">DISABLED</string>
 
-    <!-- Import / Kitkat folder dialog -->
     <string name="kitkat_dialog_title">Choose Hendroid folder</string>
-    <string name="kitkat_dialog_dir">$dir $default\n[$freeUsage MB free ($freePc%)]</string>
-    <string name="kitkat_dialog_public">This is a public folder - your downloads will stay there even after uninstalling the app</string>
-    <string name="kitkat_dialog_private">WARNING : This is a private folder - your downloads will be deleted after uninstalling the app !\nYou\'ll need to use ADB to download them to your computer.</string>
-    <string name="kitkat_dialog_subfolder">Subfolder (optional)</string>
-    <string name="kitkat_dialog_return_0">Folder $s created successfully</string>
-    <string name="kitkat_dialog_return_1">Folder $s created but not writable</string>
-    <string name="kitkat_dialog_return_2">Folder $s could not be created</string>
-
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
-    <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
-    <string name="error_open">Error opening image : no image viewer found.</string>
+    <string name="error_open">Error opening file : no relevant application found</string>
     <string name="error_browser">Error opening link: no browser found</string>
-    <string name="error_send">Error sending archive : no relevant application found.</string>
+    <string name="error_send">Error sending archive : no relevant application found</string>
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
@@ -116,35 +163,28 @@
     <string name="redownload_action">REDOWNLOAD</string>
     <string name="redownload_open_log">Open error log</string>
     <string name="redownload_share_log">Share error log</string>
-    <string name="redownload_get_log">Get error log</string>
     <string name="redownload_generating_log_file">Generating log file…</string>
-    <string name="redownload_log_clipboard">Log copied to clipboard</string>
 
     <!-- Library fragment -->
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
     </plurals>
-    <string name="deleted">\@content deleted.</string>
-    <string name="not_previous_page">First page - can\'t proceed any further.</string>
-    <string name="not_next_page">Last page - download more!</string>
-    <string name="on_first_page">Already on the first page.</string>
-    <string name="moving_to_first_page">Moving to first page.</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
     <string name="queue_empty">Why am I empty?</string>
+    <string name="errors_empty">No errors detected among downloads</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
     <string name="downloads_loading">Loading up~</string>
     <string name="masterdata_no_result">No result found :(</string>
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
-    <string name="sd_access_error">SD Access Error!\nPlease check or replace SD Card!!</string>
     <string name="sd_access_fatal_error">Hendroid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="book_title">"This is a rather long title, just because we need it to be."</string>
     <string name="book_series">"Series: Name"</string>
     <string name="book_artist">"Artist: Name"</string>
-    <string name="book_pages">"Pages: 1234"</string>
+    <string name="book_pages">"Pages: 1234; 125 MB (est.)"</string>
     <string name="book_tags">""tag1, tag2, tag3, etc.</string>
     <plurals name="number_of_book_search_results">
         <item quantity="one">%d/%d result</item>
@@ -160,10 +200,27 @@
         <item quantity="one">One of the selected books has secured content and cannot be redownloaded\nThis book will be ignored.</item>
         <item quantity="other">Some of the selected books have secured content and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
-    <string name="no_more_load_retry">No more items to load. Refresh to retry</string>
-    <string name="endless_disabled">Loading has been disabled</string>
-    <string name="endless_cancel">Loading has been canceled</string>
-    <string name="endless_error">Error while loading</string>
+    <string name="deleted">Deleted</string>
+    <string name="help_search">Search anything : title, author, tag\nand launch code too !</string>
+    <string name="help_page_slider">You can browse faster by sliding through page numbers</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d item selected</item>
+        <item quantity="other">%d items selected</item>
+    </plurals>
+    <string name="folder_undefined">Error - containing folder undefined</string>
+    <!-- Sorting fields -->
+    <string name="sort_title">Title</string>
+    <string name="sort_artist">Artist</string>
+    <string name="sort_pages">Pages</string>
+    <string name="sort_dl_date">Download date</string>
+    <string name="sort_read_date">Read date</string>
+    <string name="sort_reads">Reads</string>
+    <string name="sort_random">Random</string>
+    <string name="sort_invalid">-invalid-</string>
+    <!-- Item card tooltips -->
+    <string name="drag_help">Drag item</string>
+    <string name="view_source_help">View source in browser</string>
+    <string name="book_fav_help">Mark/unmark book as favourite</string>
 
     <!-- Alerts -->
     <string name="alert_orange">Be aware that downloads may fail on this site.\n%s</string>
@@ -197,7 +254,7 @@
     <string name="about_chrome_version">Chrome v%1$d</string>
 
     <!-- Web viewer -->
-    <string name="web_gallery">Back to gallery page</string>
+    <string name="web_gallery">Back to latest gallery page</string>
     <string name="web_home">Back to library</string>
     <string name="web_back">Back</string>
     <string name="web_forward">Forward</string>
@@ -206,6 +263,9 @@
     <string name="web_download">Download</string>
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
     <string name="web_url_clipboard">URL copied to clipboard</string>
+    <string name="help_web_download">You\'ve reached a book page.\nTime to download with the bottom bar!</string>
+    <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
+    <string name="help_web_exh_account">Please use or create an ExHentai account</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
@@ -222,33 +282,37 @@
     <string name="search_select_a_filter">Select a filter</string>
 
     <!-- DB migration & Maintenance -->
-    <string name="migrate_db">Migrating the database</string>
     <string name="maintenance">Performing maintenance</string>
 
     <!-- Image viewer -->
     <string name="no_images">Could not load the book : No image found</string>
-    <string name="image_file_not_found">File not found in @dir</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
     <string name="viewer_direction_ttb">Top to bottom</string>
-    <string name="viewer_prefs_title">Viewer preferences</string>
-    <string name="viewer_prefs_display_fit">Fit (image is entirely displayed on screen)</string>
-    <string name="viewer_prefs_display_fill">Fill (image takes up all screen)</string>
     <string name="viewer_slideshow">Slideshow</string>
+    <string name="viewer_slideshow_help">Slideshow mode</string>
     <string name="viewer_order_shuffle">Shuffle pages</string>
     <string name="viewer_order_123">Reorder pages</string>
+    <string name="viewer_order_shuffle_help">Toggle page shuffling</string>
     <string name="viewer_filter_favourite_off">Only show favourite pages</string>
     <string name="viewer_filter_favourite_on">Show all pages</string>
+    <string name="viewer_filter_favourite_help">Toggle display of favourite page</string>
     <string name="viewer_page_menu">Page menu</string>
-    <string name="viewer_favourite_off">Mark page as favourite</string>
-    <string name="viewer_favourite_on">Unmark page as favourite</string>
+    <string name="viewer_page_menu_help">Open page properties</string>
     <string name="viewer_delete_book">Delete book</string>
-    <string name="pref_viewer_image_display">Image display mode</string>
     <string name="viewer_copy_success">Copied to Downloads folder</string>
     <string name="viewer_copy_fail">Could not write to Downloads folder</string>
     <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
     <string name="viewer_ask_delete_page">Are you sure you wish to delete this page?</string>
+    <string name="previous_book_help">Previous book</string>
+    <string name="next_book_help">Next book</string>
+    <string name="gallery_help">Book gallery</string>
+    <string name="gallery_fav_help">Book gallery / favourites only</string>
+    <string name="page_fav_help">Mark/unmark page as favourite</string>
+    <string name="page_copy_help">Copy page to the Android Downloads folder</string>
+    <string name="page_share_help">Share page using another app</string>
+    <string name="page_delete_help">Delete page</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>
@@ -260,4 +324,7 @@
 
     <!-- Edit drawer -->
     <string name="title_activity_drawer_edit">Edit menu</string>
+
+    <!-- Misc -->
+    <string name="select_file_manager">Select your file manager</string>
 </resources>

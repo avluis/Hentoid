@@ -16,6 +16,8 @@ import me.devsaki.hentoid.viewholders.AttributeViewHolder;
 
 /**
  * Adapter for the available attributes list displayed in the advanced search screen
+ *
+ * Can only be removed when prerequisites are met : see comments in {@link me.devsaki.hentoid.fragments.SearchBottomSheetFragment}
  */
 public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeViewHolder> {
 

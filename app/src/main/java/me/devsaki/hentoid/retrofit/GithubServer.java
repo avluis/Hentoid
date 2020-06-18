@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.reactivex.Single;
-import me.devsaki.hentoid.util.OkHttpClientSingleton;
+import me.devsaki.hentoid.util.network.OkHttpClientSingleton;
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;

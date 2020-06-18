@@ -19,7 +19,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.HttpHelper;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 import timber.log.Timber;
 
@@ -28,10 +28,8 @@ public class MusesContent implements ContentParser {
     private String galleryUrl;
     @Selector(value = ".top-menu-breadcrumb a")
     private List<Element> breadcrumbs;
-    @Selector(value = ".gallery img", attr = "data-src", defValue = "")
-    private List<String> thumbs;
-    @Selector(value = ".gallery a", attr = "href", defValue = "")
-    private List<String> thumbLinks;
+    @Selector(value = ".gallery a")
+    private List<Element> thumbLinks;
 
     private static final List<String> nonLegitPublishers = new ArrayList<>();
     private static final List<String> publishersWithAuthors = new ArrayList<>();
@@ -54,9 +52,20 @@ public class MusesContent implements ContentParser {
         // Gallery pages are the only ones whose gallery links end with numbers
         // The others are album lists
         int nbImages = 0;
-        for (String thumbLink : thumbLinks) {
-            int numSeparator = thumbLink.lastIndexOf('/');
-            if (Helper.isNumeric(thumbLink.substring(numSeparator + 1))) nbImages++;
+        List<String> imagesUrls = new ArrayList<>();
+        for (Element thumbLink : thumbLinks) {
+            String href = thumbLink.attr("href");
+            int numSeparator = href.lastIndexOf('/');
+            if (Helper.isNumeric(href.substring(numSeparator + 1)))
+            {
+                Element img = thumbLink.select("img").first();
+                if (null == img) continue;
+                String src = img.attr("data-src");
+                if (src.isEmpty()) continue;
+                imagesUrls.add(src);
+
+                nbImages++;
+            }
         }
         if (nbImages < thumbLinks.size() / 3) return new Content().setStatus(StatusContent.IGNORED);
 
@@ -64,10 +73,9 @@ public class MusesContent implements ContentParser {
 
         result.setSite(Site.MUSES);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty() || thumbs.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty() || 0 == nbImages) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(theUrl.replace(Site.MUSES.getUrl(), ""));
-        result.setCoverImageUrl(Site.MUSES.getUrl() + thumbs.get(0));
+        result.setUrl(theUrl.replace(Site.MUSES.getUrl(), "").replace("https://comics.8muses.com",""));
 
         // == Circle (publisher), Artist and Series
         AttributeMap attributes = new AttributeMap();
@@ -109,27 +117,30 @@ public class MusesContent implements ContentParser {
             }
             result.setTitle(Helper.removeNonPrintableChars(bookTitle));
         }
-
-
-        result.setQtyPages(nbImages);
+        result.setQtyPages(nbImages); // Cover is duplicated in the code below; no need to decrease nbImages here
 
         String[] thumbParts;
-        int index = 1;
+        int index = 0;
         List<ImageFile> images = new ArrayList<>();
-        for (String s : thumbs) {
-            thumbParts = s.split("/");
+        // Cover
+        ImageFile cover = new ImageFile(index++, Site.MUSES.getUrl() + imagesUrls.get(0), StatusContent.SAVED, nbImages);
+        result.setCoverImageUrl(cover.getUrl());
+        cover.setIsCover(true);
+        images.add(cover);
+        // Images
+        for (String u : imagesUrls) {
+            thumbParts = u.split("/");
             if (thumbParts.length > 3) {
                 thumbParts[2] = "fl"; // Large dimensions; there's also a medium variant available (fm)
                 String imgUrl = Site.MUSES.getUrl() + "/" + thumbParts[1] + "/" + thumbParts[2] + "/" + thumbParts[3];
-                images.add(new ImageFile(index, imgUrl, StatusContent.SAVED, thumbs.size())); // We infer actual book page images have the same format as their thumbs
-                index++;
+                images.add(new ImageFile(index++, imgUrl, StatusContent.SAVED, nbImages)); // We infer actual book page images have the same format as their thumbs
             }
         }
         result.setImageFiles(images);
 
         // Tags are not shown on the album page, but on the picture page (!)
         try {
-            Document doc = HttpHelper.getOnlineDocument(Site.MUSES.getUrl() + thumbLinks.get(thumbLinks.size() - 1));
+            Document doc = HttpHelper.getOnlineDocument(Site.MUSES.getUrl() + thumbLinks.get(thumbLinks.size() - 1).attr("href"));
             if (doc != null) {
                 Elements elements = doc.select(".album-tags a[href*='/search/tag']");
                 if (!elements.isEmpty())

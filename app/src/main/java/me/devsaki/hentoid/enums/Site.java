@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.enums;
 
-import java.io.File;
-
 import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
@@ -30,6 +28,7 @@ public enum Site {
     EXHENTAI(14, "exhentai", "https://exhentai.org", "exhentai", R.drawable.ic_menu_exhentai, false, false, true),
     PORNCOMIX(15, "porncomixonline", "https://www.porncomixonline.net/", "porncomixonline", R.drawable.ic_menu_porncomix, false, false, false),
     HBROWSE(16, "Hbrowse", "https://www.hbrowse.com/", "hbrowse", R.drawable.ic_menu_hbrowse, false, false, false),
+    HENTAI2READ(17, "Hentai2Read", "https://hentai2read.com/", "h2r", R.drawable.ic_menu_hentai2read, false, false, false),
     NONE(98, "none", "", "none", R.drawable.ic_info, true, false, false), // Fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true, false, false); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
@@ -123,7 +122,7 @@ public enum Site {
     }
 
     public String getFolder() {
-        return File.separator + description + File.separator;
+            return description;
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {

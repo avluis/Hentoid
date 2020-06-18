@@ -1,13 +1,16 @@
 package me.devsaki.hentoid.util;
 
-import androidx.annotation.WorkerThread;
+import android.content.Context;
+
+import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -27,20 +30,23 @@ public class ZipUtil {
 
     private static final int BUFFER = 32 * 1024;
 
-    @WorkerThread
-    public static File zipFiles(List<File> files, File dest) throws IOException {
+    public static File zipFiles(@NonNull final Context context, List<DocumentFile> files, File dest) throws IOException {
+        Helper.assertNonUiThread();
         try (FileOutputStream out = new FileOutputStream(dest); ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out))) {
             final byte[] data = new byte[BUFFER];
-            for (File file : files) addFile(file, zipOutputStream, data);
+            for (DocumentFile file : files) addFile(context, file, zipOutputStream, data);
             FileUtil.sync(out);
             out.flush();
         }
         return dest;
     }
 
-    private static void addFile(final File file, final ZipOutputStream stream, final byte[] data) throws IOException {
+    private static void addFile(@NonNull final Context context,
+                                @NonNull final DocumentFile file,
+                                final ZipOutputStream stream,
+                                final byte[] data) throws IOException {
         Timber.d("Adding: %s", file);
-        try (FileInputStream fi = new FileInputStream(file); BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)) {
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)) {
 
             ZipEntry zipEntry = new ZipEntry(file.getName());
             stream.putNextEntry(zipEntry);

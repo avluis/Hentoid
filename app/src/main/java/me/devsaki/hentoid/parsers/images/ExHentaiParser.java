@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
 import android.util.Pair;
+import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
@@ -28,14 +29,14 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class ExHentaiParser implements ImageListParser {
 
@@ -112,6 +113,7 @@ public class ExHentaiParser implements ImageListParser {
                 // 3- Open all pages and
                 //    - grab the URL of the displayed image
                 //    - grab the alternate URL of the "Click here if the image fails loading" link
+                result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
                 ImageFile img;
                 for (String pageUrl : pageUrls) {
                     if (processHalted) break;
@@ -140,8 +142,7 @@ public class ExHentaiParser implements ImageListParser {
                                 else pageUrl += "?";
                                 pageUrl += "nl=" + arg;
                                 // Get the final URL
-                                doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
-                                if (doc != null) {
+                                if (URLUtil.isValidUrl(pageUrl)) {
                                     targetDownloadParams.put("backupUrl", pageUrl);
                                     downloadParamsStr = JsonHelper.serializeToJson(targetDownloadParams, JsonHelper.MAP_STRINGS);
                                     img.setDownloadParams(downloadParamsStr);

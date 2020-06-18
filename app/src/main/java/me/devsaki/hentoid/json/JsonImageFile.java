@@ -8,6 +8,7 @@ class JsonImageFile {
     private Integer order;
     private String url;
     private String name;
+    private boolean isCover;
     private boolean favourite;
     private StatusContent status;
 
@@ -19,6 +20,7 @@ class JsonImageFile {
         result.url = f.getUrl();
         result.name = f.getName();
         result.status = f.getStatus();
+        result.isCover = f.isCover();
         result.favourite = f.isFavourite();
         return result;
     }
@@ -26,6 +28,7 @@ class JsonImageFile {
     ImageFile toEntity(int maxPages) {
         ImageFile result = new ImageFile(order, url, status, maxPages);
         result.setName(name);
+        result.setIsCover(isCover);
         result.setFavourite(favourite);
         return result;
     }

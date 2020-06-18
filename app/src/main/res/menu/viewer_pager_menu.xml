@@ -2,46 +2,54 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".activities.ImageViewerActivity">
-    <item
-        android:id="@+id/action_show_favorite_pages"
-        android:icon="@drawable/ic_filter_favs_off"
-        android:title="@string/viewer_filter_favourite_off"
-        app:showAsAction="ifRoom" />
+    tools:context=".activities.ImageViewerActivity"
+    tools:targetApi="o">
     <item
         android:id="@+id/action_slideshow"
         android:enabled="true"
         android:icon="@drawable/ic_slideshow"
-        android:orderInCategory="0"
-        android:title="@string/viewer_favourite_off"
+        android:title="@string/viewer_slideshow"
+        android:tooltipText="@string/viewer_slideshow_help"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_page_menu"
         android:enabled="true"
         android:icon="@drawable/ic_image"
-        android:orderInCategory="0"
         android:title="@string/viewer_page_menu"
+        android:tooltipText="@string/viewer_page_menu_help"
         app:showAsAction="always" />
-    <item
-        android:id="@+id/action_shuffle"
-        android:enabled="true"
-        android:icon="@drawable/ic_menu_sort_random"
-        android:orderInCategory="1"
-        android:title="@string/viewer_order_shuffle"
-        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_delete_book"
         android:enabled="true"
         android:icon="@drawable/ic_action_delete_forever"
-        android:orderInCategory="1"
         android:title="@string/viewer_delete_book"
+        android:tooltipText="@string/viewer_delete_book"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_show_favorite_pages"
+        android:icon="@drawable/ic_filter_favs_off"
+        android:title="@string/viewer_filter_favourite_off"
+        android:tooltipText="@string/viewer_filter_favourite_help"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_shuffle"
+        android:enabled="true"
+        android:icon="@drawable/ic_menu_sort_random"
+        android:title="@string/viewer_order_shuffle"
+        android:tooltipText="@string/viewer_order_shuffle_help"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_app_settings"
         android:enabled="true"
         android:icon="@drawable/ic_settings"
-        android:orderInCategory="2"
-        android:title="@string/open_settings"
-        app:showAsAction="always" />
-
+        android:title="@string/app_settings"
+        android:tooltipText="@string/app_settings"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_book_settings"
+        android:enabled="true"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/book_settings"
+        android:tooltipText="@string/book_settings"
+        app:showAsAction="ifRoom" />
 </menu>

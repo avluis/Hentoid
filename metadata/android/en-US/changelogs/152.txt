@@ -1,0 +1,50 @@
+Regressions:
+Support has been dropped for Android Kitkat (Android 4)
+Dropped external image viewer support (mainly because File has been replaced by DocumentFile)
+
+New
+
++ New source : Hentai2Read
+New import progress screen with notifications
++ Queue screen : New "Errors" tab to keep track of all failed downloads
+Queue screen has been redesigned
+Drag & drop
+Swipe to cancel
+Move to bottom
+Cancel all
+Image viewer : Rendering mode can now be chosen globally and also set book by book
+Sharp (default) : sharp lines; may display aliasing artifacts
+Smooth : removes most aliasing artifacts; lines may appear slightly blurred on some screens
+Invert queue
++ Queue screen : Displays consumed bandwidth
++ Queue screen : Displays estimated size of downloaded book
++ Queue : New option not to run the queue when WiFi is unavailable
++ Queue : New option not to download large books when WiFi is unavailable
++ Queue is backed up as you download, and does not disappear when you uninstall the app
+Library screen : Swipe to delete
+Library screen : "Open containing folder" when selecting a book
++ Preferences : New feature to delete all books except favourites
++ Preferences : Import and export your library and queue to and from JSON files (in "Storage" submenu)
+All app : Show tooltips at first use for non-obvious features
+
+
+Changed
+
++ Queue, library and gallery screens now have a fast scroller
+Queue screen : errors information button now appears on the top bar
++ Queue screen : shortcut to the downloader settings
++ Downloader : Doesn't try to download when no network is available
+Library screen : Redesigned "sort by" menu
++ Library screen : "Unread first" sort is also sorted by newest downloaded
+Library screen : Doesn't display failed downloads anymore (see new "Errors" tab on the Queue screen)
++ Image viewer : Top menu icons order has been changed
+Error details dialog now displays the cause of the 1st recorded error
++ PIN dialog : PIN buttons are now closer to the bottom of the screen
+Menu editor : Items are now highlighted when dragged
+Refresh library doesn't ask the location of the Hentoid folder anymore
++ Soft buttons are now coloured according to the current color theme
+Most icons and buttons now have tooltips
+
+Tons of bug fixes
+
+Thanks for all the hard work by the Hentoid team! :)
