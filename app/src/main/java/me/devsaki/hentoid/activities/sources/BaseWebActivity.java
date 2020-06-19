@@ -406,7 +406,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // Validate permissions
     // TODO find something better than that
     private void checkPermissions() {
-        if (!PermissionUtil.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION))
+        if (!PermissionUtil.requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
             ToastUtil.toast("Storage permission denied - cannot use the downloader");
     }
 
