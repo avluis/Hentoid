@@ -214,11 +214,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
             }
-            /*
-            if (oldItem.isBeingDeleted() != newItem.isBeingDeleted()) {
-                diffBundleBuilder.setIsBeingDeleted(newItem.isBeingDeleted());
-            }
-             */
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
             }
@@ -352,15 +347,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         recyclerView = requireViewById(rootView, R.id.library_list);
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
         new FastScrollerBuilder(recyclerView).build();
-
-        // Disable blink animation on card change (bind holder)
-        // Disabled because with it, swiped undo panel doesn't appear
-        // TODO test if everything's alright with that off
-        /*
-        RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
-        if (animator instanceof SimpleItemAnimator)
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-*/
 
         // Swiping
         SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
