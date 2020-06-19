@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.Group;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -80,6 +82,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ThemeHelper;
@@ -139,6 +142,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
+    // Permissions alert bar
+    private Group alertBar;
+
     // === SELECTION TOOLBAR
     private Toolbar selectionToolbar;
     private MenuItem itemDelete;
@@ -279,6 +285,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             TooltipUtil.showTooltip(requireContext(), R.string.help_search, ArrowOrientation.TOP, toolbar, getViewLifecycleOwner());
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
+
+        // Display permissions alert if required
+        if (!PermissionUtil.checkExternalStorageReadWritePermission(requireActivity())) {
+            requireViewById(view, R.id.library_alert_fix_btn).setOnClickListener(v -> fixPermissions());
+            alertBar.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -288,6 +300,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private void initUI(@NonNull View rootView) {
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
+
+        // Permissions alert bar
+        alertBar = requireViewById(rootView, R.id.library_alert_group);
 
         // Search bar
         advancedSearchBar = requireViewById(rootView, R.id.advanced_search_background);
@@ -1305,5 +1320,19 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             item.setUndoSwipeAction(cancelSwipe);
             fastAdapter.notifyItemChanged(position);
         }
+    }
+
+    private void fixPermissions() {
+        PermissionUtil.requestExternalStorageReadWritePermission(this, PermissionUtil.RQST_STORAGE_PERMISSION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode != PermissionUtil.RQST_STORAGE_PERMISSION) return;
+        if (permissions.length < 2) return;
+        if (grantResults.length == 0) return;
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            alertBar.setVisibility(View.GONE);
+        } // Don't show rationales here; the alert still displayed on screen should be enough
     }
 }

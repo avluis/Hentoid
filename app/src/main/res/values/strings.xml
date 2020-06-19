@@ -48,6 +48,8 @@
     <string name="open_settings">Open settings</string>
     <string name="app_settings">App settings</string>
     <string name="book_settings">Book settings</string>
+    <string name="permissions_lost">File permissions have been lost</string>
+    <string name="fix_permissions">Fix</string>
 
     <!-- Queue -->
     <string name="queue_queue_tab">In progress</string>
