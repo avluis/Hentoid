@@ -166,6 +166,7 @@ public class ImportService extends IntentService {
         ContentProviderClient client = this.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
         List<DocumentFile> bookFolders = new ArrayList<>();
         DocumentFile cleanupLogFile = null;
+        CollectionDAO dao = new ObjectBoxDAO(this);
 
         if (null == client) return;
         try {
@@ -189,7 +190,6 @@ public class ImportService extends IntentService {
             trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
 
             // Cleanup DB
-            CollectionDAO dao = new ObjectBoxDAO(this);
             dao.deleteAllLibraryBooks(true);
             dao.deleteAllErrorBooksWithJson();
 
@@ -329,6 +329,7 @@ public class ImportService extends IntentService {
 
             eventComplete(4, bookFolders.size(), booksOK, booksKO, cleanupLogFile);
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
+            dao.cleanup();
         }
 
         stopForeground(true);

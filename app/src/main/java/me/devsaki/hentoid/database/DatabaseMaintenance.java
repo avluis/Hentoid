@@ -29,6 +29,7 @@ public class DatabaseMaintenance {
 
         // Perform functional data updates
         performDatabaseCleanups(db);
+        db.closeThreadResources();
     }
 
     private static void performDatabaseCleanups(@NonNull ObjectBoxDB db) {

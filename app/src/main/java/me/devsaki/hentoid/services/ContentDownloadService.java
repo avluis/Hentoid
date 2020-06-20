@@ -148,7 +148,7 @@ public class ContentDownloadService extends IntentService {
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
-        dao.cleanup();
+        if (dao != null) dao.cleanup();
 
         if (notificationManager != null) notificationManager.cancel();
         ContentQueueManager.getInstance().setInactive();

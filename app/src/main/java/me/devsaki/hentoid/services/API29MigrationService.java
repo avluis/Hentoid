@@ -84,6 +84,7 @@ public class API29MigrationService extends IntentService {
     @Override
     public void onDestroy() {
         notificationManager.cancel();
+        if (dao != null) dao.cleanup();
         Timber.w("Service destroyed");
 
         super.onDestroy();
