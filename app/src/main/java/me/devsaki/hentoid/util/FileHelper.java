@@ -76,7 +76,7 @@ public class FileHelper {
     // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
     public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri, boolean isFolder) {
         if (uri.toString().isEmpty()) return "";
-        
+
         String volumePath = getVolumePath(getVolumeIdFromUri(uri, isFolder), context);
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
@@ -243,10 +243,7 @@ public class FileHelper {
         if (nomedia != null) nomedia.delete();
 
         nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
-        if (null != nomedia && nomedia.exists()) {
-            boolean deleted = nomedia.delete();
-            if (deleted) Timber.d(".nomedia file deleted");
-        } else {
+        if (null == nomedia || !nomedia.exists()) {
             if (notify)
                 ToastUtil.toast(context, R.string.error_write_permission);
             return false;
@@ -254,17 +251,6 @@ public class FileHelper {
 
         Preferences.setStorageUri(folder.getUri().toString());
         return true;
-    }
-
-    /**
-     * Create the ".nomedia" file in the app's root folder
-     */
-    public static boolean createNoMedia(@NonNull Context context) {
-        DocumentFile rootDir = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
-        if (null == rootDir || !rootDir.exists()) return false;
-
-        DocumentFile nomedia = findOrCreateDocumentFile(context, rootDir, null, NOMEDIA_FILE_NAME);
-        return (null != nomedia && nomedia.exists());
     }
 
     /**

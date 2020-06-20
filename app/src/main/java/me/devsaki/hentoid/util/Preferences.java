@@ -482,7 +482,6 @@ public final class Preferences {
         public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_APP_PREVIEW = "pref_app_preview";
-        public static final String PREF_ADD_NO_MEDIA_FILE = "pref_add_no_media_file";
         static final String PREF_CHECK_UPDATES = "pref_check_updates";
         public static final String PREF_CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         public static final String PREF_REFRESH_LIBRARY = "pref_refresh_bookshelf";

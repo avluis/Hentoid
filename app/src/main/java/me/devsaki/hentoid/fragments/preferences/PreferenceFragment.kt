@@ -68,13 +68,6 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
             when (preference.key) {
-                Preferences.Key.PREF_ADD_NO_MEDIA_FILE -> {
-                    if (FileHelper.createNoMedia(requireContext()))
-                        ToastUtil.toast(R.string.nomedia_file_created)
-                    else
-                        ToastUtil.toast(R.string.nomedia_file_failed)
-                    true
-                }
                 Preferences.Key.PREF_CHECK_UPDATE_MANUAL -> {
                     onCheckUpdatePrefClick()
                     true

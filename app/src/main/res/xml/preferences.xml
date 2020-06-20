@@ -253,11 +253,6 @@
                 android:key="pref_app_lock"
                 android:title="App Lock"
                 app:iconSpaceReserved="false" />
-            <Preference
-                android:key="pref_add_no_media_file"
-                android:summary="@string/pref_add_no_media_file_summary"
-                android:title="@string/pref_add_no_media_file_title"
-                app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_app_preview_default"
                 android:key="pref_app_preview"
