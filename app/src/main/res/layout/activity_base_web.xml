@@ -84,6 +84,20 @@
             <!-- webview inserted here programmatically -->
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+        <ImageView
+            android:id="@+id/animated_check"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:visibility="gone"
+            android:tint="?colorSecondary"
+            app:layout_constraintTop_toTopOf="@id/swipe_container"
+            app:layout_constraintBottom_toBottomOf="@id/swipe_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/check_mark_anim"
+            tools:visibility="visible"
+            tools:ignore="ContentDescription" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

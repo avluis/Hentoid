@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Animatable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -152,6 +153,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private MenuItem actionMenu;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
+    // Animated check (visual confirmation for quick download)
+    ImageView animatedCheck;
     // Alert message panel and text
     private View alertBanner;
     private ImageView alertIcon;
@@ -267,6 +270,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         galleryMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_gallery);
         actionMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_download);
 
+        // Webview
+        animatedCheck = findViewById(R.id.animated_check);
         initWebView();
         initSwipeLayout();
         webView.loadUrl(getStartUrl());
@@ -651,7 +656,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (!quickDownload) changeActionMode(ActionMode.READ);
             return;
         }
-        ToastUtil.toast(getResources().getQuantityString(R.plurals.add_to_queue, 1));
+        animatedCheck.setVisibility(View.VISIBLE);
+        ((Animatable) animatedCheck.getDrawable()).start();
+        new Handler().postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
 
         objectBoxDAO.addContentToQueue(currentContent, null);
 
