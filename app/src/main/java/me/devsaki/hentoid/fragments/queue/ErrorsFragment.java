@@ -14,6 +14,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
@@ -67,6 +68,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     private QueueViewModel viewModel;
 
     // === UI
+    private LinearLayoutManager llm;
     private Toolbar selectionToolbar;
     private TextView mEmptyText;    // "No errors" message panel
 
@@ -79,6 +81,10 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
+    // Used to show a given item at first display
+    private long contentIdToDisplayFirst = -1;
+    // Used to start processing when the recyclerView has finished updating
+    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
 
     private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
 
@@ -114,6 +120,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         }
 
         recyclerView.setAdapter(fastAdapter);
+        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Swiping
         SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
@@ -140,8 +147,9 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(QueueViewModel.class);
         viewModel.getErrors().observe(getViewLifecycleOwner(), this::onErrorsChanged);
+        viewModel.getContentIdToShowFirst().observe(getViewLifecycleOwner(), this::onContentIdToShowFirstChanged);
     }
 
     private void initToolbar() {
@@ -287,7 +295,32 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         // Update displayed books
         List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS)).toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
-//        itemAdapter.submitList(result/*, this::differEndCallback*/);
+        differEndCallback();
+    }
+
+    /**
+     * Callback for the end of item diff calculations
+     * Activated when all _adapter_ items are placed on their definitive position
+     */
+    private void differEndCallback() {
+        if (contentIdToDisplayFirst > -1) {
+            int targetPos = fastAdapter.getPosition(contentIdToDisplayFirst);
+            if (targetPos > -1) listRefreshDebouncer.submit(targetPos);
+            contentIdToDisplayFirst = -1;
+        }
+    }
+
+    /**
+     * Callback for the end of recycler updates
+     * Activated when all _displayed_ items are placed on their definitive position
+     */
+    private void onRecyclerUpdated(int topItemPosition) {
+        llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
+    }
+
+    private void onContentIdToShowFirstChanged(Long contentId) {
+        Timber.d(">>onContentIdToShowFirstChanged %s", contentId);
+        contentIdToDisplayFirst = contentId;
     }
 
     private boolean onBookClick(ContentItem item) {
