@@ -13,9 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.paging.PagedList;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,9 +21,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
-import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
 
@@ -82,28 +80,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
 
-
-    /**
-     * Diff calculation rules for list items
-     * <p>
-     * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
-     */
-    private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
-        @Override
-        public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.getId() == newItem.getId();
-        }
-
-        @Override
-        public boolean areContentsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
-                    && oldItem.getSite().equals(newItem.getSite())
-                    && oldItem.getLastReadDate() == newItem.getLastReadDate()
-                    && oldItem.isFavourite() == newItem.isFavourite();
-        }
-    }).build();
-
-    private final PagedModelAdapter<Content, ContentItem> itemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.ERRORS), c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS));
+    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
 
 
     @Override
@@ -164,7 +141,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         super.onViewCreated(view, savedInstanceState);
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
-        viewModel.getErrorsPaged().observe(getViewLifecycleOwner(), this::onErrorsChanged);
+        viewModel.getErrors().observe(getViewLifecycleOwner(), this::onErrorsChanged);
     }
 
     private void initToolbar() {
@@ -301,14 +278,16 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         ErrorsDialogFragment.invoke(this, content.getId());
     }
 
-    private void onErrorsChanged(PagedList<Content> result) {
+    private void onErrorsChanged(List<Content> result) {
         Timber.i(">>Errors changed ! Size=%s", result.size());
 
         // Update list visibility
         mEmptyText.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        itemAdapter.submitList(result/*, this::differEndCallback*/);
+        List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS)).toList();
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
+//        itemAdapter.submitList(result/*, this::differEndCallback*/);
     }
 
     private boolean onBookClick(ContentItem item) {
@@ -429,7 +408,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     }
 
     private void redownloadAll() {
-        redownloadContent(new ArrayList<>(itemAdapter.getModels()), false);
+        List<Content> contents = Stream.of(itemAdapter.getModels()).map(ContentItem::getContent).withoutNulls().toList();
+        if (!contents.isEmpty()) redownloadContent(contents, false);
     }
 
     @Override

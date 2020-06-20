@@ -119,12 +119,8 @@ public class ObjectBoxDAO implements CollectionDAO {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
-    public LiveData<PagedList<Content>> getErrorContent() {
-        Query<Content> query = db.selectErrorContentQ();
-
-        PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(true).setInitialLoadSizeHint(40).setPageSize(20).build();
-
-        return new LivePagedListBuilder<>(new ObjectBoxDataSource.Factory<>(query), cfg).build();
+    public LiveData<List<Content>> getErrorContent() {
+        return new ObjectBoxLiveData<>(db.selectErrorContentQ());
     }
 
     public LiveData<Integer> countAllBooks() {

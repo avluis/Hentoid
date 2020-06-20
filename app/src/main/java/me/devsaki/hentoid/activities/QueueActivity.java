@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.WindowManager;
@@ -9,7 +10,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.paging.PagedList;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -20,6 +20,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.fragments.queue.ErrorsFragment;
@@ -42,6 +43,7 @@ public class QueueActivity extends BaseActivity {
     private MenuItem invertQueueMenu;
     private MenuItem cancelAllMenu;
     private MenuItem redownloadAllMenu;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,11 +88,21 @@ public class QueueActivity extends BaseActivity {
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         QueueViewModel viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
-        viewModel.getQueuePaged().observe(this, this::onQueueChanged);
-        viewModel.getErrorsPaged().observe(this, this::onErrorsChanged);
+        viewModel.getQueue().observe(this, this::onQueueChanged);
+        viewModel.getErrors().observe(this, this::onErrorsChanged);
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+        }
+
+        Intent intent = getIntent();
+        if (intent != null && intent.getExtras() != null) {
+            QueueActivityBundle.Parser parser = new QueueActivityBundle.Parser(intent.getExtras());
+            long contentId = parser.contentId();
+            if (contentId > 0) {
+                if (parser.isErrorsTab()) viewPager.setCurrentItem(1);
+                viewModel.setContentIdToShowFirst(contentId);
+            }
         }
     }
 
@@ -120,7 +132,7 @@ public class QueueActivity extends BaseActivity {
         }
     }
 
-    private void onErrorsChanged(PagedList<Content> result) {
+    private void onErrorsChanged(List<Content> result) {
         // Update errors tab
         if (result.isEmpty()) errorsTab.removeBadge();
         else {

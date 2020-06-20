@@ -78,6 +78,7 @@ import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
+import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -672,6 +673,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     private void goToQueue() {
         Intent intent = new Intent(this, QueueActivity.class);
+
+        QueueActivityBundle.Builder builder = new QueueActivityBundle.Builder();
+        builder.setContentId(currentContent.getId());
+        builder.setIsErrorsTab(currentContent.getStatus().equals(StatusContent.ERROR));
+        intent.putExtras(builder.getBundle());
+
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
@@ -733,6 +740,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 content = contentDB;
             }
             if (!quickDownload) changeActionMode(ActionMode.DOWNLOAD);
+        } else {
+            content.setId(contentDB.getId());
+            content.setStatus(contentDB.getStatus());
         }
 
         if (isInCollection) {

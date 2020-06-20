@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 
 import org.greenrobot.eventbus.EventBus;
@@ -36,10 +37,12 @@ public class QueueViewModel extends AndroidViewModel {
 
     // Collection data for queue
     private LiveData<List<QueueRecord>> currentQueueSource;
-    private final MediatorLiveData<List<QueueRecord>> queuePaged = new MediatorLiveData<>();
+    private final MediatorLiveData<List<QueueRecord>> queue = new MediatorLiveData<>();
     // Collection data for errors
-    private LiveData<PagedList<Content>> currentErrorsSource;
-    private final MediatorLiveData<PagedList<Content>> errorsPaged = new MediatorLiveData<>();
+    private LiveData<List<Content>> currentErrorsSource;
+    private final MediatorLiveData<List<Content>> errors = new MediatorLiveData<>();
+
+    private final MutableLiveData<Long> contentIdToShowFirst = new MutableLiveData<>();     // ID of the content to show at 1st display
 
 
     public QueueViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -55,13 +58,18 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<List<QueueRecord>> getQueuePaged() {
-        return queuePaged;
+    public LiveData<List<QueueRecord>> getQueue() {
+        return queue;
     }
 
     @NonNull
-    public LiveData<PagedList<Content>> getErrorsPaged() {
-        return errorsPaged;
+    public LiveData<List<Content>> getErrors() {
+        return errors;
+    }
+
+    @NonNull
+    public LiveData<Long> getContentIdToShowFirst() {
+        return contentIdToShowFirst;
     }
 
 
@@ -74,13 +82,13 @@ public class QueueViewModel extends AndroidViewModel {
      */
     private void refresh() {
         // Queue
-        if (currentQueueSource != null) queuePaged.removeSource(currentQueueSource);
+        if (currentQueueSource != null) queue.removeSource(currentQueueSource);
         currentQueueSource = dao.getQueueContent();
-        queuePaged.addSource(currentQueueSource, queuePaged::setValue);
+        queue.addSource(currentQueueSource, queue::setValue);
         // Errors
-        if (currentErrorsSource != null) errorsPaged.removeSource(currentErrorsSource);
+        if (currentErrorsSource != null) errors.removeSource(currentErrorsSource);
         currentErrorsSource = dao.getErrorContent();
-        errorsPaged.addSource(currentErrorsSource, errorsPaged::setValue);
+        errors.addSource(currentErrorsSource, errors::setValue);
     }
 
 
@@ -195,5 +203,9 @@ public class QueueViewModel extends AndroidViewModel {
      */
     public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
         dao.addContentToQueue(content, targetImageStatus);
+    }
+
+    public void setContentIdToShowFirst(long id) {
+        contentIdToShowFirst.setValue(id);
     }
 }

@@ -108,6 +108,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private int topItemPosition = -1;
     private int offsetTop = 0;
 
+    // Used to show a given item at first display
+    private long contentIdToDisplayFirst = -1;
+
     // RecyclerView utils
     private LinearLayoutManager llm;
     private ItemTouchHelper touchHelper;
@@ -128,7 +131,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private boolean isEmpty = false;
 
 
-    // Use a non-pages model adapter; drag & drop doesn't work with paged content, as Adapter.move is not supported and move from DB refreshes the whole list
+    // Use a non-paged model adapter; drag & drop doesn't work with paged content, as Adapter.move is not supported and move from DB refreshes the whole list
     private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
 
 
@@ -216,6 +219,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void initToolbar() {
         if (!(requireActivity() instanceof QueueActivity)) return;
         QueueActivity activity = (QueueActivity) requireActivity();
+
         MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
         cancelAllMenu.setOnMenuItemClickListener(item -> {
             // Don't do anything if the queue is empty
@@ -329,8 +333,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
-        viewModel.getQueuePaged().observe(getViewLifecycleOwner(), this::onQueueChanged);
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(QueueViewModel.class);
+        viewModel.getQueue().observe(getViewLifecycleOwner(), this::onQueueChanged);
+        viewModel.getContentIdToShowFirst().observe(getViewLifecycleOwner(), this::onContentIdToShowFirstChanged);
     }
 
     /**
@@ -505,11 +510,22 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             TooltipUtil.showTooltip(requireContext(), R.string.help_swipe_cancel, ArrowOrientation.BOTTOM, recyclerView, getViewLifecycleOwner());
     }
 
+    private void onContentIdToShowFirstChanged(Long contentId) {
+        Timber.d(">>onContentIdToShowFirstChanged %s", contentId);
+        contentIdToDisplayFirst = contentId;
+    }
+
     /**
      * Callback for the end of item diff calculations
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
+        if (contentIdToDisplayFirst > -1) {
+            int targetPos = fastAdapter.getPosition(contentIdToDisplayFirst);
+            if (targetPos > -1) listRefreshDebouncer.submit(targetPos);
+            contentIdToDisplayFirst = -1;
+            return;
+        }
         // Reposition the list on the initial top item position
         if (topItemPosition >= 0) {
             int targetPos = topItemPosition;
