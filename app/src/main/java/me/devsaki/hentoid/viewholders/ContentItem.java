@@ -89,11 +89,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     // Constructor for library and error item
-    public ContentItem(Content content, @NonNull ItemTouchHelper touchHelper, @ViewType int viewType) {
+    public ContentItem(Content content, @Nullable ItemTouchHelper touchHelper, @ViewType int viewType) {
         this.content = content;
         this.viewType = viewType;
         this.touchHelper = touchHelper;
         isEmpty = (null == content);
+        isSwipeable = (viewType == ViewType.ERRORS);
         if (content != null) setIdentifier(content.getId());
         else setIdentifier(generateIdForPlaceholder());
     }

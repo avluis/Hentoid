@@ -34,7 +34,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -43,14 +42,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
-import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
-import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
 import com.skydoves.balloon.ArrowOrientation;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -99,7 +96,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent, SimpleSwipeCallback.ItemSwipeCallback {
+public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -158,8 +155,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
     private FastAdapter<ContentItem> fastAdapter;
     private SelectExtension<ContentItem> selectExtension;
-    // Helper used for swiping items
-    private ItemTouchHelper touchHelper;
 
 
     // ======== VARIABLES
@@ -362,14 +357,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         recyclerView = requireViewById(rootView, R.id.library_list);
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
         new FastScrollerBuilder(recyclerView).build();
-
-        // Swiping
-        SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
-                this,
-                requireContext().getDrawable(R.drawable.ic_action_delete_forever));
-
-        touchHelper = new ItemTouchHelper(swipeCallback);
-        touchHelper.attachToRecyclerView(recyclerView);
 
         // Pager
         pager.initUI(rootView);
@@ -750,19 +737,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 .create().show();
     }
 
-    private void onDeleteSwipedBook(@NonNull final ContentItem item) {
-        // Deleted book is the last selected books => disable selection mode
-        if (item.isSelected()) {
-            selectExtension.deselect(item);
-            if (selectExtension.getSelectedItems().isEmpty())
-                selectionToolbar.setVisibility(View.GONE);
-        }
-
-        List<Content> items = new ArrayList<>();
-        items.add(item.getContent());
-        onDeleteBooks(items);
-    }
-
     private void onDeleteBooks(@NonNull final List<Content> items) {
         viewModel.deleteItems(items, this::onDeleteError);
     }
@@ -928,7 +902,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isEndless) { // Endless mode
             pager.hide();
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY));
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, null, ContentItem.ViewType.LIBRARY));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
             ContentItem item = new ContentItem(ContentItem.ViewType.LIBRARY);
@@ -1067,7 +1041,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         int minIndex = bounds.getLeft();
         int maxIndex = bounds.getRight();
 
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY)).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, ContentItem.ViewType.LIBRARY)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }
@@ -1292,34 +1266,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private int getTopItemPosition() {
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
-    }
-
-    private IAdapter<ContentItem> getItemAdapter() {
-        if (itemAdapter != null) return itemAdapter;
-        else return pagedItemAdapter;
-    }
-
-    @Override
-    public void itemSwiped(int position, int direction) {
-        ContentItem item = getItemAdapter().getAdapterItem(position);
-
-        item.setSwipeDirection(direction);
-
-        if (item.getContent() != null) {
-            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(2000, this::onDeleteSwipedBook);
-            deleteDebouncer.submit(item);
-
-            Runnable cancelSwipe = () -> {
-                deleteDebouncer.clear();
-                item.setSwipeDirection(0);
-
-                int position1 = getItemAdapter().getAdapterPosition(item);
-                if (position1 != RecyclerView.NO_POSITION)
-                    fastAdapter.notifyItemChanged(position1);
-            };
-            item.setUndoSwipeAction(cancelSwipe);
-            fastAdapter.notifyItemChanged(position);
-        }
     }
 
     private void fixPermissions() {
