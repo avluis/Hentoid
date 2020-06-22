@@ -14,8 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.CachedDocumentFile;
 import androidx.documentfile.provider.DocumentFile;
 
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -142,6 +140,16 @@ class FileUtil {
         return isSuccess;
     }
 
+    static int countDocumentFiles(
+            @NonNull final DocumentFile parent,
+            @NonNull final ContentProviderClient client,
+            final FileHelper.NameFilter nameFilter,
+            boolean listFolders,
+            boolean listFiles) {
+        final List<DocumentsQueryResult> results = queryDocumentFiles( parent, client, nameFilter, listFolders, listFiles);
+        return results.size();
+    }
+
     static List<DocumentFile> listDocumentFiles(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
@@ -149,7 +157,17 @@ class FileUtil {
             final FileHelper.NameFilter nameFilter,
             boolean listFolders,
             boolean listFiles) {
-        final List<ImmutableTriple<Uri, String, Long>> results = new ArrayList<>();
+        final List<DocumentsQueryResult> results = queryDocumentFiles( parent, client, nameFilter, listFolders, listFiles);
+        return convertFromUris(context, results);
+    }
+
+    private static List<DocumentsQueryResult> queryDocumentFiles(
+            @NonNull final DocumentFile parent,
+            @NonNull final ContentProviderClient client,
+            final FileHelper.NameFilter nameFilter,
+            boolean listFolders,
+            boolean listFiles) {
+        final List<DocumentsQueryResult> results = new ArrayList<>();
 
         final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
         try (Cursor c = client.query(searchUri, new String[]{
@@ -162,27 +180,26 @@ class FileUtil {
                     final String documentId = c.getString(0);
                     final String documentName = c.getString(1);
                     boolean isFolder = c.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
-                    final Long documentSize = c.getLong(3);
+                    final long documentSize = c.getLong(3);
 
                     // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                     if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
-                        results.add(new ImmutableTriple<>(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName, documentSize));
+                        results.add(new DocumentsQueryResult(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName, documentSize, isFolder));
                 }
         } catch (Exception e) {
             Timber.w(e, "Failed query");
         }
-
-        return convertFromUris(context, results);
+        return results;
     }
 
-    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final List<ImmutableTriple<Uri, String, Long>> uris) {
+    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final List<DocumentsQueryResult> results) {
         final List<DocumentFile> resultFiles = new ArrayList<>();
-        for (ImmutableTriple<Uri, String, Long> uri : uris) {
-            DocumentFile docFile = fromTreeUriCached(context, uri.left);
+        for (DocumentsQueryResult result : results) {
+            DocumentFile docFile = fromTreeUriCached(context, result.uri);
             // Following line should be the proper way to go but it's inefficient as it calls queryIntentContentProviders from scratch repeatedly
             //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
             if (docFile != null)
-                resultFiles.add(new CachedDocumentFile(docFile, uri.middle, uri.right));
+                resultFiles.add(new CachedDocumentFile(docFile, result.name, result.size, result.isDirectory));
         }
         return resultFiles;
     }
@@ -253,6 +270,20 @@ class FileUtil {
             Timber.e(ex);
         }
         return null;
+    }
+
+    static class DocumentsQueryResult {
+        final Uri uri;
+        final String name;
+        final long size;
+        final boolean isDirectory;
+
+        public DocumentsQueryResult(Uri uri, String name, long size, boolean isDirectory) {
+            this.uri = uri;
+            this.name = name;
+            this.size = size;
+            this.isDirectory = isDirectory;
+        }
     }
 
 }

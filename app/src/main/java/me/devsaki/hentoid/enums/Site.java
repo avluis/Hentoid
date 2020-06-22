@@ -29,7 +29,7 @@ public enum Site {
     PORNCOMIX(15, "porncomixonline", "https://www.porncomixonline.net/", "porncomixonline", R.drawable.ic_menu_porncomix, false, false, false),
     HBROWSE(16, "Hbrowse", "https://www.hbrowse.com/", "hbrowse", R.drawable.ic_menu_hbrowse, false, false, false),
     HENTAI2READ(17, "Hentai2Read", "https://hentai2read.com/", "h2r", R.drawable.ic_menu_hentai2read, false, false, false),
-    NONE(98, "none", "", "none", R.drawable.ic_info, true, false, false), // Fallback site
+    NONE(98, "none", "", "none", R.drawable.ic_storage, true, false, false), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true, false, false); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
 

@@ -16,6 +16,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
+import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.services.UpdateDownloadService
@@ -63,7 +64,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
-        onFolderChanged()
+        onHentoidFolderChanged()
+        onExternalFolderChanged()
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
@@ -72,11 +74,19 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     onCheckUpdatePrefClick()
                     true
                 }
+                Preferences.Key.EXTERNAL_LIBRARY -> {
+                    if (ExternalImportService.isRunning()) {
+                        ToastUtil.toast("Import is already running")
+                    } else {
+                        LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
+                    }
+                    true
+                }
                 Preferences.Key.PREF_REFRESH_LIBRARY -> {
                     if (ImportService.isRunning()) {
                         ToastUtil.toast("Import is already running")
                     } else {
-                        LibRefreshDialogFragment.invoke(parentFragmentManager, true, false)
+                        LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
                     }
                     true
                 }
@@ -101,7 +111,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     if (ImportService.isRunning()) {
                         ToastUtil.toast("Import is already running")
                     } else {
-                        LibRefreshDialogFragment.invoke(parentFragmentManager, false, true)
+                        LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)
                     }
                     true
                 }
@@ -134,9 +144,15 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         ToastUtil.toast(R.string.restart_needed)
     }
 
-    private fun onFolderChanged() {
+    private fun onHentoidFolderChanged() {
         val storageFolderPref: Preference? = findPreference(Preferences.Key.PREF_SETTINGS_FOLDER) as Preference?
         val uri = Uri.parse(Preferences.getStorageUri())
+        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri, true)
+    }
+
+    private fun onExternalFolderChanged() {
+        val storageFolderPref: Preference? = findPreference(Preferences.Key.EXTERNAL_LIBRARY) as Preference?
+        val uri = Uri.parse(Preferences.getExternalLibraryUri())
         storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri, true)
     }
 
@@ -174,7 +190,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
             Preferences.Key.PREF_APP_PREVIEW,
             Preferences.Key.PREF_ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
             Preferences.Key.PREF_SETTINGS_FOLDER,
-            Preferences.Key.PREF_SD_STORAGE_URI -> onFolderChanged()
+            Preferences.Key.PREF_SD_STORAGE_URI -> onHentoidFolderChanged()
+            Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
         }
     }
 }

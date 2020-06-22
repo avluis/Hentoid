@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.CheckResult;
@@ -56,7 +55,7 @@ import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
 /**
- * Service responsible for importing an existing library.
+ * Service responsible for importing an existing Hentoid library.
  *
  * @see UpdateCheckService
  */
@@ -99,12 +98,6 @@ public class ImportService extends IntentService {
         Timber.w("Service destroyed");
 
         super.onDestroy();
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 
     @Override
@@ -159,16 +152,17 @@ public class ImportService extends IntentService {
 
         DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
         if (null == rootFolder || !rootFolder.exists()) {
-            Timber.e("rootFolder is not defined (%s)", Preferences.getStorageUri());
+            Timber.e("Root folder is not defined (%s)", Preferences.getStorageUri());
             return;
         }
 
         ContentProviderClient client = this.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
+        if (null == client) return;
+
         List<DocumentFile> bookFolders = new ArrayList<>();
-        DocumentFile cleanupLogFile = null;
+        DocumentFile logFile = null;
         CollectionDAO dao = new ObjectBoxDAO(this);
 
-        if (null == client) return;
         try {
             // 1st pass : count subfolders of every site folder
             List<DocumentFile> siteFolders = FileHelper.listFolders(this, rootFolder, client);
@@ -190,7 +184,7 @@ public class ImportService extends IntentService {
             trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? enabled : disabled));
 
             // Cleanup DB
-            dao.deleteAllLibraryBooks(true);
+            dao.deleteAllInternalBooks(true);
             dao.deleteAllErrorBooksWithJson();
 
             for (int i = 0; i < bookFolders.size(); i++) {
@@ -198,7 +192,7 @@ public class ImportService extends IntentService {
 
                 // Detect the presence of images if the corresponding cleanup option has been enabled
                 if (cleanNoImages) {
-                    List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, client, imageNames);
+                    List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, imageNames);
                     List<DocumentFile> subfolders = FileHelper.listFolders(this, bookFolder, client);
                     if (imageFiles.isEmpty() && subfolders.isEmpty()) { // No supported images nor subfolders
                         booksKO++;
@@ -244,7 +238,7 @@ public class ImportService extends IntentService {
                         }
 
                         // Attach file Uri's to the book's images
-                        List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, client, imageNames);
+                        List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, imageNames);
                         if (!imageFiles.isEmpty()) { // No images described in the JSON -> recreate them
                             if (contentImages.isEmpty()) {
                                 contentImages = ContentHelper.createImageListFromFiles(imageFiles);
@@ -319,7 +313,7 @@ public class ImportService extends IntentService {
             } else trace(Log.INFO, log, "No queue file found");
 
             // Write log in root folder
-            cleanupLogFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
+            logFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON, log));
         } finally {
             // ContentProviderClient.close only available on API level 24+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -327,7 +321,7 @@ public class ImportService extends IntentService {
             else
                 client.release();
 
-            eventComplete(4, bookFolders.size(), booksOK, booksKO, cleanupLogFile);
+            eventComplete(4, bookFolders.size(), booksOK, booksKO, logFile);
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
             dao.cleanup();
         }

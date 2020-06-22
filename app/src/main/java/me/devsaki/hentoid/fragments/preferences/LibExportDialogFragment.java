@@ -85,7 +85,7 @@ public class LibExportDialogFragment extends DialogFragment {
 
         dao = new ObjectBoxDAO(requireContext());
 
-        long nbLibraryBooks = dao.countAllLibraryBooks(false);
+        long nbLibraryBooks = dao.countAllInternalBooks(false);
         long nbQueueBooks = dao.countAllQueueBooks();
 
         libraryChk = requireViewById(rootView, R.id.export_file_library_chk);
@@ -118,7 +118,7 @@ public class LibExportDialogFragment extends DialogFragment {
     }
 
     private void refreshFavsDisplay() {
-        long nbLibraryBooks = dao.countAllLibraryBooks(favsChk.isChecked());
+        long nbLibraryBooks = dao.countAllInternalBooks(favsChk.isChecked());
         libraryChk.setText(getResources().getQuantityString(R.plurals.export_file_library, (int) nbLibraryBooks, (int) nbLibraryBooks));
     }
 
@@ -148,7 +148,7 @@ public class LibExportDialogFragment extends DialogFragment {
 
     private ImmutablePair<List<Content>, List<Content>> getExportedCollection(boolean exportLibrary, boolean exportFavsOnly, boolean exportQueue) {
         List<Content> library = new ArrayList<>();
-        if (exportLibrary) library.addAll(dao.selectAllLibraryBooks(exportFavsOnly));
+        if (exportLibrary) library.addAll(dao.selectAllInternalBooks(exportFavsOnly));
         List<Content> queue = new ArrayList<>();
         if (exportQueue) queue.addAll(dao.selectAllQueueBooks());
         return new ImmutablePair<>(library, queue);

@@ -224,24 +224,34 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteErrorRecords(contentId);
     }
 
-    public long countAllLibraryBooks(boolean favsOnly) {
-        return db.selectAllLibraryBooksQ(favsOnly).count();
+    @Override
+    public long countAllExternalBooks() {
+        return db.selectAllExternalBooksQ().count();
+    }
+
+    public long countAllInternalBooks(boolean favsOnly) {
+        return db.selectAllInternalBooksQ(favsOnly).count();
     }
 
     public long countAllQueueBooks() {
         return db.selectAllQueueBooksQ().count();
     }
 
-    public List<Content> selectAllLibraryBooks(boolean favsOnly) {
-        return db.selectAllLibraryBooksQ(favsOnly).find();
+    public List<Content> selectAllInternalBooks(boolean favsOnly) {
+        return db.selectAllInternalBooksQ(favsOnly).find();
+    }
+
+    @Override
+    public void deleteAllExternalBooks() {
+        db.deleteContentById(db.selectAllExternalBooksQ().findIds());
     }
 
     public List<Content> selectAllQueueBooks() {
         return db.selectAllQueueBooksQ().find();
     }
 
-    public void deleteAllLibraryBooks(boolean resetRemainingImagesStatus) {
-        db.deleteContentById(db.selectAllLibraryBooksQ(false).findIds());
+    public void deleteAllInternalBooks(boolean resetRemainingImagesStatus) {
+        db.deleteContentById(db.selectAllInternalBooksQ(false).findIds());
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
         if (resetRemainingImagesStatus) {

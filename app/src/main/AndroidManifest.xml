@@ -398,6 +398,8 @@
 
         <service android:name=".services.ImportService" />
 
+        <service android:name=".services.ExternalImportService" />
+
         <service android:name=".services.DatabaseMaintenanceService" />
 
         <service android:name=".services.API29MigrationService" />

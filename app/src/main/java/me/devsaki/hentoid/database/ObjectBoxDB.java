@@ -56,8 +56,8 @@ public class ObjectBoxDB {
 
     // TODO - put indexes
 
-    // Status displayed in the library view
-    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()};
+    // Status displayed in the library view (all books of the library; both internal and external)
+    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
 
     private static ObjectBoxDB instance;
 
@@ -109,7 +109,7 @@ public class ObjectBoxDB {
     long insertContent(Content content) {
         List<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
-        Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
+        Query<Attribute> attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
 
         return store.callInTxNoException(() -> {
             // Master data management managed manually
@@ -155,8 +155,9 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, statusCodes).build().find();
     }
 
-    Query<Content> selectAllLibraryBooksQ(boolean favsOnly) {
+    Query<Content> selectAllInternalBooksQ(boolean favsOnly) {
         // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
+        // and EXTERNAL because we only want to manage internal books here
         int[] storedContentStatus = new int[]{
                 StatusContent.DOWNLOADED.getCode(),
                 StatusContent.MIGRATED.getCode(),
@@ -168,6 +169,10 @@ public class ObjectBoxDB {
         QueryBuilder<Content> query = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus);
         if (favsOnly) query.equal(Content_.favourite, true);
         return query.build();
+    }
+
+    Query<Content> selectAllExternalBooksQ() {
+        return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.EXTERNAL.getCode()).build();
     }
 
     Query<Content> selectAllErrorJsonBooksQ() {
@@ -765,7 +770,7 @@ public class ObjectBoxDB {
     Query<ImageFile> selectDownloadedImagesFromContent(long id) {
         QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
         builder.equal(ImageFile_.contentId, id);
-        builder.equal(ImageFile_.status, StatusContent.DOWNLOADED.getCode());
+        builder.in(ImageFile_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.EXTERNAL.getCode()});
         builder.order(ImageFile_.order);
         return builder.build();
     }

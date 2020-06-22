@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -88,12 +87,6 @@ public class API29MigrationService extends IntentService {
         Timber.w("Service destroyed");
 
         super.onDestroy();
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 
     @Override
@@ -223,7 +216,7 @@ public class API29MigrationService extends IntentService {
                         else contentImages = new ArrayList<>();
 
                         // Attach file Uri's to the book's images
-                        List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, client, Helper.getImageNamesFilter());
+                        List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, Helper.getImageNamesFilter());
                         if (!imageFiles.isEmpty()) {
                             if (contentImages.isEmpty()) { // No images described in the content (e.g. unread import from old JSON) -> recreate them
                                 contentImages = ContentHelper.createImageListFromFiles(imageFiles);

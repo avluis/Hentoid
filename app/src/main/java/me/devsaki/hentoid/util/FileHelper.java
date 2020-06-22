@@ -23,6 +23,8 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.annimon.stream.Stream;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedOutputStream;
@@ -371,6 +373,11 @@ public class FileHelper {
         return result;
     }
 
+    public static String getMimeTypeFromExtension(@NonNull String extension) {
+        if (extension.isEmpty()) return "application/octet-stream";
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+    }
+
     public static void shareFile(final @NonNull Context context, final @NonNull DocumentFile f, final @NonNull String title) {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("text/*");
@@ -402,11 +409,15 @@ public class FileHelper {
         }
     }
 
-    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
+    public static List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
         return FileUtil.listDocumentFiles(context, parent, client, filter, false, true);
     }
 
-    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
+    public static int countFiles(@NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
+        return FileUtil.countDocumentFiles(parent, client, filter, false, true);
+    }
+
+    public static List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
         ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
         if (null == client) return Collections.emptyList();
         try {
@@ -446,6 +457,12 @@ public class FileHelper {
         List<DocumentFile> result = listDocumentFiles(context, parent, fileName, false, true);
         if (!result.isEmpty()) return result.get(0);
         else return null;
+    }
+
+    public static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
+                                                       @NonNull final DocumentFile parent,
+                                                       @NonNull ContentProviderClient client) {
+        return FileUtil.listDocumentFiles(context, parent, client, null, true, true);
     }
 
     private static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
@@ -582,22 +599,68 @@ public class FileHelper {
         }
     }
 
-    public static void revokePreviousPermissions(@NonNull final ContentResolver resolver, @NonNull final Uri newUri) {
-        // Unfortunately, the content Uri of the selected resource is not exactly the same as the one stored by ContentResolver
-        // -> solution is to compare their TreeDocumentId instead
-        String treeUriId = DocumentsContract.getTreeDocumentId(newUri);
-
-        for (UriPermission p : resolver.getPersistedUriPermissions())
-            if (!DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId))
-                resolver.releasePersistableUriPermission(p.getUri(),
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        if (resolver.getPersistedUriPermissions().isEmpty()) {
-            Timber.d("Permissions revoked successfully.");
-        } else {
-            Timber.d("Permissions failed to be revoked.");
+    /**
+     * Reset the app's persisted I/O permissions :
+     * - persist I/O permissions for the given new Uri
+     * - keep existing persisted I/O permissions for the given optional Uri
+     * <p>
+     * NB : if the optional Uri has no persisted permissions, this call won't create them
+     *
+     * @param context Context to use
+     * @param newUri  New Uri to add to the persisted I/O permission
+     * @param keepUri Uri to keep in the persisted I/O permissions, if already set
+     */
+    public static void persistNewUriPermission(@NonNull final Context context, @NonNull final Uri newUri, @Nullable final Uri keepUri) {
+        ContentResolver contentResolver = context.getContentResolver();
+        if (!isUriPermissionPersisted(contentResolver, newUri)) {
+            Timber.d("Persisting Uri permission for %s", newUri);
+            // Release previous access permissions, if different than the new one
+            revokePreviousPermissions(contentResolver, newUri, keepUri);
+            // Persist new access permission
+            contentResolver.takePersistableUriPermission(newUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         }
     }
 
+    /**
+     * Check if the given Uri has persisted I/O permissions
+     *
+     * @param resolver ContentResolver to use
+     * @param uri      Uri to check
+     * @return true if the given Uri has persisted I/O permissions
+     */
+    private static boolean isUriPermissionPersisted(@NonNull final ContentResolver resolver, @NonNull final Uri uri) {
+        String treeUriId = DocumentsContract.getTreeDocumentId(uri);
+        for (UriPermission p : resolver.getPersistedUriPermissions()) {
+            if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {
+                Timber.d("Uri permission already persisted for %s", uri);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Revoke persisted Uri I/O permissions to the exception of given Uri's
+     *
+     * @param resolver   ContentResolver to use
+     * @param exceptions Uri's whose permissions won't be revoked
+     */
+    private static void revokePreviousPermissions(@NonNull final ContentResolver resolver, @NonNull final Uri... exceptions) {
+        // Unfortunately, the content Uri of the selected resource is not exactly the same as the one stored by ContentResolver
+        // -> solution is to compare their TreeDocumentId instead
+        List<String> exceptionIds = Stream.of(exceptions).withoutNulls().map(DocumentsContract::getTreeDocumentId).toList();
+        for (UriPermission p : resolver.getPersistedUriPermissions())
+            if (!exceptionIds.contains(DocumentsContract.getTreeDocumentId(p.getUri())))
+                resolver.releasePersistableUriPermission(p.getUri(),
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+        if (resolver.getPersistedUriPermissions().size() <= exceptionIds.size()) {
+            Timber.d("Permissions revoked successfully");
+        } else {
+            Timber.d("Failed to revoke permissions");
+        }
+    }
 
     private static NameFilter createNameFilterEquals(@NonNull final String name) {
         return displayName -> displayName.equalsIgnoreCase(name);

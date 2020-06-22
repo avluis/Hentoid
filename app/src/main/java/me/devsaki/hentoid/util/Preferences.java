@@ -232,6 +232,20 @@ public final class Preferences {
                 .apply();
     }
 
+    public static String getExternalLibraryUri() {
+        return sharedPreferences.getString(Key.EXTERNAL_LIBRARY_URI, "");
+    }
+
+    public static void setExternalLibraryUri(String uri) {
+        sharedPreferences.edit()
+                .putString(Key.EXTERNAL_LIBRARY_URI, uri)
+                .apply();
+    }
+
+    public static boolean isDeleteExternalLibrary() {
+        return sharedPreferences.getBoolean(Key.EXTERNAL_LIBRARY_DELETE, Default.EXTERNAL_LIBRARY_DELETE);
+    }
+
     static int getFolderNameFormat() {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.PREF_FOLDER_NAMING_CONTENT_LISTS,
@@ -497,6 +511,9 @@ public final class Preferences {
         static final String PREF_FIRST_RUN = "pref_first_run";
         public static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
         public static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
+        public static final String EXTERNAL_LIBRARY = "pref_external_library";
+        public static final String EXTERNAL_LIBRARY_URI = "pref_external_library_uri";
+        public static final String EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete";
         static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         public static final String PREF_SETTINGS_FOLDER = "folder";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
@@ -562,6 +579,7 @@ public final class Preferences {
         static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
+        static final boolean EXTERNAL_LIBRARY_DELETE = false;
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;

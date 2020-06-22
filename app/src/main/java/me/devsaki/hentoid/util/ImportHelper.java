@@ -2,10 +2,8 @@ package me.devsaki.hentoid.util;
 
 import android.app.Activity;
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.DocumentsContract;
@@ -29,6 +27,7 @@ import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
+import me.devsaki.hentoid.services.ExternalImportService;
 import me.devsaki.hentoid.services.ImportService;
 import timber.log.Timber;
 
@@ -42,7 +41,8 @@ public class ImportHelper {
     }
 
 
-    private static final int RQST_STORAGE_PERMISSION = 3;
+    private static final int RQST_STORAGE_PERMISSION_HENTOID = 3;
+    private static final int RQST_STORAGE_PERMISSION_EXTERNAL = 4;
 
     @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.CREATE_FAIL, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
@@ -70,14 +70,14 @@ public class ImportHelper {
         return hentoidFolderNames.accept(folderName);
     }
 
-    public static void openFolderPicker(@NonNull final Fragment caller) {
+    public static void openFolderPicker(@NonNull final Fragment caller, boolean isExternal) {
         Intent intent = getFolderPickerIntent(caller.requireContext());
-        caller.startActivityForResult(intent, RQST_STORAGE_PERMISSION);
+        caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
     }
 
-    public static void openFolderPicker(@NonNull final Activity caller) {
+    public static void openFolderPicker(@NonNull final Activity caller, boolean isExternal) {
         Intent intent = getFolderPickerIntent(caller.getParent());
-        caller.startActivityForResult(intent, RQST_STORAGE_PERMISSION);
+        caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
     }
 
     private static Intent getFolderPickerIntent(@NonNull final Context context) {
@@ -109,70 +109,87 @@ public class ImportHelper {
         HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
 
         // Return from the SAF picker
-        if (requestCode == RQST_STORAGE_PERMISSION && resultCode == Activity.RESULT_OK) {
+        if ((requestCode == RQST_STORAGE_PERMISSION_HENTOID || requestCode == RQST_STORAGE_PERMISSION_EXTERNAL) && resultCode == Activity.RESULT_OK) {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
-            if (treeUri != null)
-                return setAndScanFolder(context, treeUri, true, null);
-            else return Result.INVALID_FOLDER;
+            if (treeUri != null) {
+                if (requestCode == RQST_STORAGE_PERMISSION_EXTERNAL)
+                    return setAndScanExternalFolder(context, treeUri);
+                else
+                    return setAndScanHentoidFolder(context, treeUri, true, null);
+            } else return Result.INVALID_FOLDER;
         } else if (resultCode == Activity.RESULT_CANCELED) {
             return Result.CANCELED;
         } else return Result.OTHER;
     }
 
     public static @Result
-    int setAndScanFolder(
+    int setAndScanHentoidFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri,
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
 
-        boolean isUriPermissionPeristed = false;
-        ContentResolver contentResolver = context.getContentResolver();
-        String treeUriId = DocumentsContract.getTreeDocumentId(treeUri);
+        // Persist I/O permissions
+        Uri externalUri = null;
+        if (!Preferences.getExternalLibraryUri().isEmpty())
+            externalUri = Uri.parse(Preferences.getExternalLibraryUri());
+        FileHelper.persistNewUriPermission(context, treeUri, externalUri);
 
-        for (UriPermission p : contentResolver.getPersistedUriPermissions()) {
-            if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {
-                isUriPermissionPeristed = true;
-                Timber.d("Uri permission already persisted for %s", treeUri);
-                break;
-            }
-        }
-
-        if (!isUriPermissionPeristed) {
-            Timber.d("Persisting Uri permission for %s", treeUri);
-            // Release previous access permissions, if different than the new one
-            FileHelper.revokePreviousPermissions(contentResolver, treeUri);
-            // Persist new access permission
-            contentResolver.takePersistableUriPermission(treeUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        }
-
+        // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
         if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return Result.INVALID_FOLDER;
         }
+        // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = addHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
             Timber.e("Could not create Hentoid folder in root %s", docFile.getUri().toString());
             return Result.CREATE_FAIL;
         }
+        // Set the folder as the app's downloads folder
         if (!FileHelper.checkAndSetRootFolder(context, hentoidFolder, true)) {
             Timber.e("Could not set the selected root folder %s", hentoidFolder.getUri().toString());
             return Result.INVALID_FOLDER;
         }
 
+        // Scan the folder for an existing library; start the import
         if (hasBooks(context)) {
             if (!askScanExisting) {
-                runImport(context, options);
+                runHentoidImport(context, options);
                 return Result.OK_LIBRARY_DETECTED;
             } else return Result.OK_LIBRARY_DETECTED_ASK;
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
-            new ObjectBoxDAO(context).deleteAllLibraryBooks(true);
+            new ObjectBoxDAO(context).deleteAllInternalBooks(true);
             return Result.OK_EMPTY_FOLDER;
         }
+    }
+
+    public static @Result
+    int setAndScanExternalFolder(
+            @NonNull final Context context,
+            @NonNull final Uri treeUri) {
+
+        // Persist I/O permissions
+        Uri hentoidUri = null;
+        if (!Preferences.getStorageUri().isEmpty())
+            hentoidUri = Uri.parse(Preferences.getStorageUri());
+        FileHelper.persistNewUriPermission(context, treeUri, hentoidUri);
+
+        // Check if the folder exists
+        DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
+        if (null == docFile || !docFile.exists()) {
+            Timber.e("Could not find the selected file %s", treeUri.toString());
+            return Result.INVALID_FOLDER;
+        }
+        // Set the folder as the app's external library folder
+        Preferences.setExternalLibraryUri(docFile.getUri().toString());
+
+        // Start the import
+        runExternalImport(context);
+        return Result.OK_LIBRARY_DETECTED;
     }
 
     public static void showExistingLibraryDialog(
@@ -187,7 +204,7 @@ public class ImportHelper {
                 .setPositiveButton(android.R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            runImport(context, null);
+                            runHentoidImport(context, null);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog2, which) -> {
@@ -259,7 +276,7 @@ public class ImportHelper {
         else return root;
     }
 
-    private static void runImport(
+    private static void runHentoidImport(
             @NonNull final Context context,
             @Nullable final ImportOptions options
     ) {
@@ -272,6 +289,19 @@ public class ImportHelper {
         builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
         builder.setRefreshCleanUnreadable(null != options && options.cleanUnreadable);
         intent.putExtras(builder.getBundle());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent);
+        } else {
+            context.startService(intent);
+        }
+    }
+
+    private static void runExternalImport(
+            @NonNull final Context context
+    ) {
+        ImportNotificationChannel.init(context);
+        Intent intent = ExternalImportService.makeIntent(context);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(intent);

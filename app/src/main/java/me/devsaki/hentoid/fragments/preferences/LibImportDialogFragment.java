@@ -259,7 +259,7 @@ public class LibImportDialogFragment extends DialogFragment {
 
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
         if (!add) {
-            if (importLibrary) dao.deleteAllLibraryBooks(false);
+            if (importLibrary) dao.deleteAllInternalBooks(false);
             if (importQueue) dao.deleteAllQueuedBooks();
         }
 

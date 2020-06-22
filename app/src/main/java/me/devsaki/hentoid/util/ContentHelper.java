@@ -400,7 +400,7 @@ public final class ContentHelper {
     }
 
     public static List<ImageFile> createImageListFromFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
-        List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(context, folder, Helper.getImageNamesFilter());
+        List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, Helper.getImageNamesFilter());
         if (!imageFiles.isEmpty())
             return createImageListFromFiles(imageFiles);
         else return Collections.emptyList();
@@ -411,13 +411,14 @@ public final class ContentHelper {
         List<ImageFile> result = new ArrayList<>();
         int order = 0;
         // Sort files by name alpha
-        List<DocumentFile> fileList = Stream.of(files).filter(f -> f != null).sortBy(DocumentFile::getName).collect(toList());
+        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sortBy(DocumentFile::getName).collect(toList());
         for (DocumentFile f : fileList) {
-            String name = (f.getName() != null) ? FileHelper.getFileNameWithoutExtension(f.getName()) : "";
+            String name = (f.getName() != null) ? f.getName() : "";
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(name)));
             result.add(img);
         }
         return result;

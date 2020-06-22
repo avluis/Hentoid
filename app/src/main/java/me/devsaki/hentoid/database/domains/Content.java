@@ -535,7 +535,7 @@ public class Content implements Serializable {
 
     public long getNbDownloadedPages() {
         if (imageFiles != null)
-            return Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED && !i.isCover()).count();
+            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL) && !i.isCover()).count();
         else return 0;
     }
 

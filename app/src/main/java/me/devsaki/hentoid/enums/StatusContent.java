@@ -10,9 +10,17 @@ import io.objectbox.converter.PropertyConverter;
  */
 public enum StatusContent {
 
-    SAVED(0, "Saved"), DOWNLOADED(1, "Downloaded"), DOWNLOADING(2, "Downloading"),
-    PAUSED(3, "Paused"), ERROR(4, "Error"), MIGRATED(5, "Migrated"), IGNORED(6, "Ignored"),
-    UNHANDLED_ERROR(7, "Unhandled Error"), CANCELED(8, "Canceled"), ONLINE(9, "Online");
+    SAVED(0, "Saved"), // Content webpage has been accessed by the browser -> content is "pre-saved" to the DB and will be deleted upon next app restart if not queued
+    DOWNLOADED(1, "Downloaded"), // Content has been downloaded successfully
+    DOWNLOADING(2, "Downloading"), // Content is in Hentoid's download queue and is being downloaded
+    PAUSED(3, "Paused"), // Content is in Hentoid's download queue and is paused
+    ERROR(4, "Error"), // Content download has failed
+    MIGRATED(5, "Migrated"), // Unused value; kept for retrocompatibility
+    IGNORED(6, "Ignored"), // Transient status set by the web parser to indicate a content page that cannot be parsed
+    UNHANDLED_ERROR(7, "Unhandled Error"), // Default status for image files
+    CANCELED(8, "Canceled"), // Unused value; kept for retrocompatibility
+    ONLINE(9, "Online"), // Unused value; will be reused for #277
+    EXTERNAL(10, "External"); // Content is accessible in the external library
 
     private final int code;
     private final String description;

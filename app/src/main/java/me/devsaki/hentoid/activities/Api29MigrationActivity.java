@@ -1,8 +1,6 @@
 package me.devsaki.hentoid.activities;
 
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -131,26 +129,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
     // Return from SAF picker
     public void onSelectSAFRootFolder(@NonNull final Uri treeUri) {
 
-        boolean isUriPermissionPeristed = false;
-        ContentResolver contentResolver = getContentResolver();
-        String treeUriId = DocumentsContract.getTreeDocumentId(treeUri);
-
-        for (UriPermission p : contentResolver.getPersistedUriPermissions()) {
-            if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {
-                isUriPermissionPeristed = true;
-                Timber.d("Uri permission already persisted for %s", treeUri);
-                break;
-            }
-        }
-
-        if (!isUriPermissionPeristed) {
-            Timber.d("Persisting Uri permission for %s", treeUri);
-            // Release previous access permissions, if different than the new one
-            FileHelper.revokePreviousPermissions(contentResolver, treeUri);
-            // Persist new access permission
-            contentResolver.takePersistableUriPermission(treeUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        }
+        FileHelper.persistNewUriPermission(this, treeUri, null); // We're migrating from v1.11- so there's no external library set
 
         DocumentFile selectedFolder = DocumentFile.fromTreeUri(this, treeUri);
         if (selectedFolder != null) {
@@ -163,8 +142,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
         }
 
         // If no existing hentoid folder is detected, tell the user to select it again
-        if (null == selectedFolder || null == selectedFolder.getName() || !ImportHelper.isHentoidFolderName(selectedFolder.getName()))
-        {
+        if (null == selectedFolder || null == selectedFolder.getName() || !ImportHelper.isHentoidFolderName(selectedFolder.getName())) {
             ToastUtil.toast("Please select an existing Hentoid folder. Its location is displayed on screen.");
             return;
         }

@@ -3,7 +3,6 @@ package me.devsaki.hentoid.services;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 
@@ -44,12 +43,6 @@ public class DatabaseMaintenanceService extends IntentService {
         Timber.i("Service destroyed");
 
         super.onDestroy();
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 
     @Override

@@ -103,11 +103,14 @@
 
         <TextView
             android:id="@+id/import_step2_text"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginStart="16dp"
             android:text="@string/api29_migration_step2"
-            app:layout_constraintLeft_toRightOf="@id/import_step2_number"
+            android:ellipsize="end"
+            android:lines="1"
+            app:layout_constraintStart_toEndOf="@id/import_step2_number"
+            app:layout_constraintEnd_toEndOf="@id/import_step2_bar"
             app:layout_constraintTop_toTopOf="@id/import_step2_number" />
 
         <ProgressBar
