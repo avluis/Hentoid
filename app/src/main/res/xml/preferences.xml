@@ -154,8 +154,8 @@
                 app:iconSpaceReserved="false" />
             <Preference
                 android:key="pref_delete_all_except_favs"
-                android:summary="@string/pref_delete_all_except_favs"
-                android:title="@string/pref_delete_all_except_favs_summary"
+                android:summary="@string/pref_delete_all_except_favs_summary"
+                android:title="@string/pref_delete_all_except_favs"
                 app:iconSpaceReserved="false" />
             <Preference
                 android:key="pref_export_library"

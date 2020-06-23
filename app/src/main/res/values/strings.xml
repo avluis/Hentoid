@@ -88,8 +88,10 @@
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
-    <string name="refresh_caption">Automatically refresh the whole library by rescanning disk data.</string>
+    <string name="refresh_caption">Automatically refresh library data by rescanning files and folders.</string>
     <string name="refresh_options">Cleanup options</string>
+    <string name="refresh_location_internal">Hentoid library</string>
+    <string name="refresh_location_external">External library</string>
     <string name="refresh_options_rename">Rename all folders according to the current naming and max length preference</string>
     <string name="refresh_options_remove">Remove folders where…</string>
     <string name="refresh_options_remove_1">JSON file is absent (recommended)</string>

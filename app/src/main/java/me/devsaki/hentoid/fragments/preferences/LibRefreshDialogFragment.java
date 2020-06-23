@@ -8,10 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.Group;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -64,6 +68,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
     private View step4block;
     private ProgressBar step4progress;
     private View step4check;
+    private Group optionsGroup;
 
     // Disposable for RxJava
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -113,17 +118,28 @@ public class LibRefreshDialogFragment extends DialogFragment {
         if (rootView instanceof ViewGroup) this.rootView = (ViewGroup) rootView;
 
         if (showOptions) { // Show option screen first
-            // TODO put a radio group to select hentoid/external folder when the dialog is launched to refresh data
             CheckBox renameChk = requireViewById(rootView, R.id.refresh_options_rename);
             CheckBox cleanAbsentChk = requireViewById(rootView, R.id.refresh_options_remove_1);
             CheckBox cleanNoImagesChk = requireViewById(rootView, R.id.refresh_options_remove_2);
             CheckBox cleanUnreadableChk = requireViewById(rootView, R.id.refresh_options_remove_3);
+            RadioButton externalChk = requireViewById(rootView, R.id.refresh_location_external);
+
+            optionsGroup = requireViewById(rootView, R.id.refresh_options_group);
+
+            RadioGroup locationGrp = requireViewById(rootView, R.id.refresh_location);
+            locationGrp.setOnCheckedChangeListener((g, i) -> onLocationChanged(i));
 
             View okBtn = requireViewById(rootView, R.id.refresh_ok);
-            okBtn.setOnClickListener(v -> launchRefreshImport(externalLibrary, renameChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked(), cleanUnreadableChk.isChecked()));
+            okBtn.setOnClickListener(v -> launchRefreshImport(externalChk.isChecked(), renameChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked(), cleanUnreadableChk.isChecked()));
         } else { // Show import progress layout immediately
             showImportProgressLayout(chooseFolder, externalLibrary);
         }
+    }
+
+    private void onLocationChanged(@IdRes int checkedId) {
+        if (checkedId == R.id.refresh_location_external)
+            optionsGroup.setVisibility(View.GONE);
+        else optionsGroup.setVisibility(View.VISIBLE);
     }
 
     private void launchRefreshImport(boolean isExternal, boolean rename, boolean cleanAbsent, boolean cleanNoImages, boolean cleanUnreadable) {
