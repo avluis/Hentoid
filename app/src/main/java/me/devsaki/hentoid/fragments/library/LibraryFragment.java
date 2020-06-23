@@ -148,6 +148,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem itemShare;
     private MenuItem itemArchive;
     private MenuItem itemFolder;
+    private MenuItem itemRedownload;
     private MenuItem itemDeleteAll;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
@@ -538,6 +539,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
         itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
         itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
+        itemRedownload = selectionToolbar.getMenu().findItem(R.id.action_redownload);
         itemDeleteAll = selectionToolbar.getMenu().findItem(R.id.action_delete_all);
     }
 
@@ -569,16 +571,17 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         return true;
     }
 
-    private void updateSelectionToolbar(long selectedCount) {
-        boolean isMultipleSelection = selectedCount > 1;
+    private void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
+        boolean isMultipleSelection = selectedTotalCount > 1;
 
-        itemDelete.setVisible(!isMultipleSelection);
-        itemShare.setVisible(!isMultipleSelection);
+        itemDelete.setVisible(!isMultipleSelection && (1 == selectedLocalCount || Preferences.isDeleteExternalLibrary()));
+        itemShare.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         itemArchive.setVisible(!isMultipleSelection);
         itemFolder.setVisible(!isMultipleSelection);
-        itemDeleteAll.setVisible(isMultipleSelection);
+        itemRedownload.setVisible(selectedLocalCount > 0);
+        itemDeleteAll.setVisible(isMultipleSelection && (selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary()));
 
-        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
+        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
     }
 
     /**
@@ -599,8 +602,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private void purgeSelectedItems() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
-            List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).toList();
-            askDeleteItems(selectedContent);
+            List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+            // Remove external items if they can't be deleted
+            if (!Preferences.isDeleteExternalLibrary())
+                selectedContent = Stream.of(selectedContent).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).toList();
+            if (!selectedContent.isEmpty()) askDeleteItems(selectedContent);
         }
     }
 
@@ -655,11 +661,14 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
 
         int securedContent = 0;
+        int externalContent = 0;
         List<Content> contents = new ArrayList<>();
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
             if (null == c) continue;
-            if (c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)) {
+            if (c.getStatus().equals(StatusContent.EXTERNAL)) {
+                externalContent++;
+            } else if (c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)) {
                 securedContent++;
             } else {
                 contents.add(c);
@@ -668,6 +677,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
         if (securedContent > 0)
+            message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
+        else if (externalContent > 0)
             message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
 
         // TODO make it work for secured sites (Fakku, ExHentai) -> open a browser to fetch the relevant cookies ?
@@ -1208,15 +1219,17 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * Callback for any selection change (item added to or removed from selection)
      */
     private void onSelectionChanged() {
-        int selectedCount = selectExtension.getSelectedItems().size();
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        int selectedTotalCount = selectedItems.size();
 
-        if (0 == selectedCount) {
+        if (0 == selectedTotalCount) {
             selectionToolbar.setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
             new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
-            updateSelectionToolbar(selectedCount);
+            long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filter(s -> s.equals(StatusContent.DOWNLOADED)).count();
+            updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
             selectionToolbar.setVisibility(View.VISIBLE);
         }
     }

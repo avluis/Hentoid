@@ -203,6 +203,10 @@
         <item quantity="one">One of the selected books has secured content and cannot be redownloaded\nThis book will be ignored.</item>
         <item quantity="other">Some of the selected books have secured content and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
+    <plurals name="redownload_external_content">
+        <item quantity="one">One of the selected books is stored in the external library and cannot be redownloaded\nThis book will be ignored.</item>
+        <item quantity="other">Some of the selected books are stored in the external library and cannot be redownloaded\nThey will be ignored.</item>
+    </plurals>
     <string name="deleted">Deleted</string>
     <string name="help_search">Search anything : title, author, tag\nand launch code too !</string>
     <string name="help_page_slider">You can browse faster by sliding through page numbers</string>
