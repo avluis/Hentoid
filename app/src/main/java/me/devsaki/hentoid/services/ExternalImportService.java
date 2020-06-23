@@ -48,8 +48,6 @@ import timber.log.Timber;
 
 /**
  * Service responsible for importing an external library.
- *
- * @see UpdateCheckService
  */
 public class ExternalImportService extends IntentService {
 
