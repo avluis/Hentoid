@@ -148,7 +148,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem itemShare;
     private MenuItem itemArchive;
     private MenuItem itemFolder;
-    private MenuItem itemDeleteSwipe;
+    private MenuItem itemDeleteAll;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -538,7 +538,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
         itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
         itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
-        itemDeleteSwipe = selectionToolbar.getMenu().findItem(R.id.action_delete_sweep);
+        itemDeleteAll = selectionToolbar.getMenu().findItem(R.id.action_delete_all);
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
@@ -548,7 +548,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 shareSelectedItems();
                 break;
             case R.id.action_delete:
-            case R.id.action_delete_sweep:
+            case R.id.action_delete_all:
                 purgeSelectedItems();
                 break;
             case R.id.action_archive:
@@ -576,7 +576,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemShare.setVisible(!isMultipleSelection);
         itemArchive.setVisible(!isMultipleSelection);
         itemFolder.setVisible(!isMultipleSelection);
-        itemDeleteSwipe.setVisible(isMultipleSelection);
+        itemDeleteAll.setVisible(isMultipleSelection);
 
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
     }
