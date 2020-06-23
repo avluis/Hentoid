@@ -84,7 +84,8 @@
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: @series@</string>
     <string name="work_artist">Artist: @artist@</string>
-    <string name="work_pages">Pages: @pages@@missing@</string>
+    <string name="work_pages_queue">Pages: @pages@@missing@</string>
+    <string name="work_pages_library">%d pages / "%.1f MB</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
@@ -189,7 +190,8 @@
     <string name="book_title">"This is a rather long title, just because we need it to be."</string>
     <string name="book_series">"Series: Name"</string>
     <string name="book_artist">"Artist: Name"</string>
-    <string name="book_pages">"Pages: 1234; estimated 125 MB"</string>
+    <string name="book_pages_queue">"Pages: 1234; estimated 125 MB"</string>
+    <string name="book_pages_library">"1234 pages / 1125 MB"</string>
     <string name="book_tags">""tag1, tag2, tag3, etc.</string>
     <plurals name="number_of_book_search_results">
         <item quantity="one">%d/%d result</item>

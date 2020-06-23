@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
 import java.io.IOException;
@@ -536,6 +537,12 @@ public class Content implements Serializable {
     public long getNbDownloadedPages() {
         if (imageFiles != null)
             return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL) && !i.isCover()).count();
+        else return 0;
+    }
+
+    public long getSize() {
+        if (imageFiles != null)
+            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
         else return 0;
     }
 

@@ -72,7 +72,7 @@
         app:layout_constraintEnd_toEndOf="@id/tvArtist"
         app:layout_constraintStart_toStartOf="@id/tvArtist"
         app:layout_constraintTop_toBottomOf="@id/tvSeries"
-        tools:text="@string/book_pages" />
+        tools:text="@string/book_pages_library" />
 
     <View
         android:id="@+id/divider"

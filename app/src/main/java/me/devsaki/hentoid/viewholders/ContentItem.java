@@ -393,16 +393,22 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private void attachPages(@NonNull final Content content, @ViewType int viewType) {
             tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
             Context context = tvPages.getContext();
-            String template = context.getResources().getString(R.string.work_pages);
-            template = template.replace("@pages@", content.getQtyPages() + "");
-            if (viewType != ViewType.QUEUE) {
-                long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
-                if (nbMissingPages > 0)
-                    template = template.replace("@missing@", " (" + nbMissingPages + " missing)");
-                else
+
+            String template = null;
+            if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS) {
+                template = context.getResources().getString(R.string.work_pages_queue);
+                template = template.replace("@pages@", content.getQtyPages() + "");
+                if (viewType == ViewType.ERRORS) {
+                    long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
+                    if (nbMissingPages > 0)
+                        template = template.replace("@missing@", " (" + nbMissingPages + " missing)");
+                    else
+                        template = template.replace("@missing@", "");
+                } else
                     template = template.replace("@missing@", "");
-            } else
-                template = template.replace("@missing@", "");
+            } else { // Library
+                template = context.getResources().getString(R.string.work_pages_library, content.getNbDownloadedPages(), content.getSize() * 1.0 / (1024 * 1024));
+            }
 
             tvPages.setText(template);
         }
