@@ -73,6 +73,8 @@ public final class ContentHelper {
      * @param wrapPin True if the intent should be wrapped with PIN protection
      */
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
+        if (content.getSite().equals(Site.NONE)) return;
+
         Intent intent = new Intent(context, content.getWebActivityClass());
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(content.getGalleryUrl());
@@ -407,17 +409,21 @@ public final class ContentHelper {
     }
 
     public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files) {
+        return createImageListFromFiles(files, StatusContent.DOWNLOADED, 0, "");
+    }
+
+    public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files, StatusContent status, int initialOrder, String namePrefix) {
         Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
-        int order = 0;
+        int order = initialOrder;
         // Sort files by name alpha
         List<DocumentFile> fileList = Stream.of(files).withoutNulls().sortBy(DocumentFile::getName).collect(toList());
         for (DocumentFile f : fileList) {
-            String name = (f.getName() != null) ? f.getName() : "";
+            String name = namePrefix + ((f.getName() != null) ? f.getName() : "");
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl("").setStatus(status).setFileUri(f.getUri().toString()).setSize(f.length());
             img.setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(name)));
             result.add(img);
         }

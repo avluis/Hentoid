@@ -37,6 +37,7 @@ import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -138,7 +139,6 @@ public class ExternalImportService extends IntentService {
         DocumentFile logFile = null;
         CollectionDAO dao = new ObjectBoxDAO(this);
 
-        // TODO progress; use a custom Rx observable ?
         try {
             notificationManager.startForeground(new ImportProgressNotification(this.getResources().getString(R.string.starting_import), 0, 0));
 
@@ -152,14 +152,16 @@ public class ExternalImportService extends IntentService {
             dao.deleteAllExternalBooks();
 
             for (Content content : library) {
-                Uri jsonUri = null;
-                try {
-                    jsonUri = getJsonFor(content, client);
-                } catch (IOException ioe) {
-                    Timber.w(ioe); // Not blocking
-                    trace(Log.WARN, log, "Could not create JSON in %s", content.getStorageUri());
+                if (content.getJsonUri().isEmpty()) {
+                    Uri jsonUri = null;
+                    try {
+                        jsonUri = getJsonFor(content, client);
+                    } catch (IOException ioe) {
+                        Timber.w(ioe); // Not blocking
+                        trace(Log.WARN, log, "Could not create JSON in %s", content.getStorageUri());
+                    }
+                    if (jsonUri != null) content.setJsonUri(jsonUri.toString());
                 }
-                if (jsonUri != null) content.setJsonUri(jsonUri.toString());
                 dao.insertContent(content);
                 trace(Log.INFO, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;
@@ -248,7 +250,7 @@ public class ExternalImportService extends IntentService {
         DocumentFile contentFolder = DocumentFile.fromTreeUri(this, Uri.parse(c.getStorageUri()));
         if (null == contentFolder || !contentFolder.exists()) return null;
 
-        // If it exists, use it as is (don't overwrite it - kthxbye)
+        // If it exists, use it as is, don't overwrite it
         DocumentFile jsonFile = FileHelper.findFile(this, contentFolder, client, Consts.JSON_FILE_NAME_V2);
         if (jsonFile != null && jsonFile.exists()) return jsonFile.getUri();
 
@@ -282,11 +284,11 @@ public class ExternalImportService extends IntentService {
         result.setStatus(StatusContent.EXTERNAL).setStorageUri(bookFolder.getUri().toString());
         List<ImageFile> images = new ArrayList<>();
         scanImages(bookFolder, client, false, images, imageFiles);
-        // TODO better cover detection when reimporting hentoid books
-        createCover(images);
+        boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
+        if (!coverExists) createCover(images);
         result.setImageFiles(images);
         if (0 == result.getQtyPages())
-            result.setQtyPages(images.size() - 1);
+            result.setQtyPages(images.size() - 1); // Minus the cover
         return result;
     }
 
@@ -318,11 +320,11 @@ public class ExternalImportService extends IntentService {
         // Scan pages across all subfolders
         for (DocumentFile chapterFolder : chapterFolders)
             scanImages(chapterFolder, client, true, images, null);
-        // TODO better cover detection when reimporting hentoid books
-        createCover(images);
+        boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
+        if (!coverExists) createCover(images);
         result.setImageFiles(images);
         if (0 == result.getQtyPages())
-            result.setQtyPages(images.size() - 1);
+            result.setQtyPages(images.size() - 1); // Minus the cover
         return result;
     }
 
@@ -332,26 +334,15 @@ public class ExternalImportService extends IntentService {
             boolean addFolderNametoImgName,
             @NonNull final List<ImageFile> images,
             @Nullable List<DocumentFile> imageFiles) {
-        // TODO merge with ContentHelper.createImageListFromFiles ?
         int order = (images.isEmpty()) ? 0 : Stream.of(images).map(ImageFile::getOrder).max(Integer::compareTo).get();
         String folderName = (null == bookFolder.getName()) ? "" : bookFolder.getName();
         if (null == imageFiles)
             imageFiles = FileHelper.listFiles(this, bookFolder, client, imageNamesFilter);
-        // Order alpha
-        imageFiles = Stream.of(imageFiles).sortBy(DocumentFile::getName).toList();
-        // Create the ImageFile list
-        for (DocumentFile imageFile : imageFiles) {
-            String imgName = (null == imageFile.getName()) ? "" : imageFile.getName();
-            if (addFolderNametoImgName) imgName = folderName + "-" + imgName;
-            ImageFile img = new ImageFile().setOrder(++order)
-                    .setUrl("")
-                    .setStatus(StatusContent.EXTERNAL)
-                    .setName(imgName)
-                    .setFileUri(imageFile.getUri().toString())
-                    .setSize(imageFile.length())
-                    .setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(imgName)));
-            images.add(img);
-        }
+
+        String namePrefix = "";
+        if (addFolderNametoImgName) namePrefix = folderName + "-";
+
+        images.addAll(ContentHelper.createImageListFromFiles(imageFiles, StatusContent.EXTERNAL, order, namePrefix));
     }
 
     private void createCover(@NonNull final List<ImageFile> images) {
@@ -366,12 +357,11 @@ public class ExternalImportService extends IntentService {
         }
     }
 
-    // TODO this doesn't work (yet)
     private AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames) {
         AttributeMap result = new AttributeMap();
         // Don't include the very first one, it's the name of the root folder of the library
         if (parentNames.size() > 1) {
-            for (int i = 1; i < parentNames.size() - 1; i++)
+            for (int i = 1; i < parentNames.size(); i++)
                 result.add(new Attribute(AttributeType.TAG, parentNames.get(i), parentNames.get(i), Site.NONE));
         }
         return result;

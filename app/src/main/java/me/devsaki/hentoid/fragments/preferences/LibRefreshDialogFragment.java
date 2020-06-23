@@ -52,7 +52,8 @@ public class LibRefreshDialogFragment extends DialogFragment {
     private boolean externalLibrary;
 
     private ViewGroup rootView;
-    private View step1FolderButton;
+    private TextView step1Txt;
+    private TextView step1FolderButton;
     private TextView step2Txt;
     private ProgressBar step2progress;
     private View step2check;
@@ -171,6 +172,8 @@ public class LibRefreshDialogFragment extends DialogFragment {
         LayoutInflater.from(getActivity()).inflate(R.layout.include_import_steps, rootView, true);
 
         // Memorize UI elements that will be updated during the import events
+        step1Txt = rootView.findViewById(R.id.import_step1_text);
+        step1FolderButton = rootView.findViewById(R.id.import_step1_button);
         step2Txt = rootView.findViewById(R.id.import_step2_text);
         step2progress = rootView.findViewById(R.id.import_step2_bar);
         step2check = rootView.findViewById(R.id.import_step2_check);
@@ -182,7 +185,14 @@ public class LibRefreshDialogFragment extends DialogFragment {
         step4progress = rootView.findViewById(R.id.import_step4_bar);
         step4check = rootView.findViewById(R.id.import_step4_check);
 
-        step1FolderButton = rootView.findViewById(R.id.import_step1_button);
+        if (isExternal) {
+            step1FolderButton.setText(R.string.api29_migration_step1_select_external);
+            step1Txt.setText(R.string.api29_migration_step1_external);
+        } else {
+            step1FolderButton.setText(R.string.api29_migration_step1_select);
+            step1Txt.setText(R.string.api29_migration_step1);
+        }
+
         if (askFolder) {
             step1FolderButton.setVisibility(View.VISIBLE);
             step1FolderButton.setOnClickListener(v -> pickFolder(isExternal));
