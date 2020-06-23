@@ -278,6 +278,7 @@ public class ExternalImportService extends IntentService {
         if (null == result) {
             String title = bookFolder.getName();
             result = new Content().setSite(Site.NONE).setTitle((null == title) ? "" : title).setUrl("");
+            result.setDownloadDate(bookFolder.lastModified());
             result.addAttributes(parentNamesAsTags(parentNames));
         }
 
@@ -312,6 +313,7 @@ public class ExternalImportService extends IntentService {
         }
         if (null == result) {
             result = new Content().setSite(Site.NONE).setTitle((null == parent.getName()) ? "" : parent.getName()).setUrl("");
+            result.setDownloadDate(parent.lastModified());
             result.addAttributes(parentNamesAsTags(parentNames));
         }
 
