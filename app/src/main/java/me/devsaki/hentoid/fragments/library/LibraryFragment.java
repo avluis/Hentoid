@@ -139,8 +139,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
-    // Permissions alert bar
-    private Group alertBar;
+    // Alert bars
+    private Group permissionsAlertBar;
+    private Group storageAlertBar;
 
     // === SELECTION TOOLBAR
     private Toolbar selectionToolbar;
@@ -284,8 +285,13 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         // Display permissions alert if required
         if (!PermissionUtil.checkExternalStorageReadWritePermission(requireActivity())) {
+            ((TextView)requireViewById(view, R.id.library_alert_txt)).setText(R.string.permissions_lost);
             requireViewById(view, R.id.library_alert_fix_btn).setOnClickListener(v -> fixPermissions());
-            alertBar.setVisibility(View.VISIBLE);
+            permissionsAlertBar.setVisibility(View.VISIBLE);
+        } else if (isLowOnSpace()) { // Else display low space alert
+            ((TextView)requireViewById(view, R.id.library_alert_txt)).setText(R.string.low_memory);
+            permissionsAlertBar.setVisibility(View.GONE);
+            storageAlertBar.setVisibility(View.VISIBLE);
         }
     }
 
@@ -298,7 +304,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
 
         // Permissions alert bar
-        alertBar = requireViewById(rootView, R.id.library_alert_group);
+        permissionsAlertBar = requireViewById(rootView, R.id.library_permissions_alert_group);
+        storageAlertBar = requireViewById(rootView, R.id.library_storage_alert_group);
 
         // Search bar
         advancedSearchBar = requireViewById(rootView, R.id.advanced_search_background);
@@ -1289,13 +1296,21 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         PermissionUtil.requestExternalStorageReadWritePermission(this, PermissionUtil.RQST_STORAGE_PERMISSION);
     }
 
+    private boolean isLowOnSpace() {
+        DocumentFile rootFolder = DocumentFile.fromTreeUri(requireActivity(), Uri.parse(Preferences.getStorageUri()));
+        if (null == rootFolder || !rootFolder.exists()) return false;
+
+        double freeSpaceRatio = new FileHelper.MemoryUsageFigures(requireActivity(), rootFolder).getFreeUsageRatio100();
+        return (freeSpaceRatio / 100.0 < 0.6);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode != PermissionUtil.RQST_STORAGE_PERMISSION) return;
         if (permissions.length < 2) return;
         if (grantResults.length == 0) return;
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            alertBar.setVisibility(View.GONE);
+            permissionsAlertBar.setVisibility(View.GONE);
         } // Don't show rationales here; the alert still displayed on screen should be enough
     }
 }
