@@ -75,7 +75,7 @@ public class Content implements Serializable {
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite;
     private long reads = 0;
-    private long size = 0;
+    private long size = 0; // Yes, it _is_ redundant with the contained images' size. ObjectBox can't do thesum in a single Query, so here it is !
     private long lastReadDate;
     private int lastReadPageIndex = 0;
     @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
