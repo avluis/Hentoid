@@ -160,6 +160,7 @@ public class ExternalImportService extends IntentService {
                     }
                     if (jsonUri != null) content.setJsonUri(jsonUri.toString());
                 }
+                content.computeSize();
                 dao.insertContent(content);
                 trace(Log.INFO, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;

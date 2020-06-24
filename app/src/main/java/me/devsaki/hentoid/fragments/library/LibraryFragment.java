@@ -444,6 +444,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return Preferences.Constant.ORDER_FIELD_READ_DATE;
             case (R.id.sort_reads):
                 return Preferences.Constant.ORDER_FIELD_READS;
+            case (R.id.sort_size):
+                return Preferences.Constant.ORDER_FIELD_SIZE;
             case (R.id.sort_random):
                 return Preferences.Constant.ORDER_FIELD_RANDOM;
             default:
@@ -465,6 +467,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return R.string.sort_read_date;
             case (Preferences.Constant.ORDER_FIELD_READS):
                 return R.string.sort_reads;
+            case (Preferences.Constant.ORDER_FIELD_SIZE):
+                return R.string.sort_size;
             case (Preferences.Constant.ORDER_FIELD_RANDOM):
                 return R.string.sort_random;
             default:

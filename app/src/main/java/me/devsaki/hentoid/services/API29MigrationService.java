@@ -236,6 +236,8 @@ public class API29MigrationService extends IntentService {
                                     }
                                 }
                                 content.setImageFiles(contentImages);
+                                content.computeSize();
+                                dao.insertContent(content);
                             }
                         }
                         dao.replaceImageList(contentId, contentImages);

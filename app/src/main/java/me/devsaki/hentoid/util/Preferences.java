@@ -638,13 +638,13 @@ public final class Preferences {
 
         public static final int ORDER_FIELD_NONE = -1;
         public static final int ORDER_FIELD_TITLE = 0;
-        public static final int ORDER_FIELD_ARTIST = 1; // Not implemented yet
+        public static final int ORDER_FIELD_ARTIST = 1;
         public static final int ORDER_FIELD_NB_PAGES = 2;
         public static final int ORDER_FIELD_DOWNLOAD_DATE = 3;
         public static final int ORDER_FIELD_UPLOAD_DATE = 4;
         public static final int ORDER_FIELD_READ_DATE = 5;
         public static final int ORDER_FIELD_READS = 6;
-        public static final int ORDER_FIELD_SIZE = 7; // Not implemented yet
+        public static final int ORDER_FIELD_SIZE = 7;
         public static final int ORDER_FIELD_RANDOM = 99;
 
         public static final int ORDER_ATTRIBUTES_ALPHABETIC = 0;

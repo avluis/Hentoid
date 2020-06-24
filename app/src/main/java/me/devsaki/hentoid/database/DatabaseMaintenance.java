@@ -81,5 +81,15 @@ public class DatabaseMaintenance {
             db.insertContent(c);
         }
         Timber.i("Upgrading Tsumino covers : done");
+
+        // Compute missing downloaded Content size according to underlying ImageFile sizes
+        Timber.i("Computing downloaded content size : start");
+        contents = db.selectDownloadedContentWithNoSize();
+        Timber.i("Computing downloaded content size : %s books detected", contents.size());
+        for (Content c : contents) {
+            c.computeSize();
+            db.insertContent(c);
+        }
+        Timber.i("Computing downloaded content size : done");
     }
 }

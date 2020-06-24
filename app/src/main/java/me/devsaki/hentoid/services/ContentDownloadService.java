@@ -560,8 +560,7 @@ public class ContentDownloadService extends IntentService {
                 content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
                 // Clear download params from content
                 if (0 == pagesKO && !hasError) content.setDownloadParams("");
-
-                dao.insertContent(content);
+                content.computeSize();
 
                 // Save JSON file
                 try {
@@ -569,13 +568,13 @@ public class ContentDownloadService extends IntentService {
                     // Cache its URI to the newly created content
                     if (jsonFile != null) {
                         content.setJsonUri(jsonFile.getUri().toString());
-                        dao.insertContent(content);
                     } else {
                         Timber.w("JSON file could not be cached for %s", title);
                     }
                 } catch (IOException e) {
                     Timber.e(e, "I/O Error saving JSON: %s", title);
                 }
+                dao.insertContent(content);
 
                 Timber.i("Content download finished: %s [%s]", title, contentId);
 

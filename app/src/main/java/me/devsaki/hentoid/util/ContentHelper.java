@@ -231,7 +231,7 @@ public final class ContentHelper {
 
         // Update content JSON if it exists (i.e. if book is not queued)
         Content content = dao.selectContent(image.content.getTargetId());
-        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
+        if (content != null && !content.getJsonUri().isEmpty()) updateJson(context, content);
     }
 
     /**

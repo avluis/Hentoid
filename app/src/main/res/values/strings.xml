@@ -226,6 +226,7 @@
     <string name="sort_dl_date">Download date</string>
     <string name="sort_read_date">Read date</string>
     <string name="sort_reads">Reads</string>
+    <string name="sort_size">Size</string>
     <string name="sort_random">Random</string>
     <string name="sort_invalid">-invalid-</string>
     <!-- Item card tooltips -->

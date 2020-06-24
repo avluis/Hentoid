@@ -22,6 +22,9 @@
         android:id="@+id/sort_reads"
         android:title="@string/sort_reads"/>
     <item
+        android:id="@+id/sort_size"
+        android:title="@string/sort_size"/>
+    <item
         android:id="@+id/sort_random"
         android:title="@string/sort_random"/>
 </menu>

@@ -290,7 +290,15 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void deleteImageFile(@NonNull ImageFile img) {
+        // Delete the page
         db.deleteImageFile(img.getId());
+
+        // Update the content with its new size
+        Content content = db.selectContentById(img.content.getTargetId());
+        if (content != null) {
+            content.computeSize();
+            db.insertContent(content);
+        }
     }
 
     @Nullable

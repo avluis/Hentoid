@@ -313,7 +313,8 @@ public class ObjectBoxDB {
     }
 
     private void applySortOrder(QueryBuilder<Content> query, int orderField, boolean orderDesc) {
-        // That one's tricky - see https://github.com/objectbox/objectbox-java/issues/17 => Implemented post-query build
+        // Random ordering is tricky (see https://github.com/objectbox/objectbox-java/issues/17)
+        // => Implemented post-query build
         if (orderField == Preferences.Constant.ORDER_FIELD_RANDOM) return;
 
         Property<Content> field = getPropertyFromField(orderField);
@@ -346,6 +347,8 @@ public class ObjectBoxDB {
                 return Content_.lastReadDate;
             case Preferences.Constant.ORDER_FIELD_READS:
                 return Content_.reads;
+            case Preferences.Constant.ORDER_FIELD_SIZE:
+                return Content_.size;
             default:
                 return null;
         }
@@ -800,6 +803,10 @@ public class ObjectBoxDB {
 
     List<Content> selectContentWithOldTsuminoCovers() {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/").build().find();
+    }
+
+    List<Content> selectDownloadedContentWithNoSize() {
+        return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.size).build().find();
     }
 
     public Query<Content> selectOldStoredContentQ() {

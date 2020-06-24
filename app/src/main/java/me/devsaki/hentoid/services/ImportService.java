@@ -260,6 +260,7 @@ public class ImportService extends IntentService {
                                 content.setImageFiles(contentImages);
                             }
                         }
+                        content.computeSize();
                         dao.insertContent(content);
                         trace(Log.INFO, log, "Import book OK : %s", bookFolder.getUri().toString());
                     } else { // JSON not found

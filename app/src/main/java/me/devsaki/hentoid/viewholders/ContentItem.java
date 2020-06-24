@@ -394,7 +394,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
             Context context = tvPages.getContext();
 
-            String template = null;
+            String template;
             if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS) {
                 template = context.getResources().getString(R.string.work_pages_queue);
                 template = template.replace("@pages@", content.getQtyPages() + "");
