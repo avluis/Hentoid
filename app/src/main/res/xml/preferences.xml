@@ -129,7 +129,7 @@
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
-            android:title="@string/pref_cat_advanced"
+            android:title="@string/pref_cat_external"
             app:iconSpaceReserved="false">
             <Preference
                 android:key="pref_external_library"
