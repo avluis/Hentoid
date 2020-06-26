@@ -19,6 +19,7 @@ public class DownloadEvent {
         int NONE = -1;
         int NO_INTERNET = 0;
         int NO_WIFI = 1;
+        int NO_STORAGE = 2;
     }
 
     public static final int EV_PROGRESS = 0;    // Download progress of current book (always one book at a time)

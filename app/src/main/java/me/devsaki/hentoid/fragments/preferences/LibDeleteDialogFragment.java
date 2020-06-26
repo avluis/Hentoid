@@ -31,7 +31,7 @@ import timber.log.Timber;
  * Created by Robb on 11/2018
  * Launcher dialog for the library refresh feature
  */
-public class LibDeleteFragment extends DialogFragment {
+public class LibDeleteDialogFragment extends DialogFragment {
 
     private static final String BOOK_LIST = "book_list";
 
@@ -45,7 +45,7 @@ public class LibDeleteFragment extends DialogFragment {
 
 
     public static void invoke(@NonNull final FragmentManager fragmentManager, @NonNull final List<Long> bookList) {
-        LibDeleteFragment fragment = new LibDeleteFragment();
+        LibDeleteDialogFragment fragment = new LibDeleteDialogFragment();
 
         Bundle args = new Bundle();
         args.putLongArray(BOOK_LIST, Helper.getPrimitiveLongArrayFromList(bookList));

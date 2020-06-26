@@ -516,6 +516,7 @@ public final class Preferences {
         public static final String EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete";
         static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         public static final String PREF_SETTINGS_FOLDER = "folder";
+        public static final String MEMORY_USAGE = "pref_memory_usage";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String PREF_BROWSER_RESUME_LAST = "pref_browser_resume_last";

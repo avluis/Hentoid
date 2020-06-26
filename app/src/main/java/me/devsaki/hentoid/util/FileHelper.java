@@ -594,8 +594,16 @@ public class FileHelper {
             return freeMemBytes * 100.0 / totalMemBytes;
         }
 
+        public double getTotalSpaceMb() {
+            return totalMemBytes * 1.0 / (1024 * 1024);
+        }
+
+        public double getfreeUsageMb() {
+            return freeMemBytes * 1.0 / (1024 * 1024);
+        }
+
         public String formatFreeUsageMb() {
-            return Math.round(freeMemBytes / 1e6) + "/" + Math.round(totalMemBytes / 1e6);
+            return Math.round(getfreeUsageMb()) + "/" + Math.round(getfreeUsageMb());
         }
     }
 

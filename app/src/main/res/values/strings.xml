@@ -158,6 +158,12 @@
     <string name="enabled">ENABLED</string>
     <string name="disabled">DISABLED</string>
 
+    <!-- Memory usage -->
+    <string name="memory_title">Memory usage</string>
+    <string name="memory_total">Total : %.2f GB</string>
+    <string name="memory_free">Free : %.2f GB</string>
+    <string name="memory_hentoid">Hentoid : %.2f GB</string>
+
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>

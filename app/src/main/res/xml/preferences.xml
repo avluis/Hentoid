@@ -103,12 +103,7 @@
                 android:key="folder"
                 android:summary="@string/pref_select_folder_summary"
                 android:title="@string/pref_select_folder_title"
-                app:iconSpaceReserved="false">
-                <intent
-                    android:action="android.intent.action.APPLICATION_PREFERENCES"
-                    android:targetClass="me.devsaki.hentoid.activities.ImportActivity"
-                    android:targetPackage="@string/app_id" />
-            </Preference>
+                app:iconSpaceReserved="false" />
             <ListPreference
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -127,6 +122,11 @@
                 android:summary="@string/pref_folder_trunc_summary"
                 android:title="@string/pref_folder_trunc_title"
                 app:iconSpaceReserved="false" />
+            <Preference
+                android:key="pref_memory_usage"
+                android:summary="@string/pref_memory_usage_summary"
+                android:title="@string/pref_memory_usage_title"
+                app:iconSpaceReserved="false"></Preference>
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_external"

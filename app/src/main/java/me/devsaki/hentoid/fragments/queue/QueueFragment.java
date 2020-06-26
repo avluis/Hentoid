@@ -405,7 +405,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             dlPreparationProgressBar.setVisibility(View.GONE);
         }
 
-        dlPreparationProgressBar.setProgress(event.total - event.done);
+        dlPreparationProgressBar.setProgress1(event.total - event.done);
     }
 
     /**

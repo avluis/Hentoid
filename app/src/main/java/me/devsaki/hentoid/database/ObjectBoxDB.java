@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import com.annimon.stream.function.Function;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -735,6 +736,32 @@ public class ObjectBoxDB {
         return result;
     }
 
+    Map<Site, ImmutablePair<Integer, Long>> selectMemoryUsagePerSource() {
+        // Get all downloaded images regardless of the book's status
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()});
+        List<Content> books = query.build().find();
+
+        Map<Site, ImmutablePair<Integer, Long>> result = new EnumMap<>(Site.class);
+        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
+        // => Group by and count have to be done manually (thanks God Stream exists !)
+        // Group and count by type
+        Map<Site, List<Content>> map = Stream.of(books).collect(Collectors.groupingBy(Content::getSite));
+        for (Map.Entry<Site, List<Content>> entry : map.entrySet()) {
+            Site s = entry.getKey();
+            int count = 0;
+            long size = 0;
+            if (entry.getValue() != null) {
+                count = entry.getValue().size();
+                for (Content c : entry.getValue()) size += c.getSize();
+            }
+            result.put(s, new ImmutablePair<>(count, size));
+        }
+
+        return result;
+    }
+
     void insertErrorRecord(@NonNull final ErrorRecord record) {
         store.boxFor(ErrorRecord.class).put(record);
     }
@@ -792,6 +819,7 @@ public class ObjectBoxDB {
     SiteHistory selectHistory(@NonNull Site s) {
         return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
     }
+
 
     /**
      * ONE-SHOT USE QUERIES (MIGRATION & MAINTENANCE)

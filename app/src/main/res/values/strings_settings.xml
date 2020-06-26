@@ -56,10 +56,8 @@
     <string name="pref_folder_trunc_title">Truncate folder name</string>
     <string name="pref_folder_trunc_summary">Book folder name truncation.\nCurrently: %s.</string>
     <string name="pref_folder_trunc_default" translatable="false">0</string>
-    <string name="pref_add_no_media_file_title">Hide Downloaded Images</string>
-    <string name="pref_add_no_media_file_summary">Prevents downloaded images from showing up in gallery apps.</string>
-    <string name="nomedia_file_created">.nomedia file created.</string>
-    <string name="nomedia_file_failed">Failed to create .nomedia file.</string>
+    <string name="pref_memory_usage_title">Memory usage</string>
+    <string name="pref_memory_usage_summary">Current free space : %.2f%%</string>
 
     <string name="pref_cat_external">External library</string>
     <string name="pref_external_library_title">External library</string>

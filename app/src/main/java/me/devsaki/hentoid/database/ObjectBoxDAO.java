@@ -314,6 +314,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.countProcessedImagesById(contentId);
     }
 
+    public Map<Site, ImmutablePair<Integer, Long>> getMemoryUsagePerSource() {
+        return db.selectMemoryUsagePerSource();
+    }
+
 
     public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
         if (targetImageStatus != null)

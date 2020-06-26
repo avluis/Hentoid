@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.commit
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -66,6 +67,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         setPreferencesFromResource(R.xml.preferences, rootKey)
         onHentoidFolderChanged()
         onExternalFolderChanged()
+        populateMemoryUsage()
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
@@ -115,6 +117,10 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     }
                     true
                 }
+                Preferences.Key.MEMORY_USAGE -> {
+                    MemoryUsageDialogFragment.invoke(parentFragmentManager)
+                    true
+                }
                 Preferences.Key.PREF_APP_LOCK -> {
                     requireContext().startLocalActivity<PinPreferenceActivity>()
                     true
@@ -160,6 +166,14 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Preferences.getColorTheme()))
     }
 
+    private fun populateMemoryUsage() {
+        val folder = DocumentFile.fromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()))
+                ?: return
+
+        val memUsagePref: Preference? = findPreference(Preferences.Key.MEMORY_USAGE) as Preference?
+        memUsagePref?.summary = resources.getString(R.string.pref_memory_usage_summary, FileHelper.MemoryUsageFigures(requireContext(), folder).getFreeUsageRatio100())
+    }
+
     private fun onDeleteAllExceptFavourites() {
         val dao = ObjectBoxDAO(activity)
         var searchDisposable = Disposables.empty()
@@ -174,7 +188,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     ) { dialog1: DialogInterface, _: Int ->
                         dialog1.dismiss()
                         searchDisposable.dispose()
-                        LibDeleteFragment.invoke(parentFragmentManager, list)
+                        LibDeleteDialogFragment.invoke(parentFragmentManager, list)
                     }
                     .setNegativeButton(R.string.no
                     ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
