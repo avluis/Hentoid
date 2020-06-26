@@ -218,6 +218,13 @@ public class ContentDownloadService extends IntentService {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
+        DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
+        if (rootFolder != null && rootFolder.exists() && new FileHelper.MemoryUsageFigures(this, rootFolder).getfreeUsageMb() < 2) {
+            Timber.w("Device very low on storage space (<2 MB). Queue paused.");
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_WIFI));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
+
 
         // Work on first item of queue
 
@@ -395,8 +402,6 @@ public class ContentDownloadService extends IntentService {
         String json = JsonHelper.serializeToJson(contentCollection, JsonContentCollection.class);
 
         try {
-            Uri rootUri = Uri.parse(Preferences.getStorageUri());
-            DocumentFile rootFolder = DocumentFile.fromTreeUri(this, rootUri);
             if (rootFolder != null && rootFolder.exists()) {
                 DocumentFile queueJson = FileHelper.findOrCreateDocumentFile(this, rootFolder, JsonHelper.JSON_MIME_TYPE, Consts.QUEUE_JSON_FILE_NAME);
                 if (queueJson != null) {
