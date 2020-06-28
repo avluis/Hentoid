@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -43,7 +44,10 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 public class MemoryUsageDialogFragment extends DialogFragment {
 
-    int _4dp;
+    private int _4dp;
+
+    private TableLayout table;
+    private ImageView foldUnfoldArrow;
 
     // Disposable for RxJava
     private Disposable exportDisposable = Disposables.empty();
@@ -89,13 +93,27 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         ((TextView) requireViewById(rootView, R.id.memory_free)).setText(getResources().getString(R.string.memory_free, deviceFreeGb));
         ((TextView) requireViewById(rootView, R.id.memory_hentoid)).setText(getResources().getString(R.string.memory_hentoid, hentoidUsageGb));
 
-        TableLayout table = requireViewById(rootView, R.id.memory_details);
+        table = requireViewById(rootView, R.id.memory_details_table);
         addRow(table, "Source", "Books", "Size");
 
         // Sort sources by largest size
         List<Map.Entry<Site, ImmutablePair<Integer, Long>>> sitesBySize = Stream.of(memUsage).sortBy(entry -> -entry.getValue().right).toList();
         for (Map.Entry<Site, ImmutablePair<Integer, Long>> entry : sitesBySize) {
             addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", String.format(Locale.US, "%.1f MB", entry.getValue().right / (1024.0 * 1024)));
+        }
+
+        // Make details fold/unfold
+        foldUnfoldArrow = requireViewById(rootView, R.id.memory_details_icon);
+        requireViewById(rootView, R.id.memory_details).setOnClickListener(v -> onDetailsClick());
+    }
+
+    private void onDetailsClick() {
+        if (View.VISIBLE == table.getVisibility()) {
+            foldUnfoldArrow.setImageResource(R.drawable.ic_drop_down);
+            table.setVisibility(View.GONE);
+        } else {
+            foldUnfoldArrow.setImageResource(R.drawable.ic_drop_up);
+            table.setVisibility(View.VISIBLE);
         }
     }
 
