@@ -356,6 +356,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 motiveMsg = getString(R.string.paused_no_internet);
             else if (event.motive == DownloadEvent.Motive.NO_WIFI)
                 motiveMsg = getString(R.string.paused_no_wifi);
+            else if (event.motive == DownloadEvent.Motive.NO_STORAGE)
+                motiveMsg = getString(R.string.paused_no_storage);
             Snackbar.make(recyclerView, motiveMsg, BaseTransientBottomBar.LENGTH_SHORT).show();
         }
 
