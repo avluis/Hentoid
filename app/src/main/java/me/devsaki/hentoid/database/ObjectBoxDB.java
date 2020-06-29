@@ -610,18 +610,17 @@ public class ObjectBoxDB {
             int itemsPerPage) {
         long[] filteredContent = selectFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
+        List<Integer> libraryStatusAsList = Helper.getListFromPrimitiveArray(libraryStatus);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
 
         // Compute attribute count for sorting
-        int count;
+        long count;
         for (Attribute a : result) {
-            if (0 == filteredContent.length) count = a.contents.size();
-            else {
-                count = 0;
-                for (Content c : a.contents)
-                    if (filteredContentAsList.contains(c.getId())) count++;
-            }
-            a.setCount(count);
+            count = Stream.of(a.contents)
+                    .filter(c -> libraryStatusAsList.contains(c.getStatus().getCode()))
+                    .filter(c -> filteredContentAsList.isEmpty() || filteredContentAsList.contains(c.getId()))
+                    .count();
+            a.setCount((int) count);
         }
 
         // Apply sort order
