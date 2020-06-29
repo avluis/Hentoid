@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import io.reactivex.disposables.Disposable;
-import io.reactivex.disposables.Disposables;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -48,9 +46,6 @@ public class MemoryUsageDialogFragment extends DialogFragment {
 
     private TableLayout table;
     private ImageView foldUnfoldArrow;
-
-    // Disposable for RxJava
-    private Disposable exportDisposable = Disposables.empty();
 
 
     public static void invoke(@NonNull final FragmentManager fragmentManager) {

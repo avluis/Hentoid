@@ -87,7 +87,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:background="@color/dark_gray"
-        android:padding="8dp"
+        android:padding="4dp"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintStart_toStartOf="parent"
@@ -126,20 +126,5 @@
             app:layout_constraintTop_toBottomOf="@id/memory_details_txt" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <TextView
-        android:id="@+id/memory_ok_btn"
-        android:layout_width="64dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="?colorSecondary"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:padding="8dp"
-        android:text="@android:string/ok"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/memory_details" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
