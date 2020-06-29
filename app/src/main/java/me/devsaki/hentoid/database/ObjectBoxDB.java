@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import com.annimon.stream.function.Function;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -498,7 +497,7 @@ public class ObjectBoxDB {
 
         QueryBuilder<Content> contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
         contentFromAttributesQueryBuilder.in(Content_.status, libraryStatus);
-        if (filterFavourites) contentFromSourceQueryBuilder.equal(Content_.favourite, true);
+        if (filterFavourites) contentFromAttributesQueryBuilder.equal(Content_.favourite, true);
         contentFromAttributesQueryBuilder.link(Content_.attributes)
                 .equal(Attribute_.type, 0)
                 .equal(Attribute_.name, "");
