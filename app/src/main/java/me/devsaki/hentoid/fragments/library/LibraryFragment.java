@@ -285,11 +285,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         // Display permissions alert if required
         if (!PermissionUtil.checkExternalStorageReadWritePermission(requireActivity())) {
-            ((TextView)requireViewById(view, R.id.library_alert_txt)).setText(R.string.permissions_lost);
+            ((TextView) requireViewById(view, R.id.library_alert_txt)).setText(R.string.permissions_lost);
             requireViewById(view, R.id.library_alert_fix_btn).setOnClickListener(v -> fixPermissions());
             permissionsAlertBar.setVisibility(View.VISIBLE);
         } else if (isLowOnSpace()) { // Else display low space alert
-            ((TextView)requireViewById(view, R.id.library_alert_txt)).setText(R.string.low_memory);
+            ((TextView) requireViewById(view, R.id.library_alert_txt)).setText(R.string.low_memory);
             permissionsAlertBar.setVisibility(View.GONE);
             storageAlertBar.setVisibility(View.VISIBLE);
         }
@@ -1301,7 +1301,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (null == rootFolder || !rootFolder.exists()) return false;
 
         double freeSpaceRatio = new FileHelper.MemoryUsageFigures(requireActivity(), rootFolder).getFreeUsageRatio100();
-        return (freeSpaceRatio / 100.0 < 0.6);
+        return (freeSpaceRatio < 100 - Preferences.getMemoryAlertThreshold());
     }
 
     @Override

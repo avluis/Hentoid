@@ -232,6 +232,10 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getMemoryAlertThreshold() {
+        return Integer.parseInt(sharedPreferences.getString(Key.MEMORY_ALERT, Integer.toString(Default.PREF_MEMORY_ALERT_DEFAULT)) + "");
+    }
+
     public static String getExternalLibraryUri() {
         return sharedPreferences.getString(Key.EXTERNAL_LIBRARY_URI, "");
     }
@@ -517,6 +521,7 @@ public final class Preferences {
         static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         public static final String PREF_SETTINGS_FOLDER = "folder";
         public static final String MEMORY_USAGE = "pref_memory_usage";
+        public static final String MEMORY_ALERT = "pref_memory_alert";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String PREF_BROWSER_RESUME_LAST = "pref_browser_resume_last";
@@ -580,6 +585,7 @@ public final class Preferences {
         static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
+        static final int PREF_MEMORY_ALERT_DEFAULT = 110;
         static final boolean EXTERNAL_LIBRARY_DELETE = false;
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
