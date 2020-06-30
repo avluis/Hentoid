@@ -763,6 +763,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private boolean onSelectionMenuItemClicked(@NonNull MenuItem menuItem) {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         List<Integer> selectedPositions;
+        boolean exitSelection = false;
 
         switch (menuItem.getItemId()) {
             case R.id.action_select_queue_cancel:
@@ -772,16 +773,20 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             case R.id.action_select_queue_top:
                 selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
                 if (!selectedPositions.isEmpty()) viewModel.moveTop(selectedPositions);
+                exitSelection = true;
                 break;
             case R.id.action_select_queue_bottom:
                 selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
                 if (!selectedPositions.isEmpty()) viewModel.moveBottom(selectedPositions);
+                exitSelection = true;
                 break;
             default:
                 // Nothing here
         }
-        selectExtension.deselect();
-        selectionToolbar.setVisibility(View.GONE);
+        if (exitSelection) {
+            selectExtension.deselect();
+            selectionToolbar.setVisibility(View.GONE);
+        }
         return true;
     }
 
