@@ -57,7 +57,12 @@
     <!-- Queue -->
     <string name="queue_queue_tab">In progress</string>
     <string name="queue_errors_tab">Errors</string>
+    <string name="cancel">Cancel</string>
     <string name="cancel_all">Cancel all</string>
+    <plurals name="ask_cancel_multiple">
+        <item quantity="one">Are you sure you wish to cancel the selected item ?</item>
+        <item quantity="other">Are you sure you wish to cancel the selected items ?</item>
+    </plurals>
     <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
     <string name="canceled">Canceled</string>

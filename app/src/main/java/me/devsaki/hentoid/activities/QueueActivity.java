@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
@@ -107,11 +108,20 @@ public class QueueActivity extends BaseActivity {
     }
 
     private void onTabSelected(int position) {
+        // Update permanent toolbar
         invertQueueMenu.setVisible(0 == position);
         cancelAllMenu.setVisible(0 == position);
         redownloadAllMenu.setVisible(1 == position);
         if (1 == position)
             errorStatsMenu.setVisible(false); // That doesn't mean it should be visible at all times on tab 0 !
+
+        // Update selection toolbar
+        selectionToolbar.setVisibility(View.GONE);
+        selectionToolbar.getMenu().clear();
+        if (0 == position)
+            selectionToolbar.inflateMenu(R.menu.queue_queue_selection_menu);
+        else
+            selectionToolbar.inflateMenu(R.menu.queue_error_selection_menu);
     }
 
     public Toolbar getToolbar() {

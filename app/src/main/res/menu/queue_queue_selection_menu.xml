@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.LibraryActivity"
+    tools:ignore="AlwaysShowAction"
+    tools:targetApi="o">
+    <item
+        android:id="@+id/action_select_queue_top"
+        android:icon="@drawable/ic_action_top"
+        android:title="@string/move_top"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_select_queue_bottom"
+        android:icon="@drawable/ic_action_bottom"
+        android:title="@string/move_bottom"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_select_queue_cancel"
+        android:icon="@drawable/ic_action_delete_forever"
+        android:title="@string/cancel"
+        app:showAsAction="always" />
+</menu>

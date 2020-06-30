@@ -5,13 +5,11 @@
     tools:context=".activities.LibraryActivity"
     tools:ignore="AlwaysShowAction"
     tools:targetApi="o">
-    <!--
     <item
         android:id="@+id/action_queue_delete"
         android:icon="@drawable/ic_action_delete_forever"
         android:title="@string/menu_delete_single"
         app:showAsAction="always" />
-        -->
     <item
         android:id="@+id/action_download"
         android:icon="@drawable/ic_action_download"

@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.queue;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -88,6 +89,13 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
     private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
 
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (selectExtension != null) selectExtension.deselect();
+    }
 
     @Override
     public void onDestroy() {
@@ -195,18 +203,19 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
             selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
         });
-        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
+        selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
     }
 
-    private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
+    private boolean onSelectionMenuItemClicked(@NonNull MenuItem menuItem) {
         boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
-            /*
             case R.id.action_queue_delete:
-                //askDeleteSelected();
-                // TODO
+                Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+                if (!selectedItems.isEmpty()) {
+                    List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+                    askDeleteSelected(selectedContent);
+                }
                 break;
-             */
             case R.id.action_download:
                 redownloadSelected();
                 break;
@@ -339,6 +348,10 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     }
 
     private void onDeleteBook(@NonNull Content c) {
+        viewModel.remove(Stream.of(c).toList());
+    }
+
+    private void onDeleteBooks(@NonNull List<Content> c) {
         viewModel.remove(c);
     }
 
@@ -469,5 +482,27 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     @Override
     public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
         // Nothing
+    }
+
+    /**
+     * Display the yes/no dialog to make sure the user really wants to delete selected items
+     *
+     * @param items Items to be deleted if the answer is yes
+     */
+    private void askDeleteSelected(@NonNull final List<Content> items) {
+        Context context = getActivity();
+        if (null == context) return;
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        String title = context.getResources().getQuantityString(R.plurals.ask_cancel_multiple, items.size());
+        builder.setMessage(title)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog, which) -> {
+                            selectExtension.deselect();
+                            onDeleteBooks(items);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog, which) -> selectExtension.deselect())
+                .create().show();
     }
 }
