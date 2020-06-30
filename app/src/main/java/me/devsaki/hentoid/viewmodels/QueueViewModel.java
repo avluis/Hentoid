@@ -222,7 +222,7 @@ public class QueueViewModel extends AndroidViewModel {
     public void moveTop(List<Integer> positions) {
         int processed = 0;
         for (Integer oldPos : positions) {
-            move(oldPos - processed, processed);
+            move(oldPos, processed);
             processed++;
         }
     }
