@@ -157,9 +157,7 @@ public class QueueViewModel extends AndroidViewModel {
                         .map(c -> doRemove(c.getId()))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                    // Nothing to do here; UI callbacks are handled through LiveData
-                                },
+                                v -> saveQueue(),
                                 Timber::e
                         )
         );
@@ -208,6 +206,12 @@ public class QueueViewModel extends AndroidViewModel {
 
     public void setContentIdToShowFirst(long id) {
         contentIdToShowFirst.setValue(id);
+    }
+
+    private void saveQueue() {
+        if (ContentHelper.updateQueueJson(getApplication().getApplicationContext(), dao))
+            Timber.i("Queue JSON successfully saved");
+        else Timber.w("Queue JSON saving failed");
     }
 
     /**

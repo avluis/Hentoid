@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
+import com.crashlytics.android.Crashlytics;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
@@ -33,9 +34,11 @@ import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.json.JsonContentCollection;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
@@ -89,7 +92,7 @@ public final class ContentHelper {
      * @param context Context to use for the action
      * @param content Content whose JSON file to update
      */
-    public static void updateJson(@NonNull Context context, @NonNull Content content) {
+    public static void updateContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
         DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
         if (null == file)
@@ -107,15 +110,38 @@ public final class ContentHelper {
      *
      * @param content Content whose JSON file to create
      */
-    public static void createJson(@NonNull Context context, @NonNull Content content) {
+    public static void createContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
         DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
         if (null == folder || !folder.exists()) return;
         try {
-            JsonHelper.createJson(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getStorageUri());
         }
+    }
+
+    public static boolean updateQueueJson(@NonNull Context context, @NonNull CollectionDAO dao) {
+        List<QueueRecord> queue = dao.selectQueue();
+        // Save current queue (to be able to restore it in case the app gets uninstalled)
+        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).withoutNulls().toList();
+        JsonContentCollection contentCollection = new JsonContentCollection();
+        contentCollection.setQueue(queuedContent);
+
+        DocumentFile rootFolder = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
+        if (null == rootFolder || !rootFolder.exists()) return false;
+
+        try {
+            JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
+        } catch (IOException | IllegalArgumentException e) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e);
+            Crashlytics.logException(e);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -154,8 +180,8 @@ public final class ContentHelper {
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         dao.insertContent(content);
 
-        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
-        else createJson(context, content);
+        if (!content.getJsonUri().isEmpty()) updateContentJson(context, content);
+        else createContentJson(context, content);
     }
 
     /**
@@ -231,7 +257,7 @@ public final class ContentHelper {
 
         // Update content JSON if it exists (i.e. if book is not queued)
         Content content = dao.selectContent(image.content.getTargetId());
-        if (content != null && !content.getJsonUri().isEmpty()) updateJson(context, content);
+        if (content != null && !content.getJsonUri().isEmpty()) updateContentJson(context, content);
     }
 
     /**

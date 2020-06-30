@@ -212,8 +212,8 @@ public class LibraryViewModel extends AndroidViewModel {
 
             // Persist in it JSON
             if (!theContent.getJsonUri().isEmpty())
-                ContentHelper.updateJson(getApplication(), theContent);
-            else ContentHelper.createJson(getApplication(), theContent);
+                ContentHelper.updateContentJson(getApplication(), theContent);
+            else ContentHelper.createContentJson(getApplication(), theContent);
 
             // Persist in it DB
             dao.insertContent(theContent);

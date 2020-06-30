@@ -484,7 +484,7 @@ public class ImportService extends IntentService {
 
             contentV2.setStorageUri(parentFolder.getUri().toString());
 
-            DocumentFile newJson = JsonHelper.createJson(this, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
+            DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
@@ -507,7 +507,7 @@ public class ImportService extends IntentService {
 
             contentV2.setStorageUri(parentFolder.getUri().toString());
 
-            DocumentFile newJson = JsonHelper.createJson(this, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
+            DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;

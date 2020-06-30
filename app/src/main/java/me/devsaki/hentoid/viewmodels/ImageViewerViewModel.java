@@ -329,8 +329,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
             // Persist in JSON
             Content theContent = img.content.getTarget();
-            if (!theContent.getJsonUri().isEmpty()) ContentHelper.updateJson(context, theContent);
-            else ContentHelper.createJson(context, theContent);
+            if (!theContent.getJsonUri().isEmpty()) ContentHelper.updateContentJson(context, theContent);
+            else ContentHelper.createContentJson(context, theContent);
 
             return img;
         } else
@@ -453,8 +453,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         content.postValue(c);
 
         // Persist in JSON
-        if (!c.getJsonUri().isEmpty()) ContentHelper.updateJson(context, c);
-        else ContentHelper.createJson(context, c);
+        if (!c.getJsonUri().isEmpty()) ContentHelper.updateContentJson(context, c);
+        else ContentHelper.createContentJson(context, c);
     }
 
     // Cache JSON URI in the database to speed up favouriting

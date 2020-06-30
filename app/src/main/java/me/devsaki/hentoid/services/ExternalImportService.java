@@ -253,7 +253,7 @@ public class ExternalImportService extends IntentService {
         DocumentFile jsonFile = FileHelper.findFile(this, contentFolder, client, Consts.JSON_FILE_NAME_V2);
         if (jsonFile != null && jsonFile.exists()) return jsonFile.getUri();
 
-        return JsonHelper.createJson(this, JsonContent.fromEntity(c), JsonContent.class, contentFolder).getUri();
+        return JsonHelper.jsonToFile(this, JsonContent.fromEntity(c), JsonContent.class, contentFolder).getUri();
     }
 
     private Content scanBookFolder(
