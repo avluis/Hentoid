@@ -153,6 +153,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         super.onResume();
 
         if (selectExtension != null) selectExtension.deselect();
+        initSelectionToolbar();
         update(-1);
     }
 

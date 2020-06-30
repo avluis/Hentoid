@@ -95,6 +95,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         super.onResume();
 
         if (selectExtension != null) selectExtension.deselect();
+        initSelectionToolbar();
     }
 
     @Override
