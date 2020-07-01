@@ -22,12 +22,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiConsumer;
+import com.annimon.stream.function.Consumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
-import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
@@ -294,6 +294,17 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         consumer.accept(from, to);
         recordMoveFromFirstPos(from, to);
     }
+    private void processMove(List<Integer> positions, @NonNull Consumer<List<Integer>> consumer) {
+        topItemPosition = getTopItemPosition();
+        offsetTop = 0;
+        if (topItemPosition >= 0) {
+            View firstView = llm.findViewByPosition(topItemPosition);
+            if (firstView != null)
+                offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
+        }
+        consumer.accept(positions);
+        recordMoveFromFirstPos(positions);
+    }
 
     private void attachButtons(FastAdapter<ContentItem> fastAdapter) {
         // Site button
@@ -522,7 +533,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         // Update displayed books
         List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper)).toList();
-        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
+//        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
+        itemAdapter.set(content);
         differEndCallback();
 
         updateControlBar();
@@ -749,6 +761,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         if (0 == from) itemToRefreshIndex = to;
     }
 
+    private void recordMoveFromFirstPos(List<Integer> positions) {
+        // Only useful when moving the 1st item to the bottom
+        if (!positions.isEmpty() && 0 == positions.get(0)) itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
+    }
+
     private void initSelectionToolbar() {
         if (!(requireActivity() instanceof QueueActivity)) return;
         QueueActivity activity = (QueueActivity) requireActivity();
@@ -773,21 +790,21 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case R.id.action_select_queue_top:
                 selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
-                if (!selectedPositions.isEmpty()) viewModel.moveTop(selectedPositions);
+                selectExtension.deselect();
+                if (!selectedPositions.isEmpty()) processMove(selectedPositions, viewModel::moveTop);
                 exitSelection = true;
                 break;
             case R.id.action_select_queue_bottom:
                 selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
-                if (!selectedPositions.isEmpty()) viewModel.moveBottom(selectedPositions);
+                selectExtension.deselect();
+                if (!selectedPositions.isEmpty()) processMove(selectedPositions, viewModel::moveBottom);
                 exitSelection = true;
                 break;
             default:
                 // Nothing here
         }
-        if (exitSelection) {
-            selectExtension.deselect();
+        if (exitSelection)
             selectionToolbar.setVisibility(View.GONE);
-        }
         return true;
     }
 
