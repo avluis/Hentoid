@@ -163,6 +163,11 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         View view;
         if (ViewType.IMAGEVIEW == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
+            // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+                view.setClickable(false);
+                view.setFocusable(false);
+            }
         } else if (ViewType.IMAGEVIEW_STRETCH == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
             ((ImageView) view).setScaleType(ImageView.ScaleType.FIT_XY);
