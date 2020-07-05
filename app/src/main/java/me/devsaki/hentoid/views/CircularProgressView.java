@@ -22,8 +22,8 @@ public class CircularProgressView extends View {
     private final Paint totalPaint;
     private final Paint progress1Paint;
     private final Paint progress2Paint;
-    private double progress1 = 360;
-    private double progress2 = 360;
+    private double progress1 = 0;
+    private double progress2 = 0;
     private double total = 360;
     private TextView textView;
 
