@@ -9,6 +9,7 @@ import me.devsaki.hentoid.parsers.content.FakkuContent;
 import me.devsaki.hentoid.parsers.content.HbrowseContent;
 import me.devsaki.hentoid.parsers.content.Hentai2ReadContent;
 import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
+import me.devsaki.hentoid.parsers.content.HentaifoxContent;
 import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
 import me.devsaki.hentoid.parsers.content.NexusContent;
@@ -25,6 +26,7 @@ import me.devsaki.hentoid.parsers.images.FakkuParser;
 import me.devsaki.hentoid.parsers.images.HbrowseParser;
 import me.devsaki.hentoid.parsers.images.Hentai2ReadParser;
 import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
+import me.devsaki.hentoid.parsers.images.HentaifoxParser;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.parsers.images.LusciousParser;
@@ -76,6 +78,8 @@ public class ContentParserFactory {
                 return HbrowseContent.class;
             case HENTAI2READ:
                 return Hentai2ReadContent.class;
+            case HENTAIFOX:
+                return HentaifoxContent.class;
             case EHENTAI: // Uses the API of the site -> no HTML parser
             case EXHENTAI: // Uses the API of the site -> no HTML parser
             case LUSCIOUS: // Uses the API of the site -> no HTML parser
@@ -123,6 +127,8 @@ public class ContentParserFactory {
                 return new HbrowseParser();
             case HENTAI2READ:
                 return new Hentai2ReadParser();
+            case HENTAIFOX:
+                return new HentaifoxParser();
             default:
                 return new DummyParser();
         }

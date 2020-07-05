@@ -92,6 +92,9 @@
             android:name=".activities.sources.Hentai2ReadActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.HentaifoxActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -374,6 +377,17 @@
                 <data
                     android:host="hentai2read.com"
                     android:pathPattern="/..*/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="hentaifox.com"
+                    android:pathPattern="/gallery/..*/"
                     android:scheme="https" />
             </intent-filter>
         </activity>

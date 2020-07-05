@@ -44,8 +44,8 @@ public class HentaiCafeContent implements ContentParser {
         result.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.HENTAICAFE);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.HENTAICAFE);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.HENTAICAFE);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.HENTAICAFE);
 
         result.addAttributes(attributes);
 

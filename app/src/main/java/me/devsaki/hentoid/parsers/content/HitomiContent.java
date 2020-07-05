@@ -52,13 +52,13 @@ public class HitomiContent implements ContentParser {
         result.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.HITOMI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, Site.HITOMI);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.HITOMI);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.HITOMI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.HITOMI);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.HITOMI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.HITOMI);
 
         result.addAttributes(attributes);
 

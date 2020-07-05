@@ -50,10 +50,10 @@ public class NexusContent implements ContentParser {
 
         AttributeMap attributes = new AttributeMap();
 
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.NEXUS);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.NEXUS);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.NEXUS);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, language, true, Site.NEXUS);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.NEXUS);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.NEXUS);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.NEXUS);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, language, false, Site.NEXUS);
 
         result.addAttributes(attributes);
 

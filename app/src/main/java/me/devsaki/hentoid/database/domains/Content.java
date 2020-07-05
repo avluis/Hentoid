@@ -30,6 +30,7 @@ import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
+import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
@@ -185,6 +186,7 @@ public class Content implements Serializable {
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
             case FAKKU2:
+            case HENTAIFOX:
             case PORNCOMIX:
                 paths = url.split("/");
                 return paths[paths.length - 1];
@@ -281,6 +283,8 @@ public class Content implements Serializable {
                 return HbrowseActivity.class;
             case HENTAI2READ:
                 return Hentai2ReadActivity.class;
+            case HENTAIFOX:
+                return HentaifoxActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -314,6 +318,7 @@ public class Content implements Serializable {
     public String getGalleryUrl() {
         String galleryConst;
         switch (site) {
+            case HENTAIFOX:
             case PURURIN:
                 galleryConst = "/gallery";
                 break;
@@ -387,6 +392,8 @@ public class Content implements Serializable {
             case PORNCOMIX:
                 if (getGalleryUrl().contains("/manga")) return getGalleryUrl() + "/p/1/";
                 else return getGalleryUrl() + "#&gid=1&pid=1";
+            case HENTAIFOX:
+                return site.getUrl() + "g" + url;
             default:
                 return null;
         }

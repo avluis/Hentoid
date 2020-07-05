@@ -53,20 +53,20 @@ public class Hentai2ReadContent implements ContentParser {
                             result.setQtyPages(Integer.parseInt(qtyPages));
                             break;
                         case "parody":
-                            ParseHelper.parseAttribute(attributes, AttributeType.SERIE, child, true, Site.HENTAI2READ);
+                            ParseHelper.parseAttribute(attributes, AttributeType.SERIE, child, false, Site.HENTAI2READ);
                             break;
                         case "artist":
-                            ParseHelper.parseAttribute(attributes, AttributeType.ARTIST, child, true, Site.HENTAI2READ);
+                            ParseHelper.parseAttribute(attributes, AttributeType.ARTIST, child, false, Site.HENTAI2READ);
                             break;
                         case "language":
-                            ParseHelper.parseAttribute(attributes, AttributeType.LANGUAGE, child, true, Site.HENTAI2READ);
+                            ParseHelper.parseAttribute(attributes, AttributeType.LANGUAGE, child, false, Site.HENTAI2READ);
                             break;
                         case "character":
-                            ParseHelper.parseAttribute(attributes, AttributeType.CHARACTER, child, true, Site.HENTAI2READ);
+                            ParseHelper.parseAttribute(attributes, AttributeType.CHARACTER, child, false, Site.HENTAI2READ);
                             break;
                         case "content":
                         case "category":
-                            ParseHelper.parseAttribute(attributes, AttributeType.TAG, child, true, Site.HENTAI2READ);
+                            ParseHelper.parseAttribute(attributes, AttributeType.TAG, child, false, Site.HENTAI2READ);
                             break;
                         default:
                             // Other cases aren't interesting

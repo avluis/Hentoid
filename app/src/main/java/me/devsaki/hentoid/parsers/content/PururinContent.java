@@ -66,13 +66,13 @@ public class PururinContent implements ContentParser {
         result.setQtyPages(qtyPages);
 
         AttributeMap attributes = new AttributeMap();
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.PURURIN);
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, Site.PURURIN);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.PURURIN);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.PURURIN);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.PURURIN);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.PURURIN);
-        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.PURURIN);
         result.addAttributes(attributes);
 
         return result;
