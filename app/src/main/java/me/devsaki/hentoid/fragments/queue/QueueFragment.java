@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -210,7 +211,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
                 this,
                 this,
-                requireContext().getResources().getDrawable(R.drawable.ic_action_delete_forever, null));
+                ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.8f);
         dragSwipeCallback.setNotifyAllDrops(true);
         dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
@@ -294,6 +295,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         consumer.accept(from, to);
         recordMoveFromFirstPos(from, to);
     }
+
     private void processMove(List<Integer> positions, @NonNull Consumer<List<Integer>> consumer) {
         topItemPosition = getTopItemPosition();
         offsetTop = 0;
@@ -766,7 +768,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     private void recordMoveFromFirstPos(List<Integer> positions) {
         // Only useful when moving the 1st item to the bottom
-        if (!positions.isEmpty() && 0 == positions.get(0)) itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
+        if (!positions.isEmpty() && 0 == positions.get(0))
+            itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
     }
 
     private void initSelectionToolbar() {
@@ -794,13 +797,15 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             case R.id.action_select_queue_top:
                 selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
                 selectExtension.deselect();
-                if (!selectedPositions.isEmpty()) processMove(selectedPositions, viewModel::moveTop);
+                if (!selectedPositions.isEmpty())
+                    processMove(selectedPositions, viewModel::moveTop);
                 exitSelection = true;
                 break;
             case R.id.action_select_queue_bottom:
                 selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
                 selectExtension.deselect();
-                if (!selectedPositions.isEmpty()) processMove(selectedPositions, viewModel::moveBottom);
+                if (!selectedPositions.isEmpty())
+                    processMove(selectedPositions, viewModel::moveBottom);
                 exitSelection = true;
                 break;
             default:

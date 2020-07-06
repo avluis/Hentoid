@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -134,7 +135,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         // Swiping
         SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
                 this,
-                requireContext().getDrawable(R.drawable.ic_action_delete_forever));
+                ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.8f);
 
         touchHelper = new ItemTouchHelper(swipeCallback);
         touchHelper.attachToRecyclerView(recyclerView);
