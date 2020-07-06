@@ -33,7 +33,7 @@ class UpdateInstallNotification(private val apkUri: Uri) : Notification {
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
 
         return NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
-            .setSmallIcon(R.drawable.ic_stat_hentoid)
+            .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setVibrate(longArrayOf(1, 1, 1))
