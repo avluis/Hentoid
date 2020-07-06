@@ -20,7 +20,7 @@ class DownloadProgressNotification(
 
     override fun onCreateNotification(context: Context): android.app.Notification {
         return NotificationCompat.Builder(context, DownloadNotificationChannel.ID)
-                .setSmallIcon(R.drawable.ic_stat_hentoid)
+                .setSmallIcon(R.drawable.ic_hentoid_shape)
                 .setContentTitle(context.getString(R.string.downloading))
                 .setContentText(title)
                 .setContentInfo(progressString)

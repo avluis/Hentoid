@@ -15,7 +15,7 @@ class UpdateAvailableNotification(private val updateUrl: String) : Notification 
         val pendingIntent = PendingIntentCompat.getForegroundService(context, intent)
 
         return NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
-            .setSmallIcon(R.drawable.ic_stat_hentoid)
+            .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setVibrate(longArrayOf(1, 1, 1))

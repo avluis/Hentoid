@@ -57,7 +57,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     private static final RequestOptions glideRequestOptions = new RequestOptions()
             .centerInside()
-            .error(R.drawable.ic_placeholder);
+            .error(R.drawable.ic_hentoid);
 
     @IntDef({ViewType.LIBRARY, ViewType.QUEUE, ViewType.ERRORS})
     @Retention(RetentionPolicy.SOURCE)
@@ -435,7 +435,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 int img = content.getSite().getIco();
                 ivSite.setImageResource(img);
             } else {
-                ivSite.setImageResource(R.drawable.ic_stat_hentoid);
+                ivSite.setImageResource(R.drawable.ic_hentoid_shape);
             }
 
             if (ViewType.QUEUE == item.viewType) {
