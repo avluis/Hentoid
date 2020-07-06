@@ -165,12 +165,16 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
             // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
-                view.setClickable(false);
-                view.setFocusable(false);
+                View image = view.findViewById(R.id.image);
+                image.setClickable(false);
+                image.setFocusable(false);
             }
         } else if (ViewType.IMAGEVIEW_STRETCH == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
-            ((ImageView) view).setScaleType(ImageView.ScaleType.FIT_XY);
+            {
+                ImageView image = view.findViewById(R.id.image);
+                image.setScaleType(ImageView.ScaleType.FIT_XY);
+            }
         } else if (ViewType.SSIV_VERTICAL == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
             ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
@@ -208,8 +212,14 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public void onViewRecycled(@NonNull ImageViewHolder holder) {
         // Set the holder back to its original constraints while in vertical mode
         // (not doing this will cause super high memory usage by trying to load _all_ images)
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
-            holder.imgView.setMinimumHeight(PX_600_DP);
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+            holder.rootView.setMinimumHeight(PX_600_DP);
+
+            ViewGroup.LayoutParams layoutParams = holder.rootView.getLayoutParams();
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            holder.rootView.setLayoutParams(layoutParams);
+        }
 
         // Free the SSIV's resources
         if (ViewType.SSIV_HORIZONTAL == holder.viewType || ViewType.SSIV_VERTICAL == holder.viewType) // SubsamplingScaleImageView
@@ -270,6 +280,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         private final @ViewType
         int viewType;
+        private final View rootView;
         private final View imgView;
 
         private ImageFile img;
@@ -277,7 +288,13 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         private ImageViewHolder(@NonNull View itemView, @ViewType int viewType) {
             super(itemView);
             this.viewType = viewType;
-            imgView = itemView;
+            rootView = itemView;
+
+            if (viewType == ViewType.IMAGEVIEW || viewType == ViewType.IMAGEVIEW_STRETCH)
+                imgView = itemView.findViewById(R.id.image);
+            else
+                imgView = rootView;
+
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
                 imgView.setOnTouchListener(itemTouchListener);
         }
@@ -347,8 +364,14 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         private void adjustHeight(int imgHeight) {
+            int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+            ViewGroup.LayoutParams layoutParams = rootView.getLayoutParams();
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            layoutParams.height = layoutStyle;
+            rootView.setLayoutParams(layoutParams);
+
             int targetHeight = imgHeight + separatingBarsHeight;
-            imgView.setMinimumHeight(targetHeight);
+            rootView.setMinimumHeight(targetHeight);
         }
 
         // == SUBSAMPLINGSCALEVIEW CALLBACKS
