@@ -53,6 +53,7 @@
     <string name="pref_folder_naming_content_title">Folder names</string>
     <string name="pref_folder_naming_content_summary">Book folder naming convention:\n%s</string>
     <string name="pref_folder_naming_content_default" translatable="false">2</string>
+    <string name="pref_import_running">Import is already running</string>
     <string name="pref_folder_trunc_title">Truncate folder name</string>
     <string name="pref_folder_trunc_summary">Book folder name truncation.\nCurrently: %s.</string>
     <string name="pref_folder_trunc_default" translatable="false">0</string>
@@ -177,6 +178,7 @@
     <string name="pref_viewer_display_mode_default" translatable="false">0</string>
     <string name="pref_viewer_rendering">Rendering mode</string>
     <string name="pref_viewer_rendering_default" translatable="false">0</string>
+    <string name="pref_viewer_rendering_no_android5">Smooth rendering is not available on Android 5</string>
     <string name="pref_viewer_auto_rotate">Auto-rotate pictures</string>
     <bool name="pref_viewer_auto_rotate_default" translatable="false">false</bool>
     <string name="pref_viewer_auto_rotate_summary_off">Pictures are not rotated</string>

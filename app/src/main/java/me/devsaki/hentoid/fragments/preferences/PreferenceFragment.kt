@@ -78,7 +78,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.EXTERNAL_LIBRARY -> {
                     if (ExternalImportService.isRunning()) {
-                        ToastUtil.toast("Import is already running")
+                        ToastUtil.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
                     }
@@ -86,7 +86,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.PREF_REFRESH_LIBRARY -> {
                     if (ImportService.isRunning()) {
-                        ToastUtil.toast("Import is already running")
+                        ToastUtil.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
                     }
@@ -106,12 +106,12 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.PREF_VIEWER_RENDERING -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        ToastUtil.toast("Smooth rendering is not available on Android 5")
+                        ToastUtil.toast(getString(R.string.pref_viewer_rendering_no_android5))
                     true
                 }
                 Preferences.Key.PREF_SETTINGS_FOLDER -> {
                     if (ImportService.isRunning()) {
-                        ToastUtil.toast("Import is already running")
+                        ToastUtil.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)
                     }

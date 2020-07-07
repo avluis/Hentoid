@@ -113,7 +113,7 @@ public class MemoryUsageDialogFragment extends DialogFragment {
     }
 
     private void addRow(@NonNull TableLayout table, @NonNull String... values) {
-        TableRow.LayoutParams tableParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT, 1.0f);
+        TableRow.LayoutParams tableParams = new TableRow.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f);
         TableRow tableRow = new TableRow(requireContext());
         tableRow.setLayoutParams(tableParams);
 
