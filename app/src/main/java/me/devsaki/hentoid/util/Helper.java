@@ -163,7 +163,7 @@ public final class Helper {
 
     // https://stackoverflow.com/a/18603020/8374722
     public static String removeNonPrintableChars(@Nullable final String s) {
-        if (null == s) return "";
+        if (null == s || s.isEmpty()) return "";
 
         StringBuilder newString = new StringBuilder(s.length());
         for (int offset = 0; offset < s.length(); ) {

@@ -34,7 +34,7 @@ public class ParseHelper {
      * @return String with removed brackets
      */
     public static String removeBrackets(String s) {
-        if (null == s || s.isEmpty()) return s;
+        if (null == s || s.isEmpty()) return "";
 
         int bracketPos = s.lastIndexOf('(');
         if (bracketPos > 1 && ' ' == s.charAt(bracketPos - 1)) bracketPos--;
@@ -54,7 +54,7 @@ public class ParseHelper {
      * @return String with removed trailing numbers
      */
     public static String removeTrailingNumbers(String s) {
-        if (null == s || s.isEmpty()) return s;
+        if (null == s || s.isEmpty()) return "";
 
         String[] parts = s.split(" ");
         if (parts.length > 1 && Helper.isNumeric(parts[parts.length - 1])) {
