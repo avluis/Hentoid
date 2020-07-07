@@ -450,7 +450,7 @@ public class ContentDownloadService extends IntentService {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Timber.w(e);
                 Thread.currentThread().interrupt();
             }
         }
