@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.parsers.content;
 
-import com.annimon.stream.Stream;
-
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -25,9 +23,9 @@ public class HentaifoxContent implements ContentParser {
     private String title;
     @Selector(".info")
     private Element information;
-    @Selector(value=".g_thumb img")
+    @Selector(value = ".g_thumb img")
     private List<Element> thumbs;
-    @Selector(value="body script")
+    @Selector(value = "body script")
     private List<Element> scripts;
 
 
@@ -37,7 +35,7 @@ public class HentaifoxContent implements ContentParser {
         result.setSite(Site.HENTAIFOX);
         if (url.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(url.replace(Site.HENTAIFOX.getUrl(), "").replace("/gallery",""));
+        result.setUrl(url.replace(Site.HENTAIFOX.getUrl(), "").replace("/gallery", ""));
 
         result.populateUniqueSiteId();
         result.setCoverImageUrl(coverUrl);

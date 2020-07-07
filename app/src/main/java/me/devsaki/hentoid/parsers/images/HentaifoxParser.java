@@ -21,7 +21,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 public class HentaifoxParser extends BaseParser {
 
     // Hentaifox have two image servers; each hosts the exact same files
-    private final static String[] HOSTS = new String[]{"i.hentaifox.com", "i2.hentaifox.com"};
+    private static final String[] HOSTS = new String[]{"i.hentaifox.com", "i2.hentaifox.com"};
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {
