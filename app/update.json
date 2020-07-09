@@ -13,7 +13,9 @@
 	  {"sourceName":"PORNCOMIX", "status":"ORANGE", "fixedByBuild":"206" },
 	  {"sourceName":"MUSES", "status":"RED", "fixedByBuild":"233" },
 	  {"sourceName":"NHENTAI", "status":"ORANGE", "fixedByBuild":"233" },
-	  {"sourceName":"HENTAI2READ", "status":"ORANGE", "fixedByBuild":"236"}
+	  {"sourceName":"HENTAI2READ", "status":"ORANGE", "fixedByBuild":"236"},
+	  {"sourceName":"NEXUS", "status":"ORANGE"},
+	  {"sourceName":"EHENTAI", "status":"ORANGE"}
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
