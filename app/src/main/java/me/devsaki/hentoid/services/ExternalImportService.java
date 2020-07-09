@@ -365,6 +365,8 @@ public class ExternalImportService extends IntentService {
             for (int i = 1; i < parentNames.size(); i++)
                 result.add(new Attribute(AttributeType.TAG, parentNames.get(i), parentNames.get(i), Site.NONE));
         }
+        // Add a generic tag to filter external library books
+        result.add(new Attribute(AttributeType.TAG, "external-library", "external-library", Site.NONE));
         return result;
     }
 }
