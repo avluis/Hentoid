@@ -135,7 +135,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         // Swiping
         SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
                 this,
-                ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.8f);
+                ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
 
         touchHelper = new ItemTouchHelper(swipeCallback);
         touchHelper.attachToRecyclerView(recyclerView);
