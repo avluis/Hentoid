@@ -287,6 +287,9 @@ public class LibraryViewModel extends AndroidViewModel {
                 return theContent;
             }
             throw new ContentNotRemovedException(content, "Error when trying to delete : invalid ContentId " + content.getId());
+        } catch (ContentNotRemovedException cnre) {
+            Timber.e(cnre, "Error when trying to delete %s", content.getId());
+            throw cnre;
         } catch (Exception e) {
             Timber.e(e, "Error when trying to delete %s", content.getId());
             throw new ContentNotRemovedException(content, "Error when trying to delete " + content.getId() + " : " + e.getMessage(), e);

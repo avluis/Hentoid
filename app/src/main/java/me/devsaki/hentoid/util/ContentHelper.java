@@ -40,6 +40,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
@@ -226,12 +227,12 @@ public final class ContentHelper {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (!content.getStorageUri().isEmpty()) {
             DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-            if (null == folder || !folder.exists()) throw new ContentNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
+            if (null == folder || !folder.exists()) throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
 
             if (folder.delete()) {
                 Timber.i("Directory removed : %s", content.getStorageUri());
             } else {
-                throw new ContentNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
+                throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
             }
         }
     }
