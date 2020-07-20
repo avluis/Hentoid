@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ProgressBar;
-import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +16,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -57,7 +57,7 @@ public class LibExportDialogFragment extends DialogFragment {
     private ViewGroup rootView;
     private CheckBox queueChk;
     private CheckBox libraryChk;
-    private Switch favsChk;
+    private SwitchMaterial favsChk;
     private View runBtn;
 
     // Variable used during the import process

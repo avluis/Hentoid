@@ -66,10 +66,6 @@ public final class ShortcutHelper {
     private static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);
 
-        if (d != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            d = (DrawableCompat.wrap(d)).mutate();
-        }
-
         if (d != null) {
             Bitmap b = Bitmap.createBitmap(d.getIntrinsicWidth(), d.getIntrinsicHeight(), ARGB_8888);
             Canvas c = new Canvas(b);

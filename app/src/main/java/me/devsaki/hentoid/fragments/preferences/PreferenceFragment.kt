@@ -194,7 +194,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
                     .create()
                     .show()
-        };
+        }
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
