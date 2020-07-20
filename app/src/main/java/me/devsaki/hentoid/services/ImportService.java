@@ -1,9 +1,12 @@
 package me.devsaki.hentoid.services;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
-import android.content.ContentProviderClient;
-import android.content.Context;
-import android.content.Intent;
+import android.app.PendingIntent;
+import android.content.*;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
@@ -109,20 +112,25 @@ public class ImportService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        // True if the user has asked for a cleanup when calling import from Preferences
-        boolean doRename = false;
-        boolean doCleanAbsent = false;
-        boolean doCleanNoImages = false;
-        boolean doCleanUnreadable = false;
+        if (checkNetwork()) {
+            // True if the user has asked for a cleanup when calling import from Preferences
+            boolean doRename = false;
+            boolean doCleanAbsent = false;
+            boolean doCleanNoImages = false;
+            boolean doCleanUnreadable = false;
 
-        if (intent != null && intent.getExtras() != null) {
-            ImportActivityBundle.Parser parser = new ImportActivityBundle.Parser(intent.getExtras());
-            doRename = parser.getRefreshRename();
-            doCleanAbsent = parser.getRefreshCleanAbsent();
-            doCleanNoImages = parser.getRefreshCleanNoImages();
-            doCleanUnreadable = parser.getRefreshCleanUnreadable();
+            if (intent != null && intent.getExtras() != null) {
+                ImportActivityBundle.Parser parser = new ImportActivityBundle.Parser(intent.getExtras());
+                doRename = parser.getRefreshRename();
+                doCleanAbsent = parser.getRefreshCleanAbsent();
+                doCleanNoImages = parser.getRefreshCleanNoImages();
+                doCleanUnreadable = parser.getRefreshCleanUnreadable();
+            }
+            startImport(doRename, doCleanAbsent, doCleanNoImages, doCleanUnreadable);
         }
-        startImport(doRename, doCleanAbsent, doCleanNoImages, doCleanUnreadable);
+        else {
+            NetworkStateReceiver.enable(getApplicationContext());
+        }
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -531,6 +539,63 @@ public class ImportService extends IntentService {
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v2) file");
             throw new ParseException("Error reading JSON (v2) file : " + e.getMessage(), e);
+        }
+    }
+
+    boolean checkNetwork() {
+        final ConnectivityManager connManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        Network activeNetwork = connManager.getActiveNetwork();
+        if (activeNetwork != null) {
+            return true;
+        }
+        return false;
+    }
+
+    public static class NetworkStateReceiver extends BroadcastReceiver {
+        private static final String TAG = NetworkStateReceiver.class.getName();
+
+        private static ImportService service;
+
+        public static void setService(ImportService newService) {
+            service = newService;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (service.checkNetwork()) {
+                NetworkStateReceiver.disable(context);
+
+                final AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+                final Intent innerIntent = new Intent(context, ImportService.class);
+                final PendingIntent pendingIntent = PendingIntent.getService(context, 0, innerIntent, 0);
+
+                SharedPreferences preferences = context.getSharedPreferences(context.getPackageName(), Context.MODE_PRIVATE);
+                preferences.edit();
+                boolean autoRefreshEnabled = preferences.getBoolean("pref_auto_refresh_enabled", false);
+
+                final String hours = preferences.getString("pref_auto_refresh_enabled", "0");
+                long hoursLong = Long.parseLong(hours) * 60 * 60 * 1000;
+
+                if (autoRefreshEnabled && hoursLong != 0) {
+                    final long alarmTime = preferences.getLong("last_auto_refresh_time", 0) + hoursLong;
+                    alarmManager.set(AlarmManager.RTC, alarmTime, pendingIntent);
+                } else {
+                    alarmManager.cancel(pendingIntent);
+                }
+            }
+        }
+
+        public static void enable(Context context) {
+            final PackageManager packageManager = context.getPackageManager();
+            final ComponentName receiver = new ComponentName(context, NetworkStateReceiver.class);
+            packageManager.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+        }
+
+        public static void disable(Context context) {
+            final PackageManager packageManager = context.getPackageManager();
+            final ComponentName receiver = new ComponentName(context, NetworkStateReceiver.class);
+            packageManager.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
         }
     }
 }
