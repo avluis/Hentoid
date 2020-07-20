@@ -343,7 +343,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Content targetContent = collectionDao.selectContent(loadedBookId);
         if (null == targetContent) return;
 
-        // Unplug image source listener (avoid displaying pages as they are being deleted)
+        // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
         if (currentImageSource != null) images.removeSource(currentImageSource);
 
         compositeDisposable.add(
