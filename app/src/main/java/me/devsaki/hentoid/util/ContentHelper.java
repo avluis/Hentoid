@@ -39,6 +39,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
@@ -217,7 +218,7 @@ public final class ContentHelper {
      * @param content Content to be removed
      * @param dao     DAO to be used
      */
-    public static void removeContent(@NonNull Context context, @NonNull Content content, @NonNull CollectionDAO dao) {
+    public static void removeContent(@NonNull Context context, @NonNull Content content, @NonNull CollectionDAO dao) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
@@ -225,12 +226,12 @@ public final class ContentHelper {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (!content.getStorageUri().isEmpty()) {
             DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-            if (null == folder || !folder.exists()) return;
+            if (null == folder || !folder.exists()) throw new ContentNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
 
             if (folder.delete()) {
                 Timber.i("Directory removed : %s", content.getStorageUri());
             } else {
-                Timber.w("Failed to delete directory : %s", content.getStorageUri()); // TODO use exception to display feedback on screen
+                throw new ContentNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
             }
         }
     }

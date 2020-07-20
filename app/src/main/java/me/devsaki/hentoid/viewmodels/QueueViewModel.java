@@ -8,6 +8,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.annimon.stream.function.Consumer;
+
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
@@ -23,6 +25,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import timber.log.Timber;
 
 
@@ -144,13 +147,13 @@ public class QueueViewModel extends AndroidViewModel {
      *
      * @param contents Contents whose download has to be canceled
      */
-    public void cancel(@NonNull List<Content> contents) {
+    public void cancel(@NonNull List<Content> contents, Consumer<Throwable> onError) {
         for (Content c : contents)
             EventBus.getDefault().post(new DownloadEvent(c, DownloadEvent.EV_CANCEL));
-        remove(contents);
+        remove(contents, onError);
     }
 
-    public void remove(@NonNull List<Content> content) {
+    public void remove(@NonNull List<Content> content, Consumer<Throwable> onError) {
         compositeDisposable.add(
                 Observable.fromIterable(content)
                         .observeOn(Schedulers.io())
@@ -158,12 +161,12 @@ public class QueueViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> saveQueue(),
-                                Timber::e
+                                onError::accept
                         )
         );
     }
 
-    public void cancelAll() {
+    public void cancelAll(Consumer<Throwable> onError) {
         List<QueueRecord> queue = dao.selectQueue();
         if (queue.isEmpty()) return;
 
@@ -178,12 +181,12 @@ public class QueueViewModel extends AndroidViewModel {
                                 v -> {
                                     // Nothing to do here; UI callbacks are handled through LiveData
                                 },
-                                Timber::e
+                                onError::accept
                         )
         );
     }
 
-    private boolean doRemove(long contentId) {
+    private boolean doRemove(long contentId) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         // Remove content altogether from the DB (including queue)
         Content content = dao.selectContent(contentId);

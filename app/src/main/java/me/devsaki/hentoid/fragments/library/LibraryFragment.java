@@ -770,11 +770,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Timber.e(t);
         if (t instanceof ContentNotRemovedException) {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
-            Snackbar snackbar = Snackbar.make(recyclerView, "Content removal failed", BaseTransientBottomBar.LENGTH_LONG);
+            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
             viewModel.flagContentDelete(e.getContent(), false);
-            List<Content> contents = new ArrayList<>();
-            contents.add(e.getContent());
-            snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::onDeleteError));
+            snackbar.setAction("RETRY", v -> viewModel.deleteItems(Stream.of(e.getContent()).toList(), this::onDeleteError));
             snackbar.show();
         }
     }

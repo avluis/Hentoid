@@ -25,6 +25,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import timber.log.Timber;
 
 /**
@@ -97,7 +98,7 @@ public class LibDeleteDialogFragment extends DialogFragment {
                 );
     }
 
-    private boolean deleteItem(@NonNull Content c) {
+    private boolean deleteItem(@NonNull Content c) throws ContentNotRemovedException {
         ContentHelper.removeContent(requireActivity(), c, dao);
         return true;
     }

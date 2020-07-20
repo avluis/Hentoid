@@ -221,7 +221,7 @@ public class LibraryViewModel extends AndroidViewModel {
             return theContent;
         }
 
-        throw new InvalidParameterException("ContentId " + contentId + " does not refer to a valid content");
+        throw new InvalidParameterException("Invalid ContentId : " + contentId);
     }
 
     /**
@@ -247,8 +247,8 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Delete the given list of content
      *
-     * @param contents   List of content to be deleted
-     * @param onError    Callback to run when an error occurs
+     * @param contents List of content to be deleted
+     * @param onError  Callback to run when an error occurs
      */
     public void deleteItems(@NonNull final List<Content> contents, Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
@@ -256,11 +256,12 @@ public class LibraryViewModel extends AndroidViewModel {
 
         compositeDisposable.add(
                 Observable.fromIterable(contents)
-                        .subscribeOn(Schedulers.io())
-                        .flatMap(s -> Observable.fromCallable(() -> doDeleteContent(s)))
+                        .observeOn(Schedulers.io())
+                        .map(this::doDeleteContent)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> {
+                                    // Nothing to do here; UI callbacks are handled through LiveData
                                 },
                                 onError::accept
                         )
@@ -285,7 +286,7 @@ public class LibraryViewModel extends AndroidViewModel {
                 Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
                 return theContent;
             }
-            throw new ContentNotRemovedException(content, "ContentId " + content.getId() + " does not refer to a valid content");
+            throw new ContentNotRemovedException(content, "Error when trying to delete : invalid ContentId " + content.getId());
         } catch (Exception e) {
             Timber.e(e, "Error when trying to delete %s", content.getId());
             throw new ContentNotRemovedException(content, "Error when trying to delete " + content.getId() + " : " + e.getMessage(), e);

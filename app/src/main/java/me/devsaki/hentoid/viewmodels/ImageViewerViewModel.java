@@ -42,6 +42,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
@@ -329,7 +330,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
             // Persist in JSON
             Content theContent = img.content.getTarget();
-            if (!theContent.getJsonUri().isEmpty()) ContentHelper.updateContentJson(context, theContent);
+            if (!theContent.getJsonUri().isEmpty())
+                ContentHelper.updateContentJson(context, theContent);
             else ContentHelper.createContentJson(context, theContent);
 
             return img;
@@ -337,7 +339,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));
     }
 
-    public void deleteBook() {
+    public void deleteBook(Consumer<Throwable> onError) {
         Content targetContent = collectionDao.selectContent(loadedBookId);
         if (null == targetContent) return;
 
@@ -345,7 +347,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (currentImageSource != null) images.removeSource(currentImageSource);
 
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doDeleteBook(targetContent))
+                Completable.fromAction(() -> doDeleteBook(targetContent))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -363,7 +365,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                     }
                                 },
                                 e -> {
-                                    Timber.e(e);
+                                    onError.accept(e);
                                     // Restore image source listener on error
                                     images.addSource(currentImageSource, imgs -> setImages(targetContent, imgs));
                                 }
@@ -371,7 +373,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doDeleteBook(@NonNull Content targetContent) {
+    private void doDeleteBook(@NonNull Content targetContent) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         collectionDao.deleteQueue(targetContent);
         ContentHelper.removeContent(getApplication(), targetContent, collectionDao);

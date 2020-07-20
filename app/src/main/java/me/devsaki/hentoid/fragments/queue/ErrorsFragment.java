@@ -50,6 +50,7 @@ import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -71,6 +72,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
     // === UI
     private LinearLayoutManager llm;
+    private RecyclerView recyclerView;
     private Toolbar selectionToolbar;
     private TextView mEmptyText;    // "No errors" message panel
 
@@ -113,7 +115,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         mEmptyText = requireViewById(rootView, R.id.errors_empty_txt);
 
         // Book list container
-        RecyclerView recyclerView = requireViewById(rootView, R.id.queue_list);
+        recyclerView = requireViewById(rootView, R.id.queue_list);
 
         fastAdapter = FastAdapter.with(itemAdapter);
         fastAdapter.setHasStableIds(true);
@@ -350,11 +352,23 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     }
 
     private void onDeleteBook(@NonNull Content c) {
-        viewModel.remove(Stream.of(c).toList());
+        viewModel.remove(Stream.of(c).toList(), this::onDeleteError);
     }
 
     private void onDeleteBooks(@NonNull List<Content> c) {
-        viewModel.remove(c);
+        viewModel.remove(c, this::onDeleteError);
+    }
+
+    /**
+     * Callback for the failure of the "delete item" action
+     */
+    private void onDeleteError(Throwable t) {
+        Timber.e(t);
+        if (t instanceof ContentNotRemovedException) {
+            ContentNotRemovedException e = (ContentNotRemovedException) t;
+            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
+        }
     }
 
 

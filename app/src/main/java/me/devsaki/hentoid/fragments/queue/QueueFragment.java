@@ -73,6 +73,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -440,7 +441,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             dlPreparationProgressBar.setVisibility(View.GONE);
         }
 
-        dlPreparationProgressBar.setProgress1((long)event.total - event.done);
+        dlPreparationProgressBar.setProgress1((long) event.total - event.done);
     }
 
     /**
@@ -670,15 +671,27 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void onCancelBook(@NonNull Content c) {
-        viewModel.cancel(Stream.of(c).toList());
+        viewModel.cancel(Stream.of(c).toList(), this::onDeleteError);
     }
 
     private void onCancelBooks(@NonNull List<Content> c) {
-        viewModel.cancel(c);
+        viewModel.cancel(c, this::onDeleteError);
     }
 
     private void onCancelAll() {
-        viewModel.cancelAll();
+        viewModel.cancelAll(this::onDeleteError);
+    }
+
+    /**
+     * Callback for the failure of the "delete item" action
+     */
+    private void onDeleteError(Throwable t) {
+        Timber.e(t);
+        if (t instanceof ContentNotRemovedException) {
+            ContentNotRemovedException e = (ContentNotRemovedException) t;
+            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
+        }
     }
 
     /**

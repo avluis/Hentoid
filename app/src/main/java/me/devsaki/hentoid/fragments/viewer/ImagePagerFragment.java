@@ -29,6 +29,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,7 @@ import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.ZoomableFrame;
@@ -488,8 +491,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         bookPreferences = content.getBookPreferences();
         // Updating the same book may mean its preferences have changed and the display has to be updated
         // Don't do that when content has changed since display is always updated when new images come in
-        if (contentId == content.getId())
-        {
+        if (contentId == content.getId()) {
             //        onBrowseModeChange();
             onUpdateImageDisplay();
         }
@@ -522,12 +524,24 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .setPositiveButton(android.R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            viewModel.deleteBook();
+                            viewModel.deleteBook(this::onDeleteError);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
                 .create()
                 .show();
+    }
+
+    /**
+     * Callback for the failure of the "delete item" action
+     */
+    private void onDeleteError(Throwable t) {
+        Timber.e(t);
+        if (t instanceof ContentNotRemovedException) {
+            ContentNotRemovedException e = (ContentNotRemovedException) t;
+            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
+        }
     }
 
 
@@ -650,7 +664,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
     }
 
-    public void onBookPreferenceChanged(@NonNull final Map<String,String> newPrefs) {
+    public void onBookPreferenceChanged(@NonNull final Map<String, String> newPrefs) {
         viewModel.updateBookPreferences(newPrefs);
     }
 
