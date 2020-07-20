@@ -599,6 +599,18 @@ public class ContentDownloadService extends IntentService {
      */
     private List<ImageFile> fetchImageURLs(@NonNull Content content) throws Exception {
         List<ImageFile> imgs;
+
+        // If content doesn't have any download parameters, get them from the live gallery page
+        String downloadParamsStr = content.getDownloadParams();
+        if (null == downloadParamsStr || downloadParamsStr.isEmpty()) {
+            String cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+            if (!cookieStr.isEmpty()) {
+                Map<String, String> downloadParams = new HashMap<>();
+                downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+                content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+            }
+        }
+
         // Use ImageListParser to query the source
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
