@@ -173,7 +173,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             res -> {
-                                if (ImportHelper.Result.INVALID_FOLDER == res || ImportHelper.Result.CREATE_FAIL == res)
+                                if (ImportHelper.Result.INVALID_FOLDER == res || ImportHelper.Result.CREATE_FAIL == res || ImportHelper.Result.OK_EMPTY_FOLDER == res)
                                     dismiss();
                             },
                             Timber::w
