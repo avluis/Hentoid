@@ -140,16 +140,35 @@ class FileUtil {
         return isSuccess;
     }
 
+    /**
+     * Count the children of a given folder (non recursive) matching the given criteria
+     * @param parent Folder containing the document to count
+     * @param client ContentProviderClient to use for the query
+     * @param nameFilter NameFilter defining which documents to include
+     * @param countFolders true if matching folders have to be counted in the results
+     * @param countFiles true if matching files have to be counted in the results
+     * @return Number of documents inside the given folder, matching the given criteria
+     */
     static int countDocumentFiles(
             @NonNull final DocumentFile parent,
             @NonNull final ContentProviderClient client,
             final FileHelper.NameFilter nameFilter,
-            boolean listFolders,
-            boolean listFiles) {
-        final List<DocumentsQueryResult> results = queryDocumentFiles( parent, client, nameFilter, listFolders, listFiles);
+            boolean countFolders,
+            boolean countFiles) {
+        final List<DocumentProperties> results = queryDocumentFiles( parent, client, nameFilter, countFolders, countFiles);
         return results.size();
     }
 
+    /**
+     * List the children of a given folder (non recursive) matching the given criteria
+     * @param context Context to use for the query
+     * @param parent Folder containing the document to count
+     * @param client ContentProviderClient to use for the query
+     * @param nameFilter NameFilter defining which documents to include
+     * @param listFolders true if matching folders have to be listed in the results
+     * @param listFiles true if matching files have to be listed in the results
+     * @return List of documents inside the given folder, matching the given criteria
+     */
     static List<DocumentFile> listDocumentFiles(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
@@ -157,17 +176,26 @@ class FileUtil {
             final FileHelper.NameFilter nameFilter,
             boolean listFolders,
             boolean listFiles) {
-        final List<DocumentsQueryResult> results = queryDocumentFiles( parent, client, nameFilter, listFolders, listFiles);
-        return convertFromUris(context, results);
+        final List<DocumentProperties> results = queryDocumentFiles( parent, client, nameFilter, listFolders, listFiles);
+        return convertFromProperties(context, results);
     }
 
-    private static List<DocumentsQueryResult> queryDocumentFiles(
+    /**
+     * List the properties of the children of the given folder (non recursive) matching the given criteria
+     * @param parent Folder containing the document to count
+     * @param client ContentProviderClient to use for the query
+     * @param nameFilter NameFilter defining which documents to include
+     * @param listFolders true if matching folders have to be listed in the results
+     * @param listFiles true if matching files have to be listed in the results
+     * @return List of properties of the children of the given folder, matching the given criteria
+     */
+    private static List<DocumentProperties> queryDocumentFiles(
             @NonNull final DocumentFile parent,
             @NonNull final ContentProviderClient client,
             final FileHelper.NameFilter nameFilter,
             boolean listFolders,
             boolean listFiles) {
-        final List<DocumentsQueryResult> results = new ArrayList<>();
+        final List<DocumentProperties> results = new ArrayList<>();
 
         final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
         try (Cursor c = client.query(searchUri, new String[]{
@@ -184,7 +212,7 @@ class FileUtil {
 
                     // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                     if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
-                        results.add(new DocumentsQueryResult(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName, documentSize, isFolder));
+                        results.add(new DocumentProperties(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName, documentSize, isFolder));
                 }
         } catch (Exception e) {
             Timber.w(e, "Failed query");
@@ -192,9 +220,15 @@ class FileUtil {
         return results;
     }
 
-    private static List<DocumentFile> convertFromUris(@NonNull final Context context, @NonNull final List<DocumentsQueryResult> results) {
+    /**
+     * Convert the given document properties to DocumentFile's
+     * @param context Context to use for the conversion
+     * @param properties Properties to convert
+     * @return List of DocumentFile's built from the given properties
+     */
+    private static List<DocumentFile> convertFromProperties(@NonNull final Context context, @NonNull final List<DocumentProperties> properties) {
         final List<DocumentFile> resultFiles = new ArrayList<>();
-        for (DocumentsQueryResult result : results) {
+        for (DocumentProperties result : properties) {
             DocumentFile docFile = fromTreeUriCached(context, result.uri);
             // Following line should be the proper way to go but it's inefficient as it calls queryIntentContentProviders from scratch repeatedly
             //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
@@ -204,10 +238,12 @@ class FileUtil {
         return resultFiles;
     }
 
+
     /**
-     * WARNING This is a tweak of internal Android code to make it faster by caching calls to queryIntentContentProviders
-     * Original (uncached) is DocumentFile.fromTreeUri
+     * WARNING Following methods are tweaks of internal Android code to make it faster by caching calls to queryIntentContentProviders
      */
+
+    // Original (uncached) is DocumentFile.fromTreeUri
     @Nullable
     private static DocumentFile fromTreeUriCached(@NonNull final Context context, @NonNull final Uri treeUri) {
         String documentId = DocumentsContract.getTreeDocumentId(treeUri);
@@ -272,13 +308,16 @@ class FileUtil {
         return null;
     }
 
-    static class DocumentsQueryResult {
+    /**
+     * Properties of a stored document
+     */
+    static class DocumentProperties {
         final Uri uri;
         final String name;
         final long size;
         final boolean isDirectory;
 
-        public DocumentsQueryResult(Uri uri, String name, long size, boolean isDirectory) {
+        public DocumentProperties(Uri uri, String name, long size, boolean isDirectory) {
             this.uri = uri;
             this.name = name;
             this.size = size;
