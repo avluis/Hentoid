@@ -36,8 +36,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -62,8 +60,6 @@ public class FileHelper {
 
     private static final String PRIMARY_VOLUME_NAME = "primary";
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
-
-    private static final Charset CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1;
 
 
     public static String getFileProviderAuthority() {
@@ -336,30 +332,6 @@ public class FileHelper {
         }
     }
 
-    public static String getMimeTypeFromPictureBinary(byte[] binary) {
-        if (binary.length < 12) return "";
-
-        // In Java, byte type is signed !
-        // => Converting all raw values to byte to be sure they are evaluated as expected
-        if ((byte) 0xFF == binary[0] && (byte) 0xD8 == binary[1] && (byte) 0xFF == binary[2])
-            return "image/jpeg";
-        else if ((byte) 0x89 == binary[0] && (byte) 0x50 == binary[1] && (byte) 0x4E == binary[2]) {
-            // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
-            int acTlPos = findSequencePosition(binary, 0, "acTL".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
-            if (acTlPos > -1) {
-                long idatPos = findSequencePosition(binary, acTlPos, "IDAT".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.1));
-                if (idatPos > -1) return "image/apng";
-            }
-            return "image/png";
-        } else if ((byte) 0x47 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2])
-            return "image/gif";
-        else if ((byte) 0x52 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2] && (byte) 0x46 == binary[3]
-                && (byte) 0x57 == binary[8] && (byte) 0x45 == binary[9] && (byte) 0x42 == binary[10] && (byte) 0x50 == binary[11])
-            return "image/webp";
-        else if ((byte) 0x42 == binary[0] && (byte) 0x4D == binary[1]) return "image/bmp";
-        else return "image/*";
-    }
-
     @Nullable
     public static String getExtensionFromMimeType(@NonNull String mimeType) {
         if (mimeType.isEmpty()) return null;
@@ -483,7 +455,7 @@ public class FileHelper {
         }
     }
 
-    private static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
+    static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
 //        int BUFFER_SIZE = 64;
 //        byte[] readBuffer = new byte[BUFFER_SIZE];
 

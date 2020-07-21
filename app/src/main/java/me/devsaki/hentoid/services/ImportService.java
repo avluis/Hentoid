@@ -46,7 +46,7 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
@@ -148,7 +148,7 @@ public class ImportService extends IntentService {
         Content content = null;
         List<LogUtil.LogEntry> log = new ArrayList<>();
 
-        final FileHelper.NameFilter imageNames = displayName -> Helper.isImageExtensionSupported(FileHelper.getExtension(displayName));
+        final FileHelper.NameFilter imageNames = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
         DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
         if (null == rootFolder || !rootFolder.exists()) {

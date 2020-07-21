@@ -68,7 +68,7 @@ import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.AccountException;
@@ -858,7 +858,7 @@ public class ContentDownloadService extends IntentService {
         // No extension detected in the URL => Read binary header of the file to detect known formats
         // If PNG, peek into the file to see if it is an animated PNG or not (no other way to do that)
         if (fileExt.isEmpty() || fileExt.equals("png")) {
-            mimeType = FileHelper.getMimeTypeFromPictureBinary(binaryContent);
+            mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
             fileExt = FileHelper.getExtensionFromMimeType(mimeType);
             Timber.d("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
         }
@@ -871,7 +871,7 @@ public class ContentDownloadService extends IntentService {
         if (null == mimeType) mimeType = "image/*";
         img.setMimeType(mimeType);
 
-        if (!Helper.isImageExtensionSupported(fileExt))
+        if (!ImageHelper.isImageExtensionSupported(fileExt))
             throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - image not processed", fileExt, img.getUrl()));
         else
             return saveImage(dir, img.getName() + "." + fileExt, mimeType, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);

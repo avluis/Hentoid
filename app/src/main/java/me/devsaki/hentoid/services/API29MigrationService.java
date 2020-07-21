@@ -38,7 +38,7 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -216,7 +216,7 @@ public class API29MigrationService extends IntentService {
                         else contentImages = new ArrayList<>();
 
                         // Attach file Uri's to the book's images
-                        List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, Helper.getImageNamesFilter());
+                        List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, ImageHelper.getImageNamesFilter());
                         if (!imageFiles.isEmpty()) {
                             if (contentImages.isEmpty()) { // No images described in the content (e.g. unread import from old JSON) -> recreate them
                                 contentImages = ContentHelper.createImageListFromFiles(imageFiles);

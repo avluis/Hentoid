@@ -40,6 +40,7 @@ import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
@@ -57,7 +58,7 @@ public class ExternalImportService extends IntentService {
     private static boolean running;
     private ServiceNotificationManager notificationManager;
 
-    final FileHelper.NameFilter imageNamesFilter = displayName -> Helper.isImageExtensionSupported(FileHelper.getExtension(displayName));
+    final FileHelper.NameFilter imageNamesFilter = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
 
     public ExternalImportService() {

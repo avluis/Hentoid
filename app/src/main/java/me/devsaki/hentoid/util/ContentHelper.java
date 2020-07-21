@@ -208,7 +208,7 @@ public final class ContentHelper {
         return FileHelper.listFoldersFilter(context,
                 folder,
                 displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME)
-                        && Helper.isImageExtensionSupported(FileHelper.getExtension(displayName))
+                        && ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName))
                 )
         );
     }
@@ -227,7 +227,8 @@ public final class ContentHelper {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (!content.getStorageUri().isEmpty()) {
             DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-            if (null == folder || !folder.exists()) throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
+            if (null == folder || !folder.exists())
+                throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
 
             if (folder.delete()) {
                 Timber.i("Directory removed : %s", content.getStorageUri());
@@ -430,7 +431,7 @@ public final class ContentHelper {
     }
 
     public static List<ImageFile> createImageListFromFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
-        List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, Helper.getImageNamesFilter());
+        List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, ImageHelper.getImageNamesFilter());
         if (!imageFiles.isEmpty())
             return createImageListFromFiles(imageFiles);
         else return Collections.emptyList();

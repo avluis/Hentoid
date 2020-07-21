@@ -147,20 +147,6 @@ public final class Helper {
         } else return false;
     }
 
-    public static boolean isImageExtensionSupported(String extension) {
-        return extension.equalsIgnoreCase("jpg")
-                || extension.equalsIgnoreCase("jpeg")
-                || extension.equalsIgnoreCase("gif")
-                || extension.equalsIgnoreCase("png")
-                || extension.equalsIgnoreCase("webp");
-    }
-
-    public static FileHelper.NameFilter getImageNamesFilter() {
-        if (null == imageNamesFilter)
-            imageNamesFilter = displayName -> Helper.isImageExtensionSupported(FileHelper.getExtension(displayName));
-        return imageNamesFilter;
-    }
-
     // https://stackoverflow.com/a/18603020/8374722
     public static String removeNonPrintableChars(@Nullable final String s) {
         if (null == s || s.isEmpty()) return "";
