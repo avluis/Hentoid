@@ -28,8 +28,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/pbDownload"
             app:layout_constraintTop_toTopOf="parent"
+            tools:tint="@color/light_gray"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_placeholder" />
+            tools:src="@drawable/ic_hentoid_trans" />
 
         <ProgressBar
             android:id="@+id/pbDownload"
