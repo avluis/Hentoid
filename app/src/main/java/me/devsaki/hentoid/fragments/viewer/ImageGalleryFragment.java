@@ -124,11 +124,11 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     @Override
-    public void onStop() {
+    public void onDestroy() {
         if (recyclerView != null)
             recyclerView.setAdapter(null);
         recyclerView = null;
-        super.onStop();
+        super.onDestroy();
     }
 
     private void onImagesChanged(List<ImageFile> images) {
