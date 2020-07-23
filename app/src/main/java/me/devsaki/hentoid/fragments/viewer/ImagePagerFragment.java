@@ -197,7 +197,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         viewModel.getStartingIndex()
                 .observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
 
-        viewModel.setOnShuffledChangeListener(this::onShuffleChanged);
+        viewModel.getShuffled()
+                .observe(getViewLifecycleOwner(), this::onShuffleChanged);
     }
 
     @Override

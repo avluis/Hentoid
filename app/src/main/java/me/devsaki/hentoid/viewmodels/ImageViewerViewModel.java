@@ -14,7 +14,6 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.annimon.stream.Stream;
-import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -57,7 +56,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Settings
     private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
     private boolean showFavourites = false;                                          // True if viewer only shows favourite images; false if shows all pages
-    private BooleanConsumer onShuffledChangeListener;
 
     // Collection data
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
@@ -67,8 +65,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Pictures data
     private LiveData<List<ImageFile>> currentImageSource;
-    private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();    // Currently displayed set of images
+    private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();  // Currently displayed set of images
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
+    private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // shuffle state of the current book
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -81,6 +80,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
 
     @NonNull
+    public LiveData<Content> getContent() {
+        return content;
+    }
+
+    @NonNull
     public LiveData<List<ImageFile>> getImages() {
         return images;
     }
@@ -91,13 +95,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<Content> getContent() {
-        return content;
+    public LiveData<Boolean> getShuffled() {
+        return shuffled;
     }
 
-    public void setOnShuffledChangeListener(BooleanConsumer listener) {
-        this.onShuffledChangeListener = listener;
-    }
 
     public void onSaveState(Bundle outState) {
         outState.putBoolean(KEY_IS_SHUFFLED, isShuffled);
@@ -195,7 +196,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void onShuffleClick() {
         isShuffled = !isShuffled;
-        onShuffledChangeListener.accept(isShuffled);
+        shuffled.postValue(isShuffled);
 
         List<ImageFile> imgs = getImages().getValue();
         if (imgs != null) sortAndSetImages(imgs, isShuffled);
