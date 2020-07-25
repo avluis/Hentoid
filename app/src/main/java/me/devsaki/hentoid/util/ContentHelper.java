@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
+import com.crashlytics.android.Crashlytics;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
@@ -33,9 +34,13 @@ import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.json.JsonContentCollection;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
@@ -73,6 +78,8 @@ public final class ContentHelper {
      * @param wrapPin True if the intent should be wrapped with PIN protection
      */
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
+        if (content.getSite().equals(Site.NONE)) return;
+
         Intent intent = new Intent(context, content.getWebActivityClass());
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(content.getGalleryUrl());
@@ -87,7 +94,7 @@ public final class ContentHelper {
      * @param context Context to use for the action
      * @param content Content whose JSON file to update
      */
-    public static void updateJson(@NonNull Context context, @NonNull Content content) {
+    public static void updateContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
         DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
         if (null == file)
@@ -105,15 +112,38 @@ public final class ContentHelper {
      *
      * @param content Content whose JSON file to create
      */
-    public static void createJson(@NonNull Context context, @NonNull Content content) {
+    public static void createContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
         DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
         if (null == folder || !folder.exists()) return;
         try {
-            JsonHelper.createJson(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getStorageUri());
         }
+    }
+
+    public static boolean updateQueueJson(@NonNull Context context, @NonNull CollectionDAO dao) {
+        List<QueueRecord> queue = dao.selectQueue();
+        // Save current queue (to be able to restore it in case the app gets uninstalled)
+        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).withoutNulls().toList();
+        JsonContentCollection contentCollection = new JsonContentCollection();
+        contentCollection.setQueue(queuedContent);
+
+        DocumentFile rootFolder = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
+        if (null == rootFolder || !rootFolder.exists()) return false;
+
+        try {
+            JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
+        } catch (IOException | IllegalArgumentException e) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e);
+            Crashlytics.logException(e);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -152,8 +182,8 @@ public final class ContentHelper {
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         dao.insertContent(content);
 
-        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
-        else createJson(context, content);
+        if (!content.getJsonUri().isEmpty()) updateContentJson(context, content);
+        else createContentJson(context, content);
     }
 
     /**
@@ -178,7 +208,7 @@ public final class ContentHelper {
         return FileHelper.listFoldersFilter(context,
                 folder,
                 displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME)
-                        && Helper.isImageExtensionSupported(FileHelper.getExtension(displayName))
+                        && ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName))
                 )
         );
     }
@@ -189,7 +219,7 @@ public final class ContentHelper {
      * @param content Content to be removed
      * @param dao     DAO to be used
      */
-    public static void removeContent(@NonNull Context context, @NonNull Content content, @NonNull CollectionDAO dao) {
+    public static void removeContent(@NonNull Context context, @NonNull Content content, @NonNull CollectionDAO dao) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
@@ -197,12 +227,13 @@ public final class ContentHelper {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (!content.getStorageUri().isEmpty()) {
             DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-            if (null == folder || !folder.exists()) return;
+            if (null == folder || !folder.exists())
+                throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
 
             if (folder.delete()) {
                 Timber.i("Directory removed : %s", content.getStorageUri());
             } else {
-                Timber.w("Failed to delete directory : %s", content.getStorageUri()); // TODO use exception to display feedback on screen
+                throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
             }
         }
     }
@@ -229,7 +260,7 @@ public final class ContentHelper {
 
         // Update content JSON if it exists (i.e. if book is not queued)
         Content content = dao.selectContent(image.content.getTargetId());
-        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
+        if (content != null && !content.getJsonUri().isEmpty()) updateContentJson(context, content);
     }
 
     /**
@@ -400,24 +431,29 @@ public final class ContentHelper {
     }
 
     public static List<ImageFile> createImageListFromFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
-        List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(context, folder, Helper.getImageNamesFilter());
+        List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, ImageHelper.getImageNamesFilter());
         if (!imageFiles.isEmpty())
             return createImageListFromFiles(imageFiles);
         else return Collections.emptyList();
     }
 
     public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files) {
+        return createImageListFromFiles(files, StatusContent.DOWNLOADED, 0, "");
+    }
+
+    public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files, StatusContent status, int initialOrder, String namePrefix) {
         Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
-        int order = 0;
+        int order = initialOrder;
         // Sort files by name alpha
-        List<DocumentFile> fileList = Stream.of(files).filter(f -> f != null).sortBy(DocumentFile::getName).collect(toList());
+        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sortBy(DocumentFile::getName).collect(toList());
         for (DocumentFile f : fileList) {
-            String name = (f.getName() != null) ? FileHelper.getFileNameWithoutExtension(f.getName()) : "";
+            String name = namePrefix + ((f.getName() != null) ? f.getName() : "");
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl("").setStatus(status).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(name)));
             result.add(img);
         }
         return result;

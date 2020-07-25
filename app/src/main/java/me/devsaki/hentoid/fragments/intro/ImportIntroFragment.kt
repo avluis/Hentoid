@@ -35,7 +35,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        import_step1_button.setOnClickListener { ImportHelper.openFolderPicker(this) }
+        import_step1_button.setOnClickListener { ImportHelper.openFolderPicker(this, false) }
         import_step1_button.visibility = View.VISIBLE
     }
 

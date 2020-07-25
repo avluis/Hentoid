@@ -79,13 +79,13 @@ public class PorncomixContent implements ContentParser {
         AttributeMap attributes = new AttributeMap();
         attributes.add(new Attribute(AttributeType.ARTIST, artist, artist, Site.PORNCOMIX));
         if (mangaTags != null && !mangaTags.isEmpty())
-            ParseHelper.parseAttributes(attributes, AttributeType.TAG, mangaTags, true, Site.PORNCOMIX);
+            ParseHelper.parseAttributes(attributes, AttributeType.TAG, mangaTags, false, Site.PORNCOMIX);
         else if (galleryTags != null && !galleryTags.isEmpty())
-            ParseHelper.parseAttributes(attributes, AttributeType.TAG, galleryTags, true, Site.PORNCOMIX);
+            ParseHelper.parseAttributes(attributes, AttributeType.TAG, galleryTags, false, Site.PORNCOMIX);
         else if (zoneTags != null && !zoneTags.isEmpty())
-            ParseHelper.parseAttributes(attributes, AttributeType.TAG, zoneTags, true, Site.PORNCOMIX);
+            ParseHelper.parseAttributes(attributes, AttributeType.TAG, zoneTags, false, Site.PORNCOMIX);
         else if (bestTags != null && !bestTags.isEmpty())
-            ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, true, Site.PORNCOMIX);
+            ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, false, Site.PORNCOMIX);
         result.addAttributes(attributes);
 
         List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages), result.getCoverImageUrl(), StatusContent.SAVED);

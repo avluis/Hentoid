@@ -163,8 +163,9 @@ public class ImageFile {
         return (null == mimeType) ? "image/*" : mimeType;
     }
 
-    public void setMimeType(String mimeType) {
+    public ImageFile setMimeType(String mimeType) {
         this.mimeType = mimeType;
+        return this;
     }
 
     public void setContentId(long contentId) {

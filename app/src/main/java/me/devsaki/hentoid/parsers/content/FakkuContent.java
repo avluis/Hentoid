@@ -61,7 +61,7 @@ public class FakkuContent implements ContentParser {
             for (Element e : information) {
                 elementName = e.child(0).text().trim().toLowerCase();
                 if (elementName.equals("language")) {
-                    ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, e.child(1).children(), true, Site.FAKKU2); // Language elements are A links
+                    ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, e.child(1).children(), false, Site.FAKKU2); // Language elements are A links
                 }
                 if (elementName.equals("pages")) {
                     qtyPages = Integer.parseInt(e.child(1).text().toLowerCase().replace("pages", "").replace("page", "").trim());
@@ -69,9 +69,9 @@ public class FakkuContent implements ContentParser {
             }
         result.setQtyPages(qtyPages);
 
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.FAKKU2);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.FAKKU2);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.FAKKU2);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.FAKKU2);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.FAKKU2);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.FAKKU2);
 
         result.addAttributes(attributes);
 

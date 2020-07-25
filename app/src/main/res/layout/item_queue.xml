@@ -28,8 +28,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/pbDownload"
             app:layout_constraintTop_toTopOf="parent"
+            tools:tint="@color/light_gray"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_placeholder" />
+            tools:src="@drawable/ic_hentoid_trans" />
 
         <ProgressBar
             android:id="@+id/pbDownload"
@@ -85,7 +86,7 @@
             app:layout_constraintEnd_toEndOf="@id/tvArtist"
             app:layout_constraintStart_toStartOf="@id/tvArtist"
             app:layout_constraintTop_toBottomOf="@id/tvArtist"
-            tools:text="@string/book_pages" />
+            tools:text="@string/book_pages_queue" />
 
         <ImageView
             android:id="@+id/ivReorder"

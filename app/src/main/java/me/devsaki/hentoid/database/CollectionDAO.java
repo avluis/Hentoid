@@ -52,11 +52,15 @@ public interface CollectionDAO {
 
     // MASS OPERATIONS
 
-    long countAllLibraryBooks(boolean favsOnly);
+    // Internal library (i.e. managed in the Hentoid folder)
 
-    List<Content> selectAllLibraryBooks(boolean favsOnly);
+    long countAllInternalBooks(boolean favsOnly);
 
-    void deleteAllLibraryBooks(boolean resetRemainingImagesStatus);
+    List<Content> selectAllInternalBooks(boolean favsOnly);
+
+    void deleteAllInternalBooks(boolean resetRemainingImagesStatus);
+
+    // Queued books
 
     void deleteAllErrorBooksWithJson();
 
@@ -66,8 +70,14 @@ public interface CollectionDAO {
 
     void deleteAllQueuedBooks();
 
+    // External library
 
-    // High-level queries
+    long countAllExternalBooks();
+
+    void deleteAllExternalBooks();
+
+
+    // High-level queries (internal and external locations)
 
     Single<List<Long>> getStoredBookIds(boolean nonFavouriteOnly, boolean includeQueued);
 
@@ -85,7 +95,7 @@ public interface CollectionDAO {
     LiveData<PagedList<Content>> getRecentBooks(int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
 
-    LiveData<PagedList<Content>> getErrorContent();
+    LiveData<List<Content>> getErrorContent();
 
 
     LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly);
@@ -110,6 +120,8 @@ public interface CollectionDAO {
     LiveData<List<ImageFile>> getDownloadedImagesFromContent(long id);
 
     Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId);
+
+    Map<Site, ImmutablePair<Integer, Long>> getMemoryUsagePerSource();
 
 
     // QUEUE

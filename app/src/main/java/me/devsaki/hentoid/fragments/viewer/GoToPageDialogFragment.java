@@ -31,6 +31,12 @@ public final class GoToPageDialogFragment extends DialogFragment {
         parent = (Parent) getParentFragment();
     }
 
+    @Override
+    public void onDestroy() {
+        parent = null;
+        super.onDestroy();
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {

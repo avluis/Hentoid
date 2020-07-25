@@ -24,7 +24,9 @@
     <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
     <string name="api29_migration_location">Current Hentoid folder location\n%s</string>
     <string name="api29_migration_step1">Hentoid folder</string>
+    <string name="api29_migration_step1_external">External folder</string>
     <string name="api29_migration_step1_select">Select Hentoid folder</string>
+    <string name="api29_migration_step1_select_external">Select external folder</string>
     <string name="api29_migration_step2">Scan site folders</string>
     <string name="api29_migration_step3_init">Library scan starting…</string>
     <string name="api29_migration_step3">Scan library (%1$d / %2$d)</string>
@@ -48,11 +50,19 @@
     <string name="open_settings">Open settings</string>
     <string name="app_settings">App settings</string>
     <string name="book_settings">Book settings</string>
+    <string name="permissions_lost">File permissions have been lost</string>
+    <string name="low_memory">Your device is low on memory !</string>
+    <string name="fix_permissions">Fix</string>
 
     <!-- Queue -->
     <string name="queue_queue_tab">In progress</string>
     <string name="queue_errors_tab">Errors</string>
+    <string name="cancel">Cancel</string>
     <string name="cancel_all">Cancel all</string>
+    <plurals name="ask_cancel_multiple">
+        <item quantity="one">Are you sure you wish to cancel the selected item ?</item>
+        <item quantity="other">Are you sure you wish to cancel the selected items ?</item>
+    </plurals>
     <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
     <string name="canceled">Canceled</string>
@@ -66,7 +76,7 @@
     <string name="queue_empty2" />
     <string name="queue_paused">Queue paused</string>
     <string name="queue_preparing">Preparing download</string>
-    <string name="queue_dl">Downloading {0}</string>
+    <string name="queue_dl">Downloading %s</string>
     <string name="err_stats_title">Error stats</string>
     <string name="err_stats_help">Show detailed stats about current download errors</string>
     <string name="err_no_content">Book does not exist yet</string>
@@ -74,18 +84,22 @@
     <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
     <string name="paused_no_internet">Cannot download - No internet</string>
     <string name="paused_no_wifi">Cannot download - No WiFi</string>
+    <string name="paused_no_storage">Cannot download - Low on storage</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: @series@</string>
     <string name="work_artist">Artist: @artist@</string>
-    <string name="work_pages">Pages: @pages@@missing@</string>
+    <string name="work_pages_queue">Pages: @pages@@missing@</string>
+    <string name="work_pages_library">%d pages / "%.1f MB</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
-    <string name="refresh_caption">Automatically refresh the whole library by rescanning disk data.</string>
+    <string name="refresh_caption">Automatically refresh library data by rescanning files and folders.</string>
     <string name="refresh_options">Cleanup options</string>
+    <string name="refresh_location_internal">Hentoid library</string>
+    <string name="refresh_location_external">External library</string>
     <string name="refresh_options_rename">Rename all folders according to the current naming and max length preference</string>
     <string name="refresh_options_remove">Remove folders where…</string>
     <string name="refresh_options_remove_1">JSON file is absent (recommended)</string>
@@ -150,6 +164,13 @@
     <string name="enabled">ENABLED</string>
     <string name="disabled">DISABLED</string>
 
+    <!-- Memory usage -->
+    <string name="memory_title">Memory usage</string>
+    <string name="memory_total">Total : %.2f GB</string>
+    <string name="memory_free">Free : %.2f GB</string>
+    <string name="memory_hentoid">Hentoid : %.2f GB</string>
+    <string name="memory_details">View details</string>
+
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
@@ -183,7 +204,8 @@
     <string name="book_title">"This is a rather long title, just because we need it to be."</string>
     <string name="book_series">"Series: Name"</string>
     <string name="book_artist">"Artist: Name"</string>
-    <string name="book_pages">"Pages: 1234; 125 MB (est.)"</string>
+    <string name="book_pages_queue">"Pages: 1234; estimated 125 MB"</string>
+    <string name="book_pages_library">"1234 pages / 1125 MB"</string>
     <string name="book_tags">""tag1, tag2, tag3, etc.</string>
     <plurals name="number_of_book_search_results">
         <item quantity="one">%d/%d result</item>
@@ -198,6 +220,10 @@
     <plurals name="redownload_secured_content">
         <item quantity="one">One of the selected books has secured content and cannot be redownloaded\nThis book will be ignored.</item>
         <item quantity="other">Some of the selected books have secured content and cannot be redownloaded\nThey will be ignored.</item>
+    </plurals>
+    <plurals name="redownload_external_content">
+        <item quantity="one">One of the selected books is stored in the external library and cannot be redownloaded\nThis book will be ignored.</item>
+        <item quantity="other">Some of the selected books are stored in the external library and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
     <string name="deleted">Deleted</string>
     <string name="help_search">Search anything : title, author, tag\nand launch code too !</string>
@@ -214,6 +240,7 @@
     <string name="sort_dl_date">Download date</string>
     <string name="sort_read_date">Read date</string>
     <string name="sort_reads">Reads</string>
+    <string name="sort_size">Size</string>
     <string name="sort_random">Random</string>
     <string name="sort_invalid">-invalid-</string>
     <!-- Item card tooltips -->

@@ -29,11 +29,12 @@ public class CachedDocumentFile extends DocumentFile {
         mLength = null;
     }
 
-    public CachedDocumentFile(DocumentFile wrapped, String name, long length) {
+    public CachedDocumentFile(DocumentFile wrapped, String name, long length, boolean isDirectory) {
         super(wrapped.getParentFile());
         mWrapped = wrapped;
         mName = name;
         mLength = length;
+        mIsDirectory = isDirectory;
     }
 
     public boolean canRead() {

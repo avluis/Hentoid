@@ -22,9 +22,7 @@ import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
 import com.annimon.stream.Stream;
-import com.crashlytics.android.Crashlytics;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -32,9 +30,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.threeten.bp.Instant;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,7 +59,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.JsonContent;
-import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
@@ -74,7 +68,7 @@ import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.AccountException;
@@ -148,7 +142,7 @@ public class ContentDownloadService extends IntentService {
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
-        dao.cleanup();
+        if (dao != null) dao.cleanup();
 
         if (notificationManager != null) notificationManager.cancel();
         ContentQueueManager.getInstance().setInactive();
@@ -214,6 +208,13 @@ public class ContentDownloadService extends IntentService {
         // Check for wifi if wifi-only mode is on
         if (Preferences.isQueueWifiOnly() && NetworkHelper.Connectivity.WIFI != connectivity) {
             Timber.w("No wi-fi connection available. Queue paused.");
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_WIFI));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
+
+        DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
+        if (rootFolder != null && rootFolder.exists() && new FileHelper.MemoryUsageFigures(this, rootFolder).getfreeUsageMb() < 2) {
+            Timber.w("Device very low on storage space (<2 MB). Queue paused.");
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_WIFI));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
@@ -388,33 +389,8 @@ public class ContentDownloadService extends IntentService {
                 requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
         }
 
-        // Save current queue (to be able to restore it in case the app gets uninstalled)
-        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).withoutNulls().toList();
-        JsonContentCollection contentCollection = new JsonContentCollection();
-        contentCollection.setQueue(queuedContent);
-        String json = JsonHelper.serializeToJson(contentCollection, JsonContentCollection.class);
-
-        try {
-            Uri rootUri = Uri.parse(Preferences.getStorageUri());
-            DocumentFile rootFolder = DocumentFile.fromTreeUri(this, rootUri);
-            if (rootFolder != null && rootFolder.exists()) {
-                DocumentFile queueJson = FileHelper.findOrCreateDocumentFile(this, rootFolder, JsonHelper.JSON_MIME_TYPE, Consts.QUEUE_JSON_FILE_NAME);
-                if (queueJson != null) {
-                    try (OutputStream newDownload = FileHelper.getOutputStream(this, queueJson)) {
-                        try (InputStream input = IOUtils.toInputStream(json, StandardCharsets.UTF_8)) {
-                            FileHelper.copy(input, newDownload);
-                        }
-                    }
-                    Timber.i("Queue JSON successfully saved");
-                }
-            }
-        } catch (IOException | IllegalArgumentException e) {
-            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
-            // even though all the file existence checks are in place
-            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
-            Timber.e(e);
-            Crashlytics.logException(e);
-        }
+        if (ContentHelper.updateQueueJson(this, dao)) Timber.i("Queue JSON successfully saved");
+        else Timber.w("Queue JSON saving failed");
 
         return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);
     }
@@ -474,7 +450,7 @@ public class ContentDownloadService extends IntentService {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Timber.w(e);
                 Thread.currentThread().interrupt();
             }
         }
@@ -495,7 +471,8 @@ public class ContentDownloadService extends IntentService {
      *
      * @param contentId Id of the Content to mark as downloaded
      */
-    private void completeDownload(final long contentId, @NonNull final String title, final int pagesOK, final int pagesKO, final long sizeDownloaded) {
+    private void completeDownload(final long contentId, @NonNull final String title,
+                                  final int pagesOK, final int pagesKO, final long sizeDownloaded) {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
         // Get the latest value of Content
         Content content = dao.selectContent(contentId);
@@ -560,22 +537,21 @@ public class ContentDownloadService extends IntentService {
                 content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
                 // Clear download params from content
                 if (0 == pagesKO && !hasError) content.setDownloadParams("");
-
-                dao.insertContent(content);
+                content.computeSize();
 
                 // Save JSON file
                 try {
-                    DocumentFile jsonFile = JsonHelper.createJson(this, JsonContent.fromEntity(content), JsonContent.class, dir);
+                    DocumentFile jsonFile = JsonHelper.jsonToFile(this, JsonContent.fromEntity(content), JsonContent.class, dir);
                     // Cache its URI to the newly created content
                     if (jsonFile != null) {
                         content.setJsonUri(jsonFile.getUri().toString());
-                        dao.insertContent(content);
                     } else {
                         Timber.w("JSON file could not be cached for %s", title);
                     }
                 } catch (IOException e) {
                     Timber.e(e, "I/O Error saving JSON: %s", title);
                 }
+                dao.insertContent(content);
 
                 Timber.i("Content download finished: %s [%s]", title, contentId);
 
@@ -623,6 +599,18 @@ public class ContentDownloadService extends IntentService {
      */
     private List<ImageFile> fetchImageURLs(@NonNull Content content) throws Exception {
         List<ImageFile> imgs;
+
+        // If content doesn't have any download parameters, get them from the live gallery page
+        String downloadParamsStr = content.getDownloadParams();
+        if (null == downloadParamsStr || downloadParamsStr.isEmpty()) {
+            String cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+            if (!cookieStr.isEmpty()) {
+                Map<String, String> downloadParams = new HashMap<>();
+                downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+                content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+            }
+        }
+
         // Use ImageListParser to query the source
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
@@ -680,7 +668,9 @@ public class ContentDownloadService extends IntentService {
                 error -> onRequestError(error, img, dir, backupUrlFinal));
     }
 
-    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, @NonNull ImageFile img, @NonNull DocumentFile dir, boolean hasImageProcessing, @NonNull String backupUrl) {
+    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>>
+                                          result, @NonNull ImageFile img, @NonNull DocumentFile dir, boolean hasImageProcessing,
+                                  @NonNull String backupUrl) {
         try {
             if (result != null) {
                 DocumentFile imgFile = processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey(), hasImageProcessing);
@@ -709,7 +699,8 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    private void onRequestError(VolleyError error, @NonNull ImageFile img, @NonNull DocumentFile dir, @NonNull String backupUrl) {
+    private void onRequestError(VolleyError error, @NonNull ImageFile
+            img, @NonNull DocumentFile dir, @NonNull String backupUrl) {
         // Try with the backup URL, if it exists and if the current image isn't a backup itself
         if (!img.isBackup() && !backupUrl.isEmpty()) {
             tryUsingBackupUrl(img, dir, backupUrl);
@@ -741,7 +732,8 @@ public class ContentDownloadService extends IntentService {
         logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
     }
 
-    private void tryUsingBackupUrl(@NonNull ImageFile img, @NonNull DocumentFile dir, @NonNull String backupUrl) {
+    private void tryUsingBackupUrl(@NonNull ImageFile img, @NonNull DocumentFile
+            dir, @NonNull String backupUrl) {
         Timber.i("Using backup URL %s", backupUrl);
         Content content = img.content.getTarget();
         if (null == content) return;
@@ -767,7 +759,8 @@ public class ContentDownloadService extends IntentService {
         );
     }
 
-    private void processBackupImage(ImageFile backupImage, @NonNull ImageFile originalImage, @NonNull DocumentFile dir, Site site) {
+    private void processBackupImage(ImageFile backupImage, @NonNull ImageFile
+            originalImage, @NonNull DocumentFile dir, Site site) {
         if (backupImage != null) {
             Timber.i("Backup URL contains image @ %s; queuing", backupImage.getUrl());
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
@@ -777,7 +770,8 @@ public class ContentDownloadService extends IntentService {
         } else Timber.w("Failed to parse backup URL");
     }
 
-    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws IOException {
+    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws
+            IOException {
         Map<String, String> downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
 
         if (!downloadParams.containsKey("pageInfo"))
@@ -864,7 +858,7 @@ public class ContentDownloadService extends IntentService {
         // No extension detected in the URL => Read binary header of the file to detect known formats
         // If PNG, peek into the file to see if it is an animated PNG or not (no other way to do that)
         if (fileExt.isEmpty() || fileExt.equals("png")) {
-            mimeType = FileHelper.getMimeTypeFromPictureBinary(binaryContent);
+            mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
             fileExt = FileHelper.getExtensionFromMimeType(mimeType);
             Timber.d("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
         }
@@ -877,7 +871,7 @@ public class ContentDownloadService extends IntentService {
         if (null == mimeType) mimeType = "image/*";
         img.setMimeType(mimeType);
 
-        if (!Helper.isImageExtensionSupported(fileExt))
+        if (!ImageHelper.isImageExtensionSupported(fileExt))
             throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - image not processed", fileExt, img.getUrl()));
         else
             return saveImage(dir, img.getName() + "." + fileExt, mimeType, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
@@ -891,7 +885,8 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
+    private DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String
+            fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
         DocumentFile file = FileHelper.findOrCreateDocumentFile(this, dir, mimeType, fileName);
         if (null == file)
             throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));
@@ -905,7 +900,8 @@ public class ContentDownloadService extends IntentService {
      * @param img     Image to update
      * @param success True if download is successful; false if download failed
      */
-    private void updateImageStatusUri(@NonNull ImageFile img, boolean success, @NonNull String uriStr) {
+    private void updateImageStatusUri(@NonNull ImageFile img, boolean success,
+                                      @NonNull String uriStr) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         img.setFileUri(uriStr);
         if (success) img.setDownloadParams("");
@@ -945,7 +941,8 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    private void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
+    private void logErrorRecord(long contentId, ErrorType type, String url, String
+            contentPart, String description) {
         ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description, Instant.now());
         if (contentId > 0) dao.insertErrorRecord(record);
     }

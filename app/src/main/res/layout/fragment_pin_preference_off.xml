@@ -16,7 +16,7 @@
         app:title="@string/title_activity_app_lock"
         tools:targetApi="lollipop" />
 
-    <Switch
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switch_on"
         android:layout_width="0dp"
         android:layout_height="56dp"

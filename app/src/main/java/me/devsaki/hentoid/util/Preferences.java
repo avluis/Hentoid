@@ -232,6 +232,24 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getMemoryAlertThreshold() {
+        return Integer.parseInt(sharedPreferences.getString(Key.MEMORY_ALERT, Integer.toString(Default.PREF_MEMORY_ALERT_DEFAULT)) + "");
+    }
+
+    public static String getExternalLibraryUri() {
+        return sharedPreferences.getString(Key.EXTERNAL_LIBRARY_URI, "");
+    }
+
+    public static void setExternalLibraryUri(String uri) {
+        sharedPreferences.edit()
+                .putString(Key.EXTERNAL_LIBRARY_URI, uri)
+                .apply();
+    }
+
+    public static boolean isDeleteExternalLibrary() {
+        return sharedPreferences.getBoolean(Key.EXTERNAL_LIBRARY_DELETE, Default.EXTERNAL_LIBRARY_DELETE);
+    }
+
     static int getFolderNameFormat() {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.PREF_FOLDER_NAMING_CONTENT_LISTS,
@@ -482,7 +500,6 @@ public final class Preferences {
         public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_APP_PREVIEW = "pref_app_preview";
-        public static final String PREF_ADD_NO_MEDIA_FILE = "pref_add_no_media_file";
         static final String PREF_CHECK_UPDATES = "pref_check_updates";
         public static final String PREF_CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         public static final String PREF_REFRESH_LIBRARY = "pref_refresh_bookshelf";
@@ -498,8 +515,13 @@ public final class Preferences {
         static final String PREF_FIRST_RUN = "pref_first_run";
         public static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
         public static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
+        public static final String EXTERNAL_LIBRARY = "pref_external_library";
+        public static final String EXTERNAL_LIBRARY_URI = "pref_external_library_uri";
+        public static final String EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete";
         static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         public static final String PREF_SETTINGS_FOLDER = "folder";
+        public static final String MEMORY_USAGE = "pref_memory_usage";
+        public static final String MEMORY_ALERT = "pref_memory_alert";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String PREF_BROWSER_RESUME_LAST = "pref_browser_resume_last";
@@ -563,6 +585,8 @@ public final class Preferences {
         static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
+        static final int PREF_MEMORY_ALERT_DEFAULT = 110;
+        static final boolean EXTERNAL_LIBRARY_DELETE = false;
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
@@ -621,13 +645,13 @@ public final class Preferences {
 
         public static final int ORDER_FIELD_NONE = -1;
         public static final int ORDER_FIELD_TITLE = 0;
-        public static final int ORDER_FIELD_ARTIST = 1; // Not implemented yet
+        public static final int ORDER_FIELD_ARTIST = 1;
         public static final int ORDER_FIELD_NB_PAGES = 2;
         public static final int ORDER_FIELD_DOWNLOAD_DATE = 3;
         public static final int ORDER_FIELD_UPLOAD_DATE = 4;
         public static final int ORDER_FIELD_READ_DATE = 5;
         public static final int ORDER_FIELD_READS = 6;
-        public static final int ORDER_FIELD_SIZE = 7; // Not implemented yet
+        public static final int ORDER_FIELD_SIZE = 7;
         public static final int ORDER_FIELD_RANDOM = 99;
 
         public static final int ORDER_ATTRIBUTES_ALPHABETIC = 0;

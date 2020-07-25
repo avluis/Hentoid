@@ -387,8 +387,8 @@ public class CustomSubsamplingScaleImageView extends View {
         screenWidth = context.getResources().getDisplayMetrics().widthPixels;
         screenHeight = context.getResources().getDisplayMetrics().heightPixels;
 
-        setMinimumDpi(160);
-        setDoubleTapZoomDpi(160);
+        setMinimumDpi(120);
+        setDoubleTapZoomDpi(120);
         setMinimumTileDpi(320);
         setGestureDetector(context);
         this.handler = new Handler(message -> {

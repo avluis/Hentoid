@@ -144,7 +144,7 @@ public class MusesContent implements ContentParser {
             if (doc != null) {
                 Elements elements = doc.select(".album-tags a[href*='/search/tag']");
                 if (!elements.isEmpty())
-                    ParseHelper.parseAttributes(attributes, AttributeType.TAG, elements, true, Site.MUSES);
+                    ParseHelper.parseAttributes(attributes, AttributeType.TAG, elements, false, Site.MUSES);
             }
         } catch (IOException e) {
             Timber.e(e);

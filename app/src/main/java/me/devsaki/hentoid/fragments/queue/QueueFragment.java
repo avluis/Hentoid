@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.queue;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -20,15 +23,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiConsumer;
+import com.annimon.stream.function.Consumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
-import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
+import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
 import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
@@ -39,9 +43,9 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -69,6 +73,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -95,8 +100,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     // UI ELEMENTS
     private View rootView;
+    private Toolbar selectionToolbar;
     private MenuItem errorStatsMenu;    // Toolbar menu item for error stats
     private RecyclerView recyclerView;  // Queued book list
+    private LinearLayoutManager llm;
     private TextView mEmptyText;        // "Empty queue" message panel
     private ImageButton btnStart;       // Start / Resume button
     private ImageButton btnPause;       // Pause button
@@ -104,21 +111,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private TextView queueInfo;         // 2nd line of text displayed on the right of the queue pause / play button
     private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
 
-    // Used to keep scroll position when moving items
-    // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
-    private int topItemPosition = -1;
-    private int offsetTop = 0;
-
-    // RecyclerView utils
-    private LinearLayoutManager llm;
-    private ItemTouchHelper touchHelper;
-
-    // Used to start processing when the recyclerView has finished updating
-    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
-    private int itemToRefreshIndex = -1;
-
-    // Used to effectively cancel a download when the user hasn't hit UNDO
+    // == FASTADAPTER COMPONENTS AND HELPERS
     private FastAdapter<ContentItem> fastAdapter;
+    private SelectExtension<ContentItem> selectExtension;
+    private ItemTouchHelper touchHelper;
 
     // Download speed calculator
     private final DownloadSpeedCalculator downloadSpeedCalulator = new DownloadSpeedCalculator();
@@ -128,8 +124,23 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private boolean isPaused = false;
     private boolean isEmpty = false;
 
+    // === VARIABLES
+    // Used to ignore native calls to onBookClick right after that book has been deselected
+    private boolean invalidateNextBookClick = false;
+    // Used to show a given item at first display
+    private long contentIdToDisplayFirst = -1;
 
-    // Use a non-pages model adapter; drag & drop doesn't work with paged content, as Adapter.move is not supported and move from DB refreshes the whole list
+    // Used to start processing when the recyclerView has finished updating
+    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private int itemToRefreshIndex = -1;
+
+    // Used to keep scroll position when moving items
+    // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
+    private int topItemPosition = -1;
+    private int offsetTop = 0;
+
+
+    // Use a non-paged model adapter; drag & drop doesn't work with paged content, as Adapter.move is not supported and move from DB refreshes the whole list
     private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
 
 
@@ -143,6 +154,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     public void onResume() {
         super.onResume();
 
+        if (selectExtension != null) selectExtension.deselect();
+        initSelectionToolbar();
         update(-1);
     }
 
@@ -176,6 +189,16 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         fastAdapter.setHasStableIds(true);
         ContentItem item = new ContentItem(ContentItem.ViewType.QUEUE);
         fastAdapter.registerItemFactory(item.getType(), item);
+
+        // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
+        selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
+        if (selectExtension != null) {
+            selectExtension.setSelectable(true);
+            selectExtension.setMultiSelect(true);
+            selectExtension.setSelectOnLongClick(true);
+            selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+        }
+
         recyclerView.setAdapter(fastAdapter);
 
         recyclerView.setHasFixedSize(true);
@@ -189,7 +212,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
                 this,
                 this,
-                requireContext().getResources().getDrawable(R.drawable.ic_action_delete_forever, null));
+                ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
         dragSwipeCallback.setNotifyAllDrops(true);
         dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
@@ -200,6 +223,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
 
         initToolbar();
+        initSelectionToolbar();
         attachButtons(fastAdapter);
 
         // Network usage display refresh
@@ -217,6 +241,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void initToolbar() {
         if (!(requireActivity() instanceof QueueActivity)) return;
         QueueActivity activity = (QueueActivity) requireActivity();
+
         MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
         cancelAllMenu.setOnMenuItemClickListener(item -> {
             // Don't do anything if the queue is empty
@@ -270,6 +295,18 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
         consumer.accept(from, to);
         recordMoveFromFirstPos(from, to);
+    }
+
+    private void processMove(List<Integer> positions, @NonNull Consumer<List<Integer>> consumer) {
+        topItemPosition = getTopItemPosition();
+        offsetTop = 0;
+        if (topItemPosition >= 0) {
+            View firstView = llm.findViewByPosition(topItemPosition);
+            if (firstView != null)
+                offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
+        }
+        consumer.accept(positions);
+        recordMoveFromFirstPos(positions);
     }
 
     private void attachButtons(FastAdapter<ContentItem> fastAdapter) {
@@ -330,8 +367,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
-        viewModel.getQueuePaged().observe(getViewLifecycleOwner(), this::onQueueChanged);
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(QueueViewModel.class);
+        viewModel.getQueue().observe(getViewLifecycleOwner(), this::onQueueChanged);
+        viewModel.getContentIdToShowFirst().observe(getViewLifecycleOwner(), this::onContentIdToShowFirstChanged);
     }
 
     /**
@@ -352,6 +390,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 motiveMsg = getString(R.string.paused_no_internet);
             else if (event.motive == DownloadEvent.Motive.NO_WIFI)
                 motiveMsg = getString(R.string.paused_no_wifi);
+            else if (event.motive == DownloadEvent.Motive.NO_STORAGE)
+                motiveMsg = getString(R.string.paused_no_storage);
             Snackbar.make(recyclerView, motiveMsg, BaseTransientBottomBar.LENGTH_SHORT).show();
         }
 
@@ -369,7 +409,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case DownloadEvent.EV_SKIP:
                 // Books switch / display handled directly by the adapter
-                updateBookTitle();
                 queueInfo.setText("");
                 dlPreparationProgressBar.setVisibility(View.GONE);
                 break;
@@ -402,7 +441,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             dlPreparationProgressBar.setVisibility(View.GONE);
         }
 
-        dlPreparationProgressBar.setProgress(event.total - event.done);
+        dlPreparationProgressBar.setProgress1((long) event.total - event.done);
     }
 
     /**
@@ -472,7 +511,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         Content content = itemAdapter.getAdapterItem(0).getContent();
         if (null == content) return;
 
-        queueStatus.setText(MessageFormat.format(requireActivity().getString(R.string.queue_dl), content.getTitle()));
+        queueStatus.setText(getResources().getString(R.string.queue_dl, content.getTitle()));
     }
 
     /**
@@ -497,7 +536,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         // Update displayed books
         List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper)).toList();
-        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
+        // When using mass-moving (select multiple + move up/down), diff calculations ignored certain items
+        // and desynch the "real" list from the one manipulated by selectExtension
+        // => use a plain ItemAdapter.set for now (and live with the occasional blinking)
+//        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
+        itemAdapter.set(content);
         differEndCallback();
 
         updateControlBar();
@@ -507,11 +550,22 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             TooltipUtil.showTooltip(requireContext(), R.string.help_swipe_cancel, ArrowOrientation.BOTTOM, recyclerView, getViewLifecycleOwner());
     }
 
+    private void onContentIdToShowFirstChanged(Long contentId) {
+        Timber.d(">>onContentIdToShowFirstChanged %s", contentId);
+        contentIdToDisplayFirst = contentId;
+    }
+
     /**
      * Callback for the end of item diff calculations
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
+        if (contentIdToDisplayFirst > -1) {
+            int targetPos = fastAdapter.getPosition(contentIdToDisplayFirst);
+            if (targetPos > -1) listRefreshDebouncer.submit(targetPos);
+            contentIdToDisplayFirst = -1;
+            return;
+        }
         // Reposition the list on the initial top item position
         if (topItemPosition >= 0) {
             int targetPos = topItemPosition;
@@ -588,31 +642,56 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
     }
 
-    private boolean onBookClick(ContentItem i) {
-        Content c = i.getContent();
-        if (null == c) {
-            ToastUtil.toast(R.string.err_no_content);
-            return false;
-        }
+    private boolean onBookClick(ContentItem item) {
+        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty()) {
+            Content c = item.getContent();
+            if (!invalidateNextBookClick) {
+                // Process the click
+                if (null == c) {
+                    ToastUtil.toast(R.string.err_no_content);
+                    return false;
+                }
+                // Retrieve the latest version of the content if storage URI is unknown
+                // (may happen when the item is fetched before it is processed by the downloader)
+                if (c.getStorageUri().isEmpty())
+                    c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
 
-        // Retrieve the latest version of the content if storage URI is unknown
-        // (may happen when the item is fetched before it is processed by the downloader)
-        if (c.getStorageUri().isEmpty())
-            c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
+                if (c != null) {
+                    if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
+                        ToastUtil.toast(R.string.err_no_content);
+                    return true;
+                } else return false;
+            } else invalidateNextBookClick = false;
 
-        if (c != null) {
-            if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
-                ToastUtil.toast(R.string.err_no_content);
             return true;
-        } else return false;
+        } else {
+            selectExtension.setSelectOnLongClick(false);
+        }
+        return false;
     }
 
     private void onCancelBook(@NonNull Content c) {
-        viewModel.cancel(c);
+        viewModel.cancel(Stream.of(c).toList(), this::onDeleteError);
+    }
+
+    private void onCancelBooks(@NonNull List<Content> c) {
+        viewModel.cancel(c, this::onDeleteError);
     }
 
     private void onCancelAll() {
-        viewModel.cancelAll();
+        viewModel.cancelAll(this::onDeleteError);
+    }
+
+    /**
+     * Callback for the failure of the "delete item" action
+     */
+    private void onDeleteError(Throwable t) {
+        Timber.e(t);
+        if (t instanceof ContentNotRemovedException) {
+            ContentNotRemovedException e = (ContentNotRemovedException) t;
+            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
+        }
     }
 
     /**
@@ -698,5 +777,98 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     private void recordMoveFromFirstPos(int from, int to) {
         if (0 == from) itemToRefreshIndex = to;
+    }
+
+    private void recordMoveFromFirstPos(List<Integer> positions) {
+        // Only useful when moving the 1st item to the bottom
+        if (!positions.isEmpty() && 0 == positions.get(0))
+            itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
+    }
+
+    private void initSelectionToolbar() {
+        if (!(requireActivity() instanceof QueueActivity)) return;
+        QueueActivity activity = (QueueActivity) requireActivity();
+
+        selectionToolbar = activity.getSelectionToolbar();
+        selectionToolbar.setNavigationOnClickListener(v -> {
+            selectExtension.deselect();
+            selectionToolbar.setVisibility(View.GONE);
+        });
+        selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
+    }
+
+    private boolean onSelectionMenuItemClicked(@NonNull MenuItem menuItem) {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        List<Integer> selectedPositions;
+        boolean exitSelection = false;
+
+        switch (menuItem.getItemId()) {
+            case R.id.action_select_queue_cancel:
+                List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+                if (!selectedContent.isEmpty()) askDeleteSelected(selectedContent);
+                break;
+            case R.id.action_select_queue_top:
+                selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
+                selectExtension.deselect();
+                if (!selectedPositions.isEmpty())
+                    processMove(selectedPositions, viewModel::moveTop);
+                exitSelection = true;
+                break;
+            case R.id.action_select_queue_bottom:
+                selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
+                selectExtension.deselect();
+                if (!selectedPositions.isEmpty())
+                    processMove(selectedPositions, viewModel::moveBottom);
+                exitSelection = true;
+                break;
+            default:
+                // Nothing here
+        }
+        if (exitSelection)
+            selectionToolbar.setVisibility(View.GONE);
+        return true;
+    }
+
+    private void updateSelectionToolbar(long selectedCount) {
+        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
+    }
+
+    /**
+     * Callback for any selection change (item added to or removed from selection)
+     */
+    private void onSelectionChanged() {
+        int selectedCount = selectExtension.getSelectedItems().size();
+
+        if (0 == selectedCount) {
+            selectionToolbar.setVisibility(View.GONE);
+            selectExtension.setSelectOnLongClick(true);
+            invalidateNextBookClick = true;
+            new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
+        } else {
+            updateSelectionToolbar(selectedCount);
+            selectionToolbar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /**
+     * Display the yes/no dialog to make sure the user really wants to delete selected items
+     *
+     * @param items Items to be deleted if the answer is yes
+     */
+    private void askDeleteSelected(@NonNull final List<Content> items) {
+        Context context = getActivity();
+        if (null == context) return;
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        String title = context.getResources().getQuantityString(R.plurals.ask_cancel_multiple, items.size());
+        builder.setMessage(title)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog, which) -> {
+                            selectExtension.deselect();
+                            onCancelBooks(items);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog, which) -> selectExtension.deselect())
+                .create().show();
     }
 }

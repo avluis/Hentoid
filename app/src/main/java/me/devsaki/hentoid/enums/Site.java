@@ -13,7 +13,7 @@ public enum Site {
     // NOTE : to maintain compatiblity with saved JSON files and prefs, do _not_ edit either existing names or codes
     FAKKU(0, "Fakku", "https://www.fakku.net", "fakku", R.drawable.ic_menu_fakku, true, false, false), // Legacy support for old fakku archives
     PURURIN(1, "Pururin", "https://pururin.io", "pururin", R.drawable.ic_menu_pururin, true, false, false),
-    HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi,  false, false, false),
+    HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi, false, false, false),
     NHENTAI(3, "nhentai", "https://nhentai.net", "nhentai", R.drawable.ic_menu_nhentai, true, false, false),
     TSUMINO(4, "tsumino", "https://www.tsumino.com", "tsumino", R.drawable.ic_menu_tsumino, true, false, false),
     HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", "hentai.cafe", R.drawable.ic_menu_hentaicafe, true, false, false),
@@ -29,7 +29,8 @@ public enum Site {
     PORNCOMIX(15, "porncomixonline", "https://www.porncomixonline.net/", "porncomixonline", R.drawable.ic_menu_porncomix, false, false, false),
     HBROWSE(16, "Hbrowse", "https://www.hbrowse.com/", "hbrowse", R.drawable.ic_menu_hbrowse, false, false, false),
     HENTAI2READ(17, "Hentai2Read", "https://hentai2read.com/", "h2r", R.drawable.ic_menu_hentai2read, false, false, false),
-    NONE(98, "none", "", "none", R.drawable.ic_info, true, false, false), // Fallback site
+    HENTAIFOX(18, "Hentaifox", "https://hentaifox.com", "hentaifox", R.drawable.ic_menu_hentaifox, false, false, false),
+    NONE(98, "none", "", "none", R.drawable.ic_external_library, true, false, false), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true, false, false); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
 

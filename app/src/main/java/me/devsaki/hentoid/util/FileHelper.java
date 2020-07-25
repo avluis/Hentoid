@@ -23,6 +23,8 @@ import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.annimon.stream.Stream;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedOutputStream;
@@ -34,8 +36,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -61,23 +61,37 @@ public class FileHelper {
     private static final String PRIMARY_VOLUME_NAME = "primary";
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
 
-    private static final Charset CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1;
-
 
     public static String getFileProviderAuthority() {
         return AUTHORITY;
     }
 
+    /**
+     * Build a DocumentFile from the given Uri string
+     * @param context Context to use for the conversion
+     * @param uriStr Uri string to use
+     * @return DocumentFile built from the given Uri string; null if the DocumentFile couldn't be built
+     */
+    @Nullable
     public static DocumentFile getFileFromUriString(@NonNull final Context context, @NonNull final String uriStr) {
         Uri fileUri = Uri.parse(uriStr);
         return DocumentFile.fromSingleUri(context, fileUri);
     }
 
-    // Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
+    /**
+     * Get the full, human-readable access path from the given Uri
+     *
+     * Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
+     *
+     * @param context Context to use for the conversion
+     * @param uri Uri to get the full path from
+     * @param isFolder true if the given Uri represents a folder; false if it represents a file
+     * @return Full, human-readable access path from the given Uri
+     */
     public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri, boolean isFolder) {
         if (uri.toString().isEmpty()) return "";
-        
-        String volumePath = getVolumePath(getVolumeIdFromUri(uri, isFolder), context);
+
+        String volumePath = getVolumePath(context, getVolumeIdFromUri(uri, isFolder));
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
             volumePath = volumePath.substring(0, volumePath.length() - 1);
@@ -94,8 +108,14 @@ public class FileHelper {
         } else return volumePath;
     }
 
+    /**
+     * Get the human-readable access path for the given volume ID
+     * @param context Context to use
+     * @param volumeId Volume ID to get the path from
+     * @return Human-readable access path of the given volume ID
+     */
     @SuppressLint("ObsoleteSdkInt")
-    private static String getVolumePath(final String volumeId, Context context) {
+    private static String getVolumePath(@NonNull Context context, final String volumeId) {
         try {
             // StorageVolume exist since API21, but only visible since API24
             StorageManager mStorageManager =
@@ -106,6 +126,7 @@ public class FileHelper {
             Method getPath = storageVolumeClazz.getMethod("getPath");
             Method isPrimary = storageVolumeClazz.getMethod("isPrimary");
             Object result = getVolumeList.invoke(mStorageManager);
+            if (null == result) return null;
 
             final int length = Array.getLength(result);
             for (int i = 0; i < length; i++) {
@@ -114,7 +135,7 @@ public class FileHelper {
                 Boolean primary = (Boolean) isPrimary.invoke(storageVolumeElement);
 
                 // primary volume?
-                if (primary && PRIMARY_VOLUME_NAME.equals(volumeId))
+                if (primary != null && primary && PRIMARY_VOLUME_NAME.equals(volumeId))
                     return (String) getPath.invoke(storageVolumeElement);
 
                 // other volumes?
@@ -128,6 +149,12 @@ public class FileHelper {
         }
     }
 
+    /**
+     * Get the volume ID of the given Uri
+     * @param uri Uri to get the volume ID for
+     * @param isFolder true if the given Uri represents a folder; false if it represents a file
+     * @return Volume ID of the given Uri
+     */
     private static String getVolumeIdFromUri(final Uri uri, boolean isFolder) {
         final String docId;
         if (isFolder) docId = DocumentsContract.getTreeDocumentId(uri);
@@ -138,6 +165,12 @@ public class FileHelper {
         else return null;
     }
 
+    /**
+     * Get the human-readable document path of the given Uri
+     * @param uri Uri to get the path for
+     * @param isFolder true if the given Uri represents a folder; false if it represents a file
+     * @return Human-readable document path of the given Uri
+     */
     private static String getDocumentPathFromUri(final Uri uri, boolean isFolder) {
         final String docId;
         if (isFolder) docId = DocumentsContract.getTreeDocumentId(uri);
@@ -149,7 +182,7 @@ public class FileHelper {
     }
 
     /**
-     * Method ensures file creation from stream.
+     * Ensure file creation from stream.
      *
      * @param stream - OutputStream
      * @return true if all OK.
@@ -159,19 +192,34 @@ public class FileHelper {
     }
 
     /**
-     * Get OutputStream from file.
-     *
-     * @param target The file.
-     * @return FileOutputStream.
+     * Create an OutputStream opened the given file
+     * NB : File length will be truncated to the length of the written data
+     * @param target File to open the OutputStream on
+     * @return New OutputStream opened on the given file
      */
     private static OutputStream getOutputStream(@NonNull final File target) throws IOException {
         return FileUtils.openOutputStream(target);
     }
 
+    /**
+     * Create an OutputStream opened the given file
+     * NB : File length will be truncated to the length of the written data
+     * @param context Context to use
+     * @param target File to open the OutputStream on
+     * @return New OutputStream opened on the given file
+     * @throws IOException In case something horrible happens during I/O
+     */
     public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
         return context.getContentResolver().openOutputStream(target.getUri(), "rwt"); // Always truncate file to whatever data needs to be written
     }
 
+    /**
+     * Create an InputStream opened the given file
+     * @param context Context to use
+     * @param target File to open the InputStream on
+     * @return New InputStream opened on the given file
+     * @throws IOException In case something horrible happens during I/O
+     */
     public static InputStream getInputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
         return context.getContentResolver().openInputStream(target.getUri());
     }
@@ -230,6 +278,13 @@ public class FileHelper {
         } else return file;
     }
 
+    /**
+     * Check if the given folder is valid; if it is, set it as the app's root folder
+     * @param context Context to use
+     * @param folder Folder to check and set
+     * @param notify true if the method is allowed to create a toast in case of any error -- TODO this parameter is a joke
+     * @return true if the given folder is valid and has been set; false if not
+     */
     public static boolean checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder, boolean notify) {
         // Validate folder
         if (!folder.exists() && !folder.isDirectory()) {
@@ -243,10 +298,7 @@ public class FileHelper {
         if (nomedia != null) nomedia.delete();
 
         nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
-        if (null != nomedia && nomedia.exists()) {
-            boolean deleted = nomedia.delete();
-            if (deleted) Timber.d(".nomedia file deleted");
-        } else {
+        if (null == nomedia || !nomedia.exists()) {
             if (notify)
                 ToastUtil.toast(context, R.string.error_write_permission);
             return false;
@@ -257,20 +309,9 @@ public class FileHelper {
     }
 
     /**
-     * Create the ".nomedia" file in the app's root folder
-     */
-    public static boolean createNoMedia(@NonNull Context context) {
-        DocumentFile rootDir = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
-        if (null == rootDir || !rootDir.exists()) return false;
-
-        DocumentFile nomedia = findOrCreateDocumentFile(context, rootDir, null, NOMEDIA_FILE_NAME);
-        return (null != nomedia && nomedia.exists());
-    }
-
-    /**
      * Open the given file using the device's app(s) of choice
      *
-     * @param context Context
+     * @param context Context to use
      * @param aFile   File to be opened
      */
     public static void openFile(@NonNull Context context, @NonNull File aFile) {
@@ -282,7 +323,7 @@ public class FileHelper {
     /**
      * Open the given file using the device's app(s) of choice
      *
-     * @param context Context
+     * @param context Context to use
      * @param aFile   File to be opened
      */
     public static void openFile(@NonNull Context context, @NonNull DocumentFile aFile) {
@@ -290,6 +331,13 @@ public class FileHelper {
         tryOpenFile(context, aFile.getUri(), fileName, aFile.isDirectory());
     }
 
+    /**
+     * Attempt to open the file or folder at the given Uri using the device's app(s) of choice
+     * @param context Context to use
+     * @param uri Uri of the file or folder to be opened
+     * @param fileName Display name of the file or folder to be opened
+     * @param isDirectory true if the given Uri represents a folder; false if it represents a file
+     */
     private static void tryOpenFile(@NonNull Context context, @NonNull Uri uri, @NonNull String fileName, boolean isDirectory) {
         try {
             if (isDirectory) {
@@ -311,6 +359,12 @@ public class FileHelper {
         }
     }
 
+    /**
+     * Opens the given Uri using the device's app(s) of choice
+     * @param context Context to use
+     * @param uri Uri of the file or folder to be opened
+     * @param mimeType Mime-type to use (determines the apps the device will suggest for opening the resource)
+     */
     private static void openFileWithIntent(@NonNull Context context, @NonNull Uri uri, @Nullable String mimeType) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         myIntent.setDataAndTypeAndNormalize(uri, mimeType);
@@ -319,24 +373,37 @@ public class FileHelper {
     }
 
     /**
-     * Returns the extension of the given filename
+     * Returns the extension of the given filename, without the "."
      *
      * @param fileName Filename
-     * @return Extension of the given filename
+     * @return Extension of the given filename, without the "."
      */
     public static String getExtension(@NonNull final String fileName) {
         return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.US) : "";
     }
 
+    /**
+     * Returns the name of the given filename, without the extension
+     *
+     * @param fileName Filename
+     * @return Name of the given filename, without the extension
+     */
     public static String getFileNameWithoutExtension(@NonNull final String fileName) {
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
-    public static void saveBinaryInFile(@NonNull final Context context, @NonNull final DocumentFile file, byte[] binaryContent) throws IOException {
+    /**
+     * Save the given binary data in the given file, truncating the file length to the given data
+     * @param context Context to use
+     * @param file File to write to
+     * @param binaryData Data to write
+     * @throws IOException In case something horrible happens during I/O
+     */
+    public static void saveBinaryInFile(@NonNull final Context context, @NonNull final DocumentFile file, byte[] binaryData) throws IOException {
         byte[] buffer = new byte[1024];
         int count;
 
-        try (InputStream input = new ByteArrayInputStream(binaryContent)) {
+        try (InputStream input = new ByteArrayInputStream(binaryData)) {
             try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(context, file))) {
 
                 while ((count = input.read(buffer)) != -1) {
@@ -348,30 +415,11 @@ public class FileHelper {
         }
     }
 
-    public static String getMimeTypeFromPictureBinary(byte[] binary) {
-        if (binary.length < 12) return "";
-
-        // In Java, byte type is signed !
-        // => Converting all raw values to byte to be sure they are evaluated as expected
-        if ((byte) 0xFF == binary[0] && (byte) 0xD8 == binary[1] && (byte) 0xFF == binary[2])
-            return "image/jpeg";
-        else if ((byte) 0x89 == binary[0] && (byte) 0x50 == binary[1] && (byte) 0x4E == binary[2]) {
-            // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
-            int acTlPos = findSequencePosition(binary, 0, "acTL".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
-            if (acTlPos > -1) {
-                long idatPos = findSequencePosition(binary, acTlPos, "IDAT".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.1));
-                if (idatPos > -1) return "image/apng";
-            }
-            return "image/png";
-        } else if ((byte) 0x47 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2])
-            return "image/gif";
-        else if ((byte) 0x52 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2] && (byte) 0x46 == binary[3]
-                && (byte) 0x57 == binary[8] && (byte) 0x45 == binary[9] && (byte) 0x42 == binary[10] && (byte) 0x50 == binary[11])
-            return "image/webp";
-        else if ((byte) 0x42 == binary[0] && (byte) 0x4D == binary[1]) return "image/bmp";
-        else return "image/*";
-    }
-
+    /**
+     * Get the relevant file extension (without the ".") from the given mime-type
+     * @param mimeType Mime-type to get a file extension from
+     * @return Most relevant file extension (without the ".") corresponding to the given mime-type; null if none has been found
+     */
     @Nullable
     public static String getExtensionFromMimeType(@NonNull String mimeType) {
         if (mimeType.isEmpty()) return null;
@@ -385,6 +433,24 @@ public class FileHelper {
         return result;
     }
 
+    /**
+     * Get the most relevant mime-type for the given file extension
+     * @param extension File extension to get the mime-type for (without the ".")
+     * @return Most relevant mime-type for the given file extension; generic mime-type if none found
+     */
+    public static String getMimeTypeFromExtension(@NonNull String extension) {
+        if (extension.isEmpty()) return "application/octet-stream";
+        String result = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        if (null == result) return "application/octet-stream";
+        else return result;
+    }
+
+    /**
+     * Share the given file using the device's app(s) of choice
+     * @param context Context to use
+     * @param f File to share
+     * @param title Title of the user dialog
+     */
     public static void shareFile(final @NonNull Context context, final @NonNull DocumentFile f, final @NonNull String title) {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("text/*");
@@ -416,11 +482,15 @@ public class FileHelper {
         }
     }
 
-    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
+    public static List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
         return FileUtil.listDocumentFiles(context, parent, client, filter, false, true);
     }
 
-    public static List<DocumentFile> listDocumentFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
+    public static int countFiles(@NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
+        return FileUtil.countDocumentFiles(parent, client, filter, false, true);
+    }
+
+    public static List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
         ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
         if (null == client) return Collections.emptyList();
         try {
@@ -462,6 +532,12 @@ public class FileHelper {
         else return null;
     }
 
+    public static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
+                                                       @NonNull final DocumentFile parent,
+                                                       @NonNull ContentProviderClient client) {
+        return FileUtil.listDocumentFiles(context, parent, client, null, true, true);
+    }
+
     private static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
                                                         @NonNull final DocumentFile parent,
                                                         final String nameFilter,
@@ -480,7 +556,7 @@ public class FileHelper {
         }
     }
 
-    private static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
+    static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
 //        int BUFFER_SIZE = 64;
 //        byte[] readBuffer = new byte[BUFFER_SIZE];
 
@@ -591,27 +667,81 @@ public class FileHelper {
             return freeMemBytes * 100.0 / totalMemBytes;
         }
 
+        public double getTotalSpaceMb() {
+            return totalMemBytes * 1.0 / (1024 * 1024);
+        }
+
+        public double getfreeUsageMb() {
+            return freeMemBytes * 1.0 / (1024 * 1024);
+        }
+
         public String formatFreeUsageMb() {
-            return Math.round(freeMemBytes / 1e6) + "/" + Math.round(totalMemBytes / 1e6);
+            return Math.round(getfreeUsageMb()) + "/" + Math.round(getfreeUsageMb());
         }
     }
 
-    public static void revokePreviousPermissions(@NonNull final ContentResolver resolver, @NonNull final Uri newUri) {
+    /**
+     * Reset the app's persisted I/O permissions :
+     * - persist I/O permissions for the given new Uri
+     * - keep existing persisted I/O permissions for the given optional Uri
+     * <p>
+     * NB : if the optional Uri has no persisted permissions, this call won't create them
+     *
+     * @param context Context to use
+     * @param newUri  New Uri to add to the persisted I/O permission
+     * @param keepUri Uri to keep in the persisted I/O permissions, if already set
+     */
+    public static void persistNewUriPermission(@NonNull final Context context, @NonNull final Uri newUri, @Nullable final Uri keepUri) {
+        ContentResolver contentResolver = context.getContentResolver();
+        if (!isUriPermissionPersisted(contentResolver, newUri)) {
+            Timber.d("Persisting Uri permission for %s", newUri);
+            // Release previous access permissions, if different than the new one
+            revokePreviousPermissions(contentResolver, newUri, keepUri);
+            // Persist new access permission
+            contentResolver.takePersistableUriPermission(newUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
+    }
+
+    /**
+     * Check if the given Uri has persisted I/O permissions
+     *
+     * @param resolver ContentResolver to use
+     * @param uri      Uri to check
+     * @return true if the given Uri has persisted I/O permissions
+     */
+    private static boolean isUriPermissionPersisted(@NonNull final ContentResolver resolver, @NonNull final Uri uri) {
+        String treeUriId = DocumentsContract.getTreeDocumentId(uri);
+        for (UriPermission p : resolver.getPersistedUriPermissions()) {
+            if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {
+                Timber.d("Uri permission already persisted for %s", uri);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Revoke persisted Uri I/O permissions to the exception of given Uri's
+     *
+     * @param resolver   ContentResolver to use
+     * @param exceptions Uri's whose permissions won't be revoked
+     */
+    private static void revokePreviousPermissions(@NonNull final ContentResolver resolver, @NonNull final Uri... exceptions) {
         // Unfortunately, the content Uri of the selected resource is not exactly the same as the one stored by ContentResolver
         // -> solution is to compare their TreeDocumentId instead
-        String treeUriId = DocumentsContract.getTreeDocumentId(newUri);
-
+        List<String> exceptionIds = Stream.of(exceptions).withoutNulls().map(DocumentsContract::getTreeDocumentId).toList();
         for (UriPermission p : resolver.getPersistedUriPermissions())
-            if (!DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId))
+            if (!exceptionIds.contains(DocumentsContract.getTreeDocumentId(p.getUri())))
                 resolver.releasePersistableUriPermission(p.getUri(),
                         Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        if (resolver.getPersistedUriPermissions().isEmpty()) {
-            Timber.d("Permissions revoked successfully.");
+
+        if (resolver.getPersistedUriPermissions().size() <= exceptionIds.size()) {
+            Timber.d("Permissions revoked successfully");
         } else {
-            Timber.d("Permissions failed to be revoked.");
+            Timber.d("Failed to revoke permissions");
         }
     }
-
 
     private static NameFilter createNameFilterEquals(@NonNull final String name) {
         return displayName -> displayName.equalsIgnoreCase(name);

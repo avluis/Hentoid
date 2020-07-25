@@ -30,7 +30,7 @@
         tools:text="Export library (235 books)"
         tools:visibility="visible" />
 
-    <Switch
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/export_favs_only"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

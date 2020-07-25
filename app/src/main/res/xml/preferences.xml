@@ -103,12 +103,7 @@
                 android:key="folder"
                 android:summary="@string/pref_select_folder_summary"
                 android:title="@string/pref_select_folder_title"
-                app:iconSpaceReserved="false">
-                <intent
-                    android:action="android.intent.action.APPLICATION_PREFERENCES"
-                    android:targetClass="me.devsaki.hentoid.activities.ImportActivity"
-                    android:targetPackage="@string/app_id" />
-            </Preference>
+                app:iconSpaceReserved="false" />
             <ListPreference
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -127,6 +122,35 @@
                 android:summary="@string/pref_folder_trunc_summary"
                 android:title="@string/pref_folder_trunc_title"
                 app:iconSpaceReserved="false" />
+            <Preference
+                android:key="pref_memory_usage"
+                android:summary="@string/pref_memory_usage_summary"
+                android:title="@string/pref_memory_usage_title"
+                app:iconSpaceReserved="false"/>
+            <ListPreference
+                android:defaultValue="@string/pref_memory_alert_default"
+                android:entries="@array/pref_memory_alert_entries"
+                android:entryValues="@array/pref_memory_alert_values"
+                android:key="pref_memory_alert"
+                android:summary="@string/pref_attributes_list_order_summary"
+                android:title="@string/pref_memory_alert_title"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_external"
+            app:iconSpaceReserved="false">
+            <Preference
+                android:key="pref_external_library"
+                android:summary="@string/pref_external_library_summary_empty"
+                android:title="@string/pref_external_library_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_external_library_delete_default"
+                android:key="pref_external_library_delete"
+                android:summaryOff="@string/pref_external_library_delete_off"
+                android:summaryOn="@string/pref_external_library_delete_on"
+                android:title="@string/pref_external_library_delete_title"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_advanced"
@@ -138,8 +162,8 @@
                 app:iconSpaceReserved="false" />
             <Preference
                 android:key="pref_delete_all_except_favs"
-                android:summary="@string/pref_delete_all_except_favs"
-                android:title="@string/pref_delete_all_except_favs_summary"
+                android:summary="@string/pref_delete_all_except_favs_summary"
+                android:title="@string/pref_delete_all_except_favs"
                 app:iconSpaceReserved="false" />
             <Preference
                 android:key="pref_export_library"
@@ -253,11 +277,6 @@
                 android:key="pref_app_lock"
                 android:title="App Lock"
                 app:iconSpaceReserved="false" />
-            <Preference
-                android:key="pref_add_no_media_file"
-                android:summary="@string/pref_add_no_media_file_summary"
-                android:title="@string/pref_add_no_media_file_title"
-                app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_app_preview_default"
                 android:key="pref_app_preview"
@@ -365,9 +384,9 @@
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_auto_rotate_default"
                 android:key="pref_viewer_auto_rotate"
-                android:title="@string/pref_viewer_auto_rotate"
                 android:summaryOff="@string/pref_viewer_auto_rotate_summary_off"
                 android:summaryOn="@string/pref_viewer_auto_rotate_summary_on"
+                android:title="@string/pref_viewer_auto_rotate"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_display_pagenum_default"
@@ -401,9 +420,9 @@
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_resume_last_left_default"
                 android:key="pref_viewer_resume_last_left"
-                android:title="@string/pref_viewer_resume_last_left_title"
                 android:summaryOff="@string/pref_viewer_resume_last_left_summary_off"
                 android:summaryOn="@string/pref_viewer_resume_last_left_summary_on"
+                android:title="@string/pref_viewer_resume_last_left_title"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_open_gallery_default"
@@ -413,9 +432,9 @@
             <CheckBoxPreference
                 android:defaultValue="@bool/pref_viewer_continuous_default"
                 android:key="pref_viewer_continuous"
-                android:title="@string/pref_viewer_continuous_title"
                 android:summaryOff="@string/pref_viewer_continuous_summary_off"
                 android:summaryOn="@string/pref_viewer_continuous_summary_on"
+                android:title="@string/pref_viewer_continuous_title"
                 app:iconSpaceReserved="false" />
             <ListPreference
                 android:defaultValue="@string/pref_viewer_read_threshold_default"

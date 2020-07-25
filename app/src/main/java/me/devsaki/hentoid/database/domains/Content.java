@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
+import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
@@ -74,6 +76,7 @@ public class Content implements Serializable {
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite;
     private long reads = 0;
+    private long size = 0; // Yes, it _is_ redundant with the contained images' size. ObjectBox can't do thesum in a single Query, so here it is !
     private long lastReadDate;
     private int lastReadPageIndex = 0;
     @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
@@ -183,6 +186,7 @@ public class Content implements Serializable {
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
             case FAKKU2:
+            case HENTAIFOX:
             case PORNCOMIX:
                 paths = url.split("/");
                 return paths[paths.length - 1];
@@ -279,6 +283,8 @@ public class Content implements Serializable {
                 return HbrowseActivity.class;
             case HENTAI2READ:
                 return Hentai2ReadActivity.class;
+            case HENTAIFOX:
+                return HentaifoxActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -312,6 +318,7 @@ public class Content implements Serializable {
     public String getGalleryUrl() {
         String galleryConst;
         switch (site) {
+            case HENTAIFOX:
             case PURURIN:
                 galleryConst = "/gallery";
                 break;
@@ -385,6 +392,8 @@ public class Content implements Serializable {
             case PORNCOMIX:
                 if (getGalleryUrl().contains("/manga")) return getGalleryUrl() + "/p/1/";
                 else return getGalleryUrl() + "#&gid=1&pid=1";
+            case HENTAIFOX:
+                return site.getUrl() + "g" + url;
             default:
                 return null;
         }
@@ -535,8 +544,22 @@ public class Content implements Serializable {
 
     public long getNbDownloadedPages() {
         if (imageFiles != null)
-            return Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED && !i.isCover()).count();
+            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL) && !i.isCover()).count();
         else return 0;
+    }
+
+    private long getDownloadedPagesSize() {
+        if (imageFiles != null)
+            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
+        else return 0;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void computeSize() {
+        size = getDownloadedPagesSize();
     }
 
     public Site getSite() {

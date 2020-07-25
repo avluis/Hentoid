@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Spinner;
-import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +14,7 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
@@ -24,7 +24,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 public final class ActivatedPinPreferenceFragment extends Fragment
         implements DeactivatePinDialogFragment.Parent, ResetPinDialogFragment.Parent, AdapterView.OnItemSelectedListener {
 
-    private Switch offSwitch;
+    private SwitchMaterial offSwitch;
     private Spinner lockDelaySpinner;
 
     @Override
@@ -38,7 +38,7 @@ public final class ActivatedPinPreferenceFragment extends Fragment
         offSwitch.setOnClickListener(v -> onOffClick());
 
         boolean lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore();
-        Switch lockOnAppRestored = requireViewById(rootView, R.id.switch_lock_on_restore);
+        SwitchMaterial lockOnAppRestored = requireViewById(rootView, R.id.switch_lock_on_restore);
         lockOnAppRestored.setChecked(lockOnAppRestoredEnabled);
         lockOnAppRestored.setOnCheckedChangeListener((b, v) -> onLockOnAppRestoreClick(v));
 

@@ -48,9 +48,10 @@ public class ExHentaiParser implements ImageListParser {
     public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
+        List<ImageFile> result = new ArrayList<>();
+        boolean useHentoidAgent = Site.EXHENTAI.canKnowHentoidAgent();
+
         try {
-            List<ImageFile> result = new ArrayList<>();
-            boolean useHentoidAgent = Site.EXHENTAI.canKnowHentoidAgent();
             String downloadParamsStr = content.getDownloadParams();
             if (null == downloadParamsStr || downloadParamsStr.isEmpty()) {
                 Timber.e("Download parameters not set");
@@ -160,11 +161,10 @@ public class ExHentaiParser implements ImageListParser {
 
             // If the process has been halted manually, the result is incomplete and should not be returned as is
             if (processHalted) throw new PreparationInterruptedException();
-
-            return result;
         } finally {
             EventBus.getDefault().unregister(this);
         }
+        return result;
     }
 
     @Nullable

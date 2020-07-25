@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -39,7 +38,7 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -84,15 +83,10 @@ public class API29MigrationService extends IntentService {
     @Override
     public void onDestroy() {
         notificationManager.cancel();
+        if (dao != null) dao.cleanup();
         Timber.w("Service destroyed");
 
         super.onDestroy();
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 
     @Override
@@ -222,7 +216,7 @@ public class API29MigrationService extends IntentService {
                         else contentImages = new ArrayList<>();
 
                         // Attach file Uri's to the book's images
-                        List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(this, bookFolder, client, Helper.getImageNamesFilter());
+                        List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, ImageHelper.getImageNamesFilter());
                         if (!imageFiles.isEmpty()) {
                             if (contentImages.isEmpty()) { // No images described in the content (e.g. unread import from old JSON) -> recreate them
                                 contentImages = ContentHelper.createImageListFromFiles(imageFiles);
@@ -242,6 +236,8 @@ public class API29MigrationService extends IntentService {
                                     }
                                 }
                                 content.setImageFiles(contentImages);
+                                content.computeSize();
+                                dao.insertContent(content);
                             }
                         }
                         dao.replaceImageList(contentId, contentImages);

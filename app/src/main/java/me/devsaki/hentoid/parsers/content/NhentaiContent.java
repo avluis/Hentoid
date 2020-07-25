@@ -68,13 +68,13 @@ public class NhentaiContent implements ContentParser {
         result.setTitle(Helper.removeNonPrintableChars(titleDef));
 
         AttributeMap attributes = new AttributeMap();
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, "name", Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, "name", Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, "name", Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, "name", Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, "name", Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, "name", Site.NHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, false, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, "name", Site.NHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, "name", Site.NHENTAI);
         result.addAttributes(attributes);
 
         List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(result, thumbs), result.getCoverImageUrl(), StatusContent.SAVED);
