@@ -285,7 +285,8 @@ public final class ContentHelper {
     public static String formatBookFolderName(@NonNull final Content content) {
         String result = "";
 
-        String title = content.getTitle().replaceAll(UNAUTHORIZED_CHARS, "_");
+        String title = content.getTitle();
+        title = (null == title) ? "" : title.replaceAll(UNAUTHORIZED_CHARS, "_");
         String author = content.getAuthor().toLowerCase().replaceAll(UNAUTHORIZED_CHARS, "_");
 
         switch (Preferences.getFolderNameFormat()) {
