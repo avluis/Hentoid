@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
@@ -179,5 +180,19 @@ public class ImageFile {
     public ImageFile setSize(long size) {
         this.size = size;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ImageFile imageFile = (ImageFile) o;
+        return getId() == imageFile.getId() &&
+                Objects.equals(getUrl(), imageFile.getUrl());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId(), getUrl());
     }
 }

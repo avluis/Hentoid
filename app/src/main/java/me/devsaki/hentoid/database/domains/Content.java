@@ -718,11 +718,16 @@ public class Content implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-        return id == content.id;
+        return getId() == content.getId() &&
+                Objects.equals(getUniqueSiteId(), content.getUniqueSiteId());
+    }
+
+    public static int hash(long id, String uniqueSiteId) {
+        return Objects.hash(id, uniqueSiteId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return hash(getId(), getUniqueSiteId());
     }
 }
