@@ -74,7 +74,7 @@ public class FileHelper {
      * @return DocumentFile built from the given Uri string; null if the DocumentFile couldn't be built
      */
     @Nullable
-    public static DocumentFile getFileFromUriString(@NonNull final Context context, final String uriStr) {
+    public static DocumentFile getFileFromSingleUriString(@NonNull final Context context, final String uriStr) {
         if (null == uriStr || uriStr.isEmpty()) return null;
         DocumentFile result = DocumentFile.fromSingleUri(context, Uri.parse(uriStr));
         if (null == result || !result.exists()) return null;

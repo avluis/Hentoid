@@ -96,7 +96,7 @@ public final class ContentHelper {
      */
     public static void updateContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
+        DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
         if (null == file)
             throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
@@ -249,12 +249,8 @@ public final class ContentHelper {
         dao.deleteImageFile(image);
 
         // Remove the page from disk
-        if (image.getFileUri() != null && !image.getFileUri().isEmpty()) {
-            Uri uri = Uri.parse(image.getFileUri());
-
-            DocumentFile doc = DocumentFile.fromSingleUri(context, uri);
-            if (doc != null && doc.exists()) doc.delete();
-        }
+        DocumentFile doc = FileHelper.getFileFromSingleUriString(context, image.getFileUri());
+        if (doc != null) doc.delete();
 
         // Update content JSON if it exists (i.e. if book is not queued)
         Content content = dao.selectContent(image.content.getTargetId());

@@ -164,8 +164,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private void onCopyClick() {
         String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getFileUri());
         try {
-            DocumentFile sourceFile = FileHelper.getFileFromUriString(requireContext(), image.getFileUri());
-            if (null == sourceFile || !sourceFile.exists()) return;
+            DocumentFile sourceFile = FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri());
+            if (null == sourceFile) return;
 
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, image.getMimeType())) {
                 try (InputStream input = FileHelper.getInputStream(requireContext(), sourceFile)) {
@@ -185,8 +185,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Share" action button
      */
     private void onShareClick() {
-        DocumentFile docFile = FileHelper.getFileFromUriString(requireContext(), image.getFileUri());
-        if (docFile != null && docFile.exists())
+        DocumentFile docFile = FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri());
+        if (docFile != null)
             FileHelper.shareFile(requireContext(), docFile, "Share picture");
     }
 
@@ -212,8 +212,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private static Point getImageSize(@NonNull final Context context, @NonNull final String uri) {
-        DocumentFile imgFile = FileHelper.getFileFromUriString(context, uri);
-        if (null == imgFile || !imgFile.exists()) return new Point(0, 0);
+        DocumentFile imgFile = FileHelper.getFileFromSingleUriString(context, uri);
+        if (null == imgFile) return new Point(0, 0);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
