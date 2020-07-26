@@ -91,7 +91,7 @@ public class FileHelper {
     @Nullable
     public static DocumentFile getFolderFromTreeUriString(@NonNull final Context context, final String treeUriStr) {
         if (null == treeUriStr || treeUriStr.isEmpty()) return null;
-        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
+        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(treeUriStr));
         if (null == folder || !folder.exists()) return null;
         else return folder;
     }
