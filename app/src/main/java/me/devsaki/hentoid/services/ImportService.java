@@ -150,8 +150,8 @@ public class ImportService extends IntentService {
 
         final FileHelper.NameFilter imageNames = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
-        DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getStorageUri()));
-        if (null == rootFolder || !rootFolder.exists()) {
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
+        if (null == rootFolder) {
             Timber.e("Root folder is not defined (%s)", Preferences.getStorageUri());
             return;
         }

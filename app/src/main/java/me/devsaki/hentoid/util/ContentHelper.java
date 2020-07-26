@@ -130,8 +130,8 @@ public final class ContentHelper {
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setQueue(queuedContent);
 
-        DocumentFile rootFolder = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
-        if (null == rootFolder || !rootFolder.exists()) return false;
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        if (null == rootFolder) return false;
 
         try {
             JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.QUEUE_JSON_FILE_NAME);

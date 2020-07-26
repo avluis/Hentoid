@@ -343,23 +343,20 @@ public class LibImportDialogFragment extends DialogFragment {
         Helper.assertNonUiThread();
         Map<Site, DocumentFile> result = new EnumMap<>(Site.class);
 
-        if (!Preferences.getStorageUri().isEmpty()) {
-            Uri rootUri = Uri.parse(Preferences.getStorageUri());
-            DocumentFile rootFolder = DocumentFile.fromTreeUri(requireContext(), rootUri);
-            if (rootFolder != null && rootFolder.exists()) {
-                List<DocumentFile> subfolders = FileHelper.listFolders(requireContext(), rootFolder);
-                String folderName;
-                for (DocumentFile f : subfolders)
-                    if (f.getName() != null) {
-                        folderName = f.getName().toLowerCase();
-                        for (Site s : Site.values()) {
-                            if (folderName.equalsIgnoreCase(s.getFolder())) {
-                                result.put(s, f);
-                                break;
-                            }
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(requireActivity(), Preferences.getStorageUri());
+        if (null != rootFolder) {
+            List<DocumentFile> subfolders = FileHelper.listFolders(requireContext(), rootFolder);
+            String folderName;
+            for (DocumentFile f : subfolders)
+                if (f.getName() != null) {
+                    folderName = f.getName().toLowerCase();
+                    for (Site s : Site.values()) {
+                        if (folderName.equalsIgnoreCase(s.getFolder())) {
+                            result.put(s, f);
+                            break;
                         }
                     }
-            }
+                }
         }
         return result;
     }

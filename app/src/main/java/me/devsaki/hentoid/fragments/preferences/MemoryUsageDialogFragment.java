@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.preferences;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,10 +64,11 @@ public class MemoryUsageDialogFragment extends DialogFragment {
 
         _4dp = Helper.dpToPixel(requireContext(), 4);
 
-        DocumentFile rootFolder = DocumentFile.fromTreeUri(requireActivity(), Uri.parse(Preferences.getStorageUri()));
         double deviceFreeGb = -1;
         double deviceTotalGb = -1;
-        if (rootFolder != null && rootFolder.exists()) {
+
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(requireActivity(), Preferences.getStorageUri());
+        if (rootFolder != null) {
             FileHelper.MemoryUsageFigures memUsage = new FileHelper.MemoryUsageFigures(requireContext(), rootFolder);
             deviceFreeGb = memUsage.getfreeUsageMb() / 1024;
             deviceTotalGb = memUsage.getTotalSpaceMb() / 1024;

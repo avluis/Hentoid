@@ -104,11 +104,8 @@ public class LogUtil {
 
         // Save it
         try {
-            String settingFolderUriStr = Preferences.getStorageUri();
-            if (settingFolderUriStr.isEmpty()) return null;
-
-            DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(settingFolderUriStr));
-            if (null == folder || !folder.exists()) return null;
+            DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+            if (null == folder) return null;
 
             DocumentFile logDocumentFile = FileHelper.findOrCreateDocumentFile(context, folder, "text/plain", logFileName);
             FileHelper.saveBinaryInFile(context, logDocumentFile, log.getBytes());

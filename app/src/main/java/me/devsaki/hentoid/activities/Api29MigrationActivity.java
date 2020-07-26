@@ -84,11 +84,10 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
     private void doMigrate() {
         Timber.d("API 29 migration / Initiated");
-        String storageUri = Preferences.getStorageUri();
-        DocumentFile storageDoc = (storageUri.isEmpty()) ? null : DocumentFile.fromTreeUri(this, Uri.parse(storageUri));
+        DocumentFile storageDoc = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
 
         // If the root folder is already set to a content:// URI (previous use of SAF picker), start scanning at once
-        if (storageDoc != null && storageDoc.exists()) {
+        if (storageDoc != null) {
             Timber.d("Detected dir : %s", storageDoc.getUri().toString());
             // Make certain we have the actual Hentoid/.Hentoid folder (root URI can be set to its parent on certain devices)
             storageDoc = ImportHelper.getExistingHentoidDirFrom(this, storageDoc);
