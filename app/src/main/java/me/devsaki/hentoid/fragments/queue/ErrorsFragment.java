@@ -470,7 +470,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     }
 
     private void redownloadAll() {
-        List<Content> contents = Stream.of(itemAdapter.getModels()).map(ContentItem::getContent).withoutNulls().toList();
+        List<Content> contents = Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList();
         if (!contents.isEmpty()) redownloadContent(contents, false);
     }
 
