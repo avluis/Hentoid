@@ -67,9 +67,10 @@ public class FileHelper {
     }
 
     /**
-     * Build a DocumentFile from the given Uri string
+     * Build a DocumentFile representing a file from the given Uri string
+     *
      * @param context Context to use for the conversion
-     * @param uriStr Uri string to use
+     * @param uriStr  Uri string to use
      * @return DocumentFile built from the given Uri string; null if the DocumentFile couldn't be built
      */
     @Nullable
@@ -79,12 +80,27 @@ public class FileHelper {
     }
 
     /**
-     * Get the full, human-readable access path from the given Uri
-     *
-     * Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
+     * Build a DocumentFile representing a folder from the given Uri string
      *
      * @param context Context to use for the conversion
-     * @param uri Uri to get the full path from
+     * @param treeUriStr Uri string to use
+     * @return DocumentFile built from the given Uri string; null if the DocumentFile couldn't be built
+     */
+    @Nullable
+    public static DocumentFile getFolderFromTreeUriString(@NonNull final Context context, @NonNull final String treeUriStr) {
+        if (treeUriStr.isEmpty()) return null;
+        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
+        if (null == folder || !folder.exists()) return null;
+        else return folder;
+    }
+
+    /**
+     * Get the full, human-readable access path from the given Uri
+     * <p>
+     * Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
+     *
+     * @param context  Context to use for the conversion
+     * @param uri      Uri to get the full path from
      * @param isFolder true if the given Uri represents a folder; false if it represents a file
      * @return Full, human-readable access path from the given Uri
      */
@@ -110,7 +126,8 @@ public class FileHelper {
 
     /**
      * Get the human-readable access path for the given volume ID
-     * @param context Context to use
+     *
+     * @param context  Context to use
      * @param volumeId Volume ID to get the path from
      * @return Human-readable access path of the given volume ID
      */
@@ -151,7 +168,8 @@ public class FileHelper {
 
     /**
      * Get the volume ID of the given Uri
-     * @param uri Uri to get the volume ID for
+     *
+     * @param uri      Uri to get the volume ID for
      * @param isFolder true if the given Uri represents a folder; false if it represents a file
      * @return Volume ID of the given Uri
      */
@@ -167,7 +185,8 @@ public class FileHelper {
 
     /**
      * Get the human-readable document path of the given Uri
-     * @param uri Uri to get the path for
+     *
+     * @param uri      Uri to get the path for
      * @param isFolder true if the given Uri represents a folder; false if it represents a file
      * @return Human-readable document path of the given Uri
      */
@@ -194,6 +213,7 @@ public class FileHelper {
     /**
      * Create an OutputStream opened the given file
      * NB : File length will be truncated to the length of the written data
+     *
      * @param target File to open the OutputStream on
      * @return New OutputStream opened on the given file
      */
@@ -204,8 +224,9 @@ public class FileHelper {
     /**
      * Create an OutputStream opened the given file
      * NB : File length will be truncated to the length of the written data
+     *
      * @param context Context to use
-     * @param target File to open the OutputStream on
+     * @param target  File to open the OutputStream on
      * @return New OutputStream opened on the given file
      * @throws IOException In case something horrible happens during I/O
      */
@@ -215,8 +236,9 @@ public class FileHelper {
 
     /**
      * Create an InputStream opened the given file
+     *
      * @param context Context to use
-     * @param target File to open the InputStream on
+     * @param target  File to open the InputStream on
      * @return New InputStream opened on the given file
      * @throws IOException In case something horrible happens during I/O
      */
@@ -280,9 +302,10 @@ public class FileHelper {
 
     /**
      * Check if the given folder is valid; if it is, set it as the app's root folder
+     *
      * @param context Context to use
-     * @param folder Folder to check and set
-     * @param notify true if the method is allowed to create a toast in case of any error -- TODO this parameter is a joke
+     * @param folder  Folder to check and set
+     * @param notify  true if the method is allowed to create a toast in case of any error -- TODO this parameter is a joke
      * @return true if the given folder is valid and has been set; false if not
      */
     public static boolean checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder, boolean notify) {
@@ -333,9 +356,10 @@ public class FileHelper {
 
     /**
      * Attempt to open the file or folder at the given Uri using the device's app(s) of choice
-     * @param context Context to use
-     * @param uri Uri of the file or folder to be opened
-     * @param fileName Display name of the file or folder to be opened
+     *
+     * @param context     Context to use
+     * @param uri         Uri of the file or folder to be opened
+     * @param fileName    Display name of the file or folder to be opened
      * @param isDirectory true if the given Uri represents a folder; false if it represents a file
      */
     private static void tryOpenFile(@NonNull Context context, @NonNull Uri uri, @NonNull String fileName, boolean isDirectory) {
@@ -361,8 +385,9 @@ public class FileHelper {
 
     /**
      * Opens the given Uri using the device's app(s) of choice
-     * @param context Context to use
-     * @param uri Uri of the file or folder to be opened
+     *
+     * @param context  Context to use
+     * @param uri      Uri of the file or folder to be opened
      * @param mimeType Mime-type to use (determines the apps the device will suggest for opening the resource)
      */
     private static void openFileWithIntent(@NonNull Context context, @NonNull Uri uri, @Nullable String mimeType) {
@@ -394,8 +419,9 @@ public class FileHelper {
 
     /**
      * Save the given binary data in the given file, truncating the file length to the given data
-     * @param context Context to use
-     * @param file File to write to
+     *
+     * @param context    Context to use
+     * @param file       File to write to
      * @param binaryData Data to write
      * @throws IOException In case something horrible happens during I/O
      */
@@ -417,6 +443,7 @@ public class FileHelper {
 
     /**
      * Get the relevant file extension (without the ".") from the given mime-type
+     *
      * @param mimeType Mime-type to get a file extension from
      * @return Most relevant file extension (without the ".") corresponding to the given mime-type; null if none has been found
      */
@@ -435,6 +462,7 @@ public class FileHelper {
 
     /**
      * Get the most relevant mime-type for the given file extension
+     *
      * @param extension File extension to get the mime-type for (without the ".")
      * @return Most relevant mime-type for the given file extension; generic mime-type if none found
      */
@@ -447,9 +475,10 @@ public class FileHelper {
 
     /**
      * Share the given file using the device's app(s) of choice
+     *
      * @param context Context to use
-     * @param f File to share
-     * @param title Title of the user dialog
+     * @param f       File to share
+     * @param title   Title of the user dialog
      */
     public static void shareFile(final @NonNull Context context, final @NonNull DocumentFile f, final @NonNull String title) {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);

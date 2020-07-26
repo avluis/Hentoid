@@ -1299,8 +1299,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     }
 
     private boolean isLowOnSpace() {
-        DocumentFile rootFolder = DocumentFile.fromTreeUri(requireActivity(), Uri.parse(Preferences.getStorageUri()));
-        if (null == rootFolder || !rootFolder.exists()) return false;
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(requireActivity(), Preferences.getStorageUri());
+        if (null == rootFolder) return false;
 
         double freeSpaceRatio = new FileHelper.MemoryUsageFigures(requireActivity(), rootFolder).getFreeUsageRatio100();
         return (freeSpaceRatio < 100 - Preferences.getMemoryAlertThreshold());
