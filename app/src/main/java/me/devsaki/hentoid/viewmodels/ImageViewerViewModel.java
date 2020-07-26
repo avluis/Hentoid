@@ -2,7 +2,6 @@ package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -465,8 +464,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
         if (!content.getJsonUri().isEmpty()) return;
 
-        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-        if (null == folder || !folder.exists()) return;
+        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        if (null == folder) return;
 
         DocumentFile foundFile = FileHelper.findFile(getApplication(), folder, Consts.JSON_FILE_NAME_V2);
         if (null == foundFile) {

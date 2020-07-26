@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -305,8 +304,8 @@ public class LibraryViewModel extends AndroidViewModel {
     public void archiveContent(@NonNull final Content content, Consumer<File> onSuccess) {
         Timber.d("Building file list for: %s", content.getTitle());
 
-        DocumentFile bookFolder = DocumentFile.fromTreeUri(getApplication(), Uri.parse(content.getStorageUri()));
-        if (null == bookFolder || !bookFolder.exists()) return;
+        DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(getApplication(), content.getStorageUri());
+        if (null == bookFolder) return;
 
         List<DocumentFile> files = FileHelper.listFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive
         if (!files.isEmpty()) {

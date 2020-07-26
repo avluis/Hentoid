@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.commit
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -167,7 +166,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     }
 
     private fun populateMemoryUsage() {
-        val folder = DocumentFile.fromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()))
+        val folder = FileHelper.getFolderFromTreeUriString(requireContext(), Preferences.getStorageUri())
                 ?: return
 
         val memUsagePref: Preference? = findPreference(Preferences.Key.MEMORY_USAGE) as Preference?

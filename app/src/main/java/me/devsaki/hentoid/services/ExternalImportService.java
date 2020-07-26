@@ -39,7 +39,6 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
@@ -126,8 +125,8 @@ public class ExternalImportService extends IntentService {
         int booksKO = 0;                        // Number of folders found with no valid book inside
         List<LogUtil.LogEntry> log = new ArrayList<>();
 
-        DocumentFile rootFolder = DocumentFile.fromTreeUri(this, Uri.parse(Preferences.getExternalLibraryUri()));
-        if (null == rootFolder || !rootFolder.exists()) {
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getExternalLibraryUri());
+        if (null == rootFolder) {
             Timber.e("External folder is not defined (%s)", Preferences.getExternalLibraryUri());
             return;
         }
@@ -247,8 +246,8 @@ public class ExternalImportService extends IntentService {
     private Uri getJsonFor(@NonNull final Content c, @NonNull final ContentProviderClient client) throws IOException {
         if (null == c.getStorageUri() || c.getStorageUri().isEmpty()) return null;
 
-        DocumentFile contentFolder = DocumentFile.fromTreeUri(this, Uri.parse(c.getStorageUri()));
-        if (null == contentFolder || !contentFolder.exists()) return null;
+        DocumentFile contentFolder = FileHelper.getFolderFromTreeUriString(this, c.getStorageUri());
+        if (null == contentFolder) return null;
 
         // If it exists, use it as is, don't overwrite it
         DocumentFile jsonFile = FileHelper.findFile(this, contentFolder, client, Consts.JSON_FILE_NAME_V2);

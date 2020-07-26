@@ -655,9 +655,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                     return;
                 }
 
-                Uri folderUri = Uri.parse(c.getStorageUri());
-                DocumentFile folder = DocumentFile.fromTreeUri(requireContext(), folderUri);
-                if (folder != null && folder.exists()) {
+                DocumentFile folder = FileHelper.getFolderFromTreeUriString(requireContext(), c.getStorageUri());
+                if (folder != null) {
                     selectExtension.deselect();
                     selectionToolbar.setVisibility(View.GONE);
                     FileHelper.openFile(requireContext(), folder);

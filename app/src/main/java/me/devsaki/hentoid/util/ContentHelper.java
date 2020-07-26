@@ -114,8 +114,8 @@ public final class ContentHelper {
      */
     public static void createContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-        if (null == folder || !folder.exists()) return;
+        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        if (null == folder) return;
         try {
             JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
         } catch (IOException e) {
@@ -199,8 +199,8 @@ public final class ContentHelper {
         String storageUri = content.getStorageUri();
 
         Timber.d("Opening: %s from: %s", content.getTitle(), storageUri);
-        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(storageUri));
-        if (null == folder || !folder.exists()) {
+        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, storageUri);
+        if (null == folder) {
             Timber.d("File not found!! Exiting method.");
             return new ArrayList<>();
         }
@@ -225,16 +225,14 @@ public final class ContentHelper {
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
         dao.deleteContent(content);
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
-        if (!content.getStorageUri().isEmpty()) {
-            DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-            if (null == folder || !folder.exists())
-                throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
+        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        if (null == folder)
+            throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
 
-            if (folder.delete()) {
-                Timber.i("Directory removed : %s", content.getStorageUri());
-            } else {
-                throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
-            }
+        if (folder.delete()) {
+            Timber.i("Directory removed : %s", content.getStorageUri());
+        } else {
+            throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
         }
     }
 
