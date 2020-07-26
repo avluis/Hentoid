@@ -13,7 +13,7 @@ import me.devsaki.hentoid.database.domains.Content;
  * Tracks downloads events for interested subscribers.
  */
 public class DownloadEvent {
-    @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI})
+    @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI, Motive.NO_STORAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Motive {
         int NONE = -1;
