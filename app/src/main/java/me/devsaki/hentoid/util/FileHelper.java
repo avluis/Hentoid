@@ -74,21 +74,23 @@ public class FileHelper {
      * @return DocumentFile built from the given Uri string; null if the DocumentFile couldn't be built
      */
     @Nullable
-    public static DocumentFile getFileFromUriString(@NonNull final Context context, @NonNull final String uriStr) {
-        Uri fileUri = Uri.parse(uriStr);
-        return DocumentFile.fromSingleUri(context, fileUri);
+    public static DocumentFile getFileFromUriString(@NonNull final Context context, final String uriStr) {
+        if (null == uriStr || uriStr.isEmpty()) return null;
+        DocumentFile result = DocumentFile.fromSingleUri(context, Uri.parse(uriStr));
+        if (null == result || !result.exists()) return null;
+        else return result;
     }
 
     /**
      * Build a DocumentFile representing a folder from the given Uri string
      *
-     * @param context Context to use for the conversion
+     * @param context    Context to use for the conversion
      * @param treeUriStr Uri string to use
      * @return DocumentFile built from the given Uri string; null if the DocumentFile couldn't be built
      */
     @Nullable
-    public static DocumentFile getFolderFromTreeUriString(@NonNull final Context context, @NonNull final String treeUriStr) {
-        if (treeUriStr.isEmpty()) return null;
+    public static DocumentFile getFolderFromTreeUriString(@NonNull final Context context, final String treeUriStr) {
+        if (null == treeUriStr || treeUriStr.isEmpty()) return null;
         DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
         if (null == folder || !folder.exists()) return null;
         else return folder;
