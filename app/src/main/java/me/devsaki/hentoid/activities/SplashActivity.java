@@ -44,6 +44,9 @@ public class SplashActivity extends AppCompatActivity {
 
         Timber.d("Splash / Init");
 
+        // TODO Wait until database maintenance is completed
+
+
         // Pre-processing on app update
         if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
             Timber.d("Splash / Update detected");
@@ -56,11 +59,11 @@ public class SplashActivity extends AppCompatActivity {
 
     private void followStartupFlow() {
         Timber.d("Splash / Startup flow initiated");
-        if (Preferences.isFirstRun()) {
+        if (Preferences.isFirstRun()) { // Go to intro wizard if it's a first run
             goToActivity(new Intent(this, IntroActivity.class));
-        } else if (hasToMigrateAPI29()) {
+        } else if (hasToMigrateAPI29()) { // Go to API29 migration if the app has to migrate
             goToAPI29MigrationActivity();
-        } else {
+        } else { // Go to the library screen
             goToLibraryActivity();
         }
     }
@@ -85,12 +88,19 @@ public class SplashActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    /**
+     * Close splash screen and go to the given activity
+     * @param intent Intent to launch through a new activity
+     */
     private void goToActivity(Intent intent) {
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
     }
 
+    /**
+     * Go to the API29 migration screen (App v1.11- -> v1.12+)
+     */
     private void goToAPI29MigrationActivity() {
         Timber.d("Splash / Launch API 29 migration");
         Intent intent = new Intent(this, Api29MigrationActivity.class);
@@ -98,6 +108,9 @@ public class SplashActivity extends AppCompatActivity {
         goToActivity(intent);
     }
 
+    /**
+     * Go to the library screen
+     */
     private void goToLibraryActivity() {
         Timber.d("Splash / Launch library");
         Intent intent = new Intent(this, LibraryActivity.class);
@@ -105,6 +118,10 @@ public class SplashActivity extends AppCompatActivity {
         goToActivity(intent);
     }
 
+    /**
+     * Perform cleanup activities and follow the standard startup flow
+     * once these activities are done
+     */
     private void onAppUpdated() {
         compositeDisposable.add(
                 Completable.fromRunnable(this::doOnAppUpdated)
@@ -116,6 +133,11 @@ public class SplashActivity extends AppCompatActivity {
         );
     }
 
+    /**
+     * Perform cleanup activities when the app has been updated
+     * - Clear webview cache
+     * - Clear app cache
+     */
     private void doOnAppUpdated() {
         Timber.d("Splash / Start update pre-processing");
         // Clear webview cache (needs to execute inside the activity's Looper)

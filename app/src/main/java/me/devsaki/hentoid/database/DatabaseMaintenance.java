@@ -21,7 +21,7 @@ public class DatabaseMaintenance {
      * Clean up and upgrade database
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup
      */
-    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
+    @SuppressWarnings({"squid:CallToDeprecatedMethod"})
     public static void performDatabaseHousekeeping(@NonNull Context context) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
