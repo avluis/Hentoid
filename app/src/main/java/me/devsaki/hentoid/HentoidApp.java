@@ -29,7 +29,6 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
 import me.devsaki.hentoid.notification.maintenance.MaintenanceNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
-import me.devsaki.hentoid.services.DatabaseMaintenanceService;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
@@ -122,9 +121,6 @@ public class HentoidApp extends Application {
         boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
-        // DB housekeeping
-        performDatabaseHousekeeping();
-
         // Init notification channels
         UpdateNotificationChannel.init(this);
         DownloadNotificationChannel.init(this);
@@ -171,20 +167,6 @@ public class HentoidApp extends Application {
             }
             Timber.w(e, "Undeliverable exception received, not sure what to do");
         });
-    }
-
-    /**
-     * Clean up and upgrade database
-     */
-    @SuppressWarnings({"squid:CallToDeprecatedMethod"})
-    private void performDatabaseHousekeeping() {
-        // Launch a service that will perform non-structural DB housekeeping tasks
-        Intent intent = DatabaseMaintenanceService.makeIntent(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent);
-        } else {
-            startService(intent);
-        }
     }
 
     /**

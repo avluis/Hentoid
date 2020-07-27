@@ -1,25 +1,29 @@
 package me.devsaki.hentoid.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.webkit.WebView;
-
-import androidx.appcompat.app.AppCompatActivity;
+import android.widget.ProgressBar;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
+import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.util.FileHelper;
@@ -33,20 +37,58 @@ import timber.log.Timber;
  * <p>
  * Nothing but a splash/activity selection should be defined here.
  */
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
+
+    private List<Function<Context, Observable<Float>>> maintenanceTasks;
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private ProgressBar mainPb;
+    private ProgressBar secondaryPb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_splash);
         //ThemeHelper.applyTheme(this); <-- this won't help; the starting activity is shown with the default theme, aka Light
+
+        mainPb = findViewById(R.id.progress_main);
+        secondaryPb = findViewById(R.id.progress_secondary);
 
         Timber.d("Splash / Init");
 
-        // TODO Wait until database maintenance is completed
+        // Wait until database maintenance is completed
+        maintenanceTasks = DatabaseMaintenance.getCleanupTasks();
+        doMaintenanceTask(0);
+    }
 
+    private void doMaintenanceTask(int taskIndex) {
+        mainPb.setProgress(Math.round(100 * (taskIndex * 1f / maintenanceTasks.size())));
+        // Continue executing maintenance tasks
+        if (taskIndex < maintenanceTasks.size()) {
+            Timber.i("Splash / Maintenance task %s/%s", taskIndex + 1, maintenanceTasks.size());
+            try {
+                compositeDisposable.add(
+                        maintenanceTasks.get(taskIndex).apply(this)
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                        this::displaySecondaryProgress,
+                                        Timber::e,
+                                        () -> doMaintenanceTask(taskIndex + 1)
+                                )
+                );
+            } catch (Exception e) {
+                Timber.e(e);
+                doMaintenanceTask(taskIndex + 1);
+            }
+        } else detectAppUpdate(); // Go on with startup activities
+    }
 
+    private void displaySecondaryProgress(Float progress) {
+        secondaryPb.setProgress(Math.round(progress * 100));
+    }
+
+    private void detectAppUpdate() {
         // Pre-processing on app update
         if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
             Timber.d("Splash / Update detected");
@@ -90,6 +132,7 @@ public class SplashActivity extends AppCompatActivity {
 
     /**
      * Close splash screen and go to the given activity
+     *
      * @param intent Intent to launch through a new activity
      */
     private void goToActivity(Intent intent) {
