@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -18,7 +17,6 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
@@ -39,7 +37,7 @@ import timber.log.Timber;
  */
 public class SplashActivity extends BaseActivity {
 
-    private List<Function<Context, Observable<Float>>> maintenanceTasks;
+    private List<Observable<Float>> maintenanceTasks;
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private ProgressBar mainPb;
@@ -57,7 +55,7 @@ public class SplashActivity extends BaseActivity {
         Timber.d("Splash / Init");
 
         // Wait until database maintenance is completed
-        maintenanceTasks = DatabaseMaintenance.getCleanupTasks();
+        maintenanceTasks = DatabaseMaintenance.getCleanupTasks(this);
         doMaintenanceTask(0);
     }
 
@@ -66,21 +64,16 @@ public class SplashActivity extends BaseActivity {
         // Continue executing maintenance tasks
         if (taskIndex < maintenanceTasks.size()) {
             Timber.i("Splash / Maintenance task %s/%s", taskIndex + 1, maintenanceTasks.size());
-            try {
-                compositeDisposable.add(
-                        maintenanceTasks.get(taskIndex).apply(this)
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(
-                                        this::displaySecondaryProgress,
-                                        Timber::e,
-                                        () -> doMaintenanceTask(taskIndex + 1)
-                                )
-                );
-            } catch (Exception e) {
-                Timber.e(e);
-                doMaintenanceTask(taskIndex + 1);
-            }
+            compositeDisposable.add(
+                    maintenanceTasks.get(taskIndex)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    this::displaySecondaryProgress,
+                                    Timber::e,
+                                    () -> doMaintenanceTask(taskIndex + 1)
+                            )
+            );
         } else detectAppUpdate(); // Go on with startup activities
     }
 
