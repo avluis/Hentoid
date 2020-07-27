@@ -9,6 +9,11 @@
             android:src="@drawable/ic_hentoid_trans"
             android:tileMode="repeat" />
     </item>
-
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/ic_hentoid"
+            android:tileMode="disabled" />
+    </item>
 
 </layer-list>

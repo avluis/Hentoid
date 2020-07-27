@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 
@@ -74,7 +75,11 @@ public class SplashActivity extends BaseActivity {
                                     () -> doMaintenanceTask(taskIndex + 1)
                             )
             );
-        } else detectAppUpdate(); // Go on with startup activities
+        } else {
+            mainPb.setVisibility(View.GONE);
+            secondaryPb.setVisibility(View.GONE);
+            detectAppUpdate(); // Go on with startup activities
+        }
     }
 
     private void displaySecondaryProgress(Float progress) {
