@@ -8,11 +8,13 @@ import android.os.Looper;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.util.List;
+import java.util.Random;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -52,6 +54,11 @@ public class SplashActivity extends BaseActivity {
 
         mainPb = findViewById(R.id.progress_main);
         secondaryPb = findViewById(R.id.progress_secondary);
+        TextView quote = findViewById(R.id.quote);
+
+        String[] quotes = getResources().getStringArray(R.array.splash_quotes);
+        int random = new Random().nextInt(quotes.length);
+        quote.setText(quotes[random]);
 
         Timber.d("Splash / Init");
 

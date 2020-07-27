@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="splash_quotes">
+        <item>art in an app</item>
+        <item>the usual book ?</item>
+        <item>one hand training app</item>
+        <item>5 mins arm exercise</item>
+        <item>your hand best friend</item>
+    </string-array>
+</resources>
