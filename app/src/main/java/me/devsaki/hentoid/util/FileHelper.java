@@ -687,6 +687,15 @@ public class FileHelper {
         }
     }
 
+    /**
+     * Return the position of the given sequence in the given data array
+     *
+     * @param data       Data where to find the sequence
+     * @param initialPos Initial position to start from
+     * @param sequence   Sequence to look for
+     * @param limit      Limit not to cross (in bytes counted from the initial position); 0 for unlimited
+     * @return Position of the sequence in the data array; -1 if not found within the given initial position and limit
+     */
     static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
 //        int BUFFER_SIZE = 64;
 //        byte[] readBuffer = new byte[BUFFER_SIZE];
@@ -721,6 +730,13 @@ public class FileHelper {
         return -1;
     }
 
+    /**
+     * Copy all data from the given InputStream to the given OutputStream
+     *
+     * @param in  InputStream to read data from
+     * @param out OutputStream to write data to
+     * @throws IOException If something horrible happens during I/O
+     */
     public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
         // Transfer bytes from in to out
         byte[] buf = new byte[1024];
@@ -731,10 +747,25 @@ public class FileHelper {
         out.flush();
     }
 
+    /**
+     * Get the device's Downloads folder
+     *
+     * @return Device's Downloads folder
+     */
     public static File getDownloadsFolder() {
         return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
     }
 
+    /**
+     * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+     *
+     * @param context  Context to use
+     * @param fileName Name of the file to create
+     * @param mimeType Mime-type of the file to create
+     * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+     * @throws IOException If something horrible happens during I/O
+     */
+    // TODO document what happens when a file with the same name already exists there before the call
     public static OutputStream openNewDownloadOutputStream(
             @NonNull final Context context,
             @NonNull final String fileName,
@@ -747,6 +778,7 @@ public class FileHelper {
         }
     }
 
+    // Legacy (non-SAF, pre-Android 10) version of openNewDownloadOutputStream
     private static OutputStream openNewDownloadOutputStreamLegacy(@NonNull final String fileName) throws IOException {
         File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         if (null == downloadsFolder) throw new IOException("Downloads folder not found");
@@ -758,6 +790,7 @@ public class FileHelper {
         return getOutputStream(target);
     }
 
+    // Android 10 version of openNewDownloadOutputStream
     // https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
     @TargetApi(29)
     private static OutputStream openNewDownloadOutputStreamQ(
@@ -775,10 +808,19 @@ public class FileHelper {
         return resolver.openOutputStream(targetFileUri);
     }
 
+    /**
+     * Class to use to obtain information about memory usage
+     */
     public static class MemoryUsageFigures {
         private final long freeMemBytes;
         private final long totalMemBytes;
 
+        /**
+         * Get memory usage figures for the volume containing the given folder
+         *
+         * @param context Context to use
+         * @param f       Folder to get the figures from
+         */
         // Check https://stackoverflow.com/questions/56663624/how-to-get-free-and-total-size-of-each-storagevolume
         // to see if a better solution compatible with API21 has been found
         // TODO - encapsulate the reflection trick used by getVolumePath
@@ -794,20 +836,25 @@ public class FileHelper {
             }
         }
 
+        /**
+         * Get free usage ratio (0 = all memory full; 100 = all memory free)
+         */
         public double getFreeUsageRatio100() {
             return freeMemBytes * 100.0 / totalMemBytes;
         }
 
+        /**
+         * Get total storage capacity in "traditional" MB (base 1024)
+         */
         public double getTotalSpaceMb() {
             return totalMemBytes * 1.0 / (1024 * 1024);
         }
 
+        /**
+         * Get free storage capacity in "traditional" MB (base 1024)
+         */
         public double getfreeUsageMb() {
             return freeMemBytes * 1.0 / (1024 * 1024);
-        }
-
-        public String formatFreeUsageMb() {
-            return Math.round(getfreeUsageMb()) + "/" + Math.round(getfreeUsageMb());
         }
     }
 
