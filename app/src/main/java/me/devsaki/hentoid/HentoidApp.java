@@ -27,7 +27,6 @@ import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.plugins.RxJavaPlugins;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
-import me.devsaki.hentoid.notification.maintenance.MaintenanceNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
@@ -125,7 +124,6 @@ public class HentoidApp extends Application {
         // Init notification channels
         UpdateNotificationChannel.init(this);
         DownloadNotificationChannel.init(this);
-        MaintenanceNotificationChannel.init(this);
 
         // Clears all previous notifications
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
