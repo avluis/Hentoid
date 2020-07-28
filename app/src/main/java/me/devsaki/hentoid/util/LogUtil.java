@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
-import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -78,8 +77,8 @@ public class LogUtil {
             logStr.append("No activity to report - ").append(info.noDataMessage).append(LINE_SEPARATOR);
         else {
             // Log beginning, end and duration
-            Instant beginning = Stream.of(info.log).filter(l -> l.timestamp != null).min((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
-            Instant end = Stream.of(info.log).filter(l -> l.timestamp != null).max((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
+            Instant beginning = Stream.of(info.log).withoutNulls().min((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
+            Instant end = Stream.of(info.log).withoutNulls().max((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
             long durationMs = end.toEpochMilli() - beginning.toEpochMilli();
             logStr.append("Start : ").append(beginning.toString()).append(LINE_SEPARATOR);
             logStr.append("End : ").append(end.toString()).append(" (").append(durationMs / 1000).append(" s)").append(LINE_SEPARATOR);
