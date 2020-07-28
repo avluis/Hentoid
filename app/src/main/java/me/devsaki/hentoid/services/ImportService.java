@@ -159,7 +159,6 @@ public class ImportService extends IntentService {
         if (null == client) return;
 
         List<DocumentFile> bookFolders = new ArrayList<>();
-        DocumentFile logFile = null;
         CollectionDAO dao = new ObjectBoxDAO(this);
 
         try {
@@ -181,7 +180,7 @@ public class ImportService extends IntentService {
             trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
             trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
 
-            // Cleanup DB
+            // Flag DB content for cleanup
             dao.flagAllInternalBooks();
             dao.flagAllErrorBooksWithJson();
 
@@ -334,12 +333,11 @@ public class ImportService extends IntentService {
 
             // 3rd pass : Import queue JSON
             DocumentFile queueFile = FileHelper.findFile(this, rootFolder, client, Consts.QUEUE_JSON_FILE_NAME);
-            if (queueFile != null) {
-                importQueue(queueFile, dao, log);
-            } else trace(Log.INFO, log, "No queue file found");
+            if (queueFile != null) importQueue(queueFile, dao, log);
+            else trace(Log.INFO, log, "No queue file found");
         } finally {
             // Write log in root folder
-            logFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
+            DocumentFile logFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
 
             // ContentProviderClient.close only available on API level 24+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -348,10 +346,10 @@ public class ImportService extends IntentService {
                 client.release();
 
             dao.deleteAllFlaggedBooks(true);
+            dao.cleanup();
 
             eventComplete(4, bookFolders.size(), booksOK, booksKO, logFile);
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
-            dao.cleanup();
         }
 
         stopForeground(true);

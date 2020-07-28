@@ -97,12 +97,12 @@ public class LogUtil {
 
     @Nullable
     public static DocumentFile writeLog(@Nonnull Context context, @Nonnull LogInfo info) {
-        // Create the log
-        String log = buildLog(info);
-        String logFileName = info.fileName + ".txt";
-
-        // Save it
         try {
+            // Create the log
+            String logFileName = info.fileName + ".txt";
+            String log = buildLog(info);
+
+            // Save it
             DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
             if (null == folder) return null;
 
