@@ -337,10 +337,10 @@ public class ImportService extends IntentService {
             if (queueFile != null) {
                 importQueue(queueFile, dao, log);
             } else trace(Log.INFO, log, "No queue file found");
-
+        } finally {
             // Write log in root folder
             logFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
-        } finally {
+
             // ContentProviderClient.close only available on API level 24+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
                 client.close();
