@@ -137,31 +137,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_or_1" />
 
-    <TextView
-        android:id="@+id/refresh_options_remove_or_2"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
-        android:text="@string/refresh_options_remove_or"
-        android:textSize="@dimen/text_body_1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_2" />
-
-    <CheckBox
-        android:id="@+id/refresh_options_remove_3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="@string/refresh_options_remove_3"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_or_2" />
-
     <androidx.constraintlayout.widget.Group
         android:id="@+id/refresh_options_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="visible"
-        app:constraint_referenced_ids="refresh_options, refresh_options_rename, refresh_options_remove, refresh_options_remove_1, refresh_options_remove_or_1, refresh_options_remove_2, refresh_options_remove_or_2, refresh_options_remove_3" />
+        app:constraint_referenced_ids="refresh_options, refresh_options_rename, refresh_options_remove, refresh_options_remove_1, refresh_options_remove_or_1, refresh_options_remove_2" />
 
     <TextView
         android:id="@+id/refresh_ok"
@@ -177,6 +158,6 @@
         android:paddingBottom="8dp"
         android:text="@android:string/ok"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_3" />
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

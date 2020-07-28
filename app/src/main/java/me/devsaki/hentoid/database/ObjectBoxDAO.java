@@ -200,6 +200,11 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectContentBySourceAndUrl(site, url);
     }
 
+    @Nullable
+    public Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged) {
+        return db.selectContentByFolderUri(folderUri, onlyFlagged);
+    }
+
     public long insertContent(@NonNull final Content content) {
         return db.insertContent(content);
     }
@@ -250,6 +255,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectAllQueueBooksQ().find();
     }
 
+    public void flagAllInternalBooks() {
+        db.flagContentById(db.selectAllInternalBooksQ(false).findIds());
+    }
+
     public void deleteAllInternalBooks(boolean resetRemainingImagesStatus) {
         db.deleteContentById(db.selectAllInternalBooksQ(false).findIds());
 
@@ -261,8 +270,19 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
     }
 
-    public void deleteAllErrorBooksWithJson() {
-        db.deleteContentById(db.selectAllErrorJsonBooksQ().findIds());
+    public void deleteAllFlaggedBooks(boolean resetRemainingImagesStatus) {
+        db.deleteContentById(db.selectAllFlaggedBooksQ().findIds());
+
+        // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
+        if (resetRemainingImagesStatus) {
+            long[] remainingContentIds = db.selectAllQueueBooksQ().findIds();
+            for (long contentId : remainingContentIds)
+                db.updateImageContentStatus(contentId, null, StatusContent.SAVED);
+        }
+    }
+
+    public void flagAllErrorBooksWithJson() {
+        db.flagContentById(db.selectAllErrorJsonBooksQ().findIds());
     }
 
     public void deleteAllQueuedBooks() {

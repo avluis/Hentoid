@@ -56,7 +56,6 @@ public class LibRefreshDialogFragment extends DialogFragment {
     private boolean externalLibrary;
 
     private ViewGroup rootView;
-    private TextView step1Txt;
     private TextView step1FolderButton;
     private TextView step2Txt;
     private ProgressBar step2progress;
@@ -121,7 +120,6 @@ public class LibRefreshDialogFragment extends DialogFragment {
             CheckBox renameChk = requireViewById(rootView, R.id.refresh_options_rename);
             CheckBox cleanAbsentChk = requireViewById(rootView, R.id.refresh_options_remove_1);
             CheckBox cleanNoImagesChk = requireViewById(rootView, R.id.refresh_options_remove_2);
-            CheckBox cleanUnreadableChk = requireViewById(rootView, R.id.refresh_options_remove_3);
             RadioButton externalChk = requireViewById(rootView, R.id.refresh_location_external);
 
             optionsGroup = requireViewById(rootView, R.id.refresh_options_group);
@@ -133,7 +131,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 locationGroup.setVisibility(View.VISIBLE);
 
             View okBtn = requireViewById(rootView, R.id.refresh_ok);
-            okBtn.setOnClickListener(v -> launchRefreshImport(externalChk.isChecked(), renameChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked(), cleanUnreadableChk.isChecked()));
+            okBtn.setOnClickListener(v -> launchRefreshImport(externalChk.isChecked(), renameChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked()));
         } else { // Show import progress layout immediately
             showImportProgressLayout(chooseFolder, externalLibrary);
         }
@@ -145,7 +143,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         else optionsGroup.setVisibility(View.VISIBLE);
     }
 
-    private void launchRefreshImport(boolean isExternal, boolean rename, boolean cleanAbsent, boolean cleanNoImages, boolean cleanUnreadable) {
+    private void launchRefreshImport(boolean isExternal, boolean rename, boolean cleanAbsent, boolean cleanNoImages) {
         showImportProgressLayout(false, isExternal);
         setCancelable(false);
 
@@ -168,7 +166,6 @@ public class LibRefreshDialogFragment extends DialogFragment {
             options.rename = rename;
             options.cleanAbsent = cleanAbsent;
             options.cleanNoImages = cleanNoImages;
-            options.cleanUnreadable = cleanUnreadable;
 
             Uri rootUri = Uri.parse(Preferences.getStorageUri());
             compositeDisposable.add(Single.fromCallable(() -> ImportHelper.setAndScanHentoidFolder(requireContext(), rootUri, false, options))
@@ -191,7 +188,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         LayoutInflater.from(getActivity()).inflate(R.layout.include_import_steps, rootView, true);
 
         // Memorize UI elements that will be updated during the import events
-        step1Txt = rootView.findViewById(R.id.import_step1_text);
+        TextView step1Txt = rootView.findViewById(R.id.import_step1_text);
         step1FolderButton = rootView.findViewById(R.id.import_step1_button);
         step2Txt = rootView.findViewById(R.id.import_step2_text);
         step2progress = rootView.findViewById(R.id.import_step2_bar);

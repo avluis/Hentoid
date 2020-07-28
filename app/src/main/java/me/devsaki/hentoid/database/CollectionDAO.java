@@ -35,6 +35,9 @@ public interface CollectionDAO {
     Content selectContent(long id);
 
     @Nullable
+    Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged);
+
+    @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url);
 
     long insertContent(@NonNull final Content content);
@@ -58,17 +61,23 @@ public interface CollectionDAO {
 
     List<Content> selectAllInternalBooks(boolean favsOnly);
 
+    void flagAllInternalBooks();
+
     void deleteAllInternalBooks(boolean resetRemainingImagesStatus);
 
     // Queued books
 
-    void deleteAllErrorBooksWithJson();
+    void flagAllErrorBooksWithJson();
 
     long countAllQueueBooks();
 
     List<Content> selectAllQueueBooks();
 
     void deleteAllQueuedBooks();
+
+    // Flagging
+
+    void deleteAllFlaggedBooks(boolean resetRemainingImagesStatus);
 
     // External library
 

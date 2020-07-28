@@ -190,6 +190,21 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build();
     }
 
+    Query<Content> selectAllFlaggedBooksQ() {
+        return store.boxFor(Content.class).query().equal(Content_.isFlaggedForDeletion, true).build();
+    }
+
+    void flagContentById(long[] contentId) {
+        Box<Content> contentBox = store.boxFor(Content.class);
+        for (long id : contentId) {
+            Content c = contentBox.get(id);
+            if (c != null) {
+                c.setFlaggedForDeletion(true);
+                contentBox.put(c);
+            }
+        }
+    }
+
     void deleteContent(Content content) {
         deleteContentById(content.getId());
     }
@@ -302,6 +317,14 @@ public class ObjectBoxDB {
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url) {
         return store.boxFor(Content.class).query().equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
+    }
+
+    @Nullable
+    Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged) {
+        QueryBuilder<Content> queryBuilder = store.boxFor(Content.class).query().equal(Content_.storageUri, folderUri);
+        if (onlyFlagged) queryBuilder.equal(Content_.isFlaggedForDeletion, true);
+
+        return queryBuilder.build().findFirst();
     }
 
     private static long[] getIdsFromAttributes(@NonNull List<Attribute> attrs) {

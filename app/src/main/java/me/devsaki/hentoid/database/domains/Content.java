@@ -81,10 +81,9 @@ public class Content implements Serializable {
     private int lastReadPageIndex = 0;
     @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
     private Map<String, String> bookPreferences = new HashMap<>();
-
-    // Temporary during SAVED state only; no need to expose them for JSON persistence
+    // Temporary during SAVED state only
     private String downloadParams;
-    // Temporary during ERROR state only; no need to expose them for JSON persistence
+    // Temporary during ERROR state only
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
     // Needs to be in the DB to keep the information when deletion takes a long time
@@ -93,6 +92,8 @@ public class Content implements Serializable {
     // Needs to be in the DB to optimize I/O
     // No need to save that into the JSON file itself, obviously
     private String jsonUri;
+    // Useful only during cleanup operations; no need to get it into the JSON
+    private boolean isFlaggedForDeletion = false;
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
@@ -684,6 +685,14 @@ public class Content implements Serializable {
 
     public void setJsonUri(String jsonUri) {
         this.jsonUri = jsonUri;
+    }
+
+    public boolean isFlaggedForDeletion() {
+        return isFlaggedForDeletion;
+    }
+
+    public void setFlaggedForDeletion(boolean flaggedForDeletion) {
+        isFlaggedForDeletion = flaggedForDeletion;
     }
 
     public int getNumberDownloadRetries() {
