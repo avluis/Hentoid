@@ -447,7 +447,7 @@ public final class ContentHelper {
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl("").setStatus(status).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.getUri().toString()).setStatus(status).setFileUri(f.getUri().toString()).setSize(f.length());
             img.setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(name)));
             result.add(img);
         }

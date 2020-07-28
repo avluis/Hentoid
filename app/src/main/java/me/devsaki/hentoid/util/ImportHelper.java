@@ -340,17 +340,18 @@ public class ImportHelper {
             String title = bookFolder.getName();
             result = new Content().setSite(Site.NONE).setTitle((null == title) ? "" : title).setUrl("");
             result.setDownloadDate(bookFolder.lastModified());
-            result.addAttributes(parentNamesAsTags(parentNames));
+            result.addAttributes(parentNamesAsTags(parentNames, targetStatus.equals(StatusContent.EXTERNAL)));
         }
 
         result.setStatus(targetStatus).setStorageUri(bookFolder.getUri().toString());
         List<ImageFile> images = new ArrayList<>();
-        scanImages(context, bookFolder, client, false, images, imageFiles);
+        scanImages(context, bookFolder, client, targetStatus, false, images, imageFiles);
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
         result.setImageFiles(images);
         if (0 == result.getQtyPages())
             result.setQtyPages(images.size() - 1); // Minus the cover
+        result.computeSize();
         return result;
     }
 
@@ -376,19 +377,20 @@ public class ImportHelper {
         if (null == result) {
             result = new Content().setSite(Site.NONE).setTitle((null == parent.getName()) ? "" : parent.getName()).setUrl("");
             result.setDownloadDate(parent.lastModified());
-            result.addAttributes(parentNamesAsTags(parentNames));
+            result.addAttributes(parentNamesAsTags(parentNames, true));
         }
 
         result.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.getUri().toString());
         List<ImageFile> images = new ArrayList<>();
         // Scan pages across all subfolders
         for (DocumentFile chapterFolder : chapterFolders)
-            scanImages(context, chapterFolder, client, true, images, null);
+            scanImages(context, chapterFolder, client, StatusContent.EXTERNAL, true, images, null);
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
         result.setImageFiles(images);
         if (0 == result.getQtyPages())
             result.setQtyPages(images.size() - 1); // Minus the cover
+        result.computeSize();
         return result;
     }
 
@@ -396,6 +398,7 @@ public class ImportHelper {
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
             @NonNull final ContentProviderClient client,
+            @NonNull final StatusContent targetStatus,
             boolean addFolderNametoImgName,
             @NonNull final List<ImageFile> images,
             @Nullable List<DocumentFile> imageFiles) {
@@ -407,7 +410,7 @@ public class ImportHelper {
         String namePrefix = "";
         if (addFolderNametoImgName) namePrefix = folderName + "-";
 
-        images.addAll(ContentHelper.createImageListFromFiles(imageFiles, StatusContent.EXTERNAL, order, namePrefix));
+        images.addAll(ContentHelper.createImageListFromFiles(imageFiles, targetStatus, order, namePrefix));
     }
 
     private static void createCover(@NonNull final List<ImageFile> images) {
@@ -422,7 +425,7 @@ public class ImportHelper {
         }
     }
 
-    private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames) {
+    private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames, boolean addExternalTag) {
         AttributeMap result = new AttributeMap();
         // Don't include the very first one, it's the name of the root folder of the library
         if (parentNames.size() > 1) {
@@ -430,7 +433,8 @@ public class ImportHelper {
                 result.add(new Attribute(AttributeType.TAG, parentNames.get(i), parentNames.get(i), Site.NONE));
         }
         // Add a generic tag to filter external library books
-        result.add(new Attribute(AttributeType.TAG, "external-library", "external-library", Site.NONE));
+        if (addExternalTag)
+            result.add(new Attribute(AttributeType.TAG, "external-library", "external-library", Site.NONE));
         return result;
     }
 }

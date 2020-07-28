@@ -215,7 +215,8 @@ public class ImportService extends IntentService {
 
                         // If the very same book still exists in the DB at this point, it means it's present in the queue
                         // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
-                        if (dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl()) != null) {
+                        Content existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
+                        if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
                             booksKO++;
                             trace(Log.INFO, log, "Import book KO! (already in queue) : %s", bookFolder.getUri().toString());
                             continue;
