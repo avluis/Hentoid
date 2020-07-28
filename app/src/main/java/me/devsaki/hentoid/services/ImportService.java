@@ -108,7 +108,6 @@ public class ImportService extends IntentService {
         boolean doRename = false;
         boolean doCleanAbsent = false;
         boolean doCleanNoImages = false;
-        boolean doCleanUnreadable = false;
 
         if (intent != null && intent.getExtras() != null) {
             ImportActivityBundle.Parser parser = new ImportActivityBundle.Parser(intent.getExtras());
