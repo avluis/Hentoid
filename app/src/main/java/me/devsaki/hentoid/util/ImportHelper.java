@@ -343,7 +343,7 @@ public class ImportHelper {
             // Remove expressions between []'s
             title = title.replaceAll("\\[[^(\\[\\])]*\\]", "");
             title = title.trim();
-            result = new Content().setSite(Site.NONE).setTitle(title).setUrl("");
+            result = new Content().setSite(Site.NONE).setTitle(title).setUrl(bookFolder.getUri().toString());
             result.setDownloadDate(bookFolder.lastModified());
             result.addAttributes(parentNamesAsTags(parentNames, targetStatus.equals(StatusContent.EXTERNAL)));
         }
