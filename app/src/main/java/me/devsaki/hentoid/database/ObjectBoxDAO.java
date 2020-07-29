@@ -256,7 +256,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void flagAllInternalBooks() {
-        db.flagContentById(db.selectAllInternalBooksQ(false).findIds());
+        db.flagContentById(db.selectAllInternalBooksQ(false).findIds(), true);
     }
 
     public void deleteAllInternalBooks(boolean resetRemainingImagesStatus) {
@@ -282,7 +282,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void flagAllErrorBooksWithJson() {
-        db.flagContentById(db.selectAllErrorJsonBooksQ().findIds());
+        db.flagContentById(db.selectAllErrorJsonBooksQ().findIds(), true);
     }
 
     public void deleteAllQueuedBooks() {

@@ -48,6 +48,11 @@ public class DatabaseMaintenance {
             db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
             Timber.i("Updating queue status : done");
 
+            // Unflag all books marked for deletion
+            Timber.i("Unflag books : start");
+            db.flagContentById(db.selectAllFlaggedBooksQ().findIds(), false);
+            Timber.i("Unflag books : done");
+
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
             Timber.i("Moving back isolated items to queue : start");
             List<Content> contents = db.selectContentByStatus(StatusContent.PAUSED);

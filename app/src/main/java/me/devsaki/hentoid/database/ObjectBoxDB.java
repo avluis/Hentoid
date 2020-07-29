@@ -194,12 +194,12 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.isFlaggedForDeletion, true).build();
     }
 
-    void flagContentById(long[] contentId) {
+    void flagContentById(long[] contentId, boolean flag) {
         Box<Content> contentBox = store.boxFor(Content.class);
         for (long id : contentId) {
             Content c = contentBox.get(id);
             if (c != null) {
-                c.setFlaggedForDeletion(true);
+                c.setFlaggedForDeletion(flag);
                 contentBox.put(c);
             }
         }
