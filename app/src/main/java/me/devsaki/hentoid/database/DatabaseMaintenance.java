@@ -12,6 +12,7 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.BiConsumer;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import timber.log.Timber;
 
@@ -52,6 +53,10 @@ public class DatabaseMaintenance {
             Timber.i("Unflag books : start");
             db.flagContentById(db.selectAllFlaggedBooksQ().findIds(), false);
             Timber.i("Unflag books : done");
+
+            // TEMP
+            db.cleanupContentSourceAndUrl(Site.NONE, "");
+            // TEMP
 
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
             Timber.i("Moving back isolated items to queue : start");

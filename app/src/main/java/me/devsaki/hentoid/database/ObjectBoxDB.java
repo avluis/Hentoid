@@ -320,6 +320,16 @@ public class ObjectBoxDB {
     }
 
     @Nullable
+    public void cleanupContentSourceAndUrl(@NonNull Site site, @NonNull String url) {
+        Box<Content> contentBox = store.boxFor(Content.class);
+        List<Content> contents = store.boxFor(Content.class).query().equal(Content_.url, url).equal(Content_.site, site.getCode()).build().find();
+        for (Content c : contents) {
+            c.setUrl(c.getStorageUri());
+            contentBox.put(c);
+        }
+    }
+
+    @Nullable
     Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged) {
         QueryBuilder<Content> queryBuilder = store.boxFor(Content.class).query().equal(Content_.storageUri, folderUri);
         if (onlyFlagged) queryBuilder.equal(Content_.isFlaggedForDeletion, true);
