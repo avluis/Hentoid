@@ -338,7 +338,12 @@ public class ImportHelper {
         }
         if (null == result) {
             String title = bookFolder.getName();
-            result = new Content().setSite(Site.NONE).setTitle((null == title) ? "" : title).setUrl("");
+            if (null == title) title = "";
+            title = title.replace("_", " ");
+            // Remove expressions between []'s
+            title = title.replaceAll("\\[[^(\\[\\])]*\\]", "");
+            title = title.trim();
+            result = new Content().setSite(Site.NONE).setTitle(title).setUrl("");
             result.setDownloadDate(bookFolder.lastModified());
             result.addAttributes(parentNamesAsTags(parentNames, targetStatus.equals(StatusContent.EXTERNAL)));
         }
