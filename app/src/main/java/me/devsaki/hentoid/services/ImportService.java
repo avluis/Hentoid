@@ -19,9 +19,9 @@ import com.annimon.stream.Stream;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -305,7 +305,18 @@ public class ImportService extends IntentService {
                         }
                     } else { // If not, rebuild the book and regenerate the JSON according to stored data
                         try {
-                            Content storedContent = ImportHelper.scanBookFolder(this, bookFolder, client, Collections.emptyList(), StatusContent.DOWNLOADED, null, null);
+                            List<String> parentFolder = new ArrayList<>();
+                            // Try and detect the site according to the parent folder
+                            String[] parents = bookFolder.getUri().getPath().split("/"); // _not_ File.separator but the universal Uri separator
+                            if (parents.length > 1) {
+                                for (Site s : Site.values())
+                                    if (parents[parents.length - 2].equalsIgnoreCase(s.getFolder())) {
+                                        parentFolder.add(s.getFolder());
+                                        break;
+                                    }
+                            }
+                            // Scan the folder
+                            Content storedContent = ImportHelper.scanBookFolder(this, bookFolder, client, parentFolder, StatusContent.DOWNLOADED, null, null);
                             DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
                             storedContent.setJsonUri(newJson.getUri().toString());
                             dao.insertContent(storedContent);
