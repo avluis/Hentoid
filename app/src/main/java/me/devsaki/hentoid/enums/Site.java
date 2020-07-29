@@ -36,8 +36,8 @@ public enum Site {
 
     private final int code;
     private final String description;
-    private final String uniqueKeyword;
     private final String url;
+    private final String uniqueKeyword;
     private final int ico;
     private final boolean canKnowHentoidAgent;
     private final boolean hasImageProcessing;
