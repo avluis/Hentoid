@@ -6,12 +6,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
 import org.threeten.bp.Instant;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -29,15 +31,25 @@ public class LogUtil {
     public static class LogEntry {
         private final Instant timestamp;
         private final String message;
+        private final int chapter;
+        private final boolean isError;
 
-        public LogEntry(@NonNull String message) {
+        public LogEntry(@NonNull String message, int chapter, boolean isError) {
             this.timestamp = Instant.now();
             this.message = message;
+            this.chapter = chapter;
+            this.isError = isError;
         }
 
         public LogEntry(@NonNull Instant timestamp, @NonNull String message) {
             this.timestamp = timestamp;
             this.message = message;
+            this.chapter = 0;
+            this.isError = false;
+        }
+
+        public Integer getChapter() {
+            return chapter;
         }
     }
 
@@ -81,13 +93,18 @@ public class LogUtil {
             Instant end = Stream.of(info.log).withoutNulls().max((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
             long durationMs = end.toEpochMilli() - beginning.toEpochMilli();
             logStr.append("Start : ").append(beginning.toString()).append(LINE_SEPARATOR);
-            logStr.append("End : ").append(end.toString()).append(" (").append(durationMs / 1000).append(" s)").append(LINE_SEPARATOR);
+            logStr.append("End : ").append(end.toString()).append(" (").append(Helper.formatTime(durationMs)).append(")").append(LINE_SEPARATOR);
             logStr.append("-----").append(LINE_SEPARATOR);
 
-            // Log header and entries
+            // Log header
             if (!info.header.isEmpty()) logStr.append(info.header).append(LINE_SEPARATOR);
-            for (LogEntry entry : info.log)
-                logStr.append(entry.message).append(LINE_SEPARATOR);
+            // Log entries in chapter order, with errors first
+            Map<Integer, List<LogEntry>> logChapters = Stream.of(info.log).collect(Collectors.groupingBy(LogEntry::getChapter));
+            for (List<LogEntry> chapter : logChapters.values()) {
+                List<LogEntry> logChapterWithErrorsFirst = Stream.of(chapter).sortBy(l -> !l.isError).toList();
+                for (LogEntry entry : logChapterWithErrorsFirst)
+                    logStr.append(entry.message).append(LINE_SEPARATOR);
+            }
         }
 
         logStr.append(info.logName).append(" log : end");
@@ -107,7 +124,8 @@ public class LogUtil {
             if (null == folder) return null;
 
             DocumentFile logDocumentFile = FileHelper.findOrCreateDocumentFile(context, folder, "text/plain", logFileName);
-            FileHelper.saveBinaryInFile(context, logDocumentFile, log.getBytes());
+            if (logDocumentFile != null)
+                FileHelper.saveBinaryInFile(context, logDocumentFile, log.getBytes());
             return logDocumentFile;
         } catch (Exception e) {
             Timber.e(e);

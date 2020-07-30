@@ -107,10 +107,11 @@ public class API29MigrationService extends IntentService {
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
+    private void trace(int priority, int chapter, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
         s = String.format(s, (Object[]) t);
         Timber.log(priority, s);
-        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s));
+        boolean isError = (priority > Log.INFO);
+        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s, chapter, isError));
     }
 
 
@@ -125,11 +126,11 @@ public class API29MigrationService extends IntentService {
             Timber.e("rootFolder is not defined (%s)", Preferences.getStorageUri());
             return;
         }
-        trace(Log.INFO, log, "Using root folder %s", rootFolder.getUri().toString());
+        trace(Log.INFO, 0, log, "Using root folder %s", rootFolder.getUri().toString());
 
         // 1st pass : cache all book folders
         List<DocumentFile> siteFolders = FileHelper.listFolders(this, rootFolder);
-        trace(Log.INFO, log, "%s site folders detected", siteFolders.size() + "");
+        trace(Log.INFO, 0, log, "%s site folders detected", siteFolders.size() + "");
 
         List<DocumentFile> bookFolders;
         int foldersCount = 1;
@@ -139,7 +140,7 @@ public class API29MigrationService extends IntentService {
             for (DocumentFile bookFolder : bookFolders)
                 siteFoldersCache.put(bookFolder.getName(), bookFolder);
             bookFoldersCache.put(siteFolder.getName(), siteFoldersCache);
-            trace(Log.INFO, log, "Site %s : %s book folders detected", siteFolder.getName(), siteFoldersCache.size() + "");
+            trace(Log.INFO, 0, log, "Site %s : %s book folders detected", siteFolder.getName(), siteFoldersCache.size() + "");
             eventProgress(2, siteFolders.size(), foldersCount++, 0);
         }
 
@@ -170,7 +171,7 @@ public class API29MigrationService extends IntentService {
         int booksOK = 0;                        // Number of books imported
         int booksKO = 0;                        // Number of folders found with no valid book inside
 
-        trace(Log.DEBUG, log, "Library migration starting - books to process : %s", contentIds.size() + "");
+        trace(Log.DEBUG, 0, log, "Library migration starting - books to process : %s", contentIds.size() + "");
 
         ContentProviderClient client = this.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
         if (null == client) return;
@@ -182,7 +183,7 @@ public class API29MigrationService extends IntentService {
                         // Set the book's storage URI
                         Map<String, DocumentFile> siteFolder = bookFoldersCache.get(content.getSite().getDescription());
                         if (null == siteFolder) {
-                            trace(Log.WARN, log, "Migrate book KO : site folder %s not found for %s [%s]", content.getSite().getDescription(), content.getTitle(), contentId + "");
+                            trace(Log.WARN, 1, log, "Migrate book KO : site folder %s not found for %s [%s]", content.getSite().getDescription(), content.getTitle(), contentId + "");
                             content.resetStorageFolder();
                             dao.insertContent(content);
                             booksKO++;
@@ -194,7 +195,7 @@ public class API29MigrationService extends IntentService {
                         String bookFolderName = contentFolderParts[contentFolderParts.length - 1];
                         DocumentFile bookFolder = siteFolder.get(bookFolderName);
                         if (null == bookFolder) {
-                            trace(Log.WARN, log, "Migrate book KO : book folder %s not found in %s for %s [%s]", bookFolderName, content.getSite().getDescription(), content.getTitle(), contentId + "");
+                            trace(Log.WARN, 1, log, "Migrate book KO : book folder %s not found in %s for %s [%s]", bookFolderName, content.getSite().getDescription(), content.getTitle(), contentId + "");
                             content.resetStorageFolder();
                             dao.insertContent(content);
                             booksKO++;
@@ -243,11 +244,11 @@ public class API29MigrationService extends IntentService {
                         dao.replaceImageList(contentId, contentImages);
 
                         booksOK++;
-                        trace(Log.INFO, log, "Migrate book OK : %s", bookFolder.getUri().toString());
+                        trace(Log.INFO, 1, log, "Migrate book OK : %s", bookFolder.getUri().toString());
                     } catch (Exception e) {
                         Timber.w(e);
                         booksKO++;
-                        trace(Log.ERROR, log, "Migrate book ERROR : %s for Content %s [%s]", e.getMessage(), content.getTitle(), contentId + "");
+                        trace(Log.ERROR, 1, log, "Migrate book ERROR : %s for Content %s [%s]", e.getMessage(), content.getTitle(), contentId + "");
                     }
                 } else booksKO++; // null books (content ID not found in DB)
 
@@ -260,7 +261,7 @@ public class API29MigrationService extends IntentService {
             else
                 client.release();
         }
-        trace(Log.INFO, log, "Migration complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", contentIds.size() + "");
+        trace(Log.INFO, 2, log, "Migration complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", contentIds.size() + "");
 
         // Write cleanup log in root folder
         DocumentFile migrationLogFile = LogUtil.writeLog(this, buildLogInfo(log));
