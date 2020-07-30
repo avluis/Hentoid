@@ -319,14 +319,8 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
     }
 
-    @Nullable
-    public void cleanupContentSourceAndUrl(@NonNull Site site, @NonNull String url) {
-        Box<Content> contentBox = store.boxFor(Content.class);
-        List<Content> contents = store.boxFor(Content.class).query().equal(Content_.url, url).equal(Content_.site, site.getCode()).build().find();
-        for (Content c : contents) {
-            c.setUrl(c.getStorageUri());
-            contentBox.put(c);
-        }
+    List<Content> selectContentBySource(@NonNull Site site) {
+        return store.boxFor(Content.class).query().equal(Content_.site, site.getCode()).build().find();
     }
 
     @Nullable

@@ -3,7 +3,9 @@ package me.devsaki.hentoid.database;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,9 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
 public class DatabaseMaintenance {
@@ -30,6 +35,7 @@ public class DatabaseMaintenance {
     public static List<Observable<Float>> getCleanupTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
+        result.add(createObservableFrom(context, DatabaseMaintenance::tempProcessing));
         result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties2));
@@ -54,10 +60,6 @@ public class DatabaseMaintenance {
             db.flagContentById(db.selectAllFlaggedBooksQ().findIds(), false);
             Timber.i("Unflag books : done");
 
-            // TEMP
-            db.cleanupContentSourceAndUrl(Site.NONE, "");
-            // TEMP
-
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
             Timber.i("Moving back isolated items to queue : start");
             List<Content> contents = db.selectContentByStatus(StatusContent.PAUSED);
@@ -73,6 +75,33 @@ public class DatabaseMaintenance {
                 }
             }
             Timber.i("Moving back isolated items to queue : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void tempProcessing(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Clear temporary books created from browsing a book page without downloading it (since versionCode 60 / v1.3.7)
+            List<Content> contents = db.selectContentBySource(Site.NONE);
+            int max = contents.size();
+            float pos = 1;
+            for (Content c : contents) {
+                c.setUrl(c.getStorageUri());
+                DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, c.getStorageUri());
+                if (bookFolder != null) {
+                    try {
+                        DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(c), JsonContent.class, bookFolder);
+                        c.setJsonUri(newJson.getUri().toString());
+                    } catch (IOException e) {
+                        Timber.e(e);
+                    }
+                }
+                db.insertContent(c);
+                emitter.onNext(pos++ / max);
+            }
         } finally {
             db.closeThreadResources();
             emitter.onComplete();
