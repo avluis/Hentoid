@@ -105,10 +105,11 @@ public class ExternalImportService extends IntentService {
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
+    private void trace(int priority, int chapter, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
         s = String.format(s, (Object[]) t);
         Timber.log(priority, s);
-        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s));
+        boolean isError = (priority > Log.INFO);
+        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s, chapter, isError));
     }
 
 
@@ -141,7 +142,7 @@ public class ExternalImportService extends IntentService {
             eventComplete(2, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
-            trace(Log.DEBUG, log, "Import books starting - initial detected count : %s", library.size() + "");
+            trace(Log.DEBUG, 0, log, "Import books starting - initial detected count : %s", library.size() + "");
             dao.deleteAllExternalBooks();
 
             for (Content content : library) {
@@ -151,17 +152,17 @@ public class ExternalImportService extends IntentService {
                         jsonUri = getJsonFor(content, client);
                     } catch (IOException ioe) {
                         Timber.w(ioe); // Not blocking
-                        trace(Log.WARN, log, "Could not create JSON in %s", content.getStorageUri());
+                        trace(Log.WARN, 1, log, "Could not create JSON in %s", content.getStorageUri());
                     }
                     if (jsonUri != null) content.setJsonUri(jsonUri.toString());
                 }
                 dao.insertContent(content);
-                trace(Log.INFO, log, "Import book OK : %s", content.getStorageUri());
+                trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;
                 notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, library.size()));
                 eventProgress(3, library.size(), booksOK, booksKO);
             }
-            trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", library.size() + "");
+            trace(Log.INFO, 2, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", library.size() + "");
             eventComplete(3, library.size(), booksOK, booksKO, null);
 
             // Write log in root folder
