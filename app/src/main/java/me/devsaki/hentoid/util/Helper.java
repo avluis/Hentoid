@@ -200,4 +200,42 @@ public final class Helper {
             throw new IllegalStateException("This should not be run on the UI thread");
         }
     }
+
+    /// <summary>
+    /// Format the given duration using the following format
+    ///     DDdHH:MM:SS
+    ///
+    ///  Where
+    ///     DD is the number of days, if applicable (i.e. durations of less than 1 day won't display the "DDd" part)
+    ///     HH is the number of hours, if applicable (i.e. durations of less than 1 hour won't display the "HH:" part)
+    ///     MM is the number of minutes
+    ///     SS is the number of seconds
+    /// </summary>
+    /// <param name="seconds">Duration to format (in seconds)</param>
+    /// <returns>Formatted duration according to the abovementioned convention</returns>
+
+    /**
+     * Format the given duration using the HH:MM:SS format
+     *
+     * @param ms Duration to format, in milliseconds
+     * @return FormattedDuration
+     */
+    public static String formatTime(long ms) {
+        long seconds = (long) Math.floor(ms / 1000f);
+        int h = (int) Math.floor(seconds / 3600f);
+        int m = (int) Math.floor((seconds - 3600f * h) / 60);
+        long s = seconds - (60 * m) - (3600 * h);
+
+        String hStr = String.valueOf(h);
+        if (1 == hStr.length()) hStr = "0" + hStr;
+        String mStr = String.valueOf(m);
+        if (1 == mStr.length()) mStr = "0" + mStr;
+        String sStr = String.valueOf(s);
+        if (1 == sStr.length()) sStr = "0" + sStr;
+
+        if (h > 0)
+            return hStr + ":" + mStr + ":" + sStr;
+        else
+            return mStr + ":" + sStr;
+    }
 }
