@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.preferences;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -68,6 +70,8 @@ public class LibRefreshDialogFragment extends DialogFragment {
     private ProgressBar step4progress;
     private View step4check;
     private Group optionsGroup;
+
+    private boolean isServiceGracefulClose = false;
 
     // Disposable for RxJava
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -340,8 +344,23 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step4block.setVisibility(View.VISIBLE);
             } else if (4 == event.step) {
                 step4check.setVisibility(View.VISIBLE);
+                isServiceGracefulClose = true;
                 dismiss();
             }
+        }
+    }
+
+    /**
+     * Service destroyed event handler
+     *
+     * @param event Broadcasted event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServiceDestroyed(ServiceDestroyedEvent event) {
+        if (event.service != ServiceDestroyedEvent.Service.IMPORT) return;
+        if (!isServiceGracefulClose) {
+            Snackbar.make(rootView, R.string.import_unexpected, BaseTransientBottomBar.LENGTH_LONG).show();
+            new Handler().postDelayed(this::dismiss, 3000);
         }
     }
 }
