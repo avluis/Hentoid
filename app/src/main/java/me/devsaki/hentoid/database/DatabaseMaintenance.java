@@ -14,7 +14,6 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.BiConsumer;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.util.FileHelper;
@@ -35,7 +34,7 @@ public class DatabaseMaintenance {
     public static List<Observable<Float>> getCleanupTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
-        result.add(createObservableFrom(context, DatabaseMaintenance::tempProcessing));
+        result.add(createObservableFrom(context, DatabaseMaintenance::fixEmptyUrls));
         result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties2));
@@ -81,11 +80,13 @@ public class DatabaseMaintenance {
         }
     }
 
-    private static void tempProcessing(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+    private static void fixEmptyUrls(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         try {
-            // Clear temporary books created from browsing a book page without downloading it (since versionCode 60 / v1.3.7)
-            List<Content> contents = db.selectContentBySource(Site.NONE);
+            // Fix books with empty URLs (might cause issues since source and URLs are sometimes used as unique identifier)
+            Timber.i("Fix empty URLs : start");
+            List<Content> contents = db.selectContentWithEmptyUrls();
+            Timber.i("Fix empty URLs : %s books detected", contents.size());
             int max = contents.size();
             float pos = 1;
             for (Content c : contents) {
@@ -102,6 +103,7 @@ public class DatabaseMaintenance {
                 db.insertContent(c);
                 emitter.onNext(pos++ / max);
             }
+            Timber.i("Fix empty URLs : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();
