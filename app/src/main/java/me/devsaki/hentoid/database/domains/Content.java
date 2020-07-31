@@ -160,6 +160,8 @@ public class Content implements Serializable {
         String[] paths;
 
         if (null == url) return "";
+        // Fallback URLs made with storage URI's
+        if (url.startsWith("content://")) return Integer.toString(url.hashCode());
 
         switch (site) {
             case FAKKU:
