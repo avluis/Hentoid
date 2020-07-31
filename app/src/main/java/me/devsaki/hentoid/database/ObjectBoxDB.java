@@ -316,11 +316,7 @@ public class ObjectBoxDB {
 
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url) {
-        return store.boxFor(Content.class).query().equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
-    }
-
-    List<Content> selectContentWithEmptyUrls() {
-        return store.boxFor(Content.class).query().equal(Content_.url, "").or().isNull(Content_.url).build().find();
+        return store.boxFor(Content.class).query().notEqual(Content_.url, "").equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
     }
 
     @Nullable

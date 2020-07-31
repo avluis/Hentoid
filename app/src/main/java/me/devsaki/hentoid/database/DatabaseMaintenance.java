@@ -3,9 +3,7 @@ package me.devsaki.hentoid.database;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.documentfile.provider.DocumentFile;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,9 +13,6 @@ import io.reactivex.functions.BiConsumer;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.json.JsonContent;
-import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
 public class DatabaseMaintenance {
@@ -34,7 +29,6 @@ public class DatabaseMaintenance {
     public static List<Observable<Float>> getCleanupTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
-        result.add(createObservableFrom(context, DatabaseMaintenance::fixEmptyUrls));
         result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties2));
@@ -74,36 +68,6 @@ public class DatabaseMaintenance {
                 }
             }
             Timber.i("Moving back isolated items to queue : done");
-        } finally {
-            db.closeThreadResources();
-            emitter.onComplete();
-        }
-    }
-
-    private static void fixEmptyUrls(@NonNull final Context context, ObservableEmitter<Float> emitter) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        try {
-            // Fix books with empty URLs (might cause issues since source and URLs are sometimes used as unique identifier)
-            Timber.i("Fix empty URLs : start");
-            List<Content> contents = db.selectContentWithEmptyUrls();
-            Timber.i("Fix empty URLs : %s books detected", contents.size());
-            int max = contents.size();
-            float pos = 1;
-            for (Content c : contents) {
-                c.setUrl(c.getStorageUri());
-                DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, c.getStorageUri());
-                if (bookFolder != null) {
-                    try {
-                        DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(c), JsonContent.class, bookFolder);
-                        c.setJsonUri(newJson.getUri().toString());
-                    } catch (IOException e) {
-                        Timber.e(e);
-                    }
-                }
-                db.insertContent(c);
-                emitter.onNext(pos++ / max);
-            }
-            Timber.i("Fix empty URLs : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

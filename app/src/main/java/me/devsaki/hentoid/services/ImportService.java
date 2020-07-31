@@ -208,10 +208,6 @@ public class ImportService extends IntentService {
                 try {
                     content = importJson(bookFolder, client);
                     if (content != null) {
-
-                        // Fix contents with empty URL's
-                        if (content.getUrl().isEmpty()) content.setUrl(content.getStorageUri());
-
                         // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
                         if (existingFlaggedContent != null)
                             dao.deleteContent(existingFlaggedContent);
