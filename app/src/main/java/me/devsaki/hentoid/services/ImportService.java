@@ -35,6 +35,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.ContentV1;
 import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
@@ -95,7 +96,8 @@ public class ImportService extends IntentService {
     @Override
     public void onDestroy() {
         running = false;
-        notificationManager.cancel();
+        if (notificationManager != null) notificationManager.cancel();
+        EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.IMPORT));
         Timber.w("Service destroyed");
 
         super.onDestroy();
@@ -206,7 +208,6 @@ public class ImportService extends IntentService {
                 try {
                     content = importJson(bookFolder, client);
                     if (content != null) {
-
                         // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
                         if (existingFlaggedContent != null)
                             dao.deleteContent(existingFlaggedContent);

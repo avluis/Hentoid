@@ -716,7 +716,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private @ContentStatus
     int processContent(@NonNull Content content, boolean quickDownload) {
         @ContentStatus int result = ContentStatus.UNKNOWN;
-        if (null == content.getUrl()) return result;
+        if (content.getUrl().isEmpty()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
         Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl());

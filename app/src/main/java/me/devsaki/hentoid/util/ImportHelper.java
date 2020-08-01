@@ -353,7 +353,7 @@ public class ImportHelper {
                             break;
                         }
             }
-            result.setSite(site).setUrl(bookFolder.getUri().toString());
+            result.setSite(site);
             result.setDownloadDate(bookFolder.lastModified());
             result.addAttributes(parentNamesAsTags(parentNames, targetStatus.equals(StatusContent.EXTERNAL)));
         }

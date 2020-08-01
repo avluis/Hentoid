@@ -6,10 +6,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 public class ServiceDestroyedEvent {
-    @IntDef({Service.DOWNLOAD})
+    @IntDef({Service.DOWNLOAD, Service.IMPORT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Service {
         int DOWNLOAD = 0; // Download service
+        int IMPORT = 1; // Import service
     }
 
     public final @Service

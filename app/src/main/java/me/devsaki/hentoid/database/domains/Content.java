@@ -307,7 +307,7 @@ public class Content implements Serializable {
     }
 
     public String getUrl() {
-        return url;
+        return (null == url) ? "" : url;
     }
 
     public Content setUrl(String url) {
