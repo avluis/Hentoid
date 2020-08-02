@@ -78,6 +78,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
     // == FASTADAPTER COMPONENTS AND HELPERS
     private FastAdapter<ContentItem> fastAdapter;
+    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
     private SelectExtension<ContentItem> selectExtension;
     // Helper for swiping items
     private ItemTouchHelper touchHelper;
@@ -89,8 +90,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     private long contentIdToDisplayFirst = -1;
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
-
-    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
 
 
     @Override
