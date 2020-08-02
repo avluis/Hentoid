@@ -22,7 +22,6 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
-import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.select.SelectExtension;
 
@@ -51,6 +50,7 @@ public class ImageGalleryFragment extends Fragment {
     private ImageViewerViewModel viewModel;
 
     // === UI
+    private Toolbar toolbar;
     private Toolbar selectionToolbar;
     private MenuItem itemSetCover;
     private MenuItem showFavouritePagesButton;
@@ -123,7 +123,7 @@ public class ImageGalleryFragment extends Fragment {
         recyclerView.setAdapter(fastAdapter);
         new FastScrollerBuilder(recyclerView).build();
 
-        Toolbar toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
+        toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
@@ -141,7 +141,6 @@ public class ImageGalleryFragment extends Fragment {
             selectionToolbar.setVisibility(View.GONE);
         });
         selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
-
 
         return rootView;
     }
@@ -173,7 +172,7 @@ public class ImageGalleryFragment extends Fragment {
             if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
             imgs.add(holder);
         }
-        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs);
+        itemAdapter.set(imgs);
         updateListFilter();
         updateFavouriteDisplay();
     }
@@ -304,12 +303,14 @@ public class ImageGalleryFragment extends Fragment {
 
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
+            toolbar.setVisibility(View.VISIBLE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
             new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
+            toolbar.setVisibility(View.GONE);
         }
     }
 
