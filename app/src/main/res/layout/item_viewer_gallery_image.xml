@@ -3,13 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_gallery_card"
+    android:clickable="true"
+    android:focusable="true">
 
     <ImageView
         android:id="@+id/viewer_gallery_image"
-        android:layout_width="0dp"
-        android:layout_height="150dp"
-        android:minWidth="80dp"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:duplicateParentState="true"
+        android:focusable="false"
+        android:maxHeight="150dp"
+        android:minHeight="100dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
@@ -32,18 +39,21 @@
     <TextView
         android:id="@+id/viewer_gallery_pagenumber_text"
         style="@style/TextShadow"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:clickable="false"
+        android:duplicateParentState="true"
         android:focusable="false"
         android:gravity="center"
+        android:longClickable="false"
         android:padding="8dp"
         android:textAlignment="center"
         android:textColor="@color/white_opacity_87"
+        android:background="@color/black_opacity_50"
         android:textSize="@dimen/text_body_2"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/viewer_gallery_image"
+        app:layout_constraintStart_toStartOf="@id/viewer_gallery_image"
         tools:text="28" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

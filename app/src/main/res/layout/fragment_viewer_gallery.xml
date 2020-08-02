@@ -16,8 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/viewer_gallery_menu"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="Gallery"
-        tools:targetApi="lollipop" />
+        app:title="Gallery" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/viewer_gallery_selection_toolbar"
@@ -28,7 +27,7 @@
         android:minHeight="?android:attr/actionBarSize"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/queue_error_selection_menu"
+        app:menu="@menu/viewer_gallery_selection_menu"
         app:navigationIcon="@drawable/ic_arrow_back" />
 
     <androidx.recyclerview.widget.RecyclerView

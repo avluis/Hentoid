@@ -1002,7 +1002,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             selectExtension.setSelectable(true);
             selectExtension.setMultiSelect(true);
             selectExtension.setSelectOnLongClick(true);
-            selectExtension.setSelectionListener((item, b) -> LibraryFragment.this.onSelectionChanged());
+            selectExtension.setSelectionListener((item, b) -> this.onSelectionChanged());
         }
 
         recyclerView.setAdapter(fastAdapter);
