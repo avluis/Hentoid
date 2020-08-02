@@ -10,6 +10,8 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.Stream;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.lang.annotation.Retention;
@@ -309,15 +311,20 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.updateImageFileStatusParamsMimeTypeUriSize(image);
     }
 
-    public void deleteImageFile(@NonNull ImageFile img) {
+    public void deleteImageFiles(@NonNull List<ImageFile> imgs) {
         // Delete the page
-        db.deleteImageFile(img.getId());
+        db.deleteImageFiles(imgs);
+
+        // Lists all relevant content
+        List<Long> contents = Stream.of(imgs).filter(i -> i.content != null).map(i -> i.content.getTargetId()).distinct().toList();
 
         // Update the content with its new size
-        Content content = db.selectContentById(img.content.getTargetId());
-        if (content != null) {
-            content.computeSize();
-            db.insertContent(content);
+        for (Long contentId : contents) {
+            Content content = db.selectContentById(contentId);
+            if (content != null) {
+                content.computeSize();
+                db.insertContent(content);
+            }
         }
     }
 

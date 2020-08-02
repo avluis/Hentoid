@@ -19,6 +19,18 @@
         app:title="Gallery"
         tools:targetApi="lollipop" />
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/viewer_gallery_selection_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorPrimaryVariant"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:minHeight="?android:attr/actionBarSize"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/queue_error_selection_menu"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/viewer_gallery_recycler"
         android:layout_width="match_parent"

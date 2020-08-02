@@ -122,7 +122,7 @@ public interface CollectionDAO {
 
     void updateImageFileStatusParamsMimeTypeUriSize(@NonNull ImageFile image);
 
-    void deleteImageFile(@NonNull ImageFile img);
+    void deleteImageFiles(@NonNull List<ImageFile> imgs);
 
     ImageFile selectImageFile(long id);
 

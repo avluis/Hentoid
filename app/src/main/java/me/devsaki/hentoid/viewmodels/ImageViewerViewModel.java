@@ -379,9 +379,36 @@ public class ImageViewerViewModel extends AndroidViewModel {
         ContentHelper.removeContent(getApplication(), targetContent, collectionDao);
     }
 
-    public void deletePage(int pageIndex) {
+    public void deletePage(int pageIndex, Consumer<Throwable> onError) {
+        List<ImageFile> imageFiles = images.getValue();
+        if (imageFiles != null && imageFiles.size() > pageIndex)
+            deletePages(Stream.of(imageFiles.get(pageIndex)).toList(), onError);
+    }
+
+    public void deletePages(List<ImageFile> pages, Consumer<Throwable> onError) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doDeletePage(pageIndex))
+                Completable.fromRunnable(() -> doDeletePages(pages))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Update is done through LiveData
+                                },
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    private void doDeletePages(@NonNull List<ImageFile> pages) {
+        Helper.assertNonUiThread();
+        ContentHelper.removePages(pages, collectionDao, getApplication());
+    }
+
+    public void setCover(ImageFile page) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doSetCover(page))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -392,11 +419,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doDeletePage(int pageIndex) {
+    private void doSetCover(@NonNull ImageFile page) {
         Helper.assertNonUiThread();
-        List<ImageFile> imageFiles = images.getValue();
-        if (imageFiles != null && imageFiles.size() > pageIndex)
-            ContentHelper.removePage(imageFiles.get(pageIndex), collectionDao, getApplication());
+        ContentHelper.setCover(page, collectionDao, getApplication());
     }
 
     public void loadNextContent() {

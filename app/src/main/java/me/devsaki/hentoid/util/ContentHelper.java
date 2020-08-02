@@ -237,24 +237,55 @@ public final class ContentHelper {
     }
 
     /**
-     * Remove the given page from the disk and the DB
+     * Remove the given pages from the disk and the DB
      *
-     * @param image Page to be removed
-     * @param dao   DAO to be used
+     * @param images  Pages to be removed
+     * @param dao     DAO to be used
+     * @param context Context to be used
      */
-    public static void removePage(@NonNull ImageFile image, @NonNull CollectionDAO dao, @NonNull final Context context) {
+    public static void removePages(@NonNull List<ImageFile> images, @NonNull CollectionDAO dao, @NonNull final Context context) {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
-        dao.deleteImageFile(image);
+        dao.deleteImageFiles(images);
 
-        // Remove the page from disk
-        DocumentFile doc = FileHelper.getFileFromSingleUriString(context, image.getFileUri());
-        if (doc != null) doc.delete();
+        // Remove the pages from disk
+        for (ImageFile image : images) {
+            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, image.getFileUri());
+            if (doc != null) doc.delete();
+        }
+
+        // Lists all relevant content
+        List<Long> contents = Stream.of(images).filter(i -> i.content != null).map(i -> i.content.getTargetId()).distinct().toList();
 
         // Update content JSON if it exists (i.e. if book is not queued)
+        for (Long contentId : contents) {
+            Content content = dao.selectContent(contentId);
+            if (content != null && !content.getJsonUri().isEmpty())
+                updateContentJson(context, content);
+        }
+    }
+
+    // TODO doc
+    public static void setCover(@NonNull ImageFile image, @NonNull CollectionDAO dao, @NonNull final Context context) {
+        Helper.assertNonUiThread();
+
+        // Get all images from the DB
         Content content = dao.selectContent(image.content.getTargetId());
-        if (content != null && !content.getJsonUri().isEmpty()) updateContentJson(context, content);
+        if (null == content) return;
+        List<ImageFile> images = content.getImageFiles();
+        if (null == images) return;
+
+        // Set the given image as cover
+        for (ImageFile img : images)
+            img.setIsCover(img.equals(image));
+
+        // Update the whole list
+        dao.replaceImageList(content.getId(), images);
+
+        // Update content JSON if it exists (i.e. if book is not queued)
+        if (!content.getJsonUri().isEmpty())
+            updateContentJson(context, content);
     }
 
     /**
