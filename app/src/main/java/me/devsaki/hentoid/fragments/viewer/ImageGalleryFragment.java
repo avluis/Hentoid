@@ -292,6 +292,10 @@ public class ImageGalleryFragment extends Fragment {
             filterFavourites = savedInstanceState.getBoolean(KEY_FILTER_FAVOURITES, false);
     }
 
+    /**
+     * Returns true if the current book has at least a favourite
+     * @return True if the current book has at least a favourite
+     */
     private boolean hasFavourite() {
         List<ImageFileItem> images = itemAdapter.getAdapterItems();
         for (ImageFileItem item : images) if (item.isFavourite()) return true;
@@ -351,7 +355,10 @@ public class ImageGalleryFragment extends Fragment {
         }
     }
 
-    // TODO doc
+    /**
+     * Display the yes/no dialog to make sure the user really wants to set the cover
+     * @param item Item that contains the image to set as a cover
+     */
     private void askSetSelectedCover(@NonNull final ImageFile item) {
         Context context = getActivity();
         if (null == context) return;
