@@ -32,6 +32,7 @@ public final class ImageHelper {
     public static boolean isImageExtensionSupported(String extension) {
         return extension.equalsIgnoreCase("jpg")
                 || extension.equalsIgnoreCase("jpeg")
+                || extension.equalsIgnoreCase("jfif")
                 || extension.equalsIgnoreCase("gif")
                 || extension.equalsIgnoreCase("png")
                 || extension.equalsIgnoreCase("webp");
