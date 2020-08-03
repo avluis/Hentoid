@@ -139,6 +139,7 @@ public class ImageGalleryFragment extends Fragment {
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
+            toolbar.setVisibility(View.VISIBLE);
         });
         selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
 
@@ -198,9 +199,11 @@ public class ImageGalleryFragment extends Fragment {
                 break;
             default:
                 selectionToolbar.setVisibility(View.GONE);
+                toolbar.setVisibility(View.VISIBLE);
                 return false;
         }
         selectionToolbar.setVisibility(View.GONE);
+        toolbar.setVisibility(View.VISIBLE);
         return true;
     }
 

@@ -267,21 +267,32 @@ public final class ContentHelper {
     }
 
     // TODO doc
-    public static void setCover(@NonNull ImageFile image, @NonNull CollectionDAO dao, @NonNull final Context context) {
+    public static void setCover(@NonNull ImageFile newCover, @NonNull CollectionDAO dao, @NonNull final Context context) {
         Helper.assertNonUiThread();
 
         // Get all images from the DB
-        Content content = dao.selectContent(image.content.getTargetId());
+        Content content = dao.selectContent(newCover.content.getTargetId());
         if (null == content) return;
         List<ImageFile> images = content.getImageFiles();
         if (null == images) return;
 
-        // Set the given image as cover
-        for (ImageFile img : images)
-            img.setIsCover(img.equals(image));
+        // Remove current cover from the set
+        for (int i = 0; i < images.size(); i++)
+            if (images.get(i).isCover()) {
+                images.remove(i);
+                break;
+            }
+
+        // Duplicate given picture and set it as a cover
+        ImageFile cover = ImageFile.newCover(newCover.getUrl(), newCover.getStatus()).setFileUri(newCover.getFileUri()).setMimeType(newCover.getMimeType());
+        images.add(0, cover);
+
+        // Update cover URL to "ping" the content to be updated too (useful for library screen that only detects "direct" content updates)
+        content.setCoverImageUrl(newCover.getUrl());
 
         // Update the whole list
-        dao.replaceImageList(content.getId(), images);
+//        dao.replaceImageList(content.getId(), images);
+        dao.insertContent(content);
 
         // Update content JSON if it exists (i.e. if book is not queued)
         if (!content.getJsonUri().isEmpty())

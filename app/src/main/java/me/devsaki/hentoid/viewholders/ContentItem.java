@@ -257,6 +257,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         public void bindView(@NotNull ContentItem item, @NotNull List<?> payloads) {
             if (item.isEmpty || null == item.content) return; // Ignore placeholders from PagedList
 
+            String coverUri = null;
             // Payloads are set when the content stays the same but some properties alone change
             if (!payloads.isEmpty()) {
                 Bundle bundle = (Bundle) payloads.get(0);
@@ -268,6 +269,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (boolValue != null) item.content.setFavourite(boolValue);
                 Long longValue = bundleParser.getReads();
                 if (longValue != null) item.content.setReads(longValue);
+                String stringValue = bundleParser.getCoverUri();
+                //if (stringValue != null) coverUri = stringValue;
+                if (stringValue != null) item.content.getCover().setFileUri(stringValue);
             }
 
             updateLayoutVisibility(item);

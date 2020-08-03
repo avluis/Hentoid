@@ -198,7 +198,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
         @Override
         public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.getId() == newItem.getId();
+//            return oldItem.equals(newItem) && oldItem.getCover().equals(newItem.getCover());
+//            return oldItem.equals(newItem) && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl());
+            return oldItem.equals(newItem);
         }
 
         @Override
@@ -206,6 +208,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
                     && oldItem.getSite().equals(newItem.getSite())
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
+                    && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())
 //                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
                     && oldItem.isFavourite() == newItem.isFavourite();
         }
@@ -220,6 +223,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
+            }
+            if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
+                diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());
             }
 
             if (diffBundleBuilder.isEmpty()) return null;
