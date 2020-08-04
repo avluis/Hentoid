@@ -9,6 +9,7 @@ import me.devsaki.hentoid.util.Preferences
 /**
  * Responsible for creating ViewModels and supplying their dependencies
  */
+@Suppress("UNCHECKED_CAST")
 class ViewModelFactory(val application: Application): ViewModelProvider.Factory {
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
