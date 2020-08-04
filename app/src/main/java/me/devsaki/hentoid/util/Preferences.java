@@ -332,15 +332,15 @@ public final class Preferences {
         return isViewerSmoothRendering();
     }
 
-    public static boolean isViewerSmoothRendering() {
+    private static boolean isViewerSmoothRendering() {
         return isSmoothRendering(getViewerRenderingMode());
     }
 
-    public static boolean isSmoothRendering(int mode) {
+    private static boolean isSmoothRendering(int mode) {
         return (mode == Constant.PREF_VIEWER_RENDERING_SMOOTH && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
     }
 
-    public static int getViewerRenderingMode() {
+    private static int getViewerRenderingMode() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_RENDERING, Integer.toString(Default.PREF_VIEWER_RENDERING)) + "");
     }
 
