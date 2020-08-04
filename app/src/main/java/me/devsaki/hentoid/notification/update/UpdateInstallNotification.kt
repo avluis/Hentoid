@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.webkit.MimeTypeMap
+import androidx.annotation.NonNull
 import androidx.core.app.NotificationCompat
 import androidx.core.content.FileProvider
 import me.devsaki.hentoid.R
@@ -20,7 +21,7 @@ class UpdateInstallNotification(private val apkUri: Uri) : Notification {
     override fun onCreateNotification(context: Context): android.app.Notification {
         val intent: Intent
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val f = File(apkUri.path)
+            val f = File(apkUri.path!!)
             val contentUri = FileProvider.getUriForFile(context, FileHelper.getFileProviderAuthority(), f)
             intent = Intent(Intent.ACTION_INSTALL_PACKAGE, contentUri)
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
