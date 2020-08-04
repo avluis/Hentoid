@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.viewer;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
@@ -55,6 +56,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private TextView imgDimensions;
 
     private ImageView favoriteButton;
+    private ImageView copyButton;
+    private ImageView shareButton;
 
 
     public static void show(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
@@ -95,10 +98,10 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         favoriteButton = requireViewById(rootView, R.id.img_action_favourite);
         favoriteButton.setOnClickListener(v -> onFavouriteClick());
 
-        View copyButton = requireViewById(rootView, R.id.img_action_copy);
+        copyButton = requireViewById(rootView, R.id.img_action_copy);
         copyButton.setOnClickListener(v -> onCopyClick());
 
-        View shareButton = requireViewById(rootView, R.id.img_action_share);
+        shareButton = requireViewById(rootView, R.id.img_action_share);
         shareButton.setOnClickListener(v -> onShareClick());
 
         View deleteButton = requireViewById(rootView, R.id.img_action_delete);
@@ -122,9 +125,22 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
 
-        imgPath.setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false));
-        Point size = getImageSize(requireContext(), image.getFileUri());
-        imgDimensions.setText(String.format(Locale.US, "%s x %s (scale %.0f%%)", size.x, size.y, scale * 100));
+        boolean imageExists = (null != FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri()));
+
+        if (imageExists) {
+            imgPath.setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false));
+            Point size = getImageSize(requireContext(), image.getFileUri());
+            imgDimensions.setText(String.format(Locale.US, "%s x %s (scale %.0f%%)", size.x, size.y, scale * 100));
+        } else {
+            imgDimensions.setText(R.string.image_not_found);
+            int grayColor = ThemeHelper.getColor(requireContext(), R.color.dark_gray);
+            favoriteButton.setImageTintList(ColorStateList.valueOf(grayColor));
+            favoriteButton.setEnabled(false);
+            copyButton.setImageTintList(ColorStateList.valueOf(grayColor));
+            copyButton.setEnabled(false);
+            shareButton.setImageTintList(ColorStateList.valueOf(grayColor));
+            shareButton.setEnabled(false);
+        }
 
         updateFavouriteDisplay(image.isFavourite());
     }

@@ -356,6 +356,7 @@
     <string name="page_share_help">Share page using another app</string>
     <string name="page_delete_help">Delete page</string>
     <string name="viewer_ask_cover">Set this page as book cover?</string>
+    <string name="image_not_found">Image not found</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>
