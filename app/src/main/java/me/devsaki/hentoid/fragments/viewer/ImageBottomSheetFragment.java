@@ -124,11 +124,10 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         if (imageIndex >= images.size())
             imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
+        imgPath.setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false));
 
         boolean imageExists = (null != FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri()));
-
         if (imageExists) {
-            imgPath.setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false));
             Point size = getImageSize(requireContext(), image.getFileUri());
             imgDimensions.setText(String.format(Locale.US, "%s x %s (scale %.0f%%)", size.x, size.y, scale * 100));
         } else {
