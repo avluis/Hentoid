@@ -30,7 +30,6 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -174,12 +173,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private Content initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
-
-        if (imageFiles.isEmpty()) { // No pictures found
-            // TODO : do something more UX-friendly here; the user is alone with that black screen...
-            ToastUtil.toast(R.string.no_images);
-        }
-
         sortAndSetImages(imageFiles, isShuffled);
 
         if (theContent.getId() != loadedBookId) { // To be done once per book only

@@ -102,7 +102,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private boolean isComputingImageList = false;
     private int targetStartingIndex = -1;
 
-    // == CONTROLS ==
+    // == UI ==
+    private TextView noImageMessage;
     private TextView pageNumberOverlay;
     private ZoomableFrame zoomFrame;
     private ZoomableRecyclerView recyclerView;
@@ -329,6 +330,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageCurrentNumber = requireViewById(rootView, R.id.viewer_current_page_text);
         pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.invoke(this));
         pageMaxNumber = requireViewById(rootView, R.id.viewer_max_page_text);
+        noImageMessage = requireViewById(rootView, R.id.viewer_no_img_txt);
         pageNumberOverlay = requireViewById(rootView, R.id.viewer_pagenumber_text);
 
         // Next/previous book
@@ -430,6 +432,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onImagesChanged(List<ImageFile> images) {
         isComputingImageList = true;
         adapter.submitList(images, this::differEndCallback);
+
+        if (images.isEmpty()) {
+            setSystemBarsVisible(true);
+            noImageMessage.setVisibility(View.VISIBLE);
+        } else {
+            noImageMessage.setVisibility(View.GONE);
+        }
     }
 
     /**

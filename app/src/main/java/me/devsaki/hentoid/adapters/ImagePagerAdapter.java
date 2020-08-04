@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -289,15 +290,18 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         private final View imgView;
 
         private ImageFile img;
+        private TextView noImgTxt = null;
 
         private ImageViewHolder(@NonNull View itemView, @ViewType int viewType) {
             super(itemView);
             this.viewType = viewType;
             rootView = itemView;
 
-            if (viewType == ViewType.IMAGEVIEW || viewType == ViewType.IMAGEVIEW_STRETCH)
+            if (viewType == ViewType.IMAGEVIEW || viewType == ViewType.IMAGEVIEW_STRETCH) {
                 imgView = itemView.findViewById(R.id.image);
-            else
+                noImgTxt = itemView.findViewById(R.id.viewer_no_page_txt);
+                noImgTxt.setVisibility(View.GONE);
+            } else
                 imgView = rootView;
 
             if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
@@ -424,7 +428,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         @Override
         public void onImageLoadError(Throwable e) {
             Timber.w(e, ">>>>IMG %s reloaded with Glide", img.getFileUri());
-            // Manually force mime-type as GIF to fall back to Glide
+            // Hack to fall back to glide by Manually forcing mime-type as GIF
             img.setMimeType("image/gif");
             // Reload adapter
             notifyItemChanged(getLayoutPosition());
@@ -444,6 +448,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         // == GLIDE CALLBACKS
         @Override
         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+            if (noImgTxt != null) noImgTxt.setVisibility(View.VISIBLE);
             return false;
         }
 
