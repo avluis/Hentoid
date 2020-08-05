@@ -91,7 +91,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private Disposable slideshowTimer = null;
 
     private Map<String, String> bookPreferences; // Preferences of current book; to feed the book prefs dialog
-    private long contentId;
 
     private final Debouncer<Integer> indexRefreshDebouncer = new Debouncer<>(75, this::applyStartingIndexInternal);
 
@@ -480,13 +479,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             return;
         }
         bookPreferences = content.getBookPreferences();
-        // Updating the same book may mean its preferences have changed and the display has to be updated
-        // Don't do that when content has changed since display is always updated when new images come in
-//        if (contentId == content.getId()) {
-        onBrowseModeChange();
-        //onUpdateImageDisplay();
-//        }
-//        contentId = content.getId();
+        onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
         updateBookNavigation(content);
     }
@@ -641,7 +634,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             case Preferences.Key.PREF_VIEWER_ZOOM_TRANSITIONS:
             case Preferences.Key.PREF_VIEWER_SEPARATING_BARS:
             case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY:
-            case Preferences.Key.PREF_VIEWER_AUTO_ROTATE: // TODO maybe use onBrowseModeChange which is supposed to recreate all viewholders
+            case Preferences.Key.PREF_VIEWER_AUTO_ROTATE:
             case Preferences.Key.PREF_VIEWER_RENDERING:
                 onUpdateImageDisplay();
                 break;
@@ -672,11 +665,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageSnapWidget.setFlingSensitivity(flingFactor / 100f);
     }
 
+    /**
+     * Re-create and re-bind all Viewholders
+     */
     private void onUpdateImageDisplay() {
         adapter.refreshPrefs(bookPreferences);
         recyclerView.setAdapter(null);
         recyclerView.setLayoutManager(null);
-//        recyclerView.setAdapter(adapter);
         recyclerView.getRecycledViewPool().clear();
         recyclerView.swapAdapter(adapter, false);
         recyclerView.setLayoutManager(llm);
@@ -702,7 +697,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
         recyclerView.resetScale();
-        onUpdateImageDisplay(); // TODO we should do more than that as a simple rebind won't recreate existing holders
+        onUpdateImageDisplay();
 
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == orientation) {
             zoomFrame.enable();
