@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -93,11 +94,12 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     public ImagePagerAdapter(Context context) {
         super(DIFF_CALLBACK);
-        refreshPrefs();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) rs = RenderScript.create(context);
     }
 
-    public void refreshPrefs() {
+    // Book prefs have to be set explicitely because the cached Content linked from each ImageFile
+    // might not have the latest properties
+    public void refreshPrefs(@NonNull final Map<String, String> bookPreferences) {
         int separatingBarsPrefs = Preferences.getViewerSeparatingBars();
         switch (separatingBarsPrefs) {
             case Preferences.Constant.PREF_VIEWER_SEPARATING_BARS_SMALL:
@@ -112,10 +114,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             default:
                 separatingBarsHeight = 0;
         }
-        viewerOrientation = Preferences.getViewerOrientation();
         longTapZoomEnabled = Preferences.isViewerHoldToZoom();
-        displayMode = Preferences.getViewerDisplayMode();
         autoRotate = Preferences.isViewerAutoRotate();
+        displayMode = Preferences.getContentDisplayMode(bookPreferences);
+        viewerOrientation = Preferences.getContentOrientation(bookPreferences);
     }
 
     public void setRecyclerView(RecyclerView v) {
@@ -125,6 +127,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public void setItemTouchListener(View.OnTouchListener itemTouchListener) {
         this.itemTouchListener = itemTouchListener;
     }
+
 
     public boolean isFavouritePresent() {
         for (ImageFile img : getCurrentList())
@@ -137,7 +140,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if (null == img) return IMG_TYPE_OTHER;
 
         String extension = FileHelper.getExtension(img.getFileUri());
-
         if ("gif".equalsIgnoreCase(extension) || img.getMimeType().contains("gif")) {
             return IMG_TYPE_GIF;
         }

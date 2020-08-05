@@ -358,6 +358,9 @@
     <string name="page_delete_help">Delete page</string>
     <string name="viewer_ask_cover">Set this page as book cover?</string>
     <string name="image_not_found">Image not found</string>
+    <string name="book_prefs">Book settings</string>
+    <string name="goto_app_prefs">Go to app settings</string>
+    <string name="use_app_prefs">Use app settings (%s)</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

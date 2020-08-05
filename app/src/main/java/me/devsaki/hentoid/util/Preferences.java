@@ -299,23 +299,31 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_VIEWER_KEEP_SCREEN_ON, Default.PREF_VIEWER_KEEP_SCREEN_ON);
     }
 
-    public static int getViewerDisplayMode() {
-        if (Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == getViewerOrientation())
+    public static int getContentDisplayMode(final Map<String, String> bookPrefs) {
+        if (Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(bookPrefs))
             return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)) + "");
         else
             return Constant.PREF_VIEWER_DISPLAY_FIT; // The only relevant mode for vertical (aka. webtoon) display
     }
 
+    public static int getContentBrowseMode(final Map<String, String> bookPrefs) {
+        if (bookPrefs != null && bookPrefs.containsKey(Key.PREF_VIEWER_BROWSE_MODE)) {
+            String value = bookPrefs.get(Key.PREF_VIEWER_BROWSE_MODE);
+            if (value != null) return Integer.parseInt(value);
+        }
+        return getViewerBrowseMode();
+    }
+
+    public static int getContentDirection(final Map<String, String> bookPrefs) {
+        return (getContentBrowseMode(bookPrefs) == Constant.PREF_VIEWER_BROWSE_RTL) ? Constant.PREF_VIEWER_DIRECTION_RTL : Constant.PREF_VIEWER_DIRECTION_LTR;
+    }
+
+    public static int getContentOrientation(final Map<String, String> bookPrefs) {
+        return (getContentBrowseMode(bookPrefs) == Constant.PREF_VIEWER_BROWSE_TTB) ? Constant.PREF_VIEWER_ORIENTATION_VERTICAL : Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL;
+    }
+
     public static int getViewerBrowseMode() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_BROWSE_MODE, Integer.toString(Default.PREF_VIEWER_BROWSE_MODE)) + "");
-    }
-
-    public static int getViewerDirection() {
-        return (getViewerBrowseMode() == Constant.PREF_VIEWER_BROWSE_RTL) ? Constant.PREF_VIEWER_DIRECTION_RTL : Constant.PREF_VIEWER_DIRECTION_LTR;
-    }
-
-    public static int getViewerOrientation() {
-        return (getViewerBrowseMode() == Constant.PREF_VIEWER_BROWSE_TTB) ? Constant.PREF_VIEWER_ORIENTATION_VERTICAL : Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL;
     }
 
     public static void setViewerBrowseMode(int browseMode) {
@@ -324,15 +332,15 @@ public final class Preferences {
                 .apply();
     }
 
-    public static boolean isContentSmoothRendering(Map<String, String> bookPrefs) {
-        if (bookPrefs.containsKey(Key.PREF_VIEWER_RENDERING)) {
+    public static boolean isContentSmoothRendering(final Map<String, String> bookPrefs) {
+        if (bookPrefs != null && bookPrefs.containsKey(Key.PREF_VIEWER_RENDERING)) {
             String value = bookPrefs.get(Key.PREF_VIEWER_RENDERING);
             if (value != null) return isSmoothRendering(Integer.parseInt(value));
         }
         return isViewerSmoothRendering();
     }
 
-    private static boolean isViewerSmoothRendering() {
+    public static boolean isViewerSmoothRendering() {
         return isSmoothRendering(getViewerRenderingMode());
     }
 

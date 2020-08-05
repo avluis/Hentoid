@@ -2,7 +2,6 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.net.Uri;
@@ -44,8 +43,6 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
-import me.devsaki.hentoid.activities.PrefsActivity;
-import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -138,7 +135,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         initPager(rootView);
         initControlsOverlay(rootView);
 
-        onBrowseModeChange();
+//        onBrowseModeChange(); will be called by onContentChanged
         onUpdateSwipeToFling();
         onUpdatePageNumDisplay();
 
@@ -153,9 +150,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                     break;
                 case R.id.action_page_menu:
                     onPageMenuClick();
-                    break;
-                case R.id.action_app_settings:
-                    onAppSettingsClick();
                     break;
                 case R.id.action_book_settings:
                     onBookSettingsClick();
@@ -280,7 +274,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.setOnGetMaxDimensionsListener(this::onGetMaxDimensions);
         recyclerView.requestFocus();
         recyclerView.setOnScaleListener(scale -> {
-            if (pageSnapWidget != null && Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()) {
+            if (pageSnapWidget != null && LinearLayoutManager.HORIZONTAL == llm.getOrientation()) {
                 if (1.0 == scale && !pageSnapWidget.isPageSnapEnabled())
                     pageSnapWidget.setPageSnapEnabled(true);
                 else if (1.0 != scale && pageSnapWidget.isPageSnapEnabled())
@@ -382,19 +376,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     /**
-     * Show the app viewer settings dialog
-     */
-    private void onAppSettingsClick() {
-        Intent intent = new Intent(requireActivity(), PrefsActivity.class);
-
-        PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
-        builder.setIsViewerPrefs(true);
-        intent.putExtras(builder.getBundle());
-
-        requireContext().startActivity(intent);
-    }
-
-    /**
      * Show the book viewer settings dialog
      */
     private void onBookSettingsClick() {
@@ -481,7 +462,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // -> activate scroll listener manually
         if (currentPosition == startingIndex) onScrollPositionChange(startingIndex);
         else {
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation() && recyclerView != null)
+            if (LinearLayoutManager.HORIZONTAL == llm.getOrientation() && recyclerView != null)
                 recyclerView.scrollToPosition(startingIndex);
             else
                 llm.scrollToPositionWithOffset(startingIndex, 0);
@@ -501,11 +482,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         bookPreferences = content.getBookPreferences();
         // Updating the same book may mean its preferences have changed and the display has to be updated
         // Don't do that when content has changed since display is always updated when new images come in
-        if (contentId == content.getId()) {
-            //        onBrowseModeChange();
-            onUpdateImageDisplay();
-        }
-        contentId = content.getId();
+//        if (contentId == content.getId()) {
+        onBrowseModeChange();
+        //onUpdateImageDisplay();
+//        }
+//        contentId = content.getId();
 
         updateBookNavigation(content);
     }
@@ -563,9 +544,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onScrollPositionChange(int scrollPosition) {
         if (scrollPosition != imageIndex) {
             boolean isScrollLTR = true;
-            if (Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection() && imageIndex > scrollPosition)
+            int direction = Preferences.getContentDirection(bookPreferences);
+            if (Constant.PREF_VIEWER_DIRECTION_LTR == direction && imageIndex > scrollPosition)
                 isScrollLTR = false;
-            else if (Constant.PREF_VIEWER_DIRECTION_RTL == Preferences.getViewerDirection() && imageIndex < scrollPosition)
+            else if (Constant.PREF_VIEWER_DIRECTION_RTL == direction && imageIndex < scrollPosition)
                 isScrollLTR = false;
             adapter.setScrollLTR(isScrollLTR);
         }
@@ -574,7 +556,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         highestImageIndexReached = Math.max(imageIndex, highestImageIndexReached);
 
         // Resets zoom if we're using horizontal (independent pages) mode
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
             adapter.resetScaleAtPosition(scrollPosition);
 
         updatePageDisplay();
@@ -691,7 +673,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onUpdateImageDisplay() {
-        adapter.refreshPrefs();
+        adapter.refreshPrefs(bookPreferences);
+        recyclerView.setAdapter(null);
+        recyclerView.setLayoutManager(null);
+//        recyclerView.setAdapter(adapter);
+        recyclerView.getRecycledViewPool().clear();
+        recyclerView.swapAdapter(adapter, false);
+        recyclerView.setLayoutManager(llm);
         adapter.notifyDataSetChanged(); // NB : will re-run onBindViewHolder for all displayed pictures
     }
 
@@ -707,13 +695,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         if (View.LAYOUT_DIRECTION_LTR == controlsOverlay.getLayoutDirection())
             currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_LTR;
         else currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_RTL;
-        llm.setReverseLayout(Preferences.getViewerDirection() != currentLayoutDirection);
+        llm.setReverseLayout(Preferences.getContentDirection(bookPreferences) != currentLayoutDirection);
+
+        int orientation = Preferences.getContentOrientation(bookPreferences);
+        llm.setOrientation(getOrientation(orientation));
 
         // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
         recyclerView.resetScale();
         onUpdateImageDisplay(); // TODO we should do more than that as a simple rebind won't recreate existing holders
 
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == orientation) {
             zoomFrame.enable();
             recyclerView.setLongTapZoomEnabled(Preferences.isViewerHoldToZoom());
         } else {
@@ -721,8 +712,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             recyclerView.setLongTapZoomEnabled(!Preferences.isViewerHoldToZoom());
         }
 
-        llm.setOrientation(getOrientation());
-        pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation());
+        pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == orientation);
     }
 
     /**
@@ -730,8 +720,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      *
      * @return Preferred orientation, as LinearLayoutManager orientation code
      */
-    private int getOrientation() {
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()) {
+    private int getOrientation(int orientation) {
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == orientation) {
             return LinearLayoutManager.HORIZONTAL;
         } else {
             return LinearLayoutManager.VERTICAL;
@@ -748,14 +738,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
 
         if (Preferences.isViewerTapTransitions()) {
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
                 recyclerView.smoothScrollToPosition(imageIndex + 1);
             else {
                 smoothScroller.setTargetPosition(imageIndex + 1);
                 llm.startSmoothScroll(smoothScroller);
             }
         } else {
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
                 recyclerView.scrollToPosition(imageIndex + 1);
             else
                 llm.scrollToPositionWithOffset(imageIndex + 1, 0);
@@ -863,7 +853,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isViewerTapToTurn()) return;
 
-        if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
+        if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
             previousPage();
         else
             nextPage();
@@ -884,7 +874,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isViewerTapToTurn()) return;
 
-        if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
+        if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
             nextPage();
         else
             previousPage();

@@ -39,13 +39,6 @@
         android:tooltipText="@string/viewer_order_shuffle_help"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_app_settings"
-        android:enabled="true"
-        android:icon="@drawable/ic_settings"
-        android:title="@string/app_settings"
-        android:tooltipText="@string/app_settings"
-        app:showAsAction="ifRoom" />
-    <item
         android:id="@+id/action_book_settings"
         android:enabled="true"
         android:icon="@drawable/ic_settings"
