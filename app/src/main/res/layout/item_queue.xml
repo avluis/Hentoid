@@ -28,9 +28,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/pbDownload"
             app:layout_constraintTop_toTopOf="parent"
-            tools:tint="@color/light_gray"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_hentoid_trans" />
+            tools:src="@drawable/ic_hentoid_trans"
+            tools:tint="@color/light_gray" />
+
+        <ImageView
+            android:id="@+id/ivFlag"
+            android:layout_width="16dp"
+            android:layout_height="12dp"
+            android:adjustViewBounds="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/ivCover"
+            app:layout_constraintEnd_toEndOf="@id/ivCover"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/flag_cn"
+            tools:visibility="visible" />
 
         <ProgressBar
             android:id="@+id/pbDownload"

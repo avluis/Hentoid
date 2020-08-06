@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -53,6 +54,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.LanguageHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
@@ -201,6 +203,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private View baseLayout;
         private TextView tvTitle;
         private ImageView ivCover;
+        private ImageView ivFlag;
         private TextView tvSeries;
         private TextView tvArtist;
         private TextView tvPages;
@@ -229,6 +232,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             baseLayout = requireViewById(itemView, R.id.item);
             tvTitle = requireViewById(itemView, R.id.tvTitle);
             ivCover = requireViewById(itemView, R.id.ivCover);
+            ivFlag = requireViewById(itemView, R.id.ivFlag);
             tvArtist = requireViewById(itemView, R.id.tvArtist);
             tvPages = requireViewById(itemView, R.id.tvPages);
             ivSite = requireViewById(itemView, R.id.queue_site_button);
@@ -274,6 +278,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
             updateLayoutVisibility(item);
             attachCover(item.content);
+            attachFlag(item.content);
             attachTitle(item.content);
             attachArtist(item.content);
             if (tvSeries != null)
@@ -354,6 +359,20 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         .load(Uri.parse(thumbLocation))
                         .apply(glideRequestOptions)
                         .into(ivCover);
+        }
+
+        private void attachFlag(@NonNull final Content content) {
+            List<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
+            if (langAttributes != null && !langAttributes.isEmpty())
+                for (Attribute lang : langAttributes) {
+                    @DrawableRes int resId = LanguageHelper.getFlagFromLanguage(ivFlag.getContext(), lang.getName());
+                    if (resId != 0) {
+                        ivFlag.setImageResource(resId);
+                        ivFlag.setVisibility(View.VISIBLE);
+                        return;
+                    }
+                }
+            ivFlag.setVisibility(View.GONE);
         }
 
         private void attachTitle(@NonNull final Content content) {
