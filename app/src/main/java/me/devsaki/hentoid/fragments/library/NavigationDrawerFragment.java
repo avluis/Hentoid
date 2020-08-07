@@ -28,7 +28,6 @@ import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AboutActivity;
-import me.devsaki.hentoid.activities.DrawerEditActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
@@ -49,6 +48,8 @@ public final class NavigationDrawerFragment extends Fragment {
 
     private UpdateEvent updateInfo;
 
+    private View aboutBadge;
+
 
     // Settings listener
     private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = (p, k) -> onSharedPreferenceChanged(k);
@@ -64,11 +65,16 @@ public final class NavigationDrawerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
 
-        View btn = requireViewById(rootView, R.id.drawer_prefs_btn);
+        View btn = requireViewById(rootView, R.id.drawer_about_btn);
+        btn.setOnClickListener(v -> onAboutClick());
+
+        btn = requireViewById(rootView, R.id.drawer_app_prefs_btn);
         btn.setOnClickListener(v -> onPrefsClick());
 
-        btn = requireViewById(rootView, R.id.drawer_edit_btn);
-        btn.setOnClickListener(v -> onEditClick());
+        btn = requireViewById(rootView, R.id.drawer_app_queue_btn);
+        btn.setOnClickListener(v -> onQueueClick());
+
+        aboutBadge = requireViewById(rootView, R.id.drawer_about_badge_btn);
 
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p));
         RecyclerView recyclerView = requireViewById(rootView, R.id.drawer_list);
@@ -87,9 +93,6 @@ public final class NavigationDrawerFragment extends Fragment {
         List<Site> activeSites = Preferences.getActiveSites();
         for (Site s : activeSites) drawerItems.add(new DrawerItem(s));
 
-        drawerItems.add(new DrawerItem("QUEUE", R.drawable.ic_action_download, QueueActivity.class));
-        drawerItems.add(new DrawerItem("ABOUT", R.drawable.ic_info, AboutActivity.class));
-
         drawerAdapter.clear();
         drawerAdapter.add(0, drawerItems);
         applyFlagsAndAlerts();
@@ -101,7 +104,7 @@ public final class NavigationDrawerFragment extends Fragment {
         return true;
     }
 
-    private void launchActivity(@NonNull Class activityClass) {
+    private void launchActivity(@NonNull Class<?> activityClass) {
         Intent intent = new Intent(parentActivity, activityClass);
         Bundle bundle = ActivityOptionsCompat
                 .makeCustomAnimation(parentActivity, R.anim.fade_in, R.anim.fade_out)
@@ -113,13 +116,7 @@ public final class NavigationDrawerFragment extends Fragment {
     }
 
     private void showFlagAboutItem() {
-        // About is always last
-        int aboutItemPos = drawerAdapter.getAdapterItemCount() - 1;
-        if (aboutItemPos > -1) {
-            DrawerItem item = drawerAdapter.getAdapterItem(aboutItemPos);
-            item.setFlagNew(true);
-            fastAdapter.notifyItemChanged(aboutItemPos);
-        }
+        aboutBadge.setVisibility(View.VISIBLE);
     }
 
     private void showFlagAlerts(Map<Site, UpdateInfo.SourceAlert> alerts) {
@@ -166,12 +163,16 @@ public final class NavigationDrawerFragment extends Fragment {
         Preferences.unregisterPrefsChangedListener(prefsListener);
     }
 
+    private void onAboutClick() {
+        launchActivity(AboutActivity.class);
+    }
+
     private void onPrefsClick() {
         launchActivity(PrefsActivity.class);
     }
 
-    private void onEditClick() {
-        launchActivity(DrawerEditActivity.class);
+    private void onQueueClick() {
+        launchActivity(QueueActivity.class);
     }
 
     /**

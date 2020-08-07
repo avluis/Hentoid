@@ -521,6 +521,7 @@ public final class Preferences {
         static final String PREF_ORDER_CONTENT_DESC = "pref_order_content_desc";
         static final String PREF_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String PREF_FIRST_RUN = "pref_first_run";
+        public static final String PREF_DRAWER_SOURCES = "pref_drawer_sources";
         public static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
         public static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
         public static final String EXTERNAL_LIBRARY = "pref_external_library";

@@ -13,6 +13,7 @@ import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.reactivex.disposables.Disposables
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
@@ -71,8 +72,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
             when (preference.key) {
-                Preferences.Key.PREF_CHECK_UPDATE_MANUAL -> {
-                    onCheckUpdatePrefClick()
+                Preferences.Key.PREF_DRAWER_SOURCES -> {
+                    requireContext().startLocalActivity<DrawerEditActivity>()
                     true
                 }
                 Preferences.Key.EXTERNAL_LIBRARY -> {
@@ -122,6 +123,10 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.PREF_APP_LOCK -> {
                     requireContext().startLocalActivity<PinPreferenceActivity>()
+                    true
+                }
+                Preferences.Key.PREF_CHECK_UPDATE_MANUAL -> {
+                    onCheckUpdatePrefClick()
                     true
                 }
                 else -> super.onPreferenceTreeClick(preference)

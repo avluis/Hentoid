@@ -8,6 +8,11 @@
         <PreferenceCategory
             android:title="@string/pref_cat_library"
             app:iconSpaceReserved="false">
+            <Preference
+                android:key="pref_drawer_sources"
+                android:summary="@string/pref_drawer_sources_summary"
+                android:title="@string/pref_drawer_sources_title"
+                app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_endless_scroll_default"
                 android:disableDependentsState="true"
