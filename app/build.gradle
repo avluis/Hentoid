@@ -94,7 +94,7 @@ dependencies {
 
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     //implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.google.android.material:material:1.1.0-alpha08'
@@ -179,8 +179,8 @@ dependencies {
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
     if (includeObjectBoxBrowser.toBoolean()) {
-        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.6.0"
-        releaseImplementation "io.objectbox:objectbox-android:2.6.0"
+        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.7.0"
+        releaseImplementation "io.objectbox:objectbox-android:2.7.0"
     }
 
     // Cleaner date manipulation
