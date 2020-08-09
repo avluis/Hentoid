@@ -173,6 +173,8 @@ public interface CollectionDAO {
 
     void cleanup();
 
+    long getDbSizeBytes();
+
 
     // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
 

@@ -71,6 +71,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public long getDbSizeBytes() {
+        return db.getDbSizeBytes();
+    }
+
+    @Override
     public Single<List<Long>> getStoredBookIds(boolean nonFavouritesOnly, boolean includeQueued) {
         return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectStoredContentIds(nonFavouritesOnly, includeQueued)))
                 .subscribeOn(Schedulers.io())

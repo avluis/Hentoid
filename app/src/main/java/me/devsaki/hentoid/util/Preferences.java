@@ -499,6 +499,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static long getMaxDbSizeKb() {
+        return Long.parseLong(sharedPreferences.getString(Key.PREF_DB_MAX_SIZE, Long.toString(Default.DB_MAX_SIZE_KB)) + "");
+    }
+
+    public static void setMaxDbSizeKb(long maxDbSizeKb) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_DB_MAX_SIZE, Long.toString(maxDbSizeKb))
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -571,6 +581,7 @@ public final class Preferences {
         public static final String ACTIVE_SITES = "active_sites";
         static final String PREF_LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
         static final String PREF_LOCK_TIMER = "pref_lock_timer";
+        static final String PREF_DB_MAX_SIZE = "db_max_size";
 
         // Deprecated values kept for housekeeping/migration
         static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -639,6 +650,7 @@ public final class Preferences {
         static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
         static final boolean PREF_LOCK_ON_APP_RESTORE = false;
         static final int PREF_LOCK_TIMER = Constant.PREF_LOCK_TIMER_30S;
+        static final long DB_MAX_SIZE_KB = 2L * 1024 * 1024; // 2GB
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

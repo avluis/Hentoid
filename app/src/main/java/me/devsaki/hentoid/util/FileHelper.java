@@ -808,6 +808,10 @@ public class FileHelper {
         return resolver.openOutputStream(targetFileUri);
     }
 
+    public static String formatHumanReadableSize(long bytes) {
+        return FileUtils.byteCountToDisplaySize(bytes);
+    }
+
     /**
      * Class to use to obtain information about memory usage
      */

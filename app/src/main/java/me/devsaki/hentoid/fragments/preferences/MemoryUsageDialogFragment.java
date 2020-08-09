@@ -100,6 +100,9 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         // Make details fold/unfold
         foldUnfoldArrow = requireViewById(rootView, R.id.memory_details_icon);
         requireViewById(rootView, R.id.memory_details).setOnClickListener(v -> onDetailsClick());
+
+        long dbMaxSizeKb = Preferences.getMaxDbSizeKb();
+        ((TextView) requireViewById(rootView, R.id.memory_db)).setText(getResources().getString(R.string.memory_database, FileHelper.formatHumanReadableSize(dao.getDbSizeBytes()), dao.getDbSizeBytes() * 100 / 1024f / dbMaxSizeKb));
     }
 
     private void onDetailsClick() {
