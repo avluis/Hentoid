@@ -149,7 +149,7 @@ public class ExternalImportService extends IntentService {
                 if (content.getJsonUri().isEmpty()) {
                     Uri jsonUri = null;
                     try {
-                        jsonUri = getJsonFor(content, client);
+                        jsonUri = createJsonFileFor(content, client);
                     } catch (IOException ioe) {
                         Timber.w(ioe); // Not blocking
                         trace(Log.WARN, 1, log, "Could not create JSON in %s", content.getStorageUri());
@@ -238,7 +238,7 @@ public class ExternalImportService extends IntentService {
     }
 
     @Nullable
-    private Uri getJsonFor(@NonNull final Content c, @NonNull final ContentProviderClient client) throws IOException {
+    private Uri createJsonFileFor(@NonNull final Content c, @NonNull final ContentProviderClient client) throws IOException {
         if (null == c.getStorageUri() || c.getStorageUri().isEmpty()) return null;
 
         DocumentFile contentFolder = FileHelper.getFolderFromTreeUriString(this, c.getStorageUri());

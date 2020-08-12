@@ -476,7 +476,8 @@ public class Content implements Serializable {
     }
 
     public Content setImageFiles(List<ImageFile> imageFiles) {
-        if (imageFiles != null && !imageFiles.equals(this.imageFiles)) {
+        // We do want to compare array references, not content
+        if (imageFiles != null && imageFiles != this.imageFiles) {
             this.imageFiles.clear();
             this.imageFiles.addAll(imageFiles);
         }
