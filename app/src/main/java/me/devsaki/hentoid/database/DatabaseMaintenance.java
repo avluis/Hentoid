@@ -12,6 +12,7 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.BiConsumer;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
 import timber.log.Timber;
 
@@ -33,6 +34,7 @@ public class DatabaseMaintenance {
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties2));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
+        result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         return result;
     }
 
@@ -157,6 +159,30 @@ public class DatabaseMaintenance {
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Computing downloaded content size : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void createGroups(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Compute missing downloaded Content size according to underlying ImageFile sizes
+            Timber.i("Fixing non-existing groupings : start");
+            List<Grouping> groupingsToProcess = new ArrayList<>();
+            for (Grouping grouping : Grouping.values())
+                if (grouping.canReorderBooks())
+                    if (db.countGroupsFor(grouping) > 0) groupingsToProcess.add(grouping);
+
+            Timber.i("Fixing non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
+            int max = groupingsToProcess.size();
+            float pos = 1;
+            for (Grouping g : groupingsToProcess) {
+                // TODO initiate groups according to where we are; consider using a Helper
+                emitter.onNext(pos++ / max);
+            }
+            Timber.i("Fixing non-existing groupings : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

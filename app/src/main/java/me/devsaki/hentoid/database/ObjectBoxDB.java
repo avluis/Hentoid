@@ -34,6 +34,8 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ErrorRecord_;
+import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.Group_;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
@@ -42,6 +44,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord_;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.database.domains.SiteHistory_;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
@@ -860,6 +863,10 @@ public class ObjectBoxDB {
 
     List<Content> selectDownloadedContentWithNoSize() {
         return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.size).build().find();
+    }
+
+    long countGroupsFor(Grouping grouping) {
+        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping.getId()).build().count();
     }
 
     public Query<Content> selectOldStoredContentQ() {
