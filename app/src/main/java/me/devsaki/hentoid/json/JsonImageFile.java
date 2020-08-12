@@ -11,6 +11,7 @@ class JsonImageFile {
     private boolean isCover;
     private boolean favourite;
     private StatusContent status;
+    private String mimeType;
 
     private JsonImageFile() {}
 
@@ -22,6 +23,7 @@ class JsonImageFile {
         result.status = f.getStatus();
         result.isCover = f.isCover();
         result.favourite = f.isFavourite();
+        result.mimeType = f.getMimeType();
         return result;
     }
 
@@ -30,6 +32,7 @@ class JsonImageFile {
         result.setName(name);
         result.setIsCover(isCover);
         result.setFavourite(favourite);
+        result.setMimeType(mimeType);
         return result;
     }
 }
