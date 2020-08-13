@@ -22,12 +22,11 @@ import com.google.android.material.snackbar.Snackbar;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.IntroActivity;
+import me.devsaki.hentoid.util.PermissionUtil;
 
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
-
-    private static final int PERMISSION_REQUEST_CODE = 0;
 
     private IntroActivity parentActivity;
 
@@ -58,9 +57,13 @@ public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
         invokeAskPermission();
     }
 
+    private void invokeAskPermission() {
+        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PermissionUtil.RQST_STORAGE_PERMISSION);
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode != PERMISSION_REQUEST_CODE) return;
+        if (requestCode != PermissionUtil.RQST_STORAGE_PERMISSION) return;
         if (permissions.length == 0) return;
         if (!permissions[0].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) return;
         if (grantResults.length == 0) return;
@@ -87,10 +90,6 @@ public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
         Snackbar.make(view, R.string.permissioncomplaint_snackbar_manual, LENGTH_LONG)
                 .setAction(android.R.string.ok, v -> invokeOpenSettings())
                 .show();
-    }
-
-    private void invokeAskPermission() {
-        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
 
     private void invokeOpenSettings() {

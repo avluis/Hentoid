@@ -2,7 +2,6 @@ package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,7 +13,6 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.annimon.stream.Stream;
-import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -42,6 +40,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
@@ -56,7 +55,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Settings
     private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
     private boolean showFavourites = false;                                          // True if viewer only shows favourite images; false if shows all pages
-    private BooleanConsumer onShuffledChangeListener;
 
     // Collection data
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
@@ -66,8 +64,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Pictures data
     private LiveData<List<ImageFile>> currentImageSource;
-    private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();    // Currently displayed set of images
+    private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();  // Currently displayed set of images
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
+    private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // shuffle state of the current book
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -80,6 +79,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
 
     @NonNull
+    public LiveData<Content> getContent() {
+        return content;
+    }
+
+    @NonNull
     public LiveData<List<ImageFile>> getImages() {
         return images;
     }
@@ -90,13 +94,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<Content> getContent() {
-        return content;
+    public LiveData<Boolean> getShuffled() {
+        return shuffled;
     }
 
-    public void setOnShuffledChangeListener(BooleanConsumer listener) {
-        this.onShuffledChangeListener = listener;
-    }
 
     public void onSaveState(Bundle outState) {
         outState.putBoolean(KEY_IS_SHUFFLED, isShuffled);
@@ -194,7 +195,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void onShuffleClick() {
         isShuffled = !isShuffled;
-        onShuffledChangeListener.accept(isShuffled);
+        shuffled.postValue(isShuffled);
 
         List<ImageFile> imgs = getImages().getValue();
         if (imgs != null) sortAndSetImages(imgs, isShuffled);
@@ -329,23 +330,24 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
             // Persist in JSON
             Content theContent = img.content.getTarget();
-            if (!theContent.getJsonUri().isEmpty()) ContentHelper.updateJson(context, theContent);
-            else ContentHelper.createJson(context, theContent);
+            if (!theContent.getJsonUri().isEmpty())
+                ContentHelper.updateContentJson(context, theContent);
+            else ContentHelper.createContentJson(context, theContent);
 
             return img;
         } else
             throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));
     }
 
-    public void deleteBook() {
+    public void deleteBook(Consumer<Throwable> onError) {
         Content targetContent = collectionDao.selectContent(loadedBookId);
         if (null == targetContent) return;
 
-        // Unplug image source listener (avoid displaying pages as they are being deleted)
+        // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
         if (currentImageSource != null) images.removeSource(currentImageSource);
 
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doDeleteBook(targetContent))
+                Completable.fromAction(() -> doDeleteBook(targetContent))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -363,7 +365,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                     }
                                 },
                                 e -> {
-                                    Timber.e(e);
+                                    onError.accept(e);
                                     // Restore image source listener on error
                                     images.addSource(currentImageSource, imgs -> setImages(targetContent, imgs));
                                 }
@@ -371,15 +373,42 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doDeleteBook(@NonNull Content targetContent) {
+    private void doDeleteBook(@NonNull Content targetContent) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         collectionDao.deleteQueue(targetContent);
         ContentHelper.removeContent(getApplication(), targetContent, collectionDao);
     }
 
-    public void deletePage(int pageIndex) {
+    public void deletePage(int pageIndex, Consumer<Throwable> onError) {
+        List<ImageFile> imageFiles = images.getValue();
+        if (imageFiles != null && imageFiles.size() > pageIndex)
+            deletePages(Stream.of(imageFiles.get(pageIndex)).toList(), onError);
+    }
+
+    public void deletePages(List<ImageFile> pages, Consumer<Throwable> onError) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doDeletePage(pageIndex))
+                Completable.fromRunnable(() -> doDeletePages(pages))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Update is done through LiveData
+                                },
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    private void doDeletePages(@NonNull List<ImageFile> pages) {
+        Helper.assertNonUiThread();
+        ContentHelper.removePages(pages, collectionDao, getApplication());
+    }
+
+    public void setCover(ImageFile page) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doSetCover(page))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -390,11 +419,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doDeletePage(int pageIndex) {
+    private void doSetCover(@NonNull ImageFile page) {
         Helper.assertNonUiThread();
-        List<ImageFile> imageFiles = images.getValue();
-        if (imageFiles != null && imageFiles.size() > pageIndex)
-            ContentHelper.removePage(imageFiles.get(pageIndex), collectionDao, getApplication());
+        ContentHelper.setCover(page, collectionDao, getApplication());
     }
 
     public void loadNextContent() {
@@ -453,8 +480,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         content.postValue(c);
 
         // Persist in JSON
-        if (!c.getJsonUri().isEmpty()) ContentHelper.updateJson(context, c);
-        else ContentHelper.createJson(context, c);
+        if (!c.getJsonUri().isEmpty()) ContentHelper.updateContentJson(context, c);
+        else ContentHelper.createContentJson(context, c);
     }
 
     // Cache JSON URI in the database to speed up favouriting
@@ -462,8 +489,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
         if (!content.getJsonUri().isEmpty()) return;
 
-        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-        if (null == folder || !folder.exists()) return;
+        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        if (null == folder) return;
 
         DocumentFile foundFile = FileHelper.findFile(getApplication(), folder, Consts.JSON_FILE_NAME_V2);
         if (null == foundFile) {

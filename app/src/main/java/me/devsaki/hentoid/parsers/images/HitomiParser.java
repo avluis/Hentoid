@@ -98,7 +98,12 @@ public class HitomiParser implements ImageListParser {
         String componentA = hash.substring(hash.length() - 1);
         String componentB = hash.substring(hash.length() - 3, hash.length() - 1);
 
-        String imageSubdomain = subdomainFromGalleryId(Integer.valueOf(componentB, 16));
+        int nbFrontends = NUMBER_OF_FRONTENDS;
+        int varG = Integer.valueOf(componentB, 16);
+        if (varG < 0x30) nbFrontends = 2;
+        if (varG < 0x09) varG = 1;
+
+        String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends);
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/" + folder + "/" + componentA + "/" + componentB + "/" + hash + "." + extension;
 
         return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
@@ -108,14 +113,14 @@ public class HitomiParser implements ImageListParser {
         // New Hitomi image URLs starting from june 2018
         //  If book ID is even, starts with 'aa'; else starts with 'ba'
         int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
-        String imageSubdomain = subdomainFromGalleryId(referenceId);
+        String imageSubdomain = subdomainFromGalleryId(referenceId, NUMBER_OF_FRONTENDS);
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/galleries/" + content.getUniqueSiteId() + "/" + page.getName();
 
         return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
     }
 
-    private String subdomainFromGalleryId(int referenceId) {
-        return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
+    private String subdomainFromGalleryId(int referenceId, int nbFrontends) {
+        return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % nbFrontends))) + HOSTNAME_SUFFIX;
     }
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {

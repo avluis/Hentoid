@@ -11,7 +11,7 @@ class UpdateCheckNotification : Notification {
     override fun onCreateNotification(context: Context): android.app.Notification =
         NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
             .setDefaults(0)
-            .setSmallIcon(R.drawable.ic_stat_hentoid)
+            .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setVibrate(null)
             .setSound(null)

@@ -40,6 +40,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="ContentDescription" />
 
+                android:layout_marginStart="5dp"
             <TextView
                 android:id="@+id/tv_version_name"
                 android:layout_width="0dp"

@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Animatable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -77,6 +78,7 @@ import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
+import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -152,6 +154,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private MenuItem actionMenu;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
+    // Animated check (visual confirmation for quick download)
+    ImageView animatedCheck;
     // Alert message panel and text
     private View alertBanner;
     private ImageView alertIcon;
@@ -210,6 +214,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         universalBlockedContent.add("tsyndicate.com");
         universalBlockedContent.add("semireproji.pro");
         universalBlockedContent.add("defutohi.pro");
+        universalBlockedContent.add("realsrv.com");
+        universalBlockedContent.add("smartclick.net");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -265,6 +271,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         galleryMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_gallery);
         actionMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_download);
 
+        // Webview
+        animatedCheck = findViewById(R.id.animated_check);
         initWebView();
         initSwipeLayout();
         webView.loadUrl(getStartUrl());
@@ -404,7 +412,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // Validate permissions
     // TODO find something better than that
     private void checkPermissions() {
-        if (!PermissionUtil.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION))
+        if (!PermissionUtil.requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
             ToastUtil.toast("Storage permission denied - cannot use the downloader");
     }
 
@@ -650,7 +658,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (!quickDownload) changeActionMode(ActionMode.READ);
             return;
         }
-        ToastUtil.toast(getResources().getQuantityString(R.plurals.add_to_queue, 1));
+        animatedCheck.setVisibility(View.VISIBLE);
+        ((Animatable) animatedCheck.getDrawable()).start();
+        new Handler().postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
 
         objectBoxDAO.addContentToQueue(currentContent, null);
 
@@ -664,6 +674,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     private void goToQueue() {
         Intent intent = new Intent(this, QueueActivity.class);
+
+        QueueActivityBundle.Builder builder = new QueueActivityBundle.Builder();
+        builder.setContentId(currentContent.getId());
+        builder.setIsErrorsTab(currentContent.getStatus().equals(StatusContent.ERROR));
+        intent.putExtras(builder.getBundle());
+
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
@@ -701,7 +717,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private @ContentStatus
     int processContent(@NonNull Content content, boolean quickDownload) {
         @ContentStatus int result = ContentStatus.UNKNOWN;
-        if (null == content.getUrl()) return result;
+        if (content.getUrl().isEmpty()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
         Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
@@ -725,6 +741,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 content = contentDB;
             }
             if (!quickDownload) changeActionMode(ActionMode.DOWNLOAD);
+        } else {
+            content.setId(contentDB.getId());
+            content.setStatus(contentDB.getStatus());
         }
 
         if (isInCollection) {

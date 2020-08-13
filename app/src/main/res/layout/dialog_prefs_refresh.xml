@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
@@ -31,16 +32,61 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/refresh_title" />
 
+    <RadioGroup
+        android:id="@+id/refresh_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/refresh_caption">
+
+        <RadioButton
+            android:id="@+id/refresh_location_internal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_body_1"
+            android:checked="true"
+            android:text="@string/refresh_location_internal"
+            android:textColor="?colorOnSurface" />
+
+        <RadioButton
+            android:id="@+id/refresh_location_external"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_body_1"
+            android:text="@string/refresh_location_external"
+            android:textColor="?colorOnSurface" />
+    </RadioGroup>
+
+    <View
+        android:id="@+id/refresh_divider"
+        android:layout_height="1dp"
+        android:layout_marginTop="2dp"
+        android:background="?colorSecondary"
+        android:layout_width="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/refresh_location" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/refresh_location_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="refresh_divider, refresh_location"
+        tools:visibility="visible" />
+
     <TextView
         android:id="@+id/refresh_options"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:text="@string/refresh_options"
         android:textAlignment="center"
         android:textSize="@dimen/text_body_1"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_caption" />
+        app:layout_constraintTop_toBottomOf="@id/refresh_divider" />
 
     <CheckBox
         android:id="@+id/refresh_options_rename"
@@ -91,24 +137,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_or_1" />
 
-    <TextView
-        android:id="@+id/refresh_options_remove_or_2"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
-        android:text="@string/refresh_options_remove_or"
-        android:textSize="@dimen/text_body_1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_2" />
-
-    <CheckBox
-        android:id="@+id/refresh_options_remove_3"
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/refresh_options_group"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="@string/refresh_options_remove_3"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_or_2" />
+        android:visibility="visible"
+        app:constraint_referenced_ids="refresh_options, refresh_options_rename, refresh_options_remove, refresh_options_remove_1, refresh_options_remove_or_1, refresh_options_remove_2" />
 
     <TextView
         android:id="@+id/refresh_ok"
@@ -124,6 +158,6 @@
         android:paddingBottom="8dp"
         android:text="@android:string/ok"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_3" />
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -18,7 +18,7 @@
         android:tooltipText="@string/menu_archive_help"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_delete_sweep"
+        android:id="@+id/action_delete_all"
         android:icon="@drawable/ic_delete_sweep"
         android:title="@string/menu_delete_multi"
         android:tooltipText="@string/menu_delete_multi"

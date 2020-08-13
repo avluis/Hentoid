@@ -44,12 +44,12 @@ public class EHentaiParser implements ImageListParser {
     public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
-        try {
-            List<ImageFile> result = new ArrayList<>();
-            boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
-            Map<String, String> downloadParams = new HashMap<>();
-            int order = 1;
+        List<ImageFile> result = new ArrayList<>();
+        boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
+        Map<String, String> downloadParams = new HashMap<>();
+        int order = 1;
 
+        try {
             /*
              * 1- Detect the number of pages of the gallery
              *
@@ -132,10 +132,10 @@ public class EHentaiParser implements ImageListParser {
 
             // If the process has been halted manually, the result is incomplete and should not be returned as is
             if (processHalted) throw new PreparationInterruptedException();
-            return result;
         } finally {
             EventBus.getDefault().unregister(this);
         }
+        return result;
     }
 
     @Nullable

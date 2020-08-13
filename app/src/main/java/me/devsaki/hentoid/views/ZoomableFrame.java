@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
- * Frame layout which contains a [WebtoonRecyclerView]. It's needed to handle touch events,
+ * Frame layout which contains a [ZoomableRecyclerView]. It's needed to handle touch events,
  * because the recyclerview is scaled and its touch events are translated, which breaks the
  * detectors.
  * <p>

@@ -5,7 +5,7 @@ import android.os.Bundle;
 import javax.annotation.Nonnull;
 
 /**
- * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.ImportActivity}
+ * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.services.ImportService}
  * through a Bundle
  *
  * Use Builder class to set data; use Parser class to get data
@@ -15,7 +15,6 @@ public class ImportActivityBundle {
     private static final String KEY_REFRESH_RENAME = "rename";
     private static final String KEY_REFRESH_CLEAN_ABSENT = "cleanAbsent";
     private static final String KEY_REFRESH_CLEAN_NO_IMAGES = "cleanNoImages";
-    private static final String KEY_REFRESH_CLEAN_UNREADABLE = "cleanUnreadable";
 
     private ImportActivityBundle() {
         throw new UnsupportedOperationException();
@@ -39,10 +38,6 @@ public class ImportActivityBundle {
 
         public void setRefreshCleanNoImages(boolean refresh) {
             bundle.putBoolean(KEY_REFRESH_CLEAN_NO_IMAGES, refresh);
-        }
-
-        public void setRefreshCleanUnreadable(boolean refresh) {
-            bundle.putBoolean(KEY_REFRESH_CLEAN_UNREADABLE, refresh);
         }
 
         public Bundle getBundle() {
@@ -72,10 +67,6 @@ public class ImportActivityBundle {
 
         public boolean getRefreshCleanNoImages() {
             return bundle.getBoolean(KEY_REFRESH_CLEAN_NO_IMAGES, false);
-        }
-
-        public boolean getRefreshCleanUnreadable() {
-            return bundle.getBoolean(KEY_REFRESH_CLEAN_UNREADABLE, false);
         }
     }
 }

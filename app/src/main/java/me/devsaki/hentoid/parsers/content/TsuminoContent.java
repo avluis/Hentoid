@@ -54,12 +54,12 @@ public class TsuminoContent implements ContentParser {
         result.setQtyPages((pages.length() > 0) ? Integer.parseInt(pages) : 0);
 
         AttributeMap attributes = new AttributeMap();
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.TSUMINO);
         result.addAttributes(attributes);
 
         return result;

@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
@@ -164,8 +166,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private void onCopyClick() {
         String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getFileUri());
         try {
-            DocumentFile sourceFile = FileHelper.getFileFromUriString(requireContext(), image.getFileUri());
-            if (null == sourceFile || !sourceFile.exists()) return;
+            DocumentFile sourceFile = FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri());
+            if (null == sourceFile) return;
 
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, image.getMimeType())) {
                 try (InputStream input = FileHelper.getInputStream(requireContext(), sourceFile)) {
@@ -185,8 +187,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Share" action button
      */
     private void onShareClick() {
-        DocumentFile docFile = FileHelper.getFileFromUriString(requireContext(), image.getFileUri());
-        if (docFile != null && docFile.exists())
+        DocumentFile docFile = FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri());
+        if (docFile != null)
             FileHelper.shareFile(requireContext(), docFile, "Share picture");
     }
 
@@ -202,8 +204,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
                 .setPositiveButton(android.R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            viewModel.deletePage(imageIndex);
-
+                            viewModel.deletePage(imageIndex, this::onDeleteError);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
@@ -212,8 +213,8 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private static Point getImageSize(@NonNull final Context context, @NonNull final String uri) {
-        DocumentFile imgFile = FileHelper.getFileFromUriString(context, uri);
-        if (null == imgFile || !imgFile.exists()) return new Point(0, 0);
+        DocumentFile imgFile = FileHelper.getFileFromSingleUriString(context, uri);
+        if (null == imgFile) return new Point(0, 0);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -223,6 +224,18 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         } catch (IOException | IllegalArgumentException e) {
             Timber.w(e);
             return new Point(0, 0);
+        }
+    }
+
+    /**
+     * Callback for the failure of the "delete item" action
+     */
+    private void onDeleteError(Throwable t) {
+        Timber.e(t);
+        if (t instanceof ContentNotRemovedException) {
+            ContentNotRemovedException e = (ContentNotRemovedException) t;
+            String message = (null == e.getMessage()) ? "File removal failed" : e.getMessage();
+            Snackbar.make(rootView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
     }
 }

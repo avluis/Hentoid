@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
+import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
@@ -74,14 +76,14 @@ public class Content implements Serializable {
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite;
     private long reads = 0;
+    private long size = 0; // Yes, it _is_ redundant with the contained images' size. ObjectBox can't do thesum in a single Query, so here it is !
     private long lastReadDate;
     private int lastReadPageIndex = 0;
     @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
     private Map<String, String> bookPreferences = new HashMap<>();
-
-    // Temporary during SAVED state only; no need to expose them for JSON persistence
+    // Temporary during SAVED state only
     private String downloadParams;
-    // Temporary during ERROR state only; no need to expose them for JSON persistence
+    // Temporary during ERROR state only
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
     // Needs to be in the DB to keep the information when deletion takes a long time
@@ -90,6 +92,8 @@ public class Content implements Serializable {
     // Needs to be in the DB to optimize I/O
     // No need to save that into the JSON file itself, obviously
     private String jsonUri;
+    // Useful only during cleanup operations; no need to get it into the JSON
+    private boolean isFlaggedForDeletion = false;
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
@@ -180,6 +184,7 @@ public class Content implements Serializable {
                 return url.replace("/?p=", "");
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
+            case HENTAIFOX:
             case PORNCOMIX:
             case DOUJINS:
                 // ID is the last numeric part of the URL
@@ -270,6 +275,8 @@ public class Content implements Serializable {
                 return HbrowseActivity.class;
             case HENTAI2READ:
                 return Hentai2ReadActivity.class;
+            case HENTAIFOX:
+                return HentaifoxActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -289,7 +296,7 @@ public class Content implements Serializable {
     }
 
     public String getUrl() {
-        return url;
+        return (null == url) ? "" : url;
     }
 
     public Content setUrl(String url) {
@@ -301,6 +308,7 @@ public class Content implements Serializable {
     public String getGalleryUrl() {
         String galleryConst;
         switch (site) {
+            case HENTAIFOX:
             case PURURIN:
                 galleryConst = "/gallery";
                 break;
@@ -368,6 +376,8 @@ public class Content implements Serializable {
             case PORNCOMIX:
                 if (getGalleryUrl().contains("/manga")) return getGalleryUrl() + "/p/1/";
                 else return getGalleryUrl() + "#&gid=1&pid=1";
+            case HENTAIFOX:
+                return site.getUrl() + "g" + url;
             default:
                 return null;
         }
@@ -518,8 +528,22 @@ public class Content implements Serializable {
 
     public long getNbDownloadedPages() {
         if (imageFiles != null)
-            return Stream.of(imageFiles).filter(i -> i.getStatus() == StatusContent.DOWNLOADED && !i.isCover()).count();
+            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL) && !i.isCover()).count();
         else return 0;
+    }
+
+    private long getDownloadedPagesSize() {
+        if (imageFiles != null)
+            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
+        else return 0;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void computeSize() {
+        size = getDownloadedPagesSize();
     }
 
     public Site getSite() {
@@ -651,6 +675,14 @@ public class Content implements Serializable {
         this.jsonUri = jsonUri;
     }
 
+    public boolean isFlaggedForDeletion() {
+        return isFlaggedForDeletion;
+    }
+
+    public void setFlaggedForDeletion(boolean flaggedForDeletion) {
+        isFlaggedForDeletion = flaggedForDeletion;
+    }
+
     public int getNumberDownloadRetries() {
         return numberDownloadRetries;
     }
@@ -683,11 +715,16 @@ public class Content implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-        return id == content.id;
+        return getId() == content.getId() &&
+                Objects.equals(getUniqueSiteId(), content.getUniqueSiteId());
+    }
+
+    public static int hash(long id, String uniqueSiteId) {
+        return Objects.hash(id, uniqueSiteId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return hash(getId(), getUniqueSiteId());
     }
 }

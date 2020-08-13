@@ -31,7 +31,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
 
     public ImageFileItem(@NonNull ImageFile image) {
         this.image = image;
-        setIdentifier(image.getId());
+        setIdentifier(image.hashCode());
     }
 
     public ImageFile getImage() {

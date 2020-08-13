@@ -30,10 +30,12 @@ public class ParseHelper {
     /**
      * Remove counters from given string (e.g. "Futanari (2660)" => "Futanari")
      *
-     * @param s String brackets have to be removed
+     * @param s String to clean up
      * @return String with removed brackets
      */
     public static String removeBrackets(String s) {
+        if (null == s || s.isEmpty()) return "";
+
         int bracketPos = s.lastIndexOf('(');
         if (bracketPos > 1 && ' ' == s.charAt(bracketPos - 1)) bracketPos--;
         if (bracketPos > -1) {
@@ -43,52 +45,73 @@ public class ParseHelper {
         return s;
     }
 
-    public static void parseAttributes(
-            @NonNull AttributeMap map,
-            @NonNull AttributeType type,
-            List<Element> elements,
-            boolean filterCount,
-            @NonNull Site site) {
-        if (elements != null)
-            for (Element a : elements) parseAttribute(map, type, a, filterCount, site);
+    /**
+     * Remove trailing numbers from given string (e.g. "Futanari 2660" => "Futanari")
+     * Only works when the numbers come after a space, so that tags ending with numbers
+     * are not altered (e.g. "circle64")
+     *
+     * @param s String to clean up
+     * @return String with removed trailing numbers
+     */
+    public static String removeTrailingNumbers(String s) {
+        if (null == s || s.isEmpty()) return "";
+
+        String[] parts = s.split(" ");
+        if (parts.length > 1 && Helper.isNumeric(parts[parts.length - 1])) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < parts.length - 1; i++) sb.append(parts[i]).append(" ");
+            return sb.toString().trim();
+        }
+
+        return s;
     }
 
     public static void parseAttributes(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
             List<Element> elements,
-            boolean filterCount,
+            boolean removeTrailingNumbers,
+            @NonNull Site site) {
+        if (elements != null)
+            for (Element a : elements) parseAttribute(map, type, a, removeTrailingNumbers, site);
+    }
+
+    public static void parseAttributes(
+            @NonNull AttributeMap map,
+            @NonNull AttributeType type,
+            List<Element> elements,
+            boolean removeTrailingNumbers,
             @NonNull String childElementClass,
             @NonNull Site site) {
         if (elements != null)
             for (Element a : elements)
-                parseAttribute(map, type, a, filterCount, childElementClass, site);
+                parseAttribute(map, type, a, removeTrailingNumbers, childElementClass, site);
     }
 
     public static void parseAttribute(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
             @NonNull Element element,
-            boolean filterCount,
+            boolean removeTrailingNumbers,
             @NonNull Site site) {
-        parseAttribute(map, type, element, filterCount, null, site, "");
+        parseAttribute(map, type, element, removeTrailingNumbers, null, site, "");
     }
 
     public static void parseAttribute(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
             @NonNull Element element,
-            boolean filterCount,
+            boolean removeTrailingNumbers,
             @NonNull String childElementClass,
             @NonNull Site site) {
-        parseAttribute(map, type, element, filterCount, childElementClass, site, "");
+        parseAttribute(map, type, element, removeTrailingNumbers, childElementClass, site, "");
     }
 
     public static void parseAttribute(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
             @NonNull Element element,
-            boolean filterCount,
+            boolean removeTrailingNumbers,
             @Nullable String childElementClass,
             @NonNull Site site,
             @NonNull final String prefix) {
@@ -99,7 +122,8 @@ public class ParseHelper {
             name = element.selectFirst("." + childElementClass).text();
         }
         name = Helper.removeNonPrintableChars(name);
-        if (filterCount) name = removeBrackets(name);
+        name = removeBrackets(name);
+        if (removeTrailingNumbers) name = removeTrailingNumbers(name);
         if (name.isEmpty() || name.equals("-") || name.equals("/")) return;
 
         if (!prefix.isEmpty()) name = prefix + ":" + name;

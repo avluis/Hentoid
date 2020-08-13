@@ -16,6 +16,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
+import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.services.UpdateDownloadService
@@ -63,29 +64,32 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
-        onFolderChanged()
+        onHentoidFolderChanged()
+        onExternalFolderChanged()
+        populateMemoryUsage()
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
             when (preference.key) {
-                Preferences.Key.PREF_ADD_NO_MEDIA_FILE -> {
-                    if (FileHelper.createNoMedia(requireContext()))
-                        ToastUtil.toast(R.string.nomedia_file_created)
-                    else
-                        ToastUtil.toast(R.string.nomedia_file_failed)
-                    true
-                }
                 /*
                 Preferences.Key.PREF_CHECK_UPDATE_MANUAL -> {
                     onCheckUpdatePrefClick()
                     true
                 }
                  */
+                Preferences.Key.EXTERNAL_LIBRARY -> {
+                    if (ExternalImportService.isRunning()) {
+                        ToastUtil.toast(getString(R.string.pref_import_running))
+                    } else {
+                        LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
+                    }
+                    true
+                }
                 Preferences.Key.PREF_REFRESH_LIBRARY -> {
                     if (ImportService.isRunning()) {
-                        ToastUtil.toast("Import is already running")
+                        ToastUtil.toast(getString(R.string.pref_import_running))
                     } else {
-                        LibRefreshDialogFragment.invoke(parentFragmentManager, true, false)
+                        LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
                     }
                     true
                 }
@@ -103,15 +107,19 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.PREF_VIEWER_RENDERING -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        ToastUtil.toast("Smooth rendering is not available on Android 5")
+                        ToastUtil.toast(getString(R.string.pref_viewer_rendering_no_android5))
                     true
                 }
                 Preferences.Key.PREF_SETTINGS_FOLDER -> {
                     if (ImportService.isRunning()) {
-                        ToastUtil.toast("Import is already running")
+                        ToastUtil.toast(getString(R.string.pref_import_running))
                     } else {
-                        LibRefreshDialogFragment.invoke(parentFragmentManager, false, true)
+                        LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)
                     }
+                    true
+                }
+                Preferences.Key.MEMORY_USAGE -> {
+                    MemoryUsageDialogFragment.invoke(parentFragmentManager)
                     true
                 }
                 Preferences.Key.PREF_APP_LOCK -> {
@@ -145,14 +153,28 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         ToastUtil.toast(R.string.restart_needed)
     }
 
-    private fun onFolderChanged() {
+    private fun onHentoidFolderChanged() {
         val storageFolderPref: Preference? = findPreference(Preferences.Key.PREF_SETTINGS_FOLDER) as Preference?
         val uri = Uri.parse(Preferences.getStorageUri())
         storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri, true)
     }
 
+    private fun onExternalFolderChanged() {
+        val storageFolderPref: Preference? = findPreference(Preferences.Key.EXTERNAL_LIBRARY) as Preference?
+        val uri = Uri.parse(Preferences.getExternalLibraryUri())
+        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri, true)
+    }
+
     private fun onPrefColorThemeChanged() {
         ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Preferences.getColorTheme()))
+    }
+
+    private fun populateMemoryUsage() {
+        val folder = FileHelper.getFolderFromTreeUriString(requireContext(), Preferences.getStorageUri())
+                ?: return
+
+        val memUsagePref: Preference? = findPreference(Preferences.Key.MEMORY_USAGE) as Preference?
+        memUsagePref?.summary = resources.getString(R.string.pref_memory_usage_summary, FileHelper.MemoryUsageFigures(requireContext(), folder).getFreeUsageRatio100())
     }
 
     private fun onDeleteAllExceptFavourites() {
@@ -169,13 +191,13 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     ) { dialog1: DialogInterface, _: Int ->
                         dialog1.dismiss()
                         searchDisposable.dispose()
-                        LibDeleteFragment.invoke(parentFragmentManager, list)
+                        LibDeleteDialogFragment.invoke(parentFragmentManager, list)
                     }
                     .setNegativeButton(R.string.no
                     ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
                     .create()
                     .show()
-        };
+        }
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
@@ -185,7 +207,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
             Preferences.Key.PREF_APP_PREVIEW,
             //Preferences.Key.PREF_ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
             Preferences.Key.PREF_SETTINGS_FOLDER,
-            Preferences.Key.PREF_SD_STORAGE_URI -> onFolderChanged()
+            Preferences.Key.PREF_SD_STORAGE_URI -> onHentoidFolderChanged()
+            Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
         }
     }
 }

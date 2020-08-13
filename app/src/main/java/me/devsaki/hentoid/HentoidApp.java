@@ -28,9 +28,7 @@ import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.plugins.RxJavaPlugins;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
-import me.devsaki.hentoid.notification.maintenance.MaintenanceNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
-import me.devsaki.hentoid.services.DatabaseMaintenanceService;
 import me.devsaki.hentoid.services.UpdateCheckService;
 //import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
@@ -93,6 +91,7 @@ public class HentoidApp extends Application {
 
         // Fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
         // see https://github.com/square/okhttp/issues/2372 for more information
+        // NB : Takes ~250ms at startup
         try {
             //ProviderInstaller.installIfNeeded(getApplicationContext());
         } catch (Exception e) {
@@ -123,13 +122,9 @@ public class HentoidApp extends Application {
         //boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
         //FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
-        // DB housekeeping
-        performDatabaseHousekeeping();
-
         // Init notification channels
         //UpdateNotificationChannel.init(this);
         DownloadNotificationChannel.init(this);
-        MaintenanceNotificationChannel.init(this);
 
         // Clears all previous notifications
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -179,20 +174,6 @@ public class HentoidApp extends Application {
             }
             Timber.w(e, "Undeliverable exception received, not sure what to do");
         });
-    }
-
-    /**
-     * Clean up and upgrade database
-     */
-    @SuppressWarnings({"squid:CallToDeprecatedMethod"})
-    private void performDatabaseHousekeeping() {
-        // Launch a service that will perform non-structural DB housekeeping tasks
-        Intent intent = DatabaseMaintenanceService.makeIntent(this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent);
-        } else {
-            startService(intent);
-        }
     }
 
     /**

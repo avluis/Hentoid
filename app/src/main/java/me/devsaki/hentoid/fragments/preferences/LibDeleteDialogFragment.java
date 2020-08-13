@@ -25,13 +25,14 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import timber.log.Timber;
 
 /**
  * Created by Robb on 11/2018
  * Launcher dialog for the library refresh feature
  */
-public class LibDeleteFragment extends DialogFragment {
+public class LibDeleteDialogFragment extends DialogFragment {
 
     private static final String BOOK_LIST = "book_list";
 
@@ -45,7 +46,7 @@ public class LibDeleteFragment extends DialogFragment {
 
 
     public static void invoke(@NonNull final FragmentManager fragmentManager, @NonNull final List<Long> bookList) {
-        LibDeleteFragment fragment = new LibDeleteFragment();
+        LibDeleteDialogFragment fragment = new LibDeleteDialogFragment();
 
         Bundle args = new Bundle();
         args.putLongArray(BOOK_LIST, Helper.getPrimitiveLongArrayFromList(bookList));
@@ -97,7 +98,7 @@ public class LibDeleteFragment extends DialogFragment {
                 );
     }
 
-    private boolean deleteItem(@NonNull Content c) {
+    private boolean deleteItem(@NonNull Content c) throws ContentNotRemovedException {
         ContentHelper.removeContent(requireActivity(), c, dao);
         return true;
     }

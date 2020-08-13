@@ -58,7 +58,7 @@ public class LusciousBookMetadata {
 
         result.setTitle(Helper.removeNonPrintableChars(info.title));
 
-        result.setQtyPages(info.number_of_pictures);
+//        result.setQtyPages(info.number_of_pictures);  <-- does not reflect the actual number of pictures reachable via the Luscious API / website
         result.setCoverImageUrl(info.cover.url);
 
         AttributeMap attributes = new AttributeMap();

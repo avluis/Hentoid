@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -71,6 +72,7 @@ public class Hentai2ReadParser extends BaseParser {
                 List<Element> chapters = doc.select(".nav-chapters a[href^=" + content.getGalleryUrl() + "]");
                 for (Element e : chapters) chapterUrls.add(e.attr("href"));
             }
+            Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
 
             progressStart(chapterUrls.size());
 

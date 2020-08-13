@@ -1,0 +1,50 @@
+New
+
+Image viewer : Rendering mode can now be chosen globally and also set book by book
+Sharp (default) : sharp lines; may display aliasing artifacts
+Smooth : removes most aliasing artifacts; lines may appear slightly blurred on some screens
+New source : Hentaifox
+Hentoid can now read an external library with non-Hentoid folders and images => use Preferences > Storage > External library to set it
+Web browser : Tap the queue button on a book page shows the queue positioned on the book
+Downloader : stops downloading when <2MB left on device
+Library screen : Show a storage permission warning when SD card access is lost
+Library screen : Show a storage permission warning when memory usage is low
+Library screen : Sort by size
+Preferences : Storage > Memory usage screen with detailed usage stats
+Image viewer / gallery : Set picture as book cover (on long tap)
+Image viewer / gallery : Delete multiple pages (on long tap)
+JFIF images are now downloadable
+First-use import and Preferences / storage / refresh now recover books with corrupted JSONs
+Funny quotes on the launch screen ^^
+
+Changed
+
+Queue screen : Swipe to delete sensitivity has been greatly reduced
+Queue screen : Multi-select, multi move top/bottom, multi cancel
+Library screen : Swipe to delete has been removed due to popular demand
+Library screen : All books now display their size
+Library and queue screens : Book cover placeholders now show the hentoid logo shape instead of teh entire logo
+Image viewer : Max zoom level increased
+App-wide : Visual warnings when deleting a book fails in deleting the underlying folder
+Startup database cleaning tasks now all take place before the library screen is displayed
+
+Fixed
+
+Hentai2Read : Books with half-chapters (e.g. 2.5, 4.6) can now be downloaded entirely
+Nhentai : Download button now appears when searching by launch code on nhentai's search
+Migration : User can't select a non-Hentoid folder anymore
+Migration : Folder Uri's migrated from SD card locations are now automatically fixed
+Image viewer : zooming now uses the best image quality available
+Image viewer : prevent crashes on Android 5 (which has a known stability issue with the renderer used in v1.12.0)
+Nexus : Pages from old books should be all downloadable
+E-hentai : Certain downloads work again
+NHentai : Searching by launch code on the site using '#number" syntax is now detected as a downloadable book
+Multi sites : Redownload from scratch should now work better when done on fully downloaded books
+Image viewer / GIFs in vertical mode : Tap to display controls works again
+Image viewer / GIFs in vertical mode : Black separator bars now appear between images if set
+Image viewer / GIFs in vertical mode : Images are now properly resized to screen size
+Image gallery : Screen doesn't go black when coming back after putting the app in the background
+Advanced search : Metadata from queued books isn't counted anymore
+Import metadata : All files are now selectable in the "Open" file dialog
+Crashes in various situations (thanks to Firebase reports)
+Alignment with new Hitomi image hosts - use "redownload from scratch" to fix your errors

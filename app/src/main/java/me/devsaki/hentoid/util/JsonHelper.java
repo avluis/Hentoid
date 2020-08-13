@@ -58,10 +58,13 @@ public class JsonHelper {
      * @param <K>    Type of the object to save
      * @throws IOException If anything happens during file I/O
      */
-    public static <K> DocumentFile createJson(@NonNull final Context context, K object, Type type, @NonNull DocumentFile dir) throws IOException {
-        DocumentFile file = FileHelper.findOrCreateDocumentFile(context, dir, JSON_MIME_TYPE, Consts.JSON_FILE_NAME_V2);
+    public static <K> DocumentFile jsonToFile(@NonNull final Context context, K object, Type type, @NonNull DocumentFile dir) throws IOException {
+        return jsonToFile(context, object, type, dir, Consts.JSON_FILE_NAME_V2);
+    }
+    public static <K> DocumentFile jsonToFile(@NonNull final Context context, K object, Type type, @NonNull DocumentFile dir, @NonNull final String fileName) throws IOException {
+        DocumentFile file = FileHelper.findOrCreateDocumentFile(context, dir, JSON_MIME_TYPE, fileName);
         if (null == file)
-            throw new IOException("Failed creating file " + Consts.JSON_FILE_NAME_V2 + " in " + dir.getUri().getPath());
+            throw new IOException("Failed creating file " + fileName + " in " + dir.getUri().getPath());
 
         try (OutputStream output = FileHelper.getOutputStream(context, file)) {
             if (output != null) updateJson(object, type, output);

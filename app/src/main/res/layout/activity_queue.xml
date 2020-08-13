@@ -27,7 +27,7 @@
         android:minHeight="?android:attr/actionBarSize"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/queue_selection_menu"
+        app:menu="@menu/queue_error_selection_menu"
         app:navigationIcon="@drawable/ic_arrow_back" />
 
     <com.google.android.material.tabs.TabLayout

@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +26,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.Group;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -32,7 +34,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -41,14 +42,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
-import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
-import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
 import com.skydoves.balloon.ArrowOrientation;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -83,12 +82,14 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.TooltipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -99,7 +100,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent, SimpleSwipeCallback.ItemSwipeCallback {
+public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Parent {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -142,21 +143,24 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
+    // Alert bars
+    private Group permissionsAlertBar;
+    private Group storageAlertBar;
+
     // === SELECTION TOOLBAR
     private Toolbar selectionToolbar;
     private MenuItem itemDelete;
     private MenuItem itemShare;
     private MenuItem itemArchive;
     private MenuItem itemFolder;
-    private MenuItem itemDeleteSwipe;
+    private MenuItem itemRedownload;
+    private MenuItem itemDeleteAll;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
     private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
     private FastAdapter<ContentItem> fastAdapter;
     private SelectExtension<ContentItem> selectExtension;
-    // Helper used for swiping items
-    private ItemTouchHelper touchHelper;
 
 
     // ======== VARIABLES
@@ -197,7 +201,9 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
         @Override
         public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.getId() == newItem.getId();
+//            return oldItem.equals(newItem) && oldItem.getCover().equals(newItem.getCover());
+//            return oldItem.equals(newItem) && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl());
+            return oldItem.equals(newItem);
         }
 
         @Override
@@ -205,6 +211,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
                     && oldItem.getSite().equals(newItem.getSite())
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
+                    && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())
 //                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
                     && oldItem.isFavourite() == newItem.isFavourite();
         }
@@ -217,13 +224,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
             }
-            /*
-            if (oldItem.isBeingDeleted() != newItem.isBeingDeleted()) {
-                diffBundleBuilder.setIsBeingDeleted(newItem.isBeingDeleted());
-            }
-             */
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
+            }
+            if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
+                diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());
             }
 
             if (diffBundleBuilder.isEmpty()) return null;
@@ -287,6 +292,17 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             TooltipUtil.showTooltip(requireContext(), R.string.help_search, ArrowOrientation.TOP, toolbar, getViewLifecycleOwner());
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
+
+        // Display permissions alert if required
+        if (!PermissionUtil.checkExternalStorageReadWritePermission(requireActivity())) {
+            ((TextView) requireViewById(view, R.id.library_alert_txt)).setText(R.string.permissions_lost);
+            requireViewById(view, R.id.library_alert_fix_btn).setOnClickListener(v -> fixPermissions());
+            permissionsAlertBar.setVisibility(View.VISIBLE);
+        } else if (isLowOnSpace()) { // Else display low space alert
+            ((TextView) requireViewById(view, R.id.library_alert_txt)).setText(R.string.low_memory);
+            permissionsAlertBar.setVisibility(View.GONE);
+            storageAlertBar.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -296,6 +312,10 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      */
     private void initUI(@NonNull View rootView) {
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
+
+        // Permissions alert bar
+        permissionsAlertBar = requireViewById(rootView, R.id.library_permissions_alert_group);
+        storageAlertBar = requireViewById(rootView, R.id.library_storage_alert_group);
 
         // Search bar
         advancedSearchBar = requireViewById(rootView, R.id.advanced_search_background);
@@ -355,23 +375,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         recyclerView = requireViewById(rootView, R.id.library_list);
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
         new FastScrollerBuilder(recyclerView).build();
-
-        // Disable blink animation on card change (bind holder)
-        // Disabled because with it, swiped undo panel doesn't appear
-        // TODO test if everything's alright with that off
-        /*
-        RecyclerView.ItemAnimator animator = recyclerView.getItemAnimator();
-        if (animator instanceof SimpleItemAnimator)
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-*/
-
-        // Swiping
-        SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
-                this,
-                requireContext().getDrawable(R.drawable.ic_action_delete_forever));
-
-        touchHelper = new ItemTouchHelper(swipeCallback);
-        touchHelper.attachToRecyclerView(recyclerView);
 
         // Pager
         pager.initUI(rootView);
@@ -458,6 +461,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return Preferences.Constant.ORDER_FIELD_READ_DATE;
             case (R.id.sort_reads):
                 return Preferences.Constant.ORDER_FIELD_READS;
+            case (R.id.sort_size):
+                return Preferences.Constant.ORDER_FIELD_SIZE;
             case (R.id.sort_random):
                 return Preferences.Constant.ORDER_FIELD_RANDOM;
             default:
@@ -479,6 +484,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 return R.string.sort_read_date;
             case (Preferences.Constant.ORDER_FIELD_READS):
                 return R.string.sort_reads;
+            case (Preferences.Constant.ORDER_FIELD_SIZE):
+                return R.string.sort_size;
             case (Preferences.Constant.ORDER_FIELD_RANDOM):
                 return R.string.sort_random;
             default:
@@ -553,7 +560,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
         itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
         itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
-        itemDeleteSwipe = selectionToolbar.getMenu().findItem(R.id.action_delete_sweep);
+        itemRedownload = selectionToolbar.getMenu().findItem(R.id.action_redownload);
+        itemDeleteAll = selectionToolbar.getMenu().findItem(R.id.action_delete_all);
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
@@ -563,7 +571,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 shareSelectedItems();
                 break;
             case R.id.action_delete:
-            case R.id.action_delete_sweep:
+            case R.id.action_delete_all:
                 purgeSelectedItems();
                 break;
             case R.id.action_archive:
@@ -584,16 +592,17 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         return true;
     }
 
-    private void updateSelectionToolbar(long selectedCount) {
-        boolean isMultipleSelection = selectedCount > 1;
+    private void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
+        boolean isMultipleSelection = selectedTotalCount > 1;
 
-        itemDelete.setVisible(!isMultipleSelection);
-        itemShare.setVisible(!isMultipleSelection);
+        itemDelete.setVisible(!isMultipleSelection && (1 == selectedLocalCount || Preferences.isDeleteExternalLibrary()));
+        itemShare.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         itemArchive.setVisible(!isMultipleSelection);
         itemFolder.setVisible(!isMultipleSelection);
-        itemDeleteSwipe.setVisible(isMultipleSelection);
+        itemRedownload.setVisible(selectedLocalCount > 0);
+        itemDeleteAll.setVisible(isMultipleSelection && (selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary()));
 
-        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
+        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
     }
 
     /**
@@ -614,8 +623,11 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
     private void purgeSelectedItems() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
-            List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).toList();
-            askDeleteItems(selectedContent);
+            List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+            // Remove external items if they can't be deleted
+            if (!Preferences.isDeleteExternalLibrary())
+                selectedContent = Stream.of(selectedContent).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).toList();
+            if (!selectedContent.isEmpty()) askDeleteItems(selectedContent);
         }
     }
 
@@ -652,9 +664,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                     return;
                 }
 
-                Uri folderUri = Uri.parse(c.getStorageUri());
-                DocumentFile folder = DocumentFile.fromTreeUri(requireContext(), folderUri);
-                if (folder != null && folder.exists()) {
+                DocumentFile folder = FileHelper.getFolderFromTreeUriString(requireContext(), c.getStorageUri());
+                if (folder != null) {
                     selectExtension.deselect();
                     selectionToolbar.setVisibility(View.GONE);
                     FileHelper.openFile(requireContext(), folder);
@@ -670,12 +681,14 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
 
         int securedContent = 0;
+        int externalContent = 0;
         List<Content> contents = new ArrayList<>();
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
             if (null == c) continue;
-            if (/*c.getSite().equals(Site.FAKKU2) || */
-                    c.getSite().equals(Site.EXHENTAI)) {
+            if (c.getStatus().equals(StatusContent.EXTERNAL)) {
+                externalContent++;
+            } else if (/*c.getSite().equals(Site.FAKKU2) ||*/ c.getSite().equals(Site.EXHENTAI)) {
                 securedContent++;
             } else {
                 contents.add(c);
@@ -685,6 +698,8 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
 
         String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
         if (securedContent > 0)
+            message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
+        else if (externalContent > 0)
             message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
 
         // TODO make it work for secured sites (Fakku, ExHentai) -> open a browser to fetch the relevant cookies ?
@@ -754,19 +769,6 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
                 .create().show();
     }
 
-    private void onDeleteSwipedBook(@NonNull final ContentItem item) {
-        // Deleted book is the last selected books => disable selection mode
-        if (item.isSelected()) {
-            selectExtension.deselect(item);
-            if (selectExtension.getSelectedItems().isEmpty())
-                selectionToolbar.setVisibility(View.GONE);
-        }
-
-        List<Content> items = new ArrayList<>();
-        items.add(item.getContent());
-        onDeleteBooks(items);
-    }
-
     private void onDeleteBooks(@NonNull final List<Content> items) {
         viewModel.deleteItems(items, this::onDeleteError);
     }
@@ -778,11 +780,12 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         Timber.e(t);
         if (t instanceof ContentNotRemovedException) {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
-            Snackbar snackbar = Snackbar.make(recyclerView, "Content removal failed", BaseTransientBottomBar.LENGTH_LONG);
-            viewModel.flagContentDelete(e.getContent(), false);
-            List<Content> contents = new ArrayList<>();
-            contents.add(e.getContent());
-            snackbar.setAction("RETRY", v -> viewModel.deleteItems(contents, this::onDeleteError));
+            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
+            // If the cause if not the file not being removed, keep the item on screen, not blinking
+            if (!(t instanceof FileNotRemovedException))
+                viewModel.flagContentDelete(e.getContent(), false);
+            snackbar.setAction("RETRY", v -> viewModel.deleteItems(Stream.of(e.getContent()).toList(), this::onDeleteError));
             snackbar.show();
         }
     }
@@ -934,7 +937,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         if (isEndless) { // Endless mode
             pager.hide();
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY));
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, null, ContentItem.ViewType.LIBRARY));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
             ContentItem item = new ContentItem(ContentItem.ViewType.LIBRARY);
@@ -1011,7 +1014,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
             selectExtension.setSelectable(true);
             selectExtension.setMultiSelect(true);
             selectExtension.setSelectOnLongClick(true);
-            selectExtension.setSelectionListener((item, b) -> LibraryFragment.this.onSelectionChanged());
+            selectExtension.setSelectionListener((item, b) -> this.onSelectionChanged());
         }
 
         recyclerView.setAdapter(fastAdapter);
@@ -1073,7 +1076,7 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         int minIndex = bounds.getLeft();
         int maxIndex = bounds.getRight();
 
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.LIBRARY)).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, ContentItem.ViewType.LIBRARY)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }
@@ -1246,15 +1249,17 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
      * Callback for any selection change (item added to or removed from selection)
      */
     private void onSelectionChanged() {
-        int selectedCount = selectExtension.getSelectedItems().size();
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        int selectedTotalCount = selectedItems.size();
 
-        if (0 == selectedCount) {
+        if (0 == selectedTotalCount) {
             selectionToolbar.setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
             new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
-            updateSelectionToolbar(selectedCount);
+            long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filter(s -> s.equals(StatusContent.DOWNLOADED)).count();
+            updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
             selectionToolbar.setVisibility(View.VISIBLE);
         }
     }
@@ -1306,31 +1311,25 @@ public class LibraryFragment extends Fragment implements ErrorsDialogFragment.Pa
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
     }
 
-    private IAdapter<ContentItem> getItemAdapter() {
-        if (itemAdapter != null) return itemAdapter;
-        else return pagedItemAdapter;
+    private void fixPermissions() {
+        PermissionUtil.requestExternalStorageReadWritePermission(this, PermissionUtil.RQST_STORAGE_PERMISSION);
+    }
+
+    private boolean isLowOnSpace() {
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(requireActivity(), Preferences.getStorageUri());
+        if (null == rootFolder) return false;
+
+        double freeSpaceRatio = new FileHelper.MemoryUsageFigures(requireActivity(), rootFolder).getFreeUsageRatio100();
+        return (freeSpaceRatio < 100 - Preferences.getMemoryAlertThreshold());
     }
 
     @Override
-    public void itemSwiped(int position, int direction) {
-        ContentItem item = getItemAdapter().getAdapterItem(position);
-
-        item.setSwipeDirection(direction);
-
-        if (item.getContent() != null) {
-            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(2000, this::onDeleteSwipedBook);
-            deleteDebouncer.submit(item);
-
-            Runnable cancelSwipe = () -> {
-                deleteDebouncer.clear();
-                item.setSwipeDirection(0);
-
-                int position1 = getItemAdapter().getAdapterPosition(item);
-                if (position1 != RecyclerView.NO_POSITION)
-                    fastAdapter.notifyItemChanged(position1);
-            };
-            item.setUndoSwipeAction(cancelSwipe);
-            fastAdapter.notifyItemChanged(position);
-        }
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode != PermissionUtil.RQST_STORAGE_PERMISSION) return;
+        if (permissions.length < 2) return;
+        if (grantResults.length == 0) return;
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            permissionsAlertBar.setVisibility(View.GONE);
+        } // Don't show rationales here; the alert still displayed on screen should be enough
     }
 }

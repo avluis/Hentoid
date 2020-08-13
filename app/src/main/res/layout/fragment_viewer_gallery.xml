@@ -16,8 +16,26 @@
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/viewer_gallery_menu"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="Gallery"
-        tools:targetApi="lollipop" />
+        app:title="Gallery" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/viewer_gallery_selection_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorPrimaryVariant"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:minHeight="?android:attr/actionBarSize"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/viewer_gallery_selection_menu"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/horizontal_barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="viewer_gallery_selection_toolbar,viewer_gallery_toolbar" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/viewer_gallery_recycler"
@@ -25,7 +43,7 @@
         android:layout_height="0dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewer_gallery_toolbar"
+        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
         app:spanCount="4"
         tools:listitem="@layout/item_viewer_gallery_image" />
 

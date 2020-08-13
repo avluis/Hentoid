@@ -25,6 +25,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import timber.log.Timber;
 
 public class HttpHelper {
 
@@ -61,7 +62,7 @@ public class HttpHelper {
         return null;
     }
 
-    public static Response getOnlineResource(String url, List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
+    public static Response getOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
         OkHttpClient okHttp = OkHttpClientSingleton.getInstance(TIMEOUT);
         Request.Builder requestBuilder = new Request.Builder().url(url);
         if (headers != null)
@@ -248,5 +249,22 @@ public class HttpHelper {
             if (url.startsWith("/")) return sourceUrl + url;
             else return sourceUrl + "/" + url;
         } else return url;
+    }
+
+    /**
+     * Get cookie headers set by the page at the given URL
+     *
+     * @param url Url to peek cookies from
+     * @return Raw cookies string
+     */
+    public static String peekCookies(@NonNull final String url) {
+        try {
+            Response response = getOnlineResource(url, null, false);
+            List<String> cookielist = response.headers().values("Set-Cookie");
+            return TextUtils.join("; ", cookielist);
+        } catch (IOException e) {
+            Timber.e(e);
+        }
+        return "";
     }
 }

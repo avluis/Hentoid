@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
+//import com.crashlytics.android.Crashlytics;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
@@ -41,9 +42,13 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.json.JsonContentCollection;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
@@ -81,6 +86,8 @@ public final class ContentHelper {
      * @param wrapPin True if the intent should be wrapped with PIN protection
      */
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
+        if (content.getSite().equals(Site.NONE)) return;
+
         Intent intent = new Intent(context, content.getWebActivityClass());
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(content.getGalleryUrl());
@@ -95,9 +102,9 @@ public final class ContentHelper {
      * @param context Context to use for the action
      * @param content Content whose JSON file to update
      */
-    public static void updateJson(@NonNull Context context, @NonNull Content content) {
+    public static void updateContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
+        DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
         if (null == file)
             throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
@@ -113,36 +120,38 @@ public final class ContentHelper {
      *
      * @param content Content whose JSON file to create
      */
-    public static void createJson(@NonNull Context context, @NonNull Content content) {
+    public static void createContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-        if (null == folder || !folder.exists()) return;
+        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        if (null == folder) return;
         try {
-            JsonHelper.createJson(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getStorageUri());
         }
     }
 
-    /**
-     * Open the given file using the device's app(s) of choice
-     * @param context Context to use for the action
-     * @param content Content to view
-     * @param aFile   File to be opened
-     *                     is faithful to the library screen's order)
-     */
-    public static void openFile(Context context, File aFile) {
-        Intent myIntent = new Intent(Intent.ACTION_VIEW);
-        File file = new File(aFile.getAbsolutePath());
-        String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
-        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-        myIntent.setDataAndType(Uri.fromFile(file), mimeType);
+    public static boolean updateQueueJson(@NonNull Context context, @NonNull CollectionDAO dao) {
+        List<QueueRecord> queue = dao.selectQueue();
+        // Save current queue (to be able to restore it in case the app gets uninstalled)
+        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).withoutNulls().toList();
+        JsonContentCollection contentCollection = new JsonContentCollection();
+        contentCollection.setQueue(queuedContent);
+
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        if (null == rootFolder) return false;
+
         try {
-            context.startActivity(myIntent);
-        } catch (ActivityNotFoundException e) {
-            Timber.e(e, "Activity not found to open %s", aFile.getAbsolutePath());
-            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
+            JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
+        } catch (IOException | IllegalArgumentException e) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e);
+//            Crashlytics.logException(e);
+            return false;
         }
+        return true;
     }
 
     public static boolean openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
@@ -208,8 +217,8 @@ public final class ContentHelper {
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         dao.insertContent(content);
 
-        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
-        else createJson(context, content);
+        if (!content.getJsonUri().isEmpty()) updateContentJson(context, content);
+        else createContentJson(context, content);
     }
 
     /**
@@ -224,20 +233,20 @@ public final class ContentHelper {
         Helper.assertNonUiThread();
         String storageUri = content.getStorageUri();
 
-        DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(storageUri));
-        if (null == folder || !folder.exists()) {
+        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, storageUri);
+        if (null == folder) {
             Timber.d("File not found!! Exiting method.");
             return new ArrayList<>();
         }
 
-        //return FileHelper.listFoldersFilter(context,
-        //        folder,
-        //        displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME)
-        //                && Helper.isImageExtensionSupported(FileHelper.getExtension(displayName))
-        //        )
-        //);
+        return FileHelper.listFoldersFilter(context,
+                folder,
+                displayName -> (displayName.toLowerCase().startsWith(Consts.THUMB_FILE_NAME)
+                        && ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName))
+                )
+        );
 
-        return FileHelper.listDocumentFiles(context, folder, Helper.getImageNamesFilter());
+//        return FileHelper.listDocumentFiles(context, folder, ImageHelper.getImageNamesFilter());
     }
 
     /**
@@ -246,47 +255,84 @@ public final class ContentHelper {
      * @param content Content to be removed
      * @param dao     DAO to be used
      */
-    public static void removeContent(@NonNull Context context, @NonNull Content content, @NonNull CollectionDAO dao) {
+    public static void removeContent(@NonNull Context context, @NonNull Content content, @NonNull CollectionDAO dao) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
         dao.deleteContent(content);
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
-        if (!content.getStorageUri().isEmpty()) {
-            DocumentFile folder = DocumentFile.fromTreeUri(context, Uri.parse(content.getStorageUri()));
-            if (null == folder || !folder.exists()) return;
+        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        if (null == folder)
+            throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
 
-            if (folder.delete()) {
-                Timber.i("Directory removed : %s", content.getStorageUri());
-            } else {
-                Timber.w("Failed to delete directory : %s", content.getStorageUri()); // TODO use exception to display feedback on screen
-            }
+        if (folder.delete()) {
+            Timber.i("Directory removed : %s", content.getStorageUri());
+        } else {
+            throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
         }
     }
 
     /**
-     * Remove the given page from the disk and the DB
+     * Remove the given pages from the disk and the DB
      *
-     * @param image Page to be removed
-     * @param dao   DAO to be used
+     * @param images  Pages to be removed
+     * @param dao     DAO to be used
+     * @param context Context to be used
      */
-    public static void removePage(@NonNull ImageFile image, @NonNull CollectionDAO dao, @NonNull final Context context) {
+    public static void removePages(@NonNull List<ImageFile> images, @NonNull CollectionDAO dao, @NonNull final Context context) {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
-        dao.deleteImageFile(image);
+        dao.deleteImageFiles(images);
 
-        // Remove the page from disk
-        if (image.getFileUri() != null && !image.getFileUri().isEmpty()) {
-            Uri uri = Uri.parse(image.getFileUri());
-
-            DocumentFile doc = DocumentFile.fromSingleUri(context, uri);
-            if (doc != null && doc.exists()) doc.delete();
+        // Remove the pages from disk
+        for (ImageFile image : images) {
+            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, image.getFileUri());
+            if (doc != null) doc.delete();
         }
 
+        // Lists all relevant content
+        List<Long> contents = Stream.of(images).filter(i -> i.content != null).map(i -> i.content.getTargetId()).distinct().toList();
+
         // Update content JSON if it exists (i.e. if book is not queued)
-        Content content = dao.selectContent(image.content.getTargetId());
-        if (!content.getJsonUri().isEmpty()) updateJson(context, content);
+        for (Long contentId : contents) {
+            Content content = dao.selectContent(contentId);
+            if (content != null && !content.getJsonUri().isEmpty())
+                updateContentJson(context, content);
+        }
+    }
+
+    // TODO doc
+    public static void setCover(@NonNull ImageFile newCover, @NonNull CollectionDAO dao, @NonNull final Context context) {
+        Helper.assertNonUiThread();
+
+        // Get all images from the DB
+        Content content = dao.selectContent(newCover.content.getTargetId());
+        if (null == content) return;
+        List<ImageFile> images = content.getImageFiles();
+        if (null == images) return;
+
+        // Remove current cover from the set
+        for (int i = 0; i < images.size(); i++)
+            if (images.get(i).isCover()) {
+                images.remove(i);
+                break;
+            }
+
+        // Duplicate given picture and set it as a cover
+        ImageFile cover = ImageFile.newCover(newCover.getUrl(), newCover.getStatus()).setFileUri(newCover.getFileUri()).setMimeType(newCover.getMimeType());
+        images.add(0, cover);
+
+        // Update cover URL to "ping" the content to be updated too (useful for library screen that only detects "direct" content updates)
+        content.setCoverImageUrl(newCover.getUrl());
+
+        // Update the whole list
+//        dao.replaceImageList(content.getId(), images);
+        dao.insertContent(content);
+
+        // Update content JSON if it exists (i.e. if book is not queued)
+        if (!content.getJsonUri().isEmpty())
+            updateContentJson(context, content);
     }
 
     /**
@@ -317,7 +363,8 @@ public final class ContentHelper {
     public static String formatBookFolderName(@NonNull final Content content) {
         String result = "";
 
-        String title = content.getTitle().replaceAll(UNAUTHORIZED_CHARS, "_");
+        String title = content.getTitle();
+        title = (null == title) ? "" : title.replaceAll(UNAUTHORIZED_CHARS, "_");
         String author = content.getAuthor().toLowerCase().replaceAll(UNAUTHORIZED_CHARS, "_");
 
         switch (Preferences.getFolderNameFormat()) {
@@ -457,24 +504,29 @@ public final class ContentHelper {
     }
 
     public static List<ImageFile> createImageListFromFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
-        List<DocumentFile> imageFiles = FileHelper.listDocumentFiles(context, folder, Helper.getImageNamesFilter());
+        List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, ImageHelper.getImageNamesFilter());
         if (!imageFiles.isEmpty())
             return createImageListFromFiles(imageFiles);
         else return Collections.emptyList();
     }
 
     public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files) {
+        return createImageListFromFiles(files, StatusContent.DOWNLOADED, 0, "");
+    }
+
+    public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files, StatusContent status, int initialOrder, String namePrefix) {
         Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
-        int order = 0;
+        int order = initialOrder;
         // Sort files by name alpha
-        List<DocumentFile> fileList = Stream.of(files).filter(f -> f != null).sortBy(DocumentFile::getName).collect(toList());
+        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sortBy(DocumentFile::getName).collect(toList());
         for (DocumentFile f : fileList) {
-            String name = (f.getName() != null) ? FileHelper.getFileNameWithoutExtension(f.getName()) : "";
+            String name = namePrefix + ((f.getName() != null) ? f.getName() : "");
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(name).setOrder(order).setUrl("").setStatus(StatusContent.DOWNLOADED).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.getUri().toString()).setStatus(status).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(name)));
             result.add(img);
         }
         return result;

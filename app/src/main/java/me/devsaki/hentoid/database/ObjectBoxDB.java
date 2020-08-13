@@ -56,8 +56,8 @@ public class ObjectBoxDB {
 
     // TODO - put indexes
 
-    // Status displayed in the library view
-    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()};
+    // Status displayed in the library view (all books of the library; both internal and external)
+    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
 
     private static ObjectBoxDB instance;
 
@@ -109,7 +109,7 @@ public class ObjectBoxDB {
     long insertContent(Content content) {
         List<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
-        Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
+        Query<Attribute> attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
 
         return store.callInTxNoException(() -> {
             // Master data management managed manually
@@ -118,6 +118,7 @@ public class ObjectBoxDB {
             Attribute dbAttr;
             Attribute inputAttr;
             if (attributes != null)
+                // This transaction may consume a lot of DB readers depending on the number of attributes involved
                 for (int i = 0; i < attributes.size(); i++) {
                     inputAttr = attributes.get(i);
                     dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
@@ -155,8 +156,9 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, statusCodes).build().find();
     }
 
-    Query<Content> selectAllLibraryBooksQ(boolean favsOnly) {
+    Query<Content> selectAllInternalBooksQ(boolean favsOnly) {
         // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
+        // and EXTERNAL because we only want to manage internal books here
         int[] storedContentStatus = new int[]{
                 StatusContent.DOWNLOADED.getCode(),
                 StatusContent.MIGRATED.getCode(),
@@ -168,6 +170,10 @@ public class ObjectBoxDB {
         QueryBuilder<Content> query = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus);
         if (favsOnly) query.equal(Content_.favourite, true);
         return query.build();
+    }
+
+    Query<Content> selectAllExternalBooksQ() {
+        return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.EXTERNAL.getCode()).build();
     }
 
     Query<Content> selectAllErrorJsonBooksQ() {
@@ -182,6 +188,21 @@ public class ObjectBoxDB {
                 StatusContent.ERROR.getCode()
         };
         return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build();
+    }
+
+    Query<Content> selectAllFlaggedBooksQ() {
+        return store.boxFor(Content.class).query().equal(Content_.isFlaggedForDeletion, true).build();
+    }
+
+    void flagContentById(long[] contentId, boolean flag) {
+        Box<Content> contentBox = store.boxFor(Content.class);
+        for (long id : contentId) {
+            Content c = contentBox.get(id);
+            if (c != null) {
+                c.setFlaggedForDeletion(flag);
+                contentBox.put(c);
+            }
+        }
     }
 
     void deleteContent(Content content) {
@@ -295,7 +316,15 @@ public class ObjectBoxDB {
 
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url) {
-        return store.boxFor(Content.class).query().equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
+        return store.boxFor(Content.class).query().notEqual(Content_.url, "").equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
+    }
+
+    @Nullable
+    Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged) {
+        QueryBuilder<Content> queryBuilder = store.boxFor(Content.class).query().equal(Content_.storageUri, folderUri);
+        if (onlyFlagged) queryBuilder.equal(Content_.isFlaggedForDeletion, true);
+
+        return queryBuilder.build().findFirst();
     }
 
     private static long[] getIdsFromAttributes(@NonNull List<Attribute> attrs) {
@@ -308,7 +337,8 @@ public class ObjectBoxDB {
     }
 
     private void applySortOrder(QueryBuilder<Content> query, int orderField, boolean orderDesc) {
-        // That one's tricky - see https://github.com/objectbox/objectbox-java/issues/17 => Implemented post-query build
+        // Random ordering is tricky (see https://github.com/objectbox/objectbox-java/issues/17)
+        // => Implemented post-query build
         if (orderField == Preferences.Constant.ORDER_FIELD_RANDOM) return;
 
         Property<Content> field = getPropertyFromField(orderField);
@@ -341,6 +371,8 @@ public class ObjectBoxDB {
                 return Content_.lastReadDate;
             case Preferences.Constant.ORDER_FIELD_READS:
                 return Content_.reads;
+            case Preferences.Constant.ORDER_FIELD_SIZE:
+                return Content_.size;
             default:
                 return null;
         }
@@ -489,7 +521,7 @@ public class ObjectBoxDB {
 
         QueryBuilder<Content> contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
         contentFromAttributesQueryBuilder.in(Content_.status, libraryStatus);
-        if (filterFavourites) contentFromSourceQueryBuilder.equal(Content_.favourite, true);
+        if (filterFavourites) contentFromAttributesQueryBuilder.equal(Content_.favourite, true);
         contentFromAttributesQueryBuilder.link(Content_.attributes)
                 .equal(Attribute_.type, 0)
                 .equal(Attribute_.name, "");
@@ -602,18 +634,17 @@ public class ObjectBoxDB {
             int itemsPerPage) {
         long[] filteredContent = selectFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
+        List<Integer> libraryStatusAsList = Helper.getListFromPrimitiveArray(libraryStatus);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
 
         // Compute attribute count for sorting
-        int count;
+        long count;
         for (Attribute a : result) {
-            if (0 == filteredContent.length) count = a.contents.size();
-            else {
-                count = 0;
-                for (Content c : a.contents)
-                    if (filteredContentAsList.contains(c.getId())) count++;
-            }
-            a.setCount(count);
+            count = Stream.of(a.contents)
+                    .filter(c -> libraryStatusAsList.contains(c.getStatus().getCode()))
+                    .filter(c -> filteredContentAsList.isEmpty() || filteredContentAsList.contains(c.getId()))
+                    .count();
+            a.setCount((int) count);
         }
 
         // Apply sort order
@@ -727,6 +758,32 @@ public class ObjectBoxDB {
         return result;
     }
 
+    Map<Site, ImmutablePair<Integer, Long>> selectMemoryUsagePerSource() {
+        // Get all downloaded images regardless of the book's status
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()});
+        List<Content> books = query.build().find();
+
+        Map<Site, ImmutablePair<Integer, Long>> result = new EnumMap<>(Site.class);
+        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // (see https://github.com/objectbox/objectbox-java/issues/422)
+        // => Group by and count have to be done manually (thanks God Stream exists !)
+        // Group and count by type
+        Map<Site, List<Content>> map = Stream.of(books).collect(Collectors.groupingBy(Content::getSite));
+        for (Map.Entry<Site, List<Content>> entry : map.entrySet()) {
+            Site s = entry.getKey();
+            int count = 0;
+            long size = 0;
+            if (entry.getValue() != null) {
+                count = entry.getValue().size();
+                for (Content c : entry.getValue()) size += c.getSize();
+            }
+            result.put(s, new ImmutablePair<>(count, size));
+        }
+
+        return result;
+    }
+
     void insertErrorRecord(@NonNull final ErrorRecord record) {
         store.boxFor(ErrorRecord.class).put(record);
     }
@@ -748,8 +805,8 @@ public class ObjectBoxDB {
         store.boxFor(ImageFile.class).query().equal(ImageFile_.contentId, contentId).build().remove();
     }
 
-    void deleteImageFile(long imageId) {
-        store.boxFor(ImageFile.class).remove(imageId);
+    void deleteImageFiles(List<ImageFile> images) {
+        store.boxFor(ImageFile.class).remove(images);
     }
 
     void insertImageFiles(@NonNull List<ImageFile> imgs) {
@@ -765,7 +822,7 @@ public class ObjectBoxDB {
     Query<ImageFile> selectDownloadedImagesFromContent(long id) {
         QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
         builder.equal(ImageFile_.contentId, id);
-        builder.equal(ImageFile_.status, StatusContent.DOWNLOADED.getCode());
+        builder.in(ImageFile_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.EXTERNAL.getCode()});
         builder.order(ImageFile_.order);
         return builder.build();
     }
@@ -785,6 +842,7 @@ public class ObjectBoxDB {
         return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
     }
 
+
     /**
      * ONE-SHOT USE QUERIES (MIGRATION & MAINTENANCE)
      */
@@ -795,6 +853,10 @@ public class ObjectBoxDB {
 
     List<Content> selectContentWithOldTsuminoCovers() {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/").build().find();
+    }
+
+    List<Content> selectDownloadedContentWithNoSize() {
+        return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.size).build().find();
     }
 
     public Query<Content> selectOldStoredContentQ() {

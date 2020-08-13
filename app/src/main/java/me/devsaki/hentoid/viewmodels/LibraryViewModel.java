@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -212,8 +211,8 @@ public class LibraryViewModel extends AndroidViewModel {
 
             // Persist in it JSON
             if (!theContent.getJsonUri().isEmpty())
-                ContentHelper.updateJson(getApplication(), theContent);
-            else ContentHelper.createJson(getApplication(), theContent);
+                ContentHelper.updateContentJson(getApplication(), theContent);
+            else ContentHelper.createContentJson(getApplication(), theContent);
 
             // Persist in it DB
             dao.insertContent(theContent);
@@ -221,7 +220,7 @@ public class LibraryViewModel extends AndroidViewModel {
             return theContent;
         }
 
-        throw new InvalidParameterException("ContentId " + contentId + " does not refer to a valid content");
+        throw new InvalidParameterException("Invalid ContentId : " + contentId);
     }
 
     /**
@@ -247,8 +246,8 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Delete the given list of content
      *
-     * @param contents   List of content to be deleted
-     * @param onError    Callback to run when an error occurs
+     * @param contents List of content to be deleted
+     * @param onError  Callback to run when an error occurs
      */
     public void deleteItems(@NonNull final List<Content> contents, Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
@@ -256,11 +255,12 @@ public class LibraryViewModel extends AndroidViewModel {
 
         compositeDisposable.add(
                 Observable.fromIterable(contents)
-                        .subscribeOn(Schedulers.io())
-                        .flatMap(s -> Observable.fromCallable(() -> doDeleteContent(s)))
+                        .observeOn(Schedulers.io())
+                        .map(this::doDeleteContent)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> {
+                                    // Nothing to do here; UI callbacks are handled through LiveData
                                 },
                                 onError::accept
                         )
@@ -285,7 +285,10 @@ public class LibraryViewModel extends AndroidViewModel {
                 Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
                 return theContent;
             }
-            throw new ContentNotRemovedException(content, "ContentId " + content.getId() + " does not refer to a valid content");
+            throw new ContentNotRemovedException(content, "Error when trying to delete : invalid ContentId " + content.getId());
+        } catch (ContentNotRemovedException cnre) {
+            Timber.e(cnre, "Error when trying to delete %s", content.getId());
+            throw cnre;
         } catch (Exception e) {
             Timber.e(e, "Error when trying to delete %s", content.getId());
             throw new ContentNotRemovedException(content, "Error when trying to delete " + content.getId() + " : " + e.getMessage(), e);
@@ -301,10 +304,10 @@ public class LibraryViewModel extends AndroidViewModel {
     public void archiveContent(@NonNull final Content content, Consumer<File> onSuccess) {
         Timber.d("Building file list for: %s", content.getTitle());
 
-        DocumentFile bookFolder = DocumentFile.fromTreeUri(getApplication(), Uri.parse(content.getStorageUri()));
-        if (null == bookFolder || !bookFolder.exists()) return;
+        DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(getApplication(), content.getStorageUri());
+        if (null == bookFolder) return;
 
-        List<DocumentFile> files = FileHelper.listDocumentFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive
+        List<DocumentFile> files = FileHelper.listFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive
         if (!files.isEmpty()) {
             // Create folder to share from
             File sharedDir = new File(getApplication().getExternalCacheDir() + "/shared");

@@ -2,10 +2,8 @@ package me.devsaki.hentoid.util;
 
 import android.app.Activity;
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.DocumentsContract;
@@ -16,8 +14,10 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 
+import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -27,8 +27,15 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
+import me.devsaki.hentoid.services.ExternalImportService;
 import me.devsaki.hentoid.services.ImportService;
 import timber.log.Timber;
 
@@ -42,7 +49,8 @@ public class ImportHelper {
     }
 
 
-    private static final int RQST_STORAGE_PERMISSION = 3;
+    private static final int RQST_STORAGE_PERMISSION_HENTOID = 3;
+    private static final int RQST_STORAGE_PERMISSION_EXTERNAL = 4;
 
     @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.CREATE_FAIL, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
@@ -63,21 +71,20 @@ public class ImportHelper {
         public boolean rename;
         public boolean cleanAbsent;
         public boolean cleanNoImages;
-        public boolean cleanUnreadable;
     }
 
     public static boolean isHentoidFolderName(@NonNull final String folderName) {
         return hentoidFolderNames.accept(folderName);
     }
 
-    public static void openFolderPicker(@NonNull final Fragment caller) {
+    public static void openFolderPicker(@NonNull final Fragment caller, boolean isExternal) {
         Intent intent = getFolderPickerIntent(caller.requireContext());
-        caller.startActivityForResult(intent, RQST_STORAGE_PERMISSION);
+        caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
     }
 
-    public static void openFolderPicker(@NonNull final Activity caller) {
+    public static void openFolderPicker(@NonNull final Activity caller, boolean isExternal) {
         Intent intent = getFolderPickerIntent(caller.getParent());
-        caller.startActivityForResult(intent, RQST_STORAGE_PERMISSION);
+        caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
     }
 
     private static Intent getFolderPickerIntent(@NonNull final Context context) {
@@ -90,7 +97,7 @@ public class ImportHelper {
 
         // Start the SAF at the specified location
         if (Build.VERSION.SDK_INT >= O && !Preferences.getStorageUri().isEmpty()) {
-            DocumentFile file = DocumentFile.fromTreeUri(context, Uri.parse(Preferences.getStorageUri()));
+            DocumentFile file = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
             if (file != null)
                 intent.putExtra(EXTRA_INITIAL_URI, file.getUri());
         }
@@ -109,70 +116,87 @@ public class ImportHelper {
         HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
 
         // Return from the SAF picker
-        if (requestCode == RQST_STORAGE_PERMISSION && resultCode == Activity.RESULT_OK) {
+        if ((requestCode == RQST_STORAGE_PERMISSION_HENTOID || requestCode == RQST_STORAGE_PERMISSION_EXTERNAL) && resultCode == Activity.RESULT_OK) {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
-            if (treeUri != null)
-                return setAndScanFolder(context, treeUri, true, null);
-            else return Result.INVALID_FOLDER;
+            if (treeUri != null) {
+                if (requestCode == RQST_STORAGE_PERMISSION_EXTERNAL)
+                    return setAndScanExternalFolder(context, treeUri);
+                else
+                    return setAndScanHentoidFolder(context, treeUri, true, null);
+            } else return Result.INVALID_FOLDER;
         } else if (resultCode == Activity.RESULT_CANCELED) {
             return Result.CANCELED;
         } else return Result.OTHER;
     }
 
     public static @Result
-    int setAndScanFolder(
+    int setAndScanHentoidFolder(
             @NonNull final Context context,
             @NonNull final Uri treeUri,
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
 
-        boolean isUriPermissionPeristed = false;
-        ContentResolver contentResolver = context.getContentResolver();
-        String treeUriId = DocumentsContract.getTreeDocumentId(treeUri);
+        // Persist I/O permissions
+        Uri externalUri = null;
+        if (!Preferences.getExternalLibraryUri().isEmpty())
+            externalUri = Uri.parse(Preferences.getExternalLibraryUri());
+        FileHelper.persistNewUriPermission(context, treeUri, externalUri);
 
-        for (UriPermission p : contentResolver.getPersistedUriPermissions()) {
-            if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {
-                isUriPermissionPeristed = true;
-                Timber.d("Uri permission already persisted for %s", treeUri);
-                break;
-            }
-        }
-
-        if (!isUriPermissionPeristed) {
-            Timber.d("Persisting Uri permission for %s", treeUri);
-            // Release previous access permissions, if different than the new one
-            FileHelper.revokePreviousPermissions(contentResolver, treeUri);
-            // Persist new access permission
-            contentResolver.takePersistableUriPermission(treeUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        }
-
+        // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
         if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return Result.INVALID_FOLDER;
         }
+        // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = addHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
             Timber.e("Could not create Hentoid folder in root %s", docFile.getUri().toString());
             return Result.CREATE_FAIL;
         }
+        // Set the folder as the app's downloads folder
         if (!FileHelper.checkAndSetRootFolder(context, hentoidFolder, true)) {
             Timber.e("Could not set the selected root folder %s", hentoidFolder.getUri().toString());
             return Result.INVALID_FOLDER;
         }
 
+        // Scan the folder for an existing library; start the import
         if (hasBooks(context)) {
             if (!askScanExisting) {
-                runImport(context, options);
+                runHentoidImport(context, options);
                 return Result.OK_LIBRARY_DETECTED;
             } else return Result.OK_LIBRARY_DETECTED_ASK;
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
-            new ObjectBoxDAO(context).deleteAllLibraryBooks(true);
+            new ObjectBoxDAO(context).deleteAllInternalBooks(true);
             return Result.OK_EMPTY_FOLDER;
         }
+    }
+
+    public static @Result
+    int setAndScanExternalFolder(
+            @NonNull final Context context,
+            @NonNull final Uri treeUri) {
+
+        // Persist I/O permissions
+        Uri hentoidUri = null;
+        if (!Preferences.getStorageUri().isEmpty())
+            hentoidUri = Uri.parse(Preferences.getStorageUri());
+        FileHelper.persistNewUriPermission(context, treeUri, hentoidUri);
+
+        // Check if the folder exists
+        DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
+        if (null == docFile || !docFile.exists()) {
+            Timber.e("Could not find the selected file %s", treeUri.toString());
+            return Result.INVALID_FOLDER;
+        }
+        // Set the folder as the app's external library folder
+        Preferences.setExternalLibraryUri(docFile.getUri().toString());
+
+        // Start the import
+        runExternalImport(context);
+        return Result.OK_LIBRARY_DETECTED;
     }
 
     public static void showExistingLibraryDialog(
@@ -187,7 +211,7 @@ public class ImportHelper {
                 .setPositiveButton(android.R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            runImport(context, null);
+                            runHentoidImport(context, null);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog2, which) -> {
@@ -259,7 +283,7 @@ public class ImportHelper {
         else return root;
     }
 
-    private static void runImport(
+    private static void runHentoidImport(
             @NonNull final Context context,
             @Nullable final ImportOptions options
     ) {
@@ -270,7 +294,6 @@ public class ImportHelper {
         builder.setRefreshRename(null != options && options.rename);
         builder.setRefreshCleanAbsent(null != options && options.cleanAbsent);
         builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
-        builder.setRefreshCleanUnreadable(null != options && options.cleanUnreadable);
         intent.putExtras(builder.getBundle());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -278,5 +301,155 @@ public class ImportHelper {
         } else {
             context.startService(intent);
         }
+    }
+
+    private static void runExternalImport(
+            @NonNull final Context context
+    ) {
+        ImportNotificationChannel.init(context);
+        Intent intent = ExternalImportService.makeIntent(context);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent);
+        } else {
+            context.startService(intent);
+        }
+    }
+
+    public static Content scanBookFolder(
+            @NonNull final Context context,
+            @NonNull final DocumentFile bookFolder,
+            @NonNull final ContentProviderClient client,
+            @NonNull final List<String> parentNames,
+            @NonNull final StatusContent targetStatus,
+            @Nullable final List<DocumentFile> imageFiles,
+            @Nullable final DocumentFile jsonFile) {
+        Timber.d(">>>> scan book folder %s", bookFolder.getUri());
+
+        Content result = null;
+        if (jsonFile != null) {
+            try {
+                JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
+                result = content.toEntity();
+                result.setJsonUri(jsonFile.getUri().toString());
+            } catch (IOException ioe) {
+                Timber.w(ioe);
+            }
+        }
+        if (null == result) {
+            String title = bookFolder.getName();
+            if (null == title) title = "";
+            title = title.replace("_", " ");
+            // Remove expressions between []'s
+            title = title.replaceAll("\\[[^(\\[\\])]*\\]", "");
+            title = title.trim();
+            result = new Content().setTitle(title);
+            Site site = Site.NONE;
+            if (!parentNames.isEmpty()) {
+                for (String parent : parentNames)
+                    for (Site s : Site.values())
+                        if (parent.equalsIgnoreCase(s.getFolder())) {
+                            site = s;
+                            break;
+                        }
+            }
+            result.setSite(site);
+            result.setDownloadDate(bookFolder.lastModified());
+            result.addAttributes(parentNamesAsTags(parentNames, targetStatus.equals(StatusContent.EXTERNAL)));
+        }
+
+        result.setStatus(targetStatus).setStorageUri(bookFolder.getUri().toString());
+        List<ImageFile> images = new ArrayList<>();
+        scanImages(context, bookFolder, client, targetStatus, false, images, imageFiles);
+        boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
+        if (!coverExists) createCover(images);
+        result.setImageFiles(images);
+        if (0 == result.getQtyPages())
+            result.setQtyPages(images.size() - 1); // Minus the cover
+        result.computeSize();
+        return result;
+    }
+
+    public static Content scanChapterFolders(
+            @NonNull final Context context,
+            @NonNull final DocumentFile parent,
+            @NonNull final List<DocumentFile> chapterFolders,
+            @NonNull final ContentProviderClient client,
+            @NonNull final List<String> parentNames,
+            @Nullable final DocumentFile jsonFile) {
+        Timber.d(">>>> scan chapter folder %s", parent.getUri());
+
+        Content result = null;
+        if (jsonFile != null) {
+            try {
+                JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
+                result = content.toEntity();
+                result.setJsonUri(jsonFile.getUri().toString());
+            } catch (IOException ioe) {
+                Timber.w(ioe);
+            }
+        }
+        if (null == result) {
+            result = new Content().setSite(Site.NONE).setTitle((null == parent.getName()) ? "" : parent.getName()).setUrl("");
+            result.setDownloadDate(parent.lastModified());
+            result.addAttributes(parentNamesAsTags(parentNames, true));
+        }
+
+        result.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.getUri().toString());
+        List<ImageFile> images = new ArrayList<>();
+        // Scan pages across all subfolders
+        for (DocumentFile chapterFolder : chapterFolders)
+            scanImages(context, chapterFolder, client, StatusContent.EXTERNAL, true, images, null);
+        boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
+        if (!coverExists) createCover(images);
+        result.setImageFiles(images);
+        if (0 == result.getQtyPages())
+            result.setQtyPages(images.size() - 1); // Minus the cover
+        result.computeSize();
+        return result;
+    }
+
+    private static void scanImages(
+            @NonNull final Context context,
+            @NonNull final DocumentFile bookFolder,
+            @NonNull final ContentProviderClient client,
+            @NonNull final StatusContent targetStatus,
+            boolean addFolderNametoImgName,
+            @NonNull final List<ImageFile> images,
+            @Nullable List<DocumentFile> imageFiles) {
+        int order = (images.isEmpty()) ? 0 : Stream.of(images).map(ImageFile::getOrder).max(Integer::compareTo).get();
+        String folderName = (null == bookFolder.getName()) ? "" : bookFolder.getName();
+        if (null == imageFiles)
+            imageFiles = FileHelper.listFiles(context, bookFolder, client, ImageHelper.getImageNamesFilter());
+
+        String namePrefix = "";
+        if (addFolderNametoImgName) namePrefix = folderName + "-";
+
+        images.addAll(ContentHelper.createImageListFromFiles(imageFiles, targetStatus, order, namePrefix));
+    }
+
+    private static void createCover(@NonNull final List<ImageFile> images) {
+        if (!images.isEmpty()) {
+            ImageFile firstImg = images.get(0);
+            ImageFile cover = new ImageFile(0, "", StatusContent.DOWNLOADED, images.size());
+            cover.setName(Consts.THUMB_FILE_NAME);
+            cover.setFileUri(firstImg.getFileUri());
+            cover.setSize(firstImg.getSize());
+            cover.setIsCover(true);
+            images.add(0, cover);
+        }
+    }
+
+    private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames, boolean addExternalTag) {
+        AttributeMap result = new AttributeMap();
+        // Don't include the very first one, it's the name of the root folder of the library
+        if (parentNames.size() > 1) {
+            for (int i = 1; i < parentNames.size(); i++)
+                result.add(new Attribute(AttributeType.TAG, parentNames.get(i), parentNames.get(i), Site.NONE));
+        }
+        // Add a generic tag to filter external library books
+        if (addExternalTag)
+            result.add(new Attribute(AttributeType.TAG, "external-library", "external-library", Site.NONE));
+        return result;
     }
 }

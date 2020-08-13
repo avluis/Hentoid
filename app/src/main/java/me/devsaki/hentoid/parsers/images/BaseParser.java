@@ -29,11 +29,17 @@ public abstract class BaseParser implements ImageListParser {
         Timber.d("Gallery URL: %s", readerUrl);
 
         List<String> imgUrls = parseImages(content);
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(imgUrls, content.getCoverImageUrl(), StatusContent.SAVED);
+        List<ImageFile> result = ParseHelper.urlsToImageFiles(imgUrls, content.getCoverImageUrl(), StatusContent.SAVED);
 
-        Timber.d("%s", images);
+        // Copy the content's download params to the images
+        String downloadParamsStr = content.getDownloadParams();
+        if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
+            for (ImageFile i : result) i.setDownloadParams(downloadParamsStr);
+        }
 
-        return images;
+        Timber.d("%s", result);
+
+        return result;
     }
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
