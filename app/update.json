@@ -16,8 +16,7 @@
 	  {"sourceName":"HENTAI2READ", "status":"ORANGE", "fixedByBuild":"236"},
 	  {"sourceName":"NEXUS", "status":"ORANGE", "fixedByBuild":"244"},
 	  {"sourceName":"EHENTAI", "status":"ORANGE", "fixedByBuild":"244"},
-	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"254"},
-	  {"sourceName":"NEXUS", "status":"BLACK"}
+	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"254"}
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
