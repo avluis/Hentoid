@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="350dp"
     android:layout_height="wrap_content"
     android:gravity="start"
     android:padding="16dp"
@@ -16,6 +16,7 @@
         android:text="@string/err_stats_title"
         android:textSize="@dimen/text_header_6"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -37,6 +38,7 @@
         android:text="@string/redownload_open_log"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_open_in_new"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/stats_details" />
 
@@ -48,6 +50,7 @@
         android:text="@string/redownload_share_log"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_share"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/open_log_btn" />
 
