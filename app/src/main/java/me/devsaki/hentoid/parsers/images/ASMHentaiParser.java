@@ -22,7 +22,7 @@ public class ASMHentaiParser extends BaseParser {
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (doc != null) {
             String imgUrl = "https:" +
-                    doc.select("div.full_gallery")
+                    doc.select("div.full_image")
                             .select("a")
                             .select("img")
                             .attr("src");
