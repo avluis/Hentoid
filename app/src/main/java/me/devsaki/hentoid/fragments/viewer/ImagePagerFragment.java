@@ -260,8 +260,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(listener);
-        adapter.setRecyclerView(null);
-        adapter.destroy();
+        if (adapter != null) {
+            adapter.setRecyclerView(null);
+            adapter.destroy();
+        }
         if (recyclerView != null) recyclerView.setAdapter(null);
         recyclerView = null;
         super.onDestroy();
