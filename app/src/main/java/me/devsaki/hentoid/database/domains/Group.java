@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import androidx.annotation.NonNull;
+
 import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
@@ -24,6 +26,12 @@ public class Group {
 
     public Group() {
     }  // Required for ObjectBox to work
+
+    public Group(@NonNull final Grouping grouping, @NonNull final String name, int order) {
+        this.grouping = grouping;
+        this.name = name;
+        this.order = order;
+    }
 
     public static class GroupingConverter implements PropertyConverter<Grouping, Integer> {
         @Override

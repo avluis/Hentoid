@@ -10,10 +10,14 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.BiConsumer;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 public class DatabaseMaintenance {
@@ -169,20 +173,31 @@ public class DatabaseMaintenance {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
-            Timber.i("Fixing non-existing groupings : start");
+            Timber.i("Create non-existing groupings : start");
             List<Grouping> groupingsToProcess = new ArrayList<>();
             for (Grouping grouping : Grouping.values())
                 if (grouping.canReorderBooks())
                     if (db.countGroupsFor(grouping) > 0) groupingsToProcess.add(grouping);
 
-            Timber.i("Fixing non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
+            Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
             int max = groupingsToProcess.size();
             float pos = 1;
             for (Grouping g : groupingsToProcess) {
-                // TODO initiate groups according to where we are; consider using a Helper
+                if (g.equals(Grouping.ARTIST)) {
+                    List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0);
+                    artists.addAll(db.selectAvailableAttributes(AttributeType.CIRCLE, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0));
+                    int order = 1;
+                    for (Attribute a : artists) {
+                        Group group = new Group(Grouping.ARTIST, a.getName(), order++);
+                        db.insertGroup(group);
+                    }
+                } else if (g.equals(Grouping.CUSTOM)) {
+                    Group allBooks = new Group(Grouping.CUSTOM, "Uncategorized", 0);
+                    db.insertGroup(allBooks);
+                }
                 emitter.onNext(pos++ / max);
             }
-            Timber.i("Fixing non-existing groupings : done");
+            Timber.i("Create non-existing groupings : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

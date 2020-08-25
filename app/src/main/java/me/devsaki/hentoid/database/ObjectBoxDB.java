@@ -848,6 +848,10 @@ public class ObjectBoxDB {
         return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
     }
 
+    long insertGroup(Group group) {
+        return store.boxFor(Group.class).put(group);
+    }
+
 
     /**
      * ONE-SHOT USE QUERIES (MIGRATION & MAINTENANCE)
