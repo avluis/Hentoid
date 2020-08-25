@@ -3,6 +3,7 @@ package me.devsaki.hentoid.parsers.images;
 import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,8 +22,11 @@ public class ASMHentaiParser extends BaseParser {
         // Fetch the reader page
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (doc != null) {
+            Elements imgContainer = doc.select("div.full_image"); // New ASM layout
+            if (imgContainer.isEmpty())
+                imgContainer = doc.select("div.full_gallery"); // Old ASM layout; current ASM Comics layout
             String imgUrl = "https:" +
-                    doc.select("div.full_image")
+                    imgContainer
                             .select("a")
                             .select("img")
                             .attr("src");
