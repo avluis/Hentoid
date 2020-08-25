@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.12.5/hentoid1125-254.apk",
-  "versionCode": "254",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.12.6/hentoid1126-255.apk",
+  "versionCode": "255",
   "updateURL.beta": "https://cdn.discordapp.com/attachments/418817277383671808/717001334703783946/hentoid1120-224-beta4.apk",
   "versionCode.beta": "224",
   "sourceAlerts":[
@@ -16,7 +16,8 @@
 	  {"sourceName":"HENTAI2READ", "status":"ORANGE", "fixedByBuild":"236"},
 	  {"sourceName":"NEXUS", "status":"ORANGE", "fixedByBuild":"244"},
 	  {"sourceName":"EHENTAI", "status":"ORANGE", "fixedByBuild":"244"},
-	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"254"}
+	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"254"},
+	  {"sourceName":"ASMHENTAI", "status":"RED", "fixedByBuild":"255"}
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
