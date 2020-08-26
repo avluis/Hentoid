@@ -16,6 +16,7 @@
         android:text="@string/redownload_dialog_title"
         android:textSize="@dimen/text_header_6"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -50,6 +51,7 @@
         android:text="@string/redownload_open_log"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_open_in_new"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/redownload_detail_first_error" />
 
@@ -61,20 +63,21 @@
         android:text="@string/redownload_share_log"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_share"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/open_log_btn" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/redownload_btn"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:text="@string/redownload_action"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_download"
-        app:layout_constraintEnd_toEndOf="@id/share_log_btn"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/share_log_btn" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

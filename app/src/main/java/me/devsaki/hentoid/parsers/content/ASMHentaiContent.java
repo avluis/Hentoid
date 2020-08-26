@@ -47,7 +47,9 @@ public class ASMHentaiContent implements ContentParser {
         result.setSite(theUrl.toLowerCase().contains("comics") ? Site.ASMHENTAI_COMICS : Site.ASMHENTAI);
         if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(galleryUrl.substring(0, galleryUrl.length() - 2).replace("/gallery", ""));
+        // Remove the host from the URL
+        galleryUrl = galleryUrl.substring(galleryUrl.indexOf("/gallery/") + 8, galleryUrl.length() - 2);
+        result.setUrl(galleryUrl);
         result.setCoverImageUrl("https:" + coverUrl);
 
         result.setTitle(Helper.removeNonPrintableChars(title));
