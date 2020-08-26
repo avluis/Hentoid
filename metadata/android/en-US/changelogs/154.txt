@@ -1,0 +1,8 @@
+Changed
+Updated ASMHentai icon
+
+Fixed
+Alignment with new ASMHentai layout : downloads are working again !
+External library : Refreshing does not create blank books anymore
+Gallery screen : Crash when changing the device's orientation
+Import metadata : File picker is not restricted to JSON files anymore (was not working properly on certain devices)

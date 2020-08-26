@@ -26,7 +26,7 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 29
-        versionCode 153
+        versionCode 154
         versionName '1.12.6'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN")?: "") + '\"'
