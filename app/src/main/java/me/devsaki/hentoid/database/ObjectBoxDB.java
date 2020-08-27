@@ -35,6 +35,7 @@ import me.devsaki.hentoid.database.domains.Content_;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ErrorRecord_;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.Group_;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.ImageFile_;
@@ -850,6 +851,10 @@ public class ObjectBoxDB {
 
     long insertGroup(Group group) {
         return store.boxFor(Group.class).put(group);
+    }
+
+    long insertGroupItem(GroupItem item) {
+        return store.boxFor(GroupItem.class).put(item);
     }
 
 

@@ -4,6 +4,8 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +15,7 @@ import io.reactivex.functions.BiConsumer;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
@@ -180,8 +183,8 @@ public class DatabaseMaintenance {
                     if (db.countGroupsFor(grouping) > 0) groupingsToProcess.add(grouping);
 
             Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
-            int max = groupingsToProcess.size();
-            float pos = 1;
+            int bookInsertCount = 0;
+            List<ImmutableTriple<Group, Attribute, List<Content>>> toInsert = new ArrayList<>();
             for (Grouping g : groupingsToProcess) {
                 if (g.equals(Grouping.ARTIST)) {
                     List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0);
@@ -189,13 +192,33 @@ public class DatabaseMaintenance {
                     int order = 1;
                     for (Attribute a : artists) {
                         Group group = new Group(Grouping.ARTIST, a.getName(), order++);
-                        db.insertGroup(group);
+                        bookInsertCount += a.contents.size();
+
+                        ImmutableTriple<Group, Attribute, List<Content>> data = new ImmutableTriple<>(group, a, a.contents);
+                        toInsert.add(data);
                     }
                 } else if (g.equals(Grouping.CUSTOM)) {
-                    Group allBooks = new Group(Grouping.CUSTOM, "Uncategorized", 0);
-                    db.insertGroup(allBooks);
+                    Group group = new Group(Grouping.CUSTOM, "Uncategorized", 0);
+                    List<Content> books = db.selectAllInternalBooksQ(false).find();
+                    books.addAll(db.selectAllExternalBooksQ().find());
+                    bookInsertCount += books.size();
+
+                    ImmutableTriple<Group, Attribute, List<Content>> data = new ImmutableTriple<>(group, null, books);
+                    toInsert.add(data);
                 }
-                emitter.onNext(pos++ / max);
+            }
+
+            Timber.i("Create non-existing groupings : %s relations to create", bookInsertCount);
+            float pos = 1;
+            for (ImmutableTriple<Group, Attribute, List<Content>> data : toInsert) {
+                db.insertGroup(data.left);
+                if (data.middle != null) data.middle.group.setAndPutTarget(data.left);
+                int order = 0;
+                for (Content book : data.right) {
+                    GroupItem item = new GroupItem(book, data.left, order++);
+                    db.insertGroupItem(item);
+                    emitter.onNext(pos++ / bookInsertCount);
+                }
             }
             Timber.i("Create non-existing groupings : done");
         } finally {

@@ -14,6 +14,7 @@ import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToMany;
+import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
@@ -34,6 +35,7 @@ public class Attribute {
     private AttributeType type;
     @Backlink(to = "attribute")
     private ToMany<AttributeLocation> locations; // One entry per site
+    public ToOne<Group> group; // Associated group
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient

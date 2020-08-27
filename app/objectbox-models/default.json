@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:6281760634329431587",
-      "lastPropertyId": "5:7452586865244450379",
+      "lastPropertyId": "6:2675592496735450076",
       "name": "Attribute",
       "properties": [
         {
@@ -27,6 +27,14 @@
           "indexId": "7:689427048355118025",
           "type": 5,
           "flags": 10
+        },
+        {
+          "id": "6:2675592496735450076",
+          "name": "groupId",
+          "indexId": "13:7082707691451462644",
+          "type": 11,
+          "flags": 1548,
+          "relationTarget": "Group"
         }
       ],
       "relations": []
@@ -462,7 +470,7 @@
     }
   ],
   "lastEntityId": "11:8625892909159295220",
-  "lastIndexId": "12:7789399647013237776",
+  "lastIndexId": "13:7082707691451462644",
   "lastRelationId": "3:1412032361666532056",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
