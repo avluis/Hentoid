@@ -180,7 +180,7 @@ public class DatabaseMaintenance {
             List<Grouping> groupingsToProcess = new ArrayList<>();
             for (Grouping grouping : Grouping.values())
                 if (grouping.canReorderBooks())
-                    if (db.countGroupsFor(grouping) > 0) groupingsToProcess.add(grouping);
+                    if (0 == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping);
 
             Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
             int bookInsertCount = 0;

@@ -26,6 +26,9 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -52,6 +55,9 @@ public class LibraryViewModel extends AndroidViewModel {
     private LiveData<PagedList<Content>> currentSource;
     private LiveData<Integer> totalContent;
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
+    // Groups data
+    private LiveData<List<Group>> currentGroupsSource;
+    private MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
 
     // Updated whenever a new search is performed
     private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
@@ -77,6 +83,11 @@ public class LibraryViewModel extends AndroidViewModel {
     protected void onCleared() {
         super.onCleared();
         compositeDisposable.clear();
+    }
+
+    @NonNull
+    public LiveData<List<Group>> getGroups() {
+        return groups;
     }
 
     @NonNull
@@ -167,6 +178,12 @@ public class LibraryViewModel extends AndroidViewModel {
     public void updateOrder() {
         newSearch.setValue(true);
         performSearch();
+    }
+
+    public void selectGroups(int grouping) {
+        if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
+        currentGroupsSource = dao.selectGroups(grouping);
+        groups.addSource(currentGroupsSource, groups::setValue);
     }
 
 

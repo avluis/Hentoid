@@ -2,9 +2,6 @@ package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.NonNull;
 
-import java.util.Optional;
-
-import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToOne;
@@ -25,5 +22,9 @@ public class GroupItem {
         this.content.setTarget(content);
         this.group.setTarget(group);
         this.order = order;
+    }
+
+    public Content getContent() {
+        return content.getTarget();
     }
 }

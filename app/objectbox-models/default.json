@@ -395,7 +395,7 @@
     },
     {
       "id": "10:5605025377139576552",
-      "lastPropertyId": "5:5434514687553672562",
+      "lastPropertyId": "6:1399053985046563297",
       "name": "Group",
       "properties": [
         {
@@ -428,6 +428,12 @@
           "type": 11,
           "flags": 1548,
           "relationTarget": "ImageFile"
+        },
+        {
+          "id": "6:1399053985046563297",
+          "name": "isBeingDeleted",
+          "type": 1,
+          "flags": 4
         }
       ],
       "relations": []

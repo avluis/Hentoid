@@ -14,9 +14,7 @@
         android:paddingTop="@dimen/default_cardview_margin"
         android:paddingEnd="@dimen/default_cardview_margin"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/item_library" />
-
-    <include layout="@layout/include_library_pager" />
+        tools:listitem="@layout/item_library_group" />
 
     <TextView
         android:id="@+id/library_empty_txt"

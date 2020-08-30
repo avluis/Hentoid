@@ -2,6 +2,11 @@ package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Stream;
+
+import java.util.List;
+import java.util.Objects;
+
 import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
@@ -24,6 +29,11 @@ public class Group {
     public ToOne<ImageFile> picture;
     public int order;
 
+    // Needs to be in the DB to keep the information when deletion takes a long time
+    // and user navigates away; no need to save that into JSON
+    private boolean isBeingDeleted = false;
+
+
     public Group() {
     }  // Required for ObjectBox to work
 
@@ -32,6 +42,34 @@ public class Group {
         this.name = name;
         this.order = order;
     }
+
+    public List<Content> getContents() {
+        return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContent).withoutNulls().toList();
+    }
+
+    public boolean isBeingDeleted() {
+        return isBeingDeleted;
+    }
+
+    public void setIsBeingDeleted(boolean isBeingDeleted) {
+        this.isBeingDeleted = isBeingDeleted;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Group group = (Group) o;
+        return grouping == group.grouping &&
+                Objects.equals(name, group.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(grouping, name);
+    }
+
 
     public static class GroupingConverter implements PropertyConverter<Grouping, Integer> {
         @Override

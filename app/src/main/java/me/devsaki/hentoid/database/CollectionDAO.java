@@ -18,10 +18,12 @@ import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 
@@ -84,6 +86,11 @@ public interface CollectionDAO {
     long countAllExternalBooks();
 
     void deleteAllExternalBooks();
+
+    // Groups
+
+    LiveData<List<Group>> selectGroups(int grouping);
+
 
 
     // High-level queries (internal and external locations)

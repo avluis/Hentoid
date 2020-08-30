@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
-    tools:showIn="@layout/item_library">
-    <!-- This is the basic book card layout that is used in item_library
+    tools:showIn="@layout/item_library_book">
+    <!-- This is the basic book card layout that is used in item_library_book
          keep in mind that the actual way they are being displayed
          is shown in their parent only and not here-->
 

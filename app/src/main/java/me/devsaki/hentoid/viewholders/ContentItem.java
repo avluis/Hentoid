@@ -142,7 +142,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     @Override
     public int getLayoutRes() {
-        if (ViewType.LIBRARY == viewType) return R.layout.item_library;
+        if (ViewType.LIBRARY == viewType) return R.layout.item_library_book;
         else return R.layout.item_queue;
     }
 

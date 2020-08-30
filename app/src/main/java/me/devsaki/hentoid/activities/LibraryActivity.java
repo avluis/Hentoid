@@ -282,6 +282,7 @@ public class LibraryActivity extends BaseActivity {
     private void updateDisplay() {
         FragmentStateAdapter pagerAdapter = new LibraryPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
+        pagerAdapter.notifyDataSetChanged();
     }
 
     private void initToolbar() {

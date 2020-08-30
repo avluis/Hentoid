@@ -45,7 +45,6 @@ import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
-import com.skydoves.balloon.ArrowOrientation;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -80,7 +79,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
-import me.devsaki.hentoid.util.TooltipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -250,9 +248,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
         viewModel.updateOrder(); // Trigger a blank search
 
-        // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
-        if (Preferences.isFirstRunProcessComplete())
-            TooltipUtil.showTooltip(requireContext(), R.string.help_search, ArrowOrientation.TOP, toolbar, getViewLifecycleOwner());
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
     }
@@ -668,27 +663,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         // Display the "update success" dialog when an update is detected on a release version
         if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getParentFragmentManager());
     }
-/*
-    /**
-     * Called when returning from the Advanced Search screen
-     /
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 999
-                && resultCode == Activity.RESULT_OK
-                && data != null && data.getExtras() != null) {
-            Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
-
-            if (searchUri != null) {
-                setQuery(searchUri.getPath());
-                metadata = SearchActivityBundle.Parser.parseSearchUri(searchUri);
-                viewModel.search(query, metadata);
-            }
-        }
-    }
-    */
 
     @Override
     public void onDestroy() {

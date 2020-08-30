@@ -593,7 +593,7 @@ public final class Preferences {
         static final String PREF_LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
         static final String PREF_LOCK_TIMER = "pref_lock_timer";
         static final String PREF_DB_MAX_SIZE = "db_max_size";
-        static final String PREF_GROUPING_DISPLAY = "grouping_display";
+        public static final String PREF_GROUPING_DISPLAY = "grouping_display";
 
         // Deprecated values kept for housekeeping/migration
         static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";

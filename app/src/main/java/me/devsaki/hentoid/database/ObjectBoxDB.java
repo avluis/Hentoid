@@ -857,6 +857,10 @@ public class ObjectBoxDB {
         return store.boxFor(GroupItem.class).put(item);
     }
 
+    Query<Group> selectGroupsQ(int grouping) {
+        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).order(Group_.order).build();
+    }
+
 
     /**
      * ONE-SHOT USE QUERIES (MIGRATION & MAINTENANCE)

@@ -32,10 +32,12 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
@@ -256,6 +258,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public void deleteAllExternalBooks() {
         db.deleteContentById(db.selectAllExternalBooksQ().findIds());
+    }
+
+    @Override
+    public LiveData<List<Group>> selectGroups(int grouping) {
+        return new ObjectBoxLiveData<>(db.selectGroupsQ(grouping));
     }
 
     public List<Content> selectAllQueueBooks() {
