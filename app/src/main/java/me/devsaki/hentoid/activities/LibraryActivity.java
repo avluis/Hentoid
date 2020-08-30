@@ -12,7 +12,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.Group;
@@ -74,6 +76,8 @@ public class LibraryActivity extends BaseActivity {
     // ==== Advanced search / sort bar
     // Grey background of the advanced search / sort bar
     private View advancedSearchBar;
+    // Groups button
+    private View groupsButton;
     // Advanced search text button
     private View advancedSearchButton;
     // CLEAR button
@@ -187,6 +191,32 @@ public class LibraryActivity extends BaseActivity {
         // Search bar
         advancedSearchBar = findViewById(R.id.advanced_search_background);
 
+        // Groups menu
+        groupsButton = findViewById(R.id.groups_btn);
+        groupsButton.setOnClickListener(v -> {
+            // Load and display the field popup menu
+            PopupMenu popup = new PopupMenu(this, groupsButton);
+            popup.getMenuInflater()
+                    .inflate(R.menu.library_groups_menu, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+                item.setChecked(true);
+                int fieldCode = getGroupingCodeFromMenuId(item.getItemId());
+                Preferences.setGroupingDisplay(fieldCode);
+
+                // Update button text
+                /*
+                sortFieldButton.setText(item.getTitle());
+                 */
+
+                // Update screen display
+                updateDisplay();
+                sortCommandsAutoHide.submit(true);
+                return true;
+            });
+            popup.show(); //showing popup menu
+            sortCommandsAutoHide.submit(true);
+        }); //closing the setOnClickListener method
+
         // Link to advanced search
         advancedSearchButton = findViewById(R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
@@ -243,10 +273,14 @@ public class LibraryActivity extends BaseActivity {
         }); //closing the setOnClickListener method
 
          */
-
-        FragmentStateAdapter pagerAdapter = new LibraryPagerAdapter(this);
         viewPager = findViewById(R.id.library_pager);
         viewPager.setUserInputEnabled(false); // Disable swipe to change tabs
+
+        updateDisplay();
+    }
+
+    private void updateDisplay() {
+        FragmentStateAdapter pagerAdapter = new LibraryPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
     }
 
@@ -410,6 +444,21 @@ public class LibraryActivity extends BaseActivity {
 
     private void initSelectionToolbar() {
         selectionToolbar = findViewById(R.id.library_selection_toolbar);
+    }
+
+    private int getGroupingCodeFromMenuId(@IdRes int menuId) {
+        switch (menuId) {
+            case (R.id.groups_flat):
+                return Grouping.FLAT.getId();
+            case (R.id.groups_by_artist):
+                return Grouping.ARTIST.getId();
+            case (R.id.groups_by_dl_date):
+                return Grouping.DL_DATE.getId();
+            case (R.id.groups_custom):
+                return Grouping.CUSTOM.getId();
+            default:
+                return Grouping.NONE.getId();
+        }
     }
 
     /**

@@ -23,9 +23,7 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.Group;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -113,36 +111,19 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
     private final LibraryPager pager = new LibraryPager(this::handleNewPage);
     // Text that displays in the background when the list is empty
     private TextView emptyText;
-    // Action view associated with search menu button
-    private SearchView mainSearchView;
     // Main view where books are displayed
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
 
-    // ==== Advanced search / sort bar
-    // Grey background of the advanced search / sort bar
-    private View advancedSearchBar;
-    // Advanced search text button
-    private View advancedSearchButton;
-    // CLEAR button
-    private TextView searchClearButton;
+    // === SORT TOOLBAR
     // Sort direction button
     private ImageView sortDirectionButton;
     // Sort field button
     private TextView sortFieldButton;
 
-    // === TOOLBAR
-    private Toolbar toolbar;
-    // "Search" button on top menu
-    private MenuItem searchMenu;
-    // "Toggle favourites" button on top menu
-    private MenuItem favsMenu;
-    // Alert bars
-    private Group permissionsAlertBar;
-    private Group storageAlertBar;
-
     // === SELECTION TOOLBAR
+    private Toolbar toolbar;
     private Toolbar selectionToolbar;
     private MenuItem itemDelete;
     private MenuItem itemShare;
@@ -161,8 +142,6 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
     // ======== VARIABLES
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
-    // Used to ignore native calls to onQueryTextChange
-    private boolean invalidateNextQueryTextChange = false;
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
     // Total number of books in the whole unfiltered library
@@ -177,15 +156,6 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
-    // Used to auto-hide the sort controls bar when no activity is detected
-    private final Debouncer<Boolean> sortCommandsAutoHide = new Debouncer<>(2500, this::hideSearchSortBar);
-
-
-    // === SEARCH PARAMETERS
-    // Current text search query
-    private String query = "";
-    // Current metadata search query
-    private List<Attribute> metadata = Collections.emptyList();
 
 
     /**
@@ -255,18 +225,16 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_library, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_library_books, container, false);
 
         Preferences.registerPrefsChangedListener(prefsListener);
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         initUI(rootView);
+        initToolbars();
 
-        initToolbar(rootView);
-        initSelectionToolbar(rootView);
-        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
         selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
 
         return rootView;
@@ -295,42 +263,22 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
      * @param rootView Root view of the library screen
      */
     private void initUI(@NonNull View rootView) {
+        LibraryActivity activity = ((LibraryActivity) requireActivity());
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
 
-        // Permissions alert bar
-        permissionsAlertBar = requireViewById(rootView, R.id.library_permissions_alert_group);
-        storageAlertBar = requireViewById(rootView, R.id.library_storage_alert_group);
-
-        // Search bar
-        advancedSearchBar = requireViewById(rootView, R.id.advanced_search_background);
-
-        // Link to advanced search
-        advancedSearchButton = requireViewById(rootView, R.id.advanced_search_btn);
-        advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
-
-        // Clear search
-        searchClearButton = requireViewById(rootView, R.id.search_clear_btn);
-        searchClearButton.setOnClickListener(v -> {
-            query = "";
-            mainSearchView.setQuery("", false);
-            metadata.clear();
-            hideSearchSortBar(false);
-            viewModel.searchUniversal("");
-        });
-
         // Sort controls
-        sortDirectionButton = requireViewById(rootView, R.id.sort_direction_btn);
-        sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_up : R.drawable.ic_simple_arrow_down);
+        sortDirectionButton = activity.getSortDirectionButton();
+        sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
         sortDirectionButton.setOnClickListener(v -> {
             boolean sortDesc = !Preferences.isContentSortDesc();
             Preferences.setContentSortDesc(sortDesc);
             // Update icon
-            sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_up : R.drawable.ic_simple_arrow_down);
+            sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
             // Run a new search
             viewModel.updateOrder();
-            sortCommandsAutoHide.submit(true);
+            activity.sortCommandsAutoHide(true);
         });
-        sortFieldButton = requireViewById(rootView, R.id.sort_field_btn);
+        sortFieldButton = activity.getSortFieldButton();
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
@@ -348,11 +296,11 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
                 Preferences.setContentSortField(fieldCode);
                 // Run a new search
                 viewModel.updateOrder();
-                sortCommandsAutoHide.submit(true);
+                activity.sortCommandsAutoHide(true);
                 return true;
             });
             popup.show(); //showing popup menu
-            sortCommandsAutoHide.submit(true);
+            activity.sortCommandsAutoHide(true);
         }); //closing the setOnClickListener method
 
         // RecyclerView
@@ -365,78 +313,24 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
         initPagingMethod(Preferences.getEndlessScroll());
     }
 
-    private void initToolbar(@NonNull View rootView) {
-        toolbar = requireViewById(rootView, R.id.library_toolbar);
-        Activity activity = requireActivity();
-        toolbar.setNavigationOnClickListener(v -> ((LibraryActivity) activity).openNavigationDrawer());
-
-        searchMenu = toolbar.getMenu().findItem(R.id.action_search);
-        searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                showSearchSortBar(true, false, null);
-                invalidateNextQueryTextChange = true;
-
-                // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
-                if (!query.isEmpty())
-                    // Use of handler allows to set the value _after_ the UI has auto-cleared it
-                    // Without that handler the view displays with an empty value
-                    new Handler().postDelayed(() -> {
-                        invalidateNextQueryTextChange = true;
-                        mainSearchView.setQuery(query, false);
-                    }, 100);
-
-                return true;
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                if (!isSearchQueryActive()) {
-                    hideSearchSortBar(false);
-                }
-                invalidateNextQueryTextChange = true;
-                return true;
-            }
-        });
-
-        favsMenu = toolbar.getMenu().findItem(R.id.action_favourites);
-        updateFavouriteFilter();
-
-        mainSearchView = (SearchView) searchMenu.getActionView();
-        mainSearchView.setIconifiedByDefault(true);
-        mainSearchView.setQueryHint(getString(R.string.search_hint));
-        // Change display when text query is typed
-        mainSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String s) {
-                query = s;
-                viewModel.searchUniversal(query);
-                mainSearchView.clearFocus();
-
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String s) {
-                if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
-                    invalidateNextQueryTextChange = false;
-                } else if (s.isEmpty()) {
-                    query = "";
-                    viewModel.searchUniversal(query);
-                    searchClearButton.setVisibility(View.GONE);
-                }
-
-                return true;
-            }
-        });
+    private String getQuery() {
+        return ((LibraryActivity) requireActivity()).getQuery();
     }
 
-    public Toolbar getToolbar() {
-        return toolbar;
+    private void setQuery(String query) {
+        ((LibraryActivity) requireActivity()).setQuery(query);
     }
 
-    public Toolbar getSelectionToolbar() {
-        return selectionToolbar;
+    private List<Attribute> getMetadata() {
+        return ((LibraryActivity) requireActivity()).getMetadata();
+    }
+
+    private void setMetadata(List<Attribute> attrs) {
+        ((LibraryActivity) requireActivity()).setMetadata(attrs);
+    }
+
+    public void onSearch(String query) {
+        viewModel.searchUniversal(query);
     }
 
     private int getFieldCodeFromMenuId(@IdRes int menuId) {
@@ -485,68 +379,19 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
         }
     }
 
-    /**
-     * Callback method used when a sort method is selected in the sort drop-down menu
-     * Updates the UI according to the chosen sort method
-     *
-     * @param menuItem Toolbar of the fragment
-     */
-    private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case R.id.action_favourites:
-                menuItem.setChecked(!menuItem.isChecked());
-                updateFavouriteFilter();
-                viewModel.toggleFavouriteFilter();
-                break;
-            case R.id.action_order:
-                showSearchSortBar(null, null, true);
-                sortCommandsAutoHide.submit(true);
-                break;
-            default:
-                return false;
-        }
-        return true;
-    }
+    private void initToolbars() {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
 
-    private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
-        advancedSearchBar.setVisibility(View.VISIBLE);
-        if (showAdvancedSearch != null)
-            advancedSearchButton.setVisibility(showAdvancedSearch ? View.VISIBLE : View.GONE);
-
-        if (showClear != null)
-            searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
-
-        if (showSort != null) {
-            if (showSort) searchClearButton.setVisibility(View.GONE);
-            sortDirectionButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
-            sortFieldButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
-        }
-    }
-
-    private void hideSearchSortBar(boolean hideSortOnly) {
-        boolean isSearchVisible = (View.VISIBLE == advancedSearchButton.getVisibility() || View.VISIBLE == searchClearButton.getVisibility());
-
-        if (!hideSortOnly || !isSearchVisible)
-            advancedSearchBar.setVisibility(View.GONE);
-
-        if (!hideSortOnly) {
-            advancedSearchButton.setVisibility(View.GONE);
-            searchClearButton.setVisibility(View.GONE);
-        }
-
-        sortDirectionButton.setVisibility(View.GONE);
-        sortFieldButton.setVisibility(View.GONE);
-
-        // Restore CLEAR button if it's needed
-        if (hideSortOnly && isSearchQueryActive()) searchClearButton.setVisibility(View.VISIBLE);
-    }
-
-    private void initSelectionToolbar(@NonNull View rootView) {
-        selectionToolbar = requireViewById(rootView, R.id.library_selection_toolbar);
+        toolbar = activity.getToolbar();
+        selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
         });
+
+        selectionToolbar.getMenu().clear();
+        selectionToolbar.inflateMenu(R.menu.library_selection_menu);
 
         itemDelete = selectionToolbar.getMenu().findItem(R.id.action_delete);
         itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
@@ -782,19 +627,12 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
     }
 
     /**
-     * Update favourite filter button appearance on the action bar
-     */
-    private void updateFavouriteFilter() {
-        favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
-    }
-
-    /**
      * Indicates whether a search query is active (using universal search or advanced search) or not
      *
      * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
     private boolean isSearchQueryActive() {
-        return (!query.isEmpty() || !metadata.isEmpty());
+        return ((LibraryActivity) requireActivity()).isSearchQueryActive();
     }
 
     @Override
@@ -830,10 +668,10 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
         // Display the "update success" dialog when an update is detected on a release version
         if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getParentFragmentManager());
     }
-
+/*
     /**
      * Called when returning from the Advanced Search screen
-     */
+     /
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -844,12 +682,13 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
             Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
 
             if (searchUri != null) {
-                query = searchUri.getPath();
+                setQuery(searchUri.getPath());
                 metadata = SearchActivityBundle.Parser.parseSearchUri(searchUri);
                 viewModel.search(query, metadata);
             }
         }
     }
+    */
 
     @Override
     public void onDestroy() {
@@ -864,20 +703,20 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
             selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
             backButtonPressed = 0;
-        } else if (searchMenu.isActionViewExpanded()) {
-            searchMenu.collapseActionView();
+            return;
         }
 
-        // If none of the above, user is asking to leave => use double-tap
-        else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
-            callback.remove();
-            requireActivity().onBackPressed();
+        if (!((LibraryActivity) requireActivity()).collapseSearchMenu()) {
+            // If none of the above, user is asking to leave => use double-tap
+            if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
+                callback.remove();
+                requireActivity().onBackPressed();
+            } else {
+                backButtonPressed = SystemClock.elapsedRealtime();
+                ToastUtil.toast(R.string.press_back_again);
 
-        } else {
-            backButtonPressed = SystemClock.elapsedRealtime();
-            ToastUtil.toast(R.string.press_back_again);
-
-            llm.scrollToPositionWithOffset(0, 0);
+                llm.scrollToPositionWithOffset(0, 0);
+            }
         }
     }
 
@@ -902,17 +741,37 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
     /**
      * Handler for the "Advanced search" button
      */
-    private void onAdvancedSearchButtonClick() {
+    public void onAdvancedSearchButtonClick() {
         Intent search = new Intent(this.getContext(), SearchActivity.class);
 
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
 
-        if (!metadata.isEmpty())
-            builder.setUri(SearchActivityBundle.Builder.buildSearchUri(metadata));
+        if (!getMetadata().isEmpty())
+            builder.setUri(SearchActivityBundle.Builder.buildSearchUri(getMetadata()));
         search.putExtras(builder.getBundle());
 
         startActivityForResult(search, 999);
-        searchMenu.collapseActionView();
+        ((LibraryActivity) requireActivity()).collapseSearchMenu();
+    }
+
+    /**
+     * Called when returning from the Advanced Search screen
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 999
+                && resultCode == Activity.RESULT_OK
+                && data != null && data.getExtras() != null) {
+            Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
+
+            if (searchUri != null) {
+                setQuery(searchUri.getPath());
+                setMetadata(SearchActivityBundle.Parser.parseSearchUri(searchUri));
+                viewModel.search(getQuery(), getMetadata());
+            }
+        }
     }
 
     /**
@@ -1099,13 +958,9 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
         } else emptyText.setVisibility(View.GONE);
 
         // Update visibility of advanced search bar
-        if (isSearchQueryActive()) {
-            showSearchSortBar(true, true, false);
-            if (!result.isEmpty() && searchMenu != null) searchMenu.collapseActionView();
-        } else {
-            searchClearButton.setVisibility(View.GONE);
-        }
+        ((LibraryActivity) requireActivity()).updateSearchBarOnResults(!result.isEmpty());
 
+        String query = getQuery();
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
         if (newSearch && Helper.isNumeric(query)) {
@@ -1149,13 +1004,7 @@ public class LibraryGroupsFragment extends Fragment implements ErrorsDialogFragm
      * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
      */
     private void updateTitle(long totalSelectedCount, long totalCount) {
-        String title;
-        if (totalSelectedCount == totalCount)
-            title = totalCount + " items";
-        else {
-            title = getResources().getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, totalCount);
-        }
-        toolbar.setTitle(title);
+        ((LibraryActivity) requireActivity()).updateTitle(totalSelectedCount, totalCount);
     }
 
     /**
