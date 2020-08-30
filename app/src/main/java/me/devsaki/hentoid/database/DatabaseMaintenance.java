@@ -192,6 +192,8 @@ public class DatabaseMaintenance {
                     int order = 1;
                     for (Attribute a : artists) {
                         Group group = new Group(Grouping.ARTIST, a.getName(), order++);
+                        if (!a.contents.isEmpty())
+                            group.picture.setTarget(a.contents.get(0).getCover());
                         bookInsertCount += a.contents.size();
 
                         ImmutableTriple<Group, Attribute, List<Content>> data = new ImmutableTriple<>(group, a, a.contents);
