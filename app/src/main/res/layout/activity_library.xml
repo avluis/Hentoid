@@ -4,15 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <include layout="@layout/fragment_library" />
+    <!--
     <fragment
         android:id="@+id/fragment_library"
         android:name="me.devsaki.hentoid.fragments.library.LibraryFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout="@layout/fragment_library" />
+-->
 
-
-    <fragment
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_navigation_drawer"
         android:name="me.devsaki.hentoid.fragments.library.NavigationDrawerFragment"
         android:layout_width="@dimen/drawer_layout_width"

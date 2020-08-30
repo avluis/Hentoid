@@ -116,7 +116,7 @@ public final class NavigationDrawerFragment extends Fragment {
     }
 
     private void showFlagAboutItem() {
-        aboutBadge.setVisibility(View.VISIBLE);
+        if (aboutBadge != null) aboutBadge.setVisibility(View.VISIBLE);
     }
 
     private void showFlagAlerts(Map<Site, UpdateInfo.SourceAlert> alerts) {

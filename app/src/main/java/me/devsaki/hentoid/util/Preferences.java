@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.Theme;
 import timber.log.Timber;
@@ -509,6 +510,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getGroupingDisplay() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_GROUPING_DISPLAY, Integer.toString(Default.GROUPING_DISPLAY)) + "");
+    }
+
+    public static void setGroupingDisplay(int groupingDisplay) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_GROUPING_DISPLAY, Integer.toString(groupingDisplay))
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -582,6 +593,7 @@ public final class Preferences {
         static final String PREF_LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
         static final String PREF_LOCK_TIMER = "pref_lock_timer";
         static final String PREF_DB_MAX_SIZE = "db_max_size";
+        static final String PREF_GROUPING_DISPLAY = "grouping_display";
 
         // Deprecated values kept for housekeeping/migration
         static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -651,6 +663,7 @@ public final class Preferences {
         static final boolean PREF_LOCK_ON_APP_RESTORE = false;
         static final int PREF_LOCK_TIMER = Constant.PREF_LOCK_TIMER_30S;
         static final long DB_MAX_SIZE_KB = 2L * 1024 * 1024; // 2GB
+        static final int GROUPING_DISPLAY = Grouping.FLAT.getId();
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
