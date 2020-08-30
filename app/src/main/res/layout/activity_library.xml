@@ -5,14 +5,6 @@
     android:layout_height="match_parent">
 
     <include layout="@layout/fragment_library" />
-    <!--
-    <fragment
-        android:id="@+id/fragment_library"
-        android:name="me.devsaki.hentoid.fragments.library.LibraryFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout="@layout/fragment_library" />
--->
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_navigation_drawer"
