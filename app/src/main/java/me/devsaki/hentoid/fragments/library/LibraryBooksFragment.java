@@ -67,6 +67,8 @@ import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
@@ -151,6 +153,8 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private PagedList<Content> library;
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
+    // TODO
+    private long groupId = -1;
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
@@ -245,6 +249,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         viewModel.getNewSearch().observe(getViewLifecycleOwner(), this::onNewSearch);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
         viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
+        viewModel.getGroup().observe(getViewLifecycleOwner(), this::onGroupChanged);
 
         viewModel.updateOrder(); // Trigger a blank search
 
@@ -680,9 +685,14 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             return;
         }
 
-        if (!((LibraryActivity) requireActivity()).collapseSearchMenu()) {
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+        if (!activity.collapseSearchMenu()) {
+            // If none of the above and we're into a grouping, go back to the groups view
+            if (Grouping.FLAT.getId() != Preferences.getGroupingDisplay()) {
+                activity.goBackToGroups();
+            }
             // If none of the above, user is asking to leave => use double-tap
-            if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
+            else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
                 callback.remove();
                 requireActivity().onBackPressed();
             } else {
@@ -722,6 +732,10 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
         if (!getMetadata().isEmpty())
             builder.setUri(SearchActivityBundle.Builder.buildSearchUri(getMetadata()));
+
+        if (groupId > -1)
+            builder.setGroup(groupId);
+
         search.putExtras(builder.getBundle());
 
         startActivityForResult(search, 999);
@@ -971,6 +985,11 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private void onTotalContentChanged(Integer count) {
         totalContentCount = count;
         if (library != null) updateTitle(library.size(), totalContentCount);
+    }
+
+    // TODO
+    private void onGroupChanged(Group group) {
+        this.groupId = group.id;
     }
 
     /**

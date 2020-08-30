@@ -144,10 +144,6 @@ public class ObjectBoxDB {
         });
     }
 
-    long countContentEntries() {
-        return store.boxFor(Content.class).count();
-    }
-
     public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
         List<Content> content = selectContentByStatus(updateFrom);
         for (int i = 0; i < content.size(); i++) content.get(i).setStatus(updateTo);
@@ -313,7 +309,7 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectVisibleContentQ() {
-        return queryContentSearchContent("", Collections.emptyList(), false, Preferences.Constant.ORDER_FIELD_NONE, false);
+        return queryContentSearchContent("", -1, Collections.emptyList(), false, Preferences.Constant.ORDER_FIELD_NONE, false);
     }
 
     @Nullable
@@ -387,6 +383,7 @@ public class ObjectBoxDB {
 
     Query<Content> queryContentSearchContent(
             String title,
+            long groupId,
             List<Attribute> metadata,
             boolean filterFavourites,
             int orderField,
@@ -394,17 +391,21 @@ public class ObjectBoxDB {
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.addAll(metadata);
 
+
         boolean hasTitleFilter = (title != null && title.length() > 0);
+        boolean hasGroupFilter = (groupId > 0);
+        List<Attribute> sources = metadataMap.get(AttributeType.SOURCE);
         boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE)
-                && (metadataMap.get(AttributeType.SOURCE) != null)
-                && !(metadataMap.get(AttributeType.SOURCE).isEmpty());
+                && (sources != null)
+                && !(sources.isEmpty());
+
         boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter ? 1 : 0);
 
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, libraryStatus);
 
         if (hasSiteFilter)
-            query.in(Content_.site, getIdsFromAttributes(metadataMap.get(AttributeType.SOURCE)));
+            query.in(Content_.site, getIdsFromAttributes(sources));
         if (filterFavourites) query.equal(Content_.favourite, true);
         if (hasTitleFilter) query.contains(Content_.title, title);
         if (hasTagFilter) {
@@ -418,23 +419,29 @@ public class ObjectBoxDB {
                 }
             }
         }
+        if (hasGroupFilter) {
+            query.in(Content_.id, selectFilteredContent(groupId));
+        }
         applySortOrder(query, orderField, orderDesc);
 
         return query.build();
     }
 
-    private Query<Content> queryContentUniversalAttributes(String queryStr, boolean filterFavourites) {
+    private Query<Content> queryContentUniversalAttributes(String queryStr, long groupId, boolean filterFavourites) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, libraryStatus);
 
         if (filterFavourites) query.equal(Content_.favourite, true);
         query.link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
+        if (groupId > 0) query.in(Content_.id, selectFilteredContent(groupId));
+
         return query.build();
     }
 
     private Query<Content> queryContentUniversalContent(
             String queryStr,
+            long groupId,
             boolean filterFavourites,
             long[] additionalIds,
             int orderField,
@@ -447,6 +454,7 @@ public class ObjectBoxDB {
         query.or().equal(Content_.uniqueSiteId, queryStr);
 //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         query.or().in(Content_.id, additionalIds);
+        if (groupId > 0) query.in(Content_.id, selectFilteredContent(groupId));
         applySortOrder(query, orderField, orderDesc);
 
         return query.build();
@@ -454,18 +462,14 @@ public class ObjectBoxDB {
 
     Query<Content> queryContentUniversal(
             String queryStr,
+            long groupId,
             boolean filterFavourites,
             int orderField,
             boolean orderDesc) {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
-        return queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc);
-    }
-
-    long countContentSearch(String title, List<Attribute> tags, boolean filterFavourites) {
-        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, Preferences.Constant.ORDER_FIELD_NONE, false);
-        return query.count();
+        Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, groupId, filterFavourites);
+        return queryContentUniversalContent(queryStr, groupId, filterFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc);
     }
 
     private static long[] shuffleRandomSortId(Query<Content> query) {
@@ -481,9 +485,9 @@ public class ObjectBoxDB {
         return Helper.getPrimitiveLongArrayFromList(result);
     }
 
-    long[] selectContentSearchId(String title, List<Attribute> tags, boolean filterFavourites, int orderField, boolean orderDesc) {
+    long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterFavourites, int orderField, boolean orderDesc) {
         long[] result;
-        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, orderField, orderDesc);
+        Query<Content> query = queryContentSearchContent(title, groupId, tags, filterFavourites, orderField, orderDesc);
 
         if (orderField != Preferences.Constant.ORDER_FIELD_RANDOM) {
             result = query.findIds();
@@ -493,12 +497,12 @@ public class ObjectBoxDB {
         return result;
     }
 
-    long[] selectContentUniversalId(String queryStr, boolean filterFavourites, int orderField, boolean orderDesc) {
+    long[] selectContentUniversalId(String queryStr, long groupId, boolean filterFavourites, int orderField, boolean orderDesc) {
         long[] result;
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
-        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc);
+        Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, groupId, filterFavourites);
+        Query<Content> query = queryContentUniversalContent(queryStr, groupId, filterFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc);
 
         if (orderField != Preferences.Constant.ORDER_FIELD_RANDOM) {
             result = query.findIds();
@@ -508,12 +512,10 @@ public class ObjectBoxDB {
         return result;
     }
 
-    long countContentUniversal(String queryStr, boolean filterFavourites) {
-        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
-        // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
-        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.ORDER_FIELD_NONE, false);
-        return query.count();
+    private long[] selectFilteredContent(long groupId) {
+        if (groupId < 1) return new long[0];
+
+        return Helper.getPrimitiveLongArrayFromList(Stream.of(store.boxFor(Group.class).get(groupId).getContents()).map(Content::getId).toList());
     }
 
     private long[] selectFilteredContent(List<Attribute> attrs, boolean filterFavourites) {

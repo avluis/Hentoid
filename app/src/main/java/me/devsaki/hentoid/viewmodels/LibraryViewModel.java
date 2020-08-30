@@ -27,8 +27,6 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
-import me.devsaki.hentoid.database.domains.QueueRecord;
-import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -56,6 +54,7 @@ public class LibraryViewModel extends AndroidViewModel {
     private LiveData<Integer> totalContent;
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
     // Groups data
+    private MutableLiveData<Group> group = new MutableLiveData<>();
     private LiveData<List<Group>> currentGroupsSource;
     private MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
 
@@ -103,6 +102,11 @@ public class LibraryViewModel extends AndroidViewModel {
     @NonNull
     public LiveData<Boolean> getNewSearch() {
         return newSearch;
+    }
+
+    @NonNull
+    public LiveData<Group> getGroup() {
+        return group;
     }
 
     public Bundle getSearchManagerBundle() {
@@ -176,6 +180,16 @@ public class LibraryViewModel extends AndroidViewModel {
      * Update the order of the list
      */
     public void updateOrder() {
+        newSearch.setValue(true);
+        performSearch();
+    }
+
+    /**
+     * Set the mode (endless or paged)
+     */
+    public void setGroup(Group group) {
+        searchManager.setGroup(group);
+        this.group.postValue(group);
         newSearch.setValue(true);
         performSearch();
     }

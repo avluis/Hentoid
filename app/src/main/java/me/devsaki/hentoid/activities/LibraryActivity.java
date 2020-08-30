@@ -195,6 +195,20 @@ public class LibraryActivity extends BaseActivity {
         EventBus.getDefault().register(this);
     }
 
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onAppUpdated(AppUpdatedEvent event) {
+        EventBus.getDefault().removeStickyEvent(event);
+        // Display the "update success" dialog when an update is detected on a release version
+        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getSupportFragmentManager());
+    }
+
+    @Override
+    public void onDestroy() {
+        Preferences.unregisterPrefsChangedListener(prefsListener);
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+
     private void onCreated() {
         toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
 
@@ -449,20 +463,6 @@ public class LibraryActivity extends BaseActivity {
         favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onAppUpdated(AppUpdatedEvent event) {
-        EventBus.getDefault().removeStickyEvent(event);
-        // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getSupportFragmentManager());
-    }
-
-    @Override
-    public void onDestroy() {
-        Preferences.unregisterPrefsChangedListener(prefsListener);
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-    }
-
     /**
      * Callback for any change in Preferences
      */
@@ -541,6 +541,14 @@ public class LibraryActivity extends BaseActivity {
         callback.setEnabled(true);
     }
 
+    public void goBackToGroups() {
+        viewPager.setCurrentItem(0);
+    }
+
+    public void showBooksInGroup(me.devsaki.hentoid.database.domains.Group group) {
+        viewModel.setGroup(group);
+        viewPager.setCurrentItem(1);
+    }
 
     private class LibraryPagerAdapter extends FragmentStateAdapter {
         LibraryPagerAdapter(FragmentActivity fa) {

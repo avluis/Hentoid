@@ -115,6 +115,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         if (bundle != null) {
             SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(bundle);
             selectedAttributeTypes = parser.getAttributeTypes();
+            long groupId = parser.getGroupId();
             currentPage = 1;
 
             if (selectedAttributeTypes.isEmpty()) {
@@ -124,6 +125,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
             viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(SearchViewModel.class);
             viewModel.setAttributeTypes(selectedAttributeTypes);
+            viewModel.setGroup(groupId);
         }
     }
 

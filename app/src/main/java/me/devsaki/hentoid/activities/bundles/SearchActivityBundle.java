@@ -24,6 +24,7 @@ public class SearchActivityBundle {
     private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
     private static final String KEY_MODE = "mode";
     private static final String KEY_URI = "uri";
+    private static final String KEY_GROUP = "group";
 
     private SearchActivityBundle() {
         throw new UnsupportedOperationException();
@@ -42,6 +43,10 @@ public class SearchActivityBundle {
 
         public void setMode(int mode) {
             bundle.putInt(KEY_MODE, mode);
+        }
+
+        public void setGroup(long group) {
+            bundle.putLong(KEY_GROUP, group);
         }
 
         public Builder setUri(Uri uri) {
@@ -94,6 +99,10 @@ public class SearchActivityBundle {
 
         public int getMode() {
             return bundle.getInt(KEY_MODE, -1);
+        }
+
+        public long getGroupId() {
+            return bundle.getLong(KEY_GROUP, -1);
         }
 
         @Nullable
