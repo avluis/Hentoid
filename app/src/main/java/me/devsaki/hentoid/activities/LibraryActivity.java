@@ -120,6 +120,40 @@ public class LibraryActivity extends BaseActivity {
     private final Debouncer<Boolean> sortCommandsAutoHide = new Debouncer<>(2500, this::hideSearchSortBar);
 
 
+    public Toolbar getToolbar() {
+        return toolbar;
+    }
+
+    public Toolbar getSelectionToolbar() {
+        return selectionToolbar;
+    }
+
+    public ImageView getSortDirectionButton() {
+        return sortDirectionButton;
+    }
+
+    public TextView getSortFieldButton() {
+        return sortFieldButton;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
+    public List<Attribute> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(List<Attribute> metadata) {
+        this.metadata = metadata;
+    }
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -233,46 +267,8 @@ public class LibraryActivity extends BaseActivity {
 
         // Sort controls
         sortDirectionButton = findViewById(R.id.sort_direction_btn);
-        /*
-        sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-        sortDirectionButton.setOnClickListener(v -> {
-            boolean sortDesc = !Preferences.isContentSortDesc();
-            Preferences.setContentSortDesc(sortDesc);
-            // Update icon
-            sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-            // Run a new search
-            viewModel.updateOrder();
-            sortCommandsAutoHide.submit(true);
-        });
-
-         */
         sortFieldButton = findViewById(R.id.sort_field_btn);
-        /*
-        sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
-        sortFieldButton.setOnClickListener(v -> {
-            // Load and display the field popup menu
-            PopupMenu popup = new PopupMenu(this, sortDirectionButton);
-            popup.getMenuInflater()
-                    .inflate(R.menu.library_sort_menu, popup.getMenu());
-            popup.setOnMenuItemClickListener(item -> {
-                // Update button text
-                sortFieldButton.setText(item.getTitle());
-                item.setChecked(true);
-                int fieldCode = getFieldCodeFromMenuId(item.getItemId());
-                if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM)
-                    RandomSeedSingleton.getInstance().renewSeed();
 
-                Preferences.setContentSortField(fieldCode);
-                // Run a new search
-                viewModel.updateOrder();
-                sortCommandsAutoHide.submit(true);
-                return true;
-            });
-            popup.show(); //showing popup menu
-            sortCommandsAutoHide.submit(true);
-        }); //closing the setOnClickListener method
-
-         */
         viewPager = findViewById(R.id.library_pager);
         viewPager.setUserInputEnabled(false); // Disable swipe to change tabs
 
@@ -348,22 +344,6 @@ public class LibraryActivity extends BaseActivity {
                 return true;
             }
         });
-    }
-
-    public Toolbar getToolbar() {
-        return toolbar;
-    }
-
-    public Toolbar getSelectionToolbar() {
-        return selectionToolbar;
-    }
-
-    public ImageView getSortDirectionButton() {
-        return sortDirectionButton;
-    }
-
-    public TextView getSortFieldButton() {
-        return sortFieldButton;
     }
 
     public void sortCommandsAutoHide(boolean hideSortOnly) {
@@ -518,22 +498,6 @@ public class LibraryActivity extends BaseActivity {
             title = getResources().getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, totalCount);
         }
         toolbar.setTitle(title);
-    }
-
-    public String getQuery() {
-        return query;
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
-    }
-
-    public List<Attribute> getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(List<Attribute> metadata) {
-        this.metadata = metadata;
     }
 
     /**
