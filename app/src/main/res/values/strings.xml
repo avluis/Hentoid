@@ -235,6 +235,10 @@
         <item quantity="other">%d items selected</item>
     </plurals>
     <string name="folder_undefined">Error - containing folder undefined</string>
+    <plurals name="external_not_removed">
+        <item quantity="one">One book from the external library will not be removed</item>
+        <item quantity="other">%d books from the external library will not be removed</item>
+    </plurals>
     <!-- Groups -->
     <string name="groups_flat">Flat</string>
     <string name="groups_by_artist">By Artist</string>

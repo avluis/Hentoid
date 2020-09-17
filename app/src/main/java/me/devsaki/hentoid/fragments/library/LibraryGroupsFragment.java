@@ -53,6 +53,7 @@ import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
@@ -355,13 +356,14 @@ public class LibraryGroupsFragment extends Fragment {
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             List<Content> selectedContent = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().map(Group::getContents).single();
-            // TODO process underlying content
-            /*
             // Remove external items if they can't be deleted
-            if (!Preferences.isDeleteExternalLibrary())
-                selectedContent = Stream.of(selectedContent).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).toList();
+            if (!Preferences.isDeleteExternalLibrary()) {
+                List<Content> contentToDelete = Stream.of(selectedContent).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).toList();
+                int diff = selectedContent.size() - contentToDelete.size();
+                if (diff > 0)
+                    Snackbar.make(recyclerView, getResources().getQuantityString(R.plurals.external_not_removed, diff, diff), BaseTransientBottomBar.LENGTH_LONG).show();
+            }
             if (!selectedContent.isEmpty()) askDeleteItems(selectedContent);
-             */
         }
     }
 
