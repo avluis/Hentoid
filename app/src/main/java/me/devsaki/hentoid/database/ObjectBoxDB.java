@@ -36,6 +36,7 @@ import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ErrorRecord_;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
+import me.devsaki.hentoid.database.domains.GroupItem_;
 import me.devsaki.hentoid.database.domains.Group_;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.ImageFile_;
@@ -228,6 +229,8 @@ public class ObjectBoxDB {
         Box<Attribute> attributeBox = store.boxFor(Attribute.class);
         Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
         Box<Content> contentBox = store.boxFor(Content.class);
+        Box<GroupItem> groupItemBox = store.boxFor(GroupItem.class);
+        Box<Group> groupBox = store.boxFor(Group.class);
 
         for (long id : contentId) {
             Content c = contentBox.get(id);
@@ -254,6 +257,17 @@ public class ObjectBoxDB {
                             attributeBox.remove(a);                                             // Delete the attribute itself
                         }
                     c.getAttributes().clear();                                      // Clear links to all attributes
+
+                    // Delete corresponding groupItem
+                    List<GroupItem> groupItems = groupItemBox.query().equal(GroupItem_.contentId, id).build().find();
+                    for (GroupItem groupItem : groupItems) {
+                        // If we're not in the Custom grouping and it's the only item of its group, delete the group
+                        Group g = groupItem.group.getTarget();
+                        if (g != null && !g.grouping.equals(Grouping.CUSTOM) && g.items.size() < 2)
+                            groupBox.remove(g);
+                        // Delete the item
+                        groupItemBox.remove(groupItem);
+                    }
 
                     contentBox.remove(c);                                           // Remove the content itself
                 });
@@ -867,10 +881,10 @@ public class ObjectBoxDB {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
 
         if (0 == orderStyle) qb.order(Group_.name);
-        // TODO implement order by number of children
-        //  Option 1 : Post-query sorting (in ViewModel ?)
-        //  Option 2 : Don't use LiveData
-        //else if (1 == orderStyle) qb.order(Group_.items);
+            // TODO implement order by number of children
+            //  Option 1 : Post-query sorting (in ViewModel ?)
+            //  Option 2 : Don't use LiveData
+            //else if (1 == orderStyle) qb.order(Group_.items);
         else if (2 == orderStyle) qb.order(Group_.order);
 
         return qb.build();
