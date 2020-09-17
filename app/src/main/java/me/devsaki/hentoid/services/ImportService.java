@@ -3,8 +3,10 @@ package me.devsaki.hentoid.services;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
-import android.content.*;
-import android.content.pm.PackageManager;
+import android.content.ContentProviderClient;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.Uri;
@@ -112,7 +114,7 @@ public class ImportService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        if (checkNetwork()) {
+        if (hasActiveNetwork()) {
             // True if the user has asked for a cleanup when calling import from Preferences
             boolean doRename = false;
             boolean doCleanAbsent = false;
@@ -129,7 +131,11 @@ public class ImportService extends IntentService {
             startImport(doRename, doCleanAbsent, doCleanNoImages, doCleanUnreadable);
         }
         else {
-            NetworkStateReceiver.enable(getApplicationContext());
+            NetworkStateReceiver networkStateReceiver = new NetworkStateReceiver();
+            ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            networkStateReceiver.enable(getApplicationContext());
+            networkStateReceiver.setService(this);
+            connectivityManager.registerDefaultNetworkCallback(networkStateReceiver);
         }
     }
 
@@ -542,31 +548,28 @@ public class ImportService extends IntentService {
         }
     }
 
-    boolean checkNetwork() {
+    //The method hasActiveNetwork() checks whether the network connection is active
+    protected boolean hasActiveNetwork() {
         final ConnectivityManager connManager = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         Network activeNetwork = connManager.getActiveNetwork();
-        if (activeNetwork != null) {
-            return true;
-        }
-        return false;
+        return (activeNetwork != null);
     }
 
-    public static class NetworkStateReceiver extends BroadcastReceiver {
-        private static final String TAG = NetworkStateReceiver.class.getName();
+    public class NetworkStateReceiver extends ConnectivityManager.NetworkCallback {
+        private ImportService service;
 
-        private static ImportService service;
-
-        public static void setService(ImportService newService) {
+        public void setService(ImportService newService) {
             service = newService;
         }
 
         @Override
-        public void onReceive(Context context, Intent intent) {
-            if (service.checkNetwork()) {
-                NetworkStateReceiver.disable(context);
+        public void onAvailable(Network network) {
 
+            // If there is an active network connection, this method will "turn off" this class and arrange to process the request
+            if (service.hasActiveNetwork()) {
+                Context context = getApplicationContext();
+                disable(context);
                 final AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-
                 final Intent innerIntent = new Intent(context, ImportService.class);
                 final PendingIntent pendingIntent = PendingIntent.getService(context, 0, innerIntent, 0);
 
@@ -586,16 +589,17 @@ public class ImportService extends IntentService {
             }
         }
 
-        public static void enable(Context context) {
-            final PackageManager packageManager = context.getPackageManager();
-            final ComponentName receiver = new ComponentName(context, NetworkStateReceiver.class);
-            packageManager.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+        // Method to  "turn on" this class
+        public void enable(Context context) {
+            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            connectivityManager.registerDefaultNetworkCallback(this);
         }
 
-        public static void disable(Context context) {
-            final PackageManager packageManager = context.getPackageManager();
-            final ComponentName receiver = new ComponentName(context, NetworkStateReceiver.class);
-            packageManager.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        // Method to  "turn off" this class
+        public void disable(Context context) {
+            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            connectivityManager.unregisterNetworkCallback(this);
         }
+
     }
 }
