@@ -33,10 +33,12 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
@@ -56,6 +58,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         int SEARCH_CONTENT_UNIVERSAL = 2;
         int COUNT_CONTENT_UNIVERSAL = 3;
     }
+
+    ObjectBoxDAO(ObjectBoxDB db) { this.db = db; }
 
     public ObjectBoxDAO(Context ctx) {
         db = ObjectBoxDB.getInstance(ctx);
@@ -262,8 +266,35 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public LiveData<List<Group>> selectGroups(int grouping) {
-        return new ObjectBoxLiveData<>(db.selectGroupsQ(grouping));
+    public LiveData<List<Group>> selectGroups(int grouping, int orderStyle) {
+        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, orderStyle));
+
+        // Order by number of children (ObjectBox can't do that natively)
+        if (1 == orderStyle) {
+            MediatorLiveData<List<Group>> result = new MediatorLiveData<>();
+            result.addSource(livedata, v -> {
+                List<Group> orderedByNbChildren = Stream.of(v).sortBy(g -> g.getItems().size()).toList();
+                result.setValue(orderedByNbChildren);
+            });
+            return result;
+        } else return livedata;
+    }
+
+    @Nullable
+    public Group selectGroupByFlag(int grouping, int flag) {
+        return db.selectGroupsByFlagQ(grouping, flag).findFirst();
+    }
+
+    public long insertGroup(Group group) {
+        return db.insertGroup(group);
+    }
+
+    public long insertGroupItem(GroupItem item) {
+        return db.insertGroupItem(item);
+    }
+
+    public long countGroupsFor(Grouping grouping) {
+        return db.countGroupsFor(grouping);
     }
 
     public List<Content> selectAllQueueBooks() {

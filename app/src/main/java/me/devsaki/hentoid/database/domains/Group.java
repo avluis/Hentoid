@@ -28,6 +28,7 @@ public class Group {
     public ToMany<GroupItem> items;
     public ToOne<ImageFile> picture;
     public int order;
+    public int flag;
 
     // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON
@@ -41,10 +42,15 @@ public class Group {
         this.grouping = grouping;
         this.name = name;
         this.order = order;
+        this.flag = 0;
     }
 
     public List<Content> getContents() {
         return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContent).withoutNulls().toList();
+    }
+
+    public List<GroupItem> getItems() {
+        return items;
     }
 
     public boolean isBeingDeleted() {

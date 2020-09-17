@@ -196,7 +196,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void selectGroups(int grouping) {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping);
+        currentGroupsSource = dao.selectGroups(grouping, 0);
         groups.addSource(currentGroupsSource, groups::setValue);
     }
 

@@ -19,10 +19,12 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 
@@ -88,7 +90,16 @@ public interface CollectionDAO {
 
     // Groups
 
-    LiveData<List<Group>> selectGroups(int grouping);
+    LiveData<List<Group>> selectGroups(int grouping, int orderStyle);
+
+    @Nullable
+    Group selectGroupByFlag(int grouping, int flag);
+
+    long countGroupsFor(Grouping grouping);
+
+    long insertGroup(Group group);
+
+    long insertGroupItem(GroupItem item);
 
 
     // High-level queries (internal and external locations)

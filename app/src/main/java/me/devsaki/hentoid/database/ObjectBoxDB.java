@@ -859,8 +859,25 @@ public class ObjectBoxDB {
         return store.boxFor(GroupItem.class).put(item);
     }
 
-    Query<Group> selectGroupsQ(int grouping) {
-        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).order(Group_.order).build();
+    long countGroupsFor(Grouping grouping) {
+        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping.getId()).build().count();
+    }
+
+    Query<Group> selectGroupsQ(int grouping, int orderStyle) {
+        QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
+
+        if (0 == orderStyle) qb.order(Group_.name);
+        // TODO implement order by number of children
+        //  Option 1 : Post-query sorting (in ViewModel ?)
+        //  Option 2 : Don't use LiveData
+        //else if (1 == orderStyle) qb.order(Group_.items);
+        else if (2 == orderStyle) qb.order(Group_.order);
+
+        return qb.build();
+    }
+
+    Query<Group> selectGroupsByFlagQ(int grouping, int flag) {
+        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.flag, flag).build();
     }
 
 
@@ -878,10 +895,6 @@ public class ObjectBoxDB {
 
     List<Content> selectDownloadedContentWithNoSize() {
         return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.size).build().find();
-    }
-
-    long countGroupsFor(Grouping grouping) {
-        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping.getId()).build().count();
     }
 
     public Query<Content> selectOldStoredContentQ() {

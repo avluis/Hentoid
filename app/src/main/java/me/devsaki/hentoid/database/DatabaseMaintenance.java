@@ -20,6 +20,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -174,13 +175,13 @@ public class DatabaseMaintenance {
 
     private static void createGroups(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        ObjectBoxDAO dao = new ObjectBoxDAO(db);
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Create non-existing groupings : start");
             List<Grouping> groupingsToProcess = new ArrayList<>();
-            for (Grouping grouping : Grouping.values())
-                if (grouping.canReorderBooks())
-                    if (0 == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping);
+            for (Grouping grouping : GroupHelper.getGroupingsToProcess())
+                if (0 == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping);
 
             Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
             int bookInsertCount = 0;
@@ -200,7 +201,7 @@ public class DatabaseMaintenance {
                         toInsert.add(data);
                     }
                 } else if (g.equals(Grouping.CUSTOM)) {
-                    Group group = new Group(Grouping.CUSTOM, "Uncategorized", 0);
+                    Group group = GroupHelper.getOrCreateUncategorizedGroup(dao);
                     List<Content> books = db.selectAllInternalBooksQ(false).find();
                     books.addAll(db.selectAllExternalBooksQ().find());
                     bookInsertCount += books.size();
@@ -210,6 +211,7 @@ public class DatabaseMaintenance {
                 }
             }
 
+            // Actual insert is inside its dedicated loop to allow displaying a proper progress bar
             Timber.i("Create non-existing groupings : %s relations to create", bookInsertCount);
             float pos = 1;
             for (ImmutableTriple<Group, Attribute, List<Content>> data : toInsert) {

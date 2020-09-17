@@ -48,11 +48,15 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.ErrorType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -64,9 +68,11 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
+import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -556,6 +562,37 @@ public class ContentDownloadService extends IntentService {
 
                 // Delete book from queue
                 dao.deleteQueue(content);
+
+                // Add content to relevant groups
+                if (0 == pagesKO) {
+                    List<Grouping> staticGroupings = GroupHelper.getGroupingsToProcess();
+                    for (Grouping g : staticGroupings) {
+                        if (g.equals(Grouping.ARTIST)) {
+                            int nbGroups = (int) dao.countGroupsFor(g);
+                            AttributeMap attrs = content.getAttributeMap();
+                            List<Attribute> artists = new ArrayList<>();
+                            List<Attribute> sublist = attrs.get(AttributeType.ARTIST);
+                            if (sublist != null)
+                                artists.addAll(sublist);
+                            sublist = attrs.get(AttributeType.CIRCLE);
+                            if (sublist != null)
+                                artists.addAll(sublist);
+
+                            for (Attribute a : artists) {
+                                Group group = a.group.getTarget();
+                                if (null == group) {
+                                    group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
+                                    if (!a.contents.isEmpty())
+                                        group.picture.setTarget(a.contents.get(0).getCover());
+                                }
+                                GroupHelper.insertContent(dao, group, a, content);
+                            }
+                        } else if (g.equals(Grouping.CUSTOM)) {
+                            Group group = GroupHelper.getOrCreateUncategorizedGroup(dao);
+                            GroupHelper.insertContent(dao, group, null, content);
+                        }
+                    }
+                }
 
                 // Increase downloads count
                 contentQueueManager.downloadComplete();
