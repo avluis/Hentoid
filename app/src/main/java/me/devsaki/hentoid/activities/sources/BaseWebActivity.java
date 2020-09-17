@@ -734,8 +734,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (!isInCollection && !isInQueue) {
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
                 content.setStatus(StatusContent.SAVED);
-                content.populateAuthor();
-                objectBoxDAO.insertContent(content);
+                ContentHelper.addContent(objectBoxDAO, content);
             } else {
                 content = contentDB;
             }

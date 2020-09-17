@@ -32,9 +32,13 @@ import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
@@ -51,6 +55,7 @@ import static com.annimon.stream.Collectors.toList;
 public final class ContentHelper {
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
+    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
 
     // TODO empty this cache at some point
     private static final Map<String, String> fileNameMatchCache = new HashMap<>();
@@ -58,6 +63,11 @@ public final class ContentHelper {
 
     private ContentHelper() {
         throw new IllegalStateException("Utility class");
+    }
+
+
+    public static int[] getLibraryStatuses() {
+        return libraryStatus;
     }
 
     /**
@@ -216,10 +226,10 @@ public final class ContentHelper {
     /**
      * Remove the given Content from the disk and the DB
      *
-     * @param content Content to be removed
      * @param dao     DAO to be used
+     * @param content Content to be removed
      */
-    public static void removeContent(@NonNull Context context, @NonNull Content content, @NonNull CollectionDAO dao) throws ContentNotRemovedException {
+    public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
@@ -234,6 +244,45 @@ public final class ContentHelper {
         } else {
             throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
         }
+    }
+
+    public static long addContent(@NonNull CollectionDAO dao, @NonNull Content content) {
+        content.populateAuthor();
+        long newContentId = dao.insertContent(content);
+        content.setId(newContentId);
+
+        // Perform group operations only if the book is in the library (i.e. not queued)
+        if (Helper.getListFromPrimitiveArray(libraryStatus).contains(content.getStatus().getCode())) {
+            List<Grouping> staticGroupings = GroupHelper.getGroupingsToProcess();
+            for (Grouping g : staticGroupings) {
+                if (g.equals(Grouping.ARTIST)) {
+                    int nbGroups = (int) dao.countGroupsFor(g);
+                    AttributeMap attrs = content.getAttributeMap();
+                    List<Attribute> artists = new ArrayList<>();
+                    List<Attribute> sublist = attrs.get(AttributeType.ARTIST);
+                    if (sublist != null)
+                        artists.addAll(sublist);
+                    sublist = attrs.get(AttributeType.CIRCLE);
+                    if (sublist != null)
+                        artists.addAll(sublist);
+
+                    for (Attribute a : artists) {
+                        Group group = a.group.getTarget();
+                        if (null == group) {
+                            group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
+                            if (!a.contents.isEmpty())
+                                group.picture.setTarget(a.contents.get(0).getCover());
+                        }
+                        GroupHelper.insertContent(dao, group, a, content);
+                    }
+                } else if (g.equals(Grouping.CUSTOM)) {
+                    Group group = GroupHelper.getOrCreateUncategorizedGroup(dao);
+                    GroupHelper.insertContent(dao, group, null, content);
+                }
+            }
+        }
+
+        return newContentId;
     }
 
     /**
@@ -267,7 +316,7 @@ public final class ContentHelper {
     }
 
     // TODO doc
-    public static void setCover(@NonNull ImageFile newCover, @NonNull CollectionDAO dao, @NonNull final Context context) {
+    public static void setContentCover(@NonNull ImageFile newCover, @NonNull CollectionDAO dao, @NonNull final Context context) {
         Helper.assertNonUiThread();
 
         // Get all images from the DB
@@ -291,7 +340,6 @@ public final class ContentHelper {
         content.setCoverImageUrl(newCover.getUrl());
 
         // Update the whole list
-//        dao.replaceImageList(content.getId(), images);
         dao.insertContent(content);
 
         // Update content JSON if it exists (i.e. if book is not queued)

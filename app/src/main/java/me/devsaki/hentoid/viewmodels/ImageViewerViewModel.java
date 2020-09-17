@@ -369,7 +369,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void doDeleteBook(@NonNull Content targetContent) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         collectionDao.deleteQueue(targetContent);
-        ContentHelper.removeContent(getApplication(), targetContent, collectionDao);
+        ContentHelper.removeContent(getApplication(), collectionDao, targetContent);
     }
 
     public void deletePage(int pageIndex, Consumer<Throwable> onError) {
@@ -414,7 +414,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doSetCover(@NonNull ImageFile page) {
         Helper.assertNonUiThread();
-        ContentHelper.setCover(page, collectionDao, getApplication());
+        ContentHelper.setContentCover(page, collectionDao, getApplication());
     }
 
     public void loadNextContent() {

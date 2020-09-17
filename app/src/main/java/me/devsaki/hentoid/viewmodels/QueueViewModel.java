@@ -193,7 +193,7 @@ public class QueueViewModel extends AndroidViewModel {
         if (content != null) {
             dao.deleteQueue(content);
             // Remove the content from the disk and the DB
-            ContentHelper.removeContent(getApplication(), content, dao);
+            ContentHelper.removeContent(getApplication(), dao, content);
         }
         return true;
     }

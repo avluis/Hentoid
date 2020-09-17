@@ -292,7 +292,7 @@ public class LibImportDialogFragment extends DialogFragment {
         if (siteFolder != null) mapToContent(c, siteFolder);
         Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
         if (null == duplicate) {
-            long newContentId = dao.insertContent(c);
+            long newContentId = ContentHelper.addContent(dao, c);
             // Insert queued content into the queue
             if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
                 List<QueueRecord> lst = new ArrayList<>();

@@ -99,7 +99,7 @@ public class LibDeleteDialogFragment extends DialogFragment {
     }
 
     private boolean deleteItem(@NonNull Content c) throws ContentNotRemovedException {
-        ContentHelper.removeContent(requireActivity(), c, dao);
+        ContentHelper.removeContent(requireActivity(), dao, c);
         return true;
     }
 

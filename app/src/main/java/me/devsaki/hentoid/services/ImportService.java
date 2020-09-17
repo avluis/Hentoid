@@ -267,7 +267,7 @@ public class ImportService extends IntentService {
                             }
                         }
                         content.computeSize();
-                        dao.insertContent(content);
+                        ContentHelper.addContent(dao, content);
                         trace(Log.INFO, 2, log, "Import book OK : %s", bookFolder.getUri().toString());
                     } else { // JSON not found
                         List<DocumentFile> subfolders = FileHelper.listFolders(this, bookFolder, client);
@@ -320,7 +320,7 @@ public class ImportService extends IntentService {
                             Content storedContent = ImportHelper.scanBookFolder(this, bookFolder, client, parentFolder, StatusContent.DOWNLOADED, null, null);
                             DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
                             storedContent.setJsonUri(newJson.getUri().toString());
-                            dao.insertContent(storedContent);
+                            ContentHelper.addContent(dao, storedContent);
                             trace(Log.INFO, 2, log, "Import book OK (Content regenerated) : %s", bookFolder.getUri().toString());
                             booksOK++;
                         } catch (IOException ioe) {
@@ -408,7 +408,7 @@ public class ImportService extends IntentService {
             for (Content c : queuedContent) {
                 Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
                 if (null == duplicate) {
-                    long newContentId = dao.insertContent(c);
+                    long newContentId = ContentHelper.addContent(dao, c);
                     lst.add(new QueueRecord(newContentId, queueSize++));
                 }
                 eventProgress(4, queueSize, count++, 0);
