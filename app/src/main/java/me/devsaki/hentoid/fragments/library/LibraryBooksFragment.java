@@ -474,6 +474,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private void archiveSelectedItems() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         Context context = getActivity();
+        // TODO implement multiple archiving here (see groups fragment)
         if (1 == selectedItems.size() && context != null) {
             ToastUtil.toast(R.string.packaging_content);
             Content c = Stream.of(selectedItems).findFirst().get().getContent();

@@ -193,6 +193,12 @@
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
     </plurals>
+    <plurals name="ask_archive_multiple">
+        <item quantity="one">Are you sure you wish to archive the selected item ?</item>
+        <item quantity="other">Are you sure you wish to archive the selected items ?</item>
+    </plurals>
+    <string name="archive_progress">Archiving books</string>
+    <string name="archive_success">All books archived in your Download folder</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
     <string name="queue_empty">Why am I empty?</string>
     <string name="errors_empty">No errors detected among downloads</string>

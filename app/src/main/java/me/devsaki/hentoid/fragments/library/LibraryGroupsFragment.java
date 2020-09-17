@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.library;
 
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,10 +10,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.IdRes;
@@ -22,7 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
@@ -43,7 +39,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -55,6 +50,10 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
+import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification;
+import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel;
+import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
+import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -62,6 +61,7 @@ import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewholders.GroupDisplayItem;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -69,6 +69,7 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 public class LibraryGroupsFragment extends Fragment {
 
@@ -90,6 +91,10 @@ public class LibraryGroupsFragment extends Fragment {
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
+    // Notification for book archival
+    private NotificationManager archiveNotificationManager;
+    private int archiveProgress;
+    private int archiveMax;
 
     // === SORT TOOLBAR
     // Sort direction button
@@ -322,7 +327,6 @@ public class LibraryGroupsFragment extends Fragment {
         boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
             case R.id.action_delete:
-            case R.id.action_delete_all:
                 purgeSelectedItems();
                 break;
             case R.id.action_archive:
@@ -340,11 +344,12 @@ public class LibraryGroupsFragment extends Fragment {
         boolean isMultipleSelection = selectedTotalCount > 1;
 
         itemDelete.setVisible(!isMultipleSelection && (1 == selectedLocalCount || Preferences.isDeleteExternalLibrary()));
-        itemShare.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
-        itemArchive.setVisible(!isMultipleSelection);
-        itemFolder.setVisible(!isMultipleSelection);
-        itemRedownload.setVisible(selectedLocalCount > 0);
-        itemDeleteAll.setVisible(isMultipleSelection && (selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary()));
+        itemShare.setVisible(false);
+        itemArchive.setVisible(true);
+        itemFolder.setVisible(false);
+        itemRedownload.setVisible(false);
+        itemDeleteAll.setVisible(false);
+//        itemDeleteAll.setVisible(isMultipleSelection && (selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary()));
 
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
     }
@@ -372,45 +377,50 @@ public class LibraryGroupsFragment extends Fragment {
      */
     private void archiveSelectedItems() {
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
+        List<Content> selectedContent = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().map(Group::getContents).single();
+        if (!selectedContent.isEmpty()) askArchiveItems(selectedContent);
+    }
+
+    /**
+     * Display the yes/no dialog to make sure the user really wants to archive selected items
+     *
+     * @param items Items to be archived if the answer is yes
+     */
+    private void askArchiveItems(@NonNull final List<Content> items) {
         Context context = getActivity();
-        if (1 == selectedItems.size() && context != null) {
-            ToastUtil.toast(R.string.packaging_content);
-            List<Content> selectedContent = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().map(Group::getContents).single();
-            // TODO process underlying content
-            /*
-            if (c != null) {
-                if (c.getStorageUri().isEmpty()) {
-                    ToastUtil.toast(R.string.folder_undefined);
-                    return;
-                }
-                viewModel.archiveContent(c, this::onContentArchiveSuccess);
-            }
-             */
-        }
+        if (null == context) return;
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        String title = context.getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size());
+        builder.setMessage(title)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog, which) -> {
+                            selectExtension.deselect();
+                            ArchiveNotificationChannel.init(context);
+                            archiveNotificationManager = new NotificationManager(context, 1);
+                            archiveNotificationManager.cancel();
+                            archiveProgress = 0;
+                            archiveMax = items.size();
+                            archiveNotificationManager.notify(new ArchiveStartNotification());
+                            viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog, which) -> selectExtension.deselect())
+                .create().show();
+    }
+
+    private void onContentArchiveProgress(Content content) {
+        archiveNotificationManager.notify(new ArchiveProgressNotification(content.getTitle(), archiveProgress++, archiveMax));
     }
 
     /**
      * Callback for the success of the "archive item" action
-     *
-     * @param archive File containing the created archive
      */
-    private void onContentArchiveSuccess(File archive) {
-        Context context = getActivity();
-        if (null == context) return;
-
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_STREAM,
-                FileProvider.getUriForFile(context, FileHelper.AUTHORITY, archive));
-        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(archive.getName()));
-        sendIntent.setType(mimeType);
-
-        try {
-            context.startActivity(sendIntent);
-        } catch (ActivityNotFoundException e) {
-            Timber.e(e, "No activity found to send %s", archive.getPath());
-            ToastUtil.toast(context, R.string.error_send, Toast.LENGTH_LONG);
-        }
+    private void onContentArchiveSuccess() {
+        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress));
+        Snackbar.make(recyclerView, R.string.archive_success, LENGTH_LONG)
+                .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
+                .show();
     }
 
     /**
@@ -503,6 +513,7 @@ public class LibraryGroupsFragment extends Fragment {
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
         EventBus.getDefault().unregister(this);
+        if (archiveNotificationManager != null) archiveNotificationManager.cancel();
         super.onDestroy();
     }
 
@@ -613,7 +624,7 @@ public class LibraryGroupsFragment extends Fragment {
         if (selectExtension.getSelectedItems().isEmpty()) {
             if (!invalidateNextBookClick && item.getGroup() != null && !item.getGroup().isBeingDeleted()) {
                 topItemPosition = position;
-                ((LibraryActivity)requireActivity()).showBooksInGroup(item.getGroup());
+                ((LibraryActivity) requireActivity()).showBooksInGroup(item.getGroup());
             } else invalidateNextBookClick = false;
 
             return true;

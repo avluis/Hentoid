@@ -15,6 +15,8 @@ import androidx.paging.PagedList;
 import com.annimon.stream.function.Consumer;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.security.InvalidParameterException;
 import java.util.List;
 
@@ -365,4 +367,44 @@ public class LibraryViewModel extends AndroidViewModel {
             );
         }
     }
+
+
+    public void archiveContents(@NonNull final List<Content> contentList, Consumer<Content> onProgress, Runnable onSuccess) {
+        Timber.d("Building file list for %s books", contentList.size());
+
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        .map(this::doArchiveContent)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                onProgress::accept,
+                                Timber::e,
+                                onSuccess::run
+                        )
+        );
+    }
+
+    /**
+     * Archive the given Content into a ZIP file located into the device's 'Download' folder
+     *
+     * @param content Content to be archived
+     */
+    public Content doArchiveContent(@NonNull final Content content) throws IOException {
+        Helper.assertNonUiThread();
+        DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(getApplication(), content.getStorageUri());
+        if (null == bookFolder) return null;
+
+        List<DocumentFile> files = FileHelper.listFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive
+        if (!files.isEmpty()) {
+            // Build destination file
+            String destName = ContentHelper.formatBookFolderName(content) + ".zip";
+            OutputStream destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ZipUtil.ZIP_MIME_TYPE);
+            Timber.d("Destination file: %s", destName);
+            ZipUtil.zipFiles(getApplication(), files, destFile);
+            return content;
+        }
+        return null;
+    }
+
 }
