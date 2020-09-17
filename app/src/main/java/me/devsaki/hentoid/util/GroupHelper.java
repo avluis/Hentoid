@@ -37,16 +37,13 @@ public final class GroupHelper {
         return result;
     }
 
-    // Does group exist ?
-    // yes -> insert group item only to the bottom of the list
-    // no -> create new group and insert group item inside
     public static void insertContent(CollectionDAO dao, Group group, Attribute attribute, Content newContent) {
         insertContent(dao, group, attribute, Stream.of(newContent).toList());
     }
 
     public static void insertContent(CollectionDAO dao, Group group, Attribute attribute, List<Content> newContents) {
         int nbContents;
-        // Insert group if it doesn't exist
+        // Create group if it doesn't exist
         if (0 == group.id) {
             dao.insertGroup(group);
             if (attribute != null) attribute.group.setAndPutTarget(group);
