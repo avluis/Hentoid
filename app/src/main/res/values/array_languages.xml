@@ -2,8 +2,8 @@
 <resources>
     <string-array name="languages">
         <item>english-uk</item>
-        <item>日本語,chinese-cn</item>
-        <item>中文,japanese-jp</item>
+        <item>中文,chinese-cn</item>
+        <item>日本語,japanese-jp</item>
         <item>한국어,korean-kr</item>
         <item>spanish,español-es</item>
         <item>русский,russian-ru</item>
