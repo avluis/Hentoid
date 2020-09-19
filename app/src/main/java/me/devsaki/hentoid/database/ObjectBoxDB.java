@@ -891,6 +891,11 @@ public class ObjectBoxDB {
         return qb.build();
     }
 
+    @Nullable
+    Group selectGroup(long groupId) {
+        return store.boxFor(Group.class).get(groupId);
+    }
+
     Query<Group> selectGroupsByFlagQ(int grouping, int flag) {
         return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.flag, flag).build();
     }

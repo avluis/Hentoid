@@ -130,6 +130,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private MenuItem itemArchive;
     private MenuItem itemFolder;
     private MenuItem itemRedownload;
+    private MenuItem itemCover;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -397,6 +398,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
         itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         itemRedownload = selectionToolbar.getMenu().findItem(R.id.action_redownload);
+        itemCover = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
@@ -418,6 +420,9 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
                 askRedownloadSelectedItemsScratch();
                 keepToolbar = true;
                 break;
+            case R.id.action_set_cover:
+                askSetCover();
+                break;
             default:
                 selectionToolbar.setVisibility(View.GONE);
                 return false;
@@ -434,6 +439,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         itemArchive.setVisible(!isMultipleSelection);
         itemFolder.setVisible(!isMultipleSelection);
         itemRedownload.setVisible(selectedLocalCount > 0);
+        itemCover.setVisible(!isMultipleSelection && groupId > -1);
 
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
     }
@@ -621,6 +627,33 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             snackbar.setAction("RETRY", v -> viewModel.deleteItems(Stream.of(e.getContent()).toList(), this::onDeleteError));
             snackbar.show();
         }
+    }
+
+    /**
+     * Callback for the "set as group cover" action button
+     */
+    private void askSetCover() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        if (selectedItems.isEmpty()) return;
+
+        Content content = Stream.of(selectedItems).findFirst().get().getContent();
+
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(getResources().getString(R.string.group_make_cover_ask))
+                .setPositiveButton(android.R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            viewModel.setGroupCover(groupId, content.getCover());
+                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.deselect();
+                            selectionToolbar.setVisibility(View.GONE);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
     }
 
     /**

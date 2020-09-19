@@ -245,6 +245,8 @@
         <item quantity="one">One book from the external library will not be removed</item>
         <item quantity="other">%d books from the external library will not be removed</item>
     </plurals>
+    <string name="group_make_cover">Set as group cover</string>
+    <string name="group_make_cover_ask">Are you sure to set this book\'s cover as the current group\'s cover ?</string>
     <!-- Groups -->
     <string name="groups_flat">Flat</string>
     <string name="groups_by_artist">By Artist</string>

@@ -29,6 +29,7 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -408,4 +409,8 @@ public class LibraryViewModel extends AndroidViewModel {
         return null;
     }
 
+    public void setGroupCover(long groupId, ImageFile cover) {
+        Group group = dao.selectGroup(groupId);
+        if (group != null) group.picture.setAndPutTarget(cover);
+    }
 }

@@ -110,6 +110,7 @@ public class LibraryGroupsFragment extends Fragment {
     private MenuItem itemArchive;
     private MenuItem itemFolder;
     private MenuItem itemRedownload;
+    private MenuItem itemCover;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<GroupDisplayItem> itemAdapter;
@@ -319,6 +320,7 @@ public class LibraryGroupsFragment extends Fragment {
         itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
         itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         itemRedownload = selectionToolbar.getMenu().findItem(R.id.action_redownload);
+        itemCover = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
@@ -346,6 +348,7 @@ public class LibraryGroupsFragment extends Fragment {
         itemArchive.setVisible(true);
         itemFolder.setVisible(false);
         itemRedownload.setVisible(false);
+        itemCover.setVisible(false);
 
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
     }

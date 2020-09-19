@@ -35,4 +35,10 @@
         android:title="@string/menu_redownload_scratch"
         android:tooltipText="@string/menu_redownload_scratch"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_set_cover"
+        android:icon="@drawable/ic_action_make_cover"
+        android:title="@string/group_make_cover"
+        android:tooltipText="@string/group_make_cover"
+        app:showAsAction="ifRoom" />
 </menu>

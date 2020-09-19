@@ -281,6 +281,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Nullable
+    public Group selectGroup(long groupId) {
+        return db.selectGroup(groupId);
+    }
+
+    @Nullable
     public Group selectGroupByFlag(int grouping, int flag) {
         return db.selectGroupsByFlagQ(grouping, flag).findFirst();
     }

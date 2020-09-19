@@ -93,6 +93,9 @@ public interface CollectionDAO {
     LiveData<List<Group>> selectGroups(int grouping, int orderStyle);
 
     @Nullable
+    Group selectGroup(long groupId);
+
+    @Nullable
     Group selectGroupByFlag(int grouping, int flag);
 
     long countGroupsFor(Grouping grouping);
