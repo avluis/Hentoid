@@ -49,7 +49,7 @@ public class Hentai2ReadContent implements ContentParser {
                 else if (child.nodeName().equals("a")) {
                     switch (currentProperty) {
                         case "page":
-                            String qtyPages = child.text().substring(0, child.text().indexOf(" page"));
+                            String qtyPages = child.text().substring(0, child.text().indexOf(" page")).replace(",", "");
                             result.setQtyPages(Integer.parseInt(qtyPages));
                             break;
                         case "parody":
