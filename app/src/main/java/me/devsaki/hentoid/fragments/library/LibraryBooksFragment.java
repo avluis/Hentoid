@@ -130,7 +130,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private MenuItem itemArchive;
     private MenuItem itemFolder;
     private MenuItem itemRedownload;
-    private MenuItem itemDeleteAll;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -153,7 +152,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private PagedList<Content> library;
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
-    // TODO
+    // TODO doc
     private long groupId = -1;
 
     // Used to start processing when the recyclerView has finished updating
@@ -398,7 +397,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
         itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         itemRedownload = selectionToolbar.getMenu().findItem(R.id.action_redownload);
-        itemDeleteAll = selectionToolbar.getMenu().findItem(R.id.action_delete_all);
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
@@ -408,7 +406,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
                 shareSelectedItems();
                 break;
             case R.id.action_delete:
-            case R.id.action_delete_all:
                 purgeSelectedItems();
                 break;
             case R.id.action_archive:
@@ -432,12 +429,11 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
 
-        itemDelete.setVisible(!isMultipleSelection && (1 == selectedLocalCount || Preferences.isDeleteExternalLibrary()));
+        itemDelete.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
         itemShare.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         itemArchive.setVisible(!isMultipleSelection);
         itemFolder.setVisible(!isMultipleSelection);
         itemRedownload.setVisible(selectedLocalCount > 0);
-        itemDeleteAll.setVisible(isMultipleSelection && (selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary()));
 
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
     }
@@ -988,7 +984,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         if (library != null) updateTitle(library.size(), totalContentCount);
     }
 
-    // TODO
+    // TODO doc
     private void onGroupChanged(Group group) {
         this.groupId = group.id;
     }
