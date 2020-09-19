@@ -96,6 +96,7 @@ public class LibraryActivity extends BaseActivity {
     // Alert bars
     private Group permissionsAlertBar;
     private Group storageAlertBar;
+    private PopupMenu popup;
 
     // === SELECTION TOOLBAR
     private Toolbar selectionToolbar;
@@ -258,11 +259,11 @@ public class LibraryActivity extends BaseActivity {
 
                 // Update screen display
                 updateDisplay();
-                sortCommandsAutoHide.submit(true);
+                sortCommandsAutoHide(true, popup);
                 return true;
             });
             popup.show(); //showing popup menu
-            sortCommandsAutoHide.submit(true);
+            sortCommandsAutoHide(true, popup);
         }); //closing the setOnClickListener method
 
         // Link to advanced search
@@ -360,7 +361,8 @@ public class LibraryActivity extends BaseActivity {
         });
     }
 
-    public void sortCommandsAutoHide(boolean hideSortOnly) {
+    public void sortCommandsAutoHide(boolean hideSortOnly, PopupMenu popup) {
+        this.popup = popup;
         sortCommandsAutoHide.submit(hideSortOnly);
     }
 
@@ -424,6 +426,8 @@ public class LibraryActivity extends BaseActivity {
 
         sortDirectionButton.setVisibility(View.GONE);
         sortFieldButton.setVisibility(View.GONE);
+
+        if (popup != null) popup.dismiss();
 
         // Restore CLEAR button if it's needed
         if (hideSortOnly && isSearchQueryActive()) searchClearButton.setVisibility(View.VISIBLE);

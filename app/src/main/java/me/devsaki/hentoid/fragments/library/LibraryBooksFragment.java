@@ -276,7 +276,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
             // Run a new search
             viewModel.updateOrder();
-            activity.sortCommandsAutoHide(true);
+            activity.sortCommandsAutoHide(true, null);
         });
         sortFieldButton = activity.getSortFieldButton();
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
@@ -296,11 +296,11 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
                 Preferences.setContentSortField(fieldCode);
                 // Run a new search
                 viewModel.updateOrder();
-                activity.sortCommandsAutoHide(true);
+                activity.sortCommandsAutoHide(true, popup);
                 return true;
             });
             popup.show(); //showing popup menu
-            activity.sortCommandsAutoHide(true);
+            activity.sortCommandsAutoHide(true, popup);
         }); //closing the setOnClickListener method
 
         // RecyclerView
