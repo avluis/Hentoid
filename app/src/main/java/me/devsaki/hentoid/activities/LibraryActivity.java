@@ -91,6 +91,7 @@ public class LibraryActivity extends BaseActivity {
     private Toolbar toolbar;
     // "Search" button on top menu
     private MenuItem searchMenu;
+    private MenuItem editMode;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
     // Alert bars
@@ -152,7 +153,6 @@ public class LibraryActivity extends BaseActivity {
     public void setMetadata(List<Attribute> metadata) {
         this.metadata = metadata;
     }
-
 
 
     @Override
@@ -251,6 +251,7 @@ public class LibraryActivity extends BaseActivity {
                 item.setChecked(true);
                 int fieldCode = getGroupingCodeFromMenuId(item.getItemId());
                 Preferences.setGroupingDisplay(fieldCode);
+                viewModel.setGroup(null);
 
                 // Update button text
                 /*
@@ -286,6 +287,12 @@ public class LibraryActivity extends BaseActivity {
 
         viewPager = findViewById(R.id.library_pager);
         viewPager.setUserInputEnabled(false); // Disable swipe to change tabs
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                onTabSelected(position);
+            }
+        });
 
         updateDisplay();
     }
@@ -331,6 +338,8 @@ public class LibraryActivity extends BaseActivity {
 
         favsMenu = toolbar.getMenu().findItem(R.id.action_favourites);
         updateFavouriteFilter();
+
+        editMode = toolbar.getMenu().findItem(R.id.action_edit);
 
         mainSearchView = (SearchView) searchMenu.getActionView();
         mainSearchView.setIconifiedByDefault(true);
@@ -554,6 +563,12 @@ public class LibraryActivity extends BaseActivity {
         viewPager.setCurrentItem(1);
     }
 
+    private void onTabSelected(int position) {
+        Grouping currentGrouping = Preferences.getGroupingDisplay();
+        if (0 == position) editMode.setVisible(currentGrouping.canReorderGroups());
+        else if (1 == position) editMode.setVisible(currentGrouping.canReorderBooks());
+    }
+
     private class LibraryPagerAdapter extends FragmentStateAdapter {
         LibraryPagerAdapter(FragmentActivity fa) {
             super(fa);
@@ -563,7 +578,7 @@ public class LibraryActivity extends BaseActivity {
         @Override
         public Fragment createFragment(int position) {
             searchAction.clear();
-            if (Grouping.FLAT.getId() == Preferences.getGroupingDisplay()) {
+            if (Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
                 LibraryBooksFragment result = new LibraryBooksFragment();
                 searchAction.add(result::onSearch);
                 advSearchAction.add(result::onAdvancedSearchButtonClick);
@@ -585,7 +600,7 @@ public class LibraryActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            return (Grouping.FLAT.getId() == Preferences.getGroupingDisplay()) ? 1 : 2;
+            return (Grouping.FLAT.equals(Preferences.getGroupingDisplay())) ? 1 : 2;
         }
     }
 }

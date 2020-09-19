@@ -177,7 +177,7 @@ public class LibraryGroupsFragment extends Fragment {
         viewModel.getGroups().observe(getViewLifecycleOwner(), this::onGroupsChanged);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
 
-        viewModel.selectGroups(Preferences.getGroupingDisplay()); // Trigger a blank search
+        viewModel.selectGroups(Preferences.getGroupingDisplay().getId()); // Trigger a blank search
     }
 
     /**
@@ -306,6 +306,7 @@ public class LibraryGroupsFragment extends Fragment {
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         toolbar = activity.getToolbar();
+
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect();
@@ -560,7 +561,7 @@ public class LibraryGroupsFragment extends Fragment {
             requireActivity().finish();
             startActivity(intent);
         } else if (Preferences.Key.PREF_GROUPING_DISPLAY.equals(key)) {
-            viewModel.selectGroups(Preferences.getGroupingDisplay());
+            viewModel.selectGroups(Preferences.getGroupingDisplay().getId());
         }
     }
 
@@ -611,7 +612,7 @@ public class LibraryGroupsFragment extends Fragment {
 
         // Refresh groups
         // TODO do we really want to do that, especially when deleting content ?
-        viewModel.selectGroups(Preferences.getGroupingDisplay());
+        viewModel.selectGroups(Preferences.getGroupingDisplay().getId());
     }
 
     /**

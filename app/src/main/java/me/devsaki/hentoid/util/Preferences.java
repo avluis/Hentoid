@@ -510,8 +510,8 @@ public final class Preferences {
                 .apply();
     }
 
-    public static int getGroupingDisplay() {
-        return Integer.parseInt(sharedPreferences.getString(Key.PREF_GROUPING_DISPLAY, Integer.toString(Default.GROUPING_DISPLAY)) + "");
+    public static Grouping getGroupingDisplay() {
+        return Grouping.searchById(Integer.parseInt(sharedPreferences.getString(Key.PREF_GROUPING_DISPLAY, Integer.toString(Default.GROUPING_DISPLAY)) + ""));
     }
 
     public static void setGroupingDisplay(int groupingDisplay) {

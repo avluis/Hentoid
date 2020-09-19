@@ -87,7 +87,10 @@ public class ContentSearchManager {
     }
 
     public void setGroup(Group group) {
-        this.groupId = group.id;
+        if (group != null)
+            groupId = group.id;
+        else
+            groupId = -1;
     }
 
     public List<Attribute> getTags() {

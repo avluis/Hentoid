@@ -124,6 +124,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
     // === SELECTION TOOLBAR
     private Toolbar toolbar;
+    private MenuItem editMode;
     private Toolbar selectionToolbar;
     private MenuItem itemDelete;
     private MenuItem itemShare;
@@ -384,6 +385,12 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         toolbar = activity.getToolbar();
+        editMode = toolbar.getMenu().findItem(R.id.action_edit);
+        editMode.setOnMenuItemClickListener(v -> {
+            Timber.i(">> editMode");
+            return true;
+        });
+
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect();
@@ -718,7 +725,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         LibraryActivity activity = (LibraryActivity) requireActivity();
         if (!activity.collapseSearchMenu()) {
             // If none of the above and we're into a grouping, go back to the groups view
-            if (Grouping.FLAT.getId() != Preferences.getGroupingDisplay()) {
+            if (!Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
                 activity.goBackToGroups();
             }
             // If none of the above, user is asking to leave => use double-tap
@@ -1019,7 +1026,10 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
     // TODO doc
     private void onGroupChanged(Group group) {
-        this.groupId = group.id;
+        if (group != null)
+            groupId = group.id;
+        else
+            groupId = -1;
     }
 
     /**
