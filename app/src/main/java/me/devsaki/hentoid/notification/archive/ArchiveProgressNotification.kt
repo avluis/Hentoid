@@ -19,7 +19,7 @@ class ArchiveProgressNotification(
         return NotificationCompat.Builder(context, ArchiveNotificationChannel.ID)
                 .setSmallIcon(R.drawable.ic_hentoid_shape)
                 .setContentTitle(context.getString(R.string.archive_progress))
-                .setContentText(title)
+                .setContentText("Done : $title")
                 .setContentInfo(progressString)
                 .setProgress(max, progress, false)
                 .setColor(ThemeHelper.getColor(context, R.color.secondary_light))

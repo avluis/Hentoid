@@ -402,7 +402,7 @@ public class LibraryGroupsFragment extends Fragment {
                             archiveProgress = 0;
                             archiveMax = items.size();
                             archiveNotificationManager.notify(new ArchiveStartNotification());
-                            viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess);
+                            viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess, this::onContentArchiveError);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog, which) -> selectExtension.deselect())
@@ -417,10 +417,18 @@ public class LibraryGroupsFragment extends Fragment {
      * Callback for the success of the "archive item" action
      */
     private void onContentArchiveSuccess() {
-        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress));
+        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, false));
         Snackbar.make(recyclerView, R.string.archive_success, LENGTH_LONG)
                 .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                 .show();
+    }
+
+    /**
+     * Callback for the success of the "archive item" action
+     */
+    private void onContentArchiveError(Throwable e) {
+        Timber.e(e);
+        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, true));
     }
 
     /**

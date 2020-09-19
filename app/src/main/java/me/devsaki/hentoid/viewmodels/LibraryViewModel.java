@@ -369,7 +369,7 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
 
-    public void archiveContents(@NonNull final List<Content> contentList, Consumer<Content> onProgress, Runnable onSuccess) {
+    public void archiveContents(@NonNull final List<Content> contentList, Consumer<Content> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
         Timber.d("Building file list for %s books", contentList.size());
 
         compositeDisposable.add(
@@ -379,7 +379,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 onProgress::accept,
-                                Timber::e,
+                                onError::accept,
                                 onSuccess::run
                         )
         );
@@ -392,6 +392,7 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public Content doArchiveContent(@NonNull final Content content) throws IOException {
         Helper.assertNonUiThread();
+        Timber.i(">> archive %s", content.getTitle());
         DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(getApplication(), content.getStorageUri());
         if (null == bookFolder) return null;
 
