@@ -91,9 +91,12 @@ public class LibraryActivity extends BaseActivity {
     private Toolbar toolbar;
     // "Search" button on top menu
     private MenuItem searchMenu;
-    private MenuItem editMode;
+    // "Edit mode" button on top menu
+    private MenuItem editMenu;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
+    // "Sort" button on top menu
+    private MenuItem sortMenu;
     // Alert bars
     private Group permissionsAlertBar;
     private Group storageAlertBar;
@@ -121,6 +124,8 @@ public class LibraryActivity extends BaseActivity {
     // Used to auto-hide the sort controls bar when no activity is detected
     private final Debouncer<Boolean> sortCommandsAutoHide = new Debouncer<>(2500, this::hideSearchSortBar);
 
+
+    // === PUBLIC ACCESSORS (to be used by fragments)
 
     public Toolbar getToolbar() {
         return toolbar;
@@ -339,7 +344,8 @@ public class LibraryActivity extends BaseActivity {
         favsMenu = toolbar.getMenu().findItem(R.id.action_favourites);
         updateFavouriteFilter();
 
-        editMode = toolbar.getMenu().findItem(R.id.action_edit);
+        editMenu = toolbar.getMenu().findItem(R.id.action_edit);
+        sortMenu = toolbar.getMenu().findItem(R.id.action_order);
 
         mainSearchView = (SearchView) searchMenu.getActionView();
         mainSearchView.setIconifiedByDefault(true);
@@ -565,8 +571,15 @@ public class LibraryActivity extends BaseActivity {
 
     private void onTabSelected(int position) {
         Grouping currentGrouping = Preferences.getGroupingDisplay();
-        if (0 == position) editMode.setVisible(currentGrouping.canReorderGroups());
-        else if (1 == position) editMode.setVisible(currentGrouping.canReorderBooks());
+        if (0 == position) editMenu.setVisible(currentGrouping.canReorderGroups());
+        else if (1 == position) editMenu.setVisible(currentGrouping.canReorderBooks());
+    }
+
+    public void toggleEditMode(boolean editMode) {
+        searchMenu.setVisible(!editMode);
+        favsMenu.setVisible(!editMode);
+        editMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_edit);
+        sortMenu.setVisible(!editMode);
     }
 
     private class LibraryPagerAdapter extends FragmentStateAdapter {

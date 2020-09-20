@@ -408,15 +408,12 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     }
 
     private boolean toggleEditMode() {
-        if (!itemEditMode.isChecked()) {
-            // TODO hide the other icons
-            itemEditMode.setIcon(R.drawable.ic_check);
-            isEditMode = true;
-        } else {
-            itemEditMode.setIcon(R.drawable.ic_edit);
-            isEditMode = false;
-        }
-        itemEditMode.setChecked(isEditMode);
+        if (!(requireActivity() instanceof LibraryActivity)) return false;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
+        isEditMode = !isEditMode;
+        activity.toggleEditMode(isEditMode);
+
         setPagingMethod(Preferences.getEndlessScroll(), isEditMode);
         return true;
     }

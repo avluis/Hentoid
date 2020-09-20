@@ -22,8 +22,6 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_edit"
-        android:checkable="true"
-        android:checked="false"
         android:icon="@drawable/ic_edit"
         android:title="@string/menu_edit"
         android:tooltipText="@string/menu_edit"
