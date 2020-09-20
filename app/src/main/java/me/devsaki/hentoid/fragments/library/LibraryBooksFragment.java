@@ -124,7 +124,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
     // === SELECTION TOOLBAR
     private Toolbar toolbar;
-    private MenuItem editMode;
+    private MenuItem itemEditMode;
     private Toolbar selectionToolbar;
     private MenuItem itemDelete;
     private MenuItem itemShare;
@@ -156,6 +156,8 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private int topItemPosition = -1;
     // TODO doc
     private long groupId = -1;
+    // TODO doc
+    private boolean isEditMode = false;
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
@@ -311,7 +313,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
         // Pager
         pager.initUI(rootView);
-        initPagingMethod(Preferences.getEndlessScroll());
+        setPagingMethod(Preferences.getEndlessScroll(), false);
     }
 
     private String getQuery() {
@@ -385,11 +387,8 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         toolbar = activity.getToolbar();
-        editMode = toolbar.getMenu().findItem(R.id.action_edit);
-        editMode.setOnMenuItemClickListener(v -> {
-            Timber.i(">> editMode");
-            return true;
-        });
+        itemEditMode = toolbar.getMenu().findItem(R.id.action_edit);
+        itemEditMode.setOnMenuItemClickListener(v -> toggleEditMode());
 
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
@@ -406,6 +405,20 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         itemRedownload = selectionToolbar.getMenu().findItem(R.id.action_redownload);
         itemCover = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+    }
+
+    private boolean toggleEditMode() {
+        if (!itemEditMode.isChecked()) {
+            // TODO hide the other icons
+            itemEditMode.setIcon(R.drawable.ic_check);
+            isEditMode = true;
+        } else {
+            itemEditMode.setIcon(R.drawable.ic_edit);
+            isEditMode = false;
+        }
+        itemEditMode.setChecked(isEditMode);
+        setPagingMethod(Preferences.getEndlessScroll(), isEditMode);
+        return true;
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
@@ -747,7 +760,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private void onSharedPreferenceChanged(String key) {
         Timber.i("Prefs change detected : %s", key);
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
-            initPagingMethod(Preferences.getEndlessScroll());
+            setPagingMethod(Preferences.getEndlessScroll(), isEditMode);
             viewModel.updateOrder(); // Trigger a blank search
         } else if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
             // Restart the app with the library activity on top
@@ -804,16 +817,17 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
      *
      * @param isEndless True if endless mode has to be set; false if paged mode has to be set
      */
-    private void initPagingMethod(boolean isEndless) {
+    private void setPagingMethod(boolean isEndless, boolean isEditMode) {
         viewModel.setPagingMethod(isEndless);
 
         if (isEndless) { // Endless mode
             pager.hide();
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(ContentItem.ViewType.LIBRARY), c -> new ContentItem(c, null, ContentItem.ViewType.LIBRARY));
+            @ContentItem.ViewType int viewType = isEditMode ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, null, viewType));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             fastAdapter.setHasStableIds(true);
-            ContentItem item = new ContentItem(ContentItem.ViewType.LIBRARY);
+            ContentItem item = new ContentItem(viewType);
             fastAdapter.registerItemFactory(item.getType(), item);
 
             itemAdapter = null;
@@ -949,7 +963,8 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         int minIndex = bounds.getLeft();
         int maxIndex = bounds.getRight();
 
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, ContentItem.ViewType.LIBRARY)).toList();
+        @ContentItem.ViewType int viewType = isEditMode ? ContentItem.ViewType.LIBRARY : ContentItem.ViewType.LIBRARY_EDIT;
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }

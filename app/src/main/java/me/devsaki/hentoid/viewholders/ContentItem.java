@@ -66,12 +66,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     private static final RequestOptions glideRequestOptions;
 
-    @IntDef({ViewType.LIBRARY, ViewType.QUEUE, ViewType.ERRORS})
+    @IntDef({ViewType.LIBRARY, ViewType.LIBRARY_EDIT, ViewType.QUEUE, ViewType.ERRORS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int LIBRARY = 0;
-        int QUEUE = 1;
-        int ERRORS = 2;
+        int LIBRARY_EDIT = 1;
+        int QUEUE = 2;
+        int ERRORS = 3;
     }
 
     private final Content content;
@@ -153,7 +154,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     @Override
     public boolean isDraggable() {
-        return (ViewType.QUEUE == viewType);
+        return (ViewType.QUEUE == viewType || ViewType.LIBRARY_EDIT == viewType);
     }
 
     @Override
@@ -247,8 +248,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
-            } else if (viewType == ViewType.QUEUE) {
-                progressBar = itemView.findViewById(R.id.pbDownload);
+            } else if (viewType == ViewType.QUEUE || viewType == ViewType.LIBRARY_EDIT) {
+                if (viewType == ViewType.QUEUE) progressBar = itemView.findViewById(R.id.pbDownload);
                 ivTop = itemView.findViewById(R.id.queueTopBtn);
                 ivBottom = itemView.findViewById(R.id.queueBottomBtn);
                 ivReorder = itemView.findViewById(R.id.ivReorder);
@@ -435,7 +436,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             Context context = tvPages.getContext();
 
             String template;
-            if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS) {
+            if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS || viewType == ViewType.LIBRARY_EDIT) {
                 template = context.getResources().getString(R.string.work_pages_queue);
                 template = template.replace("@pages@", content.getQtyPages() + "");
                 if (viewType == ViewType.ERRORS) {
@@ -486,7 +487,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivSite.setImageResource(R.drawable.ic_hentoid_shape);
             }
 
-            if (ViewType.QUEUE == item.viewType) {
+            if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 boolean isFirstItem = (0 == getAdapterPosition());
                 ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
                 ivTop.setVisibility(View.VISIBLE);

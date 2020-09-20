@@ -232,7 +232,7 @@ public class LibraryGroupsFragment extends Fragment {
         new FastScrollerBuilder(recyclerView).build();
 
         // Pager
-        initPagingMethod();
+        setPagingMethod();
     }
 
     private String getQuery() {
@@ -568,7 +568,7 @@ public class LibraryGroupsFragment extends Fragment {
     /**
      * Initialize the paging method of the screen
      */
-    private void initPagingMethod() {
+    private void setPagingMethod() {
         viewModel.setPagingMethod(true);
 
         itemAdapter = new ItemAdapter<>();
