@@ -12,6 +12,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import java.io.File;
@@ -29,6 +30,7 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -412,5 +414,25 @@ public class LibraryViewModel extends AndroidViewModel {
     public void setGroupCover(long groupId, ImageFile cover) {
         Group group = dao.selectGroup(groupId);
         if (group != null) group.picture.setAndPutTarget(cover);
+    }
+
+    public void savePositions(List<Content> orderedContent) {
+        Group group = getGroup().getValue();
+        if (null == group) return;
+
+        // Select the smallest value as the starting point, as we're not sure we start from 0
+        int order = Stream.of(orderedContent).map(c -> c.getGroupItem(group.id)).map(GroupItem::getOrder).min(Integer::compare).get();
+
+        // TODO optimize if needed - grab all content at once ? grab all groupItems when providing content IDs and group ?
+        for(Content c : orderedContent) {
+            Content freshContent = dao.selectContent(c.getId());
+            if (freshContent != null) {
+                GroupItem gi = freshContent.getGroupItem(group.id);
+                if (gi != null) {
+                    gi.order = order++;
+                    dao.insertGroupItem(gi);
+                }
+            }
+        }
     }
 }

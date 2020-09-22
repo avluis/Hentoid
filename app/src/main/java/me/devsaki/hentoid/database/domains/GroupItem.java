@@ -27,4 +27,12 @@ public class GroupItem {
     public Content getContent() {
         return content.getTarget();
     }
+
+    public long getContentId() {
+        return content.getTargetId();
+    }
+
+    public int getOrder() {
+        return order;
+    }
 }

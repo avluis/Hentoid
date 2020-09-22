@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -31,6 +32,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -40,11 +42,16 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.drag.ItemTouchCallback;
+import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
+import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
+import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
+import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -84,6 +91,7 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
+import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.LibraryPager;
@@ -93,7 +101,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragment.Parent {
+public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -138,6 +146,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
     private FastAdapter<ContentItem> fastAdapter;
     private SelectExtension<ContentItem> selectExtension;
+    private ItemTouchHelper touchHelper;
 
 
     // ======== VARIABLES
@@ -161,6 +170,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private int itemToRefreshIndex = -1;
 
 
     /**
@@ -288,6 +298,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
                     .inflate(R.menu.library_sort_menu, popup.getMenu());
+            popup.getMenu().findItem(R.id.sort_custom).setVisible(Preferences.getGroupingDisplay().canReorderBooks());
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text
                 sortFieldButton.setText(item.getTitle());
@@ -352,6 +363,8 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
                 return Preferences.Constant.ORDER_FIELD_READS;
             case (R.id.sort_size):
                 return Preferences.Constant.ORDER_FIELD_SIZE;
+            case (R.id.sort_custom):
+                return Preferences.Constant.ORDER_FIELD_CUSTOM;
             case (R.id.sort_random):
                 return Preferences.Constant.ORDER_FIELD_RANDOM;
             default:
@@ -375,6 +388,8 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
                 return R.string.sort_reads;
             case (Preferences.Constant.ORDER_FIELD_SIZE):
                 return R.string.sort_size;
+            case (Preferences.Constant.ORDER_FIELD_CUSTOM):
+                return R.string.sort_custom;
             case (Preferences.Constant.ORDER_FIELD_RANDOM):
                 return R.string.sort_random;
             default:
@@ -408,11 +423,20 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     }
 
     private boolean toggleEditMode() {
+        // TODO cancel button
+        // TODO custom order starting point is the order used when first validating a custom reordering
         if (!(requireActivity() instanceof LibraryActivity)) return false;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         isEditMode = !isEditMode;
         activity.toggleEditMode(isEditMode);
+
+        // Leave edit mode by validating => Save new item position
+        if (!isEditMode) {
+            viewModel.savePositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList());
+        } else { // Switch to custom order
+            Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
+        }
 
         setPagingMethod(Preferences.getEndlessScroll(), isEditMode);
         return true;
@@ -815,28 +839,31 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
      * @param isEndless True if endless mode has to be set; false if paged mode has to be set
      */
     private void setPagingMethod(boolean isEndless, boolean isEditMode) {
-        viewModel.setPagingMethod(isEndless);
+        // Editing will always be done in Endless mode
+        viewModel.setPagingMethod(isEndless || isEditMode);
 
-        if (isEndless) { // Endless mode
-            pager.hide();
+        // Pager appearance
+        if (!isEndless && !isEditMode) {
+            pager.setCurrentPage(1);
+            pager.show();
+        } else pager.hide();
 
-            @ContentItem.ViewType int viewType = isEditMode ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, null, viewType));
+        // Adapter initialization
+        if (isEndless && !isEditMode) {
+            @ContentItem.ViewType int viewType = ContentItem.ViewType.LIBRARY;
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, touchHelper, viewType));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
-            fastAdapter.setHasStableIds(true);
             ContentItem item = new ContentItem(viewType);
             fastAdapter.registerItemFactory(item.getType(), item);
 
             itemAdapter = null;
-        } else { // Paged mode
+        } else { // Paged mode or edit mode
             itemAdapter = new ItemAdapter<>();
             fastAdapter = FastAdapter.with(itemAdapter);
-            fastAdapter.setHasStableIds(true);
-            pager.setCurrentPage(1);
-            pager.show();
 
             pagedItemAdapter = null;
         }
+        fastAdapter.setHasStableIds(true);
 
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i, p));
@@ -901,6 +928,19 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             selectExtension.setSelectionListener((item, b) -> this.onSelectionChanged());
         }
 
+        // Drag, drop & swiping
+        if (isEditMode) {
+            SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
+                    this,
+                    this,
+                    ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
+            dragSwipeCallback.setNotifyAllDrops(true);
+            dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
+
+            touchHelper = new ItemTouchHelper(dragSwipeCallback);
+            touchHelper.attachToRecyclerView(recyclerView);
+        }
+
         recyclerView.setAdapter(fastAdapter);
     }
 
@@ -925,7 +965,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
      *
      * @param iLibrary Library to extract the shelf from
      */
-    private void loadBookshelf(PagedList<Content> iLibrary) {
+    private void loadBookshelf(@NonNull final PagedList<Content> iLibrary) {
         if (iLibrary.isEmpty()) {
             itemAdapter.set(Collections.emptyList());
             fastAdapter.notifyDataSetChanged();
@@ -953,16 +993,27 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
      * @param iLibrary    Library to display books from
      * @param shelfNumber Number of the shelf to display
      */
-    private void populateBookshelf(@NonNull PagedList<Content> iLibrary, int shelfNumber) {
+    private void populateBookshelf(@NonNull final PagedList<Content> iLibrary, int shelfNumber) {
         if (Preferences.getEndlessScroll()) return;
 
         ImmutablePair<Integer, Integer> bounds = getShelfBound(shelfNumber, iLibrary.size());
         int minIndex = bounds.getLeft();
         int maxIndex = bounds.getRight();
 
-        @ContentItem.ViewType int viewType = isEditMode ? ContentItem.ViewType.LIBRARY : ContentItem.ViewType.LIBRARY_EDIT;
+        @ContentItem.ViewType int viewType = ContentItem.ViewType.LIBRARY; // Paged mode won't be used in edit mode
         List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType)).toList();
         itemAdapter.set(contentItems);
+        fastAdapter.notifyDataSetChanged();
+    }
+
+    private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
+        if (iLibrary.isEmpty()) {
+            itemAdapter.set(Collections.emptyList());
+        } else {
+            @ContentItem.ViewType int viewType = isEditMode ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
+            List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size() - 1)).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType)).toList();
+            itemAdapter.set(contentItems);
+        }
         fastAdapter.notifyDataSetChanged();
     }
 
@@ -1014,9 +1065,11 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         if (newSearch) topItemPosition = 0;
 
         // Update displayed books
-        if (Preferences.getEndlessScroll()) {
+        if (Preferences.getEndlessScroll() && !isEditMode) {
             pagedItemAdapter.submitList(result, this::differEndCallback);
-        } else {
+        } else if (isEditMode) {
+            populateAllResults(result);
+        } else { // Paged mode
             if (newSearch) pager.setCurrentPage(1);
             pager.setPageCount((int) Math.ceil(result.size() * 1.0 / Preferences.getContentPageQuantity()));
             loadBookshelf(result);
@@ -1186,5 +1239,43 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
      */
     private int getTopItemPosition() {
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
+    }
+
+    /**
+     * DRAG, DROP & SWIPE METHODS
+     */
+
+    private void recordMoveFromFirstPos(int from, int to) {
+        if (0 == from) itemToRefreshIndex = to;
+    }
+
+    private void recordMoveFromFirstPos(List<Integer> positions) {
+        // Only useful when moving the 1st item to the bottom
+        if (!positions.isEmpty() && 0 == positions.get(0))
+            itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
+    }
+
+    @Override
+    public boolean itemTouchOnMove(int oldPosition, int newPosition) {
+        DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
+        recordMoveFromFirstPos(oldPosition, newPosition);
+        return true;
+    }
+
+    @Override
+    public void itemTouchDropped(int i, int i1) {
+        // Nothing; final position will be saved once the "save" button is hit
+    }
+
+    @Override
+    public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        if (viewHolder instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) viewHolder).onDragged();
+        }
+    }
+
+    @Override
+    public void itemSwiped(int i, int i1) {
+        // TODO #609
     }
 }

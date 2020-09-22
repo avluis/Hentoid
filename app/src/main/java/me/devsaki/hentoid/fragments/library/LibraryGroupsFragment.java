@@ -208,6 +208,7 @@ public class LibraryGroupsFragment extends Fragment {
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
                     .inflate(R.menu.library_sort_menu, popup.getMenu());
+            popup.getMenu().findItem(R.id.sort_custom).setVisible(Preferences.getGroupingDisplay().canReorderGroups());
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text
                 sortFieldButton.setText(item.getTitle());

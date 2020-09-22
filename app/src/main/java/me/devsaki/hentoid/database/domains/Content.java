@@ -9,6 +9,7 @@ import com.annimon.stream.Stream;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,8 @@ public class Content implements Serializable {
     private StatusContent status;
     @Backlink(to = "content")
     private ToMany<ImageFile> imageFiles;
+    @Backlink(to = "content")
+    public ToMany<GroupItem> groupItems;
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
     private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
@@ -703,6 +706,37 @@ public class Content implements Serializable {
     public void increaseNumberDownloadRetries() {
         this.numberDownloadRetries++;
     }
+
+    @Nullable
+    public GroupItem getGroupItem(long groupId) {
+        for (GroupItem gi : groupItems)
+            if (gi.group.getTargetId() == groupId) return gi;
+
+        return null;
+    }
+
+    public static class GroupItemOrderComparator implements Comparator<Content> {
+
+        private final long groupId;
+
+        public GroupItemOrderComparator(long groupId) {
+            this.groupId = groupId;
+        }
+
+        // TODO performance test on large collections
+        @Override
+        public int compare(Content o1, Content o2) {
+            Integer o1o = Integer.MAX_VALUE;
+            Integer o2o = Integer.MAX_VALUE;
+            GroupItem o1g = o1.getGroupItem(groupId);
+            GroupItem o2g = o2.getGroupItem(groupId);
+            if (o1g != null) o1o = o1g.order;
+            if (o2g != null) o2o = o2g.order;
+
+            return o1o.compareTo(o2o);
+        }
+    }
+
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {
         @Override

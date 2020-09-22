@@ -707,6 +707,16 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      * DRAG, DROP & SWIPE METHODS
      */
 
+    private void recordMoveFromFirstPos(int from, int to) {
+        if (0 == from) itemToRefreshIndex = to;
+    }
+
+    private void recordMoveFromFirstPos(List<Integer> positions) {
+        // Only useful when moving the 1st item to the bottom
+        if (!positions.isEmpty() && 0 == positions.get(0))
+            itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
+    }
+
     @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
         DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
@@ -731,6 +741,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     @Override
+    public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        if (viewHolder instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) viewHolder).onDragged();
+        }
+    }
+
+    @Override
     public void itemSwiped(int position, int direction) {
         ContentItem item = itemAdapter.getAdapterItem(position);
         item.setSwipeDirection(direction);
@@ -751,13 +768,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
     }
 
-    @Override
-    public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
-        if (viewHolder instanceof IDraggableViewHolder) {
-            ((IDraggableViewHolder) viewHolder).onDragged();
-        }
-    }
-
     /**
      * Show the viewer settings dialog
      */
@@ -773,16 +783,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     private void updateNetworkUsage(long bytesReceived) {
         downloadSpeedCalulator.addSampleNow(bytesReceived);
-    }
-
-    private void recordMoveFromFirstPos(int from, int to) {
-        if (0 == from) itemToRefreshIndex = to;
-    }
-
-    private void recordMoveFromFirstPos(List<Integer> positions) {
-        // Only useful when moving the 1st item to the bottom
-        if (!positions.isEmpty() && 0 == positions.get(0))
-            itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
     }
 
     private void initSelectionToolbar() {

@@ -7,6 +7,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
+import androidx.paging.DataSource;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
@@ -59,7 +60,9 @@ public class ObjectBoxDAO implements CollectionDAO {
         int COUNT_CONTENT_UNIVERSAL = 3;
     }
 
-    ObjectBoxDAO(ObjectBoxDB db) { this.db = db; }
+    ObjectBoxDAO(ObjectBoxDB db) {
+        this.db = db;
+    }
 
     public ObjectBoxDAO(Context ctx) {
         db = ObjectBoxDB.getInstance(ctx);
@@ -150,7 +153,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
         // See https://github.com/objectbox/objectbox-java/issues/776
-        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.queryContentSearchContent(query, groupId, metadata, favouritesOnly, Preferences.Constant.ORDER_FIELD_NONE, false));
+        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.selectContentSearchContentQ(query, groupId, metadata, favouritesOnly, Preferences.Constant.ORDER_FIELD_NONE, false));
 
         MediatorLiveData<Integer> result = new MediatorLiveData<>();
         result.addSource(livedata, v -> result.setValue(v.size()));
@@ -179,29 +182,65 @@ public class ObjectBoxDAO implements CollectionDAO {
             boolean orderDesc,
             boolean favouritesOnly,
             boolean loadAll) {
-        boolean isRandom = (orderField == Preferences.Constant.ORDER_FIELD_RANDOM);
+        boolean isCustomOrder = (orderField == Preferences.Constant.ORDER_FIELD_CUSTOM);
 
-        Query<Content> query;
-        if (Mode.SEARCH_CONTENT_MODULAR == mode) {
-            query = db.queryContentSearchContent(filter, groupId, metadata, favouritesOnly, orderField, orderDesc);
-        } else { // Mode.SEARCH_CONTENT_UNIVERSAL
-            query = db.queryContentUniversal(filter, groupId, favouritesOnly, orderField, orderDesc);
-        }
+        ImmutablePair<Long, DataSource.Factory<Integer, Content>> contentRetrieval;
+        if (isCustomOrder)
+            contentRetrieval = getPagedContentByList(mode, filter, groupId, metadata, orderField, orderDesc, favouritesOnly);
+        else
+            contentRetrieval = getPagedContentByQuery(mode, filter, groupId, metadata, orderField, orderDesc, favouritesOnly);
 
         int nbPages = Preferences.getContentPageQuantity();
         int initialLoad = nbPages * 2;
         if (loadAll) {
             // Trump Android's algorithm by setting a number of pages higher that the actual number of results
             // to avoid having a truncated result set (see issue #501)
-            initialLoad = (int) Math.ceil(query.count() * 1.0 / nbPages) * nbPages;
+            initialLoad = (int) Math.ceil(contentRetrieval.left * 1.0 / nbPages) * nbPages;
         }
 
         PagedList.Config cfg = new PagedList.Config.Builder().setEnablePlaceholders(!loadAll).setInitialLoadSizeHint(initialLoad).setPageSize(nbPages).build();
+        return new LivePagedListBuilder<>(contentRetrieval.right, cfg).build();
+    }
 
-        return new LivePagedListBuilder<>(
-                isRandom ? new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query) : new ObjectBoxDataSource.Factory<>(query),
-                cfg
-        ).build();
+    private ImmutablePair<Long, DataSource.Factory<Integer, Content>> getPagedContentByQuery(
+            int mode,
+            String filter,
+            long groupId,
+            List<Attribute> metadata,
+            int orderField,
+            boolean orderDesc,
+            boolean favouritesOnly) {
+        boolean isRandom = (orderField == Preferences.Constant.ORDER_FIELD_RANDOM);
+
+        Query<Content> query;
+        if (Mode.SEARCH_CONTENT_MODULAR == mode) {
+            query = db.selectContentSearchContentQ(filter, groupId, metadata, favouritesOnly, orderField, orderDesc);
+        } else { // Mode.SEARCH_CONTENT_UNIVERSAL
+            query = db.selectContentUniversalQ(filter, groupId, favouritesOnly, orderField, orderDesc);
+        }
+
+        if (isRandom)
+            return new ImmutablePair<>(query.count(), new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query));
+        else return new ImmutablePair<>(query.count(), new ObjectBoxDataSource.Factory<>(query));
+    }
+
+    private ImmutablePair<Long, DataSource.Factory<Integer, Content>> getPagedContentByList(
+            int mode,
+            String filter,
+            long groupId,
+            List<Attribute> metadata,
+            int orderField,
+            boolean orderDesc,
+            boolean favouritesOnly) {
+        long[] ids;
+
+        if (Mode.SEARCH_CONTENT_MODULAR == mode) {
+            ids = db.selectContentSearchContentByGroupItem(filter, groupId, metadata, favouritesOnly, orderField, orderDesc);
+        } else { // Mode.SEARCH_CONTENT_UNIVERSAL
+            ids = db.selectContentUniversalByGroupItem(filter, groupId, favouritesOnly, orderField, orderDesc);
+        }
+
+        return new ImmutablePair<>((long) ids.length, new ObjectBoxPredeterminedDataSource.PredeterminedDataSourceFactory<>(db::selectContentById, ids));
     }
 
     @Nullable

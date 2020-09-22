@@ -686,6 +686,7 @@ public final class Preferences {
         public static final int ORDER_FIELD_READ_DATE = 5;
         public static final int ORDER_FIELD_READS = 6;
         public static final int ORDER_FIELD_SIZE = 7;
+        public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 
         public static final int ORDER_ATTRIBUTES_ALPHABETIC = 0;

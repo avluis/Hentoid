@@ -49,6 +49,10 @@ public class Group {
         return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContent).withoutNulls().toList();
     }
 
+    public List<Long> getContentIds() {
+        return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContentId).toList();
+    }
+
     public List<GroupItem> getItems() {
         return items;
     }
