@@ -424,7 +424,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     }
 
     private boolean toggleEditMode() {
-        // TODO custom order starting point is the order used when first validating a custom reordering
         if (!(requireActivity() instanceof LibraryActivity)) return false;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
