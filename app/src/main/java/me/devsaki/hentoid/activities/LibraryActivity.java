@@ -91,8 +91,10 @@ public class LibraryActivity extends BaseActivity {
     private Toolbar toolbar;
     // "Search" button on top menu
     private MenuItem searchMenu;
-    // "Edit mode" button on top menu
+    // "Edit mode" / "Validate edit" button on top menu
     private MenuItem editMenu;
+    // "Cancel edit" button on top menu
+    private MenuItem editCancelMenu;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
     // "Sort" button on top menu
@@ -345,6 +347,7 @@ public class LibraryActivity extends BaseActivity {
         updateFavouriteFilter();
 
         editMenu = toolbar.getMenu().findItem(R.id.action_edit);
+        editCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
         sortMenu = toolbar.getMenu().findItem(R.id.action_order);
 
         mainSearchView = (SearchView) searchMenu.getActionView();
@@ -579,6 +582,7 @@ public class LibraryActivity extends BaseActivity {
         searchMenu.setVisible(!editMode);
         favsMenu.setVisible(!editMode);
         editMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_edit);
+        editCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
     }
 

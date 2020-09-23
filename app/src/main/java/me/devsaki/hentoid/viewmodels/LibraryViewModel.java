@@ -12,7 +12,6 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 
-import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import java.io.File;
@@ -420,19 +419,17 @@ public class LibraryViewModel extends AndroidViewModel {
         Group group = getGroup().getValue();
         if (null == group) return;
 
-        // Select the smallest value as the starting point, as we're not sure we start from 0
-        int order = Stream.of(orderedContent).map(c -> c.getGroupItem(group.id)).map(GroupItem::getOrder).min(Integer::compare).get();
+        // Update the "has custom book order" group flag
+        group.hasCustomBookOrder = true;
 
-        // TODO optimize if needed - grab all content at once ? grab all groupItems when providing content IDs and group ?
-        for(Content c : orderedContent) {
-            Content freshContent = dao.selectContent(c.getId());
-            if (freshContent != null) {
-                GroupItem gi = freshContent.getGroupItem(group.id);
-                if (gi != null) {
+        int order = 0;
+        for (Content c : orderedContent)
+            for (GroupItem gi : group.items)
+                if (gi.content.getTargetId() == c.getId()) {
                     gi.order = order++;
                     dao.insertGroupItem(gi);
+                    break;
                 }
-            }
-        }
+        dao.insertGroup(group);
     }
 }

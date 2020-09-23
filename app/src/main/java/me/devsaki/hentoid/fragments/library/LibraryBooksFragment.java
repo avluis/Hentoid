@@ -132,14 +132,13 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
     // === SELECTION TOOLBAR
     private Toolbar toolbar;
-    private MenuItem itemEditMode;
     private Toolbar selectionToolbar;
-    private MenuItem itemDelete;
-    private MenuItem itemShare;
-    private MenuItem itemArchive;
-    private MenuItem itemFolder;
-    private MenuItem itemRedownload;
-    private MenuItem itemCover;
+    private MenuItem deleteMenu;
+    private MenuItem shareMenu;
+    private MenuItem archiveMenu;
+    private MenuItem folderMenu;
+    private MenuItem redownloadMenu;
+    private MenuItem coverMenu;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -164,7 +163,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
     // TODO doc
-    private long groupId = -1;
+    private Group group = null;
     // TODO doc
     private boolean isEditMode = false;
 
@@ -298,7 +297,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
                     .inflate(R.menu.library_sort_menu, popup.getMenu());
-            popup.getMenu().findItem(R.id.sort_custom).setVisible(Preferences.getGroupingDisplay().canReorderBooks());
+            popup.getMenu().findItem(R.id.sort_custom).setVisible(group.hasCustomBookOrder);
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text
                 sortFieldButton.setText(item.getTitle());
@@ -402,8 +401,10 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         toolbar = activity.getToolbar();
-        itemEditMode = toolbar.getMenu().findItem(R.id.action_edit);
-        itemEditMode.setOnMenuItemClickListener(v -> toggleEditMode());
+        MenuItem editModeMenu = toolbar.getMenu().findItem(R.id.action_edit);
+        editModeMenu.setOnMenuItemClickListener(v -> toggleEditMode());
+        MenuItem editCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
+        editCancelMenu.setOnMenuItemClickListener(v -> cancelEditMode());
 
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
@@ -414,16 +415,15 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         selectionToolbar.getMenu().clear();
         selectionToolbar.inflateMenu(R.menu.library_selection_menu);
 
-        itemDelete = selectionToolbar.getMenu().findItem(R.id.action_delete);
-        itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
-        itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
-        itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
-        itemRedownload = selectionToolbar.getMenu().findItem(R.id.action_redownload);
-        itemCover = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+        deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
+        shareMenu = selectionToolbar.getMenu().findItem(R.id.action_share);
+        archiveMenu = selectionToolbar.getMenu().findItem(R.id.action_archive);
+        folderMenu = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
+        redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
+        coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
     }
 
     private boolean toggleEditMode() {
-        // TODO cancel button
         // TODO custom order starting point is the order used when first validating a custom reordering
         if (!(requireActivity() instanceof LibraryActivity)) return false;
         LibraryActivity activity = (LibraryActivity) requireActivity();
@@ -434,9 +434,35 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         // Leave edit mode by validating => Save new item position
         if (!isEditMode) {
             viewModel.savePositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList());
-        } else { // Switch to custom order
+            group.hasCustomBookOrder = true;
             Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
+            sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
+        } else if (group.hasCustomBookOrder) { // Enter edit mode -> warn if a custom order already exists
+            new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                    .setIcon(R.drawable.ic_warning)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.menu_edit_warning_custom)
+                    .setPositiveButton(android.R.string.yes,
+                            (dialog1, which) -> dialog1.dismiss())
+                    .setNegativeButton(android.R.string.no,
+                            (dialog2, which) -> {
+                                dialog2.dismiss();
+                                cancelEditMode();
+                            })
+                    .create()
+                    .show();
         }
+
+        setPagingMethod(Preferences.getEndlessScroll(), isEditMode);
+        return true;
+    }
+
+    private boolean cancelEditMode() {
+        if (!(requireActivity() instanceof LibraryActivity)) return false;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
+        isEditMode = false;
+        activity.toggleEditMode(false);
 
         setPagingMethod(Preferences.getEndlessScroll(), isEditMode);
         return true;
@@ -475,12 +501,12 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
 
-        itemDelete.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
-        itemShare.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
-        itemArchive.setVisible(!isMultipleSelection);
-        itemFolder.setVisible(!isMultipleSelection);
-        itemRedownload.setVisible(selectedLocalCount > 0);
-        itemCover.setVisible(!isMultipleSelection && groupId > -1);
+        deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
+        shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
+        archiveMenu.setVisible(!isMultipleSelection);
+        folderMenu.setVisible(!isMultipleSelection);
+        redownloadMenu.setVisible(selectedLocalCount > 0);
+        coverMenu.setVisible(!isMultipleSelection && group != null);
 
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
     }
@@ -686,7 +712,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
                 .setPositiveButton(android.R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            viewModel.setGroupCover(groupId, content.getCover());
+                            viewModel.setGroupCover(group.id, content.getCover());
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
                             selectExtension.deselect();
                             selectionToolbar.setVisibility(View.GONE);
@@ -804,8 +830,8 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         if (!getMetadata().isEmpty())
             builder.setUri(SearchActivityBundle.Builder.buildSearchUri(getMetadata()));
 
-        if (groupId > -1)
-            builder.setGroup(groupId);
+        if (group != null)
+            builder.setGroup(group.id);
 
         search.putExtras(builder.getBundle());
 
@@ -1011,7 +1037,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             itemAdapter.set(Collections.emptyList());
         } else {
             @ContentItem.ViewType int viewType = isEditMode ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
-            List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size() - 1)).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType)).toList();
+            List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType)).toList();
             itemAdapter.set(contentItems);
         }
         fastAdapter.notifyDataSetChanged();
@@ -1092,9 +1118,9 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     // TODO doc
     private void onGroupChanged(Group group) {
         if (group != null)
-            groupId = group.id;
+            this.group = group;
         else
-            groupId = -1;
+            this.group = null;
     }
 
     /**
