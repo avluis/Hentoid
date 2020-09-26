@@ -65,6 +65,7 @@ import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -416,7 +417,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void purgeSelectedItems() {
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
-            List<Group> selectedGroups = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().toList();
+            // Work on all groups except the default "Uncategorized" custom group
+            List<Group> selectedGroups = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().filter(g -> g.flag != GroupHelper.FLAG_UNCATEGORIZED).toList();
             List<Content> selectedContent = Stream.of(selectedGroups).map(Group::getContents).single();
             // Remove external items if they can't be deleted
             if (!Preferences.isDeleteExternalLibrary()) {
@@ -426,12 +428,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 if (diff > 0) {
                     Snackbar.make(recyclerView, getResources().getQuantityString(R.plurals.external_not_removed, diff, diff), BaseTransientBottomBar.LENGTH_LONG).show();
                     selectedContent = contentToDelete;
-                    // Rebuild the groups list from the remanining contents if needed
+                    // Rebuild the groups list from the remaining contents if needed
                     if (Preferences.getGroupingDisplay().canReorderGroups())
                         selectedGroups = Stream.of(selectedContent).flatMap(c -> Stream.of(c.groupItems)).map(gi -> gi.group.getTarget()).toList();
                 }
             }
-            // Custom groups -> empty groups have to be removed manually
+            // Non-custom groups -> groups are removed automatically as soon as they don't contain any content => no need to remove the groups manually
             if (!Preferences.getGroupingDisplay().canReorderGroups()) selectedGroups.clear();
 
             if (!selectedContent.isEmpty() || !selectedGroups.isEmpty())
@@ -509,6 +511,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         Context context = getActivity();
         if (null == context) return;
 
+        // TODO display the number of books and groups that will be deleted
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         int count = !groups.isEmpty() ? groups.size() : items.size();
         String title = context.getResources().getQuantityString(R.plurals.ask_delete_multiple, count);
