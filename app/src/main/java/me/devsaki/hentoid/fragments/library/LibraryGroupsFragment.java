@@ -19,9 +19,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,13 +33,19 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.drag.ItemTouchCallback;
+import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
+import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
+import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
+import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Set;
@@ -54,6 +62,7 @@ import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification;
 import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel;
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
 import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
+import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -63,6 +72,7 @@ import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewholders.GroupDisplayItem;
+import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
@@ -71,7 +81,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
-public class LibraryGroupsFragment extends Fragment {
+public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -116,6 +126,7 @@ public class LibraryGroupsFragment extends Fragment {
     private ItemAdapter<GroupDisplayItem> itemAdapter;
     private FastAdapter<GroupDisplayItem> fastAdapter;
     private SelectExtension<GroupDisplayItem> selectExtension;
+    private ItemTouchHelper touchHelper;
 
 
     // ======== VARIABLES
@@ -127,9 +138,12 @@ public class LibraryGroupsFragment extends Fragment {
     private int totalContentCount;
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
+    // TODO doc
+    private boolean isEditMode = false;
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private int itemToRefreshIndex = -1;
 
 
     @Override
@@ -307,6 +321,12 @@ public class LibraryGroupsFragment extends Fragment {
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         toolbar = activity.getToolbar();
+        MenuItem editModeMenu = toolbar.getMenu().findItem(R.id.action_edit);
+        editModeMenu.setOnMenuItemClickListener(v -> toggleEditMode());
+        MenuItem editCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
+        editCancelMenu.setOnMenuItemClickListener(v -> cancelEditMode());
+        MenuItem newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
+        newGroupMenu.setOnMenuItemClickListener(v -> newGroup());
 
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
@@ -353,6 +373,41 @@ public class LibraryGroupsFragment extends Fragment {
         itemCover.setVisible(false);
 
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
+    }
+
+    private boolean toggleEditMode() {
+        if (!(requireActivity() instanceof LibraryActivity)) return false;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
+        isEditMode = !isEditMode;
+        activity.toggleEditMode(isEditMode);
+
+        // Leave edit mode by validating => Save new item position
+        if (!isEditMode) {
+            viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
+            Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
+            sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
+        }
+
+        setPagingMethod();
+        return true;
+    }
+
+    private boolean cancelEditMode() {
+        if (!(requireActivity() instanceof LibraryActivity)) return false;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
+        isEditMode = false;
+        activity.toggleEditMode(false);
+
+        setPagingMethod();
+        return true;
+    }
+
+    private boolean newGroup() {
+        InputDialog.invokeInputDialog(requireActivity(), R.string.new_group_name, groupName -> viewModel.newGroup(Preferences.getGroupingDisplay(), groupName));
+
+        return true;
     }
 
     /**
@@ -569,7 +624,7 @@ public class LibraryGroupsFragment extends Fragment {
     /**
      * Initialize the paging method of the screen
      */
-    private void setPagingMethod() {
+    private void setPagingMethod(/*boolean isEditMode*/) {
         viewModel.setPagingMethod(true);
 
         itemAdapter = new ItemAdapter<>();
@@ -588,6 +643,19 @@ public class LibraryGroupsFragment extends Fragment {
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
         }
 
+        // Drag, drop & swiping
+        if (isEditMode) {
+            SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
+                    this,
+                    this,
+                    ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
+            dragSwipeCallback.setNotifyAllDrops(true);
+            dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
+
+            touchHelper = new ItemTouchHelper(dragSwipeCallback);
+            touchHelper.attachToRecyclerView(recyclerView);
+        }
+
         recyclerView.setAdapter(fastAdapter);
     }
 
@@ -597,7 +665,8 @@ public class LibraryGroupsFragment extends Fragment {
         boolean isEmpty = (result.isEmpty());
         emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
-        List<GroupDisplayItem> groups = Stream.of(result).map(GroupDisplayItem::new).toList();
+        @GroupDisplayItem.ViewType int viewType = isEditMode ? GroupDisplayItem.ViewType.LIBRARY_EDIT : GroupDisplayItem.ViewType.LIBRARY;
+        List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).toList();
         itemAdapter.set(groups);
         differEndCallback();
     }
@@ -691,5 +760,43 @@ public class LibraryGroupsFragment extends Fragment {
      */
     private int getTopItemPosition() {
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
+    }
+
+    /**
+     * DRAG, DROP & SWIPE METHODS
+     */
+
+    private void recordMoveFromFirstPos(int from, int to) {
+        if (0 == from) itemToRefreshIndex = to;
+    }
+
+    private void recordMoveFromFirstPos(List<Integer> positions) {
+        // Only useful when moving the 1st item to the bottom
+        if (!positions.isEmpty() && 0 == positions.get(0))
+            itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
+    }
+
+    @Override
+    public boolean itemTouchOnMove(int oldPosition, int newPosition) {
+        DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
+        recordMoveFromFirstPos(oldPosition, newPosition);
+        return true;
+    }
+
+    @Override
+    public void itemTouchDropped(int i, int i1) {
+        // Nothing; final position will be saved once the "save" button is hit
+    }
+
+    @Override
+    public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        if (viewHolder instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) viewHolder).onDragged();
+        }
+    }
+
+    @Override
+    public void itemSwiped(int i, int i1) {
+        // TODO
     }
 }

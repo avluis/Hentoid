@@ -58,6 +58,10 @@ public class Group {
         return items;
     }
 
+    public int getOrder() {
+        return order;
+    }
+
     public boolean isBeingDeleted() {
         return isBeingDeleted;
     }

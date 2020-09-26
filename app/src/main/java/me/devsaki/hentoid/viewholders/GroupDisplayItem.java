@@ -10,13 +10,23 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.drag.IExtendedDraggable;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.swipe.ISwipeable;
+import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -31,13 +41,29 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
-public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHolder> {
+public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHolder> implements IExtendedDraggable, ISwipeable {
 
     private static final RequestOptions glideRequestOptions;
 
+    @IntDef({ViewType.LIBRARY, ViewType.LIBRARY_EDIT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ViewType {
+        int LIBRARY = 0;
+        int LIBRARY_EDIT = 1;
+    }
+
     // Group
     private final Group group;
+    private final @ViewType
+    int viewType;
     private final boolean isEmpty;
+
+    // Drag, drop & swipe
+    private final ItemTouchHelper touchHelper;
+    private int swipeDirection = 0;
+    private boolean isSwipeable = true;
+    private Runnable undoSwipeAction; // Action to run when hitting the "undo" button
+
 
     static {
         Context context = HentoidApp.getInstance();
@@ -51,8 +77,10 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
                 .error(d);
     }
 
-    public GroupDisplayItem(Group group) {
+    public GroupDisplayItem(Group group, @Nullable ItemTouchHelper touchHelper, @ViewType int viewType) {
         this.group = group;
+        this.viewType = viewType;
+        this.touchHelper = touchHelper;
         isEmpty = (null == group);
     }
 
@@ -64,7 +92,13 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
     @NotNull
     @Override
     public GroupViewHolder getViewHolder(@NotNull View view) {
-        return new GroupViewHolder(view);
+        return new GroupViewHolder(view, viewType);
+    }
+
+    @org.jetbrains.annotations.Nullable
+    @Override
+    public ItemTouchHelper getTouchHelper() {
+        return touchHelper;
     }
 
     @Override
@@ -77,18 +111,42 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
         return R.id.group;
     }
 
+    @org.jetbrains.annotations.Nullable
+    @Override
+    public View getDragView(@NotNull RecyclerView.ViewHolder viewHolder) {
+        if (viewHolder instanceof GroupViewHolder)
+            return ((GroupViewHolder) viewHolder).ivReorder;
+        else return null;
+    }
+
+    @Override
+    public boolean isDraggable() {
+        return (ViewType.LIBRARY_EDIT == viewType);
+    }
+
+    @Override
+    public boolean isSwipeable() {
+        return isSwipeable;
+    }
+
 
     static class GroupViewHolder extends FastAdapter.ViewHolder<GroupDisplayItem> {
 
         private final View baseLayout;
-        private final ImageView ivCover;
         private final TextView title;
+        private ImageView ivCover;
+        private View ivReorder;
 
-        GroupViewHolder(View view) {
+        GroupViewHolder(View view, @ContentItem.ViewType int viewType) {
             super(view);
             baseLayout = requireViewById(view, R.id.item);
-            ivCover = requireViewById(view, R.id.ivCover);
             title = requireViewById(view, R.id.tvTitle);
+
+            if (viewType == ViewType.LIBRARY_EDIT) {
+                ivReorder = requireViewById(view, R.id.ivReorder);
+            } else { // LIBRARY
+                ivCover = requireViewById(view, R.id.ivCover);
+            }
         }
 
 
@@ -101,7 +159,13 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             else
                 baseLayout.clearAnimation();
 
-            if (item.group.picture != null) {
+            if (ivReorder != null) {
+                ivReorder.setVisibility(View.VISIBLE);
+                DragDropUtil.bindDragHandle(this, item);
+            }
+
+            if (item.group.picture != null && ivCover != null) {
+                ivCover.setVisibility(View.VISIBLE);
                 ImageFile cover = item.group.picture.getTarget();
                 if (cover != null) attachCover(cover);
             }

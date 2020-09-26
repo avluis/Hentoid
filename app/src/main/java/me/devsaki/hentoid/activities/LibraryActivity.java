@@ -95,6 +95,8 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem editMenu;
     // "Cancel edit" button on top menu
     private MenuItem editCancelMenu;
+    // "Create new group" button on top menu
+    private MenuItem newGroupMenu;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
     // "Sort" button on top menu
@@ -348,6 +350,7 @@ public class LibraryActivity extends BaseActivity {
 
         editMenu = toolbar.getMenu().findItem(R.id.action_edit);
         editCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
+        newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
         sortMenu = toolbar.getMenu().findItem(R.id.action_order);
 
         mainSearchView = (SearchView) searchMenu.getActionView();
@@ -377,6 +380,8 @@ public class LibraryActivity extends BaseActivity {
                 return true;
             }
         });
+        // Update icons visibility
+        toggleEditMode(false);
     }
 
     public void sortCommandsAutoHide(boolean hideSortOnly, PopupMenu popup) {
@@ -567,6 +572,10 @@ public class LibraryActivity extends BaseActivity {
         viewPager.setCurrentItem(0);
     }
 
+    private boolean isGroupDisplayed() {
+        return (0 == viewPager.getCurrentItem());
+    }
+
     public void showBooksInGroup(me.devsaki.hentoid.database.domains.Group group) {
         viewModel.setGroup(group);
         viewPager.setCurrentItem(1);
@@ -580,7 +589,8 @@ public class LibraryActivity extends BaseActivity {
 
     public void toggleEditMode(boolean editMode) {
         searchMenu.setVisible(!editMode);
-        favsMenu.setVisible(!editMode);
+        newGroupMenu.setVisible(!editMode && isGroupDisplayed());
+        favsMenu.setVisible(!editMode && !isGroupDisplayed());
         editMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_edit);
         editCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
@@ -603,8 +613,8 @@ public class LibraryActivity extends BaseActivity {
             } else {
                 if (0 == position) {
                     LibraryGroupsFragment result = new LibraryGroupsFragment();
+                    // TODO search for groups
 //                    searchAction.add(result::onSearch);
-//                    advSearchAction.add(result::onAdvancedSearchButtonClick);
                     return result;
                 } else {
                     LibraryBooksFragment result = new LibraryBooksFragment();

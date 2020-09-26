@@ -432,7 +432,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
         // Leave edit mode by validating => Save new item position
         if (!isEditMode) {
-            viewModel.savePositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList());
+            viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList());
             group.hasCustomBookOrder = true;
             Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
             sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));

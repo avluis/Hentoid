@@ -12,6 +12,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import java.io.File;
@@ -31,6 +32,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -195,7 +197,8 @@ public class LibraryViewModel extends AndroidViewModel {
         searchManager.setGroup(group);
         this.group.postValue(group);
         newSearch.setValue(true);
-        performSearch();
+        // Don't search now as the UI will inevitably search as well upon switching to books view
+//        performSearch();
     }
 
     public void selectGroups(int grouping) {
@@ -415,7 +418,7 @@ public class LibraryViewModel extends AndroidViewModel {
         if (group != null) group.picture.setAndPutTarget(cover);
     }
 
-    public void savePositions(List<Content> orderedContent) {
+    public void saveContentPositions(List<Content> orderedContent) {
         Group group = getGroup().getValue();
         if (null == group) return;
 
@@ -431,5 +434,21 @@ public class LibraryViewModel extends AndroidViewModel {
                     break;
                 }
         dao.insertGroup(group);
+    }
+
+    public void newGroup(@NonNull final Grouping grouping, @NonNull final String groupName) {
+        List<Group> groups = getGroups().getValue();
+        if (null == groups) return;
+
+        int maxOrder = Stream.of(groups).map(Group::getOrder).max(Integer::compareTo).get();
+        dao.insertGroup(new Group(grouping, groupName, maxOrder + 1));
+    }
+
+    public void saveGroupPositions(List<Group> orderedGroups) {
+        int order = 0;
+        for (Group g : orderedGroups) {
+            g.order = order++;
+            dao.insertGroup(g);
+        }
     }
 }

@@ -7,11 +7,11 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
     android:background="@drawable/bg_book_card"
-    android:padding="4dp"
     android:clickable="true"
     android:elevation="6dp"
     android:focusable="true"
     android:longClickable="true"
+    android:padding="4dp"
     tools:targetApi="o">
 
     <ImageView
@@ -19,11 +19,31 @@
         android:layout_width="150dp"
         android:layout_height="200dp"
         android:adjustViewBounds="true"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_hentoid_trans"
-        tools:tint="@color/light_gray" />
+        tools:tint="@color/light_gray"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/ivReorder"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="24dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_reorder"
+        android:tooltipText="@string/drag_help"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/tvTitle"
@@ -34,8 +54,8 @@
         android:textColor="?colorSecondary"
         android:textSize="@dimen/text_subtitle_1"
         android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/ivReorder"
         app:layout_constraintStart_toEndOf="@id/ivCover"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="@string/book_title" />

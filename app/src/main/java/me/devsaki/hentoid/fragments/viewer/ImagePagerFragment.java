@@ -46,6 +46,7 @@ import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
@@ -69,8 +70,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant;
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
 //   - independent page mode (currently used for horizontal display)
-public class ImagePagerFragment extends Fragment implements GoToPageDialogFragment.Parent,
-        BrowseModeDialogFragment.Parent, BookPrefsDialogFragment.Parent {
+public class ImagePagerFragment extends Fragment implements BrowseModeDialogFragment.Parent, BookPrefsDialogFragment.Parent {
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
@@ -323,7 +323,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         // Page number button
         pageCurrentNumber = requireViewById(rootView, R.id.viewer_current_page_text);
-        pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.invoke(this));
+        pageCurrentNumber.setOnClickListener(v -> InputDialog.invokeNumberInputDialog(requireActivity(), R.string.goto_page, this::goToPage));
         pageMaxNumber = requireViewById(rootView, R.id.viewer_max_page_text);
         noImageMessage = requireViewById(rootView, R.id.viewer_no_img_txt);
         pageNumberOverlay = requireViewById(rootView, R.id.viewer_pagenumber_text);
@@ -827,7 +827,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      *
      * @param pageNum Page number to go to (1-indexed)
      */
-    @Override
     public void goToPage(int pageNum) {
         int position = pageNum - 1;
         if (position == imageIndex || position < 0 || position > maxPosition)

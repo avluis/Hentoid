@@ -12,6 +12,14 @@
         android:tooltipText="@string/menu_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="collapseActionView|always" />
+    <!-- Specific to groups -->
+    <item
+        android:id="@+id/action_group_new"
+        android:icon="@drawable/ic_new"
+        android:title="@string/menu_group_new"
+        android:tooltipText="@string/menu_group_new"
+        android:visible="false"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_favourites"
         android:checkable="true"
