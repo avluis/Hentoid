@@ -109,23 +109,26 @@ dependencies {
     implementation "androidx.viewpager2:viewpager2:1.0.0"
 
     // For ViewModel to work
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
-    kapt('androidx.lifecycle:lifecycle-common-java8:2.2.0')
+    def android_lifecycle_version = "2.2.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:$android_lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$android_lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
+    kapt("androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_version")
 
 
     // Image loader: github.com/bumptech/glide
-    implementation 'com.github.bumptech.glide:glide:4.11.0'
-    kapt('com.github.bumptech.glide:compiler:4.11.0')
-    implementation 'com.github.bumptech.glide:okhttp3-integration:4.11.0'
+    def glide_version = "4.11.0"
+    implementation "com.github.bumptech.glide:glide:$glide_version"
+    kapt("com.github.bumptech.glide:compiler:$glide_version")
+    implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
 
     // Intro screens or slides: github.com/apl-devs/AppIntro
     implementation 'com.github.paolorotolo:appintro:v5.1.0'
 
     // Java serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
-    implementation 'com.squareup.moshi:moshi:1.9.2'
-    implementation 'com.squareup.moshi:moshi-adapters:1.9.2'
+    def moshi_version = "1.9.2"
+    implementation "com.squareup.moshi:moshi:$moshi_version"
+    implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
 
     // Timber (Extensible Logger): github.com/JakeWharton/timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
@@ -164,13 +167,15 @@ dependencies {
     implementation 'org.apache.commons:commons-text:1.4' // !!! Don't update that one or Lint will go mad
 
     // Retrofit-ready-ready HTML parser with CSS selectors : https://github.com/DroidsOnRoids/jspoon
-    implementation 'pl.droidsonroids:jspoon:1.3.2'
-    implementation 'pl.droidsonroids.retrofit2:converter-jspoon:1.3.2'
+    def jspoon_version = "1.3.2"
+    implementation "pl.droidsonroids:jspoon:$jspoon_version"
+    implementation "pl.droidsonroids.retrofit2:converter-jspoon:$jspoon_version"
 
     //    https://github.com/square/retrofit
-    implementation 'com.squareup.retrofit2:retrofit:2.8.2'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.8.2'
-    implementation 'com.squareup.retrofit2:converter-moshi:2.8.2'
+    def retrofit_version = "2.8.2"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
 
     //    https://github.com/ReactiveX/RxJava
     implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
@@ -178,9 +183,10 @@ dependencies {
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
+    def objectbox_version = "2.7.1"
     if (includeObjectBoxBrowser.toBoolean()) {
-        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.7.1"
-        releaseImplementation "io.objectbox:objectbox-android:2.7.1"
+        debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
+        releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"
     }
 
     // Cleaner date manipulation
@@ -190,14 +196,15 @@ dependencies {
     implementation 'com.github.penfeizhou.android.animation:apng:1.3.3'
 
     // https://github.com/mikepenz/FastAdapter
-    implementation "com.mikepenz:fastadapter:5.2.2" // needs the `expandable`, `drag` and `scroll` extension.
-    implementation "com.mikepenz:fastadapter-extensions-diff:5.2.2" // diff util helpers
-    implementation "com.mikepenz:fastadapter-extensions-drag:5.2.2" // drag support
-    implementation "com.mikepenz:fastadapter-extensions-expandable:5.2.2"
-    implementation "com.mikepenz:fastadapter-extensions-scroll:5.2.2" // scroll helpers
-    implementation "com.mikepenz:fastadapter-extensions-paged:5.2.2"
-    implementation "com.mikepenz:fastadapter-extensions-ui:5.2.2" // needs the `expandable`, `drag` and `scroll` extension.
-    implementation "com.mikepenz:fastadapter-extensions-utils:5.2.2" // needs the `expandable`, `drag` and `scroll` extension.
+    def fastadapter_version = "5.2.2"
+    implementation "com.mikepenz:fastadapter:$fastadapter_version" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version" // diff util helpers
+    implementation "com.mikepenz:fastadapter-extensions-drag:$fastadapter_version" // drag support
+    implementation "com.mikepenz:fastadapter-extensions-expandable:$fastadapter_version"
+    implementation "com.mikepenz:fastadapter-extensions-scroll:$fastadapter_version" // scroll helpers
+    implementation "com.mikepenz:fastadapter-extensions-paged:$fastadapter_version"
+    implementation "com.mikepenz:fastadapter-extensions-ui:$fastadapter_version" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter-extensions-utils:$fastadapter_version" // needs the `expandable`, `drag` and `scroll` extension.
 
     // Fast scroller
     implementation "me.zhanghai.android.fastscroll:library:1.1.4"
