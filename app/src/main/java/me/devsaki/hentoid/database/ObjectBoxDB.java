@@ -991,10 +991,7 @@ public class ObjectBoxDB {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
 
         if (0 == orderStyle) qb.order(Group_.name);
-            // TODO implement order by number of children
-            //  Option 1 : Post-query sorting (in ViewModel ?)
-            //  Option 2 : Don't use LiveData
-            //else if (1 == orderStyle) qb.order(Group_.items);
+        // Order by number of children is done by the DAO
         else if (2 == orderStyle) qb.order(Group_.order);
 
         return qb.build();
