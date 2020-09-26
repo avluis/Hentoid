@@ -416,15 +416,26 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void purgeSelectedItems() {
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
-            List<Content> selectedContent = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().map(Group::getContents).single();
+            List<Group> selectedGroups = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().toList();
+            List<Content> selectedContent = Stream.of(selectedGroups).map(Group::getContents).single();
             // Remove external items if they can't be deleted
             if (!Preferences.isDeleteExternalLibrary()) {
                 List<Content> contentToDelete = Stream.of(selectedContent).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).toList();
                 int diff = selectedContent.size() - contentToDelete.size();
-                if (diff > 0)
+                // Remove undeletable books from the list
+                if (diff > 0) {
                     Snackbar.make(recyclerView, getResources().getQuantityString(R.plurals.external_not_removed, diff, diff), BaseTransientBottomBar.LENGTH_LONG).show();
+                    selectedContent = contentToDelete;
+                    // Rebuild the groups list from the remanining contents if needed
+                    if (Preferences.getGroupingDisplay().canReorderGroups())
+                        selectedGroups = Stream.of(selectedContent).flatMap(c -> Stream.of(c.groupItems)).map(gi -> gi.group.getTarget()).toList();
+                }
             }
-            if (!selectedContent.isEmpty()) askDeleteItems(selectedContent);
+            // Custom groups -> empty groups have to be removed manually
+            if (!Preferences.getGroupingDisplay().canReorderGroups()) selectedGroups.clear();
+
+            if (!selectedContent.isEmpty() || !selectedGroups.isEmpty())
+                askDeleteItems(selectedContent, selectedGroups);
         }
     }
 
@@ -492,25 +503,29 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      *
      * @param items Items to be deleted if the answer is yes
      */
-    private void askDeleteItems(@NonNull final List<Content> items) {
+    private void askDeleteItems(
+            @NonNull final List<Content> items,
+            @NonNull final List<Group> groups) {
         Context context = getActivity();
         if (null == context) return;
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        String title = context.getResources().getQuantityString(R.plurals.ask_delete_multiple, items.size());
+        int count = !groups.isEmpty() ? groups.size() : items.size();
+        String title = context.getResources().getQuantityString(R.plurals.ask_delete_multiple, count);
         builder.setMessage(title)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
-                            onDeleteBooks(items);
+                            onDeleteBooks(items, groups);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog, which) -> selectExtension.deselect())
                 .create().show();
     }
 
-    private void onDeleteBooks(@NonNull final List<Content> items) {
+    private void onDeleteBooks(@NonNull final List<Content> items, @NonNull final List<Group> groups) {
         viewModel.deleteItems(items, this::onDeleteError);
+        viewModel.deleteGroups(groups, this::onDeleteError);
     }
 
     /**

@@ -341,6 +341,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.countGroupsFor(grouping);
     }
 
+    public void deleteGroup(long groupId) {
+        db.deleteGroup(groupId);
+    }
+
     public List<Content> selectAllQueueBooks() {
         return db.selectAllQueueBooksQ().find();
     }

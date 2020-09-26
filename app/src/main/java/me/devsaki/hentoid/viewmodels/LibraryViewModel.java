@@ -40,6 +40,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ZipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.GroupNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
@@ -449,6 +450,64 @@ public class LibraryViewModel extends AndroidViewModel {
         for (Group g : orderedGroups) {
             g.order = order++;
             dao.insertGroup(g);
+        }
+    }
+
+    /**
+     * Delete the given list of groups
+     * WARNING : If one of the groups contains GroupItems, it will be ignored
+     * This method is aimed to be used to delete empty groups when using Custom grouping
+     *
+     * @param groups  List of groups to be deleted
+     * @param onError Callback to run when an error occurs
+     */
+    public void deleteGroups(@NonNull final List<Group> groups, Consumer<Throwable> onError) {
+        // Remove non-empty groups
+        List<Group> validGroups = Stream.of(groups).filter(g -> g.items.isEmpty()).toList();
+
+        compositeDisposable.add(
+                Observable.fromIterable(validGroups)
+                        .observeOn(Schedulers.io())
+                        .map(this::doDeleteGroup)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                    // Nothing to do here; UI callbacks are handled through LiveData
+                                },
+                                onError::accept
+                        )
+        );
+    }
+
+    /**
+     * Delete the given group
+     * WARNING : If the group contains GroupItems, it will be ignored
+     * This method is aimed to be used to delete empty groups when using Custom grouping
+     *
+     * @param group Group to be deleted
+     * @return Group that has been deleted
+     * @throws GroupNotRemovedException When any issue occurs during removal
+     */
+    private Group doDeleteGroup(@NonNull final Group group) throws GroupNotRemovedException {
+        Helper.assertNonUiThread();
+        if (!group.items.isEmpty()) throw new GroupNotRemovedException(group, "Group is not empty");
+
+        try {
+            // Check if given content still exists in DB
+            Group theGroup = dao.selectGroup(group.id);
+
+            if (theGroup != null) {
+                dao.deleteGroup(theGroup.id);
+                Timber.d("Removed group: %s from db.", theGroup.name);
+                return theGroup;
+            }
+            throw new GroupNotRemovedException(group, "Error when trying to delete : invalid group ID " + group.id);
+        } catch (GroupNotRemovedException gnre) {
+            Timber.e(gnre, "Error when trying to delete %s", group.id);
+            throw gnre;
+        } catch (Exception e) {
+            Timber.e(e, "Error when trying to delete %s", group.id);
+            throw new GroupNotRemovedException(group, "Error when trying to delete " + group.id + " : " + e.getMessage(), e);
         }
     }
 }

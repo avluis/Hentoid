@@ -104,6 +104,8 @@ public interface CollectionDAO {
 
     long insertGroupItem(GroupItem item);
 
+    void deleteGroup(long groupId);
+
 
     // High-level queries (internal and external locations)
 

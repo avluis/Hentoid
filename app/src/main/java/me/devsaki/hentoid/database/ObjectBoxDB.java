@@ -991,7 +991,7 @@ public class ObjectBoxDB {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
 
         if (0 == orderStyle) qb.order(Group_.name);
-        // Order by number of children is done by the DAO
+            // Order by number of children is done by the DAO
         else if (2 == orderStyle) qb.order(Group_.order);
 
         return qb.build();
@@ -1004,6 +1004,10 @@ public class ObjectBoxDB {
 
     Query<Group> selectGroupsByFlagQ(int grouping, int flag) {
         return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.flag, flag).build();
+    }
+
+    void deleteGroup(long groupId) {
+        store.boxFor(Group.class).remove(groupId);
     }
 
 
