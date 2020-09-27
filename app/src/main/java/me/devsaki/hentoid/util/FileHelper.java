@@ -396,6 +396,7 @@ public class FileHelper {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         myIntent.setDataAndTypeAndNormalize(uri, mimeType);
         myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        myIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(myIntent);
     }
 

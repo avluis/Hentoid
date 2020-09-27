@@ -419,6 +419,8 @@
 
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
+        <receiver android:name=".receiver.ArchiveNotificationSuccessReceiver" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider.FileProvider"

@@ -28,7 +28,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
@@ -58,20 +57,12 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
-import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification;
-import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel;
-import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
-import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
-import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
-import me.devsaki.hentoid.util.exception.FileNotRemovedException;
-import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewholders.GroupDisplayItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
@@ -80,7 +71,6 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
@@ -102,10 +92,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
-    // Notification for book archival
-    private NotificationManager archiveNotificationManager;
-    private int archiveProgress;
-    private int archiveMax;
 
     // === SORT TOOLBAR
     // Sort direction button
@@ -415,6 +401,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * Callback for the "delete item" action button
      */
     private void purgeSelectedItems() {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             // Work on all groups except the default "Uncategorized" custom group
@@ -437,7 +426,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             if (!Preferences.getGroupingDisplay().canReorderGroups()) selectedGroups.clear();
 
             if (!selectedContent.isEmpty() || !selectedGroups.isEmpty())
-                askDeleteItems(selectedContent, selectedGroups);
+                activity.askDeleteItems(selectedContent, selectedGroups, selectExtension);
         }
     }
 
@@ -445,107 +434,18 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * Callback for the "archive item" action button
      */
     private void archiveSelectedItems() {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
-        List<Content> selectedContent = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().map(Group::getContents).single();
-        if (!selectedContent.isEmpty()) askArchiveItems(selectedContent);
-    }
-
-    /**
-     * Display the yes/no dialog to make sure the user really wants to archive selected items
-     *
-     * @param items Items to be archived if the answer is yes
-     */
-    private void askArchiveItems(@NonNull final List<Content> items) {
-        Context context = getActivity();
-        if (null == context) return;
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        String title = context.getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size());
-        builder.setMessage(title)
-                .setPositiveButton(android.R.string.yes,
-                        (dialog, which) -> {
-                            selectExtension.deselect();
-                            ArchiveNotificationChannel.init(context);
-                            archiveNotificationManager = new NotificationManager(context, 1);
-                            archiveNotificationManager.cancel();
-                            archiveProgress = 0;
-                            archiveMax = items.size();
-                            archiveNotificationManager.notify(new ArchiveStartNotification());
-                            viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess, this::onContentArchiveError);
-                        })
-                .setNegativeButton(android.R.string.no,
-                        (dialog, which) -> selectExtension.deselect())
-                .create().show();
-    }
-
-    private void onContentArchiveProgress(Content content) {
-        archiveNotificationManager.notify(new ArchiveProgressNotification(content.getTitle(), archiveProgress++, archiveMax));
-    }
-
-    /**
-     * Callback for the success of the "archive item" action
-     */
-    private void onContentArchiveSuccess() {
-        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, false));
-        Snackbar.make(recyclerView, R.string.archive_success, LENGTH_LONG)
-                .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
-                .show();
-    }
-
-    /**
-     * Callback for the success of the "archive item" action
-     */
-    private void onContentArchiveError(Throwable e) {
-        Timber.e(e);
-        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, true));
-    }
-
-    /**
-     * Display the yes/no dialog to make sure the user really wants to delete selected items
-     *
-     * @param items Items to be deleted if the answer is yes
-     */
-    private void askDeleteItems(
-            @NonNull final List<Content> items,
-            @NonNull final List<Group> groups) {
-        Context context = getActivity();
-        if (null == context) return;
-
-        // TODO display the number of books and groups that will be deleted
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        int count = !groups.isEmpty() ? groups.size() : items.size();
-        String title = context.getResources().getQuantityString(R.plurals.ask_delete_multiple, count);
-        builder.setMessage(title)
-                .setPositiveButton(android.R.string.yes,
-                        (dialog, which) -> {
-                            selectExtension.deselect();
-                            onDeleteBooks(items, groups);
-                        })
-                .setNegativeButton(android.R.string.no,
-                        (dialog, which) -> selectExtension.deselect())
-                .create().show();
-    }
-
-    private void onDeleteBooks(@NonNull final List<Content> items, @NonNull final List<Group> groups) {
-        viewModel.deleteItems(items, this::onDeleteError);
-        viewModel.deleteGroups(groups, this::onDeleteError);
-    }
-
-    /**
-     * Callback for the failure of the "delete item" action
-     */
-    private void onDeleteError(Throwable t) {
-        Timber.e(t);
-        if (t instanceof ContentNotRemovedException) {
-            ContentNotRemovedException e = (ContentNotRemovedException) t;
-            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
-            Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
-            // If the cause if not the file not being removed, keep the item on screen, not blinking
-            if (!(t instanceof FileNotRemovedException))
-                viewModel.flagContentDelete(e.getContent(), false);
-            snackbar.setAction("RETRY", v -> viewModel.deleteItems(Stream.of(e.getContent()).toList(), this::onDeleteError));
-            snackbar.show();
-        }
+        List<Content> selectedContent = Stream.of(selectedItems)
+                .map(GroupDisplayItem::getGroup)
+                .withoutNulls()
+                .flatMap(g -> Stream.of(g.getContents()))
+                .withoutNulls()
+                .filterNot(c -> c.getStorageUri().isEmpty())
+                .toList();
+        if (!selectedContent.isEmpty()) activity.askArchiveItems(selectedContent, selectExtension);
     }
 
     /**
@@ -595,7 +495,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
         EventBus.getDefault().unregister(this);
-        if (archiveNotificationManager != null) archiveNotificationManager.cancel();
         super.onDestroy();
     }
 

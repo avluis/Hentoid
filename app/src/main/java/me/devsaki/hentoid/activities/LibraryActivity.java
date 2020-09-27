@@ -28,6 +28,10 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.annimon.stream.function.Consumer;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
+import com.mikepenz.fastadapter.select.SelectExtension;
 import com.skydoves.balloon.ArrowOrientation;
 
 import org.greenrobot.eventbus.EventBus;
@@ -41,19 +45,33 @@ import java.util.List;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.fragments.library.LibraryBooksFragment;
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment;
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment;
+import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification;
+import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel;
+import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
+import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
+import me.devsaki.hentoid.notification.delete.DeleteCompleteNotification;
+import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel;
+import me.devsaki.hentoid.notification.delete.DeleteProgressNotification;
+import me.devsaki.hentoid.notification.delete.DeleteStartNotification;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
+
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 public class LibraryActivity extends BaseActivity {
 
@@ -114,6 +132,16 @@ public class LibraryActivity extends BaseActivity {
     // === SEARCH CALLBACKS
     private List<Consumer<String>> searchAction = new ArrayList<>();
     private List<Runnable> advSearchAction = new ArrayList<>();
+
+    // === NOTIFICATIONS
+    // Deletion activities
+    private NotificationManager deleteNotificationManager;
+    private int deleteProgress;
+    private int deleteMax;
+    // Notification for book archival
+    private NotificationManager archiveNotificationManager;
+    private int archiveProgress;
+    private int archiveMax;
 
 
     // ======== VARIABLES
@@ -216,6 +244,8 @@ public class LibraryActivity extends BaseActivity {
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
         EventBus.getDefault().unregister(this);
+        if (archiveNotificationManager != null) archiveNotificationManager.cancel();
+        if (deleteNotificationManager != null) deleteNotificationManager.cancel();
         super.onDestroy();
     }
 
@@ -595,6 +625,133 @@ public class LibraryActivity extends BaseActivity {
         editCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
     }
+
+    /**
+     * Display the yes/no dialog to make sure the user really wants to delete selected items
+     *
+     * @param contents Items to be deleted if the answer is yes
+     */
+    public void askDeleteItems(
+            @NonNull final List<Content> contents,
+            @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups,
+            @NonNull final SelectExtension<?> selectExtension) {
+        // TODO display the number of books and groups that will be deleted
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        int count = !groups.isEmpty() ? groups.size() : contents.size();
+        String title = getResources().getQuantityString(R.plurals.ask_delete_multiple, count);
+        builder.setMessage(title)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog, which) -> {
+                            selectExtension.deselect();
+                            deleteItems(contents, groups);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog, which) -> selectExtension.deselect())
+                .create().show();
+    }
+
+    private void deleteItems(
+            @NonNull final List<Content> contents,
+            @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups
+    ) {
+        DeleteNotificationChannel.init(this);
+        deleteNotificationManager = new NotificationManager(this, 1);
+        deleteNotificationManager.cancel();
+        deleteProgress = 0;
+        deleteMax = contents.size() + groups.size();
+        deleteNotificationManager.notify(new DeleteStartNotification());
+
+        viewModel.deleteItems(contents, groups, this::onDeleteProgress, this::onDeleteSuccess, this::onDeleteError);
+    }
+
+    /**
+     * Callback for the failure of the "delete item" action
+     */
+    private void onDeleteError(Throwable t) {
+        Timber.e(t);
+        if (t instanceof ContentNotRemovedException) {
+            ContentNotRemovedException e = (ContentNotRemovedException) t;
+            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            Snackbar.make(viewPager, message, BaseTransientBottomBar.LENGTH_LONG).show();
+            // If the cause if not the file not being removed, keep the item on screen, not blinking
+            if (!(t instanceof FileNotRemovedException))
+                viewModel.flagContentDelete(e.getContent(), false);
+        }
+    }
+
+    /**
+     * Callback for the progress of the "delete item" action
+     */
+    private void onDeleteProgress(Object item) {
+        String title = null;
+        if (item instanceof Content) title = ((Content) item).getTitle();
+        else if (item instanceof me.devsaki.hentoid.database.domains.Group)
+            title = ((me.devsaki.hentoid.database.domains.Group) item).name;
+
+        if (title != null)
+            deleteNotificationManager.notify(new DeleteProgressNotification(title, deleteProgress++, deleteMax));
+    }
+
+    /**
+     * Callback for the success of the "delete item" action
+     */
+    private void onDeleteSuccess() {
+        deleteNotificationManager.notify(new DeleteCompleteNotification(deleteProgress, false));
+        Snackbar.make(viewPager, R.string.delete_success, LENGTH_LONG).show();
+    }
+
+
+    /**
+     * Display the yes/no dialog to make sure the user really wants to archive selected items
+     *
+     * @param items Items to be archived if the answer is yes
+     */
+    public void askArchiveItems(@NonNull final List<Content> items, @NonNull final SelectExtension<?> selectExtension) {
+        // TODO display the number of books to archive
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        String title = getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size());
+        builder.setMessage(title)
+                .setPositiveButton(android.R.string.yes,
+                        (dialog, which) -> {
+                            selectExtension.deselect();
+                            ArchiveNotificationChannel.init(this);
+                            archiveNotificationManager = new NotificationManager(this, 1);
+                            archiveNotificationManager.cancel();
+                            archiveProgress = 0;
+                            archiveMax = items.size();
+                            archiveNotificationManager.notify(new ArchiveStartNotification());
+                            viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess, this::onContentArchiveError);
+                        })
+                .setNegativeButton(android.R.string.no,
+                        (dialog, which) -> selectExtension.deselect())
+                .create().show();
+    }
+
+    private void onContentArchiveProgress(Content content) {
+        archiveNotificationManager.notify(new ArchiveProgressNotification(content.getTitle(), archiveProgress++, archiveMax));
+    }
+
+    /**
+     * Callback for the success of the "archive item" action
+     */
+    private void onContentArchiveSuccess() {
+        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, false));
+        Snackbar.make(viewPager, R.string.archive_success, LENGTH_LONG)
+                .setAction("OPEN FOLDER", v -> FileHelper.openFile(this, FileHelper.getDownloadsFolder()))
+                .show();
+    }
+
+    /**
+     * Callback for the success of the "archive item" action
+     */
+    private void onContentArchiveError(Throwable e) {
+        Timber.e(e);
+        archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, true));
+    }
+
+    /**
+     * ============================== SUBCLASS
+     */
 
     private class LibraryPagerAdapter extends FragmentStateAdapter {
         LibraryPagerAdapter(FragmentActivity fa) {

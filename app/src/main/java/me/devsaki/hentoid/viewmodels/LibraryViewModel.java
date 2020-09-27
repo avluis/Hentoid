@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -288,22 +289,33 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param contents List of content to be deleted
      * @param onError  Callback to run when an error occurs
      */
-    public void deleteItems(@NonNull final List<Content> contents, Consumer<Throwable> onError) {
+    public void deleteItems(@NonNull final List<Content> contents, @NonNull final List<Group> groups, Consumer<Object> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contents) flagContentDelete(c, true);
+        // TODO do the same for groups ?
+
+        // Queue first content then groups, to be sure to delete empty groups only
+        List<Object> items = new ArrayList<>();
+        items.addAll(contents);
+        items.addAll(groups);
 
         compositeDisposable.add(
-                Observable.fromIterable(contents)
+                Observable.fromIterable(items)
                         .observeOn(Schedulers.io())
-                        .map(this::doDeleteContent)
+                        .map(this::doDeleteItem)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                    // Nothing to do here; UI callbacks are handled through LiveData
-                                },
-                                onError::accept
+                                onProgress::accept,
+                                onError::accept,
+                                onSuccess::run
                         )
         );
+    }
+
+    private Object doDeleteItem(@NonNull final Object item) throws Exception {
+        if (item instanceof Content) return doDeleteContent((Content)item);
+        else if (item instanceof Group) return doDeleteGroup((Group)item);
+        else return null;
     }
 
     /**
