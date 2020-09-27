@@ -60,7 +60,9 @@ public class DatabaseMaintenance {
 
             // Unflag all books marked for deletion
             Timber.i("Unflag books : start");
-            db.flagContentById(db.selectAllFlaggedBooksQ().findIds(), false);
+            long[] ids = db.selectAllFlaggedBooksQ().findIds();
+            Timber.i("Unflag books : %s books detected", ids.length);
+            db.flagContentById(ids, false);
             Timber.i("Unflag books : done");
 
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
