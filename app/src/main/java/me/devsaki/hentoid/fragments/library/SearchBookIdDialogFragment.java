@@ -47,7 +47,6 @@ public class SearchBookIdDialogFragment extends DialogFragment {
         args.putIntegerArrayList(FOUND_SITES, siteCodes);
 
         SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
-        ThemeHelper.setStyle(context, fragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         fragment.setArguments(args);
         fragment.show(fragmentManager, null);
     }

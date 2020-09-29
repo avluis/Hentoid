@@ -36,6 +36,7 @@ public interface CollectionDAO {
 
     @Nullable
     Content selectContent(long id);
+    List<Content> selectContent(long[] id);
 
     @Nullable
     Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged);
@@ -91,6 +92,7 @@ public interface CollectionDAO {
     // Groups
 
     LiveData<List<Group>> selectGroups(int grouping, int orderStyle);
+    List<Group> selectGroups(int grouping);
 
     @Nullable
     Group selectGroup(long groupId);
@@ -102,9 +104,16 @@ public interface CollectionDAO {
 
     long insertGroup(Group group);
 
+    void deleteGroup(long groupId);
+
     long insertGroupItem(GroupItem item);
 
-    void deleteGroup(long groupId);
+    List<GroupItem> selectGroupItems(long contentId, Grouping grouping);
+
+    void deleteGroupItem(long groupItemId);
+
+    void deleteGroupItems(List<Long> groupItemIds);
+
 
 
     // High-level queries (internal and external locations)

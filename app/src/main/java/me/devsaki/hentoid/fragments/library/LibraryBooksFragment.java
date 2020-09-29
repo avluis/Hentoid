@@ -129,6 +129,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private MenuItem deleteMenu;
     private MenuItem shareMenu;
     private MenuItem archiveMenu;
+    private MenuItem changeGroupMenu;
     private MenuItem folderMenu;
     private MenuItem redownloadMenu;
     private MenuItem coverMenu;
@@ -411,6 +412,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
         shareMenu = selectionToolbar.getMenu().findItem(R.id.action_share);
         archiveMenu = selectionToolbar.getMenu().findItem(R.id.action_archive);
+        changeGroupMenu = selectionToolbar.getMenu().findItem(R.id.action_change_group);
         folderMenu = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
         coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
@@ -472,6 +474,9 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             case R.id.action_archive:
                 archiveSelectedItems();
                 break;
+            case R.id.action_change_group:
+                moveSelectedItems();
+                break;
             case R.id.action_open_folder:
                 openItemFolder();
                 break;
@@ -496,6 +501,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
         shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         archiveMenu.setVisible(true);
+        changeGroupMenu.setVisible(true);
         folderMenu.setVisible(!isMultipleSelection);
         redownloadMenu.setVisible(selectedLocalCount > 0);
         coverMenu.setVisible(!isMultipleSelection && group != null);
@@ -547,6 +553,16 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
                 .filterNot(c -> c.getStorageUri().isEmpty())
                 .toList();
         activity.askArchiveItems(contents, selectExtension);
+    }
+
+    /**
+     * Callback for the "change group" action button
+     */
+    private void moveSelectedItems() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        selectExtension.deselect();
+        List<Long> bookIds = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getId).toList();
+        ChangeGroupDialogFragment.invoke(getParentFragmentManager(), Helper.getPrimitiveLongArrayFromList(bookIds));
     }
 
     /**

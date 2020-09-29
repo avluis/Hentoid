@@ -983,8 +983,30 @@ public class ObjectBoxDB {
         return store.boxFor(GroupItem.class).put(item);
     }
 
-    long countGroupsFor(Grouping grouping) {
+    List<GroupItem> selectGroupItems(long contentId, int groupingId) {
+        QueryBuilder<GroupItem> qb = store.boxFor(GroupItem.class).query().equal(GroupItem_.contentId, contentId);
+        qb.link(GroupItem_.group).equal(Group_.grouping, groupingId);
+        return qb.build().find();
+    }
+
+    void deleteGroupItem(long groupItemId) {
+        store.boxFor(GroupItem.class).remove(groupItemId);
+    }
+
+    void deleteGroupItems(long[] groupItemIds) {
+        store.boxFor(GroupItem.class).remove(groupItemIds);
+    }
+
+    long countGroupsFor(@NonNull final Grouping grouping) {
         return store.boxFor(Group.class).query().equal(Group_.grouping, grouping.getId()).build().count();
+    }
+
+    int getMaxGroupOrderFor(@NonNull final Grouping grouping) {
+        return (int) store.boxFor(Group.class).query().equal(Group_.grouping, grouping.getId()).build().property(Group_.order).max();
+    }
+
+    int getMaxGroupItemOrderFor(long groupid) {
+        return (int) store.boxFor(GroupItem.class).query().equal(GroupItem_.groupId, groupid).build().property(GroupItem_.order).max();
     }
 
     Query<Group> selectGroupsQ(int grouping, int orderStyle) {

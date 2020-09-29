@@ -192,9 +192,6 @@ public class LibraryViewModel extends AndroidViewModel {
         performSearch();
     }
 
-    /**
-     * Set the mode (endless or paged)
-     */
     public void setGroup(Group group) {
         searchManager.setGroup(group);
         this.group.postValue(group);
@@ -203,9 +200,9 @@ public class LibraryViewModel extends AndroidViewModel {
 //        performSearch();
     }
 
-    public void selectGroups(int grouping) {
+    public void setGrouping(Grouping grouping) {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping, 0);
+        currentGroupsSource = dao.selectGroups(grouping.getId(), 0);
         groups.addSource(currentGroupsSource, groups::setValue);
     }
 
@@ -313,8 +310,8 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     private Object doDeleteItem(@NonNull final Object item) throws Exception {
-        if (item instanceof Content) return doDeleteContent((Content)item);
-        else if (item instanceof Group) return doDeleteGroup((Group)item);
+        if (item instanceof Content) return doDeleteContent((Content) item);
+        else if (item instanceof Group) return doDeleteGroup((Group) item);
         else return null;
     }
 
@@ -450,11 +447,7 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void newGroup(@NonNull final Grouping grouping, @NonNull final String groupName) {
-        List<Group> groups = getGroups().getValue();
-        if (null == groups) return;
-
-        int maxOrder = Stream.of(groups).map(Group::getOrder).max(Integer::compareTo).get();
-        dao.insertGroup(new Group(grouping, groupName, maxOrder + 1));
+        dao.insertGroup(new Group(grouping, groupName, -1));
     }
 
     public void saveGroupPositions(List<Group> orderedGroups) {
@@ -521,5 +514,27 @@ public class LibraryViewModel extends AndroidViewModel {
             Timber.e(e, "Error when trying to delete %s", group.id);
             throw new GroupNotRemovedException(group, "Error when trying to delete " + group.id + " : " + e.getMessage(), e);
         }
+    }
+
+    public void moveBooks(long[] bookIds, String newGroupName) {
+        Group newGroup = new Group(Grouping.CUSTOM, newGroupName.trim(), -1);
+        newGroup.id = dao.insertGroup(newGroup);
+        moveBooks(bookIds, newGroup);
+    }
+
+    public void moveBooks(long[] bookIds, Group group) {
+        List<Content> contents = dao.selectContent(bookIds);
+        for (Content c : contents) moveBook(c, group);
+    }
+
+    private void moveBook(@NonNull final Content content, @NonNull final Group group) {
+        // Get all groupItems for custom grouping
+        List<GroupItem> groupItems = dao.selectGroupItems(content.getId(), Grouping.CUSTOM);
+        // Delete them all
+        if (!groupItems.isEmpty())
+            dao.deleteGroupItems(Stream.of(groupItems).map(gi -> gi.id).toList());
+        // Create the new links
+        GroupItem newGroupItem = new GroupItem(content, group, -1);
+        dao.insertGroupItem(newGroupItem);
     }
 }

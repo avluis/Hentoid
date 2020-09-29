@@ -32,6 +32,10 @@ public class GroupItem {
         return content.getTargetId();
     }
 
+    public long getGroupId() {
+        return group.getTargetId();
+    }
+
     public int getOrder() {
         return order;
     }

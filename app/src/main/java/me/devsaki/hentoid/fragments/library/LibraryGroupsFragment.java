@@ -102,12 +102,13 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     // === SELECTION TOOLBAR
     private Toolbar toolbar;
     private Toolbar selectionToolbar;
-    private MenuItem itemDelete;
-    private MenuItem itemShare;
-    private MenuItem itemArchive;
-    private MenuItem itemFolder;
-    private MenuItem itemRedownload;
-    private MenuItem itemCover;
+    private MenuItem deleteMenu;
+    private MenuItem shareMenu;
+    private MenuItem archiveMenu;
+    private MenuItem changeGroupMenu;
+    private MenuItem folderMenu;
+    private MenuItem redownloadMenu;
+    private MenuItem coverMenu;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<GroupDisplayItem> itemAdapter;
@@ -178,7 +179,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         viewModel.getGroups().observe(getViewLifecycleOwner(), this::onGroupsChanged);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
 
-        viewModel.selectGroups(Preferences.getGroupingDisplay().getId()); // Trigger a blank search
+        viewModel.setGrouping(Preferences.getGroupingDisplay()); // Trigger a blank search
     }
 
     /**
@@ -324,12 +325,13 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         selectionToolbar.getMenu().clear();
         selectionToolbar.inflateMenu(R.menu.library_selection_menu);
 
-        itemDelete = selectionToolbar.getMenu().findItem(R.id.action_delete);
-        itemShare = selectionToolbar.getMenu().findItem(R.id.action_share);
-        itemArchive = selectionToolbar.getMenu().findItem(R.id.action_archive);
-        itemFolder = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
-        itemRedownload = selectionToolbar.getMenu().findItem(R.id.action_redownload);
-        itemCover = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+        deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
+        shareMenu = selectionToolbar.getMenu().findItem(R.id.action_share);
+        archiveMenu = selectionToolbar.getMenu().findItem(R.id.action_archive);
+        changeGroupMenu = selectionToolbar.getMenu().findItem(R.id.action_change_group);
+        folderMenu = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
+        redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
+        coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
@@ -352,12 +354,13 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
 
-        itemDelete.setVisible(!isMultipleSelection && (1 == selectedLocalCount || Preferences.isDeleteExternalLibrary()));
-        itemShare.setVisible(false);
-        itemArchive.setVisible(true);
-        itemFolder.setVisible(false);
-        itemRedownload.setVisible(false);
-        itemCover.setVisible(false);
+        deleteMenu.setVisible(!isMultipleSelection && (1 == selectedLocalCount || Preferences.isDeleteExternalLibrary()));
+        shareMenu.setVisible(false);
+        archiveMenu.setVisible(true);
+        changeGroupMenu.setVisible(false);
+        folderMenu.setVisible(false);
+        redownloadMenu.setVisible(false);
+        coverMenu.setVisible(false);
 
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
     }
@@ -534,7 +537,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             requireActivity().finish();
             startActivity(intent);
         } else if (Preferences.Key.PREF_GROUPING_DISPLAY.equals(key)) {
-            viewModel.selectGroups(Preferences.getGroupingDisplay().getId());
+            viewModel.setGrouping(Preferences.getGroupingDisplay());
         }
     }
 
@@ -599,7 +602,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         // Refresh groups
         // TODO do we really want to do that, especially when deleting content ?
-        viewModel.selectGroups(Preferences.getGroupingDisplay().getId());
+        viewModel.setGrouping(Preferences.getGroupingDisplay());
     }
 
     /**

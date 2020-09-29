@@ -248,6 +248,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectContentById(id);
     }
 
+    public List<Content> selectContent(long[] id) {
+        return db.selectContentById(Helper.getListFromPrimitiveArray(id));
+    }
+
     @Nullable
     public Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url) {
         return db.selectContentBySourceAndUrl(site, url);
@@ -305,6 +309,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public List<Group> selectGroups(int grouping) {
+        return db.selectGroupsQ(grouping, 0).find();
+    }
+
+    @Override
     public LiveData<List<Group>> selectGroups(int grouping, int orderStyle) {
         LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, orderStyle));
 
@@ -330,11 +339,10 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public long insertGroup(Group group) {
+        // Auto-number max order when not provided
+        if (-1 == group.order)
+            group.order = db.getMaxGroupOrderFor(group.grouping) + 1;
         return db.insertGroup(group);
-    }
-
-    public long insertGroupItem(GroupItem item) {
-        return db.insertGroupItem(item);
     }
 
     public long countGroupsFor(Grouping grouping) {
@@ -344,6 +352,27 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void deleteGroup(long groupId) {
         db.deleteGroup(groupId);
     }
+
+    public long insertGroupItem(GroupItem item) {
+        // Auto-number max order when not provided
+        if (-1 == item.order)
+            item.order = db.getMaxGroupItemOrderFor(item.getGroupId()) + 1;
+
+        return db.insertGroupItem(item);
+    }
+
+    public List<GroupItem> selectGroupItems(long contentId, Grouping grouping) {
+        return db.selectGroupItems(contentId, grouping.getId());
+    }
+
+    public void deleteGroupItem(long groupItemId) {
+        db.deleteGroupItem(groupItemId);
+    }
+
+    public void deleteGroupItems(List<Long> groupItemIds) {
+        db.deleteGroupItems(Helper.getPrimitiveLongArrayFromList(groupItemIds));
+    }
+
 
     public List<Content> selectAllQueueBooks() {
         return db.selectAllQueueBooksQ().find();

@@ -67,7 +67,7 @@ public class InputDialog {
                 .setNegativeButton(android.R.string.cancel, null)
                 .create();
 
-        materialDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         materialDialog.show();
+        materialDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
     }
 }

@@ -24,6 +24,12 @@
         android:tooltipText="@string/menu_share_help"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_change_group"
+        android:icon="@drawable/ic_folder_edit"
+        android:title="@string/menu_change_group"
+        android:tooltipText="@string/menu_change_group"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_open_folder"
         android:icon="@drawable/ic_folder"
         android:title="@string/menu_open_folder"
