@@ -289,7 +289,7 @@ public class LibraryViewModel extends AndroidViewModel {
     public void deleteItems(@NonNull final List<Content> contents, @NonNull final List<Group> groups, Consumer<Object> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contents) flagContentDelete(c, true);
-        // TODO do the same for groups ?
+        // TODO do the same blinking effect for groups ?
 
         // Queue first content then groups, to be sure to delete empty groups only
         List<Object> items = new ArrayList<>();
@@ -342,47 +342,6 @@ public class LibraryViewModel extends AndroidViewModel {
             throw new ContentNotRemovedException(content, "Error when trying to delete " + content.getId() + " : " + e.getMessage(), e);
         }
     }
-
-    /**
-     * Archive the given Content into a temp ZIP file
-     *
-     * @param content   Content to be archived
-     * @param onSuccess Callback to run when the operation succeeds
-     */
-    public void archiveContent(@NonNull final Content content, Consumer<File> onSuccess) {
-        Timber.d("Building file list for: %s", content.getTitle());
-
-        DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(getApplication(), content.getStorageUri());
-        if (null == bookFolder) return;
-
-        List<DocumentFile> files = FileHelper.listFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive
-        if (!files.isEmpty()) {
-            // Create folder to share from
-            File sharedDir = new File(getApplication().getExternalCacheDir() + "/shared");
-            if (FileHelper.createDirectory(sharedDir)) {
-                Timber.d("Shared folder created.");
-            }
-
-            // Clean directory (in case of previous job)
-            if (FileHelper.cleanDirectory(sharedDir)) {
-                Timber.d("Shared folder cleaned up.");
-            }
-
-            // Build destination file
-            File dest = new File(getApplication().getExternalCacheDir() + "/shared",
-                    content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + ".zip");
-            Timber.d("Destination file: %s", dest);
-
-            compositeDisposable.add(
-                    Single.fromCallable(() -> ZipUtil.zipFiles(getApplication(), files, dest))
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(onSuccess::accept,
-                                    Timber::e)
-            );
-        }
-    }
-
 
     public void archiveContents(@NonNull final List<Content> contentList, Consumer<Content> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
         Timber.d("Building file list for %s books", contentList.size());
@@ -459,32 +418,6 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
-     * Delete the given list of groups
-     * WARNING : If one of the groups contains GroupItems, it will be ignored
-     * This method is aimed to be used to delete empty groups when using Custom grouping
-     *
-     * @param groups  List of groups to be deleted
-     * @param onError Callback to run when an error occurs
-     */
-    public void deleteGroups(@NonNull final List<Group> groups, Consumer<Throwable> onError) {
-        // Remove non-empty groups
-        List<Group> validGroups = Stream.of(groups).filter(g -> g.items.isEmpty()).toList();
-
-        compositeDisposable.add(
-                Observable.fromIterable(validGroups)
-                        .observeOn(Schedulers.io())
-                        .map(this::doDeleteGroup)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                v -> {
-                                    // Nothing to do here; UI callbacks are handled through LiveData
-                                },
-                                onError::accept
-                        )
-        );
-    }
-
-    /**
      * Delete the given group
      * WARNING : If the group contains GroupItems, it will be ignored
      * This method is aimed to be used to delete empty groups when using Custom grouping
@@ -533,6 +466,11 @@ public class LibraryViewModel extends AndroidViewModel {
         // Delete them all
         if (!groupItems.isEmpty())
             dao.deleteGroupItems(Stream.of(groupItems).map(gi -> gi.id).toList());
+
+        // TODO If one of the existing groups becomes empty, reset its cover (should even be "if one of the existing groups had the specified Content's cover as its cover, reset it")
+
+        // TODO If target group is empty, set its cover
+
         // Create the new links
         GroupItem newGroupItem = new GroupItem(content, group, -1);
         dao.insertGroupItem(newGroupItem);
