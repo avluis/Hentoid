@@ -11,7 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
@@ -140,7 +140,8 @@ public final class ContentHelper {
             // even though all the file existence checks are in place
             // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
             Timber.e(e);
-            Crashlytics.logException(e);
+            FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+            crashlytics.recordException(e);
             return false;
         }
         return true;

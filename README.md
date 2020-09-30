@@ -23,6 +23,8 @@ ___
 ##### Visit our [Discord Server](https://discord.gg/QEZ3qk9) to chat with other users, read the latest announcements, get dev updates, app support or hang out with the development team.
 ___
 ###### [Help us](https://github.com/AVnetWS/Hentoid/wiki/Contributing) shape `Hentoid` into the best H-Manga App for you.
+
+[![](https://github.com/avluis/Hentoid/blob/master/wiki-img/CherryBanner.png)](https://github.com/RobbWatershed/GalleryCherry)
 ___
 
 <meta name='keywords' content='doujin, doujinshi, download doujinshi, android app, doujin android app, doujinshi android app, doujin android download, doujinshi android download'>
