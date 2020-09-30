@@ -9,7 +9,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.BasicNetwork;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.Volley;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.File;
 
@@ -40,7 +40,8 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
         if (dlThreadCount == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
             dlThreadCount = getSuggestedThreadCount(context);
         }
-        Crashlytics.setInt("Download thread count", dlThreadCount);
+        FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+        crashlytics.setCustomKey("Download thread count", dlThreadCount);
 
         mRequestQueue = getRequestQueue(context, dlThreadCount);
     }
@@ -50,7 +51,8 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
         final int maxThreads = 4;
 
         int memoryClass = getMemoryClass(context);
-        Crashlytics.setInt("Memory class", memoryClass);
+        FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+        crashlytics.setCustomKey("Memory class", memoryClass);
 
         if (memoryClass == 0) return maxThreads;
         int threadCount = (int) Math.ceil((double) memoryClass / (double) threshold);

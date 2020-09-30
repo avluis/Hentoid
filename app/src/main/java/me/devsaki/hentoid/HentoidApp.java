@@ -13,7 +13,6 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jakewharton.threetenabp.AndroidThreeTen;
@@ -22,7 +21,6 @@ import org.threeten.bp.Instant;
 
 import java.io.IOException;
 
-import io.fabric.sdk.android.Fabric;
 import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.plugins.RxJavaPlugins;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
@@ -85,8 +83,6 @@ public class HentoidApp extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-
-        Fabric.with(this, new Crashlytics());
 
         // Fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
         // see https://github.com/square/okhttp/issues/2372 for more information
