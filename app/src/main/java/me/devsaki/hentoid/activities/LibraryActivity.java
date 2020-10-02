@@ -603,7 +603,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private boolean isGroupDisplayed() {
-        return (0 == viewPager.getCurrentItem());
+        return (0 == viewPager.getCurrentItem() && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
     }
 
     public void showBooksInGroup(me.devsaki.hentoid.database.domains.Group group) {

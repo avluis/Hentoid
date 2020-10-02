@@ -15,7 +15,6 @@ import androidx.paging.PagedList;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
@@ -44,8 +43,6 @@ import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.GroupNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.FileHelper.AUTHORIZED_CHARS;
 
 
 public class LibraryViewModel extends AndroidViewModel {
@@ -466,10 +463,6 @@ public class LibraryViewModel extends AndroidViewModel {
         // Delete them all
         if (!groupItems.isEmpty())
             dao.deleteGroupItems(Stream.of(groupItems).map(gi -> gi.id).toList());
-
-        // TODO If one of the existing groups becomes empty, reset its cover (should even be "if one of the existing groups had the specified Content's cover as its cover, reset it")
-
-        // TODO If target group is empty, set its cover
 
         // Create the new links
         GroupItem newGroupItem = new GroupItem(content, group, -1);

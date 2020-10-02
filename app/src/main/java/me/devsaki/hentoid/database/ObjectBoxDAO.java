@@ -27,6 +27,7 @@ import io.objectbox.BoxStore;
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
 import io.objectbox.query.Query;
+import io.objectbox.relation.ToOne;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -358,6 +359,11 @@ public class ObjectBoxDAO implements CollectionDAO {
         if (-1 == item.order)
             item.order = db.getMaxGroupItemOrderFor(item.getGroupId()) + 1;
 
+        // If target group doesn't have a cover, get the corresponding Content's
+        ToOne<ImageFile> groupCover = item.group.getTarget().picture;
+        if (!groupCover.isResolvedAndNotNull())
+            groupCover.setAndPutTarget(item.content.getTarget().getCover());
+
         return db.insertGroupItem(item);
     }
 
@@ -369,7 +375,16 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteGroupItem(groupItemId);
     }
 
-    public void deleteGroupItems(List<Long> groupItemIds) {
+    public void deleteGroupItems(@NonNull final List<Long> groupItemIds) {
+        // Check if one of the GroupItems to delete is linked to the content that contains the group's cover picture
+        List<GroupItem> groupItems = db.selectGroupItems(Helper.getPrimitiveLongArrayFromList(groupItemIds));
+        for (GroupItem gi : groupItems) {
+            ToOne<ImageFile> groupPicture = gi.group.getTarget().picture;
+            // If so, remove the cover picture
+            if (groupPicture.isResolvedAndNotNull() && groupPicture.getTarget().content.getTargetId() == gi.content.getTargetId())
+                gi.group.getTarget().picture.setAndPutTarget(null);
+        }
+
         db.deleteGroupItems(Helper.getPrimitiveLongArrayFromList(groupItemIds));
     }
 

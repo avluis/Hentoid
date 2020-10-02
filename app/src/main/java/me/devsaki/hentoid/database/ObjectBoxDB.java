@@ -983,6 +983,10 @@ public class ObjectBoxDB {
         return store.boxFor(GroupItem.class).put(item);
     }
 
+    List<GroupItem> selectGroupItems(long[] groupItemIds) {
+        return store.boxFor(GroupItem.class).get(groupItemIds);
+    }
+
     List<GroupItem> selectGroupItems(long contentId, int groupingId) {
         QueryBuilder<GroupItem> qb = store.boxFor(GroupItem.class).query().equal(GroupItem_.contentId, contentId);
         qb.link(GroupItem_.group).equal(Group_.grouping, groupingId);
