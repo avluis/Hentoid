@@ -102,6 +102,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     // === SELECTION TOOLBAR
     private Toolbar toolbar;
     private Toolbar selectionToolbar;
+    private MenuItem editNameMenu;
     private MenuItem deleteMenu;
     private MenuItem shareMenu;
     private MenuItem archiveMenu;
@@ -323,6 +324,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         selectionToolbar.getMenu().clear();
         selectionToolbar.inflateMenu(R.menu.library_selection_menu);
 
+        editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
         deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
         shareMenu = selectionToolbar.getMenu().findItem(R.id.action_share);
         archiveMenu = selectionToolbar.getMenu().findItem(R.id.action_archive);
@@ -335,6 +337,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
         boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
+            case R.id.action_edit_name:
+                editSelectedItemName();
+                break;
             case R.id.action_delete:
                 purgeSelectedItems();
                 break;
@@ -352,6 +357,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
 
+        editNameMenu.setVisible(!isMultipleSelection && Preferences.getGroupingDisplay().canReorderGroups());
         deleteMenu.setVisible(!isMultipleSelection && (1 == selectedLocalCount || Preferences.isDeleteExternalLibrary()));
         shareMenu.setVisible(false);
         archiveMenu.setVisible(true);
@@ -449,6 +455,25 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 .filterNot(c -> c.getStorageUri().isEmpty())
                 .toList();
         if (!selectedContent.isEmpty()) activity.askArchiveItems(selectedContent, selectExtension);
+    }
+
+    /**
+     * Callback for the "edit item name" action button
+     */
+    private void editSelectedItemName() {
+        Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
+        Group g = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().findFirst().get();
+
+        InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, g.name, this::onEditName);
+    }
+
+    private void onEditName(@NonNull final String newName) {
+        Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
+        Group g = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().findFirst().get();
+        viewModel.renameGroup(g, newName, () -> {
+            ToastUtil.toast(R.string.group_name_exists);
+            LibraryGroupsFragment.this.editSelectedItemName();
+        });
     }
 
     /**

@@ -36,7 +36,8 @@
     <string name="menu_search">Search</string>
     <string name="menu_fav">Toggle favourite filter</string>
     <string name="menu_group_new">New group</string>
-    <string name="menu_edit">Edit order</string>
+    <string name="menu_edit_order">Edit order</string>
+    <string name="menu_edit_name">Edit name</string>
     <string name="menu_edit_cancel">Cancel edit</string>
     <string name="menu_edit_warning_custom">The new custom ordering you\'re about to create will overwrite the previous one.</string>
     <string name="menu_order">Order books</string>
@@ -203,6 +204,7 @@
         <item quantity="other">Are you sure you wish to archive the selected items ?</item>
     </plurals>
     <string name="new_group_name">Name of the new group ?</string>
+    <string name="group_edit_name">Edit group name</string>
     <string name="delete_progress">Deleting books</string>
     <string name="delete_success">All books deleted</string>
     <string name="archive_progress">Archiving books</string>

@@ -30,9 +30,9 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/action_edit"
-        android:icon="@drawable/ic_edit"
-        android:title="@string/menu_edit"
-        android:tooltipText="@string/menu_edit"
+        android:icon="@drawable/ic_reorder_lines"
+        android:title="@string/menu_edit_order"
+        android:tooltipText="@string/menu_edit_order"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_edit_cancel"

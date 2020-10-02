@@ -8,6 +8,7 @@ import android.view.WindowManager;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 
@@ -42,7 +43,16 @@ public class InputDialog {
             @NonNull final Context context,
             final @StringRes int message,
             @NonNull final Consumer<String> onResult) {
+        invokeInputDialog(context, message, null, onResult);
+    }
+
+    public static void invokeInputDialog(
+            @NonNull final Context context,
+            final @StringRes int message,
+             @Nullable final String text,
+            @NonNull final Consumer<String> onResult) {
         EditText input = new EditText(context);
+        if (text != null) input.setText(text);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
 //        input.setRawInputType(Configuration.);
 

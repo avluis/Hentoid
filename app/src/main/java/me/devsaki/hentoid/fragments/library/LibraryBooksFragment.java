@@ -126,6 +126,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     // === SELECTION TOOLBAR
     private Toolbar toolbar;
     private Toolbar selectionToolbar;
+    private MenuItem editNameMenu;
     private MenuItem deleteMenu;
     private MenuItem shareMenu;
     private MenuItem archiveMenu;
@@ -407,6 +408,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         selectionToolbar.getMenu().clear();
         selectionToolbar.inflateMenu(R.menu.library_selection_menu);
 
+        editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
         deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
         shareMenu = selectionToolbar.getMenu().findItem(R.id.action_share);
         archiveMenu = selectionToolbar.getMenu().findItem(R.id.action_archive);
@@ -493,6 +495,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
 
+        editNameMenu.setVisible(false);
         deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
         shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         archiveMenu.setVisible(true);

@@ -626,11 +626,11 @@ public class LibraryActivity extends BaseActivity {
         viewPager.setCurrentItem(1);
     }
 
-    public void updateToolbar() {
+    private void updateToolbar() {
         searchMenu.setVisible(!editMode);
         newGroupMenu.setVisible(!editMode && isGroupDisplayed());
         favsMenu.setVisible(!editMode && !isGroupDisplayed());
-        editMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_edit);
+        editMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_reorder_lines);
         editCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
 

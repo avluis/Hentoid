@@ -416,6 +416,21 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
+
+    public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
+        // Check if the group already exists
+        List<Group> groups = getGroups().getValue();
+        if (null == groups) return;
+
+        List<Group> groupMatchingName = Stream.of(groups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
+        if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
+            group.name = newGroupName;
+            dao.insertGroup(group);
+        } else {
+            onNameExists.run();
+        }
+    }
+
     public void saveGroupPositions(List<Group> orderedGroups) {
         int order = 0;
         for (Group g : orderedGroups) {
