@@ -312,7 +312,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         MenuItem editCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
         editCancelMenu.setOnMenuItemClickListener(v -> cancelEditMode());
         MenuItem newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
-        newGroupMenu.setOnMenuItemClickListener(v -> newGroup());
+        newGroupMenu.setOnMenuItemClickListener(v -> newGroupPrompt());
 
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
@@ -390,10 +390,14 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         return true;
     }
 
-    private boolean newGroup() {
-        InputDialog.invokeInputDialog(requireActivity(), R.string.new_group_name, groupName -> viewModel.newGroup(Preferences.getGroupingDisplay(), groupName));
-
+    private boolean newGroupPrompt() {
+        InputDialog.invokeInputDialog(requireActivity(), R.string.new_group_name, groupName -> viewModel.newGroup(Preferences.getGroupingDisplay(), groupName, this::onNewGroupNameExists));
         return true;
+    }
+
+    private void onNewGroupNameExists() {
+        ToastUtil.toast(R.string.group_name_exists);
+        newGroupPrompt();
     }
 
     /**

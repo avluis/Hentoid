@@ -24,7 +24,7 @@ public class InputDialog {
 
     public static void invokeNumberInputDialog(
             @NonNull final Context context,
-            @NonNull final @StringRes int message,
+            final @StringRes int message,
             @NonNull final Consumer<Integer> onResult) {
         EditText input = new EditText(context);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -40,7 +40,7 @@ public class InputDialog {
 
     public static void invokeInputDialog(
             @NonNull final Context context,
-            @NonNull final @StringRes int message,
+            final @StringRes int message,
             @NonNull final Consumer<String> onResult) {
         EditText input = new EditText(context);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -48,7 +48,7 @@ public class InputDialog {
 
         DialogInterface.OnClickListener positive = (dialog, whichButton) -> {
             if (input.getText().length() > 0)
-                onResult.accept(input.getText().toString());
+                onResult.accept(input.getText().toString().trim());
         };
 
         showDialog(context, message, input, positive);
@@ -56,7 +56,7 @@ public class InputDialog {
 
     private static void showDialog(
             @NonNull final Context context,
-            @NonNull final @StringRes int message,
+            final @StringRes int message,
             @NonNull final EditText input,
             @NonNull final DialogInterface.OnClickListener positive
     ) {

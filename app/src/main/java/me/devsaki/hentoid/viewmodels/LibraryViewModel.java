@@ -403,8 +403,17 @@ public class LibraryViewModel extends AndroidViewModel {
         dao.insertGroup(group);
     }
 
-    public void newGroup(@NonNull final Grouping grouping, @NonNull final String groupName) {
-        dao.insertGroup(new Group(grouping, groupName, -1));
+    public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
+        // Check if the group already exists
+        List<Group> groups = getGroups().getValue();
+        if (null == groups) return;
+
+        List<Group> groupMatchingName = Stream.of(groups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
+        if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
+            dao.insertGroup(new Group(grouping, newGroupName, -1));
+        } else {
+            onNameExists.run();
+        }
     }
 
     public void saveGroupPositions(List<Group> orderedGroups) {
