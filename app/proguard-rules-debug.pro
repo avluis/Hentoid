@@ -3,6 +3,8 @@
 -dontobfuscate
 
 
+## Fix for https://github.com/square/okhttp/issues/6299
+-dontwarn org.conscrypt.ConscryptHostnameVerifier
 
 # keep all classes in our package
 -keep class me.devsaki.hentoid.** { *; }
