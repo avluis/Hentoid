@@ -194,7 +194,8 @@ public class LibraryViewModel extends AndroidViewModel {
         this.group.postValue(group);
         newSearch.setValue(true);
         // Don't search now as the UI will inevitably search as well upon switching to books view
-//        performSearch();
+        // TODO only useful when browsing custom groups ?
+        performSearch();
     }
 
     public void setGrouping(Grouping grouping) {
