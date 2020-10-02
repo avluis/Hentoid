@@ -151,6 +151,8 @@ public class LibraryActivity extends BaseActivity {
     private String query = "";
     // Current metadata search query
     private List<Attribute> metadata = Collections.emptyList();
+    // TODO doc
+    private boolean editMode = false;
 
 
     // Used to auto-hide the sort controls bar when no activity is detected
@@ -189,6 +191,19 @@ public class LibraryActivity extends BaseActivity {
 
     public void setMetadata(List<Attribute> metadata) {
         this.metadata = metadata;
+    }
+
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
+        updateToolbar();
+    }
+
+    public void toggleEditMode() {
+        setEditMode(!editMode);
     }
 
 
@@ -329,7 +344,7 @@ public class LibraryActivity extends BaseActivity {
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                onTabSelected(position);
+                updateToolbar();
             }
         });
 
@@ -411,7 +426,7 @@ public class LibraryActivity extends BaseActivity {
             }
         });
         // Update icons visibility
-        toggleEditMode(false);
+        updateToolbar();
     }
 
     public void sortCommandsAutoHide(boolean hideSortOnly, PopupMenu popup) {
@@ -611,19 +626,17 @@ public class LibraryActivity extends BaseActivity {
         viewPager.setCurrentItem(1);
     }
 
-    private void onTabSelected(int position) {
-        Grouping currentGrouping = Preferences.getGroupingDisplay();
-        if (0 == position) editMenu.setVisible(currentGrouping.canReorderGroups());
-        else if (1 == position) editMenu.setVisible(currentGrouping.canReorderBooks());
-    }
-
-    public void toggleEditMode(boolean editMode) {
+    public void updateToolbar() {
         searchMenu.setVisible(!editMode);
         newGroupMenu.setVisible(!editMode && isGroupDisplayed());
         favsMenu.setVisible(!editMode && !isGroupDisplayed());
         editMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_edit);
         editCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
+
+        Grouping currentGrouping = Preferences.getGroupingDisplay();
+        if (isGroupDisplayed()) editMenu.setVisible(currentGrouping.canReorderGroups());
+        else editMenu.setVisible(currentGrouping.canReorderBooks());
     }
 
     /**

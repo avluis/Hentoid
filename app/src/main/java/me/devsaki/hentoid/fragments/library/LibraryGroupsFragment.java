@@ -126,8 +126,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private int totalContentCount;
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
-    // TODO doc
-    private boolean isEditMode = false;
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
@@ -369,11 +367,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (!(requireActivity() instanceof LibraryActivity)) return false;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
-        isEditMode = !isEditMode;
-        activity.toggleEditMode(isEditMode);
+        activity.toggleEditMode();
 
         // Leave edit mode by validating => Save new item position
-        if (!isEditMode) {
+        if (!activity.isEditMode()) {
             viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
             Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
             sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
@@ -387,8 +384,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (!(requireActivity() instanceof LibraryActivity)) return false;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
-        isEditMode = false;
-        activity.toggleEditMode(false);
+        activity.setEditMode(false);
 
         setPagingMethod();
         return true;
@@ -545,6 +541,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * Initialize the paging method of the screen
      */
     private void setPagingMethod(/*boolean isEditMode*/) {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
         viewModel.setPagingMethod(true);
 
         itemAdapter = new ItemAdapter<>();
@@ -564,7 +563,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }
 
         // Drag, drop & swiping
-        if (isEditMode) {
+        if (activity.isEditMode()) {
             SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
                     this,
                     this,
@@ -580,12 +579,15 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     private void onGroupsChanged(List<Group> result) {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
         Timber.i(">>Groups changed ! Size=%s", result.size());
 
         boolean isEmpty = (result.isEmpty());
         emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
-        @GroupDisplayItem.ViewType int viewType = isEditMode ? GroupDisplayItem.ViewType.LIBRARY_EDIT : GroupDisplayItem.ViewType.LIBRARY;
+        @GroupDisplayItem.ViewType int viewType = activity.isEditMode() ? GroupDisplayItem.ViewType.LIBRARY_EDIT : GroupDisplayItem.ViewType.LIBRARY;
         List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).toList();
         itemAdapter.set(groups);
         differEndCallback();

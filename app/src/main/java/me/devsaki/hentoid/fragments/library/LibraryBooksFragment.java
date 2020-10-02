@@ -158,8 +158,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     private int topItemPosition = -1;
     // TODO doc
     private Group group = null;
-    // TODO doc
-    private boolean isEditMode = false;
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
@@ -422,11 +420,10 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         if (!(requireActivity() instanceof LibraryActivity)) return false;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
-        isEditMode = !isEditMode;
-        activity.toggleEditMode(isEditMode);
+        activity.toggleEditMode();
 
         // Leave edit mode by validating => Save new item position
-        if (!isEditMode) {
+        if (!activity.isEditMode()) {
             viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList());
             group.hasCustomBookOrder = true;
             Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
@@ -447,7 +444,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
                     .show();
         }
 
-        setPagingMethod(Preferences.getEndlessScroll(), isEditMode);
+        setPagingMethod(Preferences.getEndlessScroll(), activity.isEditMode());
         return true;
     }
 
@@ -455,10 +452,8 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         if (!(requireActivity() instanceof LibraryActivity)) return false;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
-        isEditMode = false;
-        activity.toggleEditMode(false);
-
-        setPagingMethod(Preferences.getEndlessScroll(), isEditMode);
+        activity.setEditMode(false);
+        setPagingMethod(Preferences.getEndlessScroll(), false);
         return true;
     }
 
@@ -746,9 +741,12 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
      * Callback for any change in Preferences
      */
     private void onSharedPreferenceChanged(String key) {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
         Timber.i("Prefs change detected : %s", key);
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
-            setPagingMethod(Preferences.getEndlessScroll(), isEditMode);
+            setPagingMethod(Preferences.getEndlessScroll(), activity.isEditMode());
             viewModel.updateOrder(); // Trigger a blank search
         } else if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
             // Restart the app with the library activity on top
@@ -974,10 +972,13 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     }
 
     private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
         if (iLibrary.isEmpty()) {
             itemAdapter.set(Collections.emptyList());
         } else {
-            @ContentItem.ViewType int viewType = isEditMode ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
+            @ContentItem.ViewType int viewType = activity.isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
             List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType)).toList();
             itemAdapter.set(contentItems);
         }
@@ -1001,6 +1002,9 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
      * @param result Current library according to active filters
      */
     private void onLibraryChanged(PagedList<Content> result) {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
         Timber.i(">>Library changed ! Size=%s", result.size());
 
         updateTitle(result.size(), totalContentCount);
@@ -1013,7 +1017,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         } else emptyText.setVisibility(View.GONE);
 
         // Update visibility of advanced search bar
-        ((LibraryActivity) requireActivity()).updateSearchBarOnResults(!result.isEmpty());
+        activity.updateSearchBarOnResults(!result.isEmpty());
 
         String query = getQuery();
         // User searches a book ID
@@ -1032,9 +1036,9 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         if (newSearch) topItemPosition = 0;
 
         // Update displayed books
-        if (Preferences.getEndlessScroll() && !isEditMode) {
+        if (Preferences.getEndlessScroll() && !activity.isEditMode()) {
             pagedItemAdapter.submitList(result, this::differEndCallback);
-        } else if (isEditMode) {
+        } else if (activity.isEditMode()) {
             populateAllResults(result);
         } else { // Paged mode
             if (newSearch) pager.setCurrentPage(1);
