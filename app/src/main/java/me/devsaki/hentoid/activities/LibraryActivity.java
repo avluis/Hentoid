@@ -126,6 +126,14 @@ public class LibraryActivity extends BaseActivity {
 
     // === SELECTION TOOLBAR
     private Toolbar selectionToolbar;
+    private MenuItem editNameMenu;
+    private MenuItem deleteMenu;
+    private MenuItem shareMenu;
+    private MenuItem archiveMenu;
+    private MenuItem changeGroupMenu;
+    private MenuItem folderMenu;
+    private MenuItem redownloadMenu;
+    private MenuItem coverMenu;
 
     private ViewPager2 viewPager;
 
@@ -343,6 +351,7 @@ public class LibraryActivity extends BaseActivity {
             @Override
             public void onPageSelected(int position) {
                 updateToolbar();
+                updateSelectionToolbar(0, 0);
             }
         });
 
@@ -509,6 +518,19 @@ public class LibraryActivity extends BaseActivity {
 
     private void initSelectionToolbar() {
         selectionToolbar = findViewById(R.id.library_selection_toolbar);
+        selectionToolbar.getMenu().clear();
+        selectionToolbar.inflateMenu(R.menu.library_selection_menu);
+
+        editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
+        deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
+        shareMenu = selectionToolbar.getMenu().findItem(R.id.action_share);
+        archiveMenu = selectionToolbar.getMenu().findItem(R.id.action_archive);
+        changeGroupMenu = selectionToolbar.getMenu().findItem(R.id.action_change_group);
+        folderMenu = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
+        redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
+        coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+
+        updateSelectionToolbar(0, 0);
     }
 
     private int getGroupingCodeFromMenuId(@IdRes int menuId) {
@@ -635,6 +657,31 @@ public class LibraryActivity extends BaseActivity {
         Grouping currentGrouping = Preferences.getGroupingDisplay();
         if (isGroupDisplayed()) editMenu.setVisible(currentGrouping.canReorderGroups());
         else editMenu.setVisible(currentGrouping.canReorderBooks());
+    }
+
+    public void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
+        boolean isMultipleSelection = selectedTotalCount > 1;
+        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
+
+        if (isGroupDisplayed()) {
+            editNameMenu.setVisible(!isMultipleSelection && Preferences.getGroupingDisplay().canReorderGroups());
+            deleteMenu.setVisible(!isMultipleSelection && (1 == selectedLocalCount || Preferences.isDeleteExternalLibrary()));
+            shareMenu.setVisible(false);
+            archiveMenu.setVisible(true);
+            changeGroupMenu.setVisible(false);
+            folderMenu.setVisible(false);
+            redownloadMenu.setVisible(false);
+            coverMenu.setVisible(false);
+        } else {
+            editNameMenu.setVisible(false);
+            deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
+            shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
+            archiveMenu.setVisible(true);
+            changeGroupMenu.setVisible(true);
+            folderMenu.setVisible(!isMultipleSelection);
+            redownloadMenu.setVisible(selectedLocalCount > 0);
+            coverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
+        }
     }
 
     /**

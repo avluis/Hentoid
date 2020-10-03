@@ -126,14 +126,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     // === SELECTION TOOLBAR
     private Toolbar toolbar;
     private Toolbar selectionToolbar;
-    private MenuItem editNameMenu;
-    private MenuItem deleteMenu;
-    private MenuItem shareMenu;
-    private MenuItem archiveMenu;
-    private MenuItem changeGroupMenu;
-    private MenuItem folderMenu;
-    private MenuItem redownloadMenu;
-    private MenuItem coverMenu;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -401,18 +393,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
         });
-
-        selectionToolbar.getMenu().clear();
-        selectionToolbar.inflateMenu(R.menu.library_selection_menu);
-
-        editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
-        deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
-        shareMenu = selectionToolbar.getMenu().findItem(R.id.action_share);
-        archiveMenu = selectionToolbar.getMenu().findItem(R.id.action_archive);
-        changeGroupMenu = selectionToolbar.getMenu().findItem(R.id.action_change_group);
-        folderMenu = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
-        redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
-        coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
     }
 
     private boolean toggleEditMode() {
@@ -504,21 +484,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         }
         if (!keepToolbar) selectionToolbar.setVisibility(View.GONE);
         return true;
-    }
-
-    private void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
-        boolean isMultipleSelection = selectedTotalCount > 1;
-
-        editNameMenu.setVisible(false);
-        deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
-        shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
-        archiveMenu.setVisible(true);
-        changeGroupMenu.setVisible(true);
-        folderMenu.setVisible(!isMultipleSelection);
-        redownloadMenu.setVisible(selectedLocalCount > 0);
-        coverMenu.setVisible(!isMultipleSelection && group != null);
-
-        selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
     }
 
     /**
@@ -1176,8 +1141,11 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             invalidateNextBookClick = true;
             new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
+            if (!(requireActivity() instanceof LibraryActivity)) return;
+            LibraryActivity activity = (LibraryActivity) requireActivity();
+
             long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filter(s -> s.equals(StatusContent.DOWNLOADED)).count();
-            updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
+            activity.updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
             selectionToolbar.setVisibility(View.VISIBLE);
         }
     }
