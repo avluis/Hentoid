@@ -311,18 +311,19 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public List<Group> selectGroups(int grouping) {
-        return db.selectGroupsQ(grouping, null, 0).find();
+        return db.selectGroupsQ(grouping, null, 0, false).find();
     }
 
     @Override
-    public LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderStyle) {
-        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderStyle));
+    public LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc) {
+        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc));
 
         // Order by number of children (ObjectBox can't do that natively)
-        if (Preferences.Constant.ORDER_FIELD_CHILDREN == orderStyle) {
+        if (Preferences.Constant.ORDER_FIELD_CHILDREN == orderField) {
             MediatorLiveData<List<Group>> result = new MediatorLiveData<>();
             result.addSource(livedata, v -> {
-                List<Group> orderedByNbChildren = Stream.of(v).sortBy(g -> g.getItems().size()).toList();
+                int sortOrder = orderDesc ? -1 : 1;
+                List<Group> orderedByNbChildren = Stream.of(v).sortBy(g -> g.getItems().size() * sortOrder).toList();
                 result.setValue(orderedByNbChildren);
             });
             return result;

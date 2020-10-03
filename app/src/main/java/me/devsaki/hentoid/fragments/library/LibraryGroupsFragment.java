@@ -169,7 +169,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         viewModel.getGroups().observe(getViewLifecycleOwner(), this::onGroupsChanged);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
 
-        viewModel.setGrouping(Preferences.getGroupingDisplay()); // Trigger a blank search
+        viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc()); // Trigger a blank search
     }
 
     /**
@@ -206,7 +206,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             // Update icon
             sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
             // Run a new search
-            viewModel.updateOrder();
+            viewModel.updateContentOrder();
             activity.sortCommandsAutoHide(true, null);
         });
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getGroupSortField()));
@@ -223,7 +223,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
                 Preferences.setGroupSortField(fieldCode);
                 // Run a new search
-                viewModel.updateOrder();
+                viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.getQuery(), fieldCode, Preferences.isGroupSortDesc());
                 activity.sortCommandsAutoHide(true, popup);
                 return true;
             });
@@ -233,7 +233,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     public void onSearch(String query) {
-        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField());
+        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
     }
 
     private int getFieldCodeFromMenuId(@IdRes int menuId) {
@@ -495,7 +495,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             requireActivity().finish();
             startActivity(intent);
         } else if (Preferences.Key.PREF_GROUPING_DISPLAY.equals(key)) {
-            viewModel.setGrouping(Preferences.getGroupingDisplay());
+            viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
         }
     }
 
@@ -566,7 +566,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         // Refresh groups
         // TODO do we really want to do that, especially when deleting content ?
-        viewModel.setGrouping(Preferences.getGroupingDisplay());
+        viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
     }
 
     /**

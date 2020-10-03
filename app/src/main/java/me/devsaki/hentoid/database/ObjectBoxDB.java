@@ -1013,13 +1013,16 @@ public class ObjectBoxDB {
         return (int) store.boxFor(GroupItem.class).query().equal(GroupItem_.groupId, groupid).build().property(GroupItem_.order).max();
     }
 
-    Query<Group> selectGroupsQ(int grouping, @Nullable String query, int orderStyle) {
+    Query<Group> selectGroupsQ(int grouping, @Nullable String query, int orderField, boolean orderDesc) {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
         if (query != null) qb.contains(Group_.name, query);
 
-        if (Preferences.Constant.ORDER_FIELD_TITLE == orderStyle) qb.order(Group_.name);
-            // Order by number of children is done by the DAO
-        else if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderStyle) qb.order(Group_.order);
+        Property<Group> property = Group_.name;
+        if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField) property = Group_.order;
+        // Order by number of children is done by the DAO
+
+        if (orderDesc) qb.orderDesc(property);
+        else qb.order(property);
 
         return qb.build();
     }

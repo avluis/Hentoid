@@ -249,7 +249,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
         viewModel.getGroup().observe(getViewLifecycleOwner(), this::onGroupChanged);
 
-        viewModel.updateOrder(); // Trigger a blank search
+        viewModel.updateContentOrder(); // Trigger a blank search
 
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
@@ -290,7 +290,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             // Update icon
             sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
             // Run a new search
-            viewModel.updateOrder();
+            viewModel.updateContentOrder();
             activity.sortCommandsAutoHide(true, null);
         });
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
@@ -310,7 +310,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
                 Preferences.setContentSortField(fieldCode);
                 // Run a new search
-                viewModel.updateOrder();
+                viewModel.updateContentOrder();
                 activity.sortCommandsAutoHide(true, popup);
                 return true;
             });
@@ -734,7 +734,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         Timber.i("Prefs change detected : %s", key);
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
             setPagingMethod(Preferences.getEndlessScroll(), activity.isEditMode());
-            viewModel.updateOrder(); // Trigger a blank search
+            viewModel.updateContentOrder(); // Trigger a blank search
         } else if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
             // Restart the app with the library activity on top
             Intent intent = requireActivity().getIntent();

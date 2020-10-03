@@ -166,11 +166,11 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Perform a new group search using the given query
      *
-     * @param query    Query to use for the search
+     * @param query Query to use for the search
      */
-    public void searchGroup(Grouping grouping, @NonNull String query, int sortOrder) {
+    public void searchGroup(Grouping grouping, @NonNull String query, int orderField, boolean orderDesc) {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping.getId(), query, sortOrder);
+        currentGroupsSource = dao.selectGroups(grouping.getId(), query, orderField, orderDesc);
         groups.addSource(currentGroupsSource, groups::setValue);
     }
 
@@ -193,9 +193,9 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
-     * Update the order of the list
+     * Update the order of the content list
      */
-    public void updateOrder() {
+    public void updateContentOrder() {
         newSearch.setValue(true);
         doSearchContent();
     }
@@ -209,9 +209,9 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchContent();
     }
 
-    public void setGrouping(Grouping grouping) {
+    public void setGrouping(Grouping grouping, int orderField, boolean orderDesc) {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping.getId(), null, Preferences.Constant.ORDER_FIELD_TITLE);
+        currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc);
         groups.addSource(currentGroupsSource, groups::setValue);
     }
 
