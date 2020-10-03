@@ -477,7 +477,7 @@ public class LibraryActivity extends BaseActivity {
     private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
         advancedSearchBar.setVisibility(View.VISIBLE);
         if (showAdvancedSearch != null)
-            advancedSearchButton.setVisibility(showAdvancedSearch ? View.VISIBLE : View.GONE);
+            advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
 
         if (showClear != null)
             searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
