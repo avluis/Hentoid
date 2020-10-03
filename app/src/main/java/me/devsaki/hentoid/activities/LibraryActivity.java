@@ -265,8 +265,6 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void onCreated() {
-        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
-
         // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
         if (Preferences.isFirstRunProcessComplete())
             TooltipUtil.showTooltip(this, R.string.help_search, ArrowOrientation.TOP, toolbar, this);
@@ -449,7 +447,7 @@ public class LibraryActivity extends BaseActivity {
      *
      * @param menuItem Toolbar of the fragment
      */
-    private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
+    public boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_favourites:
                 menuItem.setChecked(!menuItem.isChecked());

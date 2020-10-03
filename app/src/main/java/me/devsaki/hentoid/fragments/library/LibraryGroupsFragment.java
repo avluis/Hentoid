@@ -166,6 +166,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         initUI(rootView);
         initToolbars();
 
+        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
         selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
 
         return rootView;
@@ -308,13 +309,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         toolbar = activity.getToolbar();
-        MenuItem editModeMenu = toolbar.getMenu().findItem(R.id.action_edit);
-        editModeMenu.setOnMenuItemClickListener(v -> toggleEditMode());
-        MenuItem editCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
-        editCancelMenu.setOnMenuItemClickListener(v -> cancelEditMode());
-        MenuItem newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
-        newGroupMenu.setOnMenuItemClickListener(v -> newGroupPrompt());
-
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect();
@@ -332,6 +326,26 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         folderMenu = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
         coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+    }
+
+    private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
+        if (!(requireActivity() instanceof LibraryActivity)) return false;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
+        switch (menuItem.getItemId()) {
+            case R.id.action_edit:
+                toggleEditMode();
+                break;
+            case R.id.action_edit_cancel:
+                cancelEditMode();
+                break;
+            case R.id.action_group_new:
+                newGroupPrompt();
+                break;
+            default:
+                return activity.toolbarOnItemClicked(menuItem);
+        }
+        return true;
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
