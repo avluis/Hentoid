@@ -359,6 +359,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void updateDisplay() {
+        searchAction.clear();
         FragmentStateAdapter pagerAdapter = new LibraryPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
         pagerAdapter.notifyDataSetChanged();
@@ -819,7 +820,6 @@ public class LibraryActivity extends BaseActivity {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
-            searchAction.clear();
             if (Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
                 LibraryBooksFragment result = new LibraryBooksFragment();
                 searchAction.add(result::onSearch);
