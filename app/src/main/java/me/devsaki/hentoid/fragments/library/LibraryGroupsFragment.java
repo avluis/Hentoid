@@ -52,7 +52,6 @@ import java.util.Set;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -230,22 +229,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         setPagingMethod();
     }
 
-    private String getQuery() {
-        return ((LibraryActivity) requireActivity()).getQuery();
-    }
-
-    private void setQuery(String query) {
-        ((LibraryActivity) requireActivity()).setQuery(query);
-    }
-
-    private List<Attribute> getMetadata() {
-        return ((LibraryActivity) requireActivity()).getMetadata();
-    }
-
-    private void setMetadata(List<Attribute> attrs) {
-        ((LibraryActivity) requireActivity()).setMetadata(attrs);
-    }
-
     public void onSearch(String query) {
         viewModel.searchGroup(Preferences.getGroupingDisplay(), query);
     }
@@ -348,8 +331,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         return true;
     }
 
-    private boolean toggleEditMode() {
-        if (!(requireActivity() instanceof LibraryActivity)) return false;
+    private void toggleEditMode() {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         activity.toggleEditMode();
@@ -362,22 +345,19 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }
 
         setPagingMethod();
-        return true;
     }
 
-    private boolean cancelEditMode() {
-        if (!(requireActivity() instanceof LibraryActivity)) return false;
+    private void cancelEditMode() {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         activity.setEditMode(false);
 
         setPagingMethod();
-        return true;
     }
 
-    private boolean newGroupPrompt() {
+    private void newGroupPrompt() {
         InputDialog.invokeInputDialog(requireActivity(), R.string.new_group_name, groupName -> viewModel.newGroup(Preferences.getGroupingDisplay(), groupName, this::onNewGroupNameExists));
-        return true;
     }
 
     private void onNewGroupNameExists() {
@@ -453,15 +433,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             ToastUtil.toast(R.string.group_name_exists);
             LibraryGroupsFragment.this.editSelectedItemName();
         });
-    }
-
-    /**
-     * Indicates whether a search query is active (using universal search or advanced search) or not
-     *
-     * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
-     */
-    private boolean isSearchQueryActive() {
-        return ((LibraryActivity) requireActivity()).isSearchQueryActive();
     }
 
     @Override

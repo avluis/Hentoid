@@ -395,8 +395,8 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         });
     }
 
-    private boolean toggleEditMode() {
-        if (!(requireActivity() instanceof LibraryActivity)) return false;
+    private void toggleEditMode() {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         activity.toggleEditMode();
@@ -424,16 +424,14 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         }
 
         setPagingMethod(Preferences.getEndlessScroll(), activity.isEditMode());
-        return true;
     }
 
-    private boolean cancelEditMode() {
-        if (!(requireActivity() instanceof LibraryActivity)) return false;
+    private void cancelEditMode() {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         activity.setEditMode(false);
         setPagingMethod(Preferences.getEndlessScroll(), false);
-        return true;
     }
 
     private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
@@ -1044,10 +1042,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
 
     // TODO doc
     private void onGroupChanged(Group group) {
-        if (group != null)
-            this.group = group;
-        else
-            this.group = null;
+        this.group = group;
     }
 
     /**
