@@ -282,7 +282,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
-                    .inflate(R.menu.library_sort_menu, popup.getMenu());
+                    .inflate(R.menu.library_books_sort_menu, popup.getMenu());
             popup.getMenu().findItem(R.id.sort_custom).setVisible(group.hasCustomBookOrder);
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text

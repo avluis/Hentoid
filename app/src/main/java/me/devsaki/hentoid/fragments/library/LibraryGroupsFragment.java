@@ -60,7 +60,6 @@ import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.GroupDisplayItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
@@ -184,10 +183,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         // Sort controls
         sortDirectionButton = activity.getSortDirectionButton();
-        sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
+        sortDirectionButton.setImageResource(Preferences.isGroupSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
         sortDirectionButton.setOnClickListener(v -> {
-            boolean sortDesc = !Preferences.isContentSortDesc();
-            Preferences.setContentSortDesc(sortDesc);
+            boolean sortDesc = !Preferences.isGroupSortDesc();
+            Preferences.setGroupSortDesc(sortDesc);
             // Update icon
             sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
             // Run a new search
@@ -195,22 +194,19 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             activity.sortCommandsAutoHide(true, null);
         });
         sortFieldButton = activity.getSortFieldButton();
-        sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
+        sortFieldButton.setText(getNameFromFieldCode(Preferences.getGroupSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
-                    .inflate(R.menu.library_sort_menu, popup.getMenu());
+                    .inflate(R.menu.library_groups_sort_menu, popup.getMenu());
             popup.getMenu().findItem(R.id.sort_custom).setVisible(Preferences.getGroupingDisplay().canReorderGroups());
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text
                 sortFieldButton.setText(item.getTitle());
                 item.setChecked(true);
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
-                if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM)
-                    RandomSeedSingleton.getInstance().renewSeed();
-
-                Preferences.setContentSortField(fieldCode);
+                Preferences.setGroupSortField(fieldCode);
                 // Run a new search
                 viewModel.updateOrder();
                 activity.sortCommandsAutoHide(true, popup);
@@ -230,27 +226,17 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     public void onSearch(String query) {
-        viewModel.searchGroup(Preferences.getGroupingDisplay(), query);
+        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField());
     }
 
     private int getFieldCodeFromMenuId(@IdRes int menuId) {
         switch (menuId) {
             case (R.id.sort_title):
                 return Preferences.Constant.ORDER_FIELD_TITLE;
-            case (R.id.sort_artist):
-                return Preferences.Constant.ORDER_FIELD_ARTIST;
-            case (R.id.sort_pages):
-                return Preferences.Constant.ORDER_FIELD_NB_PAGES;
-            case (R.id.sort_dl_date):
-                return Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE;
-            case (R.id.sort_read_date):
-                return Preferences.Constant.ORDER_FIELD_READ_DATE;
-            case (R.id.sort_reads):
-                return Preferences.Constant.ORDER_FIELD_READS;
-            case (R.id.sort_size):
-                return Preferences.Constant.ORDER_FIELD_SIZE;
-            case (R.id.sort_random):
-                return Preferences.Constant.ORDER_FIELD_RANDOM;
+            case (R.id.sort_books):
+                return Preferences.Constant.ORDER_FIELD_CHILDREN;
+            case (R.id.sort_custom):
+                return Preferences.Constant.ORDER_FIELD_CUSTOM;
             default:
                 return Preferences.Constant.ORDER_FIELD_NONE;
         }
@@ -260,20 +246,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         switch (prefFieldCode) {
             case (Preferences.Constant.ORDER_FIELD_TITLE):
                 return R.string.sort_title;
-            case (Preferences.Constant.ORDER_FIELD_ARTIST):
-                return R.string.sort_artist;
-            case (Preferences.Constant.ORDER_FIELD_NB_PAGES):
-                return R.string.sort_pages;
-            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
-                return R.string.sort_dl_date;
-            case (Preferences.Constant.ORDER_FIELD_READ_DATE):
-                return R.string.sort_read_date;
-            case (Preferences.Constant.ORDER_FIELD_READS):
-                return R.string.sort_reads;
-            case (Preferences.Constant.ORDER_FIELD_SIZE):
-                return R.string.sort_size;
-            case (Preferences.Constant.ORDER_FIELD_RANDOM):
-                return R.string.sort_random;
+            case (Preferences.Constant.ORDER_FIELD_CHILDREN):
+                return R.string.sort_books;
+            case (Preferences.Constant.ORDER_FIELD_CUSTOM):
+                return R.string.sort_custom;
             default:
                 return R.string.sort_invalid;
         }
@@ -340,7 +316,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         // Leave edit mode by validating => Save new item position
         if (!activity.isEditMode()) {
             viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
-            Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
+            Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
             sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
         }
 

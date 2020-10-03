@@ -196,6 +196,26 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getGroupSortField() {
+        return sharedPreferences.getInt(Key.PREF_ORDER_GROUP_FIELD, Default.PREF_ORDER_GROUP_FIELD);
+    }
+
+    public static void setGroupSortField(int sortField) {
+        sharedPreferences.edit()
+                .putInt(Key.PREF_ORDER_GROUP_FIELD, sortField)
+                .apply();
+    }
+
+    public static boolean isGroupSortDesc() {
+        return sharedPreferences.getBoolean(Key.PREF_ORDER_GROUP_DESC, Default.PREF_ORDER_GROUP_DESC);
+    }
+
+    public static void setGroupSortDesc(boolean isDesc) {
+        sharedPreferences.edit()
+                .putBoolean(Key.PREF_ORDER_GROUP_DESC, isDesc)
+                .apply();
+    }
+
     public static int getAttributesSortOrder() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_ORDER_ATTRIBUTE_LISTS, Default.PREF_ORDER_ATTRIBUTES_DEFAULT + "") + "");
     }
@@ -540,6 +560,8 @@ public final class Preferences {
         static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String PREF_ORDER_CONTENT_FIELD = "pref_order_content_field";
         static final String PREF_ORDER_CONTENT_DESC = "pref_order_content_desc";
+        static final String PREF_ORDER_GROUP_FIELD = "pref_order_group_field";
+        static final String PREF_ORDER_GROUP_DESC = "pref_order_group_desc";
         static final String PREF_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String PREF_FIRST_RUN = "pref_first_run";
         public static final String PREF_DRAWER_SOURCES = "pref_drawer_sources";
@@ -613,7 +635,9 @@ public final class Preferences {
 
         static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
         static final int PREF_ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
+        static final int PREF_ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
         static final boolean PREF_ORDER_CONTENT_DESC = false;
+        static final boolean PREF_ORDER_GROUP_DESC = false;
         static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
@@ -686,6 +710,7 @@ public final class Preferences {
         public static final int ORDER_FIELD_READ_DATE = 5;
         public static final int ORDER_FIELD_READS = 6;
         public static final int ORDER_FIELD_SIZE = 7;
+        public static final int ORDER_FIELD_CHILDREN = 8; // Groups only
         public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 

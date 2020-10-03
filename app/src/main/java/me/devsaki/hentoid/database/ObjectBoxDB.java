@@ -1017,9 +1017,9 @@ public class ObjectBoxDB {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
         if (query != null) qb.contains(Group_.name, query);
 
-        if (0 == orderStyle) qb.order(Group_.name);
+        if (Preferences.Constant.ORDER_FIELD_TITLE == orderStyle) qb.order(Group_.name);
             // Order by number of children is done by the DAO
-        else if (2 == orderStyle) qb.order(Group_.order);
+        else if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderStyle) qb.order(Group_.order);
 
         return qb.build();
     }

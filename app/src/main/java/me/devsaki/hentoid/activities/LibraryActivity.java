@@ -137,7 +137,7 @@ public class LibraryActivity extends BaseActivity {
 
     private ViewPager2 viewPager;
 
-    // === SEARCH CALLBACKS
+    // === FRAGMENT CALLBACKS
     private List<Consumer<String>> searchAction = new ArrayList<>();
     private List<Runnable> advSearchAction = new ArrayList<>();
 
@@ -159,7 +159,7 @@ public class LibraryActivity extends BaseActivity {
     private String query = "";
     // Current metadata search query
     private List<Attribute> metadata = Collections.emptyList();
-    // TODO doc
+    // True if item positioning edit mode is on (only available for specific groupings)
     private boolean editMode = false;
 
 
@@ -350,6 +350,7 @@ public class LibraryActivity extends BaseActivity {
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
+                hideSearchSortBar(false);
                 updateToolbar();
                 updateSelectionToolbar(0, 0);
             }

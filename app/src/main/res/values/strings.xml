@@ -278,6 +278,7 @@
     <string name="sort_random">Random</string>
     <string name="sort_custom">Custom</string>
     <string name="sort_invalid">-invalid-</string>
+    <string name="sort_books">Number of books</string>
     <!-- Item card tooltips -->
     <string name="drag_help">Drag item</string>
     <string name="view_source_help">View source in browser</string>
