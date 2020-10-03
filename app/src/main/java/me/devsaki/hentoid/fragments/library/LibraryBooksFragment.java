@@ -264,8 +264,25 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
         LibraryActivity activity = ((LibraryActivity) requireActivity());
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
 
-        // Sort controls
         sortDirectionButton = activity.getSortDirectionButton();
+        sortFieldButton = activity.getSortFieldButton();
+
+        // RecyclerView
+        recyclerView = requireViewById(rootView, R.id.library_list);
+        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
+        new FastScrollerBuilder(recyclerView).build();
+
+        // Pager
+        pager.initUI(rootView);
+        setPagingMethod(Preferences.getEndlessScroll(), false);
+
+        updateSortControls();
+    }
+
+    public void updateSortControls() {
+        LibraryActivity activity = ((LibraryActivity) requireActivity());
+
+        // Sort controls
         sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
         sortDirectionButton.setOnClickListener(v -> {
             boolean sortDesc = !Preferences.isContentSortDesc();
@@ -276,7 +293,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             viewModel.updateOrder();
             activity.sortCommandsAutoHide(true, null);
         });
-        sortFieldButton = activity.getSortFieldButton();
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
@@ -301,15 +317,6 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             popup.show(); //showing popup menu
             activity.sortCommandsAutoHide(true, popup);
         }); //closing the setOnClickListener method
-
-        // RecyclerView
-        recyclerView = requireViewById(rootView, R.id.library_list);
-        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
-        new FastScrollerBuilder(recyclerView).build();
-
-        // Pager
-        pager.initUI(rootView);
-        setPagingMethod(Preferences.getEndlessScroll(), false);
     }
 
     private String getQuery() {

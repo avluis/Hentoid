@@ -179,10 +179,26 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      */
     private void initUI(@NonNull View rootView) {
         LibraryActivity activity = ((LibraryActivity) requireActivity());
+
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
+        sortDirectionButton = activity.getSortDirectionButton();
+        sortFieldButton = activity.getSortFieldButton();
+
+        // RecyclerView
+        recyclerView = requireViewById(rootView, R.id.library_list);
+        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
+        new FastScrollerBuilder(recyclerView).build();
+
+        // Pager
+        setPagingMethod();
+
+        updateSortControls();
+    }
+
+    public void updateSortControls() {
+        LibraryActivity activity = ((LibraryActivity) requireActivity());
 
         // Sort controls
-        sortDirectionButton = activity.getSortDirectionButton();
         sortDirectionButton.setImageResource(Preferences.isGroupSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
         sortDirectionButton.setOnClickListener(v -> {
             boolean sortDesc = !Preferences.isGroupSortDesc();
@@ -193,7 +209,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             viewModel.updateOrder();
             activity.sortCommandsAutoHide(true, null);
         });
-        sortFieldButton = activity.getSortFieldButton();
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getGroupSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
@@ -215,14 +230,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             popup.show(); //showing popup menu
             activity.sortCommandsAutoHide(true, popup);
         }); //closing the setOnClickListener method
-
-        // RecyclerView
-        recyclerView = requireViewById(rootView, R.id.library_list);
-        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
-        new FastScrollerBuilder(recyclerView).build();
-
-        // Pager
-        setPagingMethod();
     }
 
     public void onSearch(String query) {
@@ -560,14 +567,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         // Refresh groups
         // TODO do we really want to do that, especially when deleting content ?
         viewModel.setGrouping(Preferences.getGroupingDisplay());
-    }
-
-    /**
-     * Update the screen title according to current search filter (#TOTAL BOOKS) if no filter is
-     * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
-     */
-    private void updateTitle(long totalSelectedCount, long totalCount) {
-        ((LibraryActivity) requireActivity()).updateTitle(totalSelectedCount, totalCount);
     }
 
     /**

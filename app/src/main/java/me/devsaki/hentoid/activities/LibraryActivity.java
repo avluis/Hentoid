@@ -140,6 +140,7 @@ public class LibraryActivity extends BaseActivity {
     // === FRAGMENT CALLBACKS
     private List<Consumer<String>> searchAction = new ArrayList<>();
     private List<Runnable> advSearchAction = new ArrayList<>();
+    private List<Runnable> updateSortControlsAction = new ArrayList<>();
 
     // === NOTIFICATIONS
     // Deletion activities
@@ -269,6 +270,11 @@ public class LibraryActivity extends BaseActivity {
         EventBus.getDefault().unregister(this);
         if (archiveNotificationManager != null) archiveNotificationManager.cancel();
         if (deleteNotificationManager != null) deleteNotificationManager.cancel();
+
+        searchAction.clear();
+        advSearchAction.clear();
+        updateSortControlsAction.clear();
+
         super.onDestroy();
     }
 
@@ -361,6 +367,7 @@ public class LibraryActivity extends BaseActivity {
 
     private void updateDisplay() {
         searchAction.clear();
+        updateSortControlsAction.clear();
         FragmentStateAdapter pagerAdapter = new LibraryPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
         pagerAdapter.notifyDataSetChanged();
@@ -659,6 +666,9 @@ public class LibraryActivity extends BaseActivity {
         Grouping currentGrouping = Preferences.getGroupingDisplay();
         if (isGroupDisplayed()) editMenu.setVisible(currentGrouping.canReorderGroups());
         else editMenu.setVisible(currentGrouping.canReorderBooks());
+
+        if (updateSortControlsAction.size() > viewPager.getCurrentItem())
+            updateSortControlsAction.get(viewPager.getCurrentItem()).run();
     }
 
     public void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
@@ -830,11 +840,13 @@ public class LibraryActivity extends BaseActivity {
                 if (0 == position) {
                     LibraryGroupsFragment result = new LibraryGroupsFragment();
                     searchAction.add(result::onSearch);
+                    updateSortControlsAction.add(result::updateSortControls);
                     return result;
                 } else {
                     LibraryBooksFragment result = new LibraryBooksFragment();
                     searchAction.add(result::onSearch);
                     advSearchAction.add(result::onAdvancedSearchButtonClick);
+                    updateSortControlsAction.add(result::updateSortControls);
                     return result;
                 }
             }
