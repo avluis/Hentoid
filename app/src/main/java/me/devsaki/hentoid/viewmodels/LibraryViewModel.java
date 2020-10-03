@@ -127,7 +127,7 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Perform a new library search
      */
-    private void performSearch() {
+    private void performContentSearch() {
         if (currentSource != null) libraryPaged.removeSource(currentSource);
 
         searchManager.setContentSortField(Preferences.getContentSortField());
@@ -139,28 +139,39 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
-     * Perform a new universal search using the given query
+     * Perform a new content universal search using the given query
      *
      * @param query Query to use for the universal search
      */
-    public void searchUniversal(@NonNull String query) {
+    public void searchContentUniversal(@NonNull String query) {
         searchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
         searchManager.setQuery(query);
         newSearch.setValue(true);
-        performSearch();
+        performContentSearch();
     }
 
     /**
-     * Perform a new search using the given query and metadata
+     * Perform a new content search using the given query and metadata
      *
      * @param query    Query to use for the search
      * @param metadata Metadata to use for the search
      */
-    public void search(@NonNull String query, @NonNull List<Attribute> metadata) {
+    public void searchContent(@NonNull String query, @NonNull List<Attribute> metadata) {
         searchManager.setQuery(query);
         searchManager.setTags(metadata);
         newSearch.setValue(true);
-        performSearch();
+        performContentSearch();
+    }
+
+    /**
+     * Perform a new group search using the given query
+     *
+     * @param query    Query to use for the search
+     */
+    public void searchGroup(Grouping grouping, @NonNull String query) {
+        if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
+        currentGroupsSource = dao.selectGroups(grouping.getId(), query, 0);
+        groups.addSource(currentGroupsSource, groups::setValue);
     }
 
     /**
@@ -169,7 +180,7 @@ public class LibraryViewModel extends AndroidViewModel {
     public void toggleFavouriteFilter() {
         searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
         newSearch.setValue(true);
-        performSearch();
+        performContentSearch();
     }
 
     /**
@@ -178,7 +189,7 @@ public class LibraryViewModel extends AndroidViewModel {
     public void setPagingMethod(boolean isEndless) {
         searchManager.setLoadAll(!isEndless);
         newSearch.setValue(true);
-        performSearch();
+        performContentSearch();
     }
 
     /**
@@ -186,7 +197,7 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void updateOrder() {
         newSearch.setValue(true);
-        performSearch();
+        performContentSearch();
     }
 
     public void setGroup(Group group) {
@@ -195,12 +206,12 @@ public class LibraryViewModel extends AndroidViewModel {
         newSearch.setValue(true);
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?
-        performSearch();
+        performContentSearch();
     }
 
     public void setGrouping(Grouping grouping) {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping.getId(), 0);
+        currentGroupsSource = dao.selectGroups(grouping.getId(), null, 0);
         groups.addSource(currentGroupsSource, groups::setValue);
     }
 

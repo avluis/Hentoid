@@ -329,7 +329,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
     }
 
     public void onSearch(String query) {
-        viewModel.searchUniversal(query);
+        viewModel.searchContentUniversal(query);
     }
 
     private int getFieldCodeFromMenuId(@IdRes int menuId) {
@@ -775,7 +775,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             if (searchUri != null) {
                 setQuery(searchUri.getPath());
                 setMetadata(SearchActivityBundle.Parser.parseSearchUri(searchUri));
-                viewModel.search(getQuery(), getMetadata());
+                viewModel.searchContent(getQuery(), getMetadata());
             }
         }
     }

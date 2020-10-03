@@ -247,7 +247,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     public void onSearch(String query) {
-        viewModel.searchUniversal(query);
+        viewModel.searchGroup(Preferences.getGroupingDisplay(), query);
     }
 
     private int getFieldCodeFromMenuId(@IdRes int menuId) {

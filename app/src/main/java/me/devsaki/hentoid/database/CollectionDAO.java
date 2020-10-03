@@ -91,7 +91,7 @@ public interface CollectionDAO {
 
     // Groups
 
-    LiveData<List<Group>> selectGroups(int grouping, int orderStyle);
+    LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderStyle);
     List<Group> selectGroups(int grouping);
 
     @Nullable

@@ -828,8 +828,7 @@ public class LibraryActivity extends BaseActivity {
             } else {
                 if (0 == position) {
                     LibraryGroupsFragment result = new LibraryGroupsFragment();
-                    // TODO search for groups
-//                    searchAction.add(result::onSearch);
+                    searchAction.add(result::onSearch);
                     return result;
                 } else {
                     LibraryBooksFragment result = new LibraryBooksFragment();

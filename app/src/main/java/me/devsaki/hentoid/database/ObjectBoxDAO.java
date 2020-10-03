@@ -311,12 +311,12 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public List<Group> selectGroups(int grouping) {
-        return db.selectGroupsQ(grouping, 0).find();
+        return db.selectGroupsQ(grouping, null, 0).find();
     }
 
     @Override
-    public LiveData<List<Group>> selectGroups(int grouping, int orderStyle) {
-        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, orderStyle));
+    public LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderStyle) {
+        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderStyle));
 
         // Order by number of children (ObjectBox can't do that natively)
         if (1 == orderStyle) {
