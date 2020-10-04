@@ -34,14 +34,25 @@
         android:id="@+id/export_favs_only"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:layout_marginStart="32dp"
-        android:switchPadding = "10dp"
+        android:switchPadding="10dp"
         android:text="@string/export_favs_only"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/export_file_library_chk"
-        tools:visibility="visible"
-        />
+        tools:visibility="visible" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/export_groups"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:switchPadding="10dp"
+        android:text="@string/export_groups"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_favs_only"
+        tools:visibility="visible" />
 
     <CheckBox
         android:id="@+id/export_file_queue_chk"
@@ -49,7 +60,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_favs_only"
+        app:layout_constraintTop_toBottomOf="@id/export_groups"
         tools:text="Export queue (235 books)"
         tools:visibility="visible" />
 

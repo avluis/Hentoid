@@ -19,7 +19,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +38,8 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -58,6 +60,7 @@ public class LibExportDialogFragment extends DialogFragment {
     private CheckBox queueChk;
     private CheckBox libraryChk;
     private SwitchMaterial favsChk;
+    private SwitchMaterial groupsChk;
     private View runBtn;
 
     // Variable used during the import process
@@ -96,6 +99,7 @@ public class LibExportDialogFragment extends DialogFragment {
             libraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
             libraryChk.setVisibility(View.VISIBLE);
         }
+        groupsChk = requireViewById(rootView, R.id.export_groups);
         queueChk = requireViewById(rootView, R.id.export_file_queue_chk);
         if (nbQueueBooks > 0) {
             queueChk.setText(getResources().getQuantityString(R.plurals.export_file_queue, (int) nbQueueBooks, (int) nbQueueBooks));
@@ -107,7 +111,7 @@ public class LibExportDialogFragment extends DialogFragment {
         runBtn.setEnabled(false);
         if (0 == nbLibraryBooks + nbLibraryBooks) runBtn.setVisibility(View.GONE);
         else
-            runBtn.setOnClickListener(v -> runExport(libraryChk.isChecked(), favsChk.isChecked(), queueChk.isChecked()));
+            runBtn.setOnClickListener(v -> runExport(libraryChk.isChecked(), favsChk.isChecked(), groupsChk.isChecked(), queueChk.isChecked()));
     }
 
     // Gray out run button if no option is selected
@@ -115,6 +119,7 @@ public class LibExportDialogFragment extends DialogFragment {
     private void refreshDisplay() {
         runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked());
         favsChk.setVisibility(libraryChk.isChecked() ? View.VISIBLE : View.GONE);
+        groupsChk.setVisibility(libraryChk.isChecked() ? View.VISIBLE : View.GONE);
     }
 
     private void refreshFavsDisplay() {
@@ -122,7 +127,11 @@ public class LibExportDialogFragment extends DialogFragment {
         libraryChk.setText(getResources().getQuantityString(R.plurals.export_file_library, (int) nbLibraryBooks, (int) nbLibraryBooks));
     }
 
-    private void runExport(boolean exportLibrary, boolean exportFavsOnly, boolean exportQueue) {
+    private void runExport(
+            boolean exportLibrary,
+            boolean exportFavsOnly,
+            boolean exportCustomGroups,
+            boolean exportQueue) {
         queueChk.setEnabled(false);
         libraryChk.setEnabled(false);
         runBtn.setVisibility(View.GONE);
@@ -135,10 +144,10 @@ public class LibExportDialogFragment extends DialogFragment {
             progressBar.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(requireContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
         progressBar.setVisibility(View.VISIBLE);
 
-        exportDisposable = Single.fromCallable(() -> getExportedCollection(exportLibrary, exportFavsOnly, exportQueue))
+        exportDisposable = Single.fromCallable(() -> getExportedCollection(exportLibrary, exportFavsOnly, exportCustomGroups, exportQueue))
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map(c -> serializeJson(c.left, c.right))
+                .map(c -> serializeJson(c.left, c.middle, c.right))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         s -> onJsonSerialized(s, exportLibrary, exportFavsOnly, exportQueue),
@@ -146,18 +155,21 @@ public class LibExportDialogFragment extends DialogFragment {
                 );
     }
 
-    private ImmutablePair<List<Content>, List<Content>> getExportedCollection(boolean exportLibrary, boolean exportFavsOnly, boolean exportQueue) {
+    private ImmutableTriple<List<Content>, List<Content>, List<Group>> getExportedCollection(boolean exportLibrary, boolean exportFavsOnly, boolean exportCustomgroups, boolean exportQueue) {
         List<Content> library = new ArrayList<>();
         if (exportLibrary) library.addAll(dao.selectAllInternalBooks(exportFavsOnly));
         List<Content> queue = new ArrayList<>();
         if (exportQueue) queue.addAll(dao.selectAllQueueBooks());
-        return new ImmutablePair<>(library, queue);
+        List<Group> groups = new ArrayList<>();
+        if (exportCustomgroups) groups.addAll(dao.selectGroups(Grouping.CUSTOM.getId()));
+        return new ImmutableTriple<>(library, queue, groups);
     }
 
-    private String serializeJson(@NonNull List<Content> library, @NonNull List<Content> queue) {
+    private String serializeJson(@NonNull List<Content> library, @NonNull List<Content> queue, @NonNull List<Group> groups) {
         JsonContentCollection jsonContentCollection = new JsonContentCollection();
         jsonContentCollection.setLibrary(library);
         jsonContentCollection.setQueue(queue);
+        jsonContentCollection.setCustomGroups(groups);
         return JsonHelper.serializeToJson(jsonContentCollection, JsonContentCollection.class);
     }
 
@@ -185,6 +197,7 @@ public class LibExportDialogFragment extends DialogFragment {
             Snackbar.make(rootView, R.string.viewer_copy_fail, LENGTH_LONG).show();
         }
 
+        if (dao != null) dao.cleanup();
         // Dismiss after 3s, for the user to be able to see and use the snackbar
         new Handler().postDelayed(this::dismiss, 3000);
     }
