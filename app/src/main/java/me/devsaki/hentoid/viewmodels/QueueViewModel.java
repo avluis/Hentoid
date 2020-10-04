@@ -158,9 +158,12 @@ public class QueueViewModel extends AndroidViewModel {
                 Observable.fromIterable(content)
                         .observeOn(Schedulers.io())
                         .map(c -> doRemove(c.getId()))
+                        .doOnComplete(this::saveQueue) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> saveQueue(),
+                                v -> {
+                                    // Nothing to do here; UI callbacks are handled through LiveData
+                                },
                                 onError::accept
                         )
         );
@@ -176,6 +179,7 @@ public class QueueViewModel extends AndroidViewModel {
                 Observable.fromIterable(queue)
                         .observeOn(Schedulers.io())
                         .map(qr -> doRemove(qr.content.getTargetId()))
+                        .doOnComplete(this::saveQueue) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> {
