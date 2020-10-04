@@ -26,6 +26,7 @@ import java.util.List;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -322,6 +323,7 @@ public class ImportHelper {
             @NonNull final ContentProviderClient client,
             @NonNull final List<String> parentNames,
             @NonNull final StatusContent targetStatus,
+            @NonNull final CollectionDAO dao,
             @Nullable final List<DocumentFile> imageFiles,
             @Nullable final DocumentFile jsonFile) {
         Timber.d(">>>> scan book folder %s", bookFolder.getUri());
@@ -330,7 +332,7 @@ public class ImportHelper {
         if (jsonFile != null) {
             try {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
-                result = content.toEntity();
+                result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
             } catch (IOException ioe) {
                 Timber.w(ioe);
@@ -376,6 +378,7 @@ public class ImportHelper {
             @NonNull final List<DocumentFile> chapterFolders,
             @NonNull final ContentProviderClient client,
             @NonNull final List<String> parentNames,
+            @NonNull final CollectionDAO dao,
             @Nullable final DocumentFile jsonFile) {
         Timber.d(">>>> scan chapter folder %s", parent.getUri());
 
@@ -383,7 +386,7 @@ public class ImportHelper {
         if (jsonFile != null) {
             try {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
-                result = content.toEntity();
+                result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
             } catch (IOException ioe) {
                 Timber.w(ioe);

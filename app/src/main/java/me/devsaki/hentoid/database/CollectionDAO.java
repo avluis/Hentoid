@@ -100,6 +100,9 @@ public interface CollectionDAO {
     @Nullable
     Group selectGroupByFlag(int grouping, int flag);
 
+    @Nullable
+    Group selectGroupByName(int grouping, @NonNull final String name);
+
     long countGroupsFor(Grouping grouping);
 
     long insertGroup(Group group);

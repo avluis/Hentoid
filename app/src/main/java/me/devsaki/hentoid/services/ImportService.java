@@ -206,7 +206,7 @@ public class ImportService extends IntentService {
 
                 // Detect JSON and try to parse it
                 try {
-                    content = importJson(bookFolder, client);
+                    content = importJson(bookFolder, client, dao);
                     if (content != null) {
                         // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
                         if (existingFlaggedContent != null)
@@ -317,7 +317,7 @@ public class ImportService extends IntentService {
                                     }
                             }
                             // Scan the folder
-                            Content storedContent = ImportHelper.scanBookFolder(this, bookFolder, client, parentFolder, StatusContent.DOWNLOADED, null, null);
+                            Content storedContent = ImportHelper.scanBookFolder(this, bookFolder, client, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
                             DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
                             storedContent.setJsonUri(newJson.getUri().toString());
                             ContentHelper.addContent(dao, storedContent);
@@ -432,9 +432,12 @@ public class ImportService extends IntentService {
     }
 
     @Nullable
-    private Content importJson(@NonNull DocumentFile folder, @NonNull ContentProviderClient client) throws ParseException {
+    private Content importJson(
+            @NonNull DocumentFile folder,
+            @NonNull ContentProviderClient client,
+            @NonNull CollectionDAO dao) throws ParseException {
         DocumentFile file = FileHelper.findFile(this, folder, client, Consts.JSON_FILE_NAME_V2);
-        if (file != null) return importJsonV2(file, folder);
+        if (file != null) return importJsonV2(file, folder, dao);
 
         file = FileHelper.findFile(this, folder, client, Consts.JSON_FILE_NAME);
         if (file != null) return importJsonV1(file, folder);
@@ -555,10 +558,13 @@ public class ImportService extends IntentService {
     }
 
     @CheckResult
-    private Content importJsonV2(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
+    private Content importJsonV2(
+            @NonNull final DocumentFile json,
+            @NonNull final DocumentFile parentFolder,
+            @NonNull final CollectionDAO dao) throws ParseException {
         try {
             JsonContent content = JsonHelper.jsonToObject(this, json, JsonContent.class);
-            Content result = content.toEntity();
+            Content result = content.toEntity(dao);
             result.setJsonUri(json.getUri().toString());
             result.setStorageUri(parentFolder.getUri().toString());
 

@@ -277,6 +277,7 @@ public final class ContentHelper {
                         GroupHelper.insertContent(dao, group, a, content);
                     }
                 } else if (g.equals(Grouping.CUSTOM)) {
+                    // TODO handle persisted custom groups
                     Group group = GroupHelper.getOrCreateUncategorizedGroup(dao);
                     GroupHelper.insertContent(dao, group, null, content);
                 }

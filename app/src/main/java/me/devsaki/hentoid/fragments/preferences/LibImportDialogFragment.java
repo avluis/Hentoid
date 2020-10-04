@@ -209,7 +209,7 @@ public class LibImportDialogFragment extends DialogFragment {
 
             JsonContentCollection collection = collectionOptional.get();
             libraryChk = requireViewById(rootView, R.id.import_file_library_chk);
-            int librarySize = collection.getLibrary().size();
+            int librarySize = collection.getLibrary(null).size(); // Don't link the groups, just count the books
             if (librarySize > 0) {
                 libraryChk.setText(getResources().getQuantityString(R.plurals.import_file_library, librarySize, librarySize));
                 libraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
@@ -264,7 +264,7 @@ public class LibImportDialogFragment extends DialogFragment {
         }
 
         List<Content> all = new ArrayList<>();
-        if (importLibrary) all.addAll(collection.getLibrary());
+        if (importLibrary) all.addAll(collection.getLibrary(dao));
         if (importQueue) all.addAll(collection.getQueue());
 
         totalBooks = all.size();

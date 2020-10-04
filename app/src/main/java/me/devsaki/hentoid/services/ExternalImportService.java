@@ -139,7 +139,7 @@ public class ExternalImportService extends IntentService {
 
             List<Content> library = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
-            scanFolderRecursive(rootFolder, client, new ArrayList<>(), library);
+            scanFolderRecursive(rootFolder, client, new ArrayList<>(), library, dao);
             eventComplete(2, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
@@ -197,7 +197,8 @@ public class ExternalImportService extends IntentService {
             @NonNull final DocumentFile root,
             @NonNull final ContentProviderClient client,
             @NonNull final List<String> parentNames,
-            @NonNull final List<Content> library) {
+            @NonNull final List<Content> library,
+            @NonNull final CollectionDAO dao) {
         if (parentNames.size() > 4) return; // We've descended too far
 
         String rootName = (null == root.getName()) ? "" : root.getName();
@@ -222,12 +223,12 @@ public class ExternalImportService extends IntentService {
                 // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
                 int nbPicturesInside = FileHelper.countFiles(subFolders.get(0), client, ImageHelper.getImageNamesFilter());
                 if (nbPicturesInside > 1) {
-                    library.add(scanChapterFolders(this, root, subFolders, client, parentNames, json));
+                    library.add(scanChapterFolders(this, root, subFolders, client, parentNames, dao, json));
                     return;
                 }
             }
         } else if (images.size() > 2) { // We've got a book !
-            library.add(scanBookFolder(this, root, client, parentNames, StatusContent.EXTERNAL, images, json));
+            library.add(scanBookFolder(this, root, client, parentNames, StatusContent.EXTERNAL, dao, images, json));
             return;
         }
 
@@ -235,7 +236,7 @@ public class ExternalImportService extends IntentService {
         List<String> newParentNames = new ArrayList<>(parentNames);
         newParentNames.add(rootName);
         for (DocumentFile subfolder : subFolders)
-            scanFolderRecursive(subfolder, client, newParentNames, library);
+            scanFolderRecursive(subfolder, client, newParentNames, library, dao);
     }
 
     @Nullable

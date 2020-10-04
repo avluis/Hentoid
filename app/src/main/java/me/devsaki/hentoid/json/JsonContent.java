@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json;
 
+import androidx.annotation.Nullable;
+
 import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
@@ -8,9 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -37,6 +42,7 @@ public class JsonContent {
     private Map<AttributeType, List<JsonAttribute>> attributes;
     private List<JsonImageFile> imageFiles = new ArrayList<>();
     private List<JsonErrorRecord> errorRecords = new ArrayList<>();
+    private List<JsonGroupItem> groups = new ArrayList<>();
 
     private JsonContent() {
     }
@@ -92,10 +98,14 @@ public class JsonContent {
             for (ErrorRecord err : c.getErrorLog())
                 result.errorRecords.add(JsonErrorRecord.fromEntity(err));
 
+        if (c.groupItems != null && !c.groupItems.isEmpty())
+            for (GroupItem gi : c.groupItems)
+                result.groups.add(JsonGroupItem.fromEntity(gi));
+
         return result;
     }
 
-    public Content toEntity() {
+    public Content toEntity(@Nullable final CollectionDAO dao) {
         Content result = new Content();
 
         if (null == site) site = Site.NONE;
@@ -137,6 +147,12 @@ public class JsonContent {
             for (JsonErrorRecord err : errorRecords) errs.add(err.toEntity());
             result.setErrorLog(errs);
         }
+        if (groups != null && dao != null)
+            for (JsonGroupItem gi : groups) {
+                Group group = dao.selectGroupByName(gi.getGroupingId(), gi.getGroupName());
+                if (group != null)
+                    result.groupItems.add(gi.toEntity(result, group));
+            }
 
         result.populateAuthor();
         result.populateUniqueSiteId();

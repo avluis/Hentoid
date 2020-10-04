@@ -340,6 +340,11 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectGroupsByFlagQ(grouping, flag).findFirst();
     }
 
+    @Nullable
+    public Group selectGroupByName(int grouping, @NonNull final String name) {
+        return db.selectGroupByName(grouping, name);
+    }
+
     public long insertGroup(Group group) {
         // Auto-number max order when not provided
         if (-1 == group.order)

@@ -1036,6 +1036,11 @@ public class ObjectBoxDB {
         return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.flag, flag).build();
     }
 
+    @Nullable
+    Group selectGroupByName(int grouping, @NonNull final String name) {
+        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.name, name).build().findFirst();
+    }
+
     void deleteGroup(long groupId) {
         store.boxFor(Group.class).remove(groupId);
     }
