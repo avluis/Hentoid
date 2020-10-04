@@ -252,36 +252,38 @@ public final class ContentHelper {
         long newContentId = dao.insertContent(content);
         content.setId(newContentId);
 
-        // Perform group operations only if the book is in the library (i.e. not queued)
+        // Perform group operations only if
+        //   - the book is in the library (i.e. not queued)
+        //   - the book is linked to no group from the given grouping
         if (Helper.getListFromPrimitiveArray(libraryStatus).contains(content.getStatus().getCode())) {
             List<Grouping> staticGroupings = GroupHelper.getGroupingsToProcess();
-            for (Grouping g : staticGroupings) {
-                if (g.equals(Grouping.ARTIST)) {
-                    int nbGroups = (int) dao.countGroupsFor(g);
-                    AttributeMap attrs = content.getAttributeMap();
-                    List<Attribute> artists = new ArrayList<>();
-                    List<Attribute> sublist = attrs.get(AttributeType.ARTIST);
-                    if (sublist != null)
-                        artists.addAll(sublist);
-                    sublist = attrs.get(AttributeType.CIRCLE);
-                    if (sublist != null)
-                        artists.addAll(sublist);
+            for (Grouping g : staticGroupings)
+                if (content.getGroupItems(g).isEmpty()) {
+                    if (g.equals(Grouping.ARTIST)) {
+                        int nbGroups = (int) dao.countGroupsFor(g);
+                        AttributeMap attrs = content.getAttributeMap();
+                        List<Attribute> artists = new ArrayList<>();
+                        List<Attribute> sublist = attrs.get(AttributeType.ARTIST);
+                        if (sublist != null)
+                            artists.addAll(sublist);
+                        sublist = attrs.get(AttributeType.CIRCLE);
+                        if (sublist != null)
+                            artists.addAll(sublist);
 
-                    for (Attribute a : artists) {
-                        Group group = a.group.getTarget();
-                        if (null == group) {
-                            group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
-                            if (!a.contents.isEmpty())
-                                group.picture.setTarget(a.contents.get(0).getCover());
+                        for (Attribute a : artists) {
+                            Group group = a.group.getTarget();
+                            if (null == group) {
+                                group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
+                                if (!a.contents.isEmpty())
+                                    group.picture.setTarget(a.contents.get(0).getCover());
+                            }
+                            GroupHelper.insertContent(dao, group, a, content);
                         }
-                        GroupHelper.insertContent(dao, group, a, content);
+                    } else if (g.equals(Grouping.CUSTOM)) {
+                        Group group = GroupHelper.getOrCreateUncategorizedGroup(dao); // TODO is that still relevant ?
+                        GroupHelper.insertContent(dao, group, null, content);
                     }
-                } else if (g.equals(Grouping.CUSTOM)) {
-                    // TODO handle persisted custom groups
-                    Group group = GroupHelper.getOrCreateUncategorizedGroup(dao);
-                    GroupHelper.insertContent(dao, group, null, content);
                 }
-            }
         }
 
         return newContentId;

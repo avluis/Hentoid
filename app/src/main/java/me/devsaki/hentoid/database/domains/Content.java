@@ -9,7 +9,7 @@ import com.annimon.stream.Stream;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +41,7 @@ import me.devsaki.hentoid.activities.sources.PorncomixActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
 import me.devsaki.hentoid.activities.sources.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
@@ -715,26 +716,12 @@ public class Content implements Serializable {
         return null;
     }
 
-    public static class GroupItemOrderComparator implements Comparator<Content> {
+    public List<GroupItem> getGroupItems(Grouping grouping) {
+        List<GroupItem> result = new ArrayList<>();
+        for (GroupItem gi : groupItems)
+            if (gi.group.getTarget().grouping.equals(grouping)) result.add(gi);
 
-        private final long groupId;
-
-        public GroupItemOrderComparator(long groupId) {
-            this.groupId = groupId;
-        }
-
-        // TODO performance test on large collections
-        @Override
-        public int compare(Content o1, Content o2) {
-            Integer o1o = Integer.MAX_VALUE;
-            Integer o2o = Integer.MAX_VALUE;
-            GroupItem o1g = o1.getGroupItem(groupId);
-            GroupItem o2g = o2.getGroupItem(groupId);
-            if (o1g != null) o1o = o1g.order;
-            if (o2g != null) o2o = o2g.order;
-
-            return o1o.compareTo(o2o);
-        }
+        return result;
     }
 
 
