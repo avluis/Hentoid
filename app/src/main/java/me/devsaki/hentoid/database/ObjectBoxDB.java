@@ -1045,6 +1045,14 @@ public class ObjectBoxDB {
         store.boxFor(Group.class).remove(groupId);
     }
 
+    void deleteGroupsByGrouping(int groupingId) {
+        store.boxFor(Group.class).query().equal(Group_.grouping, groupingId).build().remove();
+    }
+
+    void deleteGroupItemsByGrouping(int groupingId) {
+        store.boxFor(GroupItem.class).query().link(GroupItem_.group).equal(Group_.grouping, groupingId).build().remove();
+    }
+
 
     /**
      * ONE-SHOT USE QUERIES (MIGRATION & MAINTENANCE)

@@ -109,6 +109,8 @@ public interface CollectionDAO {
 
     void deleteGroup(long groupId);
 
+    void deleteAllGroups(Grouping grouping);
+
     long insertGroupItem(GroupItem item);
 
     List<GroupItem> selectGroupItems(long contentId, Grouping grouping);

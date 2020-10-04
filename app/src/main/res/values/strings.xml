@@ -116,6 +116,7 @@
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
     <string name="book_progress">%1$d / %2$d books</string>
+    <string name="group_progress">%1$d / %2$d groups</string>
 
     <!-- Import metadata -->
     <string name="import_title">Import metadata</string>
@@ -130,6 +131,10 @@
     <plurals name="import_file_queue">
         <item quantity="one">Import queue (%d book)</item>
         <item quantity="other">Import queue (%d books)</item>
+    </plurals>
+    <plurals name="import_file_groups">
+        <item quantity="one">Import custom groups (%d group)</item>
+        <item quantity="other">Import custom groups (%d groups)</item>
     </plurals>
     <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue > Errors.</string>
     <string name="import_run">RUN IMPORT</string>

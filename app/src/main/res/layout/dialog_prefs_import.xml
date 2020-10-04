@@ -93,6 +93,16 @@
         tools:text="Import queue (235 books)"
         tools:visibility="visible" />
 
+    <CheckBox
+        android:id="@+id/import_file_groups_chk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/import_file_queue_chk"
+        tools:text="Import custom groups (23 groups)"
+        tools:visibility="visible" />
+
     <ImageView
         android:id="@+id/import_warning_img"
         android:layout_width="56dp"
@@ -119,7 +129,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/import_warning_img"
-        app:layout_constraintTop_toBottomOf="@id/import_file_queue_chk"
+        app:layout_constraintTop_toBottomOf="@id/import_file_groups_chk"
         tools:visibility="visible" />
 
     <TextView

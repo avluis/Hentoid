@@ -345,6 +345,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectGroupByName(grouping, name);
     }
 
+    // Does NOT check name unicity
     public long insertGroup(Group group) {
         // Auto-number max order when not provided
         if (-1 == group.order)
@@ -358,6 +359,11 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteGroup(long groupId) {
         db.deleteGroup(groupId);
+    }
+
+    public void deleteAllGroups(Grouping grouping) {
+        db.deleteGroupItemsByGrouping(grouping.getId());
+        db.deleteGroupsByGrouping(grouping.getId());
     }
 
     public long insertGroupItem(GroupItem item) {
