@@ -29,22 +29,20 @@ public final class GroupHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    public static final int FLAG_UNCATEGORIZED = 99;
-
 
     public static List<Grouping> getGroupingsToProcess() {
         return Stream.of(Grouping.values()).filter(Grouping::canReorderBooks).toList();
     }
 
-    public static void insertContent(CollectionDAO dao, Group group, Attribute attribute, Content newContent) {
-        insertContent(dao, group, attribute, Stream.of(newContent).toList());
+    public static void addContentToAttributeGroup(CollectionDAO dao, Group group, Attribute attribute, Content newContent) {
+        addContentsToAttributeGroup(dao, group, attribute, Stream.of(newContent).toList());
     }
 
-    public static void insertContent(CollectionDAO dao, Group group, Attribute attribute, List<Content> newContents) {
+    public static void addContentsToAttributeGroup(CollectionDAO dao, Group group, Attribute attribute, List<Content> newContents) {
         int nbContents;
         // Create group if it doesn't exist
         if (0 == group.id) {
-            dao.insertGroup(group);
+            group.id = dao.insertGroup(group);
             if (attribute != null) attribute.group.setAndPutTarget(group);
             nbContents = 0;
         } else {

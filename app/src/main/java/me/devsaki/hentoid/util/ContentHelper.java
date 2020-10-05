@@ -278,7 +278,7 @@ public final class ContentHelper {
                                 if (!a.contents.isEmpty())
                                     group.picture.setTarget(a.contents.get(0).getCover());
                             }
-                            GroupHelper.insertContent(dao, group, a, content);
+                            GroupHelper.addContentToAttributeGroup(dao, group, a, content);
                         }
                     }
                 }
