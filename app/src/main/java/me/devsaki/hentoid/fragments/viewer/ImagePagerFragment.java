@@ -70,7 +70,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant;
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
 //   - independent page mode (currently used for horizontal display)
-public class ImagePagerFragment extends Fragment implements BrowseModeDialogFragment.Parent, BookPrefsDialogFragment.Parent {
+public class ImagePagerFragment extends Fragment implements BrowseModeDialogFragment.Parent, ContentPrefsDialogFragment.Parent {
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
@@ -380,7 +380,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
      * Show the book viewer settings dialog
      */
     private void onBookSettingsClick() {
-        BookPrefsDialogFragment.invoke(this, bookPreferences);
+        ContentPrefsDialogFragment.invoke(this, bookPreferences);
     }
 
     /**

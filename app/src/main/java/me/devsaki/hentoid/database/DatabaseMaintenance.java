@@ -202,14 +202,6 @@ public class DatabaseMaintenance {
                         ImmutableTriple<Group, Attribute, List<Content>> data = new ImmutableTriple<>(group, a, a.contents);
                         toInsert.add(data);
                     }
-                } else if (g.equals(Grouping.CUSTOM)) {
-                    Group group = GroupHelper.getOrCreateUncategorizedGroup(dao);
-                    List<Content> books = db.selectAllInternalBooksQ(false).find();
-                    books.addAll(db.selectAllExternalBooksQ().find());
-                    bookInsertCount += books.size();
-
-                    ImmutableTriple<Group, Attribute, List<Content>> data = new ImmutableTriple<>(group, null, books);
-                    toInsert.add(data);
                 }
             }
 

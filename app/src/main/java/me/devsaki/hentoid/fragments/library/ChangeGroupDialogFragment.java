@@ -24,7 +24,6 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.enums.Grouping;
-import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -78,7 +77,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
             CollectionDAO dao = new ObjectBoxDAO(requireContext());
             try {
                 customGroups = dao.selectGroups(Grouping.CUSTOM.getId());
-                customGroups = Stream.of(customGroups).filterNot(g -> (GroupHelper.FLAG_UNCATEGORIZED == g.flag)).toList();
+                customGroups = Stream.of(customGroups).toList();
 
                 if (customGroups.size() > 0) { // "Existing group" by default
                     existingRadio.setChecked(true);

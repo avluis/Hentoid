@@ -58,7 +58,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
-import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.GroupDisplayItem;
@@ -357,8 +356,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
-            // Work on all groups except the default "Uncategorized" custom group
-            List<Group> selectedGroups = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().filter(g -> g.flag != GroupHelper.FLAG_UNCATEGORIZED).toList();
+            List<Group> selectedGroups = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().toList();
             List<Content> selectedContent = Stream.of(selectedGroups).map(Group::getContents).single();
             // Remove external items if they can't be deleted
             if (!Preferences.isDeleteExternalLibrary()) {

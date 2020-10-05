@@ -98,9 +98,6 @@ public interface CollectionDAO {
     Group selectGroup(long groupId);
 
     @Nullable
-    Group selectGroupByFlag(int grouping, int flag);
-
-    @Nullable
     Group selectGroupByName(int grouping, @NonNull final String name);
 
     long countGroupsFor(Grouping grouping);

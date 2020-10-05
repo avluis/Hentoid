@@ -94,7 +94,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 
-public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
+public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -299,7 +299,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
                     .inflate(R.menu.library_books_sort_menu, popup.getMenu());
-            popup.getMenu().findItem(R.id.sort_custom).setVisible(group.hasCustomBookOrder);
+            popup.getMenu().findItem(R.id.sort_custom).setVisible(group != null && group.hasCustomBookOrder);
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text
                 sortFieldButton.setText(item.getTitle());
@@ -1016,7 +1016,7 @@ public class LibraryBooksFragment extends Fragment implements ErrorsDialogFragme
                     .map(Site::getCode)
                     .collect(toCollection(ArrayList::new));
 
-            SearchBookIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
+            SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
         }
 
         // If the update is the result of a new search, get back on top of the list

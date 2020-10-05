@@ -1032,10 +1032,6 @@ public class ObjectBoxDB {
         return store.boxFor(Group.class).get(groupId);
     }
 
-    Query<Group> selectGroupsByFlagQ(int grouping, int flag) {
-        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.flag, flag).build();
-    }
-
     @Nullable
     Group selectGroupByName(int grouping, @NonNull final String name) {
         return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.name, name, QueryBuilder.StringOrder.CASE_INSENSITIVE).build().findFirst();
@@ -1065,11 +1061,15 @@ public class ObjectBoxDB {
     }
 
     void deleteGroupItemsByGrouping(int groupingId) {
-        store.boxFor(GroupItem.class).query().link(GroupItem_.group).equal(Group_.grouping, groupingId).build().remove();
+        QueryBuilder<GroupItem> qb = store.boxFor(GroupItem.class).query();
+        qb.link(GroupItem_.group).equal(Group_.grouping, groupingId);
+        qb.build().remove();
     }
 
     void deleteGroupItemsByGroup(long groupId) {
-        store.boxFor(GroupItem.class).query().link(GroupItem_.group).equal(Group_.id, groupId).build().remove();
+        QueryBuilder<GroupItem> qb = store.boxFor(GroupItem.class).query();
+        qb.link(GroupItem_.group).equal(Group_.id, groupId);
+        qb.build().remove();
     }
 
 

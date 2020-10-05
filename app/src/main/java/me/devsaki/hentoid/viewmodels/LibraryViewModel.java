@@ -58,15 +58,17 @@ public class LibraryViewModel extends AndroidViewModel {
 
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
-    private LiveData<Integer> totalContent;
+    private final LiveData<Integer> totalContent;
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
     // Groups data
     private MutableLiveData<Group> group = new MutableLiveData<>();
     private LiveData<List<Group>> currentGroupsSource;
     private MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
+    // True if there's at least one existing custom group; false instead
+    private final MutableLiveData<Boolean> isCustomGroupingAvailable = new MutableLiveData<>();
 
     // Updated whenever a new search is performed
-    private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
+    private MediatorLiveData<Boolean> newSearch = new MediatorLiveData<>();
 
 
     public LibraryViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -74,6 +76,7 @@ public class LibraryViewModel extends AndroidViewModel {
         dao = collectionDAO;
         searchManager = new ContentSearchManager(dao);
         totalContent = dao.countAllBooks();
+        isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
     }
 
     public void onSaveState(Bundle outState) {
@@ -114,6 +117,11 @@ public class LibraryViewModel extends AndroidViewModel {
     @NonNull
     public LiveData<Group> getGroup() {
         return group;
+    }
+
+    @NonNull
+    public LiveData<Boolean> isCustomGroupingAvailable() {
+        return isCustomGroupingAvailable;
     }
 
     public Bundle getSearchManagerBundle() {
@@ -312,8 +320,10 @@ public class LibraryViewModel extends AndroidViewModel {
                         .observeOn(Schedulers.io())
                         .map(this::doDeleteItem)
                         .doOnComplete(() -> {
-                            if (!groups.isEmpty())
+                            if (!groups.isEmpty()) {
+                                isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
                                 GroupHelper.updateGroupsJson(getApplication(), dao);
+                            }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -471,7 +481,10 @@ public class LibraryViewModel extends AndroidViewModel {
                     Completable.fromRunnable(() -> dao.insertGroup(new Group(grouping, newGroupName, -1)))
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.io())
-                            .doOnComplete(() -> GroupHelper.updateGroupsJson(getApplication(), dao))
+                            .doOnComplete(() -> {
+                                isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
+                                GroupHelper.updateGroupsJson(getApplication(), dao);
+                            })
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
                                     () -> { // Update is done through LiveData
@@ -496,7 +509,10 @@ public class LibraryViewModel extends AndroidViewModel {
                     Completable.fromRunnable(() -> dao.insertGroup(group))
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.io())
-                            .doOnComplete(() -> GroupHelper.updateGroupsJson(getApplication(), dao))
+                            .doOnComplete(() -> {
+                                isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
+                                GroupHelper.updateGroupsJson(getApplication(), dao);
+                            })
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
                                     () -> { // Update is done through LiveData
@@ -552,6 +568,10 @@ public class LibraryViewModel extends AndroidViewModel {
                         .map(dao::selectContent)
                         .map(c -> doMoveBook(c, group))
                         .doOnNext(c -> ContentHelper.updateContentJson(getApplication(), c))
+                        .doOnComplete(() -> {
+                            isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
+                            GroupHelper.updateGroupsJson(getApplication(), dao);
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> { // Update is done through LiveData

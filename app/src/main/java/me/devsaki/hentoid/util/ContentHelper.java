@@ -280,9 +280,6 @@ public final class ContentHelper {
                             }
                             GroupHelper.insertContent(dao, group, a, content);
                         }
-                    } else if (g.equals(Grouping.CUSTOM)) {
-                        Group group = GroupHelper.getOrCreateUncategorizedGroup(dao); // TODO is that still relevant ?
-                        GroupHelper.insertContent(dao, group, null, content);
                     }
                 }
         }

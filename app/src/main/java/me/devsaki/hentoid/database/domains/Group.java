@@ -28,7 +28,6 @@ public class Group {
     public ToMany<GroupItem> items;
     public ToOne<ImageFile> picture;
     public int order;
-    public int flag;
     public boolean hasCustomBookOrder = false;
 
     // Needs to be in the DB to keep the information when deletion takes a long time
@@ -45,7 +44,6 @@ public class Group {
         this.grouping = grouping;
         this.name = name;
         this.order = order;
-        this.flag = 0;
     }
 
     public List<Content> getContents() {

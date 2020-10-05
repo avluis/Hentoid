@@ -29,7 +29,7 @@ import me.devsaki.hentoid.util.Preferences;
 import static me.devsaki.hentoid.util.Preferences.Key.PREF_VIEWER_BROWSE_MODE;
 import static me.devsaki.hentoid.util.Preferences.Key.PREF_VIEWER_RENDERING;
 
-public final class BookPrefsDialogFragment extends DialogFragment {
+public final class ContentPrefsDialogFragment extends DialogFragment {
 
     private static final String RENDERING_MODE = "render_mode";
     private static final String BROWSE_MODE = "browse_mode";
@@ -40,7 +40,7 @@ public final class BookPrefsDialogFragment extends DialogFragment {
 
 
     public static void invoke(Fragment parent, Map<String, String> bookPrefs) {
-        BookPrefsDialogFragment fragment = new BookPrefsDialogFragment();
+        ContentPrefsDialogFragment fragment = new ContentPrefsDialogFragment();
 
         Bundle args = new Bundle();
         if (bookPrefs.containsKey(PREF_VIEWER_RENDERING))

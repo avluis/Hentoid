@@ -36,16 +36,6 @@ public final class GroupHelper {
         return Stream.of(Grouping.values()).filter(Grouping::canReorderBooks).toList();
     }
 
-    public static Group getOrCreateUncategorizedGroup(CollectionDAO dao) {
-        Group result = dao.selectGroupByFlag(Grouping.CUSTOM.getId(), FLAG_UNCATEGORIZED);
-        if (null == result) {
-            result = new Group(Grouping.CUSTOM, "Uncategorized", 0);
-            result.flag = GroupHelper.FLAG_UNCATEGORIZED;
-            result.id = dao.insertGroup(result);
-        }
-        return result;
-    }
-
     public static void insertContent(CollectionDAO dao, Group group, Attribute attribute, Content newContent) {
         insertContent(dao, group, attribute, Stream.of(newContent).toList());
     }

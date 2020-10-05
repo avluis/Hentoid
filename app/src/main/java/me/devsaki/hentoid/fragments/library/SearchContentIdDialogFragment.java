@@ -25,7 +25,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -34,7 +33,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by Robb on 11/2018
  * Launcher dialog for the library refresh feature
  */
-public class SearchBookIdDialogFragment extends DialogFragment {
+public class SearchContentIdDialogFragment extends DialogFragment {
 
     private static final String ID = "ID";
     private static final String FOUND_SITES = "FOUND_SITES";
@@ -46,7 +45,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
         args.putString(ID, id);
         args.putIntegerArrayList(FOUND_SITES, siteCodes);
 
-        SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
+        SearchContentIdDialogFragment fragment = new SearchContentIdDialogFragment();
         fragment.setArguments(args);
         fragment.show(fragmentManager, null);
     }

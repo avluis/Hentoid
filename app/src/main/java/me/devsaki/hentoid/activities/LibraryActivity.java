@@ -48,7 +48,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
-import me.devsaki.hentoid.fragments.library.LibraryBooksFragment;
+import me.devsaki.hentoid.fragments.library.LibraryContentFragment;
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment;
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment;
 import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification;
@@ -162,6 +162,8 @@ public class LibraryActivity extends BaseActivity {
     private List<Attribute> metadata = Collections.emptyList();
     // True if item positioning edit mode is on (only available for specific groupings)
     private boolean editMode = false;
+    // True if there's at least one existing custom group; false instead
+    private boolean isCustomGroupingAvailable;
 
 
     // Used to auto-hide the sort controls bar when no activity is detected
@@ -241,6 +243,7 @@ public class LibraryActivity extends BaseActivity {
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
+        viewModel.isCustomGroupingAvailable().observe(this, b -> this.isCustomGroupingAvailable = b);
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
@@ -313,6 +316,7 @@ public class LibraryActivity extends BaseActivity {
             PopupMenu popup = new PopupMenu(this, groupsButton);
             popup.getMenuInflater()
                     .inflate(R.menu.library_groups_menu, popup.getMenu());
+            popup.getMenu().findItem(R.id.groups_custom).setVisible(isCustomGroupingAvailable);
             popup.setOnMenuItemClickListener(item -> {
                 item.setChecked(true);
                 int fieldCode = getGroupingCodeFromMenuId(item.getItemId());
@@ -832,7 +836,7 @@ public class LibraryActivity extends BaseActivity {
         @Override
         public Fragment createFragment(int position) {
             if (Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
-                LibraryBooksFragment result = new LibraryBooksFragment();
+                LibraryContentFragment result = new LibraryContentFragment();
                 searchAction.add(result::onSearch);
                 advSearchAction.add(result::onAdvancedSearchButtonClick);
                 return result;
@@ -843,7 +847,7 @@ public class LibraryActivity extends BaseActivity {
                     updateSortControlsAction.add(result::updateSortControls);
                     return result;
                 } else {
-                    LibraryBooksFragment result = new LibraryBooksFragment();
+                    LibraryContentFragment result = new LibraryContentFragment();
                     searchAction.add(result::onSearch);
                     advSearchAction.add(result::onAdvancedSearchButtonClick);
                     updateSortControlsAction.add(result::updateSortControls);
