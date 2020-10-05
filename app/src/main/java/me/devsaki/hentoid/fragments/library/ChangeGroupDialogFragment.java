@@ -51,7 +51,6 @@ public class ChangeGroupDialogFragment extends DialogFragment {
         args.putLongArray(BOOK_IDS, bookIds);
 
         ChangeGroupDialogFragment fragment = new ChangeGroupDialogFragment();
-//        ThemeHelper.setStyle(context, fragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         fragment.setArguments(args);
         fragment.show(fragmentManager, null);
     }
@@ -96,6 +95,8 @@ public class ChangeGroupDialogFragment extends DialogFragment {
                                     break;
                                 }
                             }
+                        else // If no group attached, no need to detach from it (!)
+                            detachRadio.setVisibility(View.GONE);
                     }
 
                 } else { // If none of them exist, "new group" is suggested by default
