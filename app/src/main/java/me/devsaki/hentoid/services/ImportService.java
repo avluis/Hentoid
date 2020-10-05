@@ -177,7 +177,7 @@ public class ImportService extends IntentService {
             // Flag existing groups for cleanup
             dao.flagAllGroups(Grouping.CUSTOM);
 
-            DocumentFile groupsFile = FileHelper.findFile(this, rootFolder, client, Consts.QUEUE_JSON_FILE_NAME);
+            DocumentFile groupsFile = FileHelper.findFile(this, rootFolder, client, Consts.GROUPS_JSON_FILE_NAME);
             if (groupsFile != null) importGroups(groupsFile, dao, log);
             else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
 
