@@ -591,8 +591,10 @@ public class LibraryViewModel extends AndroidViewModel {
         // Create the new links
         if (group != null) {
             GroupItem newGroupItem = new GroupItem(content, group, -1);
-            newGroupItem.id = dao.insertGroupItem(newGroupItem);
-            content.groupItems.add(newGroupItem); // Because content will be persisted on JSON right after that
+            // Use this syntax because content will be persisted on JSON right after that
+            content.groupItems.add(newGroupItem);
+            // Commit new link to the DB
+            content.groupItems.applyChangesToDb();
         }
         // updateContentOrder(); TODO is that necessary when moving when inside custom group ?
         return content;
