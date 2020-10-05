@@ -21,6 +21,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -36,6 +37,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ZipUtil;
@@ -256,7 +258,7 @@ public class LibraryViewModel extends AndroidViewModel {
             theContent.setFavourite(!theContent.isFavourite());
 
             // Persist in it JSON
-            if (!theContent.getJsonUri().isEmpty())
+            if (!theContent.getJsonUri().isEmpty()) // Having an active Content without JSON file shouldn't be possible after the API29 migration
                 ContentHelper.updateContentJson(getApplication(), theContent);
             else ContentHelper.createContentJson(getApplication(), theContent);
 
@@ -309,6 +311,10 @@ public class LibraryViewModel extends AndroidViewModel {
                 Observable.fromIterable(items)
                         .observeOn(Schedulers.io())
                         .map(this::doDeleteItem)
+                        .doOnComplete(() -> {
+                            if (!groups.isEmpty())
+                                GroupHelper.updateGroupsJson(getApplication(), dao);
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 onProgress::accept,
@@ -396,7 +402,22 @@ public class LibraryViewModel extends AndroidViewModel {
         if (group != null) group.picture.setAndPutTarget(cover);
     }
 
-    public void saveContentPositions(List<Content> orderedContent) {
+    public void saveContentPositions(@NonNull final List<Content> orderedContent) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doSaveContentPositions(orderedContent))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.io())
+                        .doOnComplete(() -> GroupHelper.updateGroupsJson(getApplication(), dao))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Update is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    private void doSaveContentPositions(@NonNull final List<Content> orderedContent) {
         Group group = getGroup().getValue();
         if (null == group) return;
 
@@ -414,19 +435,52 @@ public class LibraryViewModel extends AndroidViewModel {
         dao.insertGroup(group);
     }
 
+    public void saveGroupPositions(@NonNull final List<Group> orderedGroups) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doSaveGroupPositions(orderedGroups))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.io())
+                        .doOnComplete(() -> GroupHelper.updateGroupsJson(getApplication(), dao))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Update is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    private void doSaveGroupPositions(@NonNull final List<Group> orderedGroups) {
+        int order = 0;
+        for (Group g : orderedGroups) {
+            g.order = order++;
+            dao.insertGroup(g);
+        }
+    }
+
     public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
         // Check if the group already exists
         List<Group> groups = getGroups().getValue();
         if (null == groups) return;
 
         List<Group> groupMatchingName = Stream.of(groups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
-        if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
-            dao.insertGroup(new Group(grouping, newGroupName, -1));
-        } else {
+        if (!groupMatchingName.isEmpty()) { // Existing group with the same name
             onNameExists.run();
+        } else {
+            compositeDisposable.add(
+                    Completable.fromRunnable(() -> dao.insertGroup(new Group(grouping, newGroupName, -1)))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.io())
+                            .doOnComplete(() -> GroupHelper.updateGroupsJson(getApplication(), dao))
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    () -> { // Update is done through LiveData
+                                    },
+                                    Timber::e
+                            )
+            );
         }
     }
-
 
     public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
         // Check if the group already exists
@@ -434,19 +488,22 @@ public class LibraryViewModel extends AndroidViewModel {
         if (null == groups) return;
 
         List<Group> groupMatchingName = Stream.of(groups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
-        if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
-            group.name = newGroupName;
-            dao.insertGroup(group);
-        } else {
+        if (!groupMatchingName.isEmpty()) { // Existing group with the same name
             onNameExists.run();
-        }
-    }
-
-    public void saveGroupPositions(List<Group> orderedGroups) {
-        int order = 0;
-        for (Group g : orderedGroups) {
-            g.order = order++;
-            dao.insertGroup(g);
+        } else {
+            group.name = newGroupName;
+            compositeDisposable.add(
+                    Completable.fromRunnable(() -> dao.insertGroup(group))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.io())
+                            .doOnComplete(() -> GroupHelper.updateGroupsJson(getApplication(), dao))
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    () -> { // Update is done through LiveData
+                                    },
+                                    Timber::e
+                            )
+            );
         }
     }
 
@@ -489,11 +546,23 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void moveBooks(long[] bookIds, Group group) {
-        List<Content> contents = dao.selectContent(bookIds);
-        for (Content c : contents) moveBook(c, group);
+        compositeDisposable.add(
+                Observable.fromIterable(Helper.getListFromPrimitiveArray(bookIds))
+                        .observeOn(Schedulers.io())
+                        .map(dao::selectContent)
+                        .map(c -> doMoveBook(c, group))
+                        .doOnNext(c -> ContentHelper.updateContentJson(getApplication(), c))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> { // Update is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
     }
 
-    private void moveBook(@NonNull final Content content, @NonNull final Group group) {
+    private Content doMoveBook(@NonNull final Content content, @NonNull final Group group) {
+        Helper.assertNonUiThread();
         // Get all groupItems for custom grouping
         List<GroupItem> groupItems = dao.selectGroupItems(content.getId(), Grouping.CUSTOM);
         // Delete them all
@@ -502,6 +571,8 @@ public class LibraryViewModel extends AndroidViewModel {
 
         // Create the new links
         GroupItem newGroupItem = new GroupItem(content, group, -1);
-        dao.insertGroupItem(newGroupItem);
+        newGroupItem.id = dao.insertGroupItem(newGroupItem);
+        content.groupItems.add(newGroupItem); // Because content will be persisted on JSON right after that
+        return content;
     }
 }

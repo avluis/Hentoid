@@ -395,7 +395,7 @@
     },
     {
       "id": "10:5605025377139576552",
-      "lastPropertyId": "8:3893141455284576703",
+      "lastPropertyId": "9:6155860565053663303",
       "name": "Group",
       "properties": [
         {
@@ -444,6 +444,12 @@
         {
           "id": "8:3893141455284576703",
           "name": "hasCustomBookOrder",
+          "type": 1,
+          "flags": 4
+        },
+        {
+          "id": "9:6155860565053663303",
+          "name": "isFlaggedForDeletion",
           "type": 1,
           "flags": 4
         }

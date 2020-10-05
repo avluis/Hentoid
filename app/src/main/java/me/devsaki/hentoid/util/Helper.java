@@ -201,6 +201,10 @@ public final class Helper {
         }
     }
 
+    public static void runOnscheduler() {
+
+    }
+
     /// <summary>
     /// Format the given duration using the following format
     ///     DDdHH:MM:SS

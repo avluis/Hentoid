@@ -16,7 +16,6 @@ import android.widget.TextView;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
@@ -57,6 +56,7 @@ import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -287,16 +287,16 @@ public class LibImportDialogFragment extends DialogFragment {
             runImportItems(
                     collection.getCustomGroups(),
                     dao,
-                    R.string.group_progress,
-                    () -> runImportItems(contentToImport, dao, R.string.book_progress, this::finish)
+                    true,
+                    () -> runImportItems(contentToImport, dao, false, this::finish)
             );
         else // Run content import alone
-            runImportItems(contentToImport, dao, R.string.book_progress, this::finish);
+            runImportItems(contentToImport, dao, false, this::finish);
     }
 
     private void runImportItems(@NonNull final List<?> items,
                                 @NonNull final CollectionDAO dao,
-                                @StringRes int what,
+                                boolean isGroup,
                                 @NonNull final Runnable onFinish) {
         totalItems = items.size();
         currentProgress = 0;
@@ -306,10 +306,13 @@ public class LibImportDialogFragment extends DialogFragment {
         importDisposable = Observable.fromIterable(items)
                 .observeOn(Schedulers.io())
                 .map(c -> importItem(c, dao))
+                .doOnComplete(() -> {
+                    if (isGroup) GroupHelper.updateGroupsJson(requireContext(), dao);
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        b -> nextOK(what),
-                        e -> nextKO(e, what),
+                        b -> nextOK(isGroup),
+                        e -> nextKO(e, isGroup),
                         onFinish::run
                 );
     }
@@ -400,19 +403,19 @@ public class LibImportDialogFragment extends DialogFragment {
             dao.insertGroup(group);
     }
 
-    private void nextOK(@StringRes int what) {
+    private void nextOK(boolean isGroup) {
         nbSuccess++;
-        updateProgress(what);
+        updateProgress(isGroup);
     }
 
-    private void nextKO(Throwable e, @StringRes int what) {
+    private void nextKO(Throwable e, boolean isGroup) {
         Timber.w(e);
-        updateProgress(what);
+        updateProgress(isGroup);
     }
 
-    private void updateProgress(@StringRes int what) {
+    private void updateProgress(boolean isGroup) {
         currentProgress++;
-        progressTxt.setText(getResources().getString(what, currentProgress, totalItems));
+        progressTxt.setText(getResources().getString(isGroup ? R.string.group_progress : R.string.book_progress, currentProgress, totalItems));
         progressBar.setProgress(currentProgress);
         progressTxt.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.VISIBLE);

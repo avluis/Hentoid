@@ -34,6 +34,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
+import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -299,10 +300,10 @@ public class LibRefreshDialogFragment extends DialogFragment {
     public void onImportEvent(ProcessEvent event) {
         ProgressBar progressBar;
         switch (event.step) {
-            case (2):
+            case (ImportService.STEP_2_BOOK_FOLDERS):
                 progressBar = step2progress;
                 break;
-            case (3):
+            case (ImportService.STEP_3_BOOKS):
                 progressBar = step3progress;
                 break;
             default:
@@ -318,7 +319,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step2Txt.setText(event.elementName);
                 progressBar.setIndeterminate(true);
             }
-            if (3 == event.step) {
+            if (ImportService.STEP_3_BOOKS == event.step) {
                 step2progress.setIndeterminate(false);
                 step2progress.setMax(1);
                 step2progress.setProgress(1);
@@ -326,23 +327,23 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
-            } else if (4 == event.step) {
+            } else if (ImportService.STEP_4_QUEUE == event.step) {
                 step3check.setVisibility(View.VISIBLE);
                 step4block.setVisibility(View.VISIBLE);
             }
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            if (2 == event.step) {
+            if (ImportService.STEP_2_BOOK_FOLDERS == event.step) {
                 step2progress.setIndeterminate(false);
                 step2progress.setMax(1);
                 step2progress.setProgress(1);
                 step2Txt.setVisibility(View.GONE);
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
-            } else if (3 == event.step) {
+            } else if (ImportService.STEP_3_BOOKS == event.step) {
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
                 step3check.setVisibility(View.VISIBLE);
                 step4block.setVisibility(View.VISIBLE);
-            } else if (4 == event.step) {
+            } else if (ImportService.STEP_4_QUEUE == event.step) {
                 step4check.setVisibility(View.VISIBLE);
                 isServiceGracefulClose = true;
                 dismiss();

@@ -27,11 +27,15 @@ class JsonGroupItem {
         return new GroupItem(content, group, order);
     }
 
-    public Integer getGroupingId() {
+    public int getGroupingId() {
         return groupingId;
     }
 
     public String getGroupName() {
         return groupName;
+    }
+
+    public int getOrder() {
+        return order;
     }
 }

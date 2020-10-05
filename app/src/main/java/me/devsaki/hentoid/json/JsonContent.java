@@ -18,6 +18,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
@@ -150,8 +151,13 @@ public class JsonContent {
         if (groups != null && dao != null)
             for (JsonGroupItem gi : groups) {
                 Group group = dao.selectGroupByName(gi.getGroupingId(), gi.getGroupName());
-                if (group != null)
+                if (group != null) // Group already exists
                     result.groupItems.add(gi.toEntity(result, group));
+                else if (gi.getGroupingId() == Grouping.CUSTOM.getId()) { // Create group from scratch
+                    Group newGroup = new Group(Grouping.CUSTOM, gi.getGroupName(), -1);
+                    newGroup.id = dao.insertGroup(newGroup);
+                    result.groupItems.add(gi.toEntity(result, newGroup));
+                }
             }
 
         result.populateAuthor();

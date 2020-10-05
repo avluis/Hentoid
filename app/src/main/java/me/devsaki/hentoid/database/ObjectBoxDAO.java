@@ -363,7 +363,22 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteAllGroups(Grouping grouping) {
         db.deleteGroupItemsByGrouping(grouping.getId());
-        db.deleteGroupsByGrouping(grouping.getId());
+        db.selectGroupsByGroupingQ(grouping.getId()).remove();
+    }
+
+    public void flagAllGroups(Grouping grouping) {
+        db.flagGroupsById(db.selectGroupsByGroupingQ(grouping.getId()).findIds(), true);
+    }
+
+    public void deleteAllFlaggedGroups() {
+        Query<Group> flaggedGroups = db.selectFlaggedGroupsQ();
+
+        // Delete related GroupItems first
+        List<Group> groups = flaggedGroups.find();
+        for (Group g : groups) db.deleteGroupItemsByGroup(g.id);
+
+        // Actually delete the Group
+        flaggedGroups.remove(); // TODO allowed operation ?
     }
 
     public long insertGroupItem(GroupItem item) {

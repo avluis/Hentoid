@@ -1,7 +1,14 @@
 package me.devsaki.hentoid.util;
 
-import com.annimon.stream.Stream;
+import android.content.Context;
 
+import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
+
+import com.annimon.stream.Stream;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+
+import java.io.IOException;
 import java.util.List;
 
 import me.devsaki.hentoid.database.CollectionDAO;
@@ -10,6 +17,8 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.enums.Grouping;
+import me.devsaki.hentoid.json.JsonContentCollection;
+import timber.log.Timber;
 
 /**
  * Utility class for Content-related operations
@@ -32,7 +41,7 @@ public final class GroupHelper {
         if (null == result) {
             result = new Group(Grouping.CUSTOM, "Uncategorized", 0);
             result.flag = GroupHelper.FLAG_UNCATEGORIZED;
-            result.id =  dao.insertGroup(result);
+            result.id = dao.insertGroup(result);
         }
         return result;
     }
@@ -55,5 +64,29 @@ public final class GroupHelper {
             GroupItem item = new GroupItem(book, group, nbContents++);
             dao.insertGroupItem(item);
         }
+    }
+
+    public static boolean updateGroupsJson(@NonNull Context context, @NonNull CollectionDAO dao) {
+        Helper.assertNonUiThread();
+        List<Group> customGroups = dao.selectGroups(Grouping.CUSTOM.getId());
+        // Save custom groups (to be able to restore them in case the app gets uninstalled)
+        JsonContentCollection contentCollection = new JsonContentCollection();
+        contentCollection.setCustomGroups(customGroups);
+
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        if (null == rootFolder) return false;
+
+        try {
+            JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.GROUPS_JSON_FILE_NAME);
+        } catch (IOException | IllegalArgumentException e) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/groups.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/groups.json at /storage/emulated/0/.Hentoid/groups.json")
+            Timber.e(e);
+            FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+            crashlytics.recordException(e);
+            return false;
+        }
+        return true;
     }
 }

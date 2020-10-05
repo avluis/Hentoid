@@ -1038,19 +1038,38 @@ public class ObjectBoxDB {
 
     @Nullable
     Group selectGroupByName(int grouping, @NonNull final String name) {
-        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.name, name).build().findFirst();
+        return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.name, name, QueryBuilder.StringOrder.CASE_INSENSITIVE).build().findFirst();
     }
 
     void deleteGroup(long groupId) {
         store.boxFor(Group.class).remove(groupId);
     }
 
-    void deleteGroupsByGrouping(int groupingId) {
-        store.boxFor(Group.class).query().equal(Group_.grouping, groupingId).build().remove();
+    Query<Group> selectGroupsByGroupingQ(int groupingId) {
+        return store.boxFor(Group.class).query().equal(Group_.grouping, groupingId).build();
+    }
+
+    Query<Group> selectFlaggedGroupsQ() {
+        return store.boxFor(Group.class).query().equal(Group_.isFlaggedForDeletion, true).build();
+    }
+
+    void flagGroupsById(long[] groupId, boolean flag) {
+        Box<Group> groupBox = store.boxFor(Group.class);
+        for (long id : groupId) {
+            Group g = groupBox.get(id);
+            if (g != null) {
+                g.setFlaggedForDeletion(flag);
+                groupBox.put(g);
+            }
+        }
     }
 
     void deleteGroupItemsByGrouping(int groupingId) {
         store.boxFor(GroupItem.class).query().link(GroupItem_.group).equal(Group_.grouping, groupingId).build().remove();
+    }
+
+    void deleteGroupItemsByGroup(long groupId) {
+        store.boxFor(GroupItem.class).query().link(GroupItem_.group).equal(Group_.id, groupId).build().remove();
     }
 
 

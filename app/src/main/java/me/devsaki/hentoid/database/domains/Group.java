@@ -34,6 +34,8 @@ public class Group {
     // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON
     private boolean isBeingDeleted = false;
+    // Useful only during cleanup operations; no need to get it into the JSON
+    private boolean isFlaggedForDeletion = false;
 
 
     public Group() {
@@ -70,6 +72,13 @@ public class Group {
         this.isBeingDeleted = isBeingDeleted;
     }
 
+    public boolean isFlaggedForDeletion() {
+        return isFlaggedForDeletion;
+    }
+
+    public void setFlaggedForDeletion(boolean flaggedForDeletion) {
+        isFlaggedForDeletion = flaggedForDeletion;
+    }
 
     @Override
     public boolean equals(Object o) {

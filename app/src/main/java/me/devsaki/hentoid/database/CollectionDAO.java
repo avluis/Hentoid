@@ -111,11 +111,13 @@ public interface CollectionDAO {
 
     void deleteAllGroups(Grouping grouping);
 
+    void flagAllGroups(Grouping grouping);
+
+    void deleteAllFlaggedGroups();
+
     long insertGroupItem(GroupItem item);
 
     List<GroupItem> selectGroupItems(long contentId, Grouping grouping);
-
-    void deleteGroupItem(long groupItemId);
 
     void deleteGroupItems(List<Long> groupItemIds);
 
