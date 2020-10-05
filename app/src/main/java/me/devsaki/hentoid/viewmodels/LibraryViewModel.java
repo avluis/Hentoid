@@ -555,13 +555,13 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
-    public void moveBooks(long[] bookIds, String newGroupName) {
+    public void moveBooksToNew(long[] bookIds, String newGroupName) {
         Group newGroup = new Group(Grouping.CUSTOM, newGroupName.trim(), -1);
         newGroup.id = dao.insertGroup(newGroup);
         moveBooks(bookIds, newGroup);
     }
 
-    public void moveBooks(long[] bookIds, Group group) {
+    public void moveBooks(long[] bookIds, @Nullable final Group group) {
         compositeDisposable.add(
                 Observable.fromIterable(Helper.getListFromPrimitiveArray(bookIds))
                         .observeOn(Schedulers.io())
@@ -581,7 +581,7 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    private Content doMoveBook(@NonNull final Content content, @NonNull final Group group) {
+    private Content doMoveBook(@NonNull final Content content, @Nullable final Group group) {
         Helper.assertNonUiThread();
         // Get all groupItems for custom grouping
         List<GroupItem> groupItems = dao.selectGroupItems(content.getId(), Grouping.CUSTOM);
@@ -590,9 +590,11 @@ public class LibraryViewModel extends AndroidViewModel {
             dao.deleteGroupItems(Stream.of(groupItems).map(gi -> gi.id).toList());
 
         // Create the new links
-        GroupItem newGroupItem = new GroupItem(content, group, -1);
-        newGroupItem.id = dao.insertGroupItem(newGroupItem);
-        content.groupItems.add(newGroupItem); // Because content will be persisted on JSON right after that
+        if (group != null) {
+            GroupItem newGroupItem = new GroupItem(content, group, -1);
+            newGroupItem.id = dao.insertGroupItem(newGroupItem);
+            content.groupItems.add(newGroupItem); // Because content will be persisted on JSON right after that
+        }
         return content;
     }
 }

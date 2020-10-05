@@ -43,6 +43,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
     private PowerSpinnerView existingSpin;
     private RadioButton newRadio;
     private EditText newNameTxt;
+    private RadioButton detachRadio;
 
 
     public static void invoke(FragmentManager fragmentManager, long[] bookIds) {
@@ -72,6 +73,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
             existingSpin = rootView.findViewById(R.id.change_group_existing_list);
             newRadio = rootView.findViewById(R.id.change_group_new_radio);
             newNameTxt = rootView.findViewById(R.id.change_group_new_name);
+            detachRadio = rootView.findViewById(R.id.remove_group_radio);
 
             // Get existing custom groups
             CollectionDAO dao = new ObjectBoxDAO(requireContext());
@@ -105,6 +107,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
                 // Radio logic
                 existingRadio.setOnCheckedChangeListener((v, b) -> onExistingRadioSelect(b));
                 newRadio.setOnCheckedChangeListener((v, b) -> onNewRadioSelect(b));
+                detachRadio.setOnCheckedChangeListener((v, b) -> onDetachRadioSelect(b));
 
                 // Item click listener
                 rootView.findViewById(R.id.change_ok_btn).setOnClickListener(v -> onOkClick());
@@ -115,15 +118,30 @@ public class ChangeGroupDialogFragment extends DialogFragment {
     }
 
     private void onExistingRadioSelect(boolean isChecked) {
-        existingSpin.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-        newNameTxt.setVisibility(isChecked ? View.GONE : View.VISIBLE);
-        newRadio.setChecked(!isChecked);
+        if (isChecked) {
+            existingSpin.setVisibility(View.VISIBLE);
+            newNameTxt.setVisibility(View.GONE);
+            newRadio.setChecked(false);
+            detachRadio.setChecked(false);
+        }
     }
 
     private void onNewRadioSelect(boolean isChecked) {
-        existingSpin.setVisibility(isChecked ? View.GONE : View.VISIBLE);
-        newNameTxt.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-        existingRadio.setChecked(!isChecked);
+        if (isChecked) {
+            existingSpin.setVisibility(View.GONE);
+            newNameTxt.setVisibility(View.VISIBLE);
+            existingRadio.setChecked(false);
+            detachRadio.setChecked(false);
+        }
+    }
+
+    private void onDetachRadioSelect(boolean isChecked) {
+        if (isChecked) {
+            existingSpin.setVisibility(View.GONE);
+            newNameTxt.setVisibility(View.GONE);
+            newRadio.setChecked(false);
+            existingRadio.setChecked(false);
+        }
     }
 
     private void onOkClick() {
@@ -133,10 +151,13 @@ public class ChangeGroupDialogFragment extends DialogFragment {
         if (existingRadio.isChecked()) {
             viewModel.moveBooks(bookIds, customGroups.get(existingSpin.getSelectedIndex()));
             dismiss();
-        } else {
+        } else if (detachRadio.isChecked()) {
+            viewModel.moveBooks(bookIds, null);
+            dismiss();
+        } else { // New group
             List<Group> groupMatchingName = Stream.of(customGroups).filter(g -> g.name.equalsIgnoreCase(newNameTxt.getText().toString())).toList();
             if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
-                viewModel.moveBooks(bookIds, newNameTxt.getText().toString());
+                viewModel.moveBooksToNew(bookIds, newNameTxt.getText().toString());
                 dismiss();
             } else {
                 ToastUtil.toast(R.string.group_name_exists);

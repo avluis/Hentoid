@@ -57,6 +57,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:checked="false"
+        android:layout_marginTop="8dp"
         android:text="@string/group_new"
         android:textColor="?colorOnSurface"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,6 +77,17 @@
         app:layout_constraintTop_toBottomOf="@id/change_group_new_radio"
         tools:visibility="visible" />
 
+    <RadioButton
+        android:id="@+id/remove_group_radio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:checked="false"
+        android:text="@string/group_remove"
+        android:textColor="?colorOnSurface"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/change_group_new_name" />
+
     <TextView
         android:id="@+id/change_ok_btn"
         android:layout_width="wrap_content"
@@ -91,6 +103,6 @@
         android:paddingBottom="8dp"
         android:text="@android:string/ok"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/change_group_new_name" />
+        app:layout_constraintTop_toBottomOf="@id/remove_group_radio" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -267,6 +267,7 @@
     <string name="group_existing">Existing group</string>
     <string name="group_new">Create new</string>
     <string name="group_new_name">New custom group name</string>
+    <string name="group_remove">Detach from current group</string>
     <string name="group_name_exists">Group with that name already exists!</string>
     <!-- Groups -->
     <string name="groups_flat">Flat</string>
