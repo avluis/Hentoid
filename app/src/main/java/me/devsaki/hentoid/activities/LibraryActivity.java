@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -77,6 +78,9 @@ public class LibraryActivity extends BaseActivity {
     public static final int EV_SEARCH = 1;
     public static final int EV_ADVANCED_SEARCH = 2;
     public static final int EV_UPDATE_SORT = 3;
+
+    public static final int RC_GROUPS = 1;
+    public static final int RC_CONTENTS = 2;
 
 
     private DrawerLayout drawerLayout;
@@ -318,11 +322,6 @@ public class LibraryActivity extends BaseActivity {
                 Preferences.setGroupingDisplay(fieldCode);
                 viewModel.setGroup(null);
 
-                // Update button text
-                /*
-                sortFieldButton.setText(item.getTitle());
-                 */
-
                 // Update screen display
                 updateDisplay();
                 sortCommandsAutoHide(true, popup);
@@ -343,13 +342,14 @@ public class LibraryActivity extends BaseActivity {
             metadata.clear();
             mainSearchView.setQuery("", false);
             hideSearchSortBar(false);
-            EventBus.getDefault().post(new CommunicationEvent(EV_SEARCH, ""));
+            signalFragment(EV_SEARCH, "");
         });
 
         // Sort controls
         sortDirectionButton = findViewById(R.id.sort_direction_btn);
         sortFieldButton = findViewById(R.id.sort_field_btn);
 
+        // Main tabs
         viewPager = findViewById(R.id.library_pager);
         viewPager.setUserInputEnabled(false); // Disable swipe to change tabs
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -419,7 +419,7 @@ public class LibraryActivity extends BaseActivity {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 query = s;
-                EventBus.getDefault().post(new CommunicationEvent(EV_SEARCH, query));
+                signalFragment(EV_SEARCH, query);
                 mainSearchView.clearFocus();
 
                 return true;
@@ -431,7 +431,7 @@ public class LibraryActivity extends BaseActivity {
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
                     query = "";
-                    EventBus.getDefault().post(new CommunicationEvent(EV_SEARCH, query));
+                    signalFragment(EV_SEARCH, query);
                     searchClearButton.setVisibility(View.GONE);
                 }
 
@@ -580,7 +580,7 @@ public class LibraryActivity extends BaseActivity {
      * Handler for the "Advanced search" button
      */
     private void onAdvancedSearchButtonClick() {
-        EventBus.getDefault().post(new CommunicationEvent(EV_ADVANCED_SEARCH, null));
+        signalFragment(EV_ADVANCED_SEARCH, null);
     }
 
     /**
@@ -663,7 +663,7 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) editMenu.setVisible(currentGrouping.canReorderGroups());
         else editMenu.setVisible(currentGrouping.canReorderBooks());
 
-        EventBus.getDefault().post(new CommunicationEvent(EV_UPDATE_SORT, null));
+        signalFragment(EV_UPDATE_SORT, null);
     }
 
     public void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
@@ -812,6 +812,10 @@ public class LibraryActivity extends BaseActivity {
     private void onContentArchiveError(Throwable e) {
         Timber.e(e);
         archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, true));
+    }
+
+    private void signalFragment(int eventType, @Nullable String message) {
+        EventBus.getDefault().post(new CommunicationEvent(eventType, isGroupDisplayed() ? RC_GROUPS : RC_CONTENTS, message));
     }
 
     /**

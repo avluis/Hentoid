@@ -156,9 +156,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         initUI(rootView);
         initToolbars();
 
-        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
-        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
-
         return rootView;
     }
 
@@ -195,7 +192,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         updateSortControls();
     }
 
-    public void updateSortControls() {
+    private void updateSortControls() {
         LibraryActivity activity = ((LibraryActivity) requireActivity());
 
         // Sort controls
@@ -232,10 +229,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }); //closing the setOnClickListener method
     }
 
-    public void onSearch(String query) {
-        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
-    }
-
     private int getFieldCodeFromMenuId(@IdRes int menuId) {
         switch (menuId) {
             case (R.id.sort_title):
@@ -267,7 +260,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         toolbar = activity.getToolbar();
+        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
+
         selectionToolbar = activity.getSelectionToolbar();
+        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
@@ -453,12 +449,14 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActivityEvent(CommunicationEvent event) {
+        if (event.getRecipient() != LibraryActivity.RC_GROUPS) return;
         switch (event.getType()) {
             case LibraryActivity.EV_SEARCH:
-                viewModel.searchContentUniversal(event.getMessage());
+                viewModel.searchGroup(Preferences.getGroupingDisplay(), event.getMessage(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
                 break;
             case LibraryActivity.EV_UPDATE_SORT:
                 updateSortControls();
+                initToolbars();
                 break;
             default:
                 // No default behaviour

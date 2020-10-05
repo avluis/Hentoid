@@ -235,9 +235,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         initUI(rootView);
         initToolbars();
 
-        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
-        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
-
         return rootView;
     }
 
@@ -391,8 +388,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
         toolbar = activity.getToolbar();
-        selectionToolbar = activity.getSelectionToolbar();
+        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
 
+        selectionToolbar = activity.getSelectionToolbar();
+        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect();
             selectionToolbar.setVisibility(View.GONE);
@@ -688,15 +687,17 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActivityEvent(CommunicationEvent event) {
-        switch(event.getType()) {
-            case LibraryActivity.EV_SEARCH :
+        if (event.getRecipient() != LibraryActivity.RC_CONTENTS) return;
+        switch (event.getType()) {
+            case LibraryActivity.EV_SEARCH:
                 viewModel.searchContentUniversal(event.getMessage());
                 break;
-            case LibraryActivity.EV_ADVANCED_SEARCH :
+            case LibraryActivity.EV_ADVANCED_SEARCH:
                 onAdvancedSearchButtonClick();
                 break;
-            case LibraryActivity.EV_UPDATE_SORT :
+            case LibraryActivity.EV_UPDATE_SORT:
                 updateSortControls();
+                initToolbars();
                 break;
             default:
                 // No default behaviour
