@@ -56,6 +56,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
+import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
@@ -448,6 +449,20 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         EventBus.getDefault().removeStickyEvent(event);
         // Display the "update success" dialog when an update is detected on a release version
         if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getParentFragmentManager());
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onActivityEvent(CommunicationEvent event) {
+        switch (event.getType()) {
+            case LibraryActivity.EV_SEARCH:
+                viewModel.searchContentUniversal(event.getMessage());
+                break;
+            case LibraryActivity.EV_UPDATE_SORT:
+                updateSortControls();
+                break;
+            default:
+                // No default behaviour
+        }
     }
 
     @Override

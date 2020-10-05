@@ -27,7 +27,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.annimon.stream.function.Consumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -38,7 +37,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +46,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
+import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment;
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment;
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment;
@@ -75,10 +74,14 @@ import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH
 
 public class LibraryActivity extends BaseActivity {
 
+    public static final int EV_SEARCH = 1;
+    public static final int EV_ADVANCED_SEARCH = 2;
+    public static final int EV_UPDATE_SORT = 3;
+
+
     private DrawerLayout drawerLayout;
 
     private OnBackPressedCallback callback;
-
 
     // ======== COMMUNICATION
     // Viewmodel
@@ -137,10 +140,6 @@ public class LibraryActivity extends BaseActivity {
 
     private ViewPager2 viewPager;
 
-    // === FRAGMENT CALLBACKS
-    private List<Consumer<String>> searchAction = new ArrayList<>();
-    private List<Runnable> advSearchAction = new ArrayList<>();
-    private List<Runnable> updateSortControlsAction = new ArrayList<>();
 
     // === NOTIFICATIONS
     // Deletion activities
@@ -274,10 +273,6 @@ public class LibraryActivity extends BaseActivity {
         if (archiveNotificationManager != null) archiveNotificationManager.cancel();
         if (deleteNotificationManager != null) deleteNotificationManager.cancel();
 
-        searchAction.clear();
-        advSearchAction.clear();
-        updateSortControlsAction.clear();
-
         super.onDestroy();
     }
 
@@ -348,7 +343,7 @@ public class LibraryActivity extends BaseActivity {
             metadata.clear();
             mainSearchView.setQuery("", false);
             hideSearchSortBar(false);
-            searchAction.get(viewPager.getCurrentItem()).accept("");
+            EventBus.getDefault().post(new CommunicationEvent(EV_SEARCH, ""));
         });
 
         // Sort controls
@@ -370,8 +365,6 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void updateDisplay() {
-        searchAction.clear();
-        updateSortControlsAction.clear();
         FragmentStateAdapter pagerAdapter = new LibraryPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
         pagerAdapter.notifyDataSetChanged();
@@ -426,7 +419,7 @@ public class LibraryActivity extends BaseActivity {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 query = s;
-                searchAction.get(viewPager.getCurrentItem()).accept(query);
+                EventBus.getDefault().post(new CommunicationEvent(EV_SEARCH, query));
                 mainSearchView.clearFocus();
 
                 return true;
@@ -438,7 +431,7 @@ public class LibraryActivity extends BaseActivity {
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
                     query = "";
-                    searchAction.get(viewPager.getCurrentItem()).accept(query);
+                    EventBus.getDefault().post(new CommunicationEvent(EV_SEARCH, query));
                     searchClearButton.setVisibility(View.GONE);
                 }
 
@@ -587,8 +580,7 @@ public class LibraryActivity extends BaseActivity {
      * Handler for the "Advanced search" button
      */
     private void onAdvancedSearchButtonClick() {
-        Runnable action = advSearchAction.get(viewPager.getCurrentItem());
-        if (action != null) action.run();
+        EventBus.getDefault().post(new CommunicationEvent(EV_ADVANCED_SEARCH, null));
     }
 
     /**
@@ -671,8 +663,7 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) editMenu.setVisible(currentGrouping.canReorderGroups());
         else editMenu.setVisible(currentGrouping.canReorderBooks());
 
-        if (updateSortControlsAction.size() > viewPager.getCurrentItem())
-            updateSortControlsAction.get(viewPager.getCurrentItem()).run();
+        EventBus.getDefault().post(new CommunicationEvent(EV_UPDATE_SORT, null));
     }
 
     public void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
@@ -827,7 +818,7 @@ public class LibraryActivity extends BaseActivity {
      * ============================== SUBCLASS
      */
 
-    private class LibraryPagerAdapter extends FragmentStateAdapter {
+    private static class LibraryPagerAdapter extends FragmentStateAdapter {
         LibraryPagerAdapter(FragmentActivity fa) {
             super(fa);
         }
@@ -836,22 +827,12 @@ public class LibraryActivity extends BaseActivity {
         @Override
         public Fragment createFragment(int position) {
             if (Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
-                LibraryContentFragment result = new LibraryContentFragment();
-                searchAction.add(result::onSearch);
-                advSearchAction.add(result::onAdvancedSearchButtonClick);
-                return result;
+                return new LibraryContentFragment();
             } else {
                 if (0 == position) {
-                    LibraryGroupsFragment result = new LibraryGroupsFragment();
-                    searchAction.add(result::onSearch);
-                    updateSortControlsAction.add(result::updateSortControls);
-                    return result;
+                    return new LibraryGroupsFragment();
                 } else {
-                    LibraryContentFragment result = new LibraryContentFragment();
-                    searchAction.add(result::onSearch);
-                    advSearchAction.add(result::onAdvancedSearchButtonClick);
-                    updateSortControlsAction.add(result::updateSortControls);
-                    return result;
+                    return new LibraryContentFragment();
                 }
             }
         }

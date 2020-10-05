@@ -74,6 +74,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
+import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -279,7 +280,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         updateSortControls();
     }
 
-    public void updateSortControls() {
+    private void updateSortControls() {
         LibraryActivity activity = ((LibraryActivity) requireActivity());
 
         // Sort controls
@@ -333,10 +334,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
     private void setMetadata(List<Attribute> attrs) {
         ((LibraryActivity) requireActivity()).setMetadata(attrs);
-    }
-
-    public void onSearch(String query) {
-        viewModel.searchContentUniversal(query);
     }
 
     private int getFieldCodeFromMenuId(@IdRes int menuId) {
@@ -689,6 +686,23 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (!BuildConfig.DEBUG) UpdateSuccessDialogFragment.invoke(getParentFragmentManager());
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onActivityEvent(CommunicationEvent event) {
+        switch(event.getType()) {
+            case LibraryActivity.EV_SEARCH :
+                viewModel.searchContentUniversal(event.getMessage());
+                break;
+            case LibraryActivity.EV_ADVANCED_SEARCH :
+                onAdvancedSearchButtonClick();
+                break;
+            case LibraryActivity.EV_UPDATE_SORT :
+                updateSortControls();
+                break;
+            default:
+                // No default behaviour
+        }
+    }
+
     @Override
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
@@ -748,7 +762,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     /**
      * Handler for the "Advanced search" button
      */
-    public void onAdvancedSearchButtonClick() {
+    private void onAdvancedSearchButtonClick() {
         Intent search = new Intent(this.getContext(), SearchActivity.class);
 
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
