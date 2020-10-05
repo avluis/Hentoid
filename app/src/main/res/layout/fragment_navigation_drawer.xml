@@ -26,7 +26,7 @@
         tools:ignore="ContentDescription" />
 
     <ImageView
-        android:id="@+id/drawer_about_btn"
+        android:id="@+id/drawer_app_prefs_btn"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginTop="8dp"
@@ -35,23 +35,10 @@
         android:adjustViewBounds="true"
         android:clickable="true"
         android:focusable="true"
-        android:src="@drawable/ic_info"
+        android:src="@drawable/ic_menu_prefs"
         app:layout_constraintRight_toRightOf="@id/drawer_header"
         app:layout_constraintTop_toTopOf="@id/drawer_header"
         tools:ignore="ContentDescription" />
-
-    <ImageView
-        android:id="@+id/drawer_about_badge_btn"
-        android:layout_width="14dp"
-        android:layout_height="14dp"
-        android:adjustViewBounds="true"
-        android:src="@drawable/ic_circle"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="@id/drawer_about_btn"
-        app:layout_constraintTop_toTopOf="@id/drawer_about_btn"
-        app:tint="@color/accent_red"
-        tools:ignore="ContentDescription"
-        tools:visibility="visible" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drawer_list"
@@ -78,17 +65,32 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/drawer_app_prefs_btn"
+        android:id="@+id/drawer_about_btn"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/goto_app_prefs"
+        android:text="@string/title_activity_about"
         android:textColor="@color/white_opacity_87"
-        app:icon="@drawable/ic_settings"
+        app:icon="@drawable/ic_info"
         app:iconTint="@color/white_opacity_87"
         app:layout_constraintBottom_toBottomOf="@id/drawer_footer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/drawer_footer" />
+
+    <ImageView
+        android:id="@+id/drawer_about_badge_btn"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/ic_circle"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/drawer_about_btn"
+        app:layout_constraintTop_toTopOf="@id/drawer_about_btn"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="20dp"
+        app:tint="@color/accent_red"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/drawer_app_queue_btn"
