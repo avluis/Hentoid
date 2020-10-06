@@ -373,7 +373,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         for (Group g : groups) db.deleteGroupItemsByGroup(g.id);
 
         // Actually delete the Group
-        flaggedGroups.remove(); // TODO allowed operation ?
+        flaggedGroups.remove();
     }
 
     public long insertGroupItem(GroupItem item) {
