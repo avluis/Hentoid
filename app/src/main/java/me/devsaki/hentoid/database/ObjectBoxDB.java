@@ -374,7 +374,6 @@ public class ObjectBoxDB {
 
     private void applySortOrder(
             QueryBuilder<Content> query,
-            long groupId,
             int orderField,
             boolean orderDesc) {
         // Random ordering is tricky (see https://github.com/objectbox/objectbox-java/issues/17)
@@ -464,10 +463,9 @@ public class ObjectBoxDB {
                 }
             }
         }
-        if (hasGroupFilter) {
+        if (hasGroupFilter)
             query.in(Content_.id, selectFilteredContent(groupId));
-        }
-        applySortOrder(query, groupId, orderField, orderDesc);
+        applySortOrder(query, orderField, orderDesc);
         return query.build();
     }
 
@@ -549,7 +547,7 @@ public class ObjectBoxDB {
         //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         query.or().in(Content_.id, additionalIds);
         if (groupId > 0) query.in(Content_.id, selectFilteredContent(groupId));
-        applySortOrder(query, groupId, orderField, orderDesc);
+        applySortOrder(query, orderField, orderDesc);
 
         return query.build();
     }
