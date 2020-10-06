@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -64,6 +65,13 @@ public class DatabaseMaintenance {
             Timber.i("Unflag books : %s books detected", ids.length);
             db.flagContentById(ids, false);
             Timber.i("Unflag books : done");
+
+            // Unflag all books signaled as being deleted
+            Timber.i("Unmark books as being deleted : start");
+            ids = db.selectAllMarkedBooksQ().findIds();
+            Timber.i("Unmark books as being deleted : %s books detected", ids.length);
+            db.markContentById(ids, false);
+            Timber.i("Unmark books as being deleted : done");
 
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
             Timber.i("Moving back isolated items to queue : start");
@@ -199,9 +207,32 @@ public class DatabaseMaintenance {
                             group.picture.setTarget(a.contents.get(0).getCover());
                         bookInsertCount += a.contents.size();
 
-                        ImmutableTriple<Group, Attribute, List<Content>> data = new ImmutableTriple<>(group, a, a.contents);
-                        toInsert.add(data);
+                        toInsert.add(new ImmutableTriple<>(group, a, a.contents));
                     }
+                } else if (g.equals(Grouping.DL_DATE)) {
+                    Group group = new Group(Grouping.DL_DATE, "Today", 1);
+                    group.propertyMin = 0;
+                    group.propertyMax = 0;
+                    group = new Group(Grouping.DL_DATE, "Last 7 days", 2);
+                    group.propertyMin = 1;
+                    group.propertyMax = 7;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                    group = new Group(Grouping.DL_DATE, "Last 30 days", 3);
+                    group.propertyMin = 8;
+                    group.propertyMax = 30;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                    group = new Group(Grouping.DL_DATE, "Last 60 days", 4);
+                    group.propertyMin = 31;
+                    group.propertyMax = 60;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                    group = new Group(Grouping.DL_DATE, "Last year", 5);
+                    group.propertyMin = 61;
+                    group.propertyMax = 365;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                    group = new Group(Grouping.DL_DATE, "A long time ago", 6);
+                    group.propertyMin = 366;
+                    group.propertyMax = 9999999;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
                 }
             }
 
