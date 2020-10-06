@@ -31,7 +31,7 @@ public final class GroupHelper {
 
 
     public static List<Grouping> getGroupingsToProcess() {
-        return Stream.of(Grouping.values()).filter(Grouping::canReorderBooks).toList();
+        return Stream.of(new Grouping[]{Grouping.ARTIST, Grouping.DL_DATE, Grouping.CUSTOM}).toList();
     }
 
     public static void addContentToAttributeGroup(CollectionDAO dao, Group group, Attribute attribute, Content newContent) {

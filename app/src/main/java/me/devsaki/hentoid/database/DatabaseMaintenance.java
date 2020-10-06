@@ -212,22 +212,22 @@ public class DatabaseMaintenance {
                 } else if (g.equals(Grouping.DL_DATE)) {
                     Group group = new Group(Grouping.DL_DATE, "Today", 1);
                     group.propertyMin = 0;
-                    group.propertyMax = 0;
+                    group.propertyMax = 1;
                     group = new Group(Grouping.DL_DATE, "Last 7 days", 2);
                     group.propertyMin = 1;
-                    group.propertyMax = 7;
+                    group.propertyMax = 8;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
                     group = new Group(Grouping.DL_DATE, "Last 30 days", 3);
                     group.propertyMin = 8;
-                    group.propertyMax = 30;
+                    group.propertyMax = 31;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
                     group = new Group(Grouping.DL_DATE, "Last 60 days", 4);
                     group.propertyMin = 31;
-                    group.propertyMax = 60;
+                    group.propertyMax = 61;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
                     group = new Group(Grouping.DL_DATE, "Last year", 5);
                     group.propertyMin = 61;
-                    group.propertyMax = 365;
+                    group.propertyMax = 366;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
                     group = new Group(Grouping.DL_DATE, "A long time ago", 6);
                     group.propertyMin = 366;

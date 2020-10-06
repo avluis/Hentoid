@@ -9,6 +9,7 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.threeten.bp.Instant;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,6 +65,8 @@ public class ObjectBoxDB {
 
     // Status displayed in the library view (all books of the library; both internal and external)
     private static final int[] libraryStatus = ContentHelper.getLibraryStatuses();
+
+    private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
 
     private static ObjectBoxDB instance;
 
@@ -463,8 +466,16 @@ public class ObjectBoxDB {
                 }
             }
         }
-        if (hasGroupFilter)
-            query.in(Content_.id, selectFilteredContent(groupId));
+        if (hasGroupFilter) {
+            Group group = store.boxFor(Group.class).get(groupId);
+            if (group.grouping.equals(Grouping.DL_DATE)) { // According to days since download date
+                long today = Instant.now().toEpochMilli();
+                long minDownloadDate = today - (group.propertyMax * DAY_IN_MILLIS);
+                long maxDownloadDate = today - (group.propertyMin * DAY_IN_MILLIS);
+                query.between(Content_.downloadDate, minDownloadDate, maxDownloadDate);
+            } else // Direct link to group
+                query.in(Content_.id, selectFilteredContent(groupId));
+        }
         applySortOrder(query, orderField, orderDesc);
         return query.build();
     }
@@ -538,6 +549,7 @@ public class ObjectBoxDB {
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField)
             return store.boxFor(Content.class).query().build();
 
+        // TODO if group filter and group is a DL_DATE grouping, filter on days since DL date
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, libraryStatus);
 
@@ -618,7 +630,6 @@ public class ObjectBoxDB {
         return Helper.getPrimitiveLongArrayFromList(result);
     }
 
-    // TODO adapt
     long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterFavourites, int orderField, boolean orderDesc) {
         long[] result;
         Query<Content> query = selectContentSearchContentQ(title, groupId, tags, filterFavourites, orderField, orderDesc);
@@ -631,7 +642,6 @@ public class ObjectBoxDB {
         return result;
     }
 
-    // TODO adapt
     long[] selectContentUniversalId(String queryStr, long groupId, boolean filterFavourites, int orderField, boolean orderDesc) {
         long[] result;
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)

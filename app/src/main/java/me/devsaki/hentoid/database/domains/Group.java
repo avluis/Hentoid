@@ -29,6 +29,8 @@ public class Group {
     public ToOne<ImageFile> picture;
     public int order;
     public boolean hasCustomBookOrder = false;
+    public int propertyMin;
+    public int propertyMax;
 
     // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON

@@ -101,7 +101,8 @@ public class JsonContent {
 
         if (c.groupItems != null && !c.groupItems.isEmpty())
             for (GroupItem gi : c.groupItems)
-                result.groups.add(JsonGroupItem.fromEntity(gi));
+                if (gi.group.getTarget().hasCustomBookOrder) // Don't persist group info that can be auto-generated
+                    result.groups.add(JsonGroupItem.fromEntity(gi));
 
         return result;
     }
