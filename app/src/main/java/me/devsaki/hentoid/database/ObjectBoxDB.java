@@ -199,6 +199,10 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.isFlaggedForDeletion, true).build();
     }
 
+    Query<Content> selectAllMarkedBooksQ() {
+        return store.boxFor(Content.class).query().equal(Content_.isBeingDeleted, true).build();
+    }
+
     void flagContentById(long[] contentId, boolean flag) {
         Box<Content> contentBox = store.boxFor(Content.class);
         for (long id : contentId) {
@@ -207,6 +211,15 @@ public class ObjectBoxDB {
                 c.setFlaggedForDeletion(flag);
                 contentBox.put(c);
             }
+        }
+    }
+
+    void markContentById(long[] contentId, boolean flag) {
+        Box<Content> contentBox = store.boxFor(Content.class);
+        List<Content> contents = contentBox.get(contentId);
+        for (Content c : contents) {
+            c.setIsBeingDeleted(flag);
+            contentBox.put(c);
         }
     }
 
