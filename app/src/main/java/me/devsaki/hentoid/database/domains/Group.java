@@ -60,6 +60,15 @@ public class Group {
         return items;
     }
 
+    public Group setItems(List<GroupItem> items) {
+        // We do want to compare array references, not content
+        if (items != null && items != this.items) {
+            this.items.clear();
+            this.items.addAll(items);
+        }
+        return this;
+    }
+
     public int getOrder() {
         return order;
     }

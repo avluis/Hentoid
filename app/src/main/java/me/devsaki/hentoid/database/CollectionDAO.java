@@ -116,6 +116,8 @@ public interface CollectionDAO {
 
     List<GroupItem> selectGroupItems(long contentId, Grouping grouping);
 
+    List<GroupItem> selectGroupItemsByDlDate(int minDays, int maxDays);
+
     void deleteGroupItems(List<Long> groupItemIds);
 
 

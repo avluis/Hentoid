@@ -317,17 +317,28 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc) {
         LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc));
+        LiveData<List<Group>> workingData = livedata;
+
+        // Manually add items inside each groups (which doesn't contain any as they are dynamically generated)
+        if (grouping == Grouping.DL_DATE.getId()) {
+            MediatorLiveData<List<Group>> livedata2 = new MediatorLiveData<>();
+            livedata2.addSource(livedata, v -> {
+                List<Group> enrichedWithItems = Stream.of(v).map(g -> g.setItems(selectGroupItemsByDlDate(g.propertyMin, g.propertyMax))).toList();
+                livedata2.setValue(enrichedWithItems);
+            });
+            workingData = livedata2;
+        }
 
         // Order by number of children (ObjectBox can't do that natively)
         if (Preferences.Constant.ORDER_FIELD_CHILDREN == orderField) {
             MediatorLiveData<List<Group>> result = new MediatorLiveData<>();
-            result.addSource(livedata, v -> {
+            result.addSource(workingData, v -> {
                 int sortOrder = orderDesc ? -1 : 1;
                 List<Group> orderedByNbChildren = Stream.of(v).sortBy(g -> g.getItems().size() * sortOrder).toList();
                 result.setValue(orderedByNbChildren);
             });
             return result;
-        } else return livedata;
+        } else return workingData;
     }
 
     @Nullable
@@ -391,6 +402,10 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public List<GroupItem> selectGroupItems(long contentId, Grouping grouping) {
         return db.selectGroupItems(contentId, grouping.getId());
+    }
+
+    public List<GroupItem> selectGroupItemsByDlDate(int minDays, int maxDays) {
+        return db.selectGroupItemsByDlDate(minDays, maxDays);
     }
 
     public void deleteGroupItem(long groupItemId) {

@@ -468,12 +468,9 @@ public class ObjectBoxDB {
         }
         if (hasGroupFilter) {
             Group group = store.boxFor(Group.class).get(groupId);
-            if (group.grouping.equals(Grouping.DL_DATE)) { // According to days since download date
-                long today = Instant.now().toEpochMilli();
-                long minDownloadDate = today - (group.propertyMax * DAY_IN_MILLIS);
-                long maxDownloadDate = today - (group.propertyMin * DAY_IN_MILLIS);
-                query.between(Content_.downloadDate, minDownloadDate, maxDownloadDate);
-            } else // Direct link to group
+            if (group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
+                applyDownloadDateFilter(query, group.propertyMin, group.propertyMax);
+            else // Direct link to group
                 query.in(Content_.id, selectFilteredContent(groupId));
         }
         applySortOrder(query, orderField, orderDesc);
@@ -549,7 +546,6 @@ public class ObjectBoxDB {
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField)
             return store.boxFor(Content.class).query().build();
 
-        // TODO if group filter and group is a DL_DATE grouping, filter on days since DL date
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, libraryStatus);
 
@@ -558,7 +554,15 @@ public class ObjectBoxDB {
         query.or().equal(Content_.uniqueSiteId, queryStr);
         //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         query.or().in(Content_.id, additionalIds);
-        if (groupId > 0) query.in(Content_.id, selectFilteredContent(groupId));
+
+        if (groupId > 0) {
+            Group group = store.boxFor(Group.class).get(groupId);
+            if (group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
+                applyDownloadDateFilter(query, group.propertyMin, group.propertyMax);
+            else // Direct link to group
+                query.in(Content_.id, selectFilteredContent(groupId));
+        }
+
         applySortOrder(query, orderField, orderDesc);
 
         return query.build();
@@ -1014,6 +1018,19 @@ public class ObjectBoxDB {
         return qb.build().find();
     }
 
+    List<GroupItem> selectGroupItemsByDlDate(int minDays, int maxDays) {
+        QueryBuilder<GroupItem> qb = store.boxFor(GroupItem.class).query();
+        applyDownloadDateFilter(qb.link(GroupItem_.content), minDays, maxDays);
+        return qb.build().find();
+    }
+
+    private void applyDownloadDateFilter(@NonNull final QueryBuilder<Content> qb, int minDays, int maxDays) {
+        long today = Instant.now().toEpochMilli();
+        long minDownloadDate = today - (maxDays * DAY_IN_MILLIS);
+        long maxDownloadDate = today - (minDays * DAY_IN_MILLIS);
+        qb.between(Content_.downloadDate, minDownloadDate, maxDownloadDate);
+    }
+
     void deleteGroupItem(long groupItemId) {
         store.boxFor(GroupItem.class).remove(groupItemId);
     }
@@ -1039,7 +1056,8 @@ public class ObjectBoxDB {
         if (query != null) qb.contains(Group_.name, query);
 
         Property<Group> property = Group_.name;
-        if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField) property = Group_.order;
+        if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.getId())
+            property = Group_.order;
         // Order by number of children is done by the DAO
 
         if (orderDesc) qb.orderDesc(property);
