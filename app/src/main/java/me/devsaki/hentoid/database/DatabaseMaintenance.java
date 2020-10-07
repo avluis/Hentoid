@@ -213,6 +213,7 @@ public class DatabaseMaintenance {
                     Group group = new Group(Grouping.DL_DATE, "Today", 1);
                     group.propertyMin = 0;
                     group.propertyMax = 1;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
                     group = new Group(Grouping.DL_DATE, "Last 7 days", 2);
                     group.propertyMin = 1;
                     group.propertyMax = 8;
