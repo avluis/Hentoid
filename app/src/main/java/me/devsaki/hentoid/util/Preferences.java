@@ -570,6 +570,7 @@ public final class Preferences {
         public static final String EXTERNAL_LIBRARY = "pref_external_library";
         public static final String EXTERNAL_LIBRARY_URI = "pref_external_library_uri";
         public static final String EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete";
+        public static final String EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library";
         static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         public static final String PREF_SETTINGS_FOLDER = "folder";
         public static final String MEMORY_USAGE = "pref_memory_usage";

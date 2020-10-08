@@ -15,6 +15,7 @@ import io.reactivex.disposables.Disposables
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
+import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.services.ExternalImportService
@@ -82,6 +83,30 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
                     }
+                    true
+                }
+                Preferences.Key.EXTERNAL_LIBRARY_DETACH -> {
+                    MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                            .setIcon(R.drawable.ic_warning)
+                            .setCancelable(true)
+                            .setTitle(R.string.app_name)
+                            .setMessage(R.string.prefs_ask_detach_external_library)
+                            .setPositiveButton(android.R.string.yes
+                            ) { dialog1: DialogInterface, _: Int ->
+                                dialog1.dismiss()
+                                Preferences.setExternalLibraryUri("")
+                                val dao: CollectionDAO = ObjectBoxDAO(context)
+                                try {
+                                    dao.deleteAllExternalBooks()
+                                } finally {
+                                    dao.cleanup()
+                                }
+                                ToastUtil.toast(getString(R.string.prefs_external_library_detached))
+                            }
+                            .setNegativeButton(android.R.string.no
+                            ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
+                            .create()
+                            .show()
                     true
                 }
                 Preferences.Key.PREF_REFRESH_LIBRARY -> {
@@ -164,6 +189,11 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         val storageFolderPref: Preference? = findPreference(Preferences.Key.EXTERNAL_LIBRARY) as Preference?
         val uri = Uri.parse(Preferences.getExternalLibraryUri())
         storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri, true)
+        // Enable/disable sub-prefs
+        val deleteExternalLibrary: Preference? = findPreference(Preferences.Key.EXTERNAL_LIBRARY_DELETE) as Preference?
+        deleteExternalLibrary?.isEnabled = (uri.toString().isNotEmpty())
+        val detachExternalLibrary: Preference? = findPreference(Preferences.Key.EXTERNAL_LIBRARY_DETACH) as Preference?
+        detachExternalLibrary?.isEnabled = (uri.toString().isNotEmpty())
     }
 
     private fun onPrefColorThemeChanged() {
