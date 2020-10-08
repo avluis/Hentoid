@@ -309,7 +309,7 @@ public class LibraryViewModel extends AndroidViewModel {
         for (Content c : contents) flagContentDelete(c, true);
         // TODO do the same blinking effect for groups ?
 
-        // Queue first content then groups, to be sure to delete empty groups only
+        // First chain contents, then groups (to be sure to delete empty groups only)
         List<Object> items = new ArrayList<>();
         items.addAll(contents);
         items.addAll(groups);
