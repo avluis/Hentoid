@@ -448,13 +448,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         cacheJson(context, content);
     }
 
-    public void updateBookPreferences(@NonNull final Map<String, String> newPrefs) {
+    public void updateContentPreferences(@NonNull final Map<String, String> newPrefs) {
         Content theContent = content.getValue();
         if (null == theContent) return;
-        theContent.setBookPreferences(newPrefs);
 
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doUpdateContent(getApplication().getApplicationContext(), theContent))
+                Completable.fromRunnable(() -> doUpdateContentPreferences(getApplication().getApplicationContext(), theContent, newPrefs))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -465,16 +464,21 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doUpdateContent(@NonNull final Context context, @NonNull final Content c) {
+    private void doUpdateContentPreferences(@NonNull final Context context, @NonNull final Content c, @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
+        Content theContent = collectionDao.selectContent(c.getId());
+        if (null == theContent) return;
+
+        theContent.setBookPreferences(newPrefs);
         // Persist in DB
-        collectionDao.insertContent(c);
-        content.postValue(c);
+        collectionDao.insertContent(theContent);
+        content.postValue(theContent);
 
         // Persist in JSON
-        if (!c.getJsonUri().isEmpty()) ContentHelper.updateContentJson(context, c);
-        else ContentHelper.createContentJson(context, c);
+        if (!theContent.getJsonUri().isEmpty())
+            ContentHelper.updateContentJson(context, theContent);
+        else ContentHelper.createContentJson(context, theContent);
     }
 
     // Cache JSON URI in the database to speed up favouriting

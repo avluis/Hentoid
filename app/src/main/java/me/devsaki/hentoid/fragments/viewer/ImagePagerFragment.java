@@ -652,7 +652,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
     }
 
     public void onBookPreferenceChanged(@NonNull final Map<String, String> newPrefs) {
-        viewModel.updateBookPreferences(newPrefs);
+        viewModel.updateContentPreferences(newPrefs);
     }
 
     private void onUpdatePrefsScreenOn() {
