@@ -54,11 +54,11 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_fav_empty"
+            android:tooltipText="@string/book_fav_help"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTags"
             app:layout_constraintVertical_bias="1.0"
-            android:tooltipText="@string/book_fav_help"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription" />
 
@@ -71,11 +71,11 @@
             android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true"
+            android:tooltipText="@string/view_source_help"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/ivFavourite"
             app:layout_constraintTop_toBottomOf="@id/tvTags"
             app:layout_constraintVertical_bias="1.0"
-            android:tooltipText="@string/view_source_help"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_nhentai" />
@@ -89,7 +89,6 @@
         android:clickable="false"
         android:focusable="false"
         android:gravity="center_vertical"
-        android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -98,14 +97,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:fontFamily="sans-serif-medium"
             android:gravity="center_vertical|start"
-            android:lines="1"
-            android:singleLine="true"
-            android:text="@string/deleted"
-            android:textColor="@android:color/holo_red_dark"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="@string/about_to_delete"
+            android:textColor="@color/card_tags_light"
             android:textDirection="anyRtl"
-            android:textSize="@dimen/text_subtitle_2" />
+            android:textSize="@dimen/caption" />
 
         <TextView
             android:id="@+id/undo_swipe"
@@ -113,11 +111,15 @@
             android:layout_height="match_parent"
             android:fontFamily="sans-serif"
             android:gravity="center_vertical|start"
+            android:padding="16dp"
             android:lines="1"
             android:singleLine="true"
             android:text="@string/undo"
+            android:clickable="true"
+            android:focusable="true"
             android:textAllCaps="true"
-            android:textColor="@android:color/holo_red_dark"
+            android:textColor="?colorSecondary"
+            android:background="@color/black_opacity_25"
             android:textDirection="anyRtl"
             android:textSize="@dimen/text_subtitle_2"
             android:textStyle="bold" />
