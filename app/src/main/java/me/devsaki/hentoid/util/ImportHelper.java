@@ -170,7 +170,12 @@ public class ImportHelper {
             } else return Result.OK_LIBRARY_DETECTED_ASK;
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
-            new ObjectBoxDAO(context).deleteAllInternalBooks(true);
+            CollectionDAO dao = new ObjectBoxDAO(context);
+            try {
+                dao.deleteAllInternalBooks(true);
+            } finally {
+                dao.cleanup();
+            }
             return Result.OK_EMPTY_FOLDER;
         }
     }
