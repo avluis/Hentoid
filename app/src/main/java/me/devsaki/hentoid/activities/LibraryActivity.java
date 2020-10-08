@@ -480,6 +480,11 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
+        if (showSort != null && showSort && View.VISIBLE == sortFieldButton.getVisibility()) {
+            hideSearchSortBar(View.GONE != advancedSearchButton.getVisibility());
+            return;
+        }
+
         advancedSearchBar.setVisibility(View.VISIBLE);
         if (showAdvancedSearch != null)
             advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
