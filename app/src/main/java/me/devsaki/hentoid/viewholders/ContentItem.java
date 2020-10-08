@@ -55,6 +55,7 @@ import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LanguageHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
@@ -114,6 +115,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.viewType = viewType;
         this.touchHelper = touchHelper;
         isEmpty = (null == content);
+        isSwipeable = (content != null && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
         if (content != null) setIdentifier(content.hashCode());
         else setIdentifier(generateIdForPlaceholder());
     }
