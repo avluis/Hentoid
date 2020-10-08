@@ -42,7 +42,7 @@
         android:text="@string/title_activity_search"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/sort_direction_btn"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/groups_btn"
         app:layout_constraintTop_toTopOf="@id/advanced_search_background"
         tools:visibility="visible" />
 
