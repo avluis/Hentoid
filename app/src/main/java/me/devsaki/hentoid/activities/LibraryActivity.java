@@ -715,7 +715,7 @@ public class LibraryActivity extends BaseActivity {
                 .create().show();
     }
 
-    private void deleteItems(
+    public void deleteItems(
             @NonNull final List<Content> contents,
             @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups
     ) {

@@ -114,7 +114,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.viewType = viewType;
         this.touchHelper = touchHelper;
         isEmpty = (null == content);
-        isSwipeable = (viewType == ViewType.ERRORS);
         if (content != null) setIdentifier(content.hashCode());
         else setIdentifier(generateIdForPlaceholder());
     }
@@ -249,7 +248,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
             } else if (viewType == ViewType.QUEUE || viewType == ViewType.LIBRARY_EDIT) {
-                if (viewType == ViewType.QUEUE) progressBar = itemView.findViewById(R.id.pbDownload);
+                if (viewType == ViewType.QUEUE)
+                    progressBar = itemView.findViewById(R.id.pbDownload);
                 ivTop = itemView.findViewById(R.id.queueTopBtn);
                 ivBottom = itemView.findViewById(R.id.queueBottomBtn);
                 ivReorder = itemView.findViewById(R.id.ivReorder);
@@ -307,7 +307,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (ivNew != null)
                 ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
 
-            // Queue swipe
+            // Swipe
             if (swipeResult != null) {
                 bookCard.setVisibility((item.swipeDirection != 0) ? View.INVISIBLE : View.VISIBLE);
                 swipeResult.setVisibility((item.swipeDirection != 0) ? View.VISIBLE : View.GONE);

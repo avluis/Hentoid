@@ -37,6 +37,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
@@ -896,7 +897,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         }
 
         // Drag, drop & swiping
-        if (isEditMode) {
+//        if (isEditMode) {
             SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
                     this,
                     this,
@@ -906,7 +907,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
             touchHelper = new ItemTouchHelper(dragSwipeCallback);
             touchHelper.attachToRecyclerView(recyclerView);
-        }
+//        }
 
         recyclerView.setAdapter(fastAdapter);
     }
@@ -1214,6 +1215,11 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
     }
 
+    private IAdapter<ContentItem> getItemAdapter() {
+        if (itemAdapter != null) return itemAdapter;
+        else return pagedItemAdapter;
+    }
+
     /**
      * DRAG, DROP & SWIPE METHODS
      */
@@ -1248,7 +1254,38 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     }
 
     @Override
-    public void itemSwiped(int i, int i1) {
-        // TODO #609
+    public void itemSwiped(int position, int direction) {
+        ContentItem item = getItemAdapter().getAdapterItem(position);
+        item.setSwipeDirection(direction);
+
+        if (item.getContent() != null) {
+            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(2000, this::onDeleteSwipedBook);
+            deleteDebouncer.submit(item);
+
+            Runnable cancelSwipe = () -> {
+                deleteDebouncer.clear();
+                item.setSwipeDirection(0);
+
+                int position1 = getItemAdapter().getAdapterPosition(item);
+                if (position1 != RecyclerView.NO_POSITION)
+                    fastAdapter.notifyItemChanged(position1);
+            };
+            item.setUndoSwipeAction(cancelSwipe);
+            fastAdapter.notifyItemChanged(position);
+        }
+    }
+
+    private void onDeleteSwipedBook(@NonNull final ContentItem item) {
+        if (!(requireActivity() instanceof LibraryActivity)) return;
+        LibraryActivity activity = (LibraryActivity) requireActivity();
+
+        // Deleted book is the last selected books => disable selection mode
+        if (item.isSelected()) {
+            selectExtension.deselect(item);
+            if (selectExtension.getSelectedItems().isEmpty())
+                selectionToolbar.setVisibility(View.GONE);
+        }
+
+        activity.deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList());
     }
 }
