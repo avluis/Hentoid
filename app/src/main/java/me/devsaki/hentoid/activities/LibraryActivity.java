@@ -762,7 +762,7 @@ public class LibraryActivity extends BaseActivity {
      */
     private void onDeleteSuccess() {
         deleteNotificationManager.notify(new DeleteCompleteNotification(deleteProgress, false));
-        Snackbar.make(viewPager, R.string.delete_success, LENGTH_LONG).show();
+        Snackbar.make(viewPager, getResources().getQuantityString(R.plurals.delete_success, deleteProgress, deleteProgress), LENGTH_LONG).show();
     }
 
 
@@ -801,7 +801,7 @@ public class LibraryActivity extends BaseActivity {
      */
     private void onContentArchiveSuccess() {
         archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, false));
-        Snackbar.make(viewPager, R.string.archive_success, LENGTH_LONG)
+        Snackbar.make(viewPager, getResources().getQuantityString(R.plurals.archive_success, archiveProgress, archiveProgress), LENGTH_LONG)
                 .setAction("OPEN FOLDER", v -> FileHelper.openFile(this, FileHelper.getDownloadsFolder()))
                 .show();
     }
