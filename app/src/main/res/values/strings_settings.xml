@@ -104,7 +104,6 @@
     <string name="pref_dl_size_wifi_off">All downloads will be processed</string>
     <string name="pref_dl_size_wifi_threshold_title">Large downloads threshold</string>
     <string name="pref_dl_size_wifi_threshold_default" translatable="false">40</string>
-
     <string name="download_retries_screen_title">Automated download retries</string>
     <string name="download_retries_active_title">Retries activated</string>
     <string name="pref_dl_retries_active_default" translatable="false">false</string>
@@ -116,6 +115,12 @@
     <string name="pref_dl_retries_mem_limit_title">Mem usage threshold before aborting</string>
     <string name="pref_dl_retries_mem_limit_summary">%s</string>
     <string name="pref_dl_retries_mem_limit_default" translatable="false">100</string>
+    <string name="tag_blocking_screen_title">Tag blocking</string>
+    <string name="pref_dl_blocked_tags_title">Blocked tags</string>
+    <string name="pref_dl_blocked_tags_summary">Block the download of books with specific tags\nTip : separate tags with commas</string>
+    <string name="pref_dl_blocked_tags_behaviour_title">Blocking behaviour</string>
+    <string name="pref_dl_blocked_tags_behaviour_default" translatable="false">0</string>
+
     <string name="pref_dl_hitomi">Hitomi.la</string>
     <string name="pref_dl_hitomi_webp_title">Prefer downloading WEBP</string>
     <string name="pref_dl_hitomi_webp_summary_off">Download other type of pictures (PNG, JPG)</string>

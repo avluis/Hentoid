@@ -140,6 +140,15 @@
         <item>100</item>
     </string-array>
 
+    <string-array name="pref_dl_blocked_tags_behaviour_entries">
+        <item>Don\'t queue</item>
+        <item>Queue as download error</item>
+    </string-array>
+    <string-array name="pref_dl_blocked_tags_behaviour_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
     <string-array name="pref_viewer_browse_mode_entries">
         <item>Left to Right</item>
         <item>Right to Left</item>

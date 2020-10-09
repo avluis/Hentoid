@@ -38,6 +38,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.annimon.stream.Stream;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.skydoves.balloon.ArrowOrientation;
 
@@ -47,6 +48,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.threeten.bp.Instant;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -81,9 +83,13 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AlertStatus;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -660,14 +666,33 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (!quickDownload) changeActionMode(ActionMode.READ);
             return;
         }
+
+        // Check if the tag blocker applies here
+        if (!Preferences.getBlockedTags().isEmpty()) {
+            List<String> tags = Stream.of(currentContent.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG)).map(Attribute::getName).toList();
+            for (String blocked : Preferences.getBlockedTags())
+                for (String tag : tags)
+                    if (blocked.equalsIgnoreCase(tag)) {
+                        if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.PREF_DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
+                            ToastUtil.toast(getResources().getString(R.string.blocked_tag, tag));
+                        } else { // Insert directly as an error
+                            List<ErrorRecord> errors = new ArrayList<>();
+                            errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tag : " + tag, Instant.now()));
+                            currentContent.setErrorLog(errors);
+                            currentContent.setStatus(StatusContent.ERROR);
+                            objectBoxDAO.insertContent(currentContent);
+                            ToastUtil.toast(getResources().getString(R.string.blocked_tag_queued, tag));
+                            changeActionMode(ActionMode.VIEW_QUEUE);
+                        }
+                        return;
+                    }
+        }
+
         animatedCheck.setVisibility(View.VISIBLE);
         ((Animatable) animatedCheck.getDrawable()).start();
         new Handler().postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
-
         objectBoxDAO.addContentToQueue(currentContent, null);
-
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
-
         changeActionMode(ActionMode.VIEW_QUEUE);
     }
 

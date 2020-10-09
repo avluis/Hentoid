@@ -13,6 +13,7 @@ public enum ErrorType {
     ACCOUNT(6, "No account or insufficient credentials"),
     IMPORT(7, "No local file found after import"),
     WIFI(8, "Book skipped because of wi-fi download size limitations"),
+    BLOCKED(9, "Book contains a blocked tag"),
     UNDEFINED(99, "Undefined");
 
     private final int code;

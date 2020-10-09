@@ -355,6 +355,8 @@
     <string name="help_web_download">You\'ve reached a book page.\nTime to download with the bottom bar!</string>
     <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
     <string name="help_web_exh_account">Please use or create an ExHentai account</string>
+    <string name="blocked_tag">Book has a blocked tag (%s)\nDownload canceled</string>
+    <string name="blocked_tag_queued">Book has a blocked tag (%s)\nQueued as an error</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>

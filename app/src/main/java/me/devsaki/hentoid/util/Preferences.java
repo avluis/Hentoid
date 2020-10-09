@@ -9,7 +9,6 @@ import androidx.preference.PreferenceManager;
 
 import com.annimon.stream.Stream;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -471,6 +470,14 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_RETRIES_MEM_LIMIT, Integer.toString(Default.PREF_DL_RETRIES_MEM_LIMIT)) + "");
     }
 
+    public static List<String> getBlockedTags() {
+        return Stream.of(sharedPreferences.getString(Key.PREF_DL_BLOCKED_TAGS, "").split(",")).map(String::trim).toList();
+    }
+
+    public static int getTagBlockingBehaviour() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_BLOCKED_TAG_BEHAVIOUR, Integer.toString(Default.PREF_DL_BLOCKED_TAGS_BEHAVIOUR)) + "");
+    }
+
     public static boolean isDlHitomiWebp() {
         return sharedPreferences.getBoolean(Key.PREF_DL_HITOMI_WEBP, Default.PREF_DL_HITOMI_WEBP);
     }
@@ -479,8 +486,7 @@ public final class Preferences {
         String siteCodesStr = sharedPreferences.getString(Key.ACTIVE_SITES, Default.ACTIVE_SITES) + "";
         if (siteCodesStr.isEmpty()) return Collections.emptyList();
 
-        List<String> siteCodes = Arrays.asList(siteCodesStr.split(","));
-        return Stream.of(siteCodes).map(s -> Site.searchByCode(Long.valueOf(s))).toList();
+        return Stream.of(siteCodesStr.split(",")).map(s -> Site.searchByCode(Long.parseLong(s))).toList();
     }
 
     public static void setActiveSites(List<Site> activeSites) {
@@ -610,6 +616,8 @@ public final class Preferences {
         static final String PREF_DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String PREF_DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String PREF_DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
+        static final String PREF_DL_BLOCKED_TAGS = "pref_dl_blocked_tags";
+        static final String PREF_DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
         static final String PREF_DL_HITOMI_WEBP = "pref_dl_hitomi_webp";
         public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
@@ -680,6 +688,7 @@ public final class Preferences {
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
+        static final int PREF_DL_BLOCKED_TAGS_BEHAVIOUR = Constant.PREF_DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
         static final boolean PREF_DL_HITOMI_WEBP = true;
         static final boolean PREF_CHECK_UPDATES = true;
         // Default menu in v1.9.x
@@ -721,6 +730,8 @@ public final class Preferences {
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_AUTH_ID = 3;
+        public static final int PREF_DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE = 0;
+        public static final int PREF_DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1;
         static final int TRUNCATE_FOLDER_NONE = 0;
         public static final int PREF_VIEWER_DISPLAY_FIT = 0;
         public static final int PREF_VIEWER_DISPLAY_FILL = 1;
