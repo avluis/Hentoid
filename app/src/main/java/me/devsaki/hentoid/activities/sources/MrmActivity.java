@@ -6,6 +6,7 @@ public class MrmActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "myreadingmanga.info";
     private static final String[] GALLERY_FILTER = {"myreadingmanga.info/[%\\w\\-]+/$"};
+    private static final String[] DIRTY_ELEMENTS = {"center.imgtop"};
 
     Site getStartSite() {
         return Site.MRM;
@@ -13,15 +14,9 @@ public class MrmActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        MrmWebClient client = new MrmWebClient(GALLERY_FILTER, this);
+        addDirtyElements(DIRTY_ELEMENTS);
+        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
-    }
-
-    private class MrmWebClient extends CustomWebViewClient {
-
-        MrmWebClient(String[] filter, WebContentListener listener) {
-            super(filter, listener);
-        }
     }
 }
