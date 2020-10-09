@@ -227,6 +227,14 @@ public class HttpHelper {
 
         for (Map.Entry<String, String> entry : cookiesToSet.entrySet())
             mgr.setCookie(domain, entry.getKey() + "=" + entry.getValue());
+
+        mgr.flush();
+    }
+
+    public static boolean hasDomainCookie(@NonNull final String url, @NonNull final String cookieName) {
+        String domain = getDomainFromUri(url);
+        String existingCookiesStr = CookieManager.getInstance().getCookie(domain);
+        return (existingCookiesStr != null && existingCookiesStr.toLowerCase().contains(cookieName.toLowerCase() + "="));
     }
 
     /**
