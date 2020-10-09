@@ -487,6 +487,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             });
 
 
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptThirdPartyCookies(webView, true);
+
         Timber.i("Using agent %s", webView.getSettings().getUserAgentString());
         chromeVersion = getChromeVersion(this);
 
@@ -964,7 +967,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                                                           @NonNull WebResourceRequest request) {
             // Data fetched with POST is out of scope of analysis and adblock
             if (!request.getMethod().equalsIgnoreCase("get")) {
-                Timber.d("[%s] ignoring; method = %s", request.getUrl().toString(), request.getMethod());
+                Timber.v("[%s] ignored by interceptor; method = %s", request.getUrl().toString(), request.getMethod());
                 return super.shouldInterceptRequest(view, request);
             }
 
