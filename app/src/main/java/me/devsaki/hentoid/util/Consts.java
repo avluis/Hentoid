@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import android.os.Build;
+
 import me.devsaki.hentoid.BuildConfig;
 
 /**
@@ -26,7 +28,8 @@ public abstract class Consts {
 
     public static final String THUMB_FILE_NAME = "thumb";
 
-    public static final String USER_AGENT_NEUTRAL = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36";
+    // Some security mechanisms do check if Android devices connect with an Android mobile agent
+    public static final String USER_AGENT_NEUTRAL = "Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + "; " + Build.MODEL + ") AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.75 Mobile Safari/537.36";
 
     public static final String USER_AGENT = USER_AGENT_NEUTRAL + " Hentoid/v" + BuildConfig.VERSION_NAME;
 
