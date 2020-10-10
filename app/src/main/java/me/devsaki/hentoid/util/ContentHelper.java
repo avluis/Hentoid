@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -532,8 +533,8 @@ public final class ContentHelper {
         Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
         int order = initialOrder;
-        // Sort files by name alpha
-        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sortBy(DocumentFile::getName).collect(toList());
+        // Sort files by anything that resembles a number inside their names
+        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberComparator()).collect(toList());
         for (DocumentFile f : fileList) {
             String name = namePrefix + ((f.getName() != null) ? f.getName() : "");
             ImageFile img = new ImageFile();
@@ -557,5 +558,21 @@ public final class ContentHelper {
             Timber.w(e);
         }
         return new HashMap<>();
+    }
+
+    static class InnerNameNumberComparator implements Comparator<DocumentFile> {
+        @Override
+        public int compare(@NonNull DocumentFile o1, @NonNull DocumentFile o2) {
+            String name1 = o1.getName();
+            if (null == name1) name1 = "";
+            String name2 = o2.getName();
+            if (null == name2) name2 = "";
+            int innerNumber1 = Helper.extractNumeric(name1);
+            if (-1 == innerNumber1) return name1.compareTo(name2);
+            int innerNumber2 = Helper.extractNumeric(name2);
+            if (-1 == innerNumber2) return name1.compareTo(name2);
+
+            return Integer.compare(innerNumber1, innerNumber2);
+        }
     }
 }

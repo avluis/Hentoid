@@ -11,6 +11,7 @@ import android.webkit.WebSettings;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.ByteArrayInputStream;
@@ -89,7 +90,6 @@ public final class Helper {
         return (int) (dp * scaleFactor);
     }
 
-
     public static List<Long> getListFromPrimitiveArray(long[] input) {
         List<Long> list = new ArrayList<>(input.length);
         for (long n : input) list.add(n);
@@ -111,10 +111,17 @@ public final class Helper {
         return ret;
     }
 
-    // Match a number with optional '-' and decimal.
-    public static boolean isNumeric(String str) {
+    // Match a number with optional '-' and decimal separator
+    public static boolean isNumeric(@NonNull final String str) {
         Matcher m = NUMERIC_PATTERN.matcher(str);
         return m.matches();
+    }
+
+    public static int extractNumeric(@Nullable final String str) {
+        if (null == str) return -1;
+        String result = StringUtils.getDigits(str);
+        if (result.isEmpty()) return -1;
+        else return Integer.parseInt(result);
     }
 
     public static float coerceIn(float value, float min, float max) {
@@ -199,10 +206,6 @@ public final class Helper {
         if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
             throw new IllegalStateException("This should not be run on the UI thread");
         }
-    }
-
-    public static void runOnscheduler() {
-
     }
 
     /// <summary>
