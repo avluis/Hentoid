@@ -902,15 +902,15 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         // Drag, drop & swiping
 //        if (isEditMode) {
-            SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
-                    this,
-                    this,
-                    ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
-            dragSwipeCallback.setNotifyAllDrops(true);
-            dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
+        SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
+                this,
+                this,
+                ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
+        dragSwipeCallback.setNotifyAllDrops(true);
+        dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
-            touchHelper = new ItemTouchHelper(dragSwipeCallback);
-            touchHelper.attachToRecyclerView(recyclerView);
+        touchHelper = new ItemTouchHelper(dragSwipeCallback);
+        touchHelper.attachToRecyclerView(recyclerView);
 //        }
 
         recyclerView.setAdapter(fastAdapter);

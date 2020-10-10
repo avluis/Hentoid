@@ -50,6 +50,8 @@ public class ImportHelper {
     }
 
 
+    private static final String EXTERNAL_LIB_TAG = "external-library";
+
     private static final int RQST_STORAGE_PERMISSION_HENTOID = 3;
     private static final int RQST_STORAGE_PERMISSION_EXTERNAL = 4;
 
@@ -362,8 +364,10 @@ public class ImportHelper {
             }
             result.setSite(site);
             result.setDownloadDate(bookFolder.lastModified());
-            result.addAttributes(parentNamesAsTags(parentNames, targetStatus.equals(StatusContent.EXTERNAL)));
+            result.addAttributes(parentNamesAsTags(parentNames));
         }
+        if (targetStatus.equals(StatusContent.EXTERNAL))
+            result.addAttributes(newExternalAttribute());
 
         result.setStatus(targetStatus).setStorageUri(bookFolder.getUri().toString());
         List<ImageFile> images = new ArrayList<>();
@@ -400,8 +404,9 @@ public class ImportHelper {
         if (null == result) {
             result = new Content().setSite(Site.NONE).setTitle((null == parent.getName()) ? "" : parent.getName()).setUrl("");
             result.setDownloadDate(parent.lastModified());
-            result.addAttributes(parentNamesAsTags(parentNames, true));
+            result.addAttributes(parentNamesAsTags(parentNames));
         }
+        result.addAttributes(newExternalAttribute());
 
         result.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.getUri().toString());
         List<ImageFile> images = new ArrayList<>();
@@ -448,16 +453,21 @@ public class ImportHelper {
         }
     }
 
-    private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames, boolean addExternalTag) {
+    private static List<Attribute> newExternalAttribute() {
+        return Stream.of(new Attribute(AttributeType.TAG, EXTERNAL_LIB_TAG, EXTERNAL_LIB_TAG, Site.NONE)).toList();
+    }
+
+    public static void removeExternalAttribute(@NonNull final Content content) {
+        content.putAttributes(Stream.of(content.getAttributes()).filterNot(a -> a.getName().equalsIgnoreCase(EXTERNAL_LIB_TAG)).toList());
+    }
+
+    private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames) {
         AttributeMap result = new AttributeMap();
         // Don't include the very first one, it's the name of the root folder of the library
         if (parentNames.size() > 1) {
             for (int i = 1; i < parentNames.size(); i++)
                 result.add(new Attribute(AttributeType.TAG, parentNames.get(i), parentNames.get(i), Site.NONE));
         }
-        // Add a generic tag to filter external library books
-        if (addExternalTag)
-            result.add(new Attribute(AttributeType.TAG, "external-library", "external-library", Site.NONE));
         return result;
     }
 }

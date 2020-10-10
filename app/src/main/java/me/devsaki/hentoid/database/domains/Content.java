@@ -125,6 +125,14 @@ public class Content implements Serializable {
         this.attributes.clear();
     }
 
+    public void putAttributes(List<Attribute> attributes) {
+        // We do want to compare array references, not content
+        if (attributes != null && attributes != this.attributes) {
+            this.attributes.clear();
+            this.attributes.addAll(attributes);
+        }
+    }
+
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
         if (attributes != null)

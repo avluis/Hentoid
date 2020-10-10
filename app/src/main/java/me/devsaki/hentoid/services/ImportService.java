@@ -283,6 +283,10 @@ public class ImportService extends IntentService {
                                 content.setImageFiles(contentImages);
                             }
                         }
+
+                        // If content has an external-library tag, remove it because we're importing for the primary library now
+                        ImportHelper.removeExternalAttribute(content);
+
                         content.computeSize();
                         ContentHelper.addContent(dao, content);
                         trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK : %s", bookFolder.getUri().toString());
