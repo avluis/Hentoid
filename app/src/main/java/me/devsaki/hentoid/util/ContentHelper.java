@@ -560,7 +560,7 @@ public final class ContentHelper {
         return new HashMap<>();
     }
 
-    static class InnerNameNumberComparator implements Comparator<DocumentFile> {
+    private static class InnerNameNumberComparator implements Comparator<DocumentFile> {
         @Override
         public int compare(@NonNull DocumentFile o1, @NonNull DocumentFile o2) {
             String name1 = o1.getName();
