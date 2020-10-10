@@ -79,6 +79,23 @@
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_nhentai" />
+
+        <ImageView
+            android:id="@+id/ivExternal"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:src="@drawable/ic_external_library"
+            android:tooltipText="@string/external_help"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/queue_site_button"
+            app:layout_constraintTop_toBottomOf="@id/tvTags"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
@@ -109,17 +126,17 @@
             android:id="@+id/undo_swipe"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:fontFamily="sans-serif"
-            android:gravity="center_vertical|start"
-            android:padding="16dp"
-            android:lines="1"
-            android:singleLine="true"
-            android:text="@string/undo"
+            android:background="@color/black_opacity_25"
             android:clickable="true"
             android:focusable="true"
+            android:fontFamily="sans-serif"
+            android:gravity="center_vertical|start"
+            android:lines="1"
+            android:padding="16dp"
+            android:singleLine="true"
+            android:text="@string/undo"
             android:textAllCaps="true"
             android:textColor="?colorSecondary"
-            android:background="@color/black_opacity_25"
             android:textDirection="anyRtl"
             android:textSize="@dimen/text_subtitle_2"
             android:textStyle="bold" />

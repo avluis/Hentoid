@@ -50,6 +50,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
@@ -216,6 +217,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private View ivNew;
         private ImageView ivError;
         private ImageView ivFavourite;
+        private ImageView ivExternal;
 
         // Specific to Queued content
         private View swipeResult;
@@ -247,6 +249,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (viewType == ViewType.LIBRARY) {
                 ivNew = itemView.findViewById(R.id.lineNew);
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
+                ivExternal = itemView.findViewById(R.id.ivExternal);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
             } else if (viewType == ViewType.QUEUE || viewType == ViewType.LIBRARY_EDIT) {
@@ -482,11 +485,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (null == content) return;
 
             // Source icon
-            if (content.getSite() != null) {
-                int img = content.getSite().getIco();
+            Site site = content.getSite();
+            if (site != null && !site.equals(Site.NONE)) {
+                int img = site.getIco();
                 ivSite.setImageResource(img);
             } else {
-                ivSite.setImageResource(R.drawable.ic_hentoid_shape);
+                ivSite.setVisibility(View.GONE);
             }
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
@@ -499,6 +503,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivRedownload.setVisibility(View.VISIBLE);
                 ivError.setVisibility(View.VISIBLE);
             } else if (ViewType.LIBRARY == item.viewType) {
+                ivExternal.setVisibility(content.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
                 if (content.isFavourite()) {
                     ivFavourite.setImageResource(R.drawable.ic_fav_full);
                 } else {
