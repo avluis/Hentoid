@@ -32,12 +32,15 @@ import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.DrawerItem;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
 
 public final class NavigationDrawerFragment extends Fragment {
 
@@ -45,6 +48,7 @@ public final class NavigationDrawerFragment extends Fragment {
 
     private final ItemAdapter<DrawerItem> drawerAdapter = new ItemAdapter<>();
     private final FastAdapter<DrawerItem> fastAdapter = FastAdapter.with(drawerAdapter);
+    private RecyclerView recyclerView;
 
     private UpdateEvent updateInfo;
 
@@ -59,6 +63,19 @@ public final class NavigationDrawerFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         parentActivity = (LibraryActivity) context;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
+        Preferences.unregisterPrefsChangedListener(prefsListener);
     }
 
     @Override
@@ -77,7 +94,7 @@ public final class NavigationDrawerFragment extends Fragment {
         aboutBadge = requireViewById(rootView, R.id.drawer_about_badge_btn);
 
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p));
-        RecyclerView recyclerView = requireViewById(rootView, R.id.drawer_list);
+        recyclerView = requireViewById(rootView, R.id.drawer_list);
         recyclerView.setAdapter(fastAdapter);
 
         updateItems();
@@ -150,17 +167,10 @@ public final class NavigationDrawerFragment extends Fragment {
         applyFlagsAndAlerts();
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
-        Preferences.unregisterPrefsChangedListener(prefsListener);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDrawerClosed(CommunicationEvent event) {
+        if (event.getRecipient() != RC_DRAWER) return;
+        if (EV_CLOSED == event.getType()) recyclerView.scrollToPosition(0);
     }
 
     private void onAboutClick() {

@@ -15,6 +15,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -72,16 +73,15 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
 
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 
 public class LibraryActivity extends BaseActivity {
-
-    public static final int EV_SEARCH = 1;
-    public static final int EV_ADVANCED_SEARCH = 2;
-    public static final int EV_UPDATE_SORT = 3;
-
-    public static final int RC_GROUPS = 1;
-    public static final int RC_CONTENTS = 2;
-
 
     private DrawerLayout drawerLayout;
 
@@ -227,6 +227,16 @@ public class LibraryActivity extends BaseActivity {
 
         setContentView(R.layout.activity_library);
         drawerLayout = findViewById(R.id.drawer_layout);
+        drawerLayout.addDrawerListener(new ActionBarDrawerToggle(this, drawerLayout,
+                toolbar, R.string.open_drawer, R.string.close_drawer) {
+
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                EventBus.getDefault().post(new CommunicationEvent(EV_CLOSED, RC_DRAWER, ""));
+            }
+
+        });
 
         callback = new OnBackPressedCallback(false) {
             @Override

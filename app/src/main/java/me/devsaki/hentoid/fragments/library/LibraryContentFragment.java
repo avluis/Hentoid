@@ -95,6 +95,10 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 
 public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
@@ -688,15 +692,15 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActivityEvent(CommunicationEvent event) {
-        if (event.getRecipient() != LibraryActivity.RC_CONTENTS) return;
+        if (event.getRecipient() != RC_CONTENTS) return;
         switch (event.getType()) {
-            case LibraryActivity.EV_SEARCH:
+            case EV_SEARCH:
                 viewModel.searchContentUniversal(event.getMessage());
                 break;
-            case LibraryActivity.EV_ADVANCED_SEARCH:
+            case EV_ADVANCED_SEARCH:
                 onAdvancedSearchButtonClick();
                 break;
-            case LibraryActivity.EV_UPDATE_SORT:
+            case EV_UPDATE_SORT:
                 updateSortControls();
                 initToolbars();
                 break;

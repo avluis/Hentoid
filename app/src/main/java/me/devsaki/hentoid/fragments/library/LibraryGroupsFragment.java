@@ -69,6 +69,9 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 
 public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
@@ -449,12 +452,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActivityEvent(CommunicationEvent event) {
-        if (event.getRecipient() != LibraryActivity.RC_GROUPS) return;
+        if (event.getRecipient() != RC_GROUPS) return;
         switch (event.getType()) {
-            case LibraryActivity.EV_SEARCH:
+            case EV_SEARCH:
                 viewModel.searchGroup(Preferences.getGroupingDisplay(), event.getMessage(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
                 break;
-            case LibraryActivity.EV_UPDATE_SORT:
+            case EV_UPDATE_SORT:
                 updateSortControls();
                 initToolbars();
                 break;

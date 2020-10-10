@@ -201,6 +201,8 @@
     <string name="redownload_generating_log_file">Generating log file…</string>
 
     <!-- Library fragment -->
+    <string name="open_drawer">Open drawer</string>
+    <string name="close_drawer">Close drawer</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
