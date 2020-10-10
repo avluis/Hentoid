@@ -270,7 +270,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
             viewModel.addSelectedAttribute(a);
-            searchMasterData(tagSearchView.getQuery().toString());
+            // Empty query and display all attributes again
+            tagSearchView.setQuery("", false);
+            searchMasterData("");
         }
     }
 
