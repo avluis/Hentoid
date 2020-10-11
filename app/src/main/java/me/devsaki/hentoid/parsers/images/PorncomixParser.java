@@ -2,11 +2,12 @@ package me.devsaki.hentoid.parsers.images;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Stream;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -43,7 +44,7 @@ public class PorncomixParser extends BaseParser {
         if (mangaPagesContainer != null) {
             String pageArray = Helper.replaceUnicode(mangaPagesContainer.childNode(0).toString().replace("\"", "").replace("\\/", "/"));
             String[] pages = pageArray.substring(pageArray.indexOf('[') + 1, pageArray.lastIndexOf(']')).split(",");
-            result.addAll(Arrays.asList(pages));
+            result.addAll(Stream.of(pages).distinct().toList()); // Preloaded images list may contain duplicates
         } else if (galleryPages != null && !galleryPages.isEmpty()) {
             for (Element e : galleryPages)
                 result.add(e.attr("href"));
