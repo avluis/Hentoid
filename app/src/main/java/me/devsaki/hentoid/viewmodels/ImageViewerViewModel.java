@@ -76,6 +76,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         collectionDao = collectionDAO;
     }
 
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        collectionDao.cleanup();
+        searchDisposable.dispose();
+        compositeDisposable.clear();
+    }
+
 
     @NonNull
     public LiveData<Content> getContent() {
@@ -210,13 +218,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
 
         images.setValue(imgs);
-    }
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        searchDisposable.dispose();
-        compositeDisposable.clear();
     }
 
     public void onLeaveBook(int index, int highestImageIndexReached) {

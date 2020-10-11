@@ -55,6 +55,7 @@ public class QueueViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
+        dao.cleanup();
         compositeDisposable.clear();
     }
 

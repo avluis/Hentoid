@@ -61,6 +61,7 @@ public class SearchViewModel extends ViewModel {
     protected void onCleared() {
         filterDisposable.dispose();
         countDisposable.dispose();
+        collectionDAO.cleanup();
         super.onCleared();
     }
 
