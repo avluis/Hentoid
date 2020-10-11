@@ -6,7 +6,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -23,17 +23,17 @@
         android:allowBackup="false"
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
+        android:largeHeap="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/Theme.Light"
         android:usesCleartextTraffic="true"
-        android:largeHeap="true"
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.SplashActivity"
-            android:theme="@style/Theme.Light.Splash"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:theme="@style/Theme.Light.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -141,11 +141,11 @@
         <activity
             android:name=".activities.DrawerEditActivity"
             android:label="@string/title_activity_drawer_edit"
-            tools:ignore="UnusedAttribute"/>
+            tools:ignore="UnusedAttribute" />
         <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
-            tools:ignore="UnusedAttribute"/>
+            tools:ignore="UnusedAttribute" />
         <activity
             android:name=".activities.UnlockActivity"
             android:noHistory="true"
@@ -435,6 +435,8 @@
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
         <receiver android:name=".receiver.ArchiveNotificationSuccessReceiver" />
+
+        <receiver android:name=".receiver.DownloadNotificationPauseReceiver" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

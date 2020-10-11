@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.QueueActivity
+import me.devsaki.hentoid.receiver.DownloadNotificationPauseReceiver
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.notification.Notification
 import java.util.*
@@ -33,6 +34,7 @@ class DownloadProgressNotification(
                 .setProgress(max, progress, false)
                 .setColor(ThemeHelper.getColor(context, R.color.secondary_light))
                 .setContentIntent(getDefaultIntent(context))
+                .addAction(R.drawable.ic_action_pause, context.getString(R.string.pause), getPauseIntent(context))
                 .setLocalOnly(true)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
@@ -44,5 +46,10 @@ class DownloadProgressNotification(
         resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
 
         return PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+
+    private fun getPauseIntent(context: Context): PendingIntent {
+        val intent = Intent(context, DownloadNotificationPauseReceiver::class.java)
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT)
     }
 }
