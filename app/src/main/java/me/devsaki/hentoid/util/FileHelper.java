@@ -28,11 +28,13 @@ import com.annimon.stream.Stream;
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -779,7 +781,14 @@ public class FileHelper {
         }
     }
 
-    // Legacy (non-SAF, pre-Android 10) version of openNewDownloadOutputStream
+    /**
+     * Legacy (non-SAF, pre-Android 10) version of openNewDownloadOutputStream
+     * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+     *
+     * @param fileName Name of the file to create
+     * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+     * @throws IOException If something horrible happens during I/O
+     */
     private static OutputStream openNewDownloadOutputStreamLegacy(@NonNull final String fileName) throws IOException {
         File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         if (null == downloadsFolder) throw new IOException("Downloads folder not found");
@@ -791,8 +800,17 @@ public class FileHelper {
         return getOutputStream(target);
     }
 
-    // Android 10 version of openNewDownloadOutputStream
-    // https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
+    /**
+     * Android 10 version of openNewDownloadOutputStream
+     * https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
+     * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+     *
+     * @param context  Context to use
+     * @param fileName Name of the file to create
+     * @param mimeType Mime-type of the file to create
+     * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+     * @throws IOException If something horrible happens during I/O
+     */
     @TargetApi(29)
     private static OutputStream openNewDownloadOutputStreamQ(
             @NonNull final Context context,
@@ -809,6 +827,13 @@ public class FileHelper {
         return resolver.openOutputStream(targetFileUri);
     }
 
+    /**
+     * Format the given file size using human-readable units
+     * e.g. if the size represents more than 1M Bytes, the result is formatted as megabytes
+     *
+     * @param bytes Size to format, in bytes
+     * @return Given file size using human-readable units
+     */
     public static String formatHumanReadableSize(long bytes) {
         return FileUtils.byteCountToDisplaySize(bytes);
     }
@@ -934,6 +959,34 @@ public class FileHelper {
      */
     private static NameFilter createNameFilterEquals(@NonNull final String name) {
         return displayName -> displayName.equalsIgnoreCase(name);
+    }
+
+    /**
+     * Return the content of the given file as an UTF-8 string
+     * Leading BOMs are ignored
+     *
+     * @param context Context to be used
+     * @param f       File to read from
+     * @return Content of the given file as a string
+     */
+    static String readFileAsString(@NonNull final Context context, @NonNull DocumentFile f) {
+        StringBuilder result = new StringBuilder();
+        String sCurrentLine;
+        boolean isFirst = true;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(FileHelper.getInputStream(context, f)))) {
+            while ((sCurrentLine = br.readLine()) != null) {
+                if (isFirst) {
+                    // Strip UTF-8 BOMs if any
+                    if (sCurrentLine.charAt(0) == '\uFEFF')
+                        sCurrentLine = sCurrentLine.substring(1);
+                    isFirst = false;
+                }
+                result.append(sCurrentLine);
+            }
+        } catch (IOException | IllegalArgumentException e) {
+            Timber.e(e, "Error while reading %s", f.getUri().toString());
+        }
+        return result.toString();
     }
 
     @FunctionalInterface

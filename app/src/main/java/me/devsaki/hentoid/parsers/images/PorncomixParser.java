@@ -42,7 +42,7 @@ public class PorncomixParser extends BaseParser {
         List<String> result = new ArrayList<>();
 
         if (mangaPagesContainer != null) {
-            String pageArray = Helper.replaceUnicode(mangaPagesContainer.childNode(0).toString().replace("\"", "").replace("\\/", "/"));
+            String pageArray = Helper.replaceEscapedChars(mangaPagesContainer.childNode(0).toString().replace("\"", "").replace("\\/", "/"));
             String[] pages = pageArray.substring(pageArray.indexOf('[') + 1, pageArray.lastIndexOf(']')).split(",");
             result.addAll(Stream.of(pages).distinct().toList()); // Preloaded images list may contain duplicates
         } else if (galleryPages != null && !galleryPages.isEmpty()) {

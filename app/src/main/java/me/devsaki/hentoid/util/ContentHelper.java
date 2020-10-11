@@ -134,6 +134,13 @@ public final class ContentHelper {
         }
     }
 
+    /**
+     * Update the JSON file that stores the queue with the current content of the queue
+     *
+     * @param context Context to be used
+     * @param dao     DAO to be used
+     * @return True if the queue JSON file has been updated properly; false instead
+     */
     public static boolean updateQueueJson(@NonNull Context context, @NonNull CollectionDAO dao) {
         Helper.assertNonUiThread();
         List<QueueRecord> queue = dao.selectQueue();
@@ -249,6 +256,13 @@ public final class ContentHelper {
         }
     }
 
+    /**
+     * Add new content to the library
+     *
+     * @param dao     DAO to be used
+     * @param content Content to add to the library
+     * @return ID of the newly added Content
+     */
     public static long addContent(@NonNull CollectionDAO dao, @NonNull Content content) {
         content.populateAuthor();
         long newContentId = dao.insertContent(content);
@@ -318,7 +332,13 @@ public final class ContentHelper {
         }
     }
 
-    // TODO doc
+    /**
+     * Define a new cover among a Content's ImageFiles
+     *
+     * @param newCover ImageFile to be used as a cover for the Content it is related to
+     * @param dao      DAO to be used
+     * @param context  Context to be used
+     */
     public static void setContentCover(@NonNull ImageFile newCover, @NonNull CollectionDAO dao, @NonNull final Context context) {
         Helper.assertNonUiThread();
 
@@ -476,7 +496,32 @@ public final class ContentHelper {
         context.startActivity(Intent.createChooser(intent, context.getString(R.string.send_to)));
     }
 
-    private static String removeLeadingZeroesAndExtension(String s) {
+    /**
+     * Parse the given download parameters string into a map of strings
+     *
+     * @param downloadParamsStr String representation of the download parameters to parse
+     * @return Map of strings describing the given download parameters
+     */
+    public static Map<String, String> parseDownloadParams(final String downloadParamsStr) {
+        // Handle empty and {}
+        if (null == downloadParamsStr || downloadParamsStr.trim().length() <= 2)
+            return new HashMap<>();
+        try {
+            return JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
+        } catch (IOException e) {
+            Timber.w(e);
+        }
+        return new HashMap<>();
+    }
+
+
+    /**
+     * Remove the leading zeroes and the file extension of the given string
+     *
+     * @param s String to be cleaned
+     * @return Input string, without leading zeroes and extension
+     */
+    private static String removeLeadingZeroesAndExtension(@Nullable String s) {
         if (null == s) return "";
 
         int beginIndex = 0;
@@ -490,6 +535,12 @@ public final class ContentHelper {
         return (-1 == beginIndex) ? "0" : s.substring(beginIndex);
     }
 
+    /**
+     * Remove the leading zeroes and the file extension of the given string using cached results
+     *
+     * @param s String to be cleaned
+     * @return Input string, without leading zeroes and extension
+     */
     private static String removeLeadingZeroesAndExtensionCached(String s) {
         if (fileNameMatchCache.containsKey(s)) return fileNameMatchCache.get(s);
         else {
@@ -499,6 +550,13 @@ public final class ContentHelper {
         }
     }
 
+    /**
+     * Matches the given files to the given ImageFiles according to their name (without leading zeroes nor file extension)
+     *
+     * @param files  Files to be matched to the given ImageFiles
+     * @param images ImageFiles to be matched to the given files
+     * @return List of matched ImageFiles, with the Uri of the matching file
+     */
     public static List<ImageFile> matchFilesToImageList(@NonNull final List<DocumentFile> files, @NonNull final List<ImageFile> images) {
         Map<String, ImmutablePair<String, Long>> fileNameProperties = new HashMap<>(files.size());
         List<ImageFile> result = new ArrayList<>();
@@ -518,6 +576,13 @@ public final class ContentHelper {
         return result;
     }
 
+    /**
+     * Create the list of ImageFiles from the given folder
+     *
+     * @param context Context to be used
+     * @param folder  Folder to read the images from
+     * @return List of ImageFiles corresponding to all supported pictures inside the given folder, sorted numerically then alphabetically
+     */
     public static List<ImageFile> createImageListFromFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
         List<DocumentFile> imageFiles = FileHelper.listFiles(context, folder, ImageHelper.getImageNamesFilter());
         if (!imageFiles.isEmpty())
@@ -525,14 +590,33 @@ public final class ContentHelper {
         else return Collections.emptyList();
     }
 
+    /**
+     * Create the list of ImageFiles from the given files
+     *
+     * @param files Files to find images into
+     * @return List of ImageFiles corresponding to all supported pictures among the given files, sorted numerically then alphabetically
+     */
     public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files) {
         return createImageListFromFiles(files, StatusContent.DOWNLOADED, 0, "");
     }
 
-    public static List<ImageFile> createImageListFromFiles(@NonNull final List<DocumentFile> files, StatusContent status, int initialOrder, String namePrefix) {
+    /**
+     * Create the list of ImageFiles from the given files
+     *
+     * @param files         Files to find images into
+     * @param targetStatus  Target status of the ImageFiles to create
+     * @param startingOrder Starting order of the ImageFiles to create
+     * @param namePrefix    Prefix to add in front of the name of the ImageFiles to create
+     * @return List of ImageFiles corresponding to all supported pictures among the given files, sorted numerically then alphabetically
+     */
+    public static List<ImageFile> createImageListFromFiles(
+            @NonNull final List<DocumentFile> files,
+            @NonNull final StatusContent targetStatus,
+            int startingOrder,
+            @NonNull final String namePrefix) {
         Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
-        int order = initialOrder;
+        int order = startingOrder;
         // Sort files by anything that resembles a number inside their names
         List<DocumentFile> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberComparator()).collect(toList());
         for (DocumentFile f : fileList) {
@@ -540,26 +624,18 @@ public final class ContentHelper {
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.getUri().toString()).setStatus(status).setFileUri(f.getUri().toString()).setSize(f.length());
+            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.getUri().toString()).setStatus(targetStatus).setFileUri(f.getUri().toString()).setSize(f.length());
             img.setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(name)));
             result.add(img);
         }
         return result;
     }
 
-    public static Map<String, String> parseDownloadParams(final String downloadParamsStr) {
-        // Handle empty and {}
-        if (null == downloadParamsStr || downloadParamsStr.trim().length() <= 2)
-            return new HashMap<>();
-
-        try {
-            return JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
-        } catch (IOException e) {
-            Timber.w(e);
-        }
-        return new HashMap<>();
-    }
-
+    /**
+     * Comparator to be used to sort files according to their names :
+     *  - Sort according to the concatenation of all its numerical characters, if any
+     *  - If none, sort alphabetically (default string compare)
+     */
     private static class InnerNameNumberComparator implements Comparator<DocumentFile> {
         @Override
         public int compare(@NonNull DocumentFile o1, @NonNull DocumentFile o2) {

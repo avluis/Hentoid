@@ -115,16 +115,16 @@ public class ImportService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         // True if the user has asked for a cleanup when calling import from Preferences
         boolean doRename = false;
-        boolean doCleanAbsent = false;
+        boolean doCleanNoJson = false;
         boolean doCleanNoImages = false;
 
         if (intent != null && intent.getExtras() != null) {
             ImportActivityBundle.Parser parser = new ImportActivityBundle.Parser(intent.getExtras());
             doRename = parser.getRefreshRename();
-            doCleanAbsent = parser.getRefreshCleanAbsent();
+            doCleanNoJson = parser.getRefreshCleanNoJson();
             doCleanNoImages = parser.getRefreshCleanNoImages();
         }
-        startImport(doRename, doCleanAbsent, doCleanNoImages);
+        startImport(doRename, doCleanNoJson, doCleanNoImages);
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {

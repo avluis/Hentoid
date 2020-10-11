@@ -58,38 +58,65 @@ public class ImportHelper {
     @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.CREATE_FAIL, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Result {
-        int OK_EMPTY_FOLDER = 0;
-        int OK_LIBRARY_DETECTED = 1;
-        int OK_LIBRARY_DETECTED_ASK = 2;
-        int CANCELED = 3;
-        int INVALID_FOLDER = 4;
-        int CREATE_FAIL = 5;
-        int OTHER = 6;
+        int OK_EMPTY_FOLDER = 0; // OK - Existing, empty Hentoid folder
+        int OK_LIBRARY_DETECTED = 1; // OK - En existing Hentoid folder with books
+        int OK_LIBRARY_DETECTED_ASK = 2; // OK - Existing Hentoid folder with books + we need to ask the user if he wants to import them
+        int CANCELED = 3; // Operation canceled
+        int INVALID_FOLDER = 4; // File or folder is invalid, cannot be found
+        int CREATE_FAIL = 5; // Hentoid folder could not be created
+        int OTHER = 6; // Any other issue
     }
 
     private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
             || displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD);
 
+    /**
+     * Import options for the Hentoid folder
+     */
     public static class ImportOptions {
-        public boolean rename;
-        public boolean cleanAbsent;
-        public boolean cleanNoImages;
+        public boolean rename; // If true, rename folders with current naming convention
+        public boolean cleanNoJson; // If true, delete folders where no JSON file is found
+        public boolean cleanNoImages; // If true, delete folders where no supported images are found
     }
 
+    /**
+     * Indicate whether the given folder name is a valid Hentoid folder name
+     *
+     * @param folderName Folder name to test
+     * @return True if the given folder name is a valid Hentoid folder name; false if not
+     */
     public static boolean isHentoidFolderName(@NonNull final String folderName) {
         return hentoidFolderNames.accept(folderName);
     }
 
+    /**
+     * Open the SAF folder picker
+     *
+     * @param caller     Caller fragment
+     * @param isExternal True if the picker is used to import the external library; false if not TODO this parameter is weirdly designed
+     */
     public static void openFolderPicker(@NonNull final Fragment caller, boolean isExternal) {
         Intent intent = getFolderPickerIntent(caller.requireContext());
         caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
     }
 
+    /**
+     * Open the SAF folder picker
+     *
+     * @param caller     Caller activity
+     * @param isExternal True if the picker is used to import the external library; false if not TODO this parameter is weirdly designed
+     */
     public static void openFolderPicker(@NonNull final Activity caller, boolean isExternal) {
         Intent intent = getFolderPickerIntent(caller.getParent());
         caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
     }
 
+    /**
+     * Get the intent for the SAF folder picker properly set up, positioned on the Hentoid primary folder
+     *
+     * @param context Context to be used
+     * @return Intent for the SAF folder picker
+     */
     private static Intent getFolderPickerIntent(@NonNull final Context context) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -109,7 +136,15 @@ public class ImportHelper {
         return intent;
     }
 
-    // Return from SAF picker
+    /**
+     * Process the result of the SAF picker
+     *
+     * @param context     Context to be used
+     * @param requestCode Request code transmitted by the picker
+     * @param resultCode  Result code transmitted by the picker
+     * @param data        Intent data transmitted by the picker
+     * @return Standardized result - see ImportHelper.Result
+     */
     public static @Result
     int processPickerResult(
             @NonNull final Context context,
@@ -133,6 +168,16 @@ public class ImportHelper {
         } else return Result.OTHER;
     }
 
+    /**
+     * Scan the given tree URI for a Hentoid folder
+     * If none is found there, try to create one
+     *
+     * @param context         Context to be used
+     * @param treeUri         Tree URI of the folder where to find or create the Hentoid folder
+     * @param askScanExisting If true and an existing non-empty Hentoid folder is found, the user will be asked if he wants to import its contents
+     * @param options         Import options - See ImportHelper.ImportOptions
+     * @return Standardized result - see ImportHelper.Result
+     */
     public static @Result
     int setAndScanHentoidFolder(
             @NonNull final Context context,
@@ -182,6 +227,13 @@ public class ImportHelper {
         }
     }
 
+    /**
+     * Scan the given tree URI for external books or Hentoid books
+     *
+     * @param context Context to be used
+     * @param treeUri Tree URI of the folder where to find external books or Hentoid books
+     * @return Standardized result - see ImportHelper.Result
+     */
     public static @Result
     int setAndScanExternalFolder(
             @NonNull final Context context,
@@ -207,6 +259,12 @@ public class ImportHelper {
         return Result.OK_LIBRARY_DETECTED;
     }
 
+    /**
+     * Show the dialog to ask the user if he wants to import existing books
+     *
+     * @param context Context to be used
+     * @param cancelCallback Callback to run when the dialog is canceled
+     */
     public static void showExistingLibraryDialog(
             @NonNull final Context context,
             @Nullable Runnable cancelCallback
@@ -230,11 +288,17 @@ public class ImportHelper {
                 .show();
     }
 
-    // Count the elements inside each site's download folder (but not its subfolders)
-    //
-    // NB : this method works approximately because it doesn't try to count JSON files
-    // However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
-    // and might cause freezes -> we stick to that approximate method for ImportActivity
+    /**
+     * Detect whether the current Hentoid folder contains books or not
+     * by counting the elements inside each site's download folder (but not its subfolders)
+     *
+     * NB : this method works approximately because it doesn't try to count JSON files
+     * However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
+     * and might cause freezes -> we stick to that approximate method for ImportActivity
+     *
+     * @param context Context to be used
+     * @return True if the current Hentoid folder contains at least one book; false if not
+     */
     private static boolean hasBooks(@NonNull final Context context) {
         List<DocumentFile> downloadDirs = new ArrayList<>();
 
@@ -260,6 +324,7 @@ public class ImportHelper {
 
         return false;
     }
+
 
     @Nullable
     private static DocumentFile addHentoidFolder(@NonNull final Context context, @NonNull final DocumentFile baseFolder) {
@@ -300,7 +365,7 @@ public class ImportHelper {
 
         ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();
         builder.setRefreshRename(null != options && options.rename);
-        builder.setRefreshCleanAbsent(null != options && options.cleanAbsent);
+        builder.setRefreshCleanNoJson(null != options && options.cleanNoJson);
         builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
         intent.putExtras(builder.getBundle());
 

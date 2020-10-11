@@ -11,10 +11,6 @@ import java.util.Map;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 
-/**
- * Created by avluis on 06/05/2016.
- * JSON related utility class
- */
 public class LanguageHelper {
 
     private LanguageHelper() {
@@ -33,6 +29,13 @@ public class LanguageHelper {
         }
     }
 
+    /**
+     * Returns the resource ID of the image of the flag representing the given language
+     *
+     * @param context  Context to be used
+     * @param language Language name, either in english or in its native spelling
+     * @return Resource ID of the image of the flag representing the given language; 0 if the given language is not supported
+     */
     public static @DrawableRes
     int getFlagFromLanguage(@NonNull Context context, @NonNull final String language) {
         if (language.isEmpty()) return 0;
@@ -45,6 +48,13 @@ public class LanguageHelper {
             return 0;
     }
 
+    /**
+     * Returns the resource ID of the image of the flag representing the given country code
+     *
+     * @param context     Context to be used
+     * @param countryCode Country code (2-letter ISO-3166)
+     * @return Resource ID of the image of the flag representing the given country code
+     */
     private static @DrawableRes
     int getFlagId(@NonNull Context context, @NonNull String countryCode) {
         return context.getResources().getIdentifier("flag_" + countryCode, "drawable", context.getPackageName());

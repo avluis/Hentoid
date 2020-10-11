@@ -169,7 +169,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         } else {
             ImportHelper.ImportOptions options = new ImportHelper.ImportOptions();
             options.rename = rename;
-            options.cleanAbsent = cleanAbsent;
+            options.cleanNoJson = cleanAbsent;
             options.cleanNoImages = cleanNoImages;
 
             Uri rootUri = Uri.parse(Preferences.getStorageUri());
