@@ -454,7 +454,7 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_DL_SIZE_WIFI, Default.PREF_DL_SIZE_WIFI);
     }
 
-    public static int getDownloadLargeOnlyWifiThreshold() {
+    public static int getDownloadLargeOnlyWifiThresholdMB() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_SIZE_WIFI_THRESHOLD, Integer.toString(Default.PREF_DL_SIZE_WIFI_THRESHOLD)) + "");
     }
 

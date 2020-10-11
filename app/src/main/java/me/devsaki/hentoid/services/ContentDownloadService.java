@@ -76,6 +76,7 @@ import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
+import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.util.notification.NotificationManager;
@@ -103,6 +104,9 @@ public class ContentDownloadService extends IntentService {
     private RequestQueueManager<Object> requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
+    // Download speed calculator
+    private final DownloadSpeedCalculator downloadSpeedCalulator = new DownloadSpeedCalculator();
+
 
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
@@ -111,7 +115,7 @@ public class ContentDownloadService extends IntentService {
     private void notifyStart() {
         notificationManager = new ServiceNotificationManager(this, 1);
         notificationManager.cancel();
-        notificationManager.startForeground(new DownloadProgressNotification(this.getResources().getString(R.string.starting_download), 0, 0));
+        notificationManager.startForeground(new DownloadProgressNotification(this.getResources().getString(R.string.starting_download), 0, 0, 0, 0, 0));
 
         warningNotificationManager = new NotificationManager(this, 2);
         warningNotificationManager.cancel();
@@ -405,7 +409,7 @@ public class ContentDownloadService extends IntentService {
         boolean isDone;
         int pagesOK = 0;
         int pagesKO = 0;
-        long sizeDownloaded = 0;
+        long sizeDownloadedBytes = 0;
 
         List<ImageFile> images = content.getImageFiles();
         int totalPages = (null == images) ? 0 : images.size();
@@ -416,32 +420,38 @@ public class ContentDownloadService extends IntentService {
             ImmutablePair<Integer, Long> status = statuses.get(StatusContent.DOWNLOADED);
             if (status != null) {
                 pagesOK = status.left;
-                sizeDownloaded = status.right;
+                sizeDownloadedBytes = status.right;
             }
             status = statuses.get(StatusContent.ERROR);
             if (status != null)
                 pagesKO = status.left;
 
+            double sizeDownloadedMB = sizeDownloadedBytes / (1024.0 * 1024);
             int progress = pagesOK + pagesKO;
             isDone = progress == totalPages;
-            Timber.d("Progress: OK:%s size:%sMB - KO:%s - Total:%s", pagesOK, sizeDownloaded / (1024 * 1024), pagesKO, totalPages);
-            notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages));
-            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages, sizeDownloaded));
+            Timber.d("Progress: OK:%d size:%dMB - KO:%d - Total:%d", pagesOK, (int) sizeDownloadedMB, pagesKO, totalPages);
+
+            // Download speed and size estimation
+            downloadSpeedCalulator.addSampleNow(NetworkHelper.getIncomingNetworkUsage(this));
+            int avgSpeedKbps = (int) downloadSpeedCalulator.getAvgSpeedKbps();
+
+            double estimateBookSizeMB = -1;
+            if (pagesOK > 3 && progress > 0 && totalPages > 0) {
+                estimateBookSizeMB = sizeDownloadedMB / (progress * 1.0 / totalPages);
+                Timber.d("Estimate book size calculated for wifi check : %s MB", estimateBookSizeMB);
+            }
+
+            notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages, (int) sizeDownloadedMB, (int) estimateBookSizeMB, avgSpeedKbps));
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages, sizeDownloadedBytes));
 
             // If the "skip large downloads on mobile data" is on, estimate book size and skip if needed
-            if (Preferences.isDownloadLargeOnlyWifi() && pagesOK > 3 && progress > 0 && totalPages > 0) {
-                // Estimate book size first because it's cheaper than checking current connectivity
-                double estimateBookSize = (sizeDownloaded / (1024.0 * 1024)) / (progress * 1.0 / totalPages);
-                Timber.d("Estimate book size calculated for wifi check : %s MB", estimateBookSize);
-
-                if (estimateBookSize > Preferences.getDownloadLargeOnlyWifiThreshold()) {
-                    @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(this);
-                    if (NetworkHelper.Connectivity.WIFI != connectivity) {
-                        // Move the book to the errors queue and signal it as skipped
-                        logErrorRecord(content.getId(), ErrorType.WIFI, content.getUrl(), "Book", "");
-                        moveToErrors(content.getId());
-                        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
-                    }
+            if (Preferences.isDownloadLargeOnlyWifi() && estimateBookSizeMB > Preferences.getDownloadLargeOnlyWifiThresholdMB()) {
+                @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(this);
+                if (NetworkHelper.Connectivity.WIFI != connectivity) {
+                    // Move the book to the errors queue and signal it as skipped
+                    logErrorRecord(content.getId(), ErrorType.WIFI, content.getUrl(), "Book", "");
+                    moveToErrors(content.getId());
+                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 }
             }
 
@@ -460,7 +470,7 @@ public class ContentDownloadService extends IntentService {
             if (downloadCanceled) notificationManager.cancel();
         } else {
             // NB : no need to supply the Content itself as it has not been updated during the loop
-            completeDownload(content.getId(), content.getTitle(), pagesOK, pagesKO, sizeDownloaded);
+            completeDownload(content.getId(), content.getTitle(), pagesOK, pagesKO, sizeDownloadedBytes);
         }
     }
 
@@ -471,7 +481,7 @@ public class ContentDownloadService extends IntentService {
      * @param contentId Id of the Content to mark as downloaded
      */
     private void completeDownload(final long contentId, @NonNull final String title,
-                                  final int pagesOK, final int pagesKO, final long sizeDownloaded) {
+                                  final int pagesOK, final int pagesKO, final long sizeDownloadedBytes) {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
         // Get the latest value of Content
         Content content = dao.selectContent(contentId);
@@ -575,7 +585,7 @@ public class ContentDownloadService extends IntentService {
 
                 // Signals current download as completed
                 Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
-                EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages, sizeDownloaded));
+                EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages, sizeDownloadedBytes));
 
                 // Tracking Event (Download Completed)
                 HentoidApp.trackDownloadEvent("Completed");

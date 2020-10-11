@@ -890,7 +890,7 @@ public class ObjectBoxDB {
         }
     }
 
-    // Returns a list of processed images grouped by status, with count and filesize
+    // Returns a list of processed images grouped by status, with count and filesize (in bytes)
     Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId) {
         QueryBuilder<ImageFile> imgQuery = store.boxFor(ImageFile.class).query();
         imgQuery.equal(ImageFile_.contentId, contentId);
@@ -905,12 +905,12 @@ public class ObjectBoxDB {
         for (Map.Entry<StatusContent, List<ImageFile>> entry : map.entrySet()) {
             StatusContent t = entry.getKey();
             int count = 0;
-            long size = 0;
+            long sizeBytes = 0;
             if (entry.getValue() != null) {
                 count = entry.getValue().size();
-                for (ImageFile img : entry.getValue()) size += img.getSize();
+                for (ImageFile img : entry.getValue()) sizeBytes += img.getSize();
             }
-            result.put(t, new ImmutablePair<>(count, size));
+            result.put(t, new ImmutablePair<>(count, sizeBytes));
         }
 
         return result;

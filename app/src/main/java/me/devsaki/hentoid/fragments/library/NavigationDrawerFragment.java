@@ -169,7 +169,7 @@ public final class NavigationDrawerFragment extends Fragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDrawerClosed(CommunicationEvent event) {
-        if (event.getRecipient() != RC_DRAWER) return;
+        if (event.getRecipient() != RC_DRAWER || null == recyclerView) return;
         if (EV_CLOSED == event.getType()) recyclerView.scrollToPosition(0);
     }
 

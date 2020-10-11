@@ -692,7 +692,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActivityEvent(CommunicationEvent event) {
-        if (event.getRecipient() != RC_CONTENTS) return;
+        if (event.getRecipient() != RC_CONTENTS || null == sortDirectionButton) return;
         switch (event.getType()) {
             case EV_SEARCH:
                 viewModel.searchContentUniversal(event.getMessage());

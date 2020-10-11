@@ -13,16 +13,22 @@ import java.util.*
 class DownloadProgressNotification(
         private val title: String,
         private val progress: Int,
-        private val max: Int
+        private val max: Int,
+        private val sizeDownloadedMB: Int,
+        private val estimateBookSizeMB: Int,
+        private val avgSpeedKbps: Int
 ) : Notification {
 
     private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
 
     override fun onCreateNotification(context: Context): android.app.Notification {
+        val total = if (estimateBookSizeMB > -1) "/$estimateBookSizeMB"; else "";
+        val message = String.format("%d%s MB  @ %d KBps", sizeDownloadedMB, total, avgSpeedKbps)
+
         return NotificationCompat.Builder(context, DownloadNotificationChannel.ID)
                 .setSmallIcon(R.drawable.ic_hentoid_shape)
-                .setContentTitle(context.getString(R.string.downloading))
-                .setContentText(title)
+                .setContentTitle(title)
+                .setContentText(message)
                 .setContentInfo(progressString)
                 .setProgress(max, progress, false)
                 .setColor(ThemeHelper.getColor(context, R.color.secondary_light))
