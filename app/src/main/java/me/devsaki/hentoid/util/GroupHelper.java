@@ -30,14 +30,26 @@ public final class GroupHelper {
     }
 
 
-    public static List<Grouping> getGroupingsToProcess() {
-        return Stream.of(new Grouping[]{Grouping.ARTIST, Grouping.DL_DATE, Grouping.CUSTOM}).toList();
-    }
-
+    /**
+     * Add the given Content to the given Group, and associate the latter with the given Attribute (if no prior association)
+     *
+     * @param dao        DAO to be used
+     * @param group      Group to add the given Content to, and to associate with the given Attribute
+     * @param attribute  Attribute the given Group should be associated with, if it has no prior association
+     * @param newContent Content to put in the given Group
+     */
     public static void addContentToAttributeGroup(CollectionDAO dao, Group group, Attribute attribute, Content newContent) {
         addContentsToAttributeGroup(dao, group, attribute, Stream.of(newContent).toList());
     }
 
+    /**
+     * Add the given Contents to the given Group, and associate the latter with the given Attribute (if no prior association)
+     *
+     * @param dao         DAO to be used
+     * @param group       Group to add the given Content to, and to associate with the given Attribute
+     * @param attribute   Attribute the given Group should be associated with, if it has no prior association
+     * @param newContents List of Content to put in the given Group
+     */
     public static void addContentsToAttributeGroup(CollectionDAO dao, Group group, Attribute attribute, List<Content> newContents) {
         int nbContents;
         // Create group if it doesn't exist
@@ -54,6 +66,13 @@ public final class GroupHelper {
         }
     }
 
+    /**
+     * Update the JSON file that stores the groups with all the groups of the app
+     *
+     * @param context Context to be used
+     * @param dao     DAO to be used
+     * @return True if the groups JSON file has been updated properly; false instead
+     */
     public static boolean updateGroupsJson(@NonNull Context context, @NonNull CollectionDAO dao) {
         Helper.assertNonUiThread();
         List<Group> customGroups = dao.selectGroups(Grouping.CUSTOM.getId());

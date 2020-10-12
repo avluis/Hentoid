@@ -21,7 +21,6 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -185,12 +184,11 @@ public class DatabaseMaintenance {
 
     private static void createGroups(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        ObjectBoxDAO dao = new ObjectBoxDAO(db);
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Create non-existing groupings : start");
             List<Grouping> groupingsToProcess = new ArrayList<>();
-            for (Grouping grouping : GroupHelper.getGroupingsToProcess())
+            for (Grouping grouping : new Grouping[]{Grouping.ARTIST, Grouping.DL_DATE, Grouping.CUSTOM})
                 if (0 == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping);
 
             Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());

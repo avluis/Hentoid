@@ -135,7 +135,7 @@ public final class ContentHelper {
     }
 
     /**
-     * Update the JSON file that stores the queue with the current content of the queue
+     * Update the JSON file that stores the queue with the current contents of the queue
      *
      * @param context Context to be used
      * @param dao     DAO to be used
@@ -272,7 +272,7 @@ public final class ContentHelper {
         //   - the book is in the library (i.e. not queued)
         //   - the book is linked to no group from the given grouping
         if (Helper.getListFromPrimitiveArray(libraryStatus).contains(content.getStatus().getCode())) {
-            List<Grouping> staticGroupings = GroupHelper.getGroupingsToProcess();
+            List<Grouping> staticGroupings = Stream.of(Grouping.values()).filter(Grouping::canReorderBooks).toList();
             for (Grouping g : staticGroupings)
                 if (content.getGroupItems(g).isEmpty()) {
                     if (g.equals(Grouping.ARTIST)) {
