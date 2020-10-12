@@ -6,12 +6,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
-    /*
-    lintOptions {
-        disable 'InvalidPackage'
-        checkReleaseBuilds false
-    }
-     */
     buildToolsVersion "29.0.3"
 
     defaultConfig {

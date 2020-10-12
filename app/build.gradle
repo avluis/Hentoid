@@ -22,13 +22,6 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
-    /*
-    lintOptions {
-        disable 'InvalidPackage'
-        checkReleaseBuilds false
-        lint.dependsOn(':app:unMock')
-    }
-     */
     buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "me.devsaki.hentoid"
