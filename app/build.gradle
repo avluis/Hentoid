@@ -3,15 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.sonarqube'
-apply plugin: 'de.mobilej.unmock'
 apply plugin: 'com.google.firebase.crashlytics'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
     apply from: 'signing.gradle'
 }
-
-lint.dependsOn(':app:unMock')
 
 android {
     compileSdkVersion 29
@@ -139,7 +136,7 @@ dependencies {
     implementation 'com.mani:ThinDownloadManager:1.3.0'
 
     // HTTP & HTTP/2 client: github.com/square/okhttp
-    implementation 'com.squareup.okhttp3:okhttp:4.8.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
 
     // For downloading images : github.com/google/volley
     implementation 'com.android.volley:volley:1.1.1' // <-- if this evolves, please examine RequestQueueManager.getRequestQueue for evolutions
@@ -198,7 +195,7 @@ dependencies {
     implementation 'com.github.penfeizhou.android.animation:apng:2.4.2'
 
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = "5.2.2"
+    def fastadapter_version = "5.2.4"
     implementation "com.mikepenz:fastadapter:$fastadapter_version" // needs the `expandable`, `drag` and `scroll` extension.
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version" // diff util helpers
     implementation "com.mikepenz:fastadapter-extensions-drag:$fastadapter_version" // drag support
@@ -212,10 +209,10 @@ dependencies {
     implementation "me.zhanghai.android.fastscroll:library:1.1.4"
 
     // Popups
-    implementation "com.github.skydoves:balloon:1.1.7"
+    implementation "com.github.skydoves:balloon:1.2.3"
 
     // Dropdown lists
-    implementation "com.github.skydoves:powerspinner:1.1.0"
+    implementation "com.github.skydoves:powerspinner:1.1.5"
 
     implementation project(path: ':app:customssiv')
 }
@@ -229,36 +226,6 @@ sonarqube {
         property "sonar.sources", "src/main/"
         property "sonar.login", "3d0dc80792bad95f0193e7ed626cf090ac83e208"
     }
-}
-
-unMock {
-    keep "android.widget.BaseAdapter"
-    keep "android.widget.ArrayAdapter"
-    keep "android.os.Bundle"
-    keepStartingWith "android.database.MatrixCursor"
-    keep "android.database.AbstractCursor"
-    keep "android.database.CrossProcessCursor"
-    keepStartingWith "android.text.TextUtils"
-    keepStartingWith "android.util."
-    keepStartingWith "android.text."
-    keepStartingWith "android.content.ContentValues"
-    keepStartingWith "android.content.ComponentName"
-    keepStartingWith "android.content.ContentUris"
-    keepStartingWith "android.content.ContentProviderOperation"
-    keepStartingWith "android.content.ContentProviderResult"
-    keepStartingWith "android.content.UriMatcher"
-    keepStartingWith "android.content.Intent"
-    keepStartingWith "android.content.IIntentReceiver"
-    keep "android.location.Location"
-    keepStartingWith "android.content.res.Configuration"
-    keepStartingWith "org."
-    keepStartingWith "libcore."
-    keepStartingWith "com.android.internal.R"
-    keepStartingWith "com.android.internal.util."
-    keep "android.net.Uri"
-    keep "android.webkit.WebSettings"
-
-    keepStartingWith "me."
 }
 
 apply plugin: 'com.google.gms.google-services'
