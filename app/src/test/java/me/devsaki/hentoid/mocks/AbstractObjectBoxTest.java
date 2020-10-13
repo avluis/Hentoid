@@ -1,8 +1,12 @@
 package me.devsaki.hentoid.mocks;
 
 import androidx.annotation.NonNull;
+import androidx.test.core.app.ApplicationProvider;
+
+import com.google.firebase.FirebaseApp;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 
 import java.io.File;
@@ -54,6 +58,12 @@ public abstract class AbstractObjectBoxTest {
                 .debugFlags(DebugFlags.LOG_QUERIES | DebugFlags.LOG_QUERY_PARAMETERS)
                 .build();
     }
+
+    @Before
+    public void prepareFirebase() {
+        FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext());
+    }
+
 
     @AfterClass
     public static void tearDown() throws Exception {

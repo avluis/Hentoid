@@ -16,16 +16,17 @@ import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.junit.MockitoJUnitRunner
+import org.robolectric.RobolectricTestRunner
 
 
-@RunWith(MockitoJUnitRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class SearchViewModelTest : AbstractObjectBoxTest() {
 
     companion object {
         lateinit var mockObjectBoxDAO: CollectionDAO
 
-        @BeforeClass @JvmStatic
+        @BeforeClass
+        @JvmStatic
         fun prepareDB() {
             val attrs1 = ArrayList<Attribute>()
             attrs1.add(Attribute(AttributeType.ARTIST, "artist1"))
@@ -49,7 +50,6 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
-
 
     @Test
     fun `verify initial state`() {
