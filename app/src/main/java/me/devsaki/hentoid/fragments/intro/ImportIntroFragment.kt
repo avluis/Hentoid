@@ -21,7 +21,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-// TODO: 6/23/2018 implement ISlidePolicy to force user to select a storage option
+// TODO: 6/23/2018 implement SlidePolicy to force user to select a storage option
 class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
     override fun onCreate(savedInstanceState: Bundle?) {

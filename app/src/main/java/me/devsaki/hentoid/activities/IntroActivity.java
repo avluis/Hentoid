@@ -7,7 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.github.paolorotolo.appintro.AppIntro2;
+import com.github.appintro.AppIntro2;
 
 import java.util.List;
 
@@ -45,12 +45,12 @@ public class IntroActivity extends AppIntro2 {
         addSlide(new EndIntroFragment());
 
         setTitle(R.string.app_name);
-        showSkipButton(false);
-        setGoBackLock(true);
-        showPagerIndicator(false);
+        setWizardMode(true); // Replaces skip button with back button
+        setSystemBackButtonLocked(true);
+        setIndicatorEnabled(true);
         setSwipeLock(true);
 
-        backgroundFrame.setBackgroundColor(ThemeHelper.getColor(this, R.color.window_background_light));
+        setBackgroundResource(R.drawable.bg_pin_dialog);
     }
 
     @Override
@@ -59,22 +59,22 @@ public class IntroActivity extends AppIntro2 {
         if (oldFragment instanceof SourcesIntroFragment)
             setSourcePrefs(((SourcesIntroFragment) oldFragment).getSelection());
         boolean isProgressButtonEnabled = !(newFragment instanceof ImportIntroFragment);
-        setProgressButtonEnabled(isProgressButtonEnabled);
+        setButtonsEnabled(isProgressButtonEnabled);
     }
 
     public void onPermissionGranted() {
-        getPager().goToNextSlide();
+        goToNextSlide(false);
     }
 
     public void nextStep() {
-        getPager().goToNextSlide();
-        setButtonState(nextButton, false);
+        goToNextSlide(false);
+        setButtonsEnabled(false);
     }
 
     public void setThemePrefs(int pref) {
         Preferences.setColorTheme(pref);
         ThemeHelper.applyTheme(this);
-        getPager().goToNextSlide();
+        goToNextSlide(false);
     }
 
     public void setSourcePrefs(List<Site> sources) {
@@ -91,45 +91,4 @@ public class IntroActivity extends AppIntro2 {
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
     }
-/*
-    private void resultHandler(int resultCode, String result) {
-        if (resultCode == RESULT_OK) {
-            Timber.d("RESULT_OK: %s", result);
-
-            if (result.equals(ConstsImport.PERMISSION_GRANTED)) {
-                Timber.d("Permission Allowed, resetting.");
-                Snackbar.make(pager, R.string.permission_granted, LENGTH_SHORT).show();
-            } else {
-                // If result passes validation, then we move to next slide
-                getPager().goToNextSlide();
-                setButtonState(nextButton, false);
-            }
-        } else {
-            switch (result) {
-                case ConstsImport.PERMISSION_DENIED:
-                    Timber.d("Permission Denied by User");
-                    Snackbar.make(pager, R.string.permissioncomplaint_snackbar, LENGTH_LONG).show();
-                    break;
-                case ConstsImport.PERMISSION_DENIED_FORCED:
-                    Timber.d("Permission Denied (Forced) by User/Policy");
-                    Snackbar.make(pager, R.string.permissioncomplaint_snackbar_manual, LENGTH_INDEFINITE)
-                            .setAction(android.R.string.ok, v -> openAppSettings())
-                            .show();
-                    break;
-                case ConstsImport.RESULT_CANCELED:
-                case ConstsImport.EXISTING_LIBRARY_FOUND:
-                    Snackbar.make(pager, R.string.import_canceled, LENGTH_LONG).show();
-                    break;
-                default:
-                    // Other cases should fail silently
-            }
-        }
-    }
-
-    private void openAppSettings() {
-        Uri uri = Uri.parse("package:" + BuildConfig.APPLICATION_ID);
-        Intent appSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, uri);
-        startActivityForResult(appSettings, ConstsImport.RQST_APP_SETTINGS);
-    }
-    */
 }
