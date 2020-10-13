@@ -66,7 +66,7 @@ public class ObjectBoxDB {
     // Status displayed in the library view (all books of the library; both internal and external)
     private static final int[] libraryStatus = ContentHelper.getLibraryStatuses();
 
-    private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
+    private static final long DAY_IN_MILLIS = 1000L * 60 * 60 * 24;
 
     private static ObjectBoxDB instance;
 
