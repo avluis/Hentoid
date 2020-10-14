@@ -12,15 +12,23 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.mocks.AbstractObjectBoxTest
+import net.lachlanmckee.timberjunit.TimberTestRule
 import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import timber.log.Timber
 
 
 @RunWith(RobolectricTestRunner::class)
 class SearchViewModelTest : AbstractObjectBoxTest() {
+
+    @get:Rule
+    val logAllAlwaysRule: TimberTestRule? = TimberTestRule.logAllAlways()
+
+    @get:Rule
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     companion object {
         lateinit var mockObjectBoxDAO: CollectionDAO
@@ -28,6 +36,7 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
         @BeforeClass
         @JvmStatic
         fun prepareDB() {
+            println(">> Preparing DB...")
             val attrs1 = ArrayList<Attribute>()
             attrs1.add(Attribute(AttributeType.ARTIST, "artist1"))
             attrs1.add(Attribute(AttributeType.LANGUAGE, "english"))
@@ -45,21 +54,22 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
             mockObjectBoxDAO.insertContent(Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.HITOMI).addAttributes(attrs1))
             mockObjectBoxDAO.insertContent(Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.ASMHENTAI).addAttributes(attrs2))
             mockObjectBoxDAO.insertContent(Content().setTitle("").setStatus(StatusContent.ONLINE).setSite(Site.HITOMI).addAttributes(attrs3))
+            println(">> DB prepared")
         }
     }
 
-    @get:Rule
-    val instantTaskExecutorRule = InstantTaskExecutorRule()
-
     @Test
     fun `verify initial state`() {
+        println(">> verify initial state START")
         val viewModel = SearchViewModel(mockObjectBoxDAO, 1)
 
         viewModel.selectedAttributesData.shouldNotBeNull()
+        println(">> verify initial state END")
     }
 
     @Test
     fun `count category attributes unfiltered`() {
+        println(">> count category attributes unfiltered START")
         val viewModel = SearchViewModel(mockObjectBoxDAO, 1)
         viewModel.update()
 
@@ -76,10 +86,12 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
         attrs[AttributeType.ARTIST.code].shouldBe(2)
         attrs[AttributeType.LANGUAGE.code].shouldBe(1)
         attrs[AttributeType.SOURCE.code].shouldBe(2)
+        println(">> count category attributes unfiltered END")
     }
 
     @Test
     fun `list category attributes unfiltered`() {
+        println(">> list category attributes unfiltered START")
         val viewModel = SearchViewModel(mockObjectBoxDAO, 1)
         viewModel.update()
 
@@ -98,6 +110,7 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
         attrs.attributes[0].count.shouldBe(2)
         attrs.attributes[1].name.shouldBe("artist2")
         attrs.attributes[1].count.shouldBe(1)
+        println(">> list category attributes unfiltered END")
     }
 
     @Test
