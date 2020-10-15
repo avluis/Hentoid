@@ -46,21 +46,31 @@ public class Attribute {
     public ToMany<Content> contents;
 
 
+    // Useful for unit tests not to fail on the CI environment
+    private void initObjectBoxRelations() {
+        this.group = new ToOne<>(this, Attribute_.group);
+    }
+
+    // No-arg constructor required by ObjectBox
     public Attribute() {
-    } // No-arg constructor required by ObjectBox
+        initObjectBoxRelations();
+    }
 
     public Attribute(@Nonnull AttributeType type, @Nonnull String name) {
+        initObjectBoxRelations();
         this.type = type;
         this.name = name;
     }
 
     public Attribute(@Nonnull AttributeType type, @Nonnull String name, @Nonnull String url, @Nonnull Site site) {
+        initObjectBoxRelations();
         this.type = type;
         this.name = name;
         computeLocation(site, url);
     }
 
     public Attribute(@Nonnull DataInputStream input) throws IOException {
+        initObjectBoxRelations();
         input.readInt(); // file version
         name = input.readUTF();
         type = AttributeType.searchByCode(input.readInt());
