@@ -22,25 +22,22 @@ public class AttributeLocation {
     public String url;
     public ToOne<Attribute> attribute;
 
-    // Useful for unit tests not to fail on the CI environment
-    private void initObjectBoxRelations() {
-        this.attribute = new ToOne<>(this, AttributeLocation_.attribute);
-    }
-
-    // No-arg constructor required by ObjectBox
-    public AttributeLocation() {
-        initObjectBoxRelations();
+    public AttributeLocation() { // Required by ObjectBox
     }
 
     AttributeLocation(Site site, String url) {
-        initObjectBoxRelations();
         this.site = site;
         this.url = url;
     }
 
     AttributeLocation(@Nonnull DataInputStream input) throws IOException {
-        initObjectBoxRelations();
         this.site = Site.searchByCode(input.readInt());
         this.url = input.readUTF();
+    }
+
+
+    void saveToStream(DataOutputStream output) throws IOException {
+        output.writeInt(null == site ? Site.NONE.getCode() : site.getCode());
+        output.writeUTF(url);
     }
 }

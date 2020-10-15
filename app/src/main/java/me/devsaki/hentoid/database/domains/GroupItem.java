@@ -15,20 +15,10 @@ public class GroupItem {
     public ToOne<Group> group;
     public int order;
 
-
-    // Useful for unit tests not to fail on the CI environment
-    private void initObjectBoxRelations() {
-        this.content = new ToOne<>(this, GroupItem_.content);
-        this.group = new ToOne<>(this, GroupItem_.group);
-    }
-
-    // No-arg constructor required by ObjectBox
     public GroupItem() {
-        initObjectBoxRelations();
-    }
+    }  // Required for ObjectBox to work
 
     public GroupItem(@NonNull final Content content, @NonNull final Group group, int order) {
-        initObjectBoxRelations();
         this.content.setTarget(content);
         this.group.setTarget(group);
         this.order = order;

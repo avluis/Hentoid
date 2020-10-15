@@ -113,12 +113,6 @@ public class Content implements Serializable {
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
 
 
-    public Content() {
-        // Useful for unit tests not to fail on the CI environment
-        this.attributes = new ToMany<>(this, Content_.attributes);
-    }
-
-
     public ToMany<Attribute> getAttributes() {
         return this.attributes;
     }

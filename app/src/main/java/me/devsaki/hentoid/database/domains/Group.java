@@ -39,18 +39,10 @@ public class Group {
     private boolean isFlaggedForDeletion = false;
 
 
-    // Useful for unit tests not to fail on the CI environment
-    private void initObjectBoxRelations() {
-        this.picture = new ToOne<>(this, Group_.picture);
-    }
-
-    // No-arg constructor required by ObjectBox
     public Group() {
-        initObjectBoxRelations();
-    }
+    }  // Required for ObjectBox to work
 
     public Group(@NonNull final Grouping grouping, @NonNull final String name, int order) {
-        initObjectBoxRelations();
         this.grouping = grouping;
         this.name = name;
         this.order = order;

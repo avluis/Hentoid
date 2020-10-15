@@ -12,18 +12,10 @@ public class QueueRecord {
     public ToOne<Content> content;
     public int rank;
 
-    // Useful for unit tests not to fail on the CI environment
-    private void initObjectBoxRelations() {
-        this.content = new ToOne<>(this, QueueRecord_.content);
-    }
-
-    // No-arg constructor required by ObjectBox
     public QueueRecord() {
-        initObjectBoxRelations();
-    }
+    }  // Required for ObjectBox to work
 
     public QueueRecord(long id, int order) {
-        initObjectBoxRelations();
         content.setTargetId(id);
         rank = order;
     }

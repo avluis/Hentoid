@@ -46,18 +46,10 @@ public class ImageFile {
     private boolean isBackup = false;
 
 
-    // Useful for unit tests not to fail on the CI environment
-    private void initObjectBoxRelations() {
-        this.content = new ToOne<>(this, ImageFile_.content);
-    }
-
-    // No-arg constructor required by ObjectBox
     public ImageFile() {
-        initObjectBoxRelations();
     }
 
     public ImageFile(int order, String url, StatusContent status, int maxPages) {
-        initObjectBoxRelations();
         this.order = order;
 
         int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);

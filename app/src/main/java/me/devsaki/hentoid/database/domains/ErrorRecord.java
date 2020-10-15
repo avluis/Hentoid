@@ -27,18 +27,11 @@ public class ErrorRecord {
     @Convert(converter = InstantConverter.class, dbType = Long.class)
     private Instant timestamp;
 
-    // Useful for unit tests not to fail on the CI environment
-    private void initObjectBoxRelations() {
-        this.content = new ToOne<>(this, ErrorRecord_.content);
-    }
 
-    // No-arg constructor required by ObjectBox
     public ErrorRecord() {
-        initObjectBoxRelations();
-    }
+    } // Required for ObjectBox to work
 
     public ErrorRecord(ErrorType type, String url, String contentPart, String description, Instant timestamp) {
-        initObjectBoxRelations();
         this.type = type;
         this.url = url;
         this.contentPart = contentPart;
@@ -47,7 +40,6 @@ public class ErrorRecord {
     }
 
     public ErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description, Instant timestamp) {
-        initObjectBoxRelations();
         content.setTargetId(contentId);
         this.type = type;
         this.url = url;
