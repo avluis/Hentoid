@@ -49,6 +49,7 @@ public class Attribute {
     // Useful for unit tests not to fail on the CI environment
     private void initObjectBoxRelations() {
         this.group = new ToOne<>(this, Attribute_.group);
+        this.contents = new ToMany<>(this, Attribute_.contents);
     }
 
     // No-arg constructor required by ObjectBox
