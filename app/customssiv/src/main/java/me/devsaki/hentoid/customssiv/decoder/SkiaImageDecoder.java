@@ -85,6 +85,7 @@ public class SkiaImageDecoder implements ImageDecoder {
                 try {
                     id = Integer.parseInt(segments.get(0));
                 } catch (NumberFormatException ignored) {
+                    // Ignored exception
                 }
             }
 

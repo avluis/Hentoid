@@ -14,7 +14,6 @@ public class CachedDocumentFile extends DocumentFile {
     String mName;
     String mType;
     Boolean mIsDirectory;
-    // Boolean mIsFile;
     Long mLastModified;
     Long mLength;
 

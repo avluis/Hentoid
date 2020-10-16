@@ -121,9 +121,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
             if (treeUri != null) onSelectSAFRootFolder(treeUri);
-        }/* else if (resultCode == RESULT_CANCELED) {
-            // Do nothing, user will have to push the button again
-        }*/
+        } // Do nothing for RESULT_CANCELED, user will have to push the button again
     }
 
     // Return from SAF picker

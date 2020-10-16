@@ -373,8 +373,8 @@ public class CustomSubsamplingScaleImageView extends View {
     private boolean autoRotate = false;
 
     // Phone screen width and height (stored here for optimization)
-    private int screenWidth;
-    private int screenHeight;
+    private final int screenWidth;
+    private final int screenHeight;
 
     private final CompositeDisposable loadDisposable = new CompositeDisposable();
     // RenderScript instance to use to smoothen images; sharp mode will be used if not set
@@ -1520,7 +1520,7 @@ public class CustomSubsamplingScaleImageView extends View {
                                         .map(tile2 -> loadTile(this, decoder, tile2))
                                         .observeOn(Schedulers.computation())
                                         .filter(tile3 -> tile3.bitmap != null && !tile3.bitmap.isRecycled())
-                                        .map(tile4 -> processTile(tile4, this, targetScale))
+                                        .map(tile4 -> processTile(tile4, targetScale))
                                 )
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
@@ -1539,12 +1539,12 @@ public class CustomSubsamplingScaleImageView extends View {
     private void refreshRequiredResource(boolean load) {
         int sampleSize = Math.min(fullImageSampleSize, calculateInSampleSize(scale));
 
-        if (decoder == null || tileMap == null) refreshSingle(load, sampleSize);
+        if (decoder == null || tileMap == null) refreshSingle(load);
         else refreshRequiredTiles(load, sampleSize);
     }
 
     // TODO doc
-    private void refreshSingle(boolean load, int sampleSize) {
+    private void refreshSingle(boolean load) {
         if (!singleImage.loading && load) {
             loadDisposable.add(
                     Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
@@ -1587,7 +1587,7 @@ public class CustomSubsamplingScaleImageView extends View {
                                             .subscribeOn(Schedulers.io())
                                             .observeOn(Schedulers.computation())
                                             .filter(res -> res.bitmap != null && !res.bitmap.isRecycled())
-                                            .map(res1 -> processTile(res1, this, scale))
+                                            .map(res1 -> processTile(res1, scale))
                                             .observeOn(AndroidSchedulers.mainThread())
                                             .subscribe(
                                                     this::onTileLoaded,
@@ -1894,7 +1894,6 @@ public class CustomSubsamplingScaleImageView extends View {
                 bitmapIsCached = false;
             }
         }
-//        this.decoder = decoder;
         this.sWidth = sWidth;
         this.sHeight = sHeight;
         this.sOrientation = sOrientation;
@@ -1932,7 +1931,6 @@ public class CustomSubsamplingScaleImageView extends View {
 
     protected Tile processTile(
             @NonNull Tile loadedTile,
-            @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
         Helper.mustNotRunOnUiThread();
 
@@ -1995,12 +1993,6 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private synchronized void onImageLoaded(@NonNull Bitmap bitmap, int sOrientation, boolean bitmapIsCached, float imageScale) {
         debug("onImageLoaded");
-        // If actual dimensions don't match the declared size, reset everything.
-        /*
-        if (this.sWidth > 0 && this.sHeight > 0 && (this.sWidth != bitmap.getWidth() || this.sHeight != bitmap.getHeight())) {
-            reset(false);
-        }
-         */
 
         if (autoRotate && needsRotating(bitmap.getWidth(), bitmap.getHeight()))
             orientation = ORIENTATION_90;
@@ -2120,8 +2112,8 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     private static class SingleImage {
-        private int sampleSize;
-        private Bitmap bitmap;
+        //        private int sampleSize;
+//        private Bitmap bitmap;
         private boolean loading;
         private float scale = 1;
         private int rawWidth = -1;
