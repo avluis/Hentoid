@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.library;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -20,7 +21,6 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -56,6 +56,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -100,6 +101,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 
+@SuppressLint("NonConstantResourceId")
 public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
@@ -111,6 +113,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     private LibraryViewModel viewModel;
     // Settings listener
     private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = (p, k) -> onSharedPreferenceChanged(k);
+    // Activity
+    private WeakReference<LibraryActivity> activity;
 
 
     // ======== UI
@@ -128,9 +132,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     private ImageView sortDirectionButton;
     // Sort field button
     private TextView sortFieldButton;
-
-    // === SELECTION TOOLBAR
-    private Toolbar selectionToolbar;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -215,6 +216,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 customBackPress();
             }
         };
+
+        if (!(requireActivity() instanceof LibraryActivity))
+            throw new IllegalStateException("Parent activity has to be a LibraryActivity");
+        activity = new WeakReference<>((LibraryActivity) requireActivity());
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
@@ -237,7 +242,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         initUI(rootView);
-        initToolbars();
+        activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
 
         return rootView;
     }
@@ -263,11 +268,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * @param rootView Root view of the library screen
      */
     private void initUI(@NonNull View rootView) {
-        LibraryActivity activity = ((LibraryActivity) requireActivity());
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
 
-        sortDirectionButton = activity.getSortDirectionButton();
-        sortFieldButton = activity.getSortFieldButton();
+        sortDirectionButton = activity.get().getSortDirectionButton();
+        sortFieldButton = activity.get().getSortFieldButton();
 
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
@@ -282,8 +286,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     }
 
     private void updateSortControls() {
-        LibraryActivity activity = ((LibraryActivity) requireActivity());
-
         // Sort controls
         sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
         sortDirectionButton.setOnClickListener(v -> {
@@ -293,7 +295,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
             // Run a new search
             viewModel.updateContentOrder();
-            activity.sortCommandsAutoHide(true, null);
+            activity.get().sortCommandsAutoHide(true, null);
         });
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
         sortFieldButton.setOnClickListener(v -> {
@@ -313,28 +315,28 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 Preferences.setContentSortField(fieldCode);
                 // Run a new search
                 viewModel.updateContentOrder();
-                activity.sortCommandsAutoHide(true, popup);
+                activity.get().sortCommandsAutoHide(true, popup);
                 return true;
             });
             popup.show(); //showing popup menu
-            activity.sortCommandsAutoHide(true, popup);
+            activity.get().sortCommandsAutoHide(true, popup);
         }); //closing the setOnClickListener method
     }
 
     private String getQuery() {
-        return ((LibraryActivity) requireActivity()).getQuery();
+        return activity.get().getQuery();
     }
 
     private void setQuery(String query) {
-        ((LibraryActivity) requireActivity()).setQuery(query);
+        activity.get().setQuery(query);
     }
 
     private List<Attribute> getMetadata() {
-        return ((LibraryActivity) requireActivity()).getMetadata();
+        return activity.get().getMetadata();
     }
 
     private void setMetadata(List<Attribute> attrs) {
-        ((LibraryActivity) requireActivity()).setMetadata(attrs);
+        activity.get().setMetadata(attrs);
     }
 
     private int getFieldCodeFromMenuId(@IdRes int menuId) {
@@ -387,29 +389,11 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         }
     }
 
-    private void initToolbars() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
-        Toolbar toolbar = activity.getToolbar();
-        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
-
-        selectionToolbar = activity.getSelectionToolbar();
-        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
-        selectionToolbar.setNavigationOnClickListener(v -> {
-            selectExtension.deselect();
-            selectionToolbar.setVisibility(View.GONE);
-        });
-    }
-
     private void toggleEditMode() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
-        activity.toggleEditMode();
+        activity.get().toggleEditMode();
 
         // Leave edit mode by validating => Save new item position
-        if (!activity.isEditMode()) {
+        if (!activity.get().isEditMode()) {
             viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList());
             group.hasCustomBookOrder = true;
             Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
@@ -430,21 +414,15 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                     .show();
         }
 
-        setPagingMethod(Preferences.getEndlessScroll(), activity.isEditMode());
+        setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
     }
 
     private void cancelEditMode() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
-        activity.setEditMode(false);
+        activity.get().setEditMode(false);
         setPagingMethod(Preferences.getEndlessScroll(), false);
     }
 
     private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
-        if (!(requireActivity() instanceof LibraryActivity)) return false;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
                 toggleEditMode();
@@ -453,7 +431,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 cancelEditMode();
                 break;
             default:
-                return activity.toolbarOnItemClicked(menuItem);
+                return activity.get().toolbarOnItemClicked(menuItem);
         }
         return true;
     }
@@ -484,10 +462,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 askSetCover();
                 break;
             default:
-                selectionToolbar.setVisibility(View.GONE);
+                activity.get().getSelectionToolbar().setVisibility(View.GONE);
                 return false;
         }
-        if (!keepToolbar) selectionToolbar.setVisibility(View.GONE);
+        if (!keepToolbar) activity.get().getSelectionToolbar().setVisibility(View.GONE);
         return true;
     }
 
@@ -507,9 +485,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * Callback for the "delete item" action button
      */
     private void purgeSelectedItems() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
@@ -517,7 +492,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             if (!Preferences.isDeleteExternalLibrary())
                 selectedContent = Stream.of(selectedContent).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).toList();
             if (!selectedContent.isEmpty())
-                activity.askDeleteItems(selectedContent, Collections.emptyList(), selectExtension);
+                activity.get().askDeleteItems(selectedContent, Collections.emptyList(), selectExtension);
         }
     }
 
@@ -525,16 +500,13 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * Callback for the "archive item" action button
      */
     private void archiveSelectedItems() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         List<Content> contents = Stream.of(selectedItems)
                 .map(ContentItem::getContent)
                 .withoutNulls()
                 .filterNot(c -> c.getStorageUri().isEmpty())
                 .toList();
-        activity.askArchiveItems(contents, selectExtension);
+        activity.get().askArchiveItems(contents, selectExtension);
     }
 
     /**
@@ -564,7 +536,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 DocumentFile folder = FileHelper.getFolderFromTreeUriString(requireContext(), c.getStorageUri());
                 if (folder != null) {
                     selectExtension.deselect();
-                    selectionToolbar.setVisibility(View.GONE);
+                    activity.get().getSelectionToolbar().setVisibility(View.GONE);
                     FileHelper.openFile(requireContext(), folder);
                 }
             }
@@ -611,7 +583,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                             redownloadContent(contents, true);
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
                             selectExtension.deselect();
-                            selectionToolbar.setVisibility(View.GONE);
+                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
@@ -638,7 +610,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                             viewModel.setGroupCover(group.id, content.getCover());
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
                             selectExtension.deselect();
-                            selectionToolbar.setVisibility(View.GONE);
+                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
                 .setNegativeButton(android.R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
@@ -652,7 +624,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
     private boolean isSearchQueryActive() {
-        return ((LibraryActivity) requireActivity()).isSearchQueryActive();
+        return activity.get().isSearchQueryActive();
     }
 
     @Override
@@ -701,7 +673,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 break;
             case EV_UPDATE_SORT:
                 updateSortControls();
-                initToolbars();
+                activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
                 break;
             default:
                 // No default behaviour
@@ -719,16 +691,15 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         // If content is selected, deselect it
         if (!selectExtension.getSelectedItems().isEmpty()) {
             selectExtension.deselect();
-            selectionToolbar.setVisibility(View.GONE);
+            activity.get().getSelectionToolbar().setVisibility(View.GONE);
             backButtonPressed = 0;
             return;
         }
 
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-        if (!activity.collapseSearchMenu()) {
+        if (!activity.get().collapseSearchMenu()) {
             // If none of the above and we're into a grouping, go back to the groups view
             if (!Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
-                activity.goBackToGroups();
+                activity.get().goBackToGroups();
             }
             // If none of the above, user is asking to leave => use double-tap
             else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
@@ -747,12 +718,9 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * Callback for any change in Preferences
      */
     private void onSharedPreferenceChanged(String key) {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         Timber.i("Prefs change detected : %s", key);
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
-            setPagingMethod(Preferences.getEndlessScroll(), activity.isEditMode());
+            setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
             viewModel.updateContentOrder(); // Trigger a blank search
         } else if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
             // Restart the app with the library activity on top
@@ -781,7 +749,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         search.putExtras(builder.getBundle());
 
         startActivityForResult(search, 999);
-        ((LibraryActivity) requireActivity()).collapseSearchMenu();
+        activity.get().collapseSearchMenu();
     }
 
     /**
@@ -978,13 +946,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     }
 
     private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         if (iLibrary.isEmpty()) {
             itemAdapter.set(Collections.emptyList());
         } else {
-            @ContentItem.ViewType int viewType = activity.isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
+            @ContentItem.ViewType int viewType = activity.get().isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
             List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType)).toList();
             itemAdapter.set(contentItems);
         }
@@ -1008,9 +973,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * @param result Current library according to active filters
      */
     private void onLibraryChanged(PagedList<Content> result) {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         Timber.i(">>Library changed ! Size=%s", result.size());
 
         updateTitle(result.size(), totalContentCount);
@@ -1023,7 +985,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         } else emptyText.setVisibility(View.GONE);
 
         // Update visibility of advanced search bar
-        activity.updateSearchBarOnResults(!result.isEmpty());
+        activity.get().updateSearchBarOnResults(!result.isEmpty());
 
         String query = getQuery();
         // User searches a book ID
@@ -1042,9 +1004,9 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (newSearch) topItemPosition = 0;
 
         // Update displayed books
-        if (Preferences.getEndlessScroll() && !activity.isEditMode()) {
+        if (Preferences.getEndlessScroll() && !activity.get().isEditMode()) {
             pagedItemAdapter.submitList(result, this::differEndCallback);
-        } else if (activity.isEditMode()) {
+        } else if (activity.get().isEditMode()) {
             populateAllResults(result);
         } else { // Paged mode
             if (newSearch) pager.setCurrentPage(1);
@@ -1076,7 +1038,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
      */
     private void updateTitle(long totalSelectedCount, long totalCount) {
-        ((LibraryActivity) requireActivity()).updateTitle(totalSelectedCount, totalCount);
+        activity.get().updateTitle(totalSelectedCount, totalCount);
     }
 
     /**
@@ -1157,17 +1119,14 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         int selectedTotalCount = selectedItems.size();
 
         if (0 == selectedTotalCount) {
-            selectionToolbar.setVisibility(View.GONE);
+            activity.get().getSelectionToolbar().setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
             new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
-            if (!(requireActivity() instanceof LibraryActivity)) return;
-            LibraryActivity activity = (LibraryActivity) requireActivity();
-
             long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filter(s -> s.equals(StatusContent.DOWNLOADED)).count();
-            activity.updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
-            selectionToolbar.setVisibility(View.VISIBLE);
+            activity.get().updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
+            activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }
 
@@ -1279,16 +1238,13 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     }
 
     private void onDeleteSwipedBook(@NonNull final ContentItem item) {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         // Deleted book is the last selected books => disable selection mode
         if (item.isSelected()) {
             selectExtension.deselect(item);
             if (selectExtension.getSelectedItems().isEmpty())
-                selectionToolbar.setVisibility(View.GONE);
+                activity.get().getSelectionToolbar().setVisibility(View.GONE);
         }
 
-        activity.deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList());
+        activity.get().deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList());
     }
 }

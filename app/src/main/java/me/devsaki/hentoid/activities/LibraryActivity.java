@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -81,6 +82,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 
+@SuppressLint("NonConstantResourceId")
 public class LibraryActivity extends BaseActivity {
 
     private DrawerLayout drawerLayout;
@@ -449,6 +451,19 @@ public class LibraryActivity extends BaseActivity {
         });
         // Update icons visibility
         updateToolbar();
+    }
+
+    public void initFragmentToolbars(
+            @NonNull final SelectExtension<?> selectExtension,
+            @NonNull final Toolbar.OnMenuItemClickListener toolbarOnItemClicked,
+            @NonNull final Toolbar.OnMenuItemClickListener selectionToolbarOnItemClicked
+    ) {
+        toolbar.setOnMenuItemClickListener(toolbarOnItemClicked);
+        selectionToolbar.setOnMenuItemClickListener(selectionToolbarOnItemClicked);
+        selectionToolbar.setNavigationOnClickListener(v -> {
+            selectExtension.deselect();
+            selectionToolbar.setVisibility(View.GONE);
+        });
     }
 
     public void sortCommandsAutoHide(boolean hideSortOnly, PopupMenu popup) {

@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.library;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,7 +19,6 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -46,6 +46,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Set;
 
@@ -73,6 +74,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 
+@SuppressLint("NonConstantResourceId")
 public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
@@ -84,6 +86,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private LibraryViewModel viewModel;
     // Settings listener
     private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = (p, k) -> onSharedPreferenceChanged(k);
+    // Activity
+    private WeakReference<LibraryActivity> activity;
 
 
     // ======== UI
@@ -99,9 +103,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private ImageView sortDirectionButton;
     // Sort field button
     private TextView sortFieldButton;
-
-    // === SELECTION TOOLBAR
-    private Toolbar selectionToolbar;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<GroupDisplayItem> itemAdapter;
@@ -134,6 +135,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 customBackPress();
             }
         };
+
+        if (!(requireActivity() instanceof LibraryActivity))
+            throw new IllegalStateException("Parent activity has to be a LibraryActivity");
+        activity = new WeakReference<>((LibraryActivity) requireActivity());
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
 
@@ -156,7 +161,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         initUI(rootView);
-        initToolbars();
+        activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
 
         return rootView;
     }
@@ -177,11 +182,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * @param rootView Root view of the library screen
      */
     private void initUI(@NonNull View rootView) {
-        LibraryActivity activity = ((LibraryActivity) requireActivity());
-
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
-        sortDirectionButton = activity.getSortDirectionButton();
-        sortFieldButton = activity.getSortFieldButton();
+        sortDirectionButton = activity.get().getSortDirectionButton();
+        sortFieldButton = activity.get().getSortFieldButton();
 
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
@@ -195,8 +198,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     private void updateSortControls() {
-        LibraryActivity activity = ((LibraryActivity) requireActivity());
-
         // Sort controls
         sortDirectionButton.setImageResource(Preferences.isGroupSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
         sortDirectionButton.setOnClickListener(v -> {
@@ -206,7 +207,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
             // Run a new search
             viewModel.updateContentOrder();
-            activity.sortCommandsAutoHide(true, null);
+            activity.get().sortCommandsAutoHide(true, null);
         });
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getGroupSortField()));
         sortFieldButton.setOnClickListener(v -> {
@@ -222,12 +223,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
                 Preferences.setGroupSortField(fieldCode);
                 // Run a new search
-                viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.getQuery(), fieldCode, Preferences.isGroupSortDesc());
-                activity.sortCommandsAutoHide(true, popup);
+                viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), fieldCode, Preferences.isGroupSortDesc());
+                activity.get().sortCommandsAutoHide(true, popup);
                 return true;
             });
             popup.show(); //showing popup menu
-            activity.sortCommandsAutoHide(true, popup);
+            activity.get().sortCommandsAutoHide(true, popup);
         }); //closing the setOnClickListener method
     }
 
@@ -257,25 +258,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }
     }
 
-    private void initToolbars() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
-        Toolbar toolbar = activity.getToolbar();
-        toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
-
-        selectionToolbar = activity.getSelectionToolbar();
-        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
-        selectionToolbar.setNavigationOnClickListener(v -> {
-            selectExtension.deselect();
-            selectionToolbar.setVisibility(View.GONE);
-        });
-    }
-
     private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
-        if (!(requireActivity() instanceof LibraryActivity)) return false;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
                 toggleEditMode();
@@ -287,7 +270,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 newGroupPrompt();
                 break;
             default:
-                return activity.toolbarOnItemClicked(menuItem);
+                return activity.get().toolbarOnItemClicked(menuItem);
         }
         return true;
     }
@@ -305,21 +288,18 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 archiveSelectedItems();
                 break;
             default:
-                selectionToolbar.setVisibility(View.GONE);
+                activity.get().getSelectionToolbar().setVisibility(View.GONE);
                 return false;
         }
-        if (!keepToolbar) selectionToolbar.setVisibility(View.GONE);
+        if (!keepToolbar) activity.get().getSelectionToolbar().setVisibility(View.GONE);
         return true;
     }
 
     private void toggleEditMode() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
-        activity.toggleEditMode();
+        activity.get().toggleEditMode();
 
         // Leave edit mode by validating => Save new item position
-        if (!activity.isEditMode()) {
+        if (!activity.get().isEditMode()) {
             viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
             Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
             sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
@@ -329,11 +309,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     private void cancelEditMode() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
-        activity.setEditMode(false);
-
+        activity.get().setEditMode(false);
         setPagingMethod();
     }
 
@@ -350,9 +326,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * Callback for the "delete item" action button
      */
     private void purgeSelectedItems() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             List<Group> selectedGroups = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().toList();
@@ -374,7 +347,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             if (!Preferences.getGroupingDisplay().canReorderGroups()) selectedGroups.clear();
 
             if (!selectedContent.isEmpty() || !selectedGroups.isEmpty())
-                activity.askDeleteItems(selectedContent, selectedGroups, selectExtension);
+                activity.get().askDeleteItems(selectedContent, selectedGroups, selectExtension);
         }
     }
 
@@ -382,9 +355,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * Callback for the "archive item" action button
      */
     private void archiveSelectedItems() {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         List<Content> selectedContent = Stream.of(selectedItems)
                 .map(GroupDisplayItem::getGroup)
@@ -393,7 +363,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 .withoutNulls()
                 .filterNot(c -> c.getStorageUri().isEmpty())
                 .toList();
-        if (!selectedContent.isEmpty()) activity.askArchiveItems(selectedContent, selectExtension);
+        if (!selectedContent.isEmpty())
+            activity.get().askArchiveItems(selectedContent, selectExtension);
     }
 
     /**
@@ -458,7 +429,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 break;
             case EV_UPDATE_SORT:
                 updateSortControls();
-                initToolbars();
+                activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
                 break;
             default:
                 // No default behaviour
@@ -476,12 +447,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         // If content is selected, deselect it
         if (!selectExtension.getSelectedItems().isEmpty()) {
             selectExtension.deselect();
-            selectionToolbar.setVisibility(View.GONE);
+            activity.get().getSelectionToolbar().setVisibility(View.GONE);
             backButtonPressed = 0;
             return;
         }
 
-        if (!((LibraryActivity) requireActivity()).collapseSearchMenu()) {
+        if (!activity.get().collapseSearchMenu()) {
             // If none of the above, user is asking to leave => use double-tap
             if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
                 callback.remove();
@@ -516,9 +487,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * Initialize the paging method of the screen
      */
     private void setPagingMethod(/*boolean isEditMode*/) {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         viewModel.setPagingMethod(true);
 
         itemAdapter = new ItemAdapter<>();
@@ -538,7 +506,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }
 
         // Drag, drop & swiping
-        if (activity.isEditMode()) {
+        if (activity.get().isEditMode()) {
             SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
                     this,
                     this,
@@ -554,15 +522,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     private void onGroupsChanged(List<Group> result) {
-        if (!(requireActivity() instanceof LibraryActivity)) return;
-        LibraryActivity activity = (LibraryActivity) requireActivity();
-
         Timber.i(">>Groups changed ! Size=%s", result.size());
 
         boolean isEmpty = (result.isEmpty());
         emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
-        @GroupDisplayItem.ViewType int viewType = activity.isEditMode() ? GroupDisplayItem.ViewType.LIBRARY_EDIT : GroupDisplayItem.ViewType.LIBRARY;
+        @GroupDisplayItem.ViewType int viewType = activity.get().isEditMode() ? GroupDisplayItem.ViewType.LIBRARY_EDIT : GroupDisplayItem.ViewType.LIBRARY;
         List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).toList();
         itemAdapter.set(groups);
         differEndCallback();
@@ -591,7 +556,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (selectExtension.getSelectedItems().isEmpty()) {
             if (!invalidateNextBookClick && item.getGroup() != null && !item.getGroup().isBeingDeleted()) {
                 topItemPosition = position;
-                ((LibraryActivity) requireActivity()).showBooksInGroup(item.getGroup());
+                activity.get().showBooksInGroup(item.getGroup());
             } else invalidateNextBookClick = false;
 
             return true;
@@ -609,17 +574,14 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         int selectedTotalCount = selectedItems.size();
 
         if (0 == selectedTotalCount) {
-            selectionToolbar.setVisibility(View.GONE);
+            activity.get().getSelectionToolbar().setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
             new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
-            if (!(requireActivity() instanceof LibraryActivity)) return;
-            LibraryActivity activity = (LibraryActivity) requireActivity();
-
             long selectedLocalCount = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().count();
-            activity.updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
-            selectionToolbar.setVisibility(View.VISIBLE);
+            activity.get().updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
+            activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }
 
