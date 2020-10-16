@@ -101,8 +101,6 @@ public class LibraryActivity extends BaseActivity {
     // ==== Advanced search / sort bar
     // Grey background of the advanced search / sort bar
     private View advancedSearchBar;
-    // Groups button
-    private View groupsButton;
     // Advanced search text button
     private View advancedSearchButton;
     // CLEAR button
@@ -319,7 +317,7 @@ public class LibraryActivity extends BaseActivity {
         advancedSearchBar = findViewById(R.id.advanced_search_background);
 
         // Groups menu
-        groupsButton = findViewById(R.id.groups_btn);
+        View groupsButton = findViewById(R.id.groups_btn);
         groupsButton.setOnClickListener(v -> {
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(this, groupsButton);
