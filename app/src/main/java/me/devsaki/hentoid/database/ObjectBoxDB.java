@@ -133,7 +133,7 @@ public class ObjectBoxDB {
                 // This transaction may consume a lot of DB readers depending on the number of attributes involved
                 for (int i = 0; i < attributes.size(); i++) {
                     inputAttr = attributes.get(i);
-                    dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
+                    dbAttr = attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
                             .setParameter(Attribute_.type, inputAttr.getType().getCode())
                             .findFirst();
                     if (dbAttr != null) {
