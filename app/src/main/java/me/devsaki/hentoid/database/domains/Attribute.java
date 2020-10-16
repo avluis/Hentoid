@@ -35,7 +35,7 @@ public class Attribute {
     private AttributeType type;
     @Backlink(to = "attribute")
     private ToMany<AttributeLocation> locations; // One entry per site
-    public ToOne<Group> group; // Associated group
+    private ToOne<Group> group; // Associated group
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
@@ -110,6 +110,14 @@ public class Attribute {
     public Attribute setCount(int count) {
         this.count = count;
         return this;
+    }
+
+    public ToOne<Group> getGroup() {
+        return group;
+    }
+
+    public void putGroup(@NonNull Group group) {
+        this.group.setAndPutTarget(group);
     }
 
     public Attribute setExternalId(int id) {

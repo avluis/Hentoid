@@ -55,7 +55,7 @@ public final class GroupHelper {
         // Create group if it doesn't exist
         if (0 == group.id) {
             group.id = dao.insertGroup(group);
-            if (attribute != null) attribute.group.setAndPutTarget(group);
+            if (attribute != null) attribute.putGroup(group);
             nbContents = 0;
         } else {
             nbContents = group.getItems().size();

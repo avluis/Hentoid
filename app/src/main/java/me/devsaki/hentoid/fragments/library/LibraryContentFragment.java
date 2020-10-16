@@ -130,7 +130,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     private TextView sortFieldButton;
 
     // === SELECTION TOOLBAR
-    private Toolbar toolbar;
     private Toolbar selectionToolbar;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
@@ -392,7 +391,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (!(requireActivity() instanceof LibraryActivity)) return;
         LibraryActivity activity = (LibraryActivity) requireActivity();
 
-        toolbar = activity.getToolbar();
+        Toolbar toolbar = activity.getToolbar();
         toolbar.setOnMenuItemClickListener(this::toolbarOnItemClicked);
 
         selectionToolbar = activity.getSelectionToolbar();

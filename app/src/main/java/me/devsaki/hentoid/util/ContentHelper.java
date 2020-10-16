@@ -287,7 +287,7 @@ public final class ContentHelper {
                             artists.addAll(sublist);
 
                         for (Attribute a : artists) {
-                            Group group = a.group.getTarget();
+                            Group group = a.getGroup().getTarget();
                             if (null == group) {
                                 group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
                                 if (!a.contents.isEmpty())

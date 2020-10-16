@@ -240,7 +240,7 @@ public class DatabaseMaintenance {
             float pos = 1;
             for (ImmutableTriple<Group, Attribute, List<Content>> data : toInsert) {
                 db.insertGroup(data.left);
-                if (data.middle != null) data.middle.group.setAndPutTarget(data.left);
+                if (data.middle != null) data.middle.putGroup(data.left);
                 int order = 0;
                 for (Content book : data.right) {
                     GroupItem item = new GroupItem(book, data.left, order++);
