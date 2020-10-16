@@ -80,7 +80,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
                 customGroups = dao.selectGroups(Grouping.CUSTOM.getId());
                 customGroups = Stream.of(customGroups).toList();
 
-                if (customGroups.size() > 0) { // "Existing group" by default
+                if (!customGroups.isEmpty()) { // "Existing group" by default
                     existingRadio.setChecked(true);
                     existingSpin.setVisibility(View.VISIBLE);
                     existingSpin.setItems(Stream.of(customGroups).map(g -> g.name).toList());
