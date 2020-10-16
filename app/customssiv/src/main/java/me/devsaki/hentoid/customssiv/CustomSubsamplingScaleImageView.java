@@ -1131,6 +1131,8 @@ public class CustomSubsamplingScaleImageView extends View {
                     }
                 }
                 return true;
+            default:
+                // No other cases to be handled
         }
         return false;
     }
