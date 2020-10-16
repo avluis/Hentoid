@@ -65,8 +65,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     // Screen width and height; used to adjust dimensions of small images handled by Glide
-    final static int screenWidth = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
-    final static int screenHeight = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
+    static final int screenWidth = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
+    static final int screenHeight = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
 
     private static final int PX_600_DP = Helper.dpToPixel(HentoidApp.getInstance(), 600);
 
@@ -178,10 +178,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             }
         } else if (ViewType.IMAGEVIEW_STRETCH == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
-            {
-                ImageView image = view.findViewById(R.id.image);
-                image.setScaleType(ImageView.ScaleType.FIT_XY);
-            }
+            ImageView image = view.findViewById(R.id.image);
+            image.setScaleType(ImageView.ScaleType.FIT_XY);
         } else if (ViewType.SSIV_VERTICAL == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
             ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
