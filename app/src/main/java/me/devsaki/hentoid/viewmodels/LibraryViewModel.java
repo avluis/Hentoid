@@ -408,8 +408,8 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void setGroupCover(long groupId, ImageFile cover) {
-        Group group = dao.selectGroup(groupId);
-        if (group != null) group.picture.setAndPutTarget(cover);
+        Group localGroup = dao.selectGroup(groupId);
+        if (localGroup != null) localGroup.picture.setAndPutTarget(cover);
     }
 
     public void saveContentPositions(@NonNull final List<Content> orderedContent) {
@@ -428,21 +428,21 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     private void doSaveContentPositions(@NonNull final List<Content> orderedContent) {
-        Group group = getGroup().getValue();
-        if (null == group) return;
+        Group localGroup = getGroup().getValue();
+        if (null == localGroup) return;
 
         // Update the "has custom book order" group flag
-        group.hasCustomBookOrder = true;
+        localGroup.hasCustomBookOrder = true;
 
         int order = 0;
         for (Content c : orderedContent)
-            for (GroupItem gi : group.items)
+            for (GroupItem gi : localGroup.items)
                 if (gi.content.getTargetId() == c.getId()) {
                     gi.order = order++;
                     dao.insertGroupItem(gi);
                     break;
                 }
-        dao.insertGroup(group);
+        dao.insertGroup(localGroup);
     }
 
     public void saveGroupPositions(@NonNull final List<Group> orderedGroups) {
@@ -470,10 +470,10 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
         // Check if the group already exists
-        List<Group> groups = getGroups().getValue();
-        if (null == groups) return;
+        List<Group> localGroups = getGroups().getValue();
+        if (null == localGroups) return;
 
-        List<Group> groupMatchingName = Stream.of(groups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
+        List<Group> groupMatchingName = Stream.of(localGroups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
         if (!groupMatchingName.isEmpty()) { // Existing group with the same name
             onNameExists.run();
         } else {
@@ -497,10 +497,10 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
         // Check if the group already exists
-        List<Group> groups = getGroups().getValue();
-        if (null == groups) return;
+        List<Group> localGroups = getGroups().getValue();
+        if (null == localGroups) return;
 
-        List<Group> groupMatchingName = Stream.of(groups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
+        List<Group> groupMatchingName = Stream.of(localGroups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
         if (!groupMatchingName.isEmpty()) { // Existing group with the same name
             onNameExists.run();
         } else {

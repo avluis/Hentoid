@@ -103,23 +103,23 @@ public class QueueViewModel extends AndroidViewModel {
         Timber.d(">> move %s to %s", oldPosition, newPosition);
 
         // Get unpaged data to be sure we have everything in one collection
-        List<QueueRecord> queue = dao.selectQueue();
-        if (oldPosition < 0 || oldPosition >= queue.size()) return;
+        List<QueueRecord> localQueue = dao.selectQueue();
+        if (oldPosition < 0 || oldPosition >= localQueue.size()) return;
 
         // Move the item
-        QueueRecord fromValue = queue.get(oldPosition);
+        QueueRecord fromValue = localQueue.get(oldPosition);
         int delta = oldPosition < newPosition ? 1 : -1;
         for (int i = oldPosition; i != newPosition; i += delta) {
-            queue.set(i, queue.get(i + delta));
+            localQueue.set(i, localQueue.get(i + delta));
         }
-        queue.set(newPosition, fromValue);
+        localQueue.set(newPosition, fromValue);
 
         // Renumber everything
         int index = 1;
-        for (QueueRecord qr : queue) qr.rank = index++;
+        for (QueueRecord qr : localQueue) qr.rank = index++;
 
         // Update queue in DB
-        dao.updateQueue(queue);
+        dao.updateQueue(localQueue);
 
         // If the 1st item is involved, signal it being skipped
         if (0 == newPosition || 0 == oldPosition)
@@ -128,17 +128,17 @@ public class QueueViewModel extends AndroidViewModel {
 
     public void invertQueue() {
         // Get unpaged data to be sure we have everything in one collection
-        List<QueueRecord> queue = dao.selectQueue();
-        if (queue.size() < 2) return;
+        List<QueueRecord> localQueue = dao.selectQueue();
+        if (localQueue.size() < 2) return;
 
         // Renumber everything in reverse order
         int index = 1;
-        for (int i = queue.size() - 1; i >= 0; i--) {
-            queue.get(i).rank = index++;
+        for (int i = localQueue.size() - 1; i >= 0; i--) {
+            localQueue.get(i).rank = index++;
         }
 
         // Update queue and signal skipping the 1st item
-        dao.updateQueue(queue);
+        dao.updateQueue(localQueue);
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
     }
 
@@ -171,13 +171,13 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     public void cancelAll(Consumer<Throwable> onError) {
-        List<QueueRecord> queue = dao.selectQueue();
-        if (queue.isEmpty()) return;
+        List<QueueRecord> localQueue = dao.selectQueue();
+        if (localQueue.isEmpty()) return;
 
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
 
         compositeDisposable.add(
-                Observable.fromIterable(queue)
+                Observable.fromIterable(localQueue)
                         .observeOn(Schedulers.io())
                         .map(qr -> doRemove(qr.content.getTargetId()))
                         .doOnComplete(this::saveQueue) // Done properly in the IO thread
