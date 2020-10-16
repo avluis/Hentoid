@@ -29,7 +29,7 @@ public class ZipUtil {
         throw new IllegalStateException("Utility class");
     }
 
-    public static String ZIP_MIME_TYPE = "application/zip";
+    public static final String ZIP_MIME_TYPE = "application/zip";
 
     private static final int BUFFER = 32 * 1024;
 
