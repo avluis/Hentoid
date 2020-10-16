@@ -229,6 +229,7 @@ public class LibraryActivity extends BaseActivity {
                 toolbar, R.string.open_drawer, R.string.close_drawer) {
 
             /** Called when a drawer has settled in a completely closed state. */
+            @Override
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
                 EventBus.getDefault().post(new CommunicationEvent(EV_CLOSED, RC_DRAWER, ""));

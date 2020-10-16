@@ -15,12 +15,12 @@ import me.devsaki.hentoid.util.ThemeHelper;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
-    public BaseActivity() {
+    protected BaseActivity() {
         super();
     }
 
     @ContentView
-    public BaseActivity(@LayoutRes int contentLayoutId) {
+    protected BaseActivity(@LayoutRes int contentLayoutId) {
         super(contentLayoutId);
     }
 
