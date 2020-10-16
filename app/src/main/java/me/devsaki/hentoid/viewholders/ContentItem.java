@@ -59,6 +59,7 @@ import me.devsaki.hentoid.util.LanguageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -222,6 +223,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private TextView tvSeries;
         private ImageView ivFavourite;
         private ImageView ivExternal;
+        private CircularProgressView readingProgress;
 
         // Specific to Queued content
         private ProgressBar progressBar;
@@ -253,6 +255,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivExternal = itemView.findViewById(R.id.ivExternal);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
+                readingProgress = requireViewById(itemView, R.id.reading_progress);
             } else if (viewType == ViewType.QUEUE || viewType == ViewType.LIBRARY_EDIT) {
                 if (viewType == ViewType.QUEUE)
                     progressBar = itemView.findViewById(R.id.pbDownload);
@@ -392,6 +395,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
             tvTitle.setText(title);
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
+
+            if (readingProgress != null) {
+                readingProgress.setVisibility(View.VISIBLE);
+                readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
+                readingProgress.setTotal(content.getImageFiles().size());
+                readingProgress.setProgress1(content.getLastReadPageIndex());
+            }
         }
 
         private void attachArtist(@NonNull final Content content) {
