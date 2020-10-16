@@ -203,30 +203,31 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> implements IDraggableViewHolder {
 
         // Common elements
-        private View baseLayout;
-        private TextView tvTitle;
-        private ImageView ivCover;
-        private ImageView ivFlag;
-        private TextView tvSeries;
-        private TextView tvArtist;
-        private TextView tvPages;
-        private TextView tvTags;
-        private ImageView ivSite;
+        private final View baseLayout;
+        private final TextView tvTitle;
+        private final ImageView ivCover;
+        private final ImageView ivFlag;
+        private final TextView tvArtist;
+        private final TextView tvPages;
+        private final ImageView ivSite;
+        private final ImageView ivError;
+
+        private final View swipeResult;
+        private final View bookCard;
+        private final View tvUndoSwipe;
 
         // Specific to library content
         private View ivNew;
-        private ImageView ivError;
+        private TextView tvTags;
+        private TextView tvSeries;
         private ImageView ivFavourite;
         private ImageView ivExternal;
 
         // Specific to Queued content
-        private View swipeResult;
-        private View bookCard;
         private ProgressBar progressBar;
         private View ivTop;
         private View ivBottom;
         private View ivReorder;
-        private View tvUndoSwipe;
         private View ivRedownload;
 
 
