@@ -12,6 +12,11 @@ import java.util.List;
 
 public class SkiaDecoderHelper {
 
+    private SkiaDecoderHelper() {
+        throw new IllegalStateException("Utility class");
+    }
+
+
     public static int getResourceId(@NonNull final Context context, @NonNull final Uri uri) throws PackageManager.NameNotFoundException {
         Resources res;
         String packageName = uri.getAuthority();

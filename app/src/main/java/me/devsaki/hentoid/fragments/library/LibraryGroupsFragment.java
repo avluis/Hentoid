@@ -276,7 +276,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
-        boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
             case R.id.action_edit_name:
                 editSelectedItemName();
@@ -291,7 +290,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
                 return false;
         }
-        if (!keepToolbar) activity.get().getSelectionToolbar().setVisibility(View.GONE);
+        activity.get().getSelectionToolbar().setVisibility(View.GONE);
         return true;
     }
 
