@@ -25,6 +25,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -46,6 +47,7 @@ public class SearchContentIdDialogFragment extends DialogFragment {
         args.putIntegerArrayList(FOUND_SITES, siteCodes);
 
         SearchContentIdDialogFragment fragment = new SearchContentIdDialogFragment();
+        ThemeHelper.setStyle(context, fragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         fragment.setArguments(args);
         fragment.show(fragmentManager, null);
     }
