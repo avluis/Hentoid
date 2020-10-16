@@ -80,6 +80,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
+            android:maxLines="1"
+            android:singleLine="true"
             android:textColor="@color/card_tags_light"
             android:textSize="@dimen/caption"
             android:textStyle="bold"
