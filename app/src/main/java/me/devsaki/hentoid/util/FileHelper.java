@@ -56,8 +56,6 @@ public class FileHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    public static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
-
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
     private static final String PRIMARY_VOLUME_NAME = "primary";
@@ -251,16 +249,6 @@ public class FileHelper {
     }
 
     /**
-     * Create a folder.
-     *
-     * @param file The folder to be created.
-     * @return true if creation was successful or the folder already exists
-     */
-    public static boolean createDirectory(@NonNull File file) {
-        return FileUtil.makeDir(file);
-    }
-
-    /**
      * Delete a file.
      *
      * @param target The file.
@@ -269,20 +257,6 @@ public class FileHelper {
         FileUtil.deleteFile(target);
     }
 
-    /**
-     * Delete files in a target directory.
-     *
-     * @param target The folder.
-     * @return true if cleaned successfully.
-     */
-    public static boolean cleanDirectory(@NonNull File target) {
-        try {
-            return FileUtil.tryCleanDirectory(target);
-        } catch (Exception e) {
-            Timber.e(e, "Failed to clean directory");
-            return false;
-        }
-    }
 
     /**
      * Return the DocumentFile with the given display name located in the given folder
