@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 
 public class HitomiGalleryInfo {
@@ -34,7 +35,7 @@ public class HitomiGalleryInfo {
         }
 
         public String getName() {
-            return name;
+            return (null == name) ? "" : name;
         }
     }
 
@@ -42,15 +43,12 @@ public class HitomiGalleryInfo {
         @Override
         public int compare(@NonNull HitomiGalleryPage o1, @NonNull HitomiGalleryPage o2) {
             String name1 = o1.getName();
-            if (null == name1) name1 = "";
             String name2 = o2.getName();
-            if (null == name2) name2 = "";
-            long innerNumber1 = Helper.extractNumeric(name1);
-            if (-1 == innerNumber1) return name1.compareTo(name2);
-            long innerNumber2 = Helper.extractNumeric(name2);
-            if (-1 == innerNumber2) return name1.compareTo(name2);
-
-            return Long.compare(innerNumber1, innerNumber2);
+            // Compare only when the entire file name is numerical (see follow-up comments on #640)
+            if (Helper.isNumeric(FileHelper.getFileNameWithoutExtension(name1)) && Helper.isNumeric(FileHelper.getFileNameWithoutExtension(name2)))
+                return Long.compare(Helper.extractNumeric(name1), Helper.extractNumeric(name2));
+            else
+                return name1.compareTo(name2);
         }
     }
 }
