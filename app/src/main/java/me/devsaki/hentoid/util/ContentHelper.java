@@ -14,6 +14,7 @@ import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -236,8 +238,10 @@ public final class ContentHelper {
     /**
      * Remove the given Content from the disk and the DB
      *
+     * @param context Context to be used
      * @param dao     DAO to be used
      * @param content Content to be removed
+     * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
      */
     public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
@@ -254,6 +258,28 @@ public final class ContentHelper {
         } else {
             throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
         }
+    }
+
+    /**
+     * Remove the given Content from the queue, disk and the DB
+     *
+     * @param context Context to be used
+     * @param dao     DAO to be used
+     * @param content Content to be removed
+     * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
+     */
+    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
+        Helper.assertNonUiThread();
+        // Check if the content is on top of the queue; if so, send a CANCEL event
+        List<QueueRecord> queue = dao.selectQueue();
+        if (!queue.isEmpty() && queue.get(0).content.getTargetId() == content.getId())
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+
+        // Remove from queue
+        dao.deleteQueue(content);
+
+        // Remove content itself
+        removeContent(context, dao, content);
     }
 
     /**
@@ -633,8 +659,8 @@ public final class ContentHelper {
 
     /**
      * Comparator to be used to sort files according to their names :
-     *  - Sort according to the concatenation of all its numerical characters, if any
-     *  - If none, sort alphabetically (default string compare)
+     * - Sort according to the concatenation of all its numerical characters, if any
+     * - If none, sort alphabetically (default string compare)
      */
     private static class InnerNameNumberComparator implements Comparator<DocumentFile> {
         @Override
@@ -643,12 +669,12 @@ public final class ContentHelper {
             if (null == name1) name1 = "";
             String name2 = o2.getName();
             if (null == name2) name2 = "";
-            int innerNumber1 = Helper.extractNumeric(name1);
+            long innerNumber1 = Helper.extractNumeric(name1);
             if (-1 == innerNumber1) return name1.compareTo(name2);
-            int innerNumber2 = Helper.extractNumeric(name2);
+            long innerNumber2 = Helper.extractNumeric(name2);
             if (-1 == innerNumber2) return name1.compareTo(name2);
 
-            return Integer.compare(innerNumber1, innerNumber2);
+            return Long.compare(innerNumber1, innerNumber2);
         }
     }
 }

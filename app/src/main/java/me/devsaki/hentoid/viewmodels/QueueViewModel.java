@@ -149,6 +149,7 @@ public class QueueViewModel extends AndroidViewModel {
      * @param contents Contents whose download has to be canceled
      */
     public void cancel(@NonNull List<Content> contents, Consumer<Throwable> onError) {
+        // TODO isn't that a little excessive to send a cancel event for EVERY book ?
         for (Content c : contents)
             EventBus.getDefault().post(new DownloadEvent(c, DownloadEvent.EV_CANCEL));
         remove(contents, onError);
@@ -195,11 +196,8 @@ public class QueueViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
         // Remove content altogether from the DB (including queue)
         Content content = dao.selectContent(contentId);
-        if (content != null) {
-            dao.deleteQueue(content);
-            // Remove the content from the disk and the DB
-            ContentHelper.removeContent(getApplication(), dao, content);
-        }
+        if (content != null)
+            ContentHelper.removeQueuedContent(getApplication(), dao, content);
         return true;
     }
 
