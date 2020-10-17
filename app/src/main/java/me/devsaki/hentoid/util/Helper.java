@@ -45,6 +45,7 @@ public final class Helper {
 
     /**
      * Return the given string formatted with a capital letter as its first letter
+     *
      * @param s String to format
      * @return Given string formatted with a capital letter as its first letter
      */
@@ -77,6 +78,7 @@ public final class Helper {
 
     /**
      * Decode the given base-64-encoded string
+     *
      * @param encodedString Base-64 encoded string to decode
      * @return Decoded string
      */
@@ -90,6 +92,7 @@ public final class Helper {
 
     /**
      * Encode the given base-64-encoded string
+     *
      * @param rawString Raw string to encode
      * @return Encoded string
      */
@@ -99,8 +102,9 @@ public final class Helper {
 
     /**
      * Convert the given dp value in pixels units
+     *
      * @param context Context to be used
-     * @param dp Input value in dp
+     * @param dp      Input value in dp
      * @return Given value converted to pixels
      */
     public static int dpToPixel(@NonNull final Context context, int dp) {
@@ -111,6 +115,7 @@ public final class Helper {
 
     /**
      * Create a Collections.List from the given array of primitive values
+     *
      * @param input Array of primitive values to transform
      * @return Given values contained in a Collections.List
      */
@@ -122,6 +127,7 @@ public final class Helper {
 
     /**
      * Create a Collections.List from the given array of primitive values
+     *
      * @param input Array of primitive values to transform
      * @return Given values contained in a Collections.List
      */
@@ -133,6 +139,7 @@ public final class Helper {
 
     /**
      * Create an array of primitive types from the given List of values
+     *
      * @param input List of values to transform
      * @return Given values as an array of primitive types
      */
@@ -147,6 +154,7 @@ public final class Helper {
 
     /**
      * Determine whether the given string represents a numeric value or not
+     *
      * @param str Value to test
      * @return True if the given value is numeric (including negative and decimal numbers); false if not
      */
@@ -157,21 +165,23 @@ public final class Helper {
 
     /**
      * Extract all digits of the given value concatenated in one single figure
+     *
      * @param str Value to convert
      * @return Integer representation of all the concatenated digits of the given value; -1 if no digit has been found
      */
-    public static int extractNumeric(@Nullable final String str) {
+    public static long extractNumeric(@Nullable final String str) {
         if (null == str) return -1;
         String result = StringUtils.getDigits(str);
         if (result.isEmpty()) return -1;
-        else return Integer.parseInt(result);
+        else return Long.parseLong(result);
     }
 
     /**
      * Inclusively coerce the given value between the given min and max values
+     *
      * @param value Value to coerce
-     * @param min Min limit (inclusive)
-     * @param max Max limit (inclusive)
+     * @param min   Min limit (inclusive)
+     * @param max   Max limit (inclusive)
      * @return Given value inclusively coerced between the given min and max
      */
     public static float coerceIn(float value, float min, float max) {
@@ -181,7 +191,8 @@ public final class Helper {
 
     /**
      * Duplicate the given InputStream as many times as given
-     * @param stream Initial InputStream to duplicate
+     *
+     * @param stream           Initial InputStream to duplicate
      * @param numberDuplicates Number of duplicates to create
      * @return List containing the given number of duplicated InputStreams
      * @throws IOException If anything goes wrong during the duplication
@@ -204,8 +215,9 @@ public final class Helper {
 
     /**
      * Copy plain text to the device's clipboard
+     *
      * @param context Context to be used
-     * @param text Text to copy
+     * @param text    Text to copy
      * @return True if the copy has succeeded; false if not
      */
     public static boolean copyPlainTextToClipboard(@NonNull Context context, @NonNull String text) {
@@ -251,6 +263,7 @@ public final class Helper {
 
     /**
      * Unescape all escaped characters from the given string (Java convention)
+     *
      * @param s String to be cleaned up
      * @return Given string where all escaped characters have been unescaped
      */
@@ -262,6 +275,7 @@ public final class Helper {
      * Fix for a crash on 5.1.1
      * https://stackoverflow.com/questions/41025200/android-view-inflateexception-error-inflating-class-android-webkit-webview
      * As fallback solution _only_ since it breaks other stuff in the webview (choice in SELECT tags for instance)
+     *
      * @param context Context to fix
      * @return Fixed context
      */
@@ -271,6 +285,7 @@ public final class Helper {
 
     /**
      * Get the version of Chrome installed on the device
+     *
      * @param context Context to be used
      * @return Version of Chrome installed on the device
      */

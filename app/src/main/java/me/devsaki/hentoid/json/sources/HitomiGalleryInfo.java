@@ -45,12 +45,12 @@ public class HitomiGalleryInfo {
             if (null == name1) name1 = "";
             String name2 = o2.getName();
             if (null == name2) name2 = "";
-            int innerNumber1 = Helper.extractNumeric(name1);
+            long innerNumber1 = Helper.extractNumeric(name1);
             if (-1 == innerNumber1) return name1.compareTo(name2);
-            int innerNumber2 = Helper.extractNumeric(name2);
+            long innerNumber2 = Helper.extractNumeric(name2);
             if (-1 == innerNumber2) return name1.compareTo(name2);
 
-            return Integer.compare(innerNumber1, innerNumber2);
+            return Long.compare(innerNumber1, innerNumber2);
         }
     }
 }
