@@ -30,7 +30,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 public class UpdateSuccessDialogFragment extends DialogFragment {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private ItemAdapter<GitHubReleaseItem> itemAdapter = new ItemAdapter<>();
+    private final ItemAdapter<GitHubReleaseItem> itemAdapter = new ItemAdapter<>();
 
     public static void invoke(FragmentManager fragmentManager) {
         UpdateSuccessDialogFragment fragment = new UpdateSuccessDialogFragment();

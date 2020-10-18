@@ -22,6 +22,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
@@ -36,6 +37,7 @@ public interface CollectionDAO {
 
     @Nullable
     Content selectContent(long id);
+
     List<Content> selectContent(long[] id);
 
     @Nullable
@@ -92,6 +94,7 @@ public interface CollectionDAO {
     // Groups
 
     LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc);
+
     List<Group> selectGroups(int grouping);
 
     @Nullable
@@ -119,7 +122,6 @@ public interface CollectionDAO {
     List<GroupItem> selectGroupItemsByDlDate(int minDays, int maxDays);
 
     void deleteGroupItems(List<Long> groupItemIds);
-
 
 
     // High-level queries (internal and external locations)
@@ -204,6 +206,15 @@ public interface CollectionDAO {
     SiteHistory getHistory(@NonNull Site s);
 
     void insertSiteHistory(@NonNull Site site, @NonNull String url);
+
+
+    // BOOKMARKS
+
+    List<SiteBookmark> getBookmarks(@NonNull Site s);
+
+    long insertBookmark(@NonNull Site site, @NonNull String title, @NonNull String url);
+
+    void removeBookmark(@NonNull SiteBookmark bookmark);
 
 
     // RESOURCES

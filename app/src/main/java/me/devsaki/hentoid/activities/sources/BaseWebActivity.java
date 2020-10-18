@@ -94,6 +94,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
+import me.devsaki.hentoid.fragments.BookmarksDialogFragment;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
@@ -122,7 +123,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-public abstract class BaseWebActivity extends BaseActivity implements WebContentListener {
+public abstract class BaseWebActivity extends BaseActivity implements WebContentListener, BookmarksDialogFragment.Parent {
 
     @IntDef({ActionMode.DOWNLOAD, ActionMode.VIEW_QUEUE, ActionMode.READ})
     @Retention(RetentionPolicy.SOURCE)
@@ -150,6 +151,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // === UI
     // Associated webview
     protected NestedScrollWebView webView;
+    // Top toolbar
+    private Toolbar toolbar;
     // Bottom toolbar
     private BottomNavigationView bottomToolbar;
     // Bottom toolbar buttons
@@ -265,7 +268,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         // Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
 
@@ -320,6 +323,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         return getStartSite().getUrl();
     }
 
+    @SuppressLint("NonConstantResourceId")
     private boolean onMenuItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.web_menu_home:
@@ -333,6 +337,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 break;
             case R.id.web_menu_gallery:
                 this.onGalleryClick();
+                break;
+            case R.id.web_menu_bookmark:
+                this.onBookmarkClick();
                 break;
             case R.id.web_menu_refresh_stop:
                 this.onRefreshStopClick();
@@ -574,6 +581,13 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     /**
+     * Handler for the "bookmark" top menu button of the browser
+     */
+    private void onBookmarkClick() {
+        // TODO display dialog
+    }
+
+    /**
      * Handler for the "refresh page/stop refreshing" button of the browser
      */
     private void onRefreshStopClick() {
@@ -600,6 +614,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
+    }
+
+    public void openUrl(@NonNull final String url) {
+        webView.loadUrl(url);
     }
 
     /**
@@ -852,7 +870,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         // Adapter used to parse the HTML code of book gallery pages
         private final HtmlAdapter<ContentParser> htmlAdapter;
         // Domain name for which link navigation is restricted
-        private List<String> restrictedDomainNames = new ArrayList<>();
+        private final List<String> restrictedDomainNames = new ArrayList<>();
         // Loading state of the current webpage (used for the refresh/stop feature)
         private boolean isPageLoading = false;
         // Loading state of the HTML code of the current webpage (used to trigger the action button)

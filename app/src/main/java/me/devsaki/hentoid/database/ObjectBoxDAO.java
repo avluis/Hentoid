@@ -38,6 +38,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
@@ -610,6 +611,18 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void insertSiteHistory(@NonNull Site site, @NonNull String url) {
         db.insertSiteHistory(site, url);
+    }
+
+    public List<SiteBookmark> getBookmarks(@NonNull Site s) {
+        return db.selectBookmarks(s);
+    }
+
+    public long insertBookmark(@NonNull Site site, @NonNull String title, @NonNull String url) {
+        return db.insertBookmark(site, title, url);
+    }
+
+    public void removeBookmark(@NonNull SiteBookmark bookmark) {
+        db.removeBookmark(bookmark);
     }
 
 

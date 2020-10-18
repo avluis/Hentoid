@@ -350,6 +350,7 @@
     <string name="web_home">Back to library</string>
     <string name="web_back">Back</string>
     <string name="web_forward">Forward</string>
+    <string name="web_bookmarks">Bookmarks</string>
     <string name="web_refresh_stop">Refresh/stop</string>
     <string name="web_copy_url">Copy current URL to clipboard</string>
     <string name="web_download">Download</string>
@@ -360,6 +361,7 @@
     <string name="help_web_exh_account">Please use or create an ExHentai account</string>
     <string name="blocked_tag">Book has a blocked tag (%s)\nDownload canceled</string>
     <string name="blocked_tag_queued">Book has a blocked tag (%s)\nQueued as an error</string>
+    <string name="bookmark_current">Bookmark current page</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>

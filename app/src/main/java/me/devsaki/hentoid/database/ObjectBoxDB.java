@@ -44,6 +44,8 @@ import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
+import me.devsaki.hentoid.database.domains.SiteBookmark_;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.database.domains.SiteHistory_;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -998,6 +1000,18 @@ public class ObjectBoxDB {
     @Nullable
     SiteHistory selectHistory(@NonNull Site s) {
         return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
+    }
+
+    List<SiteBookmark> selectBookmarks(@NonNull Site s) {
+        return store.boxFor(SiteBookmark.class).query().equal(SiteBookmark_.site, s.getCode()).order(SiteBookmark_.order).build().find();
+    }
+
+    long insertBookmark(@NonNull Site site, @NonNull String title, @NonNull String url) {
+        return store.boxFor(SiteBookmark.class).put(new SiteBookmark(site, title, url));
+    }
+
+    void removeBookmark(@NonNull SiteBookmark bookmark) {
+        store.boxFor(SiteBookmark.class).remove(bookmark);
     }
 
     long insertGroup(Group group) {
