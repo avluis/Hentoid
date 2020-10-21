@@ -11,6 +11,8 @@ if (file('signing.gradle').exists()) {
     apply from: 'signing.gradle'
 }
 
+lint.dependsOn(':app:unMock')
+
 android {
     compileSdkVersion 29
     compileOptions {
