@@ -37,9 +37,10 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  */
 public class HitomiParser implements ImageListParser {
 
-    // Reproduction of the Hitomi.la Javascript to find the hostname of the image server (see subdomain_from_url@reader.js)
+    // Reproduction of the Hitomi.la Javascript to find the hostname of the image server
     private static final int NUMBER_OF_FRONTENDS = 3;
-    private static final String HOSTNAME_SUFFIX = "a";
+    private static final String HOSTNAME_SUFFIX_JPG = "b";
+    private static final String HOSTNAME_SUFFIX_WEBP = "a";
     private static final char HOSTNAME_PREFIX_BASE = 97;
 
     public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
@@ -106,24 +107,26 @@ public class HitomiParser implements ImageListParser {
         if (varG < 0x30) nbFrontends = 2;
         if (varG < 0x09) varG = 1;
 
-        String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends);
+        String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends, getSuffixFromExtension(extension));
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/" + folder + "/" + componentA + "/" + componentB + "/" + hash + "." + extension;
 
         return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
     }
 
     private ImageFile buildSimplePicture(@NonNull Content content, @NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
-        // New Hitomi image URLs starting from june 2018
-        //  If book ID is even, starts with 'aa'; else starts with 'ba'
         int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
-        String imageSubdomain = subdomainFromGalleryId(referenceId, NUMBER_OF_FRONTENDS);
+        String imageSubdomain = subdomainFromGalleryId(referenceId, NUMBER_OF_FRONTENDS, getSuffixFromExtension(FileHelper.getExtension(page.getName())));
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/galleries/" + content.getUniqueSiteId() + "/" + page.getName();
 
         return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
     }
 
-    private String subdomainFromGalleryId(int referenceId, int nbFrontends) {
-        return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % nbFrontends))) + HOSTNAME_SUFFIX;
+    private String getSuffixFromExtension(String extension) {
+        return extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("gif") ? HOSTNAME_SUFFIX_JPG : HOSTNAME_SUFFIX_WEBP;
+    }
+
+    private String subdomainFromGalleryId(int referenceId, int nbFrontends, String suffix) {
+        return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % nbFrontends))) + suffix;
     }
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
