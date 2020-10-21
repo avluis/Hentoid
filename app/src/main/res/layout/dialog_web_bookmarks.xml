@@ -36,7 +36,7 @@
         tools:listitem="@layout/item_bookmark" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/open_log_btn"
+        android:id="@+id/bookmark_current_btn"
         style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

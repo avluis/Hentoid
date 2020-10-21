@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
+import com.google.android.material.button.MaterialButton;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
@@ -39,6 +40,7 @@ public final class BookmarksDialogFragment extends DialogFragment {
     // === UI
     private Toolbar selectionToolbar;
     private SelectExtension<TextItem<SiteBookmark>> selectExtension;
+    private MaterialButton bookmarkCurrentBtn;
 
     // === VARIABLES
     private Parent parent;
@@ -113,6 +115,8 @@ public final class BookmarksDialogFragment extends DialogFragment {
 
             selectionToolbar = requireViewById(rootView, R.id.toolbar);
             selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
+
+            bookmarkCurrentBtn = requireViewById(rootView, R.id.bookmark_current_btn);
         } finally {
             dao.cleanup();
         }
