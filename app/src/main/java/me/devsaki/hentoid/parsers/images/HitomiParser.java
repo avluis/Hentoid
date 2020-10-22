@@ -122,7 +122,7 @@ public class HitomiParser implements ImageListParser {
     }
 
     private String getSuffixFromExtension(String extension) {
-        return extension.equalsIgnoreCase("jpg") || extension.equalsIgnoreCase("gif") ? HOSTNAME_SUFFIX_JPG : HOSTNAME_SUFFIX_WEBP;
+        return extension.equalsIgnoreCase("webp") || extension.equalsIgnoreCase("avif") ? HOSTNAME_SUFFIX_WEBP : HOSTNAME_SUFFIX_JPG;
     }
 
     private String subdomainFromGalleryId(int referenceId, int nbFrontends, String suffix) {
