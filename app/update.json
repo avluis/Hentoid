@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.12.8/hentoid1128-283.apk",
-  "versionCode": "283",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.12.9/hentoid1129-284.apk",
+  "versionCode": "284",
   "updateURL.beta": "https://cdn.discordapp.com/attachments/418817277383671808/717001334703783946/hentoid1120-224-beta4.apk",
   "versionCode.beta": "224",
   "sourceAlerts":[
@@ -19,7 +19,7 @@
 	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"254"},
 	  {"sourceName":"ASMHENTAI", "status":"RED", "fixedByBuild":"255"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"257"},
-	  {"sourceName":"HITOMI", "status":"ORANGE" }
+	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"284" }
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
