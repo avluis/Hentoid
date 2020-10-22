@@ -5,11 +5,14 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.sonarqube'
 apply plugin: 'de.mobilej.unmock'
+//apply plugin: 'com.google.firebase.crashlytics'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
     apply from: 'signing.gradle'
 }
+
+lint.dependsOn(':app:unMock')
 
 android {
     compileSdkVersion 29
@@ -26,8 +29,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 29
-        versionCode 155
-        versionName '1.12.6.1'
+        versionCode 156
+        versionName '1.12.8'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN")?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -83,9 +86,10 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.3.72"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.10"
 
     //implementation 'com.google.firebase:firebase-analytics:17.2.3'
+    implementation 'com.google.firebase:firebase-analytics:17.4.3'
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
@@ -184,14 +188,14 @@ dependencies {
     implementation 'com.github.penfeizhou.android.animation:apng:1.3.3'
 
     // https://github.com/mikepenz/FastAdapter
-    implementation "com.mikepenz:fastadapter:5.2.2" // needs the `expandable`, `drag` and `scroll` extension.
-    implementation "com.mikepenz:fastadapter-extensions-diff:5.2.2" // diff util helpers
-    implementation "com.mikepenz:fastadapter-extensions-drag:5.2.2" // drag support
-    implementation "com.mikepenz:fastadapter-extensions-expandable:5.2.2"
-    implementation "com.mikepenz:fastadapter-extensions-scroll:5.2.2" // scroll helpers
-    implementation "com.mikepenz:fastadapter-extensions-paged:5.2.2"
-    implementation "com.mikepenz:fastadapter-extensions-ui:5.2.2" // needs the `expandable`, `drag` and `scroll` extension.
-    implementation "com.mikepenz:fastadapter-extensions-utils:5.2.2" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter:5.2.4" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter-extensions-diff:5.2.4" // diff util helpers
+    implementation "com.mikepenz:fastadapter-extensions-drag:5.2.4" // drag support
+    implementation "com.mikepenz:fastadapter-extensions-expandable:5.2.4"
+    implementation "com.mikepenz:fastadapter-extensions-scroll:5.2.4" // scroll helpers
+    implementation "com.mikepenz:fastadapter-extensions-paged:5.2.4"
+    implementation "com.mikepenz:fastadapter-extensions-ui:5.2.4" // needs the `expandable`, `drag` and `scroll` extension.
+    implementation "com.mikepenz:fastadapter-extensions-utils:5.2.4" // needs the `expandable`, `drag` and `scroll` extension.
 
     // Fast scroller
     implementation "me.zhanghai.android.fastscroll:library:1.1.4"

@@ -41,6 +41,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
             dlThreadCount = getSuggestedThreadCount(context);
         }
         //Crashlytics.setInt("Download thread count", dlThreadCount);
+        //crashlytics.setCustomKey("Download thread count", dlThreadCount);
 
         mRequestQueue = getRequestQueue(context, dlThreadCount);
     }
@@ -51,6 +52,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
 
         int memoryClass = getMemoryClass(context);
         //Crashlytics.setInt("Memory class", memoryClass);
+        //crashlytics.setCustomKey("Memory class", memoryClass);
 
         if (memoryClass == 0) return maxThreads;
         int threadCount = (int) Math.ceil((double) memoryClass / (double) threshold);
