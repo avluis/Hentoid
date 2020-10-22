@@ -1,0 +1,5 @@
+Fixed:
+
+Hentai2Read : Books with 1000+ pages are now downloadable
+Porncomixonline : Align the app with new URL schemes and domains (= downloads work again)
+Hitomi : Align with today's new image hosts. Use "redownload from scratch" to fix failed downloads.
