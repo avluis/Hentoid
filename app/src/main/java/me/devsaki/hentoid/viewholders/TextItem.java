@@ -31,6 +31,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
     private final T tag;
     private final boolean centered;
     private final boolean draggable;
+    private final ItemTouchHelper touchHelper;
 
 
     public TextItem(String text, T tag, boolean centered) {
@@ -38,13 +39,15 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         this.tag = tag;
         this.centered = centered;
         this.draggable = false;
+        this.touchHelper = null;
     }
 
-    public TextItem(String text, T tag, boolean centered, boolean draggable) {
+    public TextItem(String text, T tag, boolean centered, boolean draggable, ItemTouchHelper touchHelper) {
         this.text = text;
         this.tag = tag;
         this.centered = centered;
         this.draggable = draggable;
+        this.touchHelper = touchHelper;
     }
 
     @Nullable
@@ -61,7 +64,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
     @Nullable
     @Override
     public ItemTouchHelper getTouchHelper() {
-        return null;
+        return touchHelper;
     }
 
     @NotNull

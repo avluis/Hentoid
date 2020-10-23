@@ -618,11 +618,15 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public long insertBookmark(@NonNull Site site, @NonNull String title, @NonNull String url) {
-        return db.insertBookmark(site, title, url);
+        return db.insertBookmark(new SiteBookmark(site, title, url));
     }
 
-    public void removeBookmark(@NonNull SiteBookmark bookmark) {
-        db.removeBookmark(bookmark);
+    public void insertBookmark(@NonNull final SiteBookmark bookmark) {
+        db.insertBookmark(bookmark);
+    }
+
+    public void deleteBookmark(long bookmarkId) {
+        db.deleteBookmark(bookmarkId);
     }
 
 

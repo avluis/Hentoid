@@ -7,19 +7,6 @@
     android:layout_gravity="center"
     android:clipToPadding="false">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
-        android:background="?colorPrimary"
-        android:elevation="@dimen/toolbar_layout_elevation"
-        android:gravity="center_vertical"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_scrollFlags="scroll|enterAlways"
-        app:menu="@menu/web_bookmarks_selection_menu"
-        tools:visibility="visible" />
-
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/bookmarks_list"
         android:layout_width="match_parent"
@@ -31,7 +18,7 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintTop_toTopOf="parent"
         app:maxHeight="450dp"
         tools:listitem="@layout/item_bookmark" />
 
@@ -41,11 +28,25 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textColor="?colorSecondary"
-        app:iconTint="?colorSecondary"
         android:text="@string/bookmark_current"
+        android:textColor="?colorSecondary"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_bookmark"
+        app:iconTint="?colorSecondary"
         app:layout_constraintTop_toBottomOf="@id/bookmarks_list" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginTop="8dp"
+        android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:gravity="center_vertical"
+        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@id/bookmarks_list"
+        app:layout_scrollFlags="scroll|enterAlways"
+        app:menu="@menu/web_bookmarks_selection_menu"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

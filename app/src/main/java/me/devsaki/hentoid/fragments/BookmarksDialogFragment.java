@@ -1,51 +1,76 @@
 package me.devsaki.hentoid.fragments;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.material.button.MaterialButton;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.drag.ItemTouchCallback;
+import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.select.SelectExtension;
+import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
+import com.mikepenz.fastadapter.utils.DragDropUtil;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Set;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.ui.InputDialog;
+import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
-public final class BookmarksDialogFragment extends DialogFragment {
+public final class BookmarksDialogFragment extends DialogFragment implements ItemTouchCallback {
 
-    private static final String URL = "url";
     private static final String SITE = "site";
+    private static final String TITLE = "title";
+    private static final String URL = "url";
 
     // === UI
     private Toolbar selectionToolbar;
-    private SelectExtension<TextItem<SiteBookmark>> selectExtension;
+    private MenuItem editMenu;
+    private MenuItem copyMenu;
+    private RecyclerView recyclerView;
     private MaterialButton bookmarkCurrentBtn;
+
+    private final ItemAdapter<TextItem<SiteBookmark>> itemAdapter = new ItemAdapter<>();
+    private final FastAdapter<TextItem<SiteBookmark>> fastAdapter = FastAdapter.with(itemAdapter);
+    private SelectExtension<TextItem<SiteBookmark>> selectExtension;
+    private ItemTouchHelper touchHelper;
 
     // === VARIABLES
     private Parent parent;
-    private String url;
     private Site site;
+    private String title;
+    private String url;
+    private long bookmarkId = -1;
 
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
@@ -54,12 +79,14 @@ public final class BookmarksDialogFragment extends DialogFragment {
     public static void invoke(
             @NonNull final FragmentActivity parent,
             @NonNull final Site site,
+            @NonNull final String title,
             @NonNull final String url) {
         BookmarksDialogFragment fragment = new BookmarksDialogFragment();
 
         Bundle args = new Bundle();
-        args.putString(URL, url);
         args.putInt(SITE, site.getCode());
+        args.putString(TITLE, title);
+        args.putString(URL, url);
         fragment.setArguments(args);
 
         fragment.show(parent.getSupportFragmentManager(), null);
@@ -70,9 +97,11 @@ public final class BookmarksDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
-        url = getArguments().getString(URL, "");
         site = Site.searchByCode(getArguments().getInt(SITE));
-        parent = (Parent) getParentFragment();
+        title = getArguments().getString(TITLE, "");
+        url = getArguments().getString(URL, "");
+
+        parent = (Parent) getActivity();
     }
 
     @Override
@@ -91,35 +120,56 @@ public final class BookmarksDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
 
-        ItemAdapter<TextItem<SiteBookmark>> itemAdapter = new ItemAdapter<>();
+        List<SiteBookmark> bookmarks = reloadBookmarks();
 
+        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
+
+        // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
+        selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
+        if (selectExtension != null) {
+            selectExtension.setSelectable(true);
+            selectExtension.setMultiSelect(true);
+            selectExtension.setSelectOnLongClick(true);
+            selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+        }
+
+        recyclerView = requireViewById(rootView, R.id.bookmarks_list);
+
+        // Activate drag & drop
+        SimpleDragCallback dragCallback = new SimpleDragCallback(this);
+        dragCallback.setNotifyAllDrops(true);
+        touchHelper = new ItemTouchHelper(dragCallback);
+        touchHelper.attachToRecyclerView(recyclerView);
+
+        recyclerView.setAdapter(fastAdapter);
+
+        selectionToolbar = requireViewById(rootView, R.id.toolbar);
+        selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
+        editMenu = selectionToolbar.getMenu().findItem(R.id.action_edit);
+        copyMenu = selectionToolbar.getMenu().findItem(R.id.action_copy);
+
+        bookmarkCurrentBtn = requireViewById(rootView, R.id.bookmark_current_btn);
+        Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> b.getUrl().equals(url)).findFirst();
+        if (currentBookmark.isPresent()) bookmarkId = currentBookmark.get().id;
+        updateBookmarkButton();
+    }
+
+    private List<SiteBookmark> reloadBookmarks() {
+        List<SiteBookmark> bookmarks;
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
         try {
-            List<SiteBookmark> bookmarks = dao.getBookmarks(site);
-            itemAdapter.set(Stream.of(bookmarks).map(s -> new TextItem<>(s.getTitle(), s, false, true)).toList());
-
-            FastAdapter<TextItem<SiteBookmark>> fastAdapter = FastAdapter.with(itemAdapter);
-            fastAdapter.setOnClickListener((v, a, i, p) -> onItemSelected(i.getTag()));
-
-            // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
-            selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
-            if (selectExtension != null) {
-                selectExtension.setSelectable(true);
-                selectExtension.setMultiSelect(true);
-                selectExtension.setSelectOnLongClick(true);
-                selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
-            }
-
-            RecyclerView sitesRecycler = requireViewById(rootView, R.id.bookmarks_list);
-            sitesRecycler.setAdapter(fastAdapter);
-
-            selectionToolbar = requireViewById(rootView, R.id.toolbar);
-            selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
-
-            bookmarkCurrentBtn = requireViewById(rootView, R.id.bookmark_current_btn);
+            bookmarks = reloadBookmarks(dao);
         } finally {
             dao.cleanup();
         }
+        return bookmarks;
+    }
+
+    private List<SiteBookmark> reloadBookmarks(CollectionDAO dao) {
+        List<SiteBookmark> bookmarks;
+        bookmarks = dao.getBookmarks(site);
+        itemAdapter.set(Stream.of(bookmarks).map(s -> new TextItem<>(s.getTitle(), s, false, true, touchHelper)).toList());
+        return bookmarks;
     }
 
     /**
@@ -134,18 +184,61 @@ public final class BookmarksDialogFragment extends DialogFragment {
             invalidateNextBookClick = true;
             new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
+            editMenu.setVisible(1 == selectedCount);
+            copyMenu.setVisible(1 == selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void updateBookmarkButton() {
+        Context context = bookmarkCurrentBtn.getContext();
+        if (bookmarkId > -1) {
+            bookmarkCurrentBtn.setIcon(ContextCompat.getDrawable(context, R.drawable.ic_bookmark_full));
+            bookmarkCurrentBtn.setText(R.string.unbookmark_current);
+            bookmarkCurrentBtn.setOnClickListener(v -> onBookmarkBtnClickedRemove());
+        } else {
+            bookmarkCurrentBtn.setIcon(ContextCompat.getDrawable(context, R.drawable.ic_bookmark));
+            bookmarkCurrentBtn.setText(R.string.bookmark_current);
+            bookmarkCurrentBtn.setOnClickListener(v -> onBookmarkBtnClickedAdd());
+        }
+    }
+
+    private void onBookmarkBtnClickedAdd() {
+        CollectionDAO dao = new ObjectBoxDAO(bookmarkCurrentBtn.getContext());
+        try {
+            bookmarkId = dao.insertBookmark(site, title, url);
+            reloadBookmarks(dao);
+            fastAdapter.notifyAdapterDataSetChanged();
+        } finally {
+            dao.cleanup();
+        }
+        updateBookmarkButton();
+    }
+
+    private void onBookmarkBtnClickedRemove() {
+        CollectionDAO dao = new ObjectBoxDAO(bookmarkCurrentBtn.getContext());
+        try {
+            dao.deleteBookmark(bookmarkId);
+            bookmarkId = -1;
+            reloadBookmarks(dao);
+            fastAdapter.notifyAdapterDataSetChanged();
+        } finally {
+            dao.cleanup();
+        }
+        updateBookmarkButton();
     }
 
     @SuppressLint("NonConstantResourceId")
     private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
+            case R.id.action_copy:
+                copySelectedItem();
+                break;
             case R.id.action_edit:
-                //shareSelectedItems();
+                editSelectedItem();
                 break;
             case R.id.action_delete:
-                //purgeSelectedItems();
+                purgeSelectedItems();
                 break;
             default:
                 selectionToolbar.setVisibility(View.GONE);
@@ -154,13 +247,116 @@ public final class BookmarksDialogFragment extends DialogFragment {
         return true;
     }
 
-    private boolean onItemSelected(SiteBookmark bookmark) {
-        if (null == bookmark) return false;
+    /**
+     * Callback for the "share item" action button
+     */
+    private void copySelectedItem() {
+        Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
+        Context context = getActivity();
+        if (1 == selectedItems.size() && context != null) {
+            SiteBookmark b = Stream.of(selectedItems).findFirst().get().getTag();
+            if (b != null)
+                if (Helper.copyPlainTextToClipboard(context, b.getUrl())) {
+                    ToastUtil.toast(context, R.string.web_url_clipboard);
+                    selectionToolbar.setVisibility(View.INVISIBLE);
+                }
+        }
+    }
 
-        parent.openUrl(bookmark.getUrl());
+    /**
+     * Callback for the "share item" action button
+     */
+    private void editSelectedItem() {
+        Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
+        if (1 == selectedItems.size()) {
+            SiteBookmark b = Stream.of(selectedItems).findFirst().get().getTag();
+            if (b != null)
+                InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, b.getTitle(), this::onEditTitle);
+        }
+    }
 
-        this.dismiss();
+    private void onEditTitle(@NonNull final String newTitle) {
+        Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
+        Context context = getActivity();
+        if (1 == selectedItems.size() && context != null) {
+            SiteBookmark b = Stream.of(selectedItems).findFirst().get().getTag();
+            if (b != null) {
+                b.setTitle(newTitle);
+                CollectionDAO dao = new ObjectBoxDAO(context);
+                try {
+                    dao.insertBookmark(b);
+                    reloadBookmarks(dao);
+                    fastAdapter.notifyAdapterDataSetChanged();
+                    selectionToolbar.setVisibility(View.INVISIBLE);
+                } finally {
+                    dao.cleanup();
+                }
+            }
+        }
+    }
+
+    /**
+     * Callback for the "delete item" action button
+     */
+    private void purgeSelectedItems() {
+        Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
+        Context context = getActivity();
+        if (!selectedItems.isEmpty() && context != null) {
+            List<SiteBookmark> selectedContent = Stream.of(selectedItems).map(TextItem::getTag).withoutNulls().toList();
+            if (!selectedContent.isEmpty()) {
+                CollectionDAO dao = new ObjectBoxDAO(context);
+                try {
+                    for (SiteBookmark b : selectedContent) {
+                        if (b.id == bookmarkId) {
+                            bookmarkId = -1;
+                            updateBookmarkButton();
+                        }
+                        dao.deleteBookmark(b.id);
+                    }
+                    reloadBookmarks(dao);
+                    fastAdapter.notifyAdapterDataSetChanged();
+                    selectionToolbar.setVisibility(View.INVISIBLE);
+                } finally {
+                    dao.cleanup();
+                }
+            }
+        }
+    }
+
+    private boolean onItemClick(TextItem<SiteBookmark> item) {
+        if (selectExtension.getSelectedItems().isEmpty()) {
+            if (!invalidateNextBookClick && item.getTag() != null) {
+                parent.openUrl(item.getTag().getUrl());
+                this.dismiss();
+            } else invalidateNextBookClick = false;
+
+            return true;
+        } else {
+            selectExtension.setSelectOnLongClick(false);
+        }
+        return false;
+    }
+
+    @Override
+    public void itemTouchDropped(int oldPosition, int newPosition) {
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
+        if (vh instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) vh).onDropped();
+        }
+        // TODO do something here
+    }
+
+    @Override
+    public boolean itemTouchOnMove(int oldPosition, int newPosition) {
+        DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
         return true;
+    }
+
+    @Override
+    public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        if (viewHolder instanceof IDraggableViewHolder) {
+            ((IDraggableViewHolder) viewHolder).onDragged();
+        }
     }
 
     public interface Parent {

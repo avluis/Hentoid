@@ -214,7 +214,9 @@ public interface CollectionDAO {
 
     long insertBookmark(@NonNull Site site, @NonNull String title, @NonNull String url);
 
-    void removeBookmark(@NonNull SiteBookmark bookmark);
+    void insertBookmark(@NonNull SiteBookmark bookmark);
+
+    void deleteBookmark(long bookmarkId);
 
 
     // RESOURCES

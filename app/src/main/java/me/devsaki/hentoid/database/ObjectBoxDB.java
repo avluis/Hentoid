@@ -1006,12 +1006,12 @@ public class ObjectBoxDB {
         return store.boxFor(SiteBookmark.class).query().equal(SiteBookmark_.site, s.getCode()).order(SiteBookmark_.order).build().find();
     }
 
-    long insertBookmark(@NonNull Site site, @NonNull String title, @NonNull String url) {
-        return store.boxFor(SiteBookmark.class).put(new SiteBookmark(site, title, url));
+    long insertBookmark(@NonNull final SiteBookmark bookmark) {
+        return store.boxFor(SiteBookmark.class).put(bookmark);
     }
 
-    void removeBookmark(@NonNull SiteBookmark bookmark) {
-        store.boxFor(SiteBookmark.class).remove(bookmark);
+    void deleteBookmark(long bookmarkId) {
+        store.boxFor(SiteBookmark.class).remove(bookmarkId);
     }
 
     long insertGroup(Group group) {

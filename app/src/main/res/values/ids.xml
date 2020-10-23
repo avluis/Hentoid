@@ -9,5 +9,4 @@
     <item name="content" type="id"/>
     <item name="text" type="id"/>
     <item name="group" type="id"/>
-    <item name="bookmark" type="id"/>
 </resources>

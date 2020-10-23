@@ -584,7 +584,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * Handler for the "bookmark" top menu button of the browser
      */
     private void onBookmarkClick() {
-        // TODO display dialog
+        BookmarksDialogFragment.invoke(this, getStartSite(), webView.getTitle(), webView.getUrl());
     }
 
     /**

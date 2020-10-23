@@ -362,6 +362,8 @@
     <string name="blocked_tag">Book has a blocked tag (%s)\nDownload canceled</string>
     <string name="blocked_tag_queued">Book has a blocked tag (%s)\nQueued as an error</string>
     <string name="bookmark_current">Bookmark current page</string>
+    <string name="unbookmark_current">Remove bookmark on current page</string>
+    <string name="bookmark_copy_url">Copy bookmark URL to clipboard</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>

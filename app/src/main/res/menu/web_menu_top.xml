@@ -6,16 +6,16 @@
     tools:ignore="AlwaysShowAction"
     tools:targetApi="o">
     <item
-        android:id="@+id/web_menu_bookmark"
-        android:icon="@drawable/ic_bookmark"
-        android:title="@string/web_bookmarks"
-        android:tooltipText="@string/web_bookmarks"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/web_menu_refresh_stop"
         android:icon="@drawable/ic_action_refresh"
         android:title="@string/web_refresh_stop"
         android:tooltipText="@string/web_refresh_stop"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/web_menu_bookmark"
+        android:icon="@drawable/ic_bookmark"
+        android:title="@string/web_bookmarks"
+        android:tooltipText="@string/web_bookmarks"
         app:showAsAction="always" />
     <item
         android:id="@+id/web_menu_copy"
