@@ -26,7 +26,6 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.select.SelectExtension;
-import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.jetbrains.annotations.NotNull;
@@ -339,21 +338,49 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
 
     @Override
     public void itemTouchDropped(int oldPosition, int newPosition) {
+        // Update  visuals
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
         if (vh instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) vh).onDropped();
         }
-        // TODO do something here
+
+        // Update DB
+        if (oldPosition == newPosition) return;
+
+        CollectionDAO dao = new ObjectBoxDAO(requireContext());
+        try {
+            List<SiteBookmark> bookmarks = dao.getBookmarks(site);
+            if (oldPosition < 0 || oldPosition >= bookmarks.size()) return;
+
+            // Move the item
+            SiteBookmark fromValue = bookmarks.get(oldPosition);
+            int delta = oldPosition < newPosition ? 1 : -1;
+            for (int i = oldPosition; i != newPosition; i += delta) {
+                bookmarks.set(i, bookmarks.get(i + delta));
+            }
+            bookmarks.set(newPosition, fromValue);
+
+            // Renumber everything and update the DB
+            int index = 1;
+            for (SiteBookmark b : bookmarks) {
+                b.setOrder(index++);
+                dao.insertBookmark(b);
+            }
+        } finally {
+            dao.cleanup();
+        }
     }
 
     @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
+        // Update visuals
         DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
         return true;
     }
 
     @Override
     public void itemTouchStartDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Update visuals
         if (viewHolder instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) viewHolder).onDragged();
         }

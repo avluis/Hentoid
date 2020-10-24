@@ -60,7 +60,7 @@ public class GitHubReleaseDescItem extends AbstractItem<GitHubReleaseDescItem.Re
 
         ReleaseDescriptionViewHolder(View view) {
             super(view);
-            title = requireViewById(view, R.id.drawer_item_txt);
+            title = requireViewById(view, R.id.item_txt);
             DP_8 = Helper.dpToPixel(view.getContext(), 8);
         }
 

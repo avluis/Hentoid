@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.queue;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -797,6 +798,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
     }
 
+    @SuppressLint("NonConstantResourceId")
     private boolean onSelectionMenuItemClicked(@NonNull MenuItem menuItem) {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         List<Integer> selectedPositions;

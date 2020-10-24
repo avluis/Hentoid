@@ -63,7 +63,7 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     }
 
     private void getReleases() {
-        compositeDisposable.add(GithubServer.API.getLatestRelease()
+        compositeDisposable.add(GithubServer.API.getLatestRelease() // No need to run on BG thread; retrofit already makes async calls
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onCheckSuccess, this::onCheckError)
         );
