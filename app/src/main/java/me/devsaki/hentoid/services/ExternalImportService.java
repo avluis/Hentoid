@@ -38,11 +38,14 @@ import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ZipUtil;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.util.ImportHelper.scanArchive;
 import static me.devsaki.hentoid.util.ImportHelper.scanBookFolder;
 import static me.devsaki.hentoid.util.ImportHelper.scanChapterFolders;
+import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
 
 /**
  * Service responsible for importing an external library.
@@ -208,11 +211,15 @@ public class ExternalImportService extends IntentService {
         List<DocumentFile> files = FileHelper.listDocumentFiles(this, root, client);
         List<DocumentFile> subFolders = new ArrayList<>();
         List<DocumentFile> images = new ArrayList<>();
+        List<DocumentFile> archives = new ArrayList<>();
         DocumentFile json = null;
+
+        // Look for the interesting stuff
         for (DocumentFile file : files)
             if (file.getName() != null) {
                 if (file.isDirectory()) subFolders.add(file);
                 else if (ImageHelper.getImageNamesFilter().accept(file.getName())) images.add(file);
+                else if (ZipUtil.getArchiveNamesFilter().accept(file.getName())) archives.add(file);
                 else if (file.getName().equals(Consts.JSON_FILE_NAME_V2)) json = file;
             }
 
@@ -225,8 +232,21 @@ public class ExternalImportService extends IntentService {
                 if (nbPicturesInside > 1) {
                     library.add(scanChapterFolders(this, root, subFolders, client, parentNames, dao, json));
                     return;
+                } else {
+                    int nbArchivesInside = FileHelper.countFiles(subFolders.get(0), client, ZipUtil.getArchiveNamesFilter());
+                    if (nbArchivesInside > 0) {
+                        List<Content> c = scanForArchives(this, subFolders, client, parentNames);
+                        library.addAll(c);
+                        return;
+                    }
                 }
             }
+        } else if (!archives.isEmpty()) { // We've got an archived book
+            for (DocumentFile archive : archives) {
+                Content c = scanArchive(this, archive, parentNames, StatusContent.EXTERNAL);
+                if (!c.getStatus().equals(StatusContent.IGNORED)) library.add(c);
+            }
+            return;
         } else if (images.size() > 2) { // We've got a book !
             library.add(scanBookFolder(this, root, client, parentNames, StatusContent.EXTERNAL, dao, images, json));
             return;

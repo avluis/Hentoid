@@ -7,15 +7,16 @@ import androidx.documentfile.provider.DocumentFile;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import me.devsaki.hentoid.database.domains.ImageFile;
 import timber.log.Timber;
 
 /**
@@ -30,20 +31,61 @@ public class ZipUtil {
     }
 
     public static final String ZIP_MIME_TYPE = "application/zip";
+    private static FileHelper.NameFilter archiveNamesFilter;
 
     private static final int BUFFER = 32 * 1024;
 
 
-    public static File zipFiles(@NonNull final Context context, List<DocumentFile> files, File dest) throws IOException {
-        Helper.assertNonUiThread();
-        try (FileOutputStream out = new FileOutputStream(dest)) {
-            zipFiles(context, files, out);
-            FileUtil.sync(out);
-        }
-        return dest;
+    /**
+     * Determine if the given archive file extension is supported by the app
+     *
+     * @param extension File extension to test
+     * @return True if the app supports the reading of files with the given extension; false if not
+     */
+    public static boolean isArchiveExtensionSupported(String extension) {
+        return extension.equalsIgnoreCase("zip")
+                || extension.equalsIgnoreCase("cbr")
+                || extension.equalsIgnoreCase("epub")
+                || extension.equalsIgnoreCase("cbz");
     }
 
-    public static void zipFiles(@NonNull final Context context, List<DocumentFile> files, OutputStream out) throws IOException {
+    /**
+     * Build a {@link FileHelper.NameFilter} only accepting archive files supported by the app
+     *
+     * @return {@link FileHelper.NameFilter} only accepting archive files supported by the app
+     */
+    public static FileHelper.NameFilter getArchiveNamesFilter() {
+        if (null == archiveNamesFilter)
+            archiveNamesFilter = displayName -> isArchiveExtensionSupported(FileHelper.getExtension(displayName));
+        return archiveNamesFilter;
+    }
+
+    public static List<ImageFile> getSupportedZipEntries(@NonNull final Context context, @NonNull final DocumentFile file) throws IOException {
+        Helper.assertNonUiThread();
+        List<ZipEntry> entries = getZipEntries(context, file);
+        List<ImageFile> result = new ArrayList<>();
+
+        for (ZipEntry entry : entries) {
+            Timber.i(">> entry %s%s", (entry.isDirectory() ? "/" : ""), entry.getName());
+        }
+
+        return result;
+    }
+
+    public static List<ZipEntry> getZipEntries(@NonNull final Context context, @NonNull final DocumentFile file) throws IOException {
+        Helper.assertNonUiThread();
+        List<ZipEntry> result = new ArrayList<>();
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER); ZipInputStream input = new ZipInputStream(bis)) {
+            ZipEntry entry = input.getNextEntry();
+            while (entry != null) {
+                result.add(entry);
+                entry = input.getNextEntry();
+            }
+        }
+        return result;
+    }
+
+    public static void zipFiles(@NonNull final Context context, @NonNull final List<DocumentFile> files, @NonNull final OutputStream out) throws IOException {
         Helper.assertNonUiThread();
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out))) {
             final byte[] data = new byte[BUFFER];

@@ -17,6 +17,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
 
 import javax.annotation.Nonnull;
 
@@ -644,7 +646,7 @@ public final class ContentHelper {
         List<ImageFile> result = new ArrayList<>();
         int order = startingOrder;
         // Sort files by anything that resembles a number inside their names
-        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberComparator()).collect(toList());
+        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberFileComparator()).collect(toList());
         for (DocumentFile f : fileList) {
             String name = namePrefix + ((f.getName() != null) ? f.getName() : "");
             ImageFile img = new ImageFile();
@@ -657,18 +659,57 @@ public final class ContentHelper {
         return result;
     }
 
+    public static List<ImageFile> createImageListFromZipEntries(
+            @NonNull final Uri zipFileUri,
+            @NonNull final List<ZipEntry> files,
+            @NonNull final StatusContent targetStatus,
+            int startingOrder,
+            @NonNull final String namePrefix) {
+        Helper.assertNonUiThread();
+        List<ImageFile> result = new ArrayList<>();
+        int order = startingOrder;
+        // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
+        List<ZipEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberZipComparator()).collect(toList());
+        for (ZipEntry f : fileList) {
+            String name = namePrefix + f.getName();
+            String path = zipFileUri.toString() + File.separator + f.getName();
+            ImageFile img = new ImageFile();
+            if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
+            else order++;
+            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(path).setStatus(targetStatus).setFileUri(path).setSize(f.getSize());
+            img.setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(name)));
+            result.add(img);
+        }
+        return result;
+    }
+
     /**
      * Comparator to be used to sort files according to their names :
      * - Sort according to the concatenation of all its numerical characters, if any
      * - If none, sort alphabetically (default string compare)
      */
-    private static class InnerNameNumberComparator implements Comparator<DocumentFile> {
+    private static class InnerNameNumberFileComparator implements Comparator<DocumentFile> {
         @Override
         public int compare(@NonNull DocumentFile o1, @NonNull DocumentFile o2) {
             String name1 = o1.getName();
             if (null == name1) name1 = "";
             String name2 = o2.getName();
             if (null == name2) name2 = "";
+
+            return new InnerNameNumberComparator().compare(name1, name2);
+        }
+    }
+
+    private static class InnerNameNumberZipComparator implements Comparator<ZipEntry> {
+        @Override
+        public int compare(@NonNull ZipEntry o1, @NonNull ZipEntry o2) {
+            return new ContentHelper.InnerNameNumberComparator().compare(o1.getName(), o2.getName());
+        }
+    }
+
+    public static class InnerNameNumberComparator implements Comparator<String> {
+        @Override
+        public int compare(@NonNull String name1, @NonNull String name2) {
             long innerNumber1 = Helper.extractNumeric(name1);
             if (-1 == innerNumber1) return name1.compareTo(name2);
             long innerNumber2 = Helper.extractNumeric(name2);

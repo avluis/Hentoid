@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 
+import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -21,7 +22,10 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.zip.ZipEntry;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -262,7 +266,7 @@ public class ImportHelper {
     /**
      * Show the dialog to ask the user if he wants to import existing books
      *
-     * @param context Context to be used
+     * @param context        Context to be used
      * @param cancelCallback Callback to run when the dialog is canceled
      */
     public static void showExistingLibraryDialog(
@@ -291,7 +295,7 @@ public class ImportHelper {
     /**
      * Detect whether the current Hentoid folder contains books or not
      * by counting the elements inside each site's download folder (but not its subfolders)
-     *
+     * <p>
      * NB : this method works approximately because it doesn't try to count JSON files
      * However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
      * and might cause freezes -> we stick to that approximate method for ImportActivity
@@ -535,4 +539,76 @@ public class ImportHelper {
         }
         return result;
     }
+
+    public static List<Content> scanForArchives(
+            @NonNull final Context context,
+            @NonNull final List<DocumentFile> subFolders,
+            @NonNull final ContentProviderClient client,
+            @NonNull final List<String> parentNames) {
+        List<Content> result = new ArrayList<>();
+
+        for (DocumentFile subfolder : subFolders) {
+            List<DocumentFile> archives = FileHelper.listFiles(context, subfolder, client, ZipUtil.getArchiveNamesFilter());
+            for (DocumentFile archive : archives) {
+                Content c = scanArchive(context, archive, parentNames, StatusContent.EXTERNAL);
+                if (!c.getStatus().equals(StatusContent.IGNORED))
+                    result.add(c);
+            }
+        }
+
+        return result;
+    }
+
+    public static Content scanArchive(
+            @NonNull final Context context,
+            @NonNull final DocumentFile archive,
+            @NonNull final List<String> parentNames,
+            @NonNull final StatusContent targetStatus) {
+        List<ZipEntry> entries = Collections.emptyList();
+
+        try {
+            entries = ZipUtil.getZipEntries(context, archive);
+        } catch (Exception e) {
+            Timber.w(e);
+        }
+
+        // Look for the folder with the most images
+        Collection<List<ZipEntry>> imageEntries = Stream.of(entries)
+                .filter(s -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(s.getName())))
+                .collect(Collectors.groupingBy(ImportHelper::getFolders))
+                .values();
+
+        if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
+
+        // Sort by number of images
+        List<ZipEntry> entryList = Stream.of(imageEntries).sortBy(List::size).toList().get(0);
+
+        List<ImageFile> images = ContentHelper.createImageListFromZipEntries(archive.getUri(), entryList, targetStatus, 1, "");
+        boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
+        if (!coverExists) createCover(images);
+
+        // Create content envelope
+        Content result = new Content().setSite(Site.NONE).setTitle((null == archive.getName()) ? "" : FileHelper.getFileNameWithoutExtension(archive.getName())).setUrl("");
+        result.setDownloadDate(archive.lastModified());
+        result.addAttributes(parentNamesAsTags(parentNames));
+        result.addAttributes(newExternalAttribute());
+
+        result.setStatus(StatusContent.EXTERNAL).setStorageUri(archive.getUri().toString());
+
+        result.setImageFiles(images);
+        if (0 == result.getQtyPages())
+            result.setQtyPages(images.size() - 1); // Minus the cover
+        result.computeSize();
+        return result;
+    }
+
+    private static String getFolders(@NonNull final ZipEntry entry) {
+        String path = entry.getName();
+        int separatorIndex = path.lastIndexOf('/');
+        if (-1 == separatorIndex) return "";
+
+        return path.substring(0, separatorIndex);
+    }
+
+
 }
