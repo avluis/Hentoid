@@ -60,18 +60,6 @@ public class ZipUtil {
         return archiveNamesFilter;
     }
 
-    public static List<ImageFile> getSupportedZipEntries(@NonNull final Context context, @NonNull final DocumentFile file) throws IOException {
-        Helper.assertNonUiThread();
-        List<ZipEntry> entries = getZipEntries(context, file);
-        List<ImageFile> result = new ArrayList<>();
-
-        for (ZipEntry entry : entries) {
-            Timber.i(">> entry %s%s", (entry.isDirectory() ? "/" : ""), entry.getName());
-        }
-
-        return result;
-    }
-
     public static List<ZipEntry> getZipEntries(@NonNull final Context context, @NonNull final DocumentFile file) throws IOException {
         Helper.assertNonUiThread();
         List<ZipEntry> result = new ArrayList<>();

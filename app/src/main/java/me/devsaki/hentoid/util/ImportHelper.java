@@ -580,8 +580,8 @@ public class ImportHelper {
 
         if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
-        // Sort by number of images
-        List<ZipEntry> entryList = Stream.of(imageEntries).sortBy(List::size).toList().get(0);
+        // Sort by number of images desc
+        List<ZipEntry> entryList = Stream.of(imageEntries).sortBy(ie -> -ie.size()).toList().get(0);
 
         List<ImageFile> images = ContentHelper.createImageListFromZipEntries(archive.getUri(), entryList, targetStatus, 1, "");
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
