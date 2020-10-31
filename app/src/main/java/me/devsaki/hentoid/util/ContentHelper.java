@@ -112,6 +112,8 @@ public final class ContentHelper {
      */
     public static void updateContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
+        if (content.isArchive()) return;
+
         DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
         if (null == file)
             throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
@@ -130,6 +132,8 @@ public final class ContentHelper {
      */
     public static void createContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
+        if (content.isArchive()) return;
+
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return;
         try {

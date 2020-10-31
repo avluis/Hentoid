@@ -85,7 +85,7 @@ public class ArchiveHelper {
     public static List<Uri> extractZipEntries(
             @NonNull final Context context,
             @NonNull final DocumentFile zipFile,
-            @NonNull final List<String> entriesToExtract,
+            @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames) throws IOException {
         Helper.assertNonUiThread();
@@ -97,7 +97,7 @@ public class ArchiveHelper {
             ZipEntry entry = input.getNextEntry();
             while (entry != null) {
                 final ZipEntry theEntry = entry;
-                if (Stream.of(entriesToExtract).anyMatch(e -> e.equalsIgnoreCase(theEntry.getName()))) {
+                if (null == entriesToExtract || Stream.of(entriesToExtract).anyMatch(e -> e.equalsIgnoreCase(theEntry.getName()))) {
                     int count;
                     // TL;DR - We don't care about folders
                     // If we were coding an all-purpose extractor we would have to create folders

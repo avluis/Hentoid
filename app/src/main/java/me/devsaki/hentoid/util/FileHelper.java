@@ -414,12 +414,18 @@ public class FileHelper {
     }
 
     /**
-     * Returns the name of the given filename, without the extension
+     * Returns the filename of the given file path, without the extension
      *
-     * @param fileName Filename
-     * @return Name of the given filename, without the extension
+     * @param filePath File path
+     * @return Name of the given file, without the extension
      */
-    public static String getFileNameWithoutExtension(@NonNull final String fileName) {
+    public static String getFileNameWithoutExtension(@NonNull final String filePath) {
+        int folderSeparatorIndex = filePath.lastIndexOf(File.separator);
+
+        String fileName;
+        if (-1 == folderSeparatorIndex) fileName = filePath;
+        else fileName = filePath.substring(folderSeparatorIndex + 1);
+        
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 

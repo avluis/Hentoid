@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.net.Uri;
@@ -125,6 +126,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
     private View favouritesGalleryBtn;
 
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_viewer_pager, container, false);

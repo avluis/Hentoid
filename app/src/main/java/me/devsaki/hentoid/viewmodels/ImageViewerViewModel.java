@@ -2,6 +2,7 @@ package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,6 +18,8 @@ import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +36,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -71,6 +75,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
 
+
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
         collectionDao = collectionDAO;
@@ -83,7 +88,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         searchDisposable.dispose();
         compositeDisposable.clear();
     }
-
 
     @NonNull
     public LiveData<Content> getContent() {
@@ -160,7 +164,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private ImmutablePair<Content, List<ImageFile>> doSetImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
+    private ImmutablePair<Content, List<ImageFile>> doSetImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) throws IOException {
         boolean missingUris = Stream.of(imgs).filter(img -> img.getFileUri().isEmpty()).count() > 0;
         List<ImageFile> imageFiles = new ArrayList<>(imgs);
 
@@ -174,6 +178,37 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     collectionDao.insertContent(theContent);
                 } else
                     ContentHelper.matchFilesToImageList(pictureFiles, imageFiles);
+            }
+        }
+
+        // Empty the cache folder where previous cached images might be
+        // TODO create a smarter cache that works with a window of a given size
+        File cachePicFolder = getOrCreatePictureCacheFolder();
+        if (cachePicFolder != null) {
+            File[] files = cachePicFolder.listFiles();
+            for (File f : files) //noinspection ResultOfMethodCallIgnored
+                f.delete();
+        }
+
+        // Extract the images if they are contained within an archive
+        if (theContent.isArchive()) {
+            // Unzip the archive in the app's cache folder
+            DocumentFile zipFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
+            // TODO stream that so that loading isn't blocked
+            List<Uri> unzippedFilesUris = ArchiveHelper.extractZipEntries(
+                    getApplication(),
+                    zipFile,
+                    Stream.of(imageFiles).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
+                    cachePicFolder,
+                    null);
+
+            // Feed the Uri's of unzipped files back into the corresponding images for viewing
+            for (ImageFile img : imageFiles) {
+                for (Uri unzippedUri : unzippedFilesUris)
+                    if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(FileHelper.getFileNameWithoutExtension(unzippedUri.getPath()))) {
+                        img.setFileUri(unzippedUri.toString());
+                        break;
+                    }
             }
         }
 
@@ -484,7 +519,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Cache JSON URI in the database to speed up favouriting
     private void cacheJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        if (!content.getJsonUri().isEmpty()) return;
+        if (!content.getJsonUri().isEmpty() || content.isArchive()) return;
 
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return;
@@ -498,5 +533,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Cache the URI of the JSON to the database
         content.setJsonUri(foundFile.getUri().toString());
         collectionDao.insertContent(content);
+    }
+
+    @Nullable
+    private File getOrCreatePictureCacheFolder() {
+        File cacheDir = getApplication().getCacheDir();
+        File pictureCacheDir = new File(cacheDir.getAbsolutePath() + File.separator + Consts.PICTURE_CACHE_FOLDER);
+        if (pictureCacheDir.exists()) return pictureCacheDir;
+        else if (pictureCacheDir.mkdir()) return pictureCacheDir;
+        else return null;
     }
 }
