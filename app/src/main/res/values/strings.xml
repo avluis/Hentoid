@@ -95,9 +95,9 @@
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
-    <string name="work_series">Series: @series@</string>
-    <string name="work_artist">Artist: @artist@</string>
-    <string name="work_pages_queue">Pages: @pages@@missing@</string>
+    <string name="work_series">Series: %s</string>
+    <string name="work_artist">Artist: %s</string>
+    <string name="work_pages_queue">Pages: %1$s%2$s</string>
     <string name="work_pages_library">%1$d pages / "%2$.1f MB</string>
 
     <!-- Refresh library -->
@@ -194,7 +194,8 @@
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
-    <string name="redownload_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
+    <string name="redownload_dialog_message">Total images in download: %1$d\nImages without error: %2$d\nImages with error: %3$d</string>
+    <string name="redownload_first_error">First error : %s</string>
     <string name="redownload_action">REDOWNLOAD</string>
     <string name="redownload_open_log">Open error log</string>
     <string name="redownload_share_log">Share error log</string>

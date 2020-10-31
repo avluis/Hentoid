@@ -406,7 +406,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         private void attachArtist(@NonNull final Content content) {
             Context context = tvArtist.getContext();
-            String templateArtist = context.getResources().getString(R.string.work_artist);
             List<Attribute> attributes = new ArrayList<>();
 
             List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
@@ -417,25 +416,22 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 attributes.addAll(circleAttributes);
 
             if (attributes.isEmpty()) {
-                tvArtist.setText(templateArtist.replace("@artist@", context.getResources().getString(R.string.work_untitled)));
+                tvArtist.setText(context.getString(R.string.work_artist, context.getResources().getString(R.string.work_untitled)));
             } else {
                 List<String> allArtists = new ArrayList<>();
                 for (Attribute attribute : attributes) {
                     allArtists.add(attribute.getName());
                 }
                 String artists = android.text.TextUtils.join(", ", allArtists);
-                tvArtist.setText(templateArtist.replace("@artist@", artists));
+                tvArtist.setText(context.getString(R.string.work_artist, artists));
             }
         }
 
 
         private void attachSeries(@NonNull final Content content) {
-            Context context = tvSeries.getContext();
-            String templateSeries = context.getResources().getString(R.string.work_series);
             List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
             if (seriesAttributes == null || seriesAttributes.isEmpty()) {
                 tvSeries.setVisibility(View.GONE);
-                tvSeries.setText(templateSeries.replace("@series@", context.getResources().getString(R.string.work_untitled)));
             } else {
                 tvSeries.setVisibility(View.VISIBLE);
                 List<String> allSeries = new ArrayList<>();
@@ -443,7 +439,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                     allSeries.add(attribute.getName());
                 }
                 String series = android.text.TextUtils.join(", ", allSeries);
-                tvSeries.setText(templateSeries.replace("@series@", series));
+                tvSeries.setText(tvSeries.getContext().getString(R.string.work_series, series));
             }
         }
 
@@ -452,17 +448,19 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             Context context = tvPages.getContext();
 
             String template;
+            String nbPages = content.getQtyPages() + "";
             if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS || viewType == ViewType.LIBRARY_EDIT) {
-                template = context.getResources().getString(R.string.work_pages_queue);
-                template = template.replace("@pages@", content.getQtyPages() + "");
+//                template = context.getResources().getString(R.string.work_pages_queue);
+//                template = template.replace("@pages@", content.getQtyPages() + "");
                 if (viewType == ViewType.ERRORS) {
                     long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
                     if (nbMissingPages > 0)
-                        template = template.replace("@missing@", " (" + nbMissingPages + " missing)");
+                        template = context.getString(R.string.work_pages_queue, nbPages, " (" + nbMissingPages + " missing)");
+//                        template = template.replace("@missing@", " (" + nbMissingPages + " missing)");
                     else
-                        template = template.replace("@missing@", "");
+                        template = context.getString(R.string.work_pages_queue, nbPages, "");
                 } else
-                    template = template.replace("@missing@", "");
+                    template = context.getString(R.string.work_pages_queue, nbPages, "");
             } else { // Library
                 template = context.getResources().getString(R.string.work_pages_library, content.getNbDownloadedPages(), content.getSize() * 1.0 / (1024 * 1024));
             }
