@@ -66,6 +66,7 @@ public class LibDeleteDialogFragment extends DialogFragment {
     @Override
     public void onDestroyView() {
         if (searchDisposable != null) searchDisposable.dispose();
+        if (dao != null) dao.cleanup();
         super.onDestroyView();
     }
 
