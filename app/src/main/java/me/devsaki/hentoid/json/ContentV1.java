@@ -15,6 +15,7 @@ import me.devsaki.hentoid.util.AttributeMap;
  *
  * @deprecated Replaced by {@link Content}; class is kept for retrocompatibilty
  */
+@SuppressWarnings("DeprecatedIsStillUsed") // Shouldn't be used for new devs but still used to ensure retrocompatiblity with old files
 @Deprecated
 public class ContentV1 {
 
