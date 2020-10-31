@@ -40,7 +40,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ZipUtil;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.GroupNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
@@ -399,9 +399,9 @@ public class LibraryViewModel extends AndroidViewModel {
         if (!files.isEmpty()) {
             // Build destination file
             String destName = ContentHelper.formatBookFolderName(content) + ".zip";
-            OutputStream destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ZipUtil.ZIP_MIME_TYPE);
+            OutputStream destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
             Timber.d("Destination file: %s", destName);
-            ZipUtil.zipFiles(getApplication(), files, destFile);
+            ArchiveHelper.zipFiles(getApplication(), files, destFile);
             return content;
         }
         return null;

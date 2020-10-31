@@ -148,7 +148,7 @@ public class ErrorsDialogFragment extends DialogFragment {
         LogUtil.LogInfo logInfo = createLog(content);
         DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null)
-            FileHelper.shareFile(requireContext(), logFile, "Error log for book ID " + content.getUniqueSiteId());
+            FileHelper.shareFile(requireContext(), logFile.getUri(), "Error log for book ID " + content.getUniqueSiteId());
     }
 
     private void redownload(@NonNull final Content content) {

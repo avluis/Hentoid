@@ -61,6 +61,10 @@ public class FileHelper {
     private static final String PRIMARY_VOLUME_NAME = "primary";
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
 
+    @FunctionalInterface
+    public interface CheckedFunction<T1, T2, R> {
+        R apply(T1 t, T2 u) throws IOException;
+    }
 
     public static String getFileProviderAuthority() {
         return AUTHORITY;
@@ -142,7 +146,7 @@ public class FileHelper {
             Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
             Method getVolumeList = mStorageManager.getClass().getMethod("getVolumeList");
             Method getUuid = storageVolumeClazz.getMethod("getUuid");
-            Method getPath = storageVolumeClazz.getMethod("getPath");
+            @SuppressWarnings("JavaReflectionMemberAccess") Method getPath = storageVolumeClazz.getMethod("getPath");
             Method isPrimary = storageVolumeClazz.getMethod("isPrimary");
             Object result = getVolumeList.invoke(mStorageManager);
             if (null == result) return null;
@@ -219,7 +223,7 @@ public class FileHelper {
      * @param target File to open the OutputStream on
      * @return New OutputStream opened on the given file
      */
-    private static OutputStream getOutputStream(@NonNull final File target) throws IOException {
+    public static OutputStream getOutputStream(@NonNull final File target) throws IOException {
         return FileUtils.openOutputStream(target);
     }
 
@@ -248,6 +252,19 @@ public class FileHelper {
         return context.getContentResolver().openInputStream(target.getUri());
     }
 
+    public static InputStream getInputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
+        return context.getContentResolver().openInputStream(fileUri);
+        /*
+        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
+
+        } else {
+            DocumentFile documentFile = getFileFromSingleUriString(context, fileUri.toString());
+            if (documentFile != null) return getInputStream(context, documentFile);
+        }
+        throw new IOException("Input stream couldn't be created for " + fileUri.toString());
+         */
+    }
+
     /**
      * Delete a file.
      *
@@ -255,6 +272,16 @@ public class FileHelper {
      */
     public static void removeFile(File target) {
         FileUtil.deleteFile(target);
+    }
+
+    // TODO doc
+    public static void removeFile(@NonNull final Context context, @NonNull final Uri fileUri) {
+        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
+            removeFile(new File(fileUri.getPath()));
+        } else {
+            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
+            if (doc != null) doc.delete();
+        }
     }
 
 
@@ -445,25 +472,29 @@ public class FileHelper {
      * @param extension File extension to get the mime-type for (without the ".")
      * @return Most relevant mime-type for the given file extension; generic mime-type if none found
      */
-    public static String getMimeTypeFromExtension(@NonNull String extension) {
+    private static String getMimeTypeFromExtension(@NonNull String extension) {
         if (extension.isEmpty()) return "application/octet-stream";
         String result = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         if (null == result) return "application/octet-stream";
         else return result;
     }
 
+    public static String getMimeTypeFromFileName(@NonNull String fileName) {
+        return getMimeTypeFromExtension(getExtension(fileName));
+    }
+
     /**
      * Share the given file using the device's app(s) of choice
      *
      * @param context Context to use
-     * @param f       File to share
+     * @param fileUri Uri of the file to share
      * @param title   Title of the user dialog
      */
-    public static void shareFile(final @NonNull Context context, final @NonNull DocumentFile f, final @NonNull String title) {
+    public static void shareFile(final @NonNull Context context, final @NonNull Uri fileUri, final @NonNull String title) {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("text/*");
         sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-        sharingIntent.putExtra(Intent.EXTRA_STREAM, f.getUri());
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
@@ -801,6 +832,18 @@ public class FileHelper {
         return resolver.openOutputStream(targetFileUri);
     }
 
+    // TODO doc
+    // open an output stream to a new file in the app's persistent files (internal storage)
+    public static OutputStream openNewAppFolderOutputStream(@NonNull final Context context, @NonNull final String fileName) throws IOException {
+        return context.openFileOutput(fileName, Context.MODE_PRIVATE);
+    }
+
+    // TODO doc
+    // open an output stream to a new file in the app's cache files (internal storage)
+    public static OutputStream openNewTempFolderOutputStream(@NonNull final Context context, @NonNull final String fileName) throws IOException {
+        return getOutputStream(new File(context.getCacheDir(), fileName));
+    }
+
     /**
      * Format the given file size using human-readable units
      * e.g. if the size represents more than 1M Bytes, the result is formatted as megabytes
@@ -961,6 +1004,16 @@ public class FileHelper {
             Timber.e(e, "Error while reading %s", f.getUri().toString());
         }
         return result.toString();
+    }
+
+    // TODO doc
+    public static boolean fileExists(@NonNull final Context context, @NonNull final Uri fileUri) {
+        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
+            return new File(fileUri.getPath()).exists();
+        } else {
+            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
+            return (doc != null);
+        }
     }
 
     @FunctionalInterface

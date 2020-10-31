@@ -124,7 +124,13 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         if (imageIndex >= images.size())
             imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
-        imgPath.setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false));
+        String filePath;
+        if (image.content.getTarget().isArchive()) {
+            filePath = image.getUrl();
+        } else {
+            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false);
+        }
+        imgPath.setText(filePath); // TODO TEST; we should get the archive's location here, not the temp file :O
 
         boolean imageExists = (null != FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri()));
         if (imageExists) {
@@ -181,11 +187,11 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     private void onCopyClick() {
         String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getFileUri());
         try {
-            DocumentFile sourceFile = FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri());
-            if (null == sourceFile) return;
+            Uri fileUri = Uri.parse(image.getFileUri());
+            if (!FileHelper.fileExists(requireContext(), fileUri)) return;
 
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, image.getMimeType())) {
-                try (InputStream input = FileHelper.getInputStream(requireContext(), sourceFile)) {
+                try (InputStream input = FileHelper.getInputStream(requireContext(), fileUri)) {
                     FileHelper.copy(input, newDownload);
                 }
             }
@@ -202,9 +208,9 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Share" action button
      */
     private void onShareClick() {
-        DocumentFile docFile = FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri());
-        if (docFile != null)
-            FileHelper.shareFile(requireContext(), docFile, "Share picture");
+        Uri fileUri = Uri.parse(image.getFileUri());
+        if (FileHelper.fileExists(requireContext(), fileUri))
+            FileHelper.shareFile(requireContext(), fileUri, "Share picture");
     }
 
     /**

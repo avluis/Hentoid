@@ -38,7 +38,7 @@ import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ZipUtil;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
@@ -150,7 +150,7 @@ public class ExternalImportService extends IntentService {
             dao.deleteAllExternalBooks();
 
             for (Content content : library) {
-                if (content.getJsonUri().isEmpty()) {
+                if (content.getJsonUri().isEmpty() && !content.isArchive()) {
                     Uri jsonUri = null;
                     try {
                         jsonUri = createJsonFileFor(content, client);
@@ -160,7 +160,7 @@ public class ExternalImportService extends IntentService {
                     }
                     if (jsonUri != null) content.setJsonUri(jsonUri.toString());
                 }
-                ContentHelper.addContent(dao, content);
+                ContentHelper.addContent(this, dao, content);
                 trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;
                 notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, library.size()));
@@ -219,7 +219,7 @@ public class ExternalImportService extends IntentService {
             if (file.getName() != null) {
                 if (file.isDirectory()) subFolders.add(file);
                 else if (ImageHelper.getImageNamesFilter().accept(file.getName())) images.add(file);
-                else if (ZipUtil.getArchiveNamesFilter().accept(file.getName())) archives.add(file);
+                else if (ArchiveHelper.getArchiveNamesFilter().accept(file.getName())) archives.add(file);
                 else if (file.getName().equals(Consts.JSON_FILE_NAME_V2)) json = file;
             }
 
@@ -233,7 +233,7 @@ public class ExternalImportService extends IntentService {
                     library.add(scanChapterFolders(this, root, subFolders, client, parentNames, dao, json));
                     return;
                 } else {
-                    int nbArchivesInside = FileHelper.countFiles(subFolders.get(0), client, ZipUtil.getArchiveNamesFilter());
+                    int nbArchivesInside = FileHelper.countFiles(subFolders.get(0), client, ArchiveHelper.getArchiveNamesFilter());
                     if (nbArchivesInside > 0) {
                         List<Content> c = scanForArchives(this, subFolders, client, parentNames);
                         library.addAll(c);

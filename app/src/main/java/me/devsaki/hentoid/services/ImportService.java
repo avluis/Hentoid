@@ -288,7 +288,7 @@ public class ImportService extends IntentService {
                         ImportHelper.removeExternalAttribute(content);
 
                         content.computeSize();
-                        ContentHelper.addContent(dao, content);
+                        ContentHelper.addContent(this, dao, content);
                         trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK : %s", bookFolder.getUri().toString());
                     } else { // JSON not found
                         List<DocumentFile> subfolders = FileHelper.listFolders(this, bookFolder, client);
@@ -341,7 +341,7 @@ public class ImportService extends IntentService {
                             Content storedContent = ImportHelper.scanBookFolder(this, bookFolder, client, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
                             DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
                             storedContent.setJsonUri(newJson.getUri().toString());
-                            ContentHelper.addContent(dao, storedContent);
+                            ContentHelper.addContent(this, dao, storedContent);
                             trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK (Content regenerated) : %s", bookFolder.getUri().toString());
                             booksOK++;
                         } catch (IOException ioe) {
@@ -431,7 +431,7 @@ public class ImportService extends IntentService {
                 // Only add at the end of the queue if it isn't a duplicate
                 Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
                 if (null == duplicate) {
-                    long newContentId = ContentHelper.addContent(dao, c);
+                    long newContentId = ContentHelper.addContent(this, dao, c);
                     lst.add(new QueueRecord(newContentId, queueSize++));
                 }
                 eventProgress(STEP_4_QUEUE, queuedContent.size(), count++, 0);

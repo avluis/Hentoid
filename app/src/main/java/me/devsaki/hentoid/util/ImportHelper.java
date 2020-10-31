@@ -517,6 +517,7 @@ public class ImportHelper {
             cover.setName(Consts.THUMB_FILE_NAME);
             cover.setFileUri(firstImg.getFileUri());
             cover.setSize(firstImg.getSize());
+            cover.setMimeType(firstImg.getMimeType());
             cover.setIsCover(true);
             images.add(0, cover);
         }
@@ -548,7 +549,7 @@ public class ImportHelper {
         List<Content> result = new ArrayList<>();
 
         for (DocumentFile subfolder : subFolders) {
-            List<DocumentFile> archives = FileHelper.listFiles(context, subfolder, client, ZipUtil.getArchiveNamesFilter());
+            List<DocumentFile> archives = FileHelper.listFiles(context, subfolder, client, ArchiveHelper.getArchiveNamesFilter());
             for (DocumentFile archive : archives) {
                 Content c = scanArchive(context, archive, parentNames, StatusContent.EXTERNAL);
                 if (!c.getStatus().equals(StatusContent.IGNORED))
@@ -567,7 +568,7 @@ public class ImportHelper {
         List<ZipEntry> entries = Collections.emptyList();
 
         try {
-            entries = ZipUtil.getZipEntries(context, archive);
+            entries = ArchiveHelper.getZipEntries(context, archive);
         } catch (Exception e) {
             Timber.w(e);
         }
@@ -593,7 +594,7 @@ public class ImportHelper {
         result.addAttributes(parentNamesAsTags(parentNames));
         result.addAttributes(newExternalAttribute());
 
-        result.setStatus(StatusContent.EXTERNAL).setStorageUri(archive.getUri().toString());
+        result.setStatus(targetStatus).setStorageUri(archive.getUri().toString()); // Here storage URI is a file URI, not a folder
 
         result.setImageFiles(images);
         if (0 == result.getQtyPages())
@@ -609,6 +610,4 @@ public class ImportHelper {
 
         return path.substring(0, separatorIndex);
     }
-
-
 }

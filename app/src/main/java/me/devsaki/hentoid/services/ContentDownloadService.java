@@ -560,7 +560,7 @@ public class ContentDownloadService extends IntentService {
                 } catch (IOException e) {
                     Timber.e(e, "I/O Error saving JSON: %s", title);
                 }
-                ContentHelper.addContent(dao, content);
+                ContentHelper.addContent(this, dao, content);
 
                 Timber.i("Content download finished: %s [%s]", title, contentId);
 

@@ -45,6 +45,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
@@ -77,6 +78,10 @@ public class Content implements Serializable {
     public ToMany<GroupItem> groupItems;
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
+    /**
+     * @deprecated Replaced by {@link me.devsaki.hentoid.services.ImportService} methods; class is kept for retrocompatibilty
+     */
+    @Deprecated
     private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite;
@@ -720,6 +725,10 @@ public class Content implements Serializable {
 
     public void increaseNumberDownloadRetries() {
         this.numberDownloadRetries++;
+    }
+
+    public boolean isArchive() {
+        return ArchiveHelper.isSupportedArchive(storageUri); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed !
     }
 
     @Nullable

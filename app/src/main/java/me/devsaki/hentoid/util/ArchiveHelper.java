@@ -1,12 +1,17 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
+
+import com.annimon.stream.Stream;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,7 +21,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import me.devsaki.hentoid.database.domains.ImageFile;
 import timber.log.Timber;
 
 /**
@@ -24,9 +28,9 @@ import timber.log.Timber;
  * Zip Utility
  */
 
-public class ZipUtil {
+public class ArchiveHelper {
 
-    private ZipUtil() {
+    private ArchiveHelper() {
         throw new IllegalStateException("Utility class");
     }
 
@@ -42,11 +46,16 @@ public class ZipUtil {
      * @param extension File extension to test
      * @return True if the app supports the reading of files with the given extension; false if not
      */
-    public static boolean isArchiveExtensionSupported(String extension) {
+    public static boolean isArchiveExtensionSupported(@NonNull final String extension) {
         return extension.equalsIgnoreCase("zip")
-                || extension.equalsIgnoreCase("cbr")
                 || extension.equalsIgnoreCase("epub")
                 || extension.equalsIgnoreCase("cbz");
+        //|| extension.equalsIgnoreCase("cbr")
+        //|| extension.equalsIgnoreCase("rar");
+    }
+
+    public static boolean isSupportedArchive(@NonNull final String fileName) {
+        return isArchiveExtensionSupported(FileHelper.getExtension(fileName));
     }
 
     /**
@@ -72,6 +81,63 @@ public class ZipUtil {
         }
         return result;
     }
+
+    public static List<Uri> extractZipEntries(
+            @NonNull final Context context,
+            @NonNull final DocumentFile zipFile,
+            @NonNull final List<String> entriesToExtract,
+            @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+            @Nullable final List<String> targetNames) throws IOException {
+        Helper.assertNonUiThread();
+        List<Uri> result = new ArrayList<>();
+        int index = 0;
+
+        try (InputStream fi = FileHelper.getInputStream(context, zipFile); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER); ZipInputStream input = new ZipInputStream(bis)) {
+            byte[] buffer = new byte[BUFFER];
+            ZipEntry entry = input.getNextEntry();
+            while (entry != null) {
+                final ZipEntry theEntry = entry;
+                if (Stream.of(entriesToExtract).anyMatch(e -> e.equalsIgnoreCase(theEntry.getName()))) {
+                    int count;
+                    // TL;DR - We don't care about folders
+                    // If we were coding an all-purpose extractor we would have to create folders
+                    // But Hentoid just wants to extract a bunch of files in one single place !
+
+                    String fileName;
+                    if (null == targetNames) {
+                        fileName = theEntry.getName();
+                        int lastSeparator = fileName.lastIndexOf(File.separator);
+                        if (lastSeparator > -1) fileName = fileName.substring(lastSeparator + 1);
+                    } else {
+                        fileName = targetNames.get(index++) + "." + FileHelper.getExtension(theEntry.getName());
+                    }
+                    final String fileNameFinal = fileName;
+
+                    File targetFile;
+                    File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(fileNameFinal));
+                    if (0 == existing.length) {
+                        targetFile = new File(targetFolder.getAbsolutePath() + File.separator + fileName);
+                        if (!targetFile.createNewFile())
+                            throw new IOException("Could not create file " + targetFile.getPath());
+                    } else {
+                        targetFile = existing[0];
+                    }
+
+                    try (OutputStream out = FileHelper.getOutputStream(targetFile)) {
+                        while ((count = input.read(buffer)) != -1)
+                            out.write(buffer, 0, count);
+                    }
+                    input.closeEntry();
+
+                    result.add(Uri.fromFile(targetFile));
+                }
+                entry = input.getNextEntry();
+            }
+        }
+        return result;
+    }
+
+    // ================= ZIP FILE CREATION
 
     public static void zipFiles(@NonNull final Context context, @NonNull final List<DocumentFile> files, @NonNull final OutputStream out) throws IOException {
         Helper.assertNonUiThread();

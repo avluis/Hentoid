@@ -210,7 +210,7 @@ public class API29MigrationService extends IntentService {
                             content.setJsonUri("");
 
                         //dao.insertContent(content);
-                        ContentHelper.addContent(dao, content);
+                        ContentHelper.addContent(this, dao, content);
 
                         List<ImageFile> contentImages;
                         if (content.getImageFiles() != null)

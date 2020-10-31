@@ -291,7 +291,10 @@ public final class ContentHelper {
      * @param content Content to add to the library
      * @return ID of the newly added Content
      */
-    public static long addContent(@NonNull CollectionDAO dao, @NonNull Content content) {
+    public static long addContent(
+            @NonNull final Context context,
+            @NonNull final CollectionDAO dao,
+            @NonNull final Content content) {
         content.populateAuthor();
         long newContentId = dao.insertContent(content);
         content.setId(newContentId);
@@ -327,6 +330,25 @@ public final class ContentHelper {
                 }
         }
 
+        // Extract the cover to the app's persistent folder if the book is an archive
+        if (content.isArchive()) {
+            DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
+            try {
+                List<Uri> outputFiles = ArchiveHelper.extractZipEntries(
+                        context,
+                        archive,
+                        Stream.of(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, "")).toList(),
+                        context.getFilesDir(),
+                        Stream.of(newContentId + "").toList());
+                if (!outputFiles.isEmpty()) {
+                    content.getCover().setFileUri(outputFiles.get(0).toString());
+                    dao.replaceImageList(newContentId, content.getImageFiles());
+                }
+            } catch (IOException e) {
+                Timber.w(e);
+            }
+        }
+
         return newContentId;
     }
 
@@ -344,10 +366,8 @@ public final class ContentHelper {
         dao.deleteImageFiles(images);
 
         // Remove the pages from disk
-        for (ImageFile image : images) {
-            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, image.getFileUri());
-            if (doc != null) doc.delete();
-        }
+        for (ImageFile image : images)
+            FileHelper.removeFile(context, Uri.parse(image.getFileUri()));
 
         // Lists all relevant content
         List<Long> contents = Stream.of(images).filter(i -> i.content != null).map(i -> i.content.getTargetId()).distinct().toList();
@@ -653,7 +673,7 @@ public final class ContentHelper {
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
             img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.getUri().toString()).setStatus(targetStatus).setFileUri(f.getUri().toString()).setSize(f.length());
-            img.setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(name)));
+            img.setMimeType(FileHelper.getMimeTypeFromFileName(name));
             result.add(img);
         }
         return result;
@@ -677,7 +697,7 @@ public final class ContentHelper {
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
             img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(path).setStatus(targetStatus).setFileUri(path).setSize(f.getSize());
-            img.setMimeType(FileHelper.getMimeTypeFromExtension(FileHelper.getExtension(name)));
+            img.setMimeType(FileHelper.getMimeTypeFromFileName(name));
             result.add(img);
         }
         return result;
