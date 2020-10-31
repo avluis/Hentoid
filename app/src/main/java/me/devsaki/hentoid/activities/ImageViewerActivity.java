@@ -44,9 +44,11 @@ public class ImageViewerActivity extends BaseActivity {
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         ImageViewerViewModel viewModel = new ViewModelProvider(this, vmFactory).get(ImageViewerViewModel.class);
 
-        Bundle searchParams = parser.getSearchParams();
-        if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
-        else viewModel.loadFromContent(contentId);
+        if (null == viewModel.getContent().getValue()) { // ViewModel hasn't loaded anything yet (fresh start)
+            Bundle searchParams = parser.getSearchParams();
+            if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
+            else viewModel.loadFromContent(contentId);
+        }
 
         if (!PermissionUtil.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION)) {
             ToastUtil.toast("Storage permission denied - cannot open the viewer");
