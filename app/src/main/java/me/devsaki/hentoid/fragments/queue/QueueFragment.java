@@ -129,7 +129,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
     // Used to show a given item at first display
-    private long contentIdToDisplayFirst = -1;
+    private long contentHashToDisplayFirst = -1;
 
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
@@ -370,7 +370,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(QueueViewModel.class);
         viewModel.getQueue().observe(getViewLifecycleOwner(), this::onQueueChanged);
-        viewModel.getContentIdToShowFirst().observe(getViewLifecycleOwner(), this::onContentIdToShowFirstChanged);
+        viewModel.getContentHashToShowFirst().observe(getViewLifecycleOwner(), this::onContentHashToShowFirstChanged);
     }
 
     /**
@@ -542,7 +542,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // => use a plain ItemAdapter.set for now (and live with the occasional blinking)
 //        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
         itemAdapter.set(content);
-        differEndCallback();
+        new Handler().postDelayed(this::differEndCallback, 150);
 
         updateControlBar();
 
@@ -551,9 +551,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             TooltipUtil.showTooltip(requireContext(), R.string.help_swipe_cancel, ArrowOrientation.BOTTOM, recyclerView, getViewLifecycleOwner());
     }
 
-    private void onContentIdToShowFirstChanged(Long contentId) {
-        Timber.d(">>onContentIdToShowFirstChanged %s", contentId);
-        contentIdToDisplayFirst = contentId;
+    private void onContentHashToShowFirstChanged(Integer contentHash) {
+        Timber.d(">>onContentIdToShowFirstChanged %s", contentHash);
+        contentHashToDisplayFirst = contentHash;
     }
 
     /**
@@ -561,10 +561,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
-        if (contentIdToDisplayFirst > -1) {
-            int targetPos = fastAdapter.getPosition(contentIdToDisplayFirst);
+        if (contentHashToDisplayFirst > -1) {
+            int targetPos = fastAdapter.getPosition(contentHashToDisplayFirst);
             if (targetPos > -1) listRefreshDebouncer.submit(targetPos);
-            contentIdToDisplayFirst = -1;
+            contentHashToDisplayFirst = -1;
             return;
         }
         // Reposition the list on the initial top item position

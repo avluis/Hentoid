@@ -87,7 +87,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
     // Used to show a given item at first display
-    private long contentIdToDisplayFirst = -1;
+    private long contentHashToDisplayFirst = -1;
     // Used to start processing when the recyclerView has finished updating
     private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
 
@@ -160,7 +160,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(QueueViewModel.class);
         viewModel.getErrors().observe(getViewLifecycleOwner(), this::onErrorsChanged);
-        viewModel.getContentIdToShowFirst().observe(getViewLifecycleOwner(), this::onContentIdToShowFirstChanged);
+        viewModel.getContentHashToShowFirst().observe(getViewLifecycleOwner(), this::onContentHashToShowFirstChanged);
     }
 
     private void initToolbar() {
@@ -307,7 +307,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         // Update displayed books
         List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS)).toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
-        differEndCallback();
+        new Handler().postDelayed(this::differEndCallback, 150);
     }
 
     /**
@@ -315,10 +315,10 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
-        if (contentIdToDisplayFirst > -1) {
-            int targetPos = fastAdapter.getPosition(contentIdToDisplayFirst);
+        if (contentHashToDisplayFirst > -1) {
+            int targetPos = fastAdapter.getPosition(contentHashToDisplayFirst);
             if (targetPos > -1) listRefreshDebouncer.submit(targetPos);
-            contentIdToDisplayFirst = -1;
+            contentHashToDisplayFirst = -1;
         }
     }
 
@@ -330,9 +330,9 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
     }
 
-    private void onContentIdToShowFirstChanged(Long contentId) {
-        Timber.d(">>onContentIdToShowFirstChanged %s", contentId);
-        contentIdToDisplayFirst = contentId;
+    private void onContentHashToShowFirstChanged(Integer contentHash) {
+        Timber.d(">>onContentIdToShowFirstChanged %s", contentHash);
+        contentHashToDisplayFirst = contentHash;
     }
 
     private boolean onBookClick(ContentItem item) {

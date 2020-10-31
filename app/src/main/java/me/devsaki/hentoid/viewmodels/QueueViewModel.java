@@ -43,7 +43,7 @@ public class QueueViewModel extends AndroidViewModel {
     private LiveData<List<Content>> currentErrorsSource;
     private final MediatorLiveData<List<Content>> errors = new MediatorLiveData<>();
 
-    private final MutableLiveData<Long> contentIdToShowFirst = new MutableLiveData<>();     // ID of the content to show at 1st display
+    private final MutableLiveData<Integer> contentHashToShowFirst = new MutableLiveData<>();     // ID of the content to show at 1st display
 
 
     public QueueViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -70,8 +70,8 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<Long> getContentIdToShowFirst() {
-        return contentIdToShowFirst;
+    public LiveData<Integer> getContentHashToShowFirst() {
+        return contentHashToShowFirst;
     }
 
 
@@ -210,8 +210,8 @@ public class QueueViewModel extends AndroidViewModel {
         dao.addContentToQueue(content, targetImageStatus);
     }
 
-    public void setContentIdToShowFirst(long id) {
-        contentIdToShowFirst.setValue(id);
+    public void setContentToShowFirst(int hash) {
+        contentHashToShowFirst.setValue(hash);
     }
 
     private void saveQueue() {
