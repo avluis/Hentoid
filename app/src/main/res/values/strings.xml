@@ -98,7 +98,7 @@
     <string name="work_series">Series: @series@</string>
     <string name="work_artist">Artist: @artist@</string>
     <string name="work_pages_queue">Pages: @pages@@missing@</string>
-    <string name="work_pages_library">%d pages / "%.1f MB</string>
+    <string name="work_pages_library">%1$d pages / "%2$.1f MB</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
@@ -182,7 +182,7 @@
     <string name="memory_total">Total : %.2f GB</string>
     <string name="memory_free">Free : %.2f GB</string>
     <string name="memory_hentoid">Hentoid : %.2f GB</string>
-    <string name="memory_database">Database : %s (%.1f%% full)</string>
+    <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
     <string name="memory_details">View details</string>
 
     <!-- Errors -->
