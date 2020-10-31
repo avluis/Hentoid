@@ -475,7 +475,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
      */
     static class ImgLoader implements Loader {
 
-        private Uri uri;
+        private final Uri uri;
 
         ImgLoader(Uri uri) {
             this.uri = uri;
@@ -490,7 +490,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     static class ImgReader extends FilterReader {
-        private Uri uri;
+        private final Uri uri;
 
         private static InputStream getInputStream(Uri uri) throws IOException {
             return HentoidApp.getInstance().getContentResolver().openInputStream(uri);
