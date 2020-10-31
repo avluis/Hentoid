@@ -36,6 +36,7 @@ import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
@@ -250,16 +251,50 @@ public final class ContentHelper {
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
         dao.deleteContent(content);
-        // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
-        DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
-        if (null == folder)
-            throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
 
-        if (folder.delete()) {
-            Timber.i("Directory removed : %s", content.getStorageUri());
-        } else {
-            throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
+        if (content.isArchive()) { // Remove an archive
+            DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
+            if (null == archive)
+                throw new FileNotRemovedException(content, "Failed to find archive " + content.getStorageUri());
+
+            if (archive.delete()) {
+                Timber.i("Archive removed : %s", content.getStorageUri());
+            } else {
+                throw new FileNotRemovedException(content, "Failed to delete archive " + content.getStorageUri());
+            }
+
+            // Remove the cover stored in the app's persistent folder
+            File appFolder = context.getFilesDir();
+            File[] images = appFolder.listFiles((dir, name) -> FileHelper.getFileNameWithoutExtension(name).equals(content.getId() + ""));
+            for (File f : images) FileHelper.removeFile(f);
+        } else { // Remove a folder and its content
+            // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
+            DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+            if (null == folder)
+                throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
+
+            if (folder.delete()) {
+                Timber.i("Directory removed : %s", content.getStorageUri());
+            } else {
+                throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
+            }
         }
+    }
+
+    // TODO doc
+    public static void removeAllExternalContent(@NonNull final Context context) {
+        // Remove all external books from DB
+        CollectionDAO dao = new ObjectBoxDAO(context);
+        try {
+            dao.deleteAllExternalBooks();
+        } finally {
+            dao.cleanup();
+        }
+
+        // Remove all images stored in the app's persistent folder (archive covers)
+        File appFolder = context.getFilesDir();
+        File[] images = appFolder.listFiles((dir, name) -> ImageHelper.isSupportedImage(name));
+        for (File f : images) FileHelper.removeFile(f);
     }
 
     /**

@@ -46,6 +46,10 @@ public final class ImageHelper {
                 || extension.equalsIgnoreCase("webp");
     }
 
+    public static boolean isSupportedImage(@NonNull final String fileName) {
+        return isImageExtensionSupported(FileHelper.getExtension(fileName));
+    }
+
     /**
      * Build a {@link FileHelper.NameFilter} only accepting image files supported by the app
      *

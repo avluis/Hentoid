@@ -15,7 +15,6 @@ import io.reactivex.disposables.Disposables
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
-import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.services.ExternalImportService
@@ -95,12 +94,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                             ) { dialog1: DialogInterface, _: Int ->
                                 dialog1.dismiss()
                                 Preferences.setExternalLibraryUri("")
-                                val dao: CollectionDAO = ObjectBoxDAO(context)
-                                try {
-                                    dao.deleteAllExternalBooks()
-                                } finally {
-                                    dao.cleanup()
-                                }
+                                ContentHelper.removeAllExternalContent(requireContext())
                                 ToastUtil.toast(getString(R.string.prefs_external_library_detached))
                             }
                             .setNegativeButton(android.R.string.no
@@ -205,7 +199,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 ?: return
 
         val memUsagePref: Preference? = findPreference(Preferences.Key.MEMORY_USAGE) as Preference?
-        memUsagePref?.summary = resources.getString(R.string.pref_memory_usage_summary, FileHelper.MemoryUsageFigures(requireContext(), folder).getFreeUsageRatio100())
+        memUsagePref?.summary = resources.getString(R.string.pref_memory_usage_summary, FileHelper.MemoryUsageFigures(requireContext(), folder).freeUsageRatio100)
     }
 
     private fun onDeleteAllExceptFavourites() {
