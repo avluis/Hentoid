@@ -81,6 +81,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:maxLines="1"
+            android:ellipsize="end"
             android:singleLine="true"
             android:textColor="@color/card_tags_light"
             android:textSize="@dimen/caption"
