@@ -176,7 +176,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
             else
                 new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                         .setIcon(R.drawable.ic_warning)
-                        .setCancelable(false)
                         .setTitle(R.string.app_name)
                         .setMessage(getString(R.string.confirm_redownload_all, fastAdapter.getItemCount()))
                         .setPositiveButton(R.string.yes,
