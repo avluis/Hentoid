@@ -40,6 +40,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -358,7 +359,11 @@ public final class ContentHelper {
                         if (sublist != null)
                             artists.addAll(sublist);
 
-                        for (Attribute a : artists) {
+                        if (artists.isEmpty()) { // Add to the "no artist" group if no artist has been found
+                            Group group = GroupHelper.getOrCreateNoArtistGroup(context, dao);
+                            GroupItem item = new GroupItem(content, group, -1);
+                            dao.insertGroupItem(item);
+                        } else for (Attribute a : artists) { // Add to the artist groups attached to the artists attributes
                             Group group = a.getGroup().getTarget();
                             if (null == group) {
                                 group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);

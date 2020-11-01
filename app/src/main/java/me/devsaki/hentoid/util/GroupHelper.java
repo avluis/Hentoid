@@ -11,6 +11,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import java.io.IOException;
 import java.util.List;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -29,6 +30,16 @@ public final class GroupHelper {
         throw new IllegalStateException("Utility class");
     }
 
+
+    public static Group getOrCreateNoArtistGroup(@NonNull final Context context, @NonNull final CollectionDAO dao) {
+        String noArtistGroupName = context.getResources().getString(R.string.no_artist_group_name);
+        Group result = dao.selectGroupByName(Grouping.ARTIST.getId(), noArtistGroupName);
+        if (null == result) {
+            result = new Group(Grouping.ARTIST, noArtistGroupName, -1);
+            result.id = dao.insertGroup(result);
+        }
+        return result;
+    }
 
     /**
      * Add the given Content to the given Group, and associate the latter with the given Attribute (if no prior association)

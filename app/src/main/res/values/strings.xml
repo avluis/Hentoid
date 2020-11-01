@@ -283,6 +283,7 @@
     <string name="groups_by_artist">By Artist</string>
     <string name="groups_by_dl_date">By Download date</string>
     <string name="groups_custom">Custom</string>
+    <string name="no_artist_group_name">[no artist]</string>
     <!-- Sorting fields -->
     <string name="sort_title">Title</string>
     <string name="sort_artist">Artist</string>
