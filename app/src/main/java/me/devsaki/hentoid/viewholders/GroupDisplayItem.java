@@ -170,7 +170,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
                 if (cover != null) attachCover(cover);
             }
             List<GroupItem> items = item.group.items;
-            title.setText(String.format("%s%s", item.group.name, (null == items || items.isEmpty()) ? "" : "(" + items.size() + ")"));
+            title.setText(String.format("%s%s", item.group.name, (null == items || items.isEmpty()) ? "" : " (" + items.size() + ")"));
         }
 
         private void attachCover(ImageFile cover) {
