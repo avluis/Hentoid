@@ -165,7 +165,6 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             }
 
             if (item.group.picture != null && ivCover != null) {
-                ivCover.setVisibility(View.VISIBLE);
                 ImageFile cover = item.group.picture.getTarget();
                 if (cover != null) attachCover(cover);
             }
@@ -174,6 +173,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
         }
 
         private void attachCover(ImageFile cover) {
+            ivCover.setVisibility(View.VISIBLE);
             String thumbLocation = "";
             if (cover.getStatus().equals(StatusContent.DOWNLOADED) || cover.getStatus().equals(StatusContent.MIGRATED) || cover.getStatus().equals(StatusContent.EXTERNAL))
                 thumbLocation = cover.getFileUri();

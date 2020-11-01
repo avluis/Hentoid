@@ -19,7 +19,7 @@
         android:layout_width="150dp"
         android:layout_height="200dp"
         android:adjustViewBounds="true"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription"
