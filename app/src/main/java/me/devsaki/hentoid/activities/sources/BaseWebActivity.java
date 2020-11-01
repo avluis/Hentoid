@@ -690,7 +690,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             List<String> tags = Stream.of(currentContent.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG)).map(Attribute::getName).toList();
             for (String blocked : Preferences.getBlockedTags())
                 for (String tag : tags)
-                    if (blocked.equalsIgnoreCase(tag)) {
+                    if (Helper.isPresentAsWord(blocked, tag)) {
                         if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.PREF_DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
                             ToastUtil.toast(getResources().getString(R.string.blocked_tag, tag));
                         } else { // Insert directly as an error

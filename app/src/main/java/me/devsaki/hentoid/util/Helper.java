@@ -11,6 +11,8 @@ import android.webkit.WebSettings;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.annimon.stream.Stream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -74,6 +76,12 @@ public final class Helper {
         }
 
         return result;
+    }
+
+    // TODO doc
+    public static boolean isPresentAsWord(@NonNull final String toDetect, @NonNull final String expression) {
+        String[] words = expression.split("\\W");
+        return Stream.of(words).anyMatch(w -> w.equalsIgnoreCase(toDetect));
     }
 
     /**
