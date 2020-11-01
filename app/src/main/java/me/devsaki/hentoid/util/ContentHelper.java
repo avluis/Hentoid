@@ -270,7 +270,8 @@ public final class ContentHelper {
             // Remove the cover stored in the app's persistent folder
             File appFolder = context.getFilesDir();
             File[] images = appFolder.listFiles((dir, name) -> FileHelper.getFileNameWithoutExtension(name).equals(content.getId() + ""));
-            for (File f : images) FileHelper.removeFile(f);
+            if (images != null)
+                for (File f : images) FileHelper.removeFile(f);
         } else { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
             DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
@@ -298,7 +299,8 @@ public final class ContentHelper {
         // Remove all images stored in the app's persistent folder (archive covers)
         File appFolder = context.getFilesDir();
         File[] images = appFolder.listFiles((dir, name) -> ImageHelper.isSupportedImage(name));
-        for (File f : images) FileHelper.removeFile(f);
+        if (images != null)
+            for (File f : images) FileHelper.removeFile(f);
     }
 
     /**
@@ -372,19 +374,21 @@ public final class ContentHelper {
         // Extract the cover to the app's persistent folder if the book is an archive
         if (content.isArchive()) {
             DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
-            try {
-                List<Uri> outputFiles = ArchiveHelper.extractZipEntries(
-                        context,
-                        archive,
-                        Stream.of(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, "")).toList(),
-                        context.getFilesDir(),
-                        Stream.of(newContentId + "").toList());
-                if (!outputFiles.isEmpty()) {
-                    content.getCover().setFileUri(outputFiles.get(0).toString());
-                    dao.replaceImageList(newContentId, content.getImageFiles());
+            if (archive != null) {
+                try {
+                    List<Uri> outputFiles = ArchiveHelper.extractZipEntries(
+                            context,
+                            archive,
+                            Stream.of(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, "")).toList(),
+                            context.getFilesDir(),
+                            Stream.of(newContentId + "").toList());
+                    if (!outputFiles.isEmpty() && content.getImageFiles() != null) {
+                        content.getCover().setFileUri(outputFiles.get(0).toString());
+                        dao.replaceImageList(newContentId, content.getImageFiles());
+                    }
+                } catch (IOException e) {
+                    Timber.w(e);
                 }
-            } catch (IOException e) {
-                Timber.w(e);
             }
         }
 
