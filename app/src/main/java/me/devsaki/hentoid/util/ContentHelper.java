@@ -363,15 +363,16 @@ public final class ContentHelper {
                             Group group = GroupHelper.getOrCreateNoArtistGroup(context, dao);
                             GroupItem item = new GroupItem(content, group, -1);
                             dao.insertGroupItem(item);
-                        } else for (Attribute a : artists) { // Add to the artist groups attached to the artists attributes
-                            Group group = a.getGroup().getTarget();
-                            if (null == group) {
-                                group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
-                                if (!a.contents.isEmpty())
-                                    group.picture.setTarget(a.contents.get(0).getCover());
+                        } else
+                            for (Attribute a : artists) { // Add to the artist groups attached to the artists attributes
+                                Group group = a.getGroup().getTarget();
+                                if (null == group) {
+                                    group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
+                                    if (!a.contents.isEmpty())
+                                        group.picture.setTarget(a.contents.get(0).getCover());
+                                }
+                                GroupHelper.addContentToAttributeGroup(dao, group, a, content);
                             }
-                            GroupHelper.addContentToAttributeGroup(dao, group, a, content);
-                        }
                     }
                 }
         }
@@ -749,6 +750,17 @@ public final class ContentHelper {
             result.add(img);
         }
         return result;
+    }
+
+    // TODO doc
+    public static void launchBrowserFor(@NonNull final Context context, @NonNull final Site s, @NonNull final String targetUrl) {
+        Intent intent = new Intent(context, Content.getWebActivityClass(s));
+
+        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
+        builder.setUrl(targetUrl);
+        intent.putExtras(builder.getBundle());
+
+        context.startActivity(intent);
     }
 
     /**

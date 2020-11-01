@@ -31,6 +31,7 @@ public class CommunicationEvent {
         return recipient;
     }
 
+    @Nullable
     public String getMessage() {
         return message;
     }

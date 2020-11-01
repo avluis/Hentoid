@@ -266,6 +266,8 @@
         <item quantity="other">%d items selected</item>
     </plurals>
     <string name="folder_undefined">Error - containing folder undefined</string>
+    <string name="malformed_url">Error - Malformed URL</string>
+    <string name="unsupported_site">Error - Site is not supported</string>
     <plurals name="external_not_removed">
         <item quantity="one">One book from the external library will not be removed</item>
         <item quantity="other">%d books from the external library will not be removed</item>

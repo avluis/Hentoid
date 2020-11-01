@@ -189,12 +189,11 @@ public class HttpHelper {
      * @param uriStr URI to parse, in String form
      * @return Domain of the URI; null if no domain found
      */
-    @Nullable
-    private static String getDomainFromUri(@NonNull String uriStr) {
+    public static String getDomainFromUri(@NonNull String uriStr) {
         Uri uri = Uri.parse(uriStr);
         String result = uri.getHost();
         if (result != null && result.startsWith("www")) result = result.substring(3);
-        return result;
+        return (null == result) ? "" : result;
     }
 
     /**

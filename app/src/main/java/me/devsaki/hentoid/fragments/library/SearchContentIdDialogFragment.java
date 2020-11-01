@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments.library;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,9 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
 
@@ -124,13 +122,8 @@ public class SearchContentIdDialogFragment extends DialogFragment {
     private boolean onItemSelected(Site s) {
         if (null == s) return false;
 
-        Intent intent = new Intent(requireContext(), Content.getWebActivityClass(s));
+        ContentHelper.launchBrowserFor(requireContext(), s, getUrlFromId(s, bookId));
 
-        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-        builder.setUrl(getUrlFromId(s, bookId));
-        intent.putExtras(builder.getBundle());
-
-        requireContext().startActivity(intent);
         this.dismiss();
         return true;
     }

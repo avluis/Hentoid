@@ -666,7 +666,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (event.getRecipient() != RC_CONTENTS || null == sortDirectionButton) return;
         switch (event.getType()) {
             case EV_SEARCH:
-                viewModel.searchContentUniversal(event.getMessage());
+                if (event.getMessage() != null) onSubmitSearch(event.getMessage());
                 break;
             case EV_ADVANCED_SEARCH:
                 onAdvancedSearchButtonClick();
@@ -729,6 +729,20 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                     | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             requireActivity().finish();
             startActivity(intent);
+        }
+    }
+
+    private void onSubmitSearch(@NonNull final String query) {
+        if (query.startsWith("http")) { // Quick-open a page
+            Site s = Site.searchByUrl(query);
+            if (null == s)
+                Snackbar.make(recyclerView, R.string.malformed_url, BaseTransientBottomBar.LENGTH_SHORT).show();
+            else if (s.equals(Site.NONE))
+                Snackbar.make(recyclerView, R.string.unsupported_site, BaseTransientBottomBar.LENGTH_SHORT).show();
+            else
+                ContentHelper.launchBrowserFor(requireContext(), s, query);
+        } else {
+            viewModel.searchContentUniversal(query);
         }
     }
 
