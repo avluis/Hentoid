@@ -26,7 +26,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.ZipEntry;
 
 import javax.annotation.Nonnull;
 
@@ -382,7 +381,7 @@ public final class ContentHelper {
             DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
             if (archive != null) {
                 try {
-                    List<Uri> outputFiles = ArchiveHelper.extractZipEntries(
+                    List<Uri> outputFiles = ArchiveHelper.extractArchiveEntries(
                             context,
                             archive,
                             Stream.of(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, "")).toList(),
@@ -728,9 +727,9 @@ public final class ContentHelper {
         return result;
     }
 
-    public static List<ImageFile> createImageListFromZipEntries(
+    public static List<ImageFile> createImageListFromArchiveEntries(
             @NonNull final Uri zipFileUri,
-            @NonNull final List<ZipEntry> files,
+            @NonNull final List<ArchiveHelper.ArchiveEntry> files,
             @NonNull final StatusContent targetStatus,
             int startingOrder,
             @NonNull final String namePrefix) {
@@ -738,14 +737,14 @@ public final class ContentHelper {
         List<ImageFile> result = new ArrayList<>();
         int order = startingOrder;
         // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
-        List<ZipEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberZipComparator()).collect(toList());
-        for (ZipEntry f : fileList) {
-            String name = namePrefix + f.getName();
-            String path = zipFileUri.toString() + File.separator + f.getName();
+        List<ArchiveHelper.ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).collect(toList());
+        for (ArchiveHelper.ArchiveEntry f : fileList) {
+            String name = namePrefix + f.path;
+            String path = zipFileUri.toString() + File.separator + f.path;
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
-            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(path).setStatus(targetStatus).setFileUri(path).setSize(f.getSize());
+            img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(path).setStatus(targetStatus).setFileUri(path).setSize(f.size);
             img.setMimeType(FileHelper.getMimeTypeFromFileName(name));
             result.add(img);
         }
@@ -780,10 +779,10 @@ public final class ContentHelper {
         }
     }
 
-    private static class InnerNameNumberZipComparator implements Comparator<ZipEntry> {
+    private static class InnerNameNumberArchiveComparator implements Comparator<ArchiveHelper.ArchiveEntry> {
         @Override
-        public int compare(@NonNull ZipEntry o1, @NonNull ZipEntry o2) {
-            return new ContentHelper.InnerNameNumberComparator().compare(o1.getName(), o2.getName());
+        public int compare(@NonNull ArchiveHelper.ArchiveEntry o1, @NonNull ArchiveHelper.ArchiveEntry o2) {
+            return new ContentHelper.InnerNameNumberComparator().compare(o1.path, o2.path);
         }
     }
 

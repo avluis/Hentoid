@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.zip.ZipEntry;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -565,26 +564,26 @@ public class ImportHelper {
             @NonNull final DocumentFile archive,
             @NonNull final List<String> parentNames,
             @NonNull final StatusContent targetStatus) {
-        List<ZipEntry> entries = Collections.emptyList();
+        List<ArchiveHelper.ArchiveEntry> entries = Collections.emptyList();
 
         try {
-            entries = ArchiveHelper.getZipEntries(context, archive);
+            entries = ArchiveHelper.getArchiveEntries(context, archive);
         } catch (Exception e) {
             Timber.w(e);
         }
 
         // Look for the folder with the most images
-        Collection<List<ZipEntry>> imageEntries = Stream.of(entries)
-                .filter(s -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(s.getName())))
+        Collection<List<ArchiveHelper.ArchiveEntry>> imageEntries = Stream.of(entries)
+                .filter(s -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(s.path)))
                 .collect(Collectors.groupingBy(ImportHelper::getFolders))
                 .values();
 
         if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
         // Sort by number of images desc
-        List<ZipEntry> entryList = Stream.of(imageEntries).sortBy(ie -> -ie.size()).toList().get(0);
+        List<ArchiveHelper.ArchiveEntry> entryList = Stream.of(imageEntries).sortBy(ie -> -ie.size()).toList().get(0);
 
-        List<ImageFile> images = ContentHelper.createImageListFromZipEntries(archive.getUri(), entryList, targetStatus, 1, "");
+        List<ImageFile> images = ContentHelper.createImageListFromArchiveEntries(archive.getUri(), entryList, targetStatus, 1, "");
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
 
@@ -603,8 +602,8 @@ public class ImportHelper {
         return result;
     }
 
-    private static String getFolders(@NonNull final ZipEntry entry) {
-        String path = entry.getName();
+    private static String getFolders(@NonNull final ArchiveHelper.ArchiveEntry entry) {
+        String path = entry.path;
         int separatorIndex = path.lastIndexOf('/');
         if (-1 == separatorIndex) return "";
 

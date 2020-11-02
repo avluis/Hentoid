@@ -231,6 +231,9 @@ dependencies {
     // Dropdown lists
     implementation "com.github.skydoves:powerspinner:1.1.5"
 
+    // RAR archive management
+    implementation "com.github.junrar:junrar:7.4.0"
+
     implementation project(path: ':app:customssiv')
 }
 

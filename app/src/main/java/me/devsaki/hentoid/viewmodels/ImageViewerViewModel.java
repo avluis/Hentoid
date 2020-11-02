@@ -186,29 +186,33 @@ public class ImageViewerViewModel extends AndroidViewModel {
         File cachePicFolder = getOrCreatePictureCacheFolder();
         if (cachePicFolder != null) {
             File[] files = cachePicFolder.listFiles();
-            for (File f : files) //noinspection ResultOfMethodCallIgnored
-                f.delete();
-        }
+            if (files != null)
+                for (File f : files) //noinspection ResultOfMethodCallIgnored
+                    f.delete();
 
-        // Extract the images if they are contained within an archive
-        if (theContent.isArchive()) {
-            // Unzip the archive in the app's cache folder
-            DocumentFile zipFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
-            // TODO stream that so that loading isn't blocked
-            List<Uri> unzippedFilesUris = ArchiveHelper.extractZipEntries(
-                    getApplication(),
-                    zipFile,
-                    Stream.of(imageFiles).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
-                    cachePicFolder,
-                    null);
 
-            // Feed the Uri's of unzipped files back into the corresponding images for viewing
-            for (ImageFile img : imageFiles) {
-                for (Uri unzippedUri : unzippedFilesUris)
-                    if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(FileHelper.getFileNameWithoutExtension(unzippedUri.getPath()))) {
-                        img.setFileUri(unzippedUri.toString());
-                        break;
+            // Extract the images if they are contained within an archive
+            if (theContent.isArchive()) {
+                // Unzip the archive in the app's cache folder
+                DocumentFile zipFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
+                // TODO stream that so that loading isn't blocked
+                if (zipFile != null) {
+                    List<Uri> unzippedFilesUris = ArchiveHelper.extractArchiveEntries(
+                            getApplication(),
+                            zipFile,
+                            Stream.of(imageFiles).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
+                            cachePicFolder,
+                            null);
+
+                    // Feed the Uri's of unzipped files back into the corresponding images for viewing
+                    for (ImageFile img : imageFiles) {
+                        for (Uri unzippedUri : unzippedFilesUris)
+                            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(FileHelper.getFileNameWithoutExtension(unzippedUri.getPath()))) {
+                                img.setFileUri(unzippedUri.toString());
+                                break;
+                            }
                     }
+                }
             }
         }
 
