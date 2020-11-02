@@ -135,7 +135,7 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.0.0'
 
     // Java serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
-    def moshi_version = "1.9.2"
+    def moshi_version = '1.11.0'
     implementation "com.squareup.moshi:moshi:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
 
@@ -156,7 +156,7 @@ dependencies {
     implementation 'org.greenrobot:eventbus:3.2.0'
 
     // JSOUP HTML parser: github.com/jhy/jsoup
-    implementation 'org.jsoup:jsoup:1.11.3'
+    implementation 'org.jsoup:jsoup:1.13.1'
 
     // Lightweight Stream : github.com/aNNiMON/Lightweight-Stream-API
     implementation 'com.annimon:stream:1.2.1'
