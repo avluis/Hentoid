@@ -11,7 +11,7 @@ import me.devsaki.hentoid.enums.Grouping;
 class JsonCustomGrouping {
 
     private Integer groupingId;
-    private List<JsonCustomGroup> groups = new ArrayList<>();
+    private final List<JsonCustomGroup> groups = new ArrayList<>();
 
     private JsonCustomGrouping() {
     }

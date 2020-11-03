@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -210,13 +211,21 @@ public interface CollectionDAO {
 
     // BOOKMARKS
 
-    List<SiteBookmark> getBookmarks(@NonNull Site s);
+    long countAllBookmarks();
 
-    long insertBookmark(@NonNull Site site, @NonNull String title, @NonNull String url);
+    List<SiteBookmark> selectAllBookmarks();
 
-    void insertBookmark(@NonNull SiteBookmark bookmark);
+    Set<String> selectAllBookmarkUrls();
+
+    List<SiteBookmark> selectBookmarks(@NonNull Site s);
+
+    long insertBookmark(@NonNull SiteBookmark bookmark);
+
+    void insertBookmarks(@NonNull List<SiteBookmark> bookmarks);
 
     void deleteBookmark(long bookmarkId);
+
+    void deleteAllBookmarks();
 
 
     // RESOURCES

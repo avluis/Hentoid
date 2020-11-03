@@ -11,6 +11,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.Grouping;
 
 public class JsonContentCollection {
@@ -18,6 +19,8 @@ public class JsonContentCollection {
     private List<JsonContent> library = new ArrayList<>();
     private List<JsonContent> queue = new ArrayList<>();
     private List<JsonCustomGrouping> groupings = new ArrayList<>();
+    private List<JsonBookmark> bookmarks = new ArrayList<>();
+
 
     public JsonContentCollection() {
         // Nothing special do to here
@@ -46,5 +49,13 @@ public class JsonContentCollection {
     public void setCustomGroups(@NonNull List<Group> customGroups) {
         this.groupings = new ArrayList<>();
         this.groupings.add(JsonCustomGrouping.fromEntity(Grouping.CUSTOM, customGroups)); // Just one for now
+    }
+
+    public List<SiteBookmark> getBookmarks() {
+        return Stream.of(bookmarks).map(JsonBookmark::toEntity).toList();
+    }
+
+    public void setBookmarks(@NonNull List<SiteBookmark> bookmarks) {
+        this.bookmarks = Stream.of(bookmarks).map(JsonBookmark::fromEntity).toList();
     }
 }

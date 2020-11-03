@@ -41,9 +41,9 @@ public class JsonContent {
     private Map<String, String> bookPreferences = new HashMap<>();
 
     private Map<AttributeType, List<JsonAttribute>> attributes;
-    private List<JsonImageFile> imageFiles = new ArrayList<>();
-    private List<JsonErrorRecord> errorRecords = new ArrayList<>();
-    private List<JsonGroupItem> groups = new ArrayList<>();
+    private final List<JsonImageFile> imageFiles = new ArrayList<>();
+    private final List<JsonErrorRecord> errorRecords = new ArrayList<>();
+    private final List<JsonGroupItem> groups = new ArrayList<>();
 
     private JsonContent() {
     }

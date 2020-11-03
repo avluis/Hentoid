@@ -19,14 +19,11 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import io.reactivex.Single;
@@ -37,8 +34,6 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.FileHelper;
@@ -57,10 +52,11 @@ public class LibExportDialogFragment extends DialogFragment {
 
     // UI
     private ViewGroup rootView;
-    private CheckBox queueChk;
     private CheckBox libraryChk;
     private SwitchMaterial favsChk;
     private SwitchMaterial groupsChk;
+    private CheckBox queueChk;
+    private CheckBox bookmarksChk;
     private View runBtn;
 
     // Variable used during the import process
@@ -90,6 +86,7 @@ public class LibExportDialogFragment extends DialogFragment {
 
         long nbLibraryBooks = dao.countAllInternalBooks(false);
         long nbQueueBooks = dao.countAllQueueBooks();
+        long nbBookmarks = dao.countAllBookmarks();
 
         libraryChk = requireViewById(rootView, R.id.export_file_library_chk);
         favsChk = requireViewById(rootView, R.id.export_favs_only);
@@ -106,18 +103,24 @@ public class LibExportDialogFragment extends DialogFragment {
             queueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
             queueChk.setVisibility(View.VISIBLE);
         }
+        bookmarksChk = requireViewById(rootView, R.id.export_file_bookmarks_chk);
+        if (nbBookmarks > 0) {
+            bookmarksChk.setText(getResources().getQuantityString(R.plurals.export_file_bookmarks, (int) nbBookmarks, (int) nbBookmarks));
+            bookmarksChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+            bookmarksChk.setVisibility(View.VISIBLE);
+        }
 
         runBtn = requireViewById(rootView, R.id.export_run_btn);
         runBtn.setEnabled(false);
         if (0 == nbLibraryBooks + nbLibraryBooks) runBtn.setVisibility(View.GONE);
         else
-            runBtn.setOnClickListener(v -> runExport(libraryChk.isChecked(), favsChk.isChecked(), groupsChk.isChecked(), queueChk.isChecked()));
+            runBtn.setOnClickListener(v -> runExport(libraryChk.isChecked(), favsChk.isChecked(), groupsChk.isChecked(), queueChk.isChecked(), bookmarksChk.isChecked()));
     }
 
     // Gray out run button if no option is selected
     // TODO create a custom style to visually gray out the run button when it's disabled
     private void refreshDisplay() {
-        runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked());
+        runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked() || bookmarksChk.isChecked());
         favsChk.setVisibility(libraryChk.isChecked() ? View.VISIBLE : View.GONE);
         groupsChk.setVisibility(libraryChk.isChecked() ? View.VISIBLE : View.GONE);
     }
@@ -131,9 +134,11 @@ public class LibExportDialogFragment extends DialogFragment {
             boolean exportLibrary,
             boolean exportFavsOnly,
             boolean exportCustomGroups,
-            boolean exportQueue) {
-        queueChk.setEnabled(false);
+            boolean exportQueue,
+            boolean exportBookmarks) {
         libraryChk.setEnabled(false);
+        queueChk.setEnabled(false);
+        bookmarksChk.setEnabled(false);
         runBtn.setVisibility(View.GONE);
         setCancelable(false);
 
@@ -144,40 +149,46 @@ public class LibExportDialogFragment extends DialogFragment {
             progressBar.getIndeterminateDrawable().setColorFilter(ThemeHelper.getColor(requireContext(), R.color.secondary_light), PorterDuff.Mode.SRC_IN);
         progressBar.setVisibility(View.VISIBLE);
 
-        exportDisposable = Single.fromCallable(() -> getExportedCollection(exportLibrary, exportFavsOnly, exportCustomGroups, exportQueue))
+        exportDisposable = Single.fromCallable(() -> getExportedCollection(exportLibrary, exportFavsOnly, exportCustomGroups, exportQueue, exportBookmarks))
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map(c -> serializeJson(c.left, c.middle, c.right))
+                .map(c -> JsonHelper.serializeToJson(c, JsonContentCollection.class))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        s -> onJsonSerialized(s, exportLibrary, exportFavsOnly, exportQueue),
+                        s -> onJsonSerialized(s, exportLibrary, exportFavsOnly, exportQueue, exportBookmarks),
                         Timber::w
                 );
     }
 
-    private ImmutableTriple<List<Content>, List<Content>, List<Group>> getExportedCollection(boolean exportLibrary, boolean exportFavsOnly, boolean exportCustomgroups, boolean exportQueue) {
-        List<Content> library = new ArrayList<>();
-        if (exportLibrary) library.addAll(dao.selectAllInternalBooks(exportFavsOnly));
-        List<Content> queue = new ArrayList<>();
-        if (exportQueue) queue.addAll(dao.selectAllQueueBooks());
-        List<Group> groups = new ArrayList<>();
-        if (exportCustomgroups) groups.addAll(dao.selectGroups(Grouping.CUSTOM.getId()));
-        return new ImmutableTriple<>(library, queue, groups);
-    }
-
-    private String serializeJson(@NonNull List<Content> library, @NonNull List<Content> queue, @NonNull List<Group> groups) {
+    private JsonContentCollection getExportedCollection(
+            boolean exportLibrary,
+            boolean exportFavsOnly,
+            boolean exportCustomgroups,
+            boolean exportQueue,
+            boolean exportBookmarks) {
         JsonContentCollection jsonContentCollection = new JsonContentCollection();
-        jsonContentCollection.setLibrary(library);
-        jsonContentCollection.setQueue(queue);
-        jsonContentCollection.setCustomGroups(groups);
-        return JsonHelper.serializeToJson(jsonContentCollection, JsonContentCollection.class);
+
+        if (exportLibrary)
+            jsonContentCollection.setLibrary(dao.selectAllInternalBooks(exportFavsOnly));
+        if (exportQueue) jsonContentCollection.setQueue(dao.selectAllQueueBooks());
+        if (exportCustomgroups)
+            jsonContentCollection.setCustomGroups(dao.selectGroups(Grouping.CUSTOM.getId()));
+        if (exportBookmarks) jsonContentCollection.setBookmarks(dao.selectAllBookmarks());
+
+        return jsonContentCollection;
     }
 
-    private void onJsonSerialized(@NonNull String json, boolean exportLibrary, boolean exportFavsOnly, boolean exportQueue) {
+    private void onJsonSerialized(
+            @NonNull String json,
+            boolean exportLibrary,
+            boolean exportFavsOnly,
+            boolean exportQueue,
+            boolean exportBookmarks) {
         exportDisposable.dispose();
 
         // Use a random number to avoid erasing older exports by mistake
         String targetFileName = new Random().nextInt(9999) + ".json";
+        if (exportBookmarks) targetFileName = "bkmks-" + targetFileName;
         if (exportQueue) targetFileName = "queue-" + targetFileName;
         if (exportLibrary && !exportFavsOnly) targetFileName = "library-" + targetFileName;
         else if (exportLibrary) targetFileName = "favs-" + targetFileName;

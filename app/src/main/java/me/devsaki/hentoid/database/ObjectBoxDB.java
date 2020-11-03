@@ -1002,12 +1002,23 @@ public class ObjectBoxDB {
         return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
     }
 
-    List<SiteBookmark> selectBookmarks(@NonNull Site s) {
-        return store.boxFor(SiteBookmark.class).query().equal(SiteBookmark_.site, s.getCode()).order(SiteBookmark_.order).build().find();
+    Query<SiteBookmark> selectBookmarksQ(@Nullable Site s) {
+        QueryBuilder<SiteBookmark> qb = store.boxFor(SiteBookmark.class).query();
+        if (s != null) qb.equal(SiteBookmark_.site, s.getCode());
+
+        return qb.order(SiteBookmark_.order).build();
+    }
+
+    String[] selectAllBooksmarkUrls() {
+        return store.boxFor(SiteBookmark.class).query().build().property(SiteBookmark_.url).findStrings();
     }
 
     long insertBookmark(@NonNull final SiteBookmark bookmark) {
         return store.boxFor(SiteBookmark.class).put(bookmark);
+    }
+
+    void insertBookmarks(@NonNull final List<SiteBookmark> bookmarks) {
+        store.boxFor(SiteBookmark.class).put(bookmarks);
     }
 
     void deleteBookmark(long bookmarkId) {

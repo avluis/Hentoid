@@ -120,8 +120,8 @@
 
     <!-- Import metadata -->
     <string name="import_title">Import metadata</string>
-    <string name="import_mode_add">Add to current library</string>
-    <string name="import_mode_replace">Replace library with imported books</string>
+    <string name="import_mode_add">Add imported items</string>
+    <string name="import_mode_replace">Replace with imported items</string>
     <string name="import_select_file">Select file to import</string>
     <string name="import_file_invalid">File %s is invalid</string>
     <plurals name="import_file_library">
@@ -136,11 +136,19 @@
         <item quantity="one">Import custom groups (%d group)</item>
         <item quantity="other">Import custom groups (%d groups)</item>
     </plurals>
+    <plurals name="import_file_bookmarks">
+        <item quantity="one">Import bookmarks (%d item)</item>
+        <item quantity="other">Import bookmarks (%d items)</item>
+    </plurals>
     <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue > Errors.</string>
     <string name="import_run">RUN IMPORT</string>
-    <plurals name="import_result">
+    <plurals name="import_result_books">
         <item quantity="one">%d book imported successfully</item>
         <item quantity="other">%d books imported successfully</item>
+    </plurals>
+    <plurals name="import_result_bookmarks">
+        <item quantity="one">%d bookmark imported successfully</item>
+        <item quantity="other">%d bookmarks imported successfully</item>
     </plurals>
 
     <!-- Export metadata -->
@@ -154,6 +162,10 @@
     <plurals name="export_file_queue">
         <item quantity="one">Export queue (%d book)</item>
         <item quantity="other">Export queue (%d books)</item>
+    </plurals>
+    <plurals name="export_file_bookmarks">
+        <item quantity="one">Export bookmarks (%d item)</item>
+        <item quantity="other">Export bookmarks (%d items)</item>
     </plurals>
     <string name="export_warning">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
     <string name="export_run">RUN EXPORT</string>

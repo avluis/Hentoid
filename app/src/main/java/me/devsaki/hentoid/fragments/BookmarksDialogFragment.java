@@ -166,7 +166,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
 
     private List<SiteBookmark> reloadBookmarks(CollectionDAO dao) {
         List<SiteBookmark> bookmarks;
-        bookmarks = dao.getBookmarks(site);
+        bookmarks = dao.selectBookmarks(site);
         itemAdapter.set(Stream.of(bookmarks).map(s -> new TextItem<>(s.getTitle(), s, false, true, touchHelper)).toList());
         return bookmarks;
     }
@@ -205,7 +205,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     private void onBookmarkBtnClickedAdd() {
         CollectionDAO dao = new ObjectBoxDAO(bookmarkCurrentBtn.getContext());
         try {
-            bookmarkId = dao.insertBookmark(site, title, url);
+            bookmarkId = dao.insertBookmark(new SiteBookmark(site, title, url));
             reloadBookmarks(dao);
             fastAdapter.notifyAdapterDataSetChanged();
         } finally {
@@ -349,7 +349,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
 
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
         try {
-            List<SiteBookmark> bookmarks = dao.getBookmarks(site);
+            List<SiteBookmark> bookmarks = dao.selectBookmarks(site);
             if (oldPosition < 0 || oldPosition >= bookmarks.size()) return;
 
             // Move the item

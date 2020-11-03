@@ -17,9 +17,12 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -613,16 +616,32 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.insertSiteHistory(site, url);
     }
 
-    public List<SiteBookmark> getBookmarks(@NonNull Site s) {
-        return db.selectBookmarks(s);
+    public long countAllBookmarks() {
+        return db.selectBookmarksQ(null).count();
     }
 
-    public long insertBookmark(@NonNull Site site, @NonNull String title, @NonNull String url) {
-        return db.insertBookmark(new SiteBookmark(site, title, url));
+    public List<SiteBookmark> selectAllBookmarks() {
+        return db.selectBookmarksQ(null).find();
     }
 
-    public void insertBookmark(@NonNull final SiteBookmark bookmark) {
-        db.insertBookmark(bookmark);
+    public Set<String> selectAllBookmarkUrls() {
+        return new HashSet<>(Arrays.asList(db.selectAllBooksmarkUrls()));
+    }
+
+    public void deleteAllBookmarks() {
+        db.selectBookmarksQ(null).remove();
+    }
+
+    public List<SiteBookmark> selectBookmarks(@NonNull Site s) {
+        return db.selectBookmarksQ(s).find();
+    }
+
+    public long insertBookmark(@NonNull final SiteBookmark bookmark) {
+        return db.insertBookmark(bookmark);
+    }
+
+    public void insertBookmarks(@NonNull List<SiteBookmark> bookmarks) {
+        db.insertBookmarks(bookmarks);
     }
 
     public void deleteBookmark(long bookmarkId) {

@@ -64,6 +64,28 @@
         tools:text="Export queue (235 books)"
         tools:visibility="visible" />
 
+    <CheckBox
+        android:id="@+id/export_file_bookmarks_chk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_file_queue_chk"
+        tools:text="Export bookmarks (25 items)"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/export_file_help_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/export_warning"
+        android:textColor="@color/white_opacity_87"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/export_warning_img"
+        app:layout_constraintTop_toBottomOf="@id/export_file_bookmarks_chk" />
+
     <ImageView
         android:id="@+id/export_warning_img"
         android:layout_width="56dp"
@@ -76,18 +98,6 @@
         app:layout_constraintTop_toTopOf="@id/export_file_help_text"
         app:tint="?colorSecondary"
         tools:ignore="ContentDescription" />
-
-    <TextView
-        android:id="@+id/export_file_help_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/export_warning"
-        android:textColor="@color/white_opacity_87"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/export_warning_img"
-        app:layout_constraintTop_toBottomOf="@id/export_file_queue_chk" />
 
     <TextView
         android:id="@+id/export_run_btn"

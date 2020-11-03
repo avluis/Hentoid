@@ -21,6 +21,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -48,6 +50,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
@@ -71,7 +74,7 @@ import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH
  */
 public class LibImportDialogFragment extends DialogFragment {
 
-    private static int RQST_PICK_IMPORT_FILE = 4;
+    private static final int RQST_PICK_IMPORT_FILE = 4;
 
     @IntDef({Result.OK, Result.CANCELED, Result.INVALID_FOLDER, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
@@ -90,6 +93,7 @@ public class LibImportDialogFragment extends DialogFragment {
     private CheckBox libraryChk;
     private CheckBox queueChk;
     private CheckBox groupsChk;
+    private CheckBox bookmarksChk;
     private View runBtn;
 
     // Variable used during the selection process
@@ -101,8 +105,9 @@ public class LibImportDialogFragment extends DialogFragment {
     private int currentProgress;
     private int nbSuccess;
     private int queueSize;
+    private int nbBookmarksSuccess = 0;
     private Map<Site, DocumentFile> siteFoldersCache = null;
-    private Map<Site, List<DocumentFile>> bookFoldersCache = new EnumMap<>(Site.class);
+    private final Map<Site, List<DocumentFile>> bookFoldersCache = new EnumMap<>(Site.class);
 
     // Disposable for RxJava
     private Disposable importDisposable = Disposables.empty();
@@ -234,6 +239,13 @@ public class LibImportDialogFragment extends DialogFragment {
                 groupsChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
                 groupsChk.setVisibility(View.VISIBLE);
             }
+            bookmarksChk = requireViewById(rootView, R.id.import_file_bookmarks_chk);
+            int bookmarksSize = collection.getBookmarks().size();
+            if (bookmarksSize > 0) {
+                bookmarksChk.setText(getResources().getQuantityString(R.plurals.import_file_bookmarks, bookmarksSize, bookmarksSize));
+                bookmarksChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+                bookmarksChk.setVisibility(View.VISIBLE);
+            }
             requireViewById(rootView, R.id.import_warning_img).setVisibility(View.VISIBLE);
             requireViewById(rootView, R.id.import_file_help_text).setVisibility(View.VISIBLE);
             runBtn = requireViewById(rootView, R.id.import_run_btn);
@@ -241,14 +253,14 @@ public class LibImportDialogFragment extends DialogFragment {
             runBtn.setEnabled(false);
 
             RadioButton addChk = requireViewById(rootView, R.id.import_mode_add);
-            runBtn.setOnClickListener(v -> runImport(collection, addChk.isChecked(), libraryChk.isChecked(), queueChk.isChecked(), groupsChk.isChecked()));
+            runBtn.setOnClickListener(v -> runImport(collection, addChk.isChecked(), libraryChk.isChecked(), queueChk.isChecked(), groupsChk.isChecked(), bookmarksChk.isChecked()));
         }
     }
 
     // Gray out run button if no option is selected
     // TODO create a custom style to visually gray out the button when it's disabled
     private void refreshDisplay() {
-        runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked());
+        runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked() || bookmarksChk.isChecked());
     }
 
     private Optional<JsonContentCollection> deserialiseJson(@NonNull DocumentFile jsonFile) {
@@ -262,11 +274,18 @@ public class LibImportDialogFragment extends DialogFragment {
         return Optional.of(result);
     }
 
-    private void runImport(@NonNull final JsonContentCollection collection, boolean add, boolean importLibrary, boolean importQueue, boolean importCustomGroups) {
+    private void runImport(
+            @NonNull final JsonContentCollection collection,
+            boolean add,
+            boolean importLibrary,
+            boolean importQueue,
+            boolean importCustomGroups,
+            boolean importBookmarks) {
         requireViewById(rootView, R.id.import_mode).setEnabled(false);
         libraryChk.setEnabled(false);
         queueChk.setEnabled(false);
         groupsChk.setEnabled(false);
+        bookmarksChk.setEnabled(false);
         runBtn.setVisibility(View.GONE);
         setCancelable(false);
 
@@ -275,6 +294,15 @@ public class LibImportDialogFragment extends DialogFragment {
             if (importLibrary) dao.deleteAllInternalBooks(false);
             if (importQueue) dao.deleteAllQueuedBooks();
             if (importCustomGroups) dao.deleteAllGroups(Grouping.CUSTOM);
+            if (importBookmarks) dao.deleteAllBookmarks();
+        }
+
+        if (importBookmarks) {
+            // Don't import bookmarks that have the same URL as existing ones
+            Set<String> existingBookmarkUrls = dao.selectAllBookmarkUrls();
+            List<SiteBookmark> bookmarksToImport = Stream.of(collection.getBookmarks()).filterNot(b -> existingBookmarkUrls.contains(b.getUrl())).toList();
+            dao.insertBookmarks(bookmarksToImport);
+            nbBookmarksSuccess = bookmarksToImport.size();
         }
 
         List<Content> contentToImport = new ArrayList<>();
@@ -424,7 +452,10 @@ public class LibImportDialogFragment extends DialogFragment {
     private void finish() {
         importDisposable.dispose();
         if (dao != null) dao.cleanup();
-        Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result, nbSuccess, nbSuccess), LENGTH_LONG).show();
+        if (nbSuccess > 0)
+            Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result_books, nbSuccess, nbSuccess), LENGTH_LONG).show();
+        else if (nbBookmarksSuccess > 0)
+            Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result_bookmarks, nbBookmarksSuccess, nbBookmarksSuccess), LENGTH_LONG).show();
 
         // Dismiss after 3s, for the user to be able to see the snackbar
         new Handler().postDelayed(this::dismiss, 3000);
