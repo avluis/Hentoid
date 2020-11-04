@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item"
+    android:layout_width="@dimen/card_grid_width"
+    android:layout_height="@dimen/card_grid_height"
+    android:layout_marginBottom="@dimen/default_cardview_margin"
+    android:clickable="true"
+    android:focusable="true"
+    android:longClickable="true"
+    tools:targetApi="o">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_book_card"
+        android:clickable="false"
+        android:duplicateParentState="true"
+        android:elevation="6dp"
+        android:focusable="false"
+        android:longClickable="false"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Dummy UI element to be able to attach to the top in library mode -->
+        <View
+            android:id="@+id/pbDownload"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/ivCover"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_hentoid_trans"
+            tools:tint="@color/light_gray" />
+
+        <ImageView
+            android:id="@+id/ivFlag"
+            android:layout_width="20dp"
+            android:layout_height="15dp"
+            android:adjustViewBounds="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/tvTitle"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/flag_cn"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:layout_marginTop="4dp"
+            android:paddingEnd="8dp"
+            android:maxLines="2"
+            android:ellipsize="middle"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/text_subtitle_1"
+            android:textStyle="bold"
+            android:background="@color/black_opacity_25"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="@string/book_title" />
+
+        <View
+            android:id="@+id/lineNew"
+            android:layout_width="4dp"
+            android:layout_height="0dp"
+            android:background="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/ivFavourite"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_fav_empty"
+            android:tooltipText="@string/book_fav_help"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/queue_site_button"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:tooltipText="@string/view_source_help"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivFavourite"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_menu_nhentai" />
+
+        <ImageView
+            android:id="@+id/ivExternal"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:src="@drawable/ic_external_library"
+            android:tooltipText="@string/external_help"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/queue_site_button"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

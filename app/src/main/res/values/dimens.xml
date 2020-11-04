@@ -59,6 +59,8 @@
     <dimen name="default_cardview_margin">8dp</dimen>
     <dimen name="list_item_spacing">16dp</dimen>
     <dimen name="list_item_spacing_half">8dp</dimen>
+    <dimen name="card_grid_width">150dp</dimen>
+    <dimen name="card_grid_height">200dp</dimen>
 
     <!-- image viewer -->
     <dimen name="tap_zone_width">64dp</dimen>

@@ -69,13 +69,14 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     private static final RequestOptions glideRequestOptions;
 
-    @IntDef({ViewType.LIBRARY, ViewType.LIBRARY_EDIT, ViewType.QUEUE, ViewType.ERRORS})
+    @IntDef({ViewType.LIBRARY, ViewType.LIBRARY_GRID, ViewType.LIBRARY_EDIT, ViewType.QUEUE, ViewType.ERRORS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int LIBRARY = 0;
-        int LIBRARY_EDIT = 1;
-        int QUEUE = 2;
-        int ERRORS = 3;
+        int LIBRARY_GRID = 1;
+        int LIBRARY_EDIT = 2;
+        int QUEUE = 3;
+        int ERRORS = 4;
     }
 
     private final Content content;
@@ -147,6 +148,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     @Override
     public int getLayoutRes() {
         if (ViewType.LIBRARY == viewType) return R.layout.item_library_content;
+        else if (ViewType.LIBRARY_GRID == viewType) return R.layout.item_library_content_grid2;
         else return R.layout.item_queue;
     }
 
@@ -240,9 +242,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvTitle = requireViewById(itemView, R.id.tvTitle);
             ivCover = requireViewById(itemView, R.id.ivCover);
             ivFlag = requireViewById(itemView, R.id.ivFlag);
-            tvArtist = requireViewById(itemView, R.id.tvArtist);
-            tvPages = requireViewById(itemView, R.id.tvPages);
             ivSite = requireViewById(itemView, R.id.queue_site_button);
+            tvArtist = itemView.findViewById(R.id.tvArtist);
+            tvPages = itemView.findViewById(R.id.tvPages);
             ivError = itemView.findViewById(R.id.ivError);
             // Swipe elements
             swipeResult = itemView.findViewById(R.id.swipe_result_content);
@@ -256,6 +258,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
                 readingProgress = requireViewById(itemView, R.id.reading_progress);
+            } else if (viewType == ViewType.LIBRARY_GRID) {
+                ivNew = itemView.findViewById(R.id.lineNew);
+                ivFavourite = itemView.findViewById(R.id.ivFavourite);
+                ivExternal = itemView.findViewById(R.id.ivExternal);
             } else if (viewType == ViewType.QUEUE || viewType == ViewType.LIBRARY_EDIT) {
                 if (viewType == ViewType.QUEUE)
                     progressBar = itemView.findViewById(R.id.pbDownload);
@@ -290,13 +296,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             attachCover(item.content);
             attachFlag(item.content);
             attachTitle(item.content);
-            attachArtist(item.content);
-            if (tvSeries != null)
-                attachSeries(item.content);
-            attachPages(item.content, item.viewType);
+            if (tvArtist != null) attachArtist(item.content);
+            if (tvSeries != null) attachSeries(item.content);
+            if (tvPages != null) attachPages(item.content, item.viewType);
+            if (tvTags != null) attachTags(item.content);
             attachButtons(item);
-            if (tvTags != null)
-                attachTags(item.content);
+
             if (progressBar != null)
                 updateProgress(item.content, baseLayout, getAdapterPosition(), false);
             if (ivReorder != null)
@@ -508,7 +513,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             } else if (ViewType.ERRORS == item.viewType) {
                 ivRedownload.setVisibility(View.VISIBLE);
                 ivError.setVisibility(View.VISIBLE);
-            } else if (ViewType.LIBRARY == item.viewType) {
+            } else if (ViewType.LIBRARY == item.viewType || ViewType.LIBRARY_GRID == item.viewType) {
                 ivExternal.setVisibility(content.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
                 if (content.isFavourite()) {
                     ivFavourite.setImageResource(R.drawable.ic_fav_full);
