@@ -61,13 +61,13 @@ public class LibraryViewModel extends AndroidViewModel {
     private final LiveData<Integer> totalContent;
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
     // Groups data
-    private MutableLiveData<Group> group = new MutableLiveData<>();
+    private final MutableLiveData<Group> group = new MutableLiveData<>();
     private LiveData<List<Group>> currentGroupsSource;
-    private MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
+    private final MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
     private final MutableLiveData<Boolean> isCustomGroupingAvailable = new MutableLiveData<>();     // True if there's at least one existing custom group; false instead
 
     // Updated whenever a new search is performed
-    private MediatorLiveData<Boolean> newSearch = new MediatorLiveData<>();
+    private final MediatorLiveData<Boolean> newSearch = new MediatorLiveData<>();
 
 
     public LibraryViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
