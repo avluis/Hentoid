@@ -45,11 +45,12 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
     private static final RequestOptions glideRequestOptions;
 
-    @IntDef({ViewType.LIBRARY, ViewType.LIBRARY_EDIT})
+    @IntDef({ViewType.LIBRARY, ViewType.LIBRARY_GRID, ViewType.LIBRARY_EDIT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
         int LIBRARY = 0;
-        int LIBRARY_EDIT = 1;
+        int LIBRARY_GRID = 1;
+        int LIBRARY_EDIT = 2;
     }
 
     // Group
@@ -103,7 +104,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
     @Override
     public int getLayoutRes() {
-        return R.layout.item_library_group;
+        return (ViewType.LIBRARY_GRID == viewType) ? R.layout.item_library_group_grid : R.layout.item_library_group;
     }
 
     @Override

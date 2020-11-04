@@ -66,6 +66,7 @@ import me.devsaki.hentoid.viewholders.GroupDisplayItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
@@ -188,7 +189,11 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
-        llm = (LinearLayoutManager) recyclerView.getLayoutManager();
+        if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+            llm = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
+        else
+            llm = new AutofitGridLayoutManager(requireContext(), (int) getResources().getDimension(R.dimen.card_grid_width));
+        recyclerView.setLayoutManager(llm);
         new FastScrollerBuilder(recyclerView).build();
 
         // Pager
@@ -526,7 +531,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         boolean isEmpty = (result.isEmpty());
         emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
-        @GroupDisplayItem.ViewType int viewType = activity.get().isEditMode() ? GroupDisplayItem.ViewType.LIBRARY_EDIT : GroupDisplayItem.ViewType.LIBRARY;
+        final @GroupDisplayItem.ViewType int viewType =
+                activity.get().isEditMode() ? GroupDisplayItem.ViewType.LIBRARY_EDIT :
+                        (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) ?
+                                GroupDisplayItem.ViewType.LIBRARY :
+                                GroupDisplayItem.ViewType.LIBRARY_GRID;
+
         List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).toList();
         itemAdapter.set(groups);
         differEndCallback();
