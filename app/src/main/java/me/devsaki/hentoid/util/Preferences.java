@@ -175,6 +175,10 @@ public final class Preferences {
         return sharedPreferences.getString(Key.PREF_SETTINGS_FOLDER, "");
     }
 
+    public static int getLibraryDisplay() {
+        return Integer.parseInt(sharedPreferences.getString(Key.LIBRARY_DISPLAY, Integer.toString(Default.LIBRARY_DISPLAY)) + "");
+    }
+
     public static int getContentSortField() {
         return sharedPreferences.getInt(Key.PREF_ORDER_CONTENT_FIELD, Default.PREF_ORDER_CONTENT_FIELD);
     }
@@ -563,6 +567,7 @@ public final class Preferences {
         public static final String IMPORT_LIBRARY = "pref_import_library";
         static final String PREF_WELCOME_DONE = "pref_welcome_done";
         static final String PREFS_VERSION_KEY = "prefs_version";
+        public static final String LIBRARY_DISPLAY = "pref_library_display";
         static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String PREF_ORDER_CONTENT_FIELD = "pref_order_content_field";
         static final String PREF_ORDER_CONTENT_DESC = "pref_order_content_desc";
@@ -642,6 +647,7 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
+        static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
         static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
         static final int PREF_ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
         static final int PREF_ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
@@ -726,6 +732,8 @@ public final class Preferences {
 
         public static final int ORDER_ATTRIBUTES_ALPHABETIC = 0;
         static final int ORDER_ATTRIBUTES_COUNT = 1;
+        public static final int LIBRARY_DISPLAY_LIST = 0;
+        static final int LIBRARY_DISPLAY_GRID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;

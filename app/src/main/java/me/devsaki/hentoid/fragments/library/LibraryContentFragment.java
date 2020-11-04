@@ -276,8 +276,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
-        //llm = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
-        llm = new AutofitGridLayoutManager(requireContext(), (int) getResources().getDimension(R.dimen.card_grid_width));
+        if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+            llm = new LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false);
+        else
+            llm = new AutofitGridLayoutManager(requireContext(), (int) getResources().getDimension(R.dimen.card_grid_width));
         recyclerView.setLayoutManager(llm);
         new FastScrollerBuilder(recyclerView).build();
 
@@ -725,7 +727,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (Preferences.Key.PREF_ENDLESS_SCROLL.equals(key)) {
             setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
             viewModel.updateContentOrder(); // Trigger a blank search
-        } else if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
+        } else if (Preferences.Key.PREF_COLOR_THEME.equals(key) || Preferences.Key.LIBRARY_DISPLAY.equals(key)) {
             // Restart the app with the library activity on top
             Intent intent = requireActivity().getIntent();
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -806,8 +808,11 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         // Adapter initialization
         if (isEndless && !isEditMode) {
-//            @ContentItem.ViewType int viewType = ContentItem.ViewType.LIBRARY;
-            @ContentItem.ViewType int viewType = ContentItem.ViewType.LIBRARY_GRID;
+            @ContentItem.ViewType int viewType;
+            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+                viewType = ContentItem.ViewType.LIBRARY;
+            else
+                viewType = ContentItem.ViewType.LIBRARY_GRID;
             pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, touchHelper, viewType));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             ContentItem item = new ContentItem(viewType);
@@ -957,8 +962,12 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         int minIndex = bounds.getLeft();
         int maxIndex = bounds.getRight();
 
-//        @ContentItem.ViewType int viewType = ContentItem.ViewType.LIBRARY; // Paged mode won't be used in edit mode
-        @ContentItem.ViewType int viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
+        @ContentItem.ViewType int viewType;
+        if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+            viewType = ContentItem.ViewType.LIBRARY; // Paged mode won't be used in edit mode
+        else
+            viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
+
         List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
@@ -968,8 +977,11 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (iLibrary.isEmpty()) {
             itemAdapter.set(Collections.emptyList());
         } else {
-//            @ContentItem.ViewType int viewType = activity.get().isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
-            @ContentItem.ViewType int viewType = activity.get().isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY_GRID;
+            @ContentItem.ViewType int viewType;
+            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+                viewType = ContentItem.ViewType.LIBRARY; // Paged mode won't be used in edit mode
+            else
+                viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
             List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType)).toList();
             itemAdapter.set(contentItems);
         }
