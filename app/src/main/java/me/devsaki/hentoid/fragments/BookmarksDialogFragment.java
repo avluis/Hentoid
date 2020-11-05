@@ -48,9 +48,9 @@ import static androidx.core.view.ViewCompat.requireViewById;
 
 public final class BookmarksDialogFragment extends DialogFragment implements ItemTouchCallback {
 
-    private static final String SITE = "site";
-    private static final String TITLE = "title";
-    private static final String URL = "url";
+    private static final String KEY_SITE = "site";
+    private static final String KEY_TITLE = "title";
+    private static final String KEY_URL = "url";
 
     // === UI
     private Toolbar selectionToolbar;
@@ -83,9 +83,9 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         BookmarksDialogFragment fragment = new BookmarksDialogFragment();
 
         Bundle args = new Bundle();
-        args.putInt(SITE, site.getCode());
-        args.putString(TITLE, title);
-        args.putString(URL, url);
+        args.putInt(KEY_SITE, site.getCode());
+        args.putString(KEY_TITLE, title);
+        args.putString(KEY_URL, url);
         fragment.setArguments(args);
 
         fragment.show(parent.getSupportFragmentManager(), null);
@@ -96,9 +96,9 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         super.onCreate(savedInstanceState);
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
-        site = Site.searchByCode(getArguments().getInt(SITE));
-        title = getArguments().getString(TITLE, "");
-        url = getArguments().getString(URL, "");
+        site = Site.searchByCode(getArguments().getInt(KEY_SITE));
+        title = getArguments().getString(KEY_TITLE, "");
+        url = getArguments().getString(KEY_URL, "");
 
         parent = (Parent) getActivity();
     }
