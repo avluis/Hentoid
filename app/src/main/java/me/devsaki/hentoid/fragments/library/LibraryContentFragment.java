@@ -21,7 +21,6 @@ import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -40,14 +39,12 @@ import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
-import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
-import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
-import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
+import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDrawerDragCallback;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -103,7 +100,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 
 @SuppressLint("NonConstantResourceId")
-public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
+public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback/*, SimpleSwipeCallback.ItemSwipeCallback*/ {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -813,7 +810,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 viewType = ContentItem.ViewType.LIBRARY;
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, touchHelper, viewType));
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
             ContentItem item = new ContentItem(viewType);
             fastAdapter.registerItemFactory(item.getType(), item);
@@ -891,17 +888,20 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         }
 
         // Drag, drop & swiping
-//        if (isEditMode) {
+        /*
         SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
                 this,
                 this,
                 ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
-        dragSwipeCallback.setNotifyAllDrops(true);
+         */
+        SimpleSwipeDrawerDragCallback dragSwipeCallback = new SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT)
+                .withSwipeLeft(80) // dimen.delete_drawer_width - required in DP units and not pixel units
+                .withSensitivity(5f)
+                .withNotifyAllDrops(true);
         dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
         touchHelper = new ItemTouchHelper(dragSwipeCallback);
         touchHelper.attachToRecyclerView(recyclerView);
-//        }
 
         recyclerView.setAdapter(fastAdapter);
     }
@@ -968,7 +968,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         else
             viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
 
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType)).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType, this::onDeleteSwipedBook)).toList();
         itemAdapter.set(contentItems);
         fastAdapter.notifyDataSetChanged();
     }
@@ -982,7 +982,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 viewType = ContentItem.ViewType.LIBRARY; // Paged mode won't be used in edit mode
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
-            List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType)).toList();
+            List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).toList();
             itemAdapter.set(contentItems);
         }
         fastAdapter.notifyDataSetChanged();
@@ -1246,7 +1246,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             ((IDraggableViewHolder) viewHolder).onDragged();
         }
     }
-
+/*
     @Override
     public void itemSwiped(int position, int direction) {
         ContentItem item = getItemAdapter().getAdapterItem(position);
@@ -1268,6 +1268,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             fastAdapter.notifyItemChanged(position);
         }
     }
+
+ */
 
     private void onDeleteSwipedBook(@NonNull final ContentItem item) {
         // Deleted book is the last selected books => disable selection mode

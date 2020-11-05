@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.function.Consumer;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
@@ -29,6 +30,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.drag.IExtendedDraggable;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.swipe.IDrawerSwipeableViewHolder;
 import com.mikepenz.fastadapter.swipe.ISwipeable;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 
@@ -84,6 +86,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     int viewType;
     private final boolean isEmpty;
 
+    private Consumer<ContentItem> deleteAction = null;
+
     // Drag, drop & swipe
     private final ItemTouchHelper touchHelper;
     private int swipeDirection = 0;
@@ -113,10 +117,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     // Constructor for library and error item
-    public ContentItem(Content content, @Nullable ItemTouchHelper touchHelper, @ViewType int viewType) {
+    public ContentItem(Content content, @Nullable ItemTouchHelper touchHelper, @ViewType int viewType, @Nullable final Consumer<ContentItem> deleteAction) {
         this.content = content;
         this.viewType = viewType;
         this.touchHelper = touchHelper;
+        this.deleteAction = deleteAction;
         isEmpty = (null == content);
         isSwipeable = (content != null && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
         if (content != null) setIdentifier(content.hashCode());
@@ -203,7 +208,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
 
-    public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> implements IDraggableViewHolder {
+    public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> implements IDraggableViewHolder, IDrawerSwipeableViewHolder {
 
         // Common elements
         private final View baseLayout;
@@ -218,6 +223,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private final View swipeResult;
         private final View bookCard;
         private final View tvUndoSwipe;
+        private final View deleteButton;
 
         // Specific to library content
         private View ivNew;
@@ -233,6 +239,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private View ivBottom;
         private View ivReorder;
         private View ivRedownload;
+
+        private Runnable deleteActionRunnable = null;
 
 
         ContentViewHolder(View view, @ViewType int viewType) {
@@ -250,6 +258,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             swipeResult = itemView.findViewById(R.id.swipe_result_content);
             bookCard = itemView.findViewById(R.id.item_card);
             tvUndoSwipe = itemView.findViewById(R.id.undo_swipe);
+            deleteButton = itemView.findViewById(R.id.delete_btn);
 
             if (viewType == ViewType.LIBRARY) {
                 ivNew = itemView.findViewById(R.id.lineNew);
@@ -308,6 +317,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 DragDropUtil.bindDragHandle(this, item);
             if (tvUndoSwipe != null)
                 tvUndoSwipe.setOnClickListener(v -> item.undoSwipe());
+
+            if (item.deleteAction != null)
+                deleteActionRunnable = () -> item.deleteAction.accept(item);
         }
 
         private void updateLayoutVisibility(@NonNull final ContentItem item) {
@@ -504,6 +516,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivSite.setVisibility(View.GONE);
             }
 
+            if (deleteButton != null) {
+                deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
+            }
+
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 boolean isFirstItem = (0 == getAdapterPosition());
                 ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
@@ -598,6 +614,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         @Override
         public void unbindView(@NotNull ContentItem item) {
 //            item.setUndoSwipeAction(null);
+            deleteActionRunnable = null;
+            bookCard.setTranslationX(0f);
         }
 
         @Override
@@ -610,6 +628,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         public void onDropped() {
             // TODO fix incorrect visual behaviour when dragging an item to 1st position
             //bookCard.setBackground(bookCard.getContext().getDrawable(R.drawable.bg_book_card));
+        }
+
+        @NotNull
+        @Override
+        public View getSwipeableView() {
+            return bookCard;
         }
     }
 }

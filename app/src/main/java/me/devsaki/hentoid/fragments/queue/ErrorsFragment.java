@@ -304,7 +304,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         mEmptyText.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS)).toList();
+        List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS, null)).toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
         new Handler().postDelayed(this::differEndCallback, 150);
     }
