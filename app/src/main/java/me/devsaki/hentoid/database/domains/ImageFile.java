@@ -28,7 +28,7 @@ public class ImageFile {
     private boolean isCover = false;
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status = StatusContent.UNHANDLED_ERROR;
-    public ToOne<Content> content;
+    private ToOne<Content> content;
     private String mimeType;
     private long size = 0;
 
@@ -180,6 +180,14 @@ public class ImageFile {
     public ImageFile setSize(long size) {
         this.size = size;
         return this;
+    }
+
+    public ToOne<Content> getContent() {
+        return content;
+    }
+
+    public void setContent(ToOne<Content> content) {
+        this.content = content;
     }
 
     @Override

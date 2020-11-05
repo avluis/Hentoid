@@ -362,7 +362,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             collectionDao.insertImageFile(img);
 
             // Persist in JSON
-            Content theContent = img.content.getTarget();
+            Content theContent = img.getContent().getTarget();
             if (!theContent.getJsonUri().isEmpty())
                 ContentHelper.updateContentJson(context, theContent);
             else ContentHelper.createContentJson(context, theContent);

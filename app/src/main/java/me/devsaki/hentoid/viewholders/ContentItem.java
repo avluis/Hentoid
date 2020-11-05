@@ -125,7 +125,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     // Constructor for queued item
     public ContentItem(@NonNull QueueRecord record, ItemTouchHelper touchHelper) {
-        content = record.content.getTarget();
+        content = record.getContent().getTarget();
         viewType = ViewType.QUEUE;
         this.touchHelper = touchHelper;
         isEmpty = (null == content);

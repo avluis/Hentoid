@@ -301,7 +301,7 @@ public class ObjectBoxDB {
     List<Content> selectQueueContents() {
         List<Content> result = new ArrayList<>();
         List<QueueRecord> queueRecords = selectQueue();
-        for (QueueRecord q : queueRecords) result.add(q.content.getTarget());
+        for (QueueRecord q : queueRecords) result.add(q.getContent().getTarget());
         return result;
     }
 

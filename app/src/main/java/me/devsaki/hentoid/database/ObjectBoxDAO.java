@@ -422,7 +422,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         for (GroupItem gi : groupItems) {
             ToOne<ImageFile> groupPicture = gi.group.getTarget().picture;
             // If so, remove the cover picture
-            if (groupPicture.isResolvedAndNotNull() && groupPicture.getTarget().content.getTargetId() == gi.content.getTargetId())
+            if (groupPicture.isResolvedAndNotNull() && groupPicture.getTarget().getContent().getTargetId() == gi.content.getTargetId())
                 gi.group.getTarget().picture.setAndPutTarget(null);
         }
 
@@ -493,7 +493,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteImageFiles(imgs);
 
         // Lists all relevant content
-        List<Long> contents = Stream.of(imgs).filter(i -> i.content != null).map(i -> i.content.getTargetId()).distinct().toList();
+        List<Long> contents = Stream.of(imgs).filter(i -> i.getContent() != null).map(i -> i.getContent().getTargetId()).distinct().toList();
 
         // Update the content with its new size
         for (Long contentId : contents) {
@@ -533,7 +533,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         List<QueueRecord> queue = db.selectQueue();
         int lastIndex = 1;
         if (!queue.isEmpty())
-            lastIndex = queue.get(queue.size() - 1).rank + 1;
+            lastIndex = queue.get(queue.size() - 1).getRank() + 1;
         db.insertQueue(content.getId(), lastIndex);
     }
 

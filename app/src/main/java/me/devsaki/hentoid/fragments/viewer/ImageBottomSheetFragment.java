@@ -125,7 +125,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
             imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
         String filePath;
-        if (image.content.getTarget().isArchive()) {
+        if (image.getContent().getTarget().isArchive()) {
             filePath = image.getUrl();
         } else {
             filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false);
@@ -185,7 +185,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Copy" action button
      */
     private void onCopyClick() {
-        String targetFileName = image.content.getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getFileUri());
+        String targetFileName = image.getContent().getTarget().getUniqueSiteId() + "-" + image.getName() + "." + FileHelper.getExtension(image.getFileUri());
         try {
             Uri fileUri = Uri.parse(image.getFileUri());
             if (!FileHelper.fileExists(requireContext(), fileUri)) return;

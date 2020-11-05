@@ -232,12 +232,12 @@ public class ContentDownloadService extends IntentService {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
-        Content content = queue.get(0).content.getTarget();
+        Content content = queue.get(0).getContent().getTarget();
 
         if (null == content) {
             Timber.w("Content is unavailable. Download aborted.");
             dao.deleteQueue(0);
-            content = new Content().setId(queue.get(0).content.getTargetId()); // Must supply content ID to the event for the UI to update properly
+            content = new Content().setId(queue.get(0).getContent().getTargetId()); // Must supply content ID to the event for the UI to update properly
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification());
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
@@ -687,7 +687,7 @@ public class ContentDownloadService extends IntentService {
                     updateImageStatusUri(img, true, imgFile.getUri().toString());
             } else {
                 updateImageStatusUri(img, false, "");
-                logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), "Result null");
+                logErrorRecord(img.getContent().getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), "Result null");
             }
         } catch (UnsupportedContentException e) {
             Timber.w(e);
@@ -695,16 +695,16 @@ public class ContentDownloadService extends IntentService {
             else {
                 Timber.w("No backup URL found - aborting this image");
                 updateImageStatusUri(img, false, "");
-                logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), e.getMessage());
+                logErrorRecord(img.getContent().getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), e.getMessage());
             }
         } catch (InvalidParameterException e) {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
             updateImageStatusUri(img, false, "");
-            logErrorRecord(img.content.getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), "Download params : " + img.getDownloadParams());
+            logErrorRecord(img.getContent().getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), "Download params : " + img.getDownloadParams());
         } catch (IOException | IllegalArgumentException e) {
             Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
             updateImageStatusUri(img, false, "");
-            logErrorRecord(img.content.getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
+            logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
         }
     }
 
@@ -738,13 +738,13 @@ public class ContentDownloadService extends IntentService {
         Timber.w(error);
 
         updateImageStatusUri(img, false, "");
-        logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
+        logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
     }
 
     private void tryUsingBackupUrl(@NonNull ImageFile img, @NonNull DocumentFile
             dir, @NonNull String backupUrl) {
         Timber.i("Using backup URL %s", backupUrl);
-        Content content = img.content.getTarget();
+        Content content = img.getContent().getTarget();
         if (null == content) return;
 
         Site site = content.getSite();
@@ -761,7 +761,7 @@ public class ContentDownloadService extends IntentService {
                                 throwable ->
                                 {
                                     updateImageStatusUri(img, false, "");
-                                    logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
+                                    logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
                                     Timber.e(throwable, "Error processing backup image.");
                                 }
                         )

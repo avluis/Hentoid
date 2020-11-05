@@ -243,8 +243,9 @@ public interface CollectionDAO {
 
 
     // RESULTS STRUCTURES
+
+    // This is a dumb struct class, nothing more
     @SuppressWarnings("squid:S1104")
-            // This is a dumb struct class, nothing more
     class AttributeQueryResult {
         public List<Attribute> attributes = new ArrayList<>();
         public long totalSelectedAttributes = 0;

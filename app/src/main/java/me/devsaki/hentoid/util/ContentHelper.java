@@ -154,7 +154,7 @@ public final class ContentHelper {
         Helper.assertNonUiThread();
         List<QueueRecord> queue = dao.selectQueue();
         // Save current queue (to be able to restore it in case the app gets uninstalled)
-        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.content.getTarget()).withoutNulls().toList();
+        List<Content> queuedContent = Stream.of(queue).map(qr -> qr.getContent().getTarget()).withoutNulls().toList();
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setQueue(queuedContent);
 
@@ -315,7 +315,7 @@ public final class ContentHelper {
         Helper.assertNonUiThread();
         // Check if the content is on top of the queue; if so, send a CANCEL event
         List<QueueRecord> queue = dao.selectQueue();
-        if (!queue.isEmpty() && queue.get(0).content.getTargetId() == content.getId())
+        if (!queue.isEmpty() && queue.get(0).getContent().getTargetId() == content.getId())
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
 
         // Remove from queue
@@ -418,7 +418,7 @@ public final class ContentHelper {
             FileHelper.removeFile(context, Uri.parse(image.getFileUri()));
 
         // Lists all relevant content
-        List<Long> contents = Stream.of(images).filter(i -> i.content != null).map(i -> i.content.getTargetId()).distinct().toList();
+        List<Long> contents = Stream.of(images).filter(i -> i.getContent() != null).map(i -> i.getContent().getTargetId()).distinct().toList();
 
         // Update content JSON if it exists (i.e. if book is not queued)
         for (Long contentId : contents) {
@@ -439,7 +439,7 @@ public final class ContentHelper {
         Helper.assertNonUiThread();
 
         // Get all images from the DB
-        Content content = dao.selectContent(newCover.content.getTargetId());
+        Content content = dao.selectContent(newCover.getContent().getTargetId());
         if (null == content) return;
         List<ImageFile> images = content.getImageFiles();
         if (null == images) return;

@@ -9,8 +9,8 @@ public class QueueRecord {
 
     @Id
     public long id;
-    public ToOne<Content> content;
-    public int rank;
+    private ToOne<Content> content;
+    private int rank;
 
     public QueueRecord() {
     }  // Required for ObjectBox to work
@@ -18,5 +18,21 @@ public class QueueRecord {
     public QueueRecord(long id, int order) {
         content.setTargetId(id);
         rank = order;
+    }
+
+    public ToOne<Content> getContent() {
+        return content;
+    }
+
+    public void setContent(ToOne<Content> content) {
+        this.content = content;
+    }
+
+    public int getRank() {
+        return rank;
+    }
+
+    public void setRank(int rank) {
+        this.rank = rank;
     }
 }
