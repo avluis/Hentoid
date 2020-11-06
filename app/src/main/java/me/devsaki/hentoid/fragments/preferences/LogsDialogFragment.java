@@ -20,8 +20,13 @@ import com.skydoves.powermenu.MenuAnimation;
 import com.skydoves.powermenu.PowerMenu;
 import com.skydoves.powermenu.PowerMenuItem;
 
+import org.threeten.bp.Instant;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.format.DateTimeFormatter;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -80,10 +85,22 @@ public class LogsDialogFragment extends DialogFragment {
         disposable.dispose();
         for (DocumentFile file : files) {
             String fileName = file.getName();
-            if (null == fileName) fileName = "";
+            fileName = (null == fileName) ? "" : fileName.toLowerCase();
 
-            // TODO format
-            itemAdapter.add(new TextItem<>(fileName, file, false));
+            String label;
+            if (fileName.startsWith("import_external")) label = "External library import/refresh";
+            else if (fileName.startsWith("import")) label = "Primary library import/refresh";
+            else if (fileName.startsWith("cleanup")) label = "Primary library cleanup";
+            else if (fileName.startsWith("api29_migration"))
+                label = "Library migration from Hentoid v1.11-";
+            else label = "Unknown";
+
+            Instant lastModified = Instant.ofEpochMilli(file.lastModified());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm", Locale.ENGLISH);
+            String timeStr = lastModified.atZone(ZoneId.systemDefault()).format(formatter);
+            label += " (" + timeStr + ")";
+
+            itemAdapter.add(new TextItem<>(label, file, false));
         }
     }
 
