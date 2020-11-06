@@ -334,7 +334,7 @@ public final class Helper {
      * @param ms Duration to format, in milliseconds
      * @return FormattedDuration
      */
-    public static String formatTime(long ms) {
+    public static String formatDuration(long ms) {
         long seconds = (long) Math.floor(ms / 1000f);
         int h = (int) Math.floor(seconds / 3600f);
         int m = (int) Math.floor((seconds - 3600f * h) / 60);
