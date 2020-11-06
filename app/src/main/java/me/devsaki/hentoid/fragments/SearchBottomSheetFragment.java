@@ -63,7 +63,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      *
      * @see Debouncer
      */
-    private final Debouncer<String> searchMasterDataDebouncer = new Debouncer<>(1000, this::searchMasterData);
+    private Debouncer<String> searchMasterDataDebouncer;
 
 
     // Panel that displays the "waiting for metadata info" visuals
@@ -127,6 +127,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             viewModel.setAttributeTypes(selectedAttributeTypes);
             viewModel.setGroup(groupId);
         }
+        searchMasterDataDebouncer = new Debouncer<>(context, 1000, this::searchMasterData);
     }
 
     @Override

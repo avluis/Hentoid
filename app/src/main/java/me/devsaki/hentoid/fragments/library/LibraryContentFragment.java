@@ -160,7 +160,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     private Group group = null;
 
     // Used to start processing when the recyclerView has finished updating
-    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
 
 
@@ -222,6 +222,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             throw new IllegalStateException("Parent activity has to be a LibraryActivity");
         activity = new WeakReference<>((LibraryActivity) requireActivity());
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+        listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);
     }
 
     @Override
@@ -307,7 +308,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
-                    .inflate(R.menu.library_books_sort_menu, popup.getMenu());
+                    .inflate(R.menu.library_books_sort_popup, popup.getMenu());
             popup.getMenu().findItem(R.id.sort_custom).setVisible(group != null && group.hasCustomBookOrder);
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text
@@ -1253,7 +1254,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         item.setSwipeDirection(direction);
 
         if (item.getContent() != null) {
-            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(2000, this::onDeleteSwipedBook);
+            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(requireContext(), 2000, this::onDeleteSwipedBook);
             deleteDebouncer.submit(item);
 
             Runnable cancelSwipe = () -> {

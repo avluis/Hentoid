@@ -425,7 +425,7 @@ public class FileHelper {
         String fileName;
         if (-1 == folderSeparatorIndex) fileName = filePath;
         else fileName = filePath.substring(folderSeparatorIndex + 1);
-        
+
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 

@@ -89,7 +89,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     // Used to show a given item at first display
     private long contentHashToDisplayFirst = -1;
     // Used to start processing when the recyclerView has finished updating
-    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private Debouncer<Integer> listRefreshDebouncer;
 
 
     @Override
@@ -150,6 +150,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         initToolbar();
         initSelectionToolbar();
         attachButtons(fastAdapter);
+
+        listRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::onRecyclerUpdated);
 
         return rootView;
     }
@@ -391,7 +393,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         item.setSwipeDirection(direction);
 
         if (item.getContent() != null) {
-            Debouncer<Content> deleteDebouncer = new Debouncer<>(2000, this::onDeleteBook);
+            Debouncer<Content> deleteDebouncer = new Debouncer<>(this.requireContext(), 2000, this::onDeleteBook);
             deleteDebouncer.submit(item.getContent());
 
             Runnable cancelSwipe = () -> {

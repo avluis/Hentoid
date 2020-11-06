@@ -56,6 +56,8 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         return tag;
     }
 
+    public String getText() { return text; }
+
     @Override
     public boolean isDraggable() {
         return draggable;

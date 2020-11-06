@@ -132,7 +132,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private long contentHashToDisplayFirst = -1;
 
     // Used to start processing when the recyclerView has finished updating
-    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
 
     // Used to keep scroll position when moving items
@@ -235,6 +235,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 .map(v -> NetworkHelper.getIncomingNetworkUsage(requireContext()))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::updateNetworkUsage));
+
+        listRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::onRecyclerUpdated);
 
         return rootView;
     }
@@ -754,7 +756,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         item.setSwipeDirection(direction);
 
         if (item.getContent() != null) {
-            Debouncer<Content> cancelDebouncer = new Debouncer<>(2000, this::onCancelBook);
+            Debouncer<Content> cancelDebouncer = new Debouncer<>(requireContext(), 2000, this::onCancelBook);
             cancelDebouncer.submit(item.getContent());
 
             Runnable cancelSwipe = () -> {

@@ -90,14 +90,14 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                             .setCancelable(true)
                             .setTitle(R.string.app_name)
                             .setMessage(R.string.prefs_ask_detach_external_library)
-                            .setPositiveButton(android.R.string.yes
+                            .setPositiveButton(R.string.yes
                             ) { dialog1: DialogInterface, _: Int ->
                                 dialog1.dismiss()
                                 Preferences.setExternalLibraryUri("")
                                 ContentHelper.removeAllExternalContent(requireContext())
                                 ToastUtil.toast(getString(R.string.prefs_external_library_detached))
                             }
-                            .setNegativeButton(android.R.string.no
+                            .setNegativeButton(R.string.no
                             ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
                             .create()
                             .show()
@@ -138,6 +138,10 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.MEMORY_USAGE -> {
                     MemoryUsageDialogFragment.invoke(parentFragmentManager)
+                    true
+                }
+                Preferences.Key.ACCESS_LATEST_LOGS -> {
+                    LogsDialogFragment.invoke(parentFragmentManager)
                     true
                 }
                 Preferences.Key.PREF_APP_LOCK -> {

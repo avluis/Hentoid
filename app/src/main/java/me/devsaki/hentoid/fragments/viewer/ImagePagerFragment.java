@@ -93,7 +93,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
 
     private Map<String, String> bookPreferences; // Preferences of current book; to feed the book prefs dialog
 
-    private final Debouncer<Integer> indexRefreshDebouncer = new Debouncer<>(75, this::applyStartingIndexInternal);
+    private Debouncer<Integer> indexRefreshDebouncer;
 
     // Starting index management
     private boolean isComputingImageList = false;
@@ -171,6 +171,8 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
         });
         showFavoritePagesButton = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
         shuffleButton = toolbar.getMenu().findItem(R.id.action_shuffle);
+
+        indexRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::applyStartingIndexInternal);
 
         return rootView;
     }

@@ -123,7 +123,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private int topItemPosition = -1;
 
     // Used to start processing when the recyclerView has finished updating
-    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
 
 
@@ -141,6 +141,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             throw new IllegalStateException("Parent activity has to be a LibraryActivity");
         activity = new WeakReference<>((LibraryActivity) requireActivity());
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+        listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);
     }
 
     @Override
@@ -219,7 +220,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
-                    .inflate(R.menu.library_groups_sort_menu, popup.getMenu());
+                    .inflate(R.menu.library_groups_sort_popup, popup.getMenu());
             popup.getMenu().findItem(R.id.sort_custom).setVisible(Preferences.getGroupingDisplay().canReorderGroups());
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text

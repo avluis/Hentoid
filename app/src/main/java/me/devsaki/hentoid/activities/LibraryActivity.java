@@ -170,7 +170,7 @@ public class LibraryActivity extends BaseActivity {
 
 
     // Used to auto-hide the sort controls bar when no activity is detected
-    private final Debouncer<Boolean> sortCommandsAutoHide = new Debouncer<>(2500, this::hideSearchSortBar);
+    private Debouncer<Boolean> sortCommandsAutoHide;
 
 
     // === PUBLIC ACCESSORS (to be used by fragments)
@@ -270,6 +270,7 @@ public class LibraryActivity extends BaseActivity {
         initSelectionToolbar();
 
         onCreated();
+        sortCommandsAutoHide = new Debouncer<>(this, 2500, this::hideSearchSortBar);
 
         EventBus.getDefault().register(this);
     }
@@ -325,7 +326,7 @@ public class LibraryActivity extends BaseActivity {
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(this, groupsButton);
             popup.getMenuInflater()
-                    .inflate(R.menu.library_groups_menu, popup.getMenu());
+                    .inflate(R.menu.library_groups_popup, popup.getMenu());
             popup.getMenu().findItem(R.id.groups_custom).setVisible(isCustomGroupingAvailable);
             popup.setOnMenuItemClickListener(item -> {
                 item.setChecked(true);
