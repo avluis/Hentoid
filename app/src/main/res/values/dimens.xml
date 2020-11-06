@@ -26,7 +26,7 @@
     <dimen name="drawer_image_height">160dp</dimen>
     <dimen name="drawer_header_icon_padding">12dp</dimen>
 
-    <!-- Elevation (V21+ API) -->
+    <!-- Elevation -->
     <dimen name="fab_default_elevation">2dp</dimen>
     <dimen name="drawer_layout_elevation">4dp</dimen>
     <dimen name="drawer_layout_header_elevation">6dp</dimen>
@@ -64,7 +64,14 @@
 
     <!-- image viewer -->
     <dimen name="tap_zone_width">64dp</dimen>
+    <dimen name="page_min_height">600dp</dimen>
 
     <!-- fast scroller -->
     <dimen name="afs_min_touch_target_size">24dp</dimen>
+
+    <!-- prefs / memory usage dialog -->
+    <dimen name="mem_row_padding">4dp</dimen>
+
+    <!-- changelog -->
+    <dimen name="changelog_line_padding">8dp</dimen>
 </resources>

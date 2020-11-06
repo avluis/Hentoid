@@ -29,7 +29,6 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.CircularProgressView;
 
@@ -41,7 +40,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 public class MemoryUsageDialogFragment extends DialogFragment {
 
-    private int _4dp;
+    private int ROW_PADDING;
 
     private TableLayout table;
     private ImageView foldUnfoldArrow;
@@ -62,7 +61,7 @@ public class MemoryUsageDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
 
-        _4dp = Helper.dpToPixel(requireContext(), 4);
+        ROW_PADDING = (int) getResources().getDimension(R.dimen.mem_row_padding);
 
         double deviceFreeGb = -1;
         double deviceTotalGb = -1;
@@ -125,7 +124,7 @@ public class MemoryUsageDialogFragment extends DialogFragment {
             TextView textView = new TextView(requireContext());
             textView.setLayoutParams(new TableRow.LayoutParams(column++));
             textView.setText(value);
-            textView.setPadding(_4dp, _4dp, _4dp, _4dp);
+            textView.setPadding(ROW_PADDING, ROW_PADDING, ROW_PADDING, ROW_PADDING);
             tableRow.addView(textView);
         }
 

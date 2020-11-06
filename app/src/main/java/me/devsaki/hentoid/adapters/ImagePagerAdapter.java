@@ -44,7 +44,6 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -68,7 +67,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     static final int screenWidth = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
     static final int screenHeight = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
 
-    private static final int PX_600_DP = Helper.dpToPixel(HentoidApp.getInstance(), 600);
+    private static final int PAGE_MIN_HEIGHT = (int) HentoidApp.getInstance().getResources().getDimension(R.dimen.page_min_height);
 
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
@@ -189,7 +188,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
-            view.setMinimumHeight(PX_600_DP); // Avoid stacking 0-px tall images on screen and load all of them at the same time
+            view.setMinimumHeight(PAGE_MIN_HEIGHT); // Avoid stacking 0-px tall images on screen and load all of them at the same time
 
         return new ImageViewHolder(view, viewType);
     }
@@ -219,7 +218,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         // Set the holder back to its original constraints while in vertical mode
         // (not doing this will cause super high memory usage by trying to load _all_ images)
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
-            holder.rootView.setMinimumHeight(PX_600_DP);
+            holder.rootView.setMinimumHeight(PAGE_MIN_HEIGHT);
 
             ViewGroup.LayoutParams layoutParams = holder.rootView.getLayoutParams();
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;

@@ -15,7 +15,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.Helper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -55,13 +54,13 @@ public class GitHubReleaseDescItem extends AbstractItem<GitHubReleaseDescItem.Re
 
     static class ReleaseDescriptionViewHolder extends FastAdapter.ViewHolder<GitHubReleaseDescItem> {
 
-        private final int DP_8;
+        private final int LINE_PADDING;
         private final TextView title;
 
         ReleaseDescriptionViewHolder(View view) {
             super(view);
             title = requireViewById(view, R.id.item_txt);
-            DP_8 = Helper.dpToPixel(view.getContext(), 8);
+            LINE_PADDING = (int) view.getResources().getDimension(R.dimen.changelog_line_padding);
         }
 
 
@@ -73,12 +72,12 @@ public class GitHubReleaseDescItem extends AbstractItem<GitHubReleaseDescItem.Re
 
         void setDescContent(String text) {
             title.setText(text);
-            title.setPadding(0, DP_8, 0, 0);
+            title.setPadding(0, LINE_PADDING, 0, 0);
         }
 
         void setListContent(String text) {
             title.setText(text);
-            title.setPadding(DP_8 * 2, DP_8, 0, 0);
+            title.setPadding(LINE_PADDING * 2, LINE_PADDING, 0, 0);
         }
 
         @Override
