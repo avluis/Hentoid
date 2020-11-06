@@ -79,6 +79,9 @@ dependencies {
 
     implementation project(':fakkuLib')
 
+    /**
+     * TESTING
+     */
     testImplementation 'junit:junit:4.13.1'
     testImplementation 'org.mockito:mockito-core:3.5.13'
     testImplementation 'androidx.test:core:1.3.0'
@@ -91,24 +94,20 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
+
+    /**
+     * ANDROID FRAMEWORK
+     */
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.10"
-
-    // Firebase
-    implementation 'com.google.firebase:firebase-analytics:18.0.0'
-
-    // Crashlytics
-    implementation 'com.google.firebase:firebase-crashlytics:17.2.2'
 
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    //implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.google.android.material:material:1.1.0-alpha08'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.media:media:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    // Won't bump until RecyclerView 1.2 is out of beta stage
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.2'
@@ -125,87 +124,21 @@ dependencies {
     kapt("androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_version")
 
 
+    /**
+     * MEDIA
+     */
     // Image loader: github.com/bumptech/glide
     def glide_version = "4.11.0"
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt("com.github.bumptech.glide:compiler:$glide_version")
     implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
 
-    // Intro screens or slides: github.com/apl-devs/AppIntro
-    implementation 'com.github.AppIntro:AppIntro:6.0.0'
-
-    // Java serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
-    def moshi_version = '1.11.0'
-    implementation "com.squareup.moshi:moshi:$moshi_version"
-    implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
-
-    // Timber (Extensible Logger): github.com/JakeWharton/timber
-    implementation 'com.jakewharton.timber:timber:4.7.1'
-
-    // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
-    implementation 'com.mani:ThinDownloadManager:1.3.0'
-
-    // HTTP & HTTP/2 client: github.com/square/okhttp
-    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
-
-    // For downloading images : github.com/google/volley
-    implementation 'com.android.volley:volley:1.1.1'
-    // <-- if this evolves, please examine RequestQueueManager.getRequestQueue for evolutions
-
-    // EventBus: github.com/greenrobot/EventBus
-    implementation 'org.greenrobot:eventbus:3.2.0'
-
-    // JSOUP HTML parser: github.com/jhy/jsoup
-    implementation 'org.jsoup:jsoup:1.13.1'
-
-    // Lightweight Stream : github.com/aNNiMON/Lightweight-Stream-API
-    implementation 'com.annimon:stream:1.2.1'
-
-    // LeakCanary: github.com/square/leakcanary
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.5'
-
-    // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
-    implementation 'com.google.android:flexbox:2.0.0'
-
-    // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation 'commons-io:commons-io:2.6'
-
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    implementation 'org.apache.commons:commons-lang3:3.9'
-
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-text/
-    implementation 'org.apache.commons:commons-text:1.4'
-    // !!! Don't update that one or Lint will go mad
-
-    // Retrofit-ready-ready HTML parser with CSS selectors : https://github.com/DroidsOnRoids/jspoon
-    def jspoon_version = "1.3.2"
-    implementation "pl.droidsonroids:jspoon:$jspoon_version"
-    implementation "pl.droidsonroids.retrofit2:converter-jspoon:$jspoon_version"
-
-    //    https://github.com/square/retrofit
-    def retrofit_version = "2.8.2"
-    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
-    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
-
-    //    https://github.com/ReactiveX/RxJava
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.20'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-
-    // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
-    // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
-    def objectbox_version = "2.7.1"
-    if (includeObjectBoxBrowser.toBoolean()) {
-        debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
-        releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"
-    }
-
-    // Cleaner date manipulation
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
-
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
     implementation 'com.github.penfeizhou.android.animation:apng:2.4.2'
 
+    /**
+     * UI
+     */
     // https://github.com/mikepenz/FastAdapter
     def fastadapter_version = "5.2.4"
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
@@ -222,17 +155,108 @@ dependencies {
     implementation "com.mikepenz:fastadapter-extensions-utils:$fastadapter_version"
     // needs the `expandable`, `drag` and `scroll` extension.
 
-    // Fast scroller
-    implementation "me.zhanghai.android.fastscroll:library:1.1.4"
+    // Intro screens or slides: github.com/apl-devs/AppIntro
+    implementation 'com.github.AppIntro:AppIntro:6.0.0'
 
-    // Popups
+    // Tooltips
     implementation "com.github.skydoves:balloon:1.2.3"
 
     // Dropdown lists
     implementation "com.github.skydoves:powerspinner:1.1.5"
 
+    // Popup menus with icons
+    implementation "com.github.skydoves:powermenu:2.1.7"
+
+    // Fast scroller
+    implementation "me.zhanghai.android.fastscroll:library:1.1.4"
+
+    // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
+    implementation 'com.google.android:flexbox:2.0.0'
+
+    /**
+     * NETWORKING
+     */
+    // Java serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
+    def moshi_version = '1.11.0'
+    implementation "com.squareup.moshi:moshi:$moshi_version"
+    implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
+
+    // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
+    implementation 'com.mani:ThinDownloadManager:1.3.0'
+
+    // HTTP & HTTP/2 client: github.com/square/okhttp
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+
+    // For downloading images : github.com/google/volley
+    implementation 'com.android.volley:volley:1.1.1'
+    // <-- if this evolves, please examine RequestQueueManager.getRequestQueue for evolutions
+
+    // Retrofit-ready-ready HTML parser with CSS selectors : https://github.com/DroidsOnRoids/jspoon; uses JSOUP
+    def jspoon_version = "1.3.2"
+    implementation "pl.droidsonroids:jspoon:$jspoon_version"
+    implementation "pl.droidsonroids.retrofit2:converter-jspoon:$jspoon_version"
+
+    // JSOUP HTML parser: github.com/jhy/jsoup
+    implementation 'org.jsoup:jsoup:1.13.1'
+
+    //    https://github.com/square/retrofit
+    def retrofit_version = "2.8.2"
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
+
+    /**
+     * UTILS
+     */
+    //    https://github.com/ReactiveX/RxJava
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.20'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+
+    // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
+    // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
+    def objectbox_version = "2.7.1"
+    if (includeObjectBoxBrowser.toBoolean()) {
+        debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
+        releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"
+    }
+
+    // Timber (Extensible Logger): github.com/JakeWharton/timber
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+
+    // EventBus: github.com/greenrobot/EventBus
+    implementation 'org.greenrobot:eventbus:3.2.0'
+
+    // Lightweight Stream : github.com/aNNiMON/Lightweight-Stream-API
+    implementation 'com.annimon:stream:1.2.1'
+
+    // LeakCanary: github.com/square/leakcanary
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.5'
+
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation 'commons-io:commons-io:2.6'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    implementation 'org.apache.commons:commons-lang3:3.9'
+
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-text/
+    implementation 'org.apache.commons:commons-text:1.4'
+    // !!! Don't update that one or Lint will go mad
+
+    // Cleaner date manipulation
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
+
     // RAR archive management
     implementation "com.github.junrar:junrar:7.4.0"
+
+    /**
+     * ANALYTICS
+     */
+    // Firebase
+    implementation 'com.google.firebase:firebase-analytics:18.0.0'
+
+    // Crashlytics
+    implementation 'com.google.firebase:firebase-crashlytics:17.2.2'
+
 
     implementation project(path: ':app:customssiv')
 }
