@@ -61,11 +61,6 @@ public class FileHelper {
     private static final String PRIMARY_VOLUME_NAME = "primary";
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
 
-    @FunctionalInterface
-    public interface CheckedFunction<T1, T2, R> {
-        R apply(T1 t, T2 u) throws IOException;
-    }
-
     public static String getFileProviderAuthority() {
         return AUTHORITY;
     }
