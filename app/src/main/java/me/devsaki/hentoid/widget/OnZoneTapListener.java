@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -63,12 +64,13 @@ public class OnZoneTapListener implements View.OnTouchListener {
         return true;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         return gestureDetector.onTouchEvent(event);
     }
 
-    private final class OnGestureListener extends GestureDetector.SimpleOnGestureListener { // TODO remove if it proves useless
+    private final class OnGestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             return onSingleTapConfirmedAction(e);
