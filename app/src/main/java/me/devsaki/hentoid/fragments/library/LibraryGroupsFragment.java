@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -60,6 +61,7 @@ import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.GroupDisplayItem;
@@ -124,7 +126,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
-    private int itemToRefreshIndex = -1;
 
 
     @Override
@@ -430,7 +431,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (event.getRecipient() != RC_GROUPS) return;
         switch (event.getType()) {
             case EV_SEARCH:
-                viewModel.searchGroup(Preferences.getGroupingDisplay(), event.getMessage(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
+                viewModel.searchGroup(Preferences.getGroupingDisplay(), Helper.protect(event.getMessage()), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
                 break;
             case EV_UPDATE_SORT:
                 updateSortControls();
@@ -587,7 +588,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
-            new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().count();
             activity.get().updateSelectionToolbar(selectedTotalCount, selectedLocalCount);

@@ -277,12 +277,12 @@ public class ImportHelper {
                 .setCancelable(false)
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.contents_detected)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             runHentoidImport(context, null);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog2, which) -> {
                             dialog2.dismiss();
                             if (cancelCallback != null) cancelCallback.run();

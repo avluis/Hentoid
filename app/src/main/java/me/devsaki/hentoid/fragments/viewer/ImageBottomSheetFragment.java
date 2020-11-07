@@ -222,12 +222,12 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
                 .setCancelable(false)
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.viewer_ask_delete_page)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             viewModel.deletePage(imageIndex, this::onDeleteError);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
                 .create()
                 .show();

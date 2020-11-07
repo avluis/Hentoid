@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -361,7 +362,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         if (event.service != ServiceDestroyedEvent.Service.IMPORT) return;
         if (!isServiceGracefulClose) {
             Snackbar.make(rootView, R.string.import_unexpected, BaseTransientBottomBar.LENGTH_LONG).show();
-            new Handler().postDelayed(this::dismiss, 3000);
+            new Handler(Looper.getMainLooper()).postDelayed(this::dismiss, 3000);
         }
     }
 }

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -397,7 +398,7 @@ public class LibraryActivity extends BaseActivity {
                 if (!query.isEmpty())
                     // Use of handler allows to set the value _after_ the UI has auto-cleared it
                     // Without that handler the view displays with an empty value
-                    new Handler().postDelayed(() -> {
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         invalidateNextQueryTextChange = true;
                         mainSearchView.setQuery(query, false);
                     }, 100);
@@ -735,12 +736,12 @@ public class LibraryActivity extends BaseActivity {
         int count = !groups.isEmpty() ? groups.size() : contents.size();
         String title = getResources().getQuantityString(R.plurals.ask_delete_multiple, count);
         builder.setMessage(title)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
                             deleteItems(contents, groups);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
                 .create().show();
     }
@@ -806,7 +807,7 @@ public class LibraryActivity extends BaseActivity {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         String title = getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size());
         builder.setMessage(title)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
                             ArchiveNotificationChannel.init(this);
@@ -817,7 +818,7 @@ public class LibraryActivity extends BaseActivity {
                             archiveNotificationManager.notify(new ArchiveStartNotification());
                             viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess, this::onContentArchiveError);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
                 .create().show();
     }

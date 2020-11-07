@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -544,7 +545,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // => use a plain ItemAdapter.set for now (and live with the occasional blinking)
 //        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
         itemAdapter.set(content);
-        new Handler().postDelayed(this::differEndCallback, 150);
+        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
 
         updateControlBar();
 
@@ -735,7 +736,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         // Delay execution of findViewHolderForAdapterPosition to give time for the new layout to
         // be calculated (if not, it might return null under certain circumstances)
-        new Handler().postDelayed(() -> {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
             RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
             if (vh instanceof IDraggableViewHolder) {
                 ((IDraggableViewHolder) vh).onDropped();
@@ -847,7 +848,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             selectionToolbar.setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
-            new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
@@ -866,12 +867,12 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         String title = context.getResources().getQuantityString(R.plurals.ask_cancel_multiple, items.size());
         builder.setMessage(title)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
                             onCancelBooks(items);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
                 .create().show();
     }
