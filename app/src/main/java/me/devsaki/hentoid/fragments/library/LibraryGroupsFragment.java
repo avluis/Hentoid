@@ -126,6 +126,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
+    private int itemToRefreshIndex = -1;
 
 
     @Override
