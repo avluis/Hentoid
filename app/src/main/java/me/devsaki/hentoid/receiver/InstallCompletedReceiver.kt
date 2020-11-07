@@ -22,8 +22,6 @@ import android.content.Intent
 import android.content.pm.PackageInstaller
 import timber.log.Timber
 
-private const val TAG = "AppInstaller"
-
 class InstallCompletedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
