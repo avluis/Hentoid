@@ -272,7 +272,9 @@ public class FileHelper {
     // TODO doc
     public static void removeFile(@NonNull final Context context, @NonNull final Uri fileUri) {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
-            removeFile(new File(fileUri.getPath()));
+            String path = fileUri.getPath();
+            if (null != path)
+                removeFile(new File(fileUri.getPath()));
         } else {
             DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
             if (doc != null) doc.delete();
@@ -1010,7 +1012,10 @@ public class FileHelper {
     // TODO doc
     public static boolean fileExists(@NonNull final Context context, @NonNull final Uri fileUri) {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
-            return new File(fileUri.getPath()).exists();
+            String path = fileUri.getPath();
+            if (path != null)
+                return new File(path).exists();
+            else return false;
         } else {
             DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
             return (doc != null);
