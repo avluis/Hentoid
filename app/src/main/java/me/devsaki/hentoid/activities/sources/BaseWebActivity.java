@@ -1014,7 +1014,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          * @return Given URL to be rewritten
          */
         protected String seekResultsUrl(@NonNull String url, int pageNum) {
-            if (null == resultsUrlRewriter || !isResultsPage(url)) return url;
+            if (null == resultsUrlRewriter || !isResultsPage(url) || isGalleryPage(url)) return url;
             else return resultsUrlRewriter.apply(Uri.parse(url), pageNum);
         }
 
