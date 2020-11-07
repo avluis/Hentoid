@@ -606,7 +606,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     public void goToPage(int pageNum) {
         String url = webView.getUrl();
-        if (pageNum < 0 || null == url) return;
+        if (pageNum < 1 || null == url) return;
         String newUrl = webClient.seekResultsUrl(url, pageNum);
         webView.loadUrl(newUrl);
     }
