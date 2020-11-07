@@ -440,6 +440,10 @@
 
         <receiver android:name=".receiver.DownloadNotificationPauseReceiver" />
 
+        <receiver android:name=".receiver.InstallRunReceiver" />
+
+        <receiver android:name=".receiver.InstallCompletedReceiver" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider.FileProvider"
