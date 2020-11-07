@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -25,8 +26,8 @@ public class HitomiActivity extends BaseWebActivity {
     private static final String[] jsWhitelist = {"galleries/[A-Za-z0-9\\-]+.js$", "jquery", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap"};
     private static final String[] blockedJsContents = {"exoloader", "popunder"};
 
-    private static List<Pattern> whitelistUrlPattern = new ArrayList<>();
-    private static List<String> jsBlacklistCache = new ArrayList<>();
+    private static final List<Pattern> whitelistUrlPattern = new ArrayList<>();
+    private static final List<String> jsBlacklistCache = new ArrayList<>();
 
     static {
         for (String s : jsWhitelist) whitelistUrlPattern.add(Pattern.compile(s));
@@ -67,9 +68,10 @@ public class HitomiActivity extends BaseWebActivity {
         Timber.d(">> examining grey file %s", url);
         try {
             Response response = HttpHelper.getOnlineResource(url, null, getStartSite().canKnowHentoidAgent());
-            if (null == response.body()) throw new IOException("Empty body");
+            ResponseBody body = response.body();
+            if (null == body) throw new IOException("Empty body");
 
-            String jsBody = response.body().string().toLowerCase();
+            String jsBody = body.string().toLowerCase();
             for (String s : blockedJsContents)
                 if (jsBody.contains(s)) {
                     jsBlacklistCache.add(url);
