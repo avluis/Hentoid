@@ -3,6 +3,7 @@ package me.devsaki.hentoid.parsers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ASMHentaiContent;
+import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
 import me.devsaki.hentoid.parsers.content.FakkuContent;
@@ -51,7 +52,7 @@ public class ContentParserFactory {
     }
 
 
-    public Class<?> getContentParserClass(Site site) {
+    public Class<? extends ContentParser> getContentParserClass(Site site) {
         switch (site) {
             case NHENTAI:
                 return NhentaiContent.class;

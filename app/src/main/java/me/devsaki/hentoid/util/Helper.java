@@ -110,8 +110,9 @@ public final class Helper {
 
     /**
      * Retreives the given dimension value as DP, not pixels
+     *
      * @param context Context to use to access resources
-     * @param id Dimension resource ID to get the value from
+     * @param id      Dimension resource ID to get the value from
      * @return Given dimension value as DP
      */
     public static int dimensAsDp(@NonNull final Context context, @DimenRes int id) {
@@ -351,5 +352,9 @@ public final class Helper {
             return hStr + ":" + mStr + ":" + sStr;
         else
             return mStr + ":" + sStr;
+    }
+
+    public static String protect(@Nullable String s) {
+        return (null == s) ? "" : s;
     }
 }

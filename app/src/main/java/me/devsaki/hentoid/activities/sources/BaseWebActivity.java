@@ -110,6 +110,7 @@ import me.devsaki.hentoid.util.TooltipUtil;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
@@ -151,8 +152,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // === UI
     // Associated webview
     protected NestedScrollWebView webView;
-    // Top toolbar
-    private Toolbar toolbar;
     // Bottom toolbar
     private BottomNavigationView bottomToolbar;
     // Bottom toolbar buttons
@@ -268,7 +267,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         // Toolbar
-        toolbar = findViewById(R.id.toolbar);
+        // Top toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
 
@@ -391,15 +391,16 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         super.onResume();
 
         checkPermissions();
-
-        Timber.i(">> WebActivity resume : %s %s %s", webView.getUrl(), currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
-        if (currentContent != null && getWebClient().isBookGallery(this.webView.getUrl()))
+        String url = webView.getUrl();
+        Timber.i(">> WebActivity resume : %s %s %s", url, currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
+        if (currentContent != null && url != null && getWebClient().isBookGallery(url))
             processContent(currentContent, false);
     }
 
     @Override
     protected void onStop() {
-        objectBoxDAO.insertSiteHistory(getStartSite(), webView.getUrl());
+        if (webView.getUrl() != null)
+            objectBoxDAO.insertSiteHistory(getStartSite(), webView.getUrl());
         super.onStop();
     }
 
@@ -483,7 +484,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
                 // Image link (https://stackoverflow.com/a/55299801/8374722)
                 if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
-                    Handler handler = new Handler();
+                    Handler handler = new Handler(getMainLooper());
                     Message message = handler.obtainMessage();
 
                     webView.requestFocusNodeHref(message);
@@ -584,7 +585,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * Handler for the "bookmark" top menu button of the browser
      */
     private void onBookmarkClick() {
-        BookmarksDialogFragment.invoke(this, getStartSite(), webView.getTitle(), webView.getUrl());
+        BookmarksDialogFragment.invoke(this, getStartSite(), Helper.protect(webView.getTitle()), Helper.protect(webView.getUrl()));
     }
 
     /**
@@ -599,7 +600,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * Handler for the "copy URL to clipboard" button
      */
     private void onCopyClick() {
-        if (Helper.copyPlainTextToClipboard(this, webView.getUrl()))
+        if (Helper.copyPlainTextToClipboard(this, Helper.protect(webView.getUrl())))
             ToastUtil.toast(R.string.web_url_clipboard);
     }
 
@@ -708,7 +709,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         animatedCheck.setVisibility(View.VISIBLE);
         ((Animatable) animatedCheck.getDrawable()).start();
-        new Handler().postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
+        new Handler(getMainLooper()).postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
         objectBoxDAO.addContentToQueue(currentContent, null);
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
         changeActionMode(ActionMode.VIEW_QUEUE);
@@ -733,12 +734,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
             WebBackForwardList webBFL = webView.copyBackForwardList();
+            String originalUrl = Helper.protect(webView.getOriginalUrl());
             int i = webBFL.getCurrentIndex();
             do {
                 i--;
             }
-            while (i >= 0 && webView.getOriginalUrl()
-                    .equals(webBFL.getItemAtIndex(i).getOriginalUrl()));
+            while (i >= 0 && originalUrl.equals(webBFL.getItemAtIndex(i).getOriginalUrl()));
             if (webView.canGoBackOrForward(i - webBFL.getCurrentIndex())) {
                 webView.goBackOrForward(i - webBFL.getCurrentIndex());
             } else {
@@ -868,7 +869,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         // List of the URL patterns identifying a parsable book gallery page
         private final List<Pattern> filteredUrlPattern = new ArrayList<>();
         // Adapter used to parse the HTML code of book gallery pages
-        private final HtmlAdapter<ContentParser> htmlAdapter;
+        private final HtmlAdapter<? extends ContentParser> htmlAdapter;
         // Domain name for which link navigation is restricted
         private final List<String> restrictedDomainNames = new ArrayList<>();
         // Loading state of the current webpage (used for the refresh/stop feature)
@@ -877,11 +878,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         boolean isHtmlLoaded = false;
 
 
-        @SuppressWarnings("unchecked")
         CustomWebViewClient(String[] filteredUrl, WebContentListener listener) {
             this.listener = listener;
 
-            Class c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
+            Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
             final Jspoon jspoon = Jspoon.create();
             htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
@@ -1090,7 +1090,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             try {
                 // Query resource here, using OkHttp
                 Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().canKnowHentoidAgent());
-                if (null == response.body()) throw new IOException("Empty body");
+                ResponseBody body = response.body();
+                if (null == body) throw new IOException("Empty body");
 
                 InputStream parserStream;
                 WebResourceResponse result;
@@ -1099,12 +1100,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                     if (analyzeForDownload) {
                         // Response body bytestream needs to be duplicated
                         // because Jsoup closes it, which makes it unavailable for the WebView to use
-                        List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
+                        List<InputStream> is = Helper.duplicateInputStream(body.byteStream(), 2);
                         parserStream = is.get(0);
                         browserStream = is.get(1);
                     } else {
                         parserStream = null;
-                        browserStream = response.body().byteStream();
+                        browserStream = body.byteStream();
                     }
 
                     // Remove dirty elements from HTML resources
@@ -1129,7 +1130,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                         }
                     }
                 } else {
-                    parserStream = response.body().byteStream();
+                    parserStream = body.byteStream();
                     result = null; // Default webview behaviour
                 }
 
