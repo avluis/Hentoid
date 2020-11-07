@@ -12,9 +12,9 @@
         android:tooltipText="@string/web_home"
         app:showAsAction="always" />
     <item
-        android:id="@+id/web_menu_gallery"
+        android:id="@+id/web_menu_seek"
         android:enabled="false"
-        android:icon="@drawable/selector_gallery_icon"
+        android:icon="@drawable/selector_page_seek"
         android:title="@string/web_gallery"
         android:tooltipText="@string/web_gallery"
         app:showAsAction="always" />

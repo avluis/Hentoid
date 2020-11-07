@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -289,6 +290,17 @@ public class HttpHelper {
             if (url.startsWith("/")) return sourceUrl + url;
             else return sourceUrl + "/" + url;
         } else return url;
+    }
+
+    // TODO Doc
+    public static Map<String, String> extractParameters(@NonNull final Uri uri) {
+        Map<String, String> result = new HashMap<>();
+
+        Set<String> keys = uri.getQueryParameterNames();
+        for (String k : keys)
+            result.put(k, uri.getQueryParameter(k));
+
+        return result;
     }
 
     /**

@@ -39,6 +39,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.annimon.stream.Stream;
+import com.annimon.stream.function.BiFunction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.skydoves.balloon.ArrowOrientation;
 
@@ -99,6 +100,7 @@ import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
+import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -148,6 +150,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         int IN_QUEUE = 2;
     }
 
+    @IntDef({SeekMode.PAGE, SeekMode.GALLERY})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface SeekMode {
+        // Seek a specific results page
+        int PAGE = 0;
+        // Back to latest gallery page
+        int GALLERY = 1;
+    }
+
 
     // === UI
     // Associated webview
@@ -157,7 +168,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // Bottom toolbar buttons
     private MenuItem backMenu;
     private MenuItem forwardMenu;
-    private MenuItem galleryMenu;
+    private MenuItem seekMenu;
     private MenuItem refreshStopMenu;
     private MenuItem actionMenu;
     // Swipe layout
@@ -178,6 +189,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // Indicates which mode the download button is in
     protected @ActionMode
     int actionButtonMode;
+    // Indicates which mode the seek button is in
+    protected @SeekMode
+    int seekButtonMode;
     // Version of installed Chrome client
     private int chromeVersion;
     // Alert to be displayed
@@ -277,7 +291,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         bottomToolbar.setItemIconTintList(null); // Hack to make selector resource work
         backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
         forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
-        galleryMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_gallery);
+        seekMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_seek);
         actionMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_download);
 
         // Webview
@@ -335,8 +349,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             case R.id.web_menu_forward:
                 this.onForwardClick();
                 break;
-            case R.id.web_menu_gallery:
-                this.onGalleryClick();
+            case R.id.web_menu_seek:
+                this.onSeekClick();
                 break;
             case R.id.web_menu_bookmark:
                 this.onBookmarkClick();
@@ -393,7 +407,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         checkPermissions();
         String url = webView.getUrl();
         Timber.i(">> WebActivity resume : %s %s %s", url, currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
-        if (currentContent != null && url != null && getWebClient().isBookGallery(url))
+        if (currentContent != null && url != null && getWebClient().isGalleryPage(url))
             processContent(currentContent, false);
     }
 
@@ -491,7 +505,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                     url = message.getData().getString("url");
                 }
 
-                if (url != null && !url.isEmpty() && webClient.isBookGallery(url)) {
+                if (url != null && !url.isEmpty() && webClient.isGalleryPage(url)) {
                     // Launch on a new thread to avoid crashes
                     webClient.parseResponseAsync(url);
                     return true;
@@ -573,12 +587,28 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     /**
-     * Handler for the "back to gallery page" navigation button of the browser
+     * Handler for the "back to gallery page" / "seek page" navigation button of the browser
      */
-    private void onGalleryClick() {
-        WebBackForwardList list = webView.copyBackForwardList();
-        int galleryIndex = backListContainsGallery(list);
-        if (galleryIndex > -1) webView.goBackOrForward(galleryIndex - list.getCurrentIndex());
+    private void onSeekClick() {
+        if (SeekMode.GALLERY == seekButtonMode) {
+            WebBackForwardList list = webView.copyBackForwardList();
+            int galleryIndex = backListContainsGallery(list);
+            if (galleryIndex > -1) webView.goBackOrForward(galleryIndex - list.getCurrentIndex());
+        } else { // Seek to page
+            InputDialog.invokeNumberInputDialog(this, R.string.goto_page, this::goToPage);
+        }
+    }
+
+    /**
+     * Go to the given page number
+     *
+     * @param pageNum Page number to go to (1-indexed)
+     */
+    public void goToPage(int pageNum) {
+        String url = webView.getUrl();
+        if (pageNum < 0 || null == url) return;
+        String newUrl = webClient.seekResultsUrl(url, pageNum);
+        webView.loadUrl(newUrl);
     }
 
     /**
@@ -664,6 +694,21 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         actionButtonMode = mode;
         actionMenu.setIcon(resId);
         actionMenu.setEnabled(true);
+    }
+
+    /**
+     * Switch the seek button to either of the available modes
+     *
+     * @param mode Mode to switch to
+     */
+    private void changeSeekMode(@SeekMode int mode, boolean enabled) {
+        @DrawableRes int resId = R.drawable.ic_action_gallery;
+        if (SeekMode.PAGE == mode) {
+            resId = R.drawable.ic_page_seek;
+        }
+        seekButtonMode = mode;
+        seekMenu.setIcon(resId);
+        seekMenu.setEnabled(enabled);
     }
 
     /**
@@ -867,7 +912,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         // Listener to the results of the page parser
         protected final WebContentListener listener;
         // List of the URL patterns identifying a parsable book gallery page
-        private final List<Pattern> filteredUrlPattern = new ArrayList<>();
+        private final List<Pattern> galleryUrlPattern = new ArrayList<>();
+        // List of the URL patterns identifying a parsable book gallery page
+        private final List<Pattern> resultsUrlPattern = new ArrayList<>();
+        // Results URL rewriter to insert page to seek to
+        private BiFunction<Uri, Integer, String> resultsUrlRewriter = null;
         // Adapter used to parse the HTML code of book gallery pages
         private final HtmlAdapter<? extends ContentParser> htmlAdapter;
         // Domain name for which link navigation is restricted
@@ -878,19 +927,27 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         boolean isHtmlLoaded = false;
 
 
-        CustomWebViewClient(String[] filteredUrl, WebContentListener listener) {
+        CustomWebViewClient(String[] galleryUrl, WebContentListener listener) {
             this.listener = listener;
 
             Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
             final Jspoon jspoon = Jspoon.create();
             htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
-            for (String s : filteredUrl) filteredUrlPattern.add(Pattern.compile(s));
+            for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
         }
 
         void destroy() {
             Timber.d("WebClient destroyed");
             compositeDisposable.clear();
+        }
+
+        void setResultsUrlPatterns(String... patterns) {
+            for (String s : patterns) resultsUrlPattern.add(Pattern.compile(s));
+        }
+
+        void setResultUrlRewriter(@NonNull BiFunction<Uri, Integer, String> rewriter) {
+            resultsUrlRewriter = rewriter;
         }
 
         /**
@@ -923,14 +980,42 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          * @param url URL to test
          * @return True if the given URL represents a book gallery page
          */
-        boolean isBookGallery(@NonNull final String url) {
-            if (filteredUrlPattern.isEmpty()) return false;
+        boolean isGalleryPage(@NonNull final String url) {
+            if (galleryUrlPattern.isEmpty()) return false;
 
-            for (Pattern p : filteredUrlPattern) {
+            for (Pattern p : galleryUrlPattern) {
                 Matcher matcher = p.matcher(url);
                 if (matcher.find()) return true;
             }
             return false;
+        }
+
+        /**
+         * Indicates if the given URL is a results page
+         *
+         * @param url URL to test
+         * @return True if the given URL represents a results page
+         */
+        boolean isResultsPage(@NonNull final String url) {
+            if (resultsUrlPattern.isEmpty()) return false;
+
+            for (Pattern p : resultsUrlPattern) {
+                Matcher matcher = p.matcher(url);
+                if (matcher.find()) return true;
+            }
+            return false;
+        }
+
+        /**
+         * Rewrite the given URL to seek the given page number
+         *
+         * @param url     URL to be rewritten
+         * @param pageNum page number to seek
+         * @return Given URL to be rewritten
+         */
+        protected String seekResultsUrl(@NonNull String url, int pageNum) {
+            if (null == resultsUrlRewriter || !isResultsPage(url)) return url;
+            else return resultsUrlRewriter.apply(Uri.parse(url), pageNum);
         }
 
         /**
@@ -982,7 +1067,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 actionMenu.setEnabled(false);
             }
             // Display download button tooltip if a book page has been reached
-            if (isBookGallery(url)) showTooltip(R.string.help_web_download);
+            if (isGalleryPage(url)) showTooltip(R.string.help_web_download);
         }
 
         @Override
@@ -999,7 +1084,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         private void refreshNavigationMenu() {
             backMenu.setEnabled(webView.canGoBack());
             forwardMenu.setEnabled(webView.canGoForward());
-            galleryMenu.setEnabled(backListContainsGallery(webView.copyBackForwardList()) > -1);
+            boolean isResults = isResultsPage(Helper.protect(webView.getUrl()));
+            changeSeekMode(isResults ? SeekMode.PAGE : SeekMode.GALLERY, isResults || backListContainsGallery(webView.copyBackForwardList()) > -1);
         }
 
         /**
@@ -1034,7 +1120,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (isBookGallery(url)) return parseResponse(url, headers, true, false);
+                if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
                 // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
                 if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
                     return parseResponse(url, headers, false, false);
@@ -1224,7 +1310,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private int backListContainsGallery(@NonNull final WebBackForwardList backForwardList) {
         for (int i = backForwardList.getCurrentIndex() - 1; i >= 0; i--) {
             WebHistoryItem item = backForwardList.getItemAtIndex(i);
-            if (webClient.isBookGallery(item.getUrl())) return i;
+            if (webClient.isGalleryPage(item.getUrl())) return i;
         }
         return -1;
     }
