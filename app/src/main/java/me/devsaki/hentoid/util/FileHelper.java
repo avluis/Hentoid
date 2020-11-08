@@ -356,6 +356,10 @@ public class FileHelper {
         tryOpenFile(context, aFile.getUri(), fileName, aFile.isDirectory());
     }
 
+    public static void openUri(@NonNull Context context, @NonNull Uri uri) {
+        tryOpenFile(context, uri, uri.getLastPathSegment(), false);
+    }
+
     /**
      * Attempt to open the file or folder at the given Uri using the device's app(s) of choice
      *

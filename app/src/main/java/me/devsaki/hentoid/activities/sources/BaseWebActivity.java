@@ -106,6 +106,7 @@ import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionUtil;
@@ -1087,14 +1088,21 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Override
         @Deprecated
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            String host = Uri.parse(url).getHost();
-            return host != null && isHostNotInRestrictedDomains(host);
+            return shouldOverrideUrlLoadingInternal(view, url);
         }
 
         @TargetApi(Build.VERSION_CODES.N)
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            String host = Uri.parse(request.getUrl().toString()).getHost();
+            return shouldOverrideUrlLoadingInternal(view, request.getUrl().toString());
+        }
+
+        protected boolean shouldOverrideUrlLoadingInternal(@NonNull final WebView view, @NonNull final String url) {
+            if (HttpHelper.getExtensionFromUri(url).equals("torrent")) {
+                FileHelper.openUri(view.getContext(), Uri.parse(url));
+                return true;
+            }
+            String host = Uri.parse(url).getHost();
             return host != null && isHostNotInRestrictedDomains(host);
         }
 
@@ -1168,6 +1176,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
+
                 // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
                 if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
                     return parseResponse(url, headers, false, false);

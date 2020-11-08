@@ -21,7 +21,7 @@ import timber.log.Timber;
  */
 public class EHentaiActivity extends BaseWebActivity {
 
-    private static final String DOMAIN_FILTER = "e-hentai.org";
+    private static final String[] DOMAIN_FILTER = {"e-hentai.org", "ehtracker.org"};
     private static final String[] GALLERY_FILTER = {"e-hentai.org/g/[0-9]+/[A-Za-z0-9\\-_]+"};
 
     Site getStartSite() {
