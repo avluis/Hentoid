@@ -845,18 +845,6 @@ public class FileHelper {
         return resolver.openOutputStream(targetFileUri);
     }
 
-    // TODO doc
-    // open an output stream to a new file in the app's persistent files (internal storage)
-    public static OutputStream openNewAppFolderOutputStream(@NonNull final Context context, @NonNull final String fileName) throws IOException {
-        return context.openFileOutput(fileName, Context.MODE_PRIVATE);
-    }
-
-    // TODO doc
-    // open an output stream to a new file in the app's cache files (internal storage)
-    public static OutputStream openNewTempFolderOutputStream(@NonNull final Context context, @NonNull final String fileName) throws IOException {
-        return getOutputStream(new File(context.getCacheDir(), fileName));
-    }
-
     /**
      * Format the given file size using human-readable units
      * e.g. if the size represents more than 1M Bytes, the result is formatted as megabytes
