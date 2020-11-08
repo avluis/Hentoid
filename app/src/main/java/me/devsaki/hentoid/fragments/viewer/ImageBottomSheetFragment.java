@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -53,11 +52,12 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
     // UI
     private View rootView;
     private TextView imgPath;
-    private TextView imgDimensions;
+    private TextView imgStats;
 
     private ImageView favoriteButton;
     private ImageView copyButton;
     private ImageView shareButton;
+    private ImageView deleteButton;
 
 
     public static void show(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
@@ -93,7 +93,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         rootView = inflater.inflate(R.layout.include_viewer_image_info, container, false);
 
         imgPath = requireViewById(rootView, R.id.image_path);
-        imgDimensions = requireViewById(rootView, R.id.image_dimensions);
+        imgStats = requireViewById(rootView, R.id.image_stats);
 
         favoriteButton = requireViewById(rootView, R.id.img_action_favourite);
         favoriteButton.setOnClickListener(v -> onFavouriteClick());
@@ -104,7 +104,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         shareButton = requireViewById(rootView, R.id.img_action_share);
         shareButton.setOnClickListener(v -> onShareClick());
 
-        View deleteButton = requireViewById(rootView, R.id.img_action_delete);
+        deleteButton = requireViewById(rootView, R.id.img_action_delete);
         deleteButton.setOnClickListener(v -> onDeleteClick());
 
         return rootView;
@@ -121,30 +121,45 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
      * @param images Book's list of images
      */
     private void onImagesChanged(List<ImageFile> images) {
+        int grayColor = ThemeHelper.getColor(requireContext(), R.color.dark_gray);
+
         if (imageIndex >= images.size())
             imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
         String filePath;
         if (image.getContent().getTarget().isArchive()) {
             filePath = image.getUrl();
+            int lastSeparator = filePath.lastIndexOf('/');
+            String archiveUri = filePath.substring(0, lastSeparator);
+            String fileName = filePath.substring(lastSeparator);
+            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(archiveUri), false) + fileName;
         } else {
             filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false);
         }
-        imgPath.setText(filePath); // TODO TEST; we should get the archive's location here, not the temp file :O
+        imgPath.setText(filePath);
 
-        boolean imageExists = (null != FileHelper.getFileFromSingleUriString(requireContext(), image.getFileUri()));
+        boolean imageExists = FileHelper.fileExists(requireContext(), Uri.parse(image.getFileUri()));
         if (imageExists) {
-            Point size = getImageSize(requireContext(), image.getFileUri());
-            imgDimensions.setText(String.format(Locale.US, "%s x %s (scale %.0f%%)", size.x, size.y, scale * 100));
+            Point dimensions = getImageDimensions(requireContext(), image.getFileUri());
+            String sizeStr = FileHelper.formatHumanReadableSize(image.getSize());
+            imgStats.setText(String.format(Locale.ENGLISH, "%s x %s (scale %.0f%%) - %s", dimensions.x, dimensions.y, scale * 100, sizeStr));
         } else {
-            imgDimensions.setText(R.string.image_not_found);
-            int grayColor = ThemeHelper.getColor(requireContext(), R.color.dark_gray);
+            imgStats.setText(R.string.image_not_found);
             favoriteButton.setImageTintList(ColorStateList.valueOf(grayColor));
             favoriteButton.setEnabled(false);
             copyButton.setImageTintList(ColorStateList.valueOf(grayColor));
             copyButton.setEnabled(false);
             shareButton.setImageTintList(ColorStateList.valueOf(grayColor));
             shareButton.setEnabled(false);
+        }
+
+        // Don't allow deleting the image if it is archived
+        if (image.getContent().getTarget().isArchive()) {
+            deleteButton.setImageTintList(ColorStateList.valueOf(grayColor));
+            deleteButton.setEnabled(false);
+        } else {
+            deleteButton.setImageTintList(null);
+            deleteButton.setEnabled(true);
         }
 
         updateFavouriteDisplay(image.isFavourite());
@@ -233,14 +248,21 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
                 .show();
     }
 
-    private static Point getImageSize(@NonNull final Context context, @NonNull final String uri) {
-        DocumentFile imgFile = FileHelper.getFileFromSingleUriString(context, uri);
-        if (null == imgFile) return new Point(0, 0);
+    /**
+     * Return the given image's dimensions
+     *
+     * @param context Context to be used
+     * @param uri     Uri of the image to be read
+     * @return Dimensions (x,y) of the given image
+     */
+    private static Point getImageDimensions(@NonNull final Context context, @NonNull final String uri) {
+        Uri fileUri = Uri.parse(uri);
+        if (!FileHelper.fileExists(context, fileUri)) return new Point(0, 0);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         try {
-            BitmapFactory.decodeStream(FileHelper.getInputStream(context, imgFile), null, options);
+            BitmapFactory.decodeStream(FileHelper.getInputStream(context, fileUri), null, options);
             return new Point(options.outWidth, options.outHeight);
         } catch (IOException | IllegalArgumentException e) {
             Timber.w(e);
