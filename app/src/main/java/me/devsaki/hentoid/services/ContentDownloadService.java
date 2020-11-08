@@ -512,6 +512,8 @@ public class ContentDownloadService extends IntentService {
                 logErrorRecord(contentId, ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
                 hasError = true;
             }
+            // Update the book's number of pages if more have been downloaded
+            if (nbImages > content.getQtyPages()) content.setQtyPages(nbImages);
 
             if (content.getStorageUri().isEmpty()) return;
 

@@ -885,7 +885,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         try {
             List<ImageFile> imgs = parser.parseImageList(c);
             int coverCount = (imgs.get(0).isCover()) ? 1 : 0;
-            int maxImageOrder = Stream.of(c.getImageFiles()).map(ImageFile::getOrder).max(Integer::compareTo).get();
+            int maxImageOrder = Stream.of(c.getImageFiles()).filter(i -> i.getStatus().equals(StatusContent.DOWNLOADED)).map(ImageFile::getOrder).max(Integer::compareTo).get();
             if (imgs.size() - coverCount > maxImageOrder)
                 return Stream.of(imgs).filter(i -> i.getOrder() > maxImageOrder).toList();
         } catch (Exception e) {
