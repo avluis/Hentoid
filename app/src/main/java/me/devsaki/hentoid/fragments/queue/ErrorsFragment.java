@@ -27,7 +27,6 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
-import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.select.SelectExtension;
@@ -119,6 +118,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         }
 
         recyclerView.setAdapter(fastAdapter);
+        recyclerView.setHasFixedSize(true);
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Swiping
@@ -129,11 +129,11 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         touchHelper = new ItemTouchHelper(swipeCallback);
         touchHelper.attachToRecyclerView(recyclerView);
 
-        // Fast scroller
-        new FastScrollerBuilder(recyclerView).build();
-
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
+
+        // Fast scroller
+        new FastScrollerBuilder(recyclerView).build();
 
         initToolbar();
         initSelectionToolbar();
@@ -324,7 +324,11 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
         // Update displayed books
         List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS)).toList();
-        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
+        // When viewing books and going back (which triggers a book update without any impact on visuals),
+        // diff calculations ignore certain items and desynch the "real" list from the one manipulated by selectExtension
+        // => use a plain ItemAdapter.set for now (and live with the occasional blinking)
+        //FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
+        itemAdapter.set(content);
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
     }
 

@@ -202,9 +202,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
 
         recyclerView.setAdapter(fastAdapter);
-
         recyclerView.setHasFixedSize(true);
-
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Fast scroller
@@ -540,8 +538,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         // Update displayed books
         List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper)).toList();
-        // When using mass-moving (select multiple + move up/down), diff calculations ignored certain items
-        // and desynch the "real" list from the one manipulated by selectExtension
+        // When using mass-moving (select multiple + move up/down),
+        // diff calculations ignore certain items and desynch the "real" list from the one manipulated by selectExtension
         // => use a plain ItemAdapter.set for now (and live with the occasional blinking)
 //        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
         itemAdapter.set(content);
