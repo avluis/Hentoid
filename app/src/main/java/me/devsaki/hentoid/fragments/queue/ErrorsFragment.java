@@ -95,20 +95,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        if (selectExtension != null) selectExtension.deselect();
-        initSelectionToolbar();
-    }
-
-    @Override
-    public void onDestroy() {
-        compositeDisposable.clear();
-        super.onDestroy();
-    }
-
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // UI ELEMENTS
         View rootView = inflater.inflate(R.layout.fragment_queue_errors, container, false);
@@ -165,6 +151,34 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(QueueViewModel.class);
         viewModel.getErrors().observe(getViewLifecycleOwner(), this::onErrorsChanged);
         viewModel.getContentHashToShowFirst().observe(getViewLifecycleOwner(), this::onContentHashToShowFirstChanged);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (fastAdapter != null) fastAdapter.saveInstanceState(outState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (null == savedInstanceState) return;
+
+        if (fastAdapter != null) fastAdapter.withSavedInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (selectExtension != null) selectExtension.deselect();
+        initSelectionToolbar();
+    }
+
+    @Override
+    public void onDestroy() {
+        compositeDisposable.clear();
+        super.onDestroy();
     }
 
     private void initToolbar() {
@@ -463,7 +477,12 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
-                        (dialog12, which) -> dialog12.dismiss())
+                        (dialog12, which) -> {
+                            dialog12.dismiss();
+                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.deselect();
+                            selectionToolbar.setVisibility(View.GONE);
+                        })
                 .create()
                 .show();
     }
