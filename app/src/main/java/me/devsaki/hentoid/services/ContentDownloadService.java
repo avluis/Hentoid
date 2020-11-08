@@ -377,19 +377,20 @@ public class ContentDownloadService extends IntentService {
         // Queue image download requests
         Site site = content.getSite();
         for (ImageFile img : images) {
-            if (img.isCover()) {
-                // Get the same download parameters as the rest of the content, in case the cover needs additional parameters to be downloaded
-                Map<String, String> downloadParams = ContentHelper.parseDownloadParams(content.getDownloadParams());
-                // Add the referer back, if unset
-                if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
-                    downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
-                // Set the 1st image of the list as a backup, if the cover URL is stale (might happen when restarting old downloads)
-                if (images.size() > 1)
-                    downloadParams.put("backupUrl", images.get(1).getUrl());
-                img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
-            }
-            if (img.getStatus().equals(StatusContent.SAVED))
+            if (img.getStatus().equals(StatusContent.SAVED)) {
+                if (img.isCover()) {
+                    // Get the same download parameters as the rest of the content, in case the cover needs additional parameters to be downloaded
+                    Map<String, String> downloadParams = ContentHelper.parseDownloadParams(content.getDownloadParams());
+                    // Add the referer back, if unset
+                    if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
+                        downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
+                    // Set the 1st image of the list as a backup, if the cover URL is stale (might happen when restarting old downloads)
+                    if (images.size() > 1)
+                        downloadParams.put("backupUrl", images.get(1).getUrl());
+                    img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+                }
                 requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
+            }
         }
 
         if (ContentHelper.updateQueueJson(this, dao)) Timber.i("Queue JSON successfully saved");

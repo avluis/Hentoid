@@ -62,6 +62,7 @@ public final class ContentHelper {
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
     private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
+    private static final int[] queueStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode()};
 
     // TODO empty this cache at some point
     private static final Map<String, String> fileNameMatchCache = new HashMap<>();
@@ -74,6 +75,10 @@ public final class ContentHelper {
 
     public static int[] getLibraryStatuses() {
         return libraryStatus;
+    }
+
+    public static int[] getQueueStatuses() {
+        return queueStatus;
     }
 
     /**

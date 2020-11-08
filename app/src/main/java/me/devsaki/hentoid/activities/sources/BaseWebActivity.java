@@ -74,6 +74,7 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
@@ -87,6 +88,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -99,6 +101,7 @@ import me.devsaki.hentoid.fragments.BookmarksDialogFragment;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
+import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Consts;
@@ -128,15 +131,17 @@ import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
  */
 public abstract class BaseWebActivity extends BaseActivity implements WebContentListener, BookmarksDialogFragment.Parent {
 
-    @IntDef({ActionMode.DOWNLOAD, ActionMode.VIEW_QUEUE, ActionMode.READ})
+    @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.VIEW_QUEUE, ActionMode.READ})
     @Retention(RetentionPolicy.SOURCE)
     protected @interface ActionMode {
         // Download book
         int DOWNLOAD = 0;
+        // Download new pages
+        int DOWNLOAD_PLUS = 1;
         // Go to the queue screen
-        int VIEW_QUEUE = 1;
+        int VIEW_QUEUE = 2;
         // Read downloaded book (image viewer)
-        int READ = 2;
+        int READ = 3;
     }
 
     @IntDef({ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE})
@@ -196,6 +201,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private int chromeVersion;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
+    // Disposable to be used for "more pages" search
+    private Disposable disposable;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -434,6 +441,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             webView = null;
         }
 
+        if (objectBoxDAO != null) objectBoxDAO.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
@@ -666,7 +674,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * Listener for the Action button : download content, view queue or read content
      */
     public void onActionClick() {
-        if (ActionMode.DOWNLOAD == actionButtonMode) processDownload(false);
+        if (ActionMode.DOWNLOAD == actionButtonMode) processDownload(false, false);
+        else if (ActionMode.DOWNLOAD_PLUS == actionButtonMode) processDownload(false, true);
         else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
         else if (ActionMode.READ == actionButtonMode && currentContent != null) {
             currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
@@ -687,6 +696,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @DrawableRes int resId = R.drawable.ic_info;
         if (ActionMode.DOWNLOAD == mode) {
             resId = R.drawable.selector_download_action;
+        } else if (ActionMode.DOWNLOAD_PLUS == mode) {
+            resId = R.drawable.ic_action_download_plus;
         } else if (ActionMode.VIEW_QUEUE == mode) {
             resId = R.drawable.ic_action_queue;
         } else if (ActionMode.READ == mode) {
@@ -716,7 +727,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * @param quickDownload True if the action has been triggered by a quick download
      *                      (which means we're not on a book gallery page but on the book list page)
      */
-    void processDownload(boolean quickDownload) {
+    void processDownload(boolean quickDownload, boolean isDownloadPlus) {
         if (null == currentContent) return;
 
         if (currentContent.getId() > 0)
@@ -724,10 +735,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         if (null == currentContent) return;
 
-        if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
+        if (!isDownloadPlus && StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastUtil.toast(R.string.already_downloaded);
             if (!quickDownload) changeActionMode(ActionMode.READ);
             return;
+        }
+
+        if (isDownloadPlus) {
+            currentContent.setStatus(StatusContent.SAVED);
+            objectBoxDAO.insertContent(currentContent);
         }
 
         // Check if the tag blocker applies here
@@ -812,15 +828,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
         Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
 
-        boolean isInCollection = (contentDB != null && (
-                contentDB.getStatus().equals(StatusContent.DOWNLOADED)
-                        || contentDB.getStatus().equals(StatusContent.MIGRATED)
-        ));
-        boolean isInQueue = (contentDB != null && (
-                contentDB.getStatus().equals(StatusContent.DOWNLOADING)
-                        || contentDB.getStatus().equals(StatusContent.ERROR)
-                        || contentDB.getStatus().equals(StatusContent.PAUSED)
-        ));
+        boolean isInCollection = (contentDB != null && Helper.getListFromPrimitiveArray(ContentHelper.getLibraryStatuses()).contains(contentDB.getStatus().getCode()));
+        boolean isInQueue = (contentDB != null && Helper.getListFromPrimitiveArray(ContentHelper.getQueueStatuses()).contains(contentDB.getStatus().getCode()));
 
         if (!isInCollection && !isInQueue) {
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
@@ -838,6 +847,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (isInCollection) {
             if (!quickDownload) changeActionMode(ActionMode.READ);
             result = ContentStatus.IN_COLLECTION;
+            searchForMoreImages(contentDB); // Async; might switch READ to DOWNLOAD_PLUS a couple seconds later
         }
         if (isInQueue) {
             if (!quickDownload) changeActionMode(ActionMode.VIEW_QUEUE);
@@ -851,7 +861,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     public void onResultReady(@NonNull Content results, boolean quickDownload) {
         @ContentStatus int status = processContent(results, quickDownload);
         if (quickDownload) {
-            if (ContentStatus.UNKNOWN == status) processDownload(true);
+            if (ContentStatus.UNKNOWN == status) processDownload(true, false);
             else if (ContentStatus.IN_COLLECTION == status)
                 ToastUtil.toast(R.string.already_downloaded);
             else if (ContentStatus.IN_QUEUE == status) ToastUtil.toast(R.string.already_queued);
@@ -860,6 +870,44 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
     public void onResultFailed() {
         runOnUiThread(() -> ToastUtil.toast(R.string.web_unparsable));
+    }
+
+    private void searchForMoreImages(@NonNull final Content c) {
+        disposable = Single.fromCallable(() -> doSearchForMoreImages(c))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(l -> onSearchForMoreImagesSuccess(c, l), Timber::e);
+    }
+
+    private List<ImageFile> doSearchForMoreImages(@NonNull final Content c) {
+        List<ImageFile> result = Collections.emptyList();
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(c);
+        try {
+            List<ImageFile> imgs = parser.parseImageList(c);
+            int coverCount = (imgs.get(0).isCover()) ? 1 : 0;
+            int maxImageOrder = Stream.of(c.getImageFiles()).map(ImageFile::getOrder).max(Integer::compareTo).get();
+            if (imgs.size() - coverCount > maxImageOrder)
+                return Stream.of(imgs).filter(i -> i.getOrder() > maxImageOrder).toList();
+        } catch (Exception e) {
+            Timber.w(e);
+        }
+        return result;
+    }
+
+    private void onSearchForMoreImagesSuccess(@NonNull final Content c, @NonNull final List<ImageFile> additionalImages) {
+        disposable.dispose();
+        if (additionalImages.isEmpty()) return;
+
+        if (currentContent.equals(c)) { // User hasn't left the book page since
+            // Append additional pages to the current book's list of pages
+            List<ImageFile> updatedImgs = new ArrayList<>(c.getImageFiles());
+            updatedImgs.addAll(additionalImages);
+            c.setImageFiles(updatedImgs);
+            // Save it
+            objectBoxDAO.insertContent(c);
+            // Display the "download more" button
+            changeActionMode(ActionMode.DOWNLOAD_PLUS);
+        }
     }
 
     /**

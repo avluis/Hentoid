@@ -57,6 +57,7 @@ import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
  * Created by DevSaki on 09/05/2015.
  * Content builder
  */
+@SuppressWarnings("UnusedReturnValue")
 @Entity
 public class Content implements Serializable {
 
@@ -117,6 +118,9 @@ public class Content implements Serializable {
     private boolean isLast;         // True if current content is the last of its set in the DB query
     @Transient
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
+
+    public Content() {
+    }
 
 
     public ToMany<Attribute> getAttributes() {
@@ -611,6 +615,7 @@ public class Content implements Serializable {
         return storageFolder == null ? "" : storageFolder;
     }
 
+    @Deprecated
     public void resetStorageFolder() {
         storageFolder = "";
     }
@@ -689,10 +694,6 @@ public class Content implements Serializable {
         this.bookPreferences = bookPreferences;
     }
 
-    public void putBookPreferenceMap(String key, String value) {
-        bookPreferences.put(key, value);
-    }
-
     public int getLastReadPageIndex() {
         return lastReadPageIndex;
     }
@@ -735,14 +736,6 @@ public class Content implements Serializable {
 
     public boolean isArchive() {
         return ArchiveHelper.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed !
-    }
-
-    @Nullable
-    public GroupItem getGroupItem(long groupId) {
-        for (GroupItem gi : groupItems)
-            if (gi.group.getTargetId() == groupId) return gi;
-
-        return null;
     }
 
     public List<GroupItem> getGroupItems(Grouping grouping) {
