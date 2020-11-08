@@ -93,7 +93,7 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         // Sort sources by largest size
         List<Map.Entry<Site, ImmutablePair<Integer, Long>>> sitesBySize = Stream.of(memUsage).sortBy(entry -> -entry.getValue().right).toList();
         for (Map.Entry<Site, ImmutablePair<Integer, Long>> entry : sitesBySize) {
-            addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", String.format(Locale.US, "%.1f MB", entry.getValue().right / (1024.0 * 1024)));
+            addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", String.format(Locale.ENGLISH, "%.1f MB", entry.getValue().right / (1024.0 * 1024)));
         }
 
         // Make details fold/unfold

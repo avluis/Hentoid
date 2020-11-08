@@ -499,7 +499,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
                 int avgSpeedKbps = (int) downloadSpeedCalulator.getAvgSpeedKbps();
                 if (avgSpeedKbps > 0)
-                    message.append(String.format(Locale.US, " @ %d KBps", avgSpeedKbps));
+                    message.append(String.format(Locale.ENGLISH, " @ %d KBps", avgSpeedKbps));
 
                 queueInfo.setText(message.toString());
                 isPreparingDownload = false;

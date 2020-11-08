@@ -407,7 +407,7 @@ public class FileHelper {
      * @return Extension of the given filename, without the "."
      */
     public static String getExtension(@NonNull final String fileName) {
-        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.US) : "";
+        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH) : "";
     }
 
     /**

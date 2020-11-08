@@ -53,7 +53,7 @@ public class ImageFile {
         this.order = order;
 
         int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
-        this.name = String.format(Locale.US, "%0" + nbMaxDigits + "d", order);
+        this.name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
 
         this.url = url;
         this.status = status;
