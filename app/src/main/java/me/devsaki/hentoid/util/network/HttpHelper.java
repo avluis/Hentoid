@@ -285,7 +285,7 @@ public class HttpHelper {
 
         if (!url.startsWith("http")) {
             String sourceUrl = baseUrl;
-            if (sourceUrl.endsWith("/")) sourceUrl = sourceUrl.substring(0, sourceUrl.length() - 2);
+            if (sourceUrl.endsWith("/")) sourceUrl = sourceUrl.substring(0, sourceUrl.length() - 1);
 
             if (url.startsWith("/")) return sourceUrl + url;
             else return sourceUrl + "/" + url;
