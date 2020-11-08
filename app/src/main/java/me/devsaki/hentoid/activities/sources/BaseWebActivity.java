@@ -715,7 +715,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * @param mode Mode to switch to
      */
     private void changeSeekMode(@SeekMode int mode, boolean enabled) {
-        @DrawableRes int resId = R.drawable.selector_gallery_icon;
+        @DrawableRes int resId = R.drawable.selector_back_gallery;
         if (SeekMode.PAGE == mode) resId = R.drawable.selector_page_seek;
         seekButtonMode = mode;
         seekMenu.setIcon(resId);
