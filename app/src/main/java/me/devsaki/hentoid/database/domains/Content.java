@@ -615,6 +615,9 @@ public class Content implements Serializable {
         return storageFolder == null ? "" : storageFolder;
     }
 
+    /**
+     * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
+     */
     @Deprecated
     public void resetStorageFolder() {
         storageFolder = "";
