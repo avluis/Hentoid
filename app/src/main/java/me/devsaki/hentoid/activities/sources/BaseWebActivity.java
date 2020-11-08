@@ -238,6 +238,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         universalBlockedContent.add("defutohi.pro");
         universalBlockedContent.add("realsrv.com");
         universalBlockedContent.add("smartclick.net");
+        universalBlockedContent.add("ulukaris.com");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -702,10 +703,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * @param mode Mode to switch to
      */
     private void changeSeekMode(@SeekMode int mode, boolean enabled) {
-        @DrawableRes int resId = R.drawable.ic_action_gallery;
-        if (SeekMode.PAGE == mode) {
-            resId = R.drawable.ic_page_seek;
-        }
+        @DrawableRes int resId = R.drawable.selector_gallery_icon;
+        if (SeekMode.PAGE == mode) resId = R.drawable.selector_page_seek;
         seekButtonMode = mode;
         seekMenu.setIcon(resId);
         seekMenu.setEnabled(enabled);
@@ -1117,7 +1116,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Nullable
         private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                    @Nullable final Map<String, String> headers) {
-            if (isUrlForbidden(url)) {
+            if (isUrlForbidden(url) || !url.startsWith("http")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 if (isGalleryPage(url)) return parseResponse(url, headers, true, false);

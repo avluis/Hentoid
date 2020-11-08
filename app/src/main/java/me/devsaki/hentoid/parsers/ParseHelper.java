@@ -153,7 +153,8 @@ public class ParseHelper {
         result.add(ImageFile.newCover(coverUrl, status));
         // Images
         int order = 1;
-        for (String s : imgUrls) result.add(urlToImageFile(s, order++, imgUrls.size(), status));
+        for (String s : imgUrls)
+            result.add(urlToImageFile(s.trim(), order++, imgUrls.size(), status));
 
         return result;
     }
