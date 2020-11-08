@@ -290,6 +290,11 @@ public class LibraryActivity extends BaseActivity {
         if (archiveNotificationManager != null) archiveNotificationManager.cancel();
         if (deleteNotificationManager != null) deleteNotificationManager.cancel();
 
+        // Empty all handlers to avoid leaks
+        toolbar.setOnMenuItemClickListener(null);
+        selectionToolbar.setOnMenuItemClickListener(null);
+        selectionToolbar.setNavigationOnClickListener(null);
+
         super.onDestroy();
     }
 
