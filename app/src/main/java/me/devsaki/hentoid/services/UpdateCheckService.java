@@ -16,6 +16,7 @@ import java.util.List;
 
 import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.notification.update.UpdateAvailableNotification;
@@ -78,7 +79,7 @@ public class UpdateCheckService extends Service {
         boolean isManualCheck = intent.getBooleanExtra(EXTRA_IS_MANUAL_CHECK, false);
         if (isManualCheck && !shouldShowToast) {
             shouldShowToast = true;
-            Toast.makeText(this, "Checking for updates...", LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.pref_check_updates_manual_checking, LENGTH_SHORT).show();
         }
 
         if (disposable == null || disposable.isDisposed()) {
@@ -105,8 +106,7 @@ public class UpdateCheckService extends Service {
             notificationManager.notify(new UpdateAvailableNotification(updateUrl));
             newVersion = true;
         } else if (shouldShowToast) {
-            String message = "Update Check: No new updates.";
-            Toast.makeText(this, message, LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.pref_check_updates_manual_no_new, LENGTH_SHORT).show();
         }
 
         // Get the alerts relevant to current version code
@@ -121,9 +121,7 @@ public class UpdateCheckService extends Service {
         Timber.w(t, "Failed to get update info");
         notificationManager.cancel();
 
-        if (shouldShowToast) {
-            String message = "Could not check for updates. Check your connection or try again later.";
-            Toast.makeText(this, message, LENGTH_SHORT).show();
-        }
+        if (shouldShowToast)
+            Toast.makeText(this, R.string.pref_check_updates_manual_no_connection, LENGTH_SHORT).show();
     }
 }
