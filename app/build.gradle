@@ -140,20 +140,16 @@ dependencies {
      * UI
      */
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = "5.2.4"
+    def fastadapter_version = "5.3.0"
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
-    // needs the `expandable`, `drag` and `scroll` extension.
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
-    // diff util helpers
-    implementation "com.mikepenz:fastadapter-extensions-drag:$fastadapter_version" // drag support
+    implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"
+    implementation "com.mikepenz:fastadapter-extensions-drag:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-expandable:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-scroll:$fastadapter_version"
-    // scroll helpers
     implementation "com.mikepenz:fastadapter-extensions-paged:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-ui:$fastadapter_version"
-    // needs the `expandable`, `drag` and `scroll` extension.
     implementation "com.mikepenz:fastadapter-extensions-utils:$fastadapter_version"
-    // needs the `expandable`, `drag` and `scroll` extension.
 
     // Intro screens or slides: github.com/apl-devs/AppIntro
     implementation 'com.github.AppIntro:AppIntro:6.0.0'

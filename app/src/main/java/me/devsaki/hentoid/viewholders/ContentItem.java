@@ -208,7 +208,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
 
-    public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> implements IDraggableViewHolder, IDrawerSwipeableViewHolder {
+    public static class ContentViewHolder extends FastAdapter.ViewHolder<ContentItem> implements IDraggableViewHolder, IDrawerSwipeableViewHolder, ISwipeableViewHolder {
 
         // Common elements
         private final View baseLayout;
@@ -517,7 +517,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
 
             if (deleteButton != null) {
-                deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
+                deleteButton.setOnClickListener(v -> {
+                    if (deleteButton.isClickable()) deleteActionRunnable.run();
+                });
+                deleteButton.setClickable(false); // Listener is set but click is disabled until told the contrary
             }
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
@@ -634,6 +637,18 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         @Override
         public View getSwipeableView() {
             return bookCard;
+        }
+
+        @Override
+        public void onSwiped() {
+            deleteButton.setClickable(true);
+            deleteButton.setFocusable(true);
+        }
+
+        @Override
+        public void onUnswiped() {
+            deleteButton.setClickable(false);
+            deleteButton.setFocusable(false);
         }
     }
 }

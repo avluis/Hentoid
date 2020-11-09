@@ -45,6 +45,7 @@ import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
+import com.mikepenz.fastadapter.swipe.SimpleSwipeDrawerCallback;
 import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDrawerDragCallback;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 
@@ -86,6 +87,7 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
+import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
@@ -101,7 +103,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 
 @SuppressLint("NonConstantResourceId")
-public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback/*, SimpleSwipeCallback.ItemSwipeCallback*/ {
+public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -890,13 +892,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         }
 
         // Drag, drop & swiping
-        /*
-        SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
-                this,
-                this,
-                ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
-         */
-        SimpleSwipeDrawerDragCallback dragSwipeCallback = new SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT)
+        SimpleSwipeDrawerDragCallback dragSwipeCallback = new SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
                 .withSwipeLeft(80) // dimen.delete_drawer_width - required in DP units and not pixel units
                 .withSensitivity(5f)
                 .withNotifyAllDrops(true);
@@ -1248,30 +1244,22 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             ((IDraggableViewHolder) viewHolder).onDragged();
         }
     }
-/*
+
     @Override
     public void itemSwiped(int position, int direction) {
-        ContentItem item = getItemAdapter().getAdapterItem(position);
-        item.setSwipeDirection(direction);
-
-        if (item.getContent() != null) {
-            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(requireContext(), 2000, this::onDeleteSwipedBook);
-            deleteDebouncer.submit(item);
-
-            Runnable cancelSwipe = () -> {
-                deleteDebouncer.clear();
-                item.setSwipeDirection(0);
-
-                int position1 = getItemAdapter().getAdapterPosition(item);
-                if (position1 != RecyclerView.NO_POSITION)
-                    fastAdapter.notifyItemChanged(position1);
-            };
-            item.setUndoSwipeAction(cancelSwipe);
-            fastAdapter.notifyItemChanged(position);
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
+        if (vh instanceof ISwipeableViewHolder) {
+            ((ISwipeableViewHolder) vh).onSwiped();
         }
     }
 
- */
+    @Override
+    public void itemUnswiped(int position) {
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
+        if (vh instanceof ISwipeableViewHolder) {
+            ((ISwipeableViewHolder) vh).onUnswiped();
+        }
+    }
 
     private void onDeleteSwipedBook(@NonNull final ContentItem item) {
         // Deleted book is the last selected books => disable selection mode

@@ -3,13 +3,13 @@
     <!-- Standard background color -->
     <item android:state_pressed="false">
         <shape>
-            <solid android:color="?colorPrimary" />
+            <solid android:color="@color/black_opacity_25" />
         </shape>
     </item>
     <!-- Color when the button is pressed -->
     <item android:state_pressed="true">
         <shape>
-            <solid android:color="?colorPrimaryVariant" />
+            <solid android:color="@color/white_opacity_25" />
         </shape>
     </item>
 </selector>
