@@ -707,6 +707,13 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             if (!Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
                 activity.get().goBackToGroups();
             }
+            // If none of the above and a search filter is on => clear search filter
+            else if (isSearchQueryActive()) {
+                setQuery("");
+                setMetadata(Collections.emptyList());
+                activity.get().hideSearchSortBar(false);
+                viewModel.searchContent(getQuery(), getMetadata());
+            }
             // If none of the above, user is asking to leave => use double-tap
             else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
                 callback.remove();

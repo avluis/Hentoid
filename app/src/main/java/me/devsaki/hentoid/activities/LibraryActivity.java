@@ -532,7 +532,7 @@ public class LibraryActivity extends BaseActivity {
         }
     }
 
-    private void hideSearchSortBar(boolean hideSortOnly) {
+    public void hideSearchSortBar(boolean hideSortOnly) {
         boolean isSearchVisible = (View.VISIBLE == advancedSearchButton.getVisibility() || View.VISIBLE == searchClearButton.getVisibility());
 
         if (!hideSortOnly || !isSearchVisible)
