@@ -2507,14 +2507,9 @@ public class CustomSubsamplingScaleImageView extends View {
                     return viewHeight / (float) sHeight();
                 }
             case ScaleType.SMART_FILL:
-                if (sHeight() > sWidth()) {
-                    // Fit to width
-                    return viewWidth / (float) sWidth();
-                } else {
-                    if (viewHeight > viewWidth)
-                        return viewHeight / (float) sHeight(); // Fit to height when in portrait mode
-                    else return viewWidth / (float) sWidth(); // Fit to width when in landscape mode
-                }
+                float scale1 = viewHeight / (float) sHeight();
+                float scale2 = viewWidth / (float) sWidth();
+                return Math.max(scale1, scale2);
             case ScaleType.CUSTOM:
                 if (minScale > 0) return minScale;
                 else return Math.min(viewWidth / (float) sWidth(), viewHeight / (float) sHeight());
