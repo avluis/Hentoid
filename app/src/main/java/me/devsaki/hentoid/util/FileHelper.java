@@ -61,11 +61,6 @@ public class FileHelper {
     private static final String PRIMARY_VOLUME_NAME = "primary";
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
 
-    @FunctionalInterface
-    public interface CheckedFunction<T1, T2, R> {
-        R apply(T1 t, T2 u) throws IOException;
-    }
-
     public static String getFileProviderAuthority() {
         return AUTHORITY;
     }
@@ -277,7 +272,9 @@ public class FileHelper {
     // TODO doc
     public static void removeFile(@NonNull final Context context, @NonNull final Uri fileUri) {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
-            removeFile(new File(fileUri.getPath()));
+            String path = fileUri.getPath();
+            if (null != path)
+                removeFile(new File(fileUri.getPath()));
         } else {
             DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
             if (doc != null) doc.delete();
@@ -360,6 +357,16 @@ public class FileHelper {
     }
 
     /**
+     * Open the given Uri using the device's app(s) of choice
+     *
+     * @param context Context to use
+     * @param uri     Uri of the resource to be opened
+     */
+    public static void openUri(@NonNull Context context, @NonNull Uri uri) {
+        tryOpenFile(context, uri, uri.getLastPathSegment(), false);
+    }
+
+    /**
      * Attempt to open the file or folder at the given Uri using the device's app(s) of choice
      *
      * @param context     Context to use
@@ -410,7 +417,7 @@ public class FileHelper {
      * @return Extension of the given filename, without the "."
      */
     public static String getExtension(@NonNull final String fileName) {
-        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.US) : "";
+        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH) : "";
     }
 
     /**
@@ -425,7 +432,7 @@ public class FileHelper {
         String fileName;
         if (-1 == folderSeparatorIndex) fileName = filePath;
         else fileName = filePath.substring(folderSeparatorIndex + 1);
-        
+
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
@@ -838,18 +845,6 @@ public class FileHelper {
         return resolver.openOutputStream(targetFileUri);
     }
 
-    // TODO doc
-    // open an output stream to a new file in the app's persistent files (internal storage)
-    public static OutputStream openNewAppFolderOutputStream(@NonNull final Context context, @NonNull final String fileName) throws IOException {
-        return context.openFileOutput(fileName, Context.MODE_PRIVATE);
-    }
-
-    // TODO doc
-    // open an output stream to a new file in the app's cache files (internal storage)
-    public static OutputStream openNewTempFolderOutputStream(@NonNull final Context context, @NonNull final String fileName) throws IOException {
-        return getOutputStream(new File(context.getCacheDir(), fileName));
-    }
-
     /**
      * Format the given file size using human-readable units
      * e.g. if the size represents more than 1M Bytes, the result is formatted as megabytes
@@ -1015,7 +1010,10 @@ public class FileHelper {
     // TODO doc
     public static boolean fileExists(@NonNull final Context context, @NonNull final Uri fileUri) {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
-            return new File(fileUri.getPath()).exists();
+            String path = fileUri.getPath();
+            if (path != null)
+                return new File(path).exists();
+            else return false;
         } else {
             DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
             return (doc != null);

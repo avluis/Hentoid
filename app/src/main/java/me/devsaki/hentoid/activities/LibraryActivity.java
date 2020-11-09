@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -170,7 +171,7 @@ public class LibraryActivity extends BaseActivity {
 
 
     // Used to auto-hide the sort controls bar when no activity is detected
-    private final Debouncer<Boolean> sortCommandsAutoHide = new Debouncer<>(2500, this::hideSearchSortBar);
+    private Debouncer<Boolean> sortCommandsAutoHide;
 
 
     // === PUBLIC ACCESSORS (to be used by fragments)
@@ -270,6 +271,7 @@ public class LibraryActivity extends BaseActivity {
         initSelectionToolbar();
 
         onCreated();
+        sortCommandsAutoHide = new Debouncer<>(this, 2500, this::hideSearchSortBar);
 
         EventBus.getDefault().register(this);
     }
@@ -287,6 +289,13 @@ public class LibraryActivity extends BaseActivity {
         EventBus.getDefault().unregister(this);
         if (archiveNotificationManager != null) archiveNotificationManager.cancel();
         if (deleteNotificationManager != null) deleteNotificationManager.cancel();
+
+        // Empty all handlers to avoid leaks
+        if (toolbar != null) toolbar.setOnMenuItemClickListener(null);
+        if (selectionToolbar != null) {
+            selectionToolbar.setOnMenuItemClickListener(null);
+            selectionToolbar.setNavigationOnClickListener(null);
+        }
 
         super.onDestroy();
     }
@@ -325,7 +334,7 @@ public class LibraryActivity extends BaseActivity {
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(this, groupsButton);
             popup.getMenuInflater()
-                    .inflate(R.menu.library_groups_menu, popup.getMenu());
+                    .inflate(R.menu.library_groups_popup, popup.getMenu());
             popup.getMenu().findItem(R.id.groups_custom).setVisible(isCustomGroupingAvailable);
             popup.setOnMenuItemClickListener(item -> {
                 item.setChecked(true);
@@ -396,7 +405,7 @@ public class LibraryActivity extends BaseActivity {
                 if (!query.isEmpty())
                     // Use of handler allows to set the value _after_ the UI has auto-cleared it
                     // Without that handler the view displays with an empty value
-                    new Handler().postDelayed(() -> {
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         invalidateNextQueryTextChange = true;
                         mainSearchView.setQuery(query, false);
                     }, 100);
@@ -734,12 +743,12 @@ public class LibraryActivity extends BaseActivity {
         int count = !groups.isEmpty() ? groups.size() : contents.size();
         String title = getResources().getQuantityString(R.plurals.ask_delete_multiple, count);
         builder.setMessage(title)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
                             deleteItems(contents, groups);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
                 .create().show();
     }
@@ -805,7 +814,7 @@ public class LibraryActivity extends BaseActivity {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         String title = getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size());
         builder.setMessage(title)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
                             ArchiveNotificationChannel.init(this);
@@ -816,7 +825,7 @@ public class LibraryActivity extends BaseActivity {
                             archiveNotificationManager.notify(new ArchiveStartNotification());
                             viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess, this::onContentArchiveError);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
                 .create().show();
     }

@@ -34,6 +34,7 @@ import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
+import me.devsaki.hentoid.activities.sources.ManhwaActivity;
 import me.devsaki.hentoid.activities.sources.MrmActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NexusActivity;
@@ -56,6 +57,7 @@ import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
  * Created by DevSaki on 09/05/2015.
  * Content builder
  */
+@SuppressWarnings("UnusedReturnValue")
 @Entity
 public class Content implements Serializable {
 
@@ -116,6 +118,9 @@ public class Content implements Serializable {
     private boolean isLast;         // True if current content is the last of its set in the DB query
     @Transient
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
+
+    public Content() {
+    }
 
 
     public ToMany<Attribute> getAttributes() {
@@ -208,6 +213,7 @@ public class Content implements Serializable {
             case FAKKU2:
             case HENTAIFOX:
             case PORNCOMIX:
+            case MANHWA:
                 paths = url.split("/");
                 return paths[paths.length - 1];
             case DOUJINS:
@@ -307,6 +313,8 @@ public class Content implements Serializable {
                 return HentaifoxActivity.class;
             case MRM:
                 return MrmActivity.class;
+            case MANHWA:
+                return ManhwaActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -375,6 +383,7 @@ public class Content implements Serializable {
             case HBROWSE:
             case HENTAI2READ:
             case MRM:
+            case MANHWA:
             default:
                 galleryConst = "";
         }
@@ -400,6 +409,7 @@ public class Content implements Serializable {
             case HBROWSE:
             case HENTAI2READ:
             case MRM:
+            case MANHWA:
                 return getGalleryUrl();
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
@@ -605,6 +615,10 @@ public class Content implements Serializable {
         return storageFolder == null ? "" : storageFolder;
     }
 
+    /**
+     * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
+     */
+    @Deprecated
     public void resetStorageFolder() {
         storageFolder = "";
     }
@@ -683,10 +697,6 @@ public class Content implements Serializable {
         this.bookPreferences = bookPreferences;
     }
 
-    public void putBookPreferenceMap(String key, String value) {
-        bookPreferences.put(key, value);
-    }
-
     public int getLastReadPageIndex() {
         return lastReadPageIndex;
     }
@@ -729,14 +739,6 @@ public class Content implements Serializable {
 
     public boolean isArchive() {
         return ArchiveHelper.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed !
-    }
-
-    @Nullable
-    public GroupItem getGroupItem(long groupId) {
-        for (GroupItem gi : groupItems)
-            if (gi.group.getTargetId() == groupId) return gi;
-
-        return null;
     }
 
     public List<GroupItem> getGroupItems(Grouping grouping) {

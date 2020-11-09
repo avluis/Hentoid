@@ -9,6 +9,8 @@
     <string name="off">Off</string>
     <string name="select_all">Select all</string>
     <string name="select_none">Select none</string>
+    <string name="goto_page">Go to page…</string>
+    <string name="confirm">Confirm</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -196,6 +198,11 @@
     <string name="memory_hentoid">Hentoid : %.2f GB</string>
     <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
     <string name="memory_details">View details</string>
+
+    <!-- Logs -->
+    <string name="logs_title">Latest logs</string>
+    <string name="logs_open">Open log</string>
+    <string name="logs_share">Share log</string>
 
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
@@ -434,7 +441,6 @@
     <string name="book_prefs">Book settings</string>
     <string name="goto_app_prefs">App settings</string>
     <string name="use_app_prefs">Use app settings (%s)</string>
-    <string name="goto_page">Go to page…</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

@@ -17,6 +17,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.renderscript.RenderScript;
@@ -391,7 +392,7 @@ public class CustomSubsamplingScaleImageView extends View {
         setDoubleTapZoomDpi(120);
         setMinimumTileDpi(320);
         setGestureDetector(context);
-        this.handler = new Handler(message -> {
+        this.handler = new Handler(Looper.getMainLooper(), message -> {
             if (message.what == MESSAGE_LONG_CLICK) {
                 if (onLongClickListener != null) {
                     maxTouchCount = 0;
@@ -2209,7 +2210,6 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Get source width taking rotation into account.
      */
-    @SuppressWarnings("SuspiciousNameCombination")
     private int sWidth() {
         int rotation = getRequiredRotation();
         if (rotation == 90 || rotation == 270) {
@@ -2222,7 +2222,6 @@ public class CustomSubsamplingScaleImageView extends View {
     /**
      * Get source height taking rotation into account.
      */
-    @SuppressWarnings("SuspiciousNameCombination")
     private int sHeight() {
         int rotation = getRequiredRotation();
         if (rotation == 90 || rotation == 270) {

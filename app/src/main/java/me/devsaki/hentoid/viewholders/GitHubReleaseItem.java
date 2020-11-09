@@ -93,7 +93,7 @@ public class GitHubReleaseItem extends AbstractItem<GitHubReleaseItem.ReleaseVie
 
         @Override
         public void bindView(@NotNull GitHubReleaseItem item, @NotNull List<?> list) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
             setTitle(item.name + " (" + dateFormat.format(item.creationDate) + ")");
 

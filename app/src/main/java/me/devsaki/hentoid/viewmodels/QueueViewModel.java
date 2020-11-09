@@ -116,7 +116,7 @@ public class QueueViewModel extends AndroidViewModel {
 
         // Renumber everything
         int index = 1;
-        for (QueueRecord qr : localQueue) qr.rank = index++;
+        for (QueueRecord qr : localQueue) qr.setRank(index++);
 
         // Update queue in DB
         dao.updateQueue(localQueue);
@@ -134,7 +134,7 @@ public class QueueViewModel extends AndroidViewModel {
         // Renumber everything in reverse order
         int index = 1;
         for (int i = localQueue.size() - 1; i >= 0; i--) {
-            localQueue.get(i).rank = index++;
+            localQueue.get(i).setRank(index++);
         }
 
         // Update queue and signal skipping the 1st item
@@ -180,7 +180,7 @@ public class QueueViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(localQueue)
                         .observeOn(Schedulers.io())
-                        .map(qr -> doRemove(qr.content.getTargetId()))
+                        .map(qr -> doRemove(qr.getContent().getTargetId()))
                         .doOnComplete(this::saveQueue) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(

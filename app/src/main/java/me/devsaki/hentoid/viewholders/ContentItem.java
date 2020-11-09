@@ -130,7 +130,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     // Constructor for queued item
     public ContentItem(@NonNull QueueRecord record, ItemTouchHelper touchHelper) {
-        content = record.content.getTarget();
+        content = record.getContent().getTarget();
         viewType = ViewType.QUEUE;
         this.touchHelper = touchHelper;
         isEmpty = (null == content);
@@ -570,7 +570,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         String pagesText = tvPages.getText().toString();
                         int separator = pagesText.indexOf(";");
                         if (separator > -1) pagesText = pagesText.substring(0, separator);
-                        pagesText = pagesText + String.format(Locale.US, "; estimated %.1f MB", content.getBookSizeEstimate() / (1024 * 1024));
+                        pagesText = pagesText + String.format(Locale.ENGLISH, "; estimated %.1f MB", content.getBookSizeEstimate() / (1024 * 1024));
                         tvPages.setText(pagesText);
                     }
                 } else {

@@ -28,7 +28,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -50,7 +49,6 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -71,7 +69,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant;
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
 //   - independent page mode (currently used for horizontal display)
-public class ImagePagerFragment extends Fragment implements BrowseModeDialogFragment.Parent, ContentPrefsDialogFragment.Parent {
+public class ImagePagerFragment extends Fragment implements BrowseModeDialogFragment.Parent, ContentPrefsDialogFragment.Parent, ViewerDeleteDialogFragment.Parent {
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
@@ -92,8 +90,9 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
     private Disposable slideshowTimer = null;
 
     private Map<String, String> bookPreferences; // Preferences of current book; to feed the book prefs dialog
+    private boolean isContentArchive; // True if current content is an archive
 
-    private final Debouncer<Integer> indexRefreshDebouncer = new Debouncer<>(75, this::applyStartingIndexInternal);
+    private Debouncer<Integer> indexRefreshDebouncer;
 
     // Starting index management
     private boolean isComputingImageList = false;
@@ -162,7 +161,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
                     startSlideshow();
                     break;
                 case R.id.action_delete_book:
-                    onDeleteBook();
+                    ViewerDeleteDialogFragment.invoke(this, !isContentArchive);
                     break;
                 default:
                     // Nothing to do here
@@ -171,6 +170,8 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
         });
         showFavoritePagesButton = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
         shuffleButton = toolbar.getMenu().findItem(R.id.action_shuffle);
+
+        indexRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::applyStartingIndexInternal);
 
         return rootView;
     }
@@ -483,6 +484,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
             return;
         }
         bookPreferences = content.getBookPreferences();
+        isContentArchive = content.isArchive();
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
         updateBookNavigation(content);
@@ -503,22 +505,14 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
         }
     }
 
-    private void onDeleteBook() {
-        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
-                .setIcon(R.drawable.ic_warning)
-                .setCancelable(false)
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.viewer_ask_delete_book)
-                .setPositiveButton(android.R.string.yes,
-                        (dialog1, which) -> {
-                            dialog1.dismiss();
-                            viewModel.deleteBook(this::onDeleteError);
-                        })
-                .setNegativeButton(android.R.string.no,
-                        (dialog12, which) -> dialog12.dismiss())
-                .create()
-                .show();
+    @Override
+    public void onDeleteElement(boolean deletePage) {
+        if (deletePage)
+            viewModel.deletePage(imageIndex, this::onDeleteError);
+        else
+            viewModel.deleteBook(this::onDeleteError);
     }
+
 
     /**
      * Callback for the failure of the "delete item" action

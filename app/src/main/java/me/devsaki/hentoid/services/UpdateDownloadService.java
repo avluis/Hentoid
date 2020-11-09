@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 import androidx.annotation.Nullable;
 
@@ -61,7 +62,7 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
         notificationManager.startForeground(new UpdateProgressNotification());
 
-        progressHandler = new Handler();
+        progressHandler = new Handler(Looper.getMainLooper());
         Timber.w("Service created");
     }
 

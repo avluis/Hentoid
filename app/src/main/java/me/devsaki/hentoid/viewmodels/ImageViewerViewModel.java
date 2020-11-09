@@ -187,8 +187,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (cachePicFolder != null) {
             File[] files = cachePicFolder.listFiles();
             if (files != null)
-                for (File f : files) //noinspection ResultOfMethodCallIgnored
-                    f.delete();
+                for (File f : files)
+                    if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
 
 
             // Extract the images if they are contained within an archive
@@ -362,7 +362,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             collectionDao.insertImageFile(img);
 
             // Persist in JSON
-            Content theContent = img.content.getTarget();
+            Content theContent = img.getContent().getTarget();
             if (!theContent.getJsonUri().isEmpty())
                 ContentHelper.updateContentJson(context, theContent);
             else ContentHelper.createContentJson(context, theContent);

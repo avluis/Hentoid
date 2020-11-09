@@ -586,6 +586,7 @@ public final class Preferences {
         public static final String PREF_SETTINGS_FOLDER = "folder";
         public static final String MEMORY_USAGE = "pref_memory_usage";
         public static final String MEMORY_ALERT = "pref_memory_alert";
+        public static final String ACCESS_LATEST_LOGS = "pref_latest_logs";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String PREF_BROWSER_RESUME_LAST = "pref_browser_resume_last";

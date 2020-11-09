@@ -97,8 +97,7 @@ public class ArchiveHelper {
         try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
             byte[] header = new byte[4];
             bis.mark(header.length);
-            //noinspection ResultOfMethodCallIgnored
-            bis.read(header);
+            if (bis.read(header) < header.length) return Collections.emptyList();
             bis.reset();
             String mimeType = getMimeTypeFromArchiveBinary(header);
             if (mimeType.equals(ZIP_MIME_TYPE)) return getZipEntries(bis);
@@ -147,8 +146,7 @@ public class ArchiveHelper {
         try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
             byte[] header = new byte[4];
             bis.mark(header.length);
-            //noinspection ResultOfMethodCallIgnored
-            bis.read(header);
+            if (bis.read(header) < header.length) return Collections.emptyList();
             bis.reset();
             String mimeType = getMimeTypeFromArchiveBinary(header);
             if (mimeType.equals(ZIP_MIME_TYPE))

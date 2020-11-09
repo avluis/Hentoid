@@ -5,9 +5,9 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Looper;
-import android.util.DisplayMetrics;
 import android.webkit.WebSettings;
 
+import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -109,16 +109,14 @@ public final class Helper {
     }
 
     /**
-     * Convert the given dp value in pixels units
+     * Retreives the given dimension value as DP, not pixels
      *
-     * @param context Context to be used
-     * @param dp      Input value in dp
-     * @return Given value converted to pixels
+     * @param context Context to use to access resources
+     * @param id      Dimension resource ID to get the value from
+     * @return Given dimension value as DP
      */
-    public static int dpToPixel(@NonNull final Context context, int dp) {
-        if (-1 == DENSITY_DPI) DENSITY_DPI = context.getResources().getDisplayMetrics().densityDpi;
-        float scaleFactor = (1.0f / DisplayMetrics.DENSITY_DEFAULT) * DENSITY_DPI;
-        return (int) (dp * scaleFactor);
+    public static int dimensAsDp(@NonNull final Context context, @DimenRes int id) {
+        return (int) (context.getResources().getDimension(id) / context.getResources().getDisplayMetrics().density);
     }
 
     /**
@@ -337,7 +335,7 @@ public final class Helper {
      * @param ms Duration to format, in milliseconds
      * @return FormattedDuration
      */
-    public static String formatTime(long ms) {
+    public static String formatDuration(long ms) {
         long seconds = (long) Math.floor(ms / 1000f);
         int h = (int) Math.floor(seconds / 3600f);
         int m = (int) Math.floor((seconds - 3600f * h) / 60);
@@ -354,5 +352,9 @@ public final class Helper {
             return hStr + ":" + mStr + ":" + sStr;
         else
             return mStr + ":" + sStr;
+    }
+
+    public static String protect(@Nullable String s) {
+        return (null == s) ? "" : s;
     }
 }

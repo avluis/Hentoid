@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.text.InputType;
-import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -49,7 +49,7 @@ public class InputDialog {
     public static void invokeInputDialog(
             @NonNull final Context context,
             final @StringRes int message,
-             @Nullable final String text,
+            @Nullable final String text,
             @NonNull final Consumer<String> onResult) {
         EditText input = new EditText(context);
         if (text != null) input.setText(text);
@@ -78,6 +78,9 @@ public class InputDialog {
                 .create();
 
         materialDialog.show();
-        materialDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
+        input.requestFocus();
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
     }
 }

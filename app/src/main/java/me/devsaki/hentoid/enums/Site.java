@@ -34,6 +34,7 @@ public enum Site {
     HENTAI2READ(17, "Hentai2Read", "https://hentai2read.com/", R.drawable.ic_menu_hentai2read, false, false, false),
     HENTAIFOX(18, "Hentaifox", "https://hentaifox.com", R.drawable.ic_menu_hentaifox, false, false, false),
     MRM(19, "MyReadingManga", "https://myreadingmanga.info/", R.drawable.ic_menu_mrm, false, false, false),
+    MANHWA(20, "ManwhaHentai", "https://manhwahentai.me/", R.drawable.ic_menu_manhwa, false, false, false),
     NONE(98, "none", "", R.drawable.ic_external_library, true, false, false), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_menu_panda, true, false, false); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -132,7 +133,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private long contentHashToDisplayFirst = -1;
 
     // Used to start processing when the recyclerView has finished updating
-    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
 
     // Used to keep scroll position when moving items
@@ -201,9 +202,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
 
         recyclerView.setAdapter(fastAdapter);
-
         recyclerView.setHasFixedSize(true);
-
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Fast scroller
@@ -235,6 +234,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 .map(v -> NetworkHelper.getIncomingNetworkUsage(requireContext()))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::updateNetworkUsage));
+
+        listRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::onRecyclerUpdated);
 
         return rootView;
     }
@@ -496,7 +497,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
                 int avgSpeedKbps = (int) downloadSpeedCalulator.getAvgSpeedKbps();
                 if (avgSpeedKbps > 0)
-                    message.append(String.format(Locale.US, " @ %d KBps", avgSpeedKbps));
+                    message.append(String.format(Locale.ENGLISH, " @ %d KBps", avgSpeedKbps));
 
                 queueInfo.setText(message.toString());
                 isPreparingDownload = false;
@@ -537,12 +538,12 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         // Update displayed books
         List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper)).toList();
-        // When using mass-moving (select multiple + move up/down), diff calculations ignored certain items
-        // and desynch the "real" list from the one manipulated by selectExtension
+        // When using mass-moving (select multiple + move up/down),
+        // diff calculations ignore certain items and desynch the "real" list from the one manipulated by selectExtension
         // => use a plain ItemAdapter.set for now (and live with the occasional blinking)
 //        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
         itemAdapter.set(content);
-        new Handler().postDelayed(this::differEndCallback, 150);
+        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
 
         updateControlBar();
 
@@ -733,7 +734,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         // Delay execution of findViewHolderForAdapterPosition to give time for the new layout to
         // be calculated (if not, it might return null under certain circumstances)
-        new Handler().postDelayed(() -> {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
             RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
             if (vh instanceof IDraggableViewHolder) {
                 ((IDraggableViewHolder) vh).onDropped();
@@ -754,7 +755,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         item.setSwipeDirection(direction);
 
         if (item.getContent() != null) {
-            Debouncer<Content> cancelDebouncer = new Debouncer<>(2000, this::onCancelBook);
+            Debouncer<Content> cancelDebouncer = new Debouncer<>(requireContext(), 2000, this::onCancelBook);
             cancelDebouncer.submit(item.getContent());
 
             Runnable cancelSwipe = () -> {
@@ -845,7 +846,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             selectionToolbar.setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
-            new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
@@ -864,12 +865,12 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         String title = context.getResources().getQuantityString(R.plurals.ask_cancel_multiple, items.size());
         builder.setMessage(title)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
                             onCancelBooks(items);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
                 .create().show();
     }

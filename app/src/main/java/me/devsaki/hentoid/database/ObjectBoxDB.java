@@ -191,13 +191,7 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectAllQueueBooksQ() {
-        int[] storedContentStatus = new int[]{
-                StatusContent.SAVED.getCode(),
-                StatusContent.DOWNLOADING.getCode(),
-                StatusContent.PAUSED.getCode(),
-                StatusContent.ERROR.getCode()
-        };
-        return store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build();
+        return store.boxFor(Content.class).query().in(Content_.status, ContentHelper.getQueueStatuses()).build();
     }
 
     Query<Content> selectAllFlaggedBooksQ() {
@@ -301,7 +295,7 @@ public class ObjectBoxDB {
     List<Content> selectQueueContents() {
         List<Content> result = new ArrayList<>();
         List<QueueRecord> queueRecords = selectQueue();
-        for (QueueRecord q : queueRecords) result.add(q.content.getTarget());
+        for (QueueRecord q : queueRecords) result.add(q.getContent().getTarget());
         return result;
     }
 

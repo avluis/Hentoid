@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.LibraryActivity"
+    tools:ignore="AlwaysShowAction">
+    <item
+        android:id="@+id/open"
+        android:icon="@drawable/ic_action_open_in_new"
+        android:title="@string/logs_open" />
+    <item
+        android:id="@+id/share"
+        android:icon="@drawable/ic_action_share"
+        android:title="@string/logs_share" />
+</menu>

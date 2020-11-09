@@ -18,7 +18,7 @@ public class ErrorRecord {
 
     @Id
     public long id;
-    public ToOne<Content> content;
+    private ToOne<Content> content;
     @Convert(converter = ErrorType.ErrorTypeConverter.class, dbType = Integer.class)
     private ErrorType type;
     private String url;
@@ -48,16 +48,6 @@ public class ErrorRecord {
         this.timestamp = timestamp;
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        String timeStr = "";
-        if (timestamp != null && !timestamp.equals(Instant.EPOCH)) {
-            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // e.g. 2011-12-03T10:15:30
-            timeStr = timestamp.atZone(ZoneId.systemDefault()).format(formatter) + " ";
-        }
-        return String.format("%s%s - [%s] : %s @ %s", timeStr, contentPart, type.getName(), description, url);
-    }
 
     public ErrorType getType() {
         return type;
@@ -77,5 +67,24 @@ public class ErrorRecord {
 
     public Instant getTimestamp() {
         return (null == timestamp) ? Instant.EPOCH : timestamp;
+    }
+
+    public ToOne<Content> getContent() {
+        return content;
+    }
+
+    public void setContent(ToOne<Content> content) {
+        this.content = content;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        String timeStr = "";
+        if (timestamp != null && !timestamp.equals(Instant.EPOCH)) {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // e.g. 2011-12-03T10:15:30
+            timeStr = timestamp.atZone(ZoneId.systemDefault()).format(formatter) + " ";
+        }
+        return String.format("%s%s - [%s] : %s @ %s", timeStr, contentPart, type.getName(), description, url);
     }
 }

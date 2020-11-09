@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -157,7 +158,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     private Group group = null;
 
     // Used to start processing when the recyclerView has finished updating
-    private final Debouncer<Integer> listRefreshDebouncer = new Debouncer<>(75, this::onRecyclerUpdated);
+    private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
 
 
@@ -219,6 +220,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             throw new IllegalStateException("Parent activity has to be a LibraryActivity");
         activity = new WeakReference<>((LibraryActivity) requireActivity());
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+        listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);
     }
 
     @Override
@@ -304,7 +306,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
-                    .inflate(R.menu.library_books_sort_menu, popup.getMenu());
+                    .inflate(R.menu.library_books_sort_popup, popup.getMenu());
             popup.getMenu().findItem(R.id.sort_custom).setVisible(group != null && group.hasCustomBookOrder);
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text
@@ -405,9 +407,9 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                     .setIcon(R.drawable.ic_warning)
                     .setTitle(R.string.app_name)
                     .setMessage(R.string.menu_edit_warning_custom)
-                    .setPositiveButton(android.R.string.yes,
+                    .setPositiveButton(R.string.yes,
                             (dialog1, which) -> dialog1.dismiss())
-                    .setNegativeButton(android.R.string.no,
+                    .setNegativeButton(R.string.no,
                             (dialog2, which) -> {
                                 dialog2.dismiss();
                                 cancelEditMode();
@@ -579,7 +581,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 .setCancelable(false)
                 .setTitle(R.string.app_name)
                 .setMessage(message)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             redownloadContent(contents, true);
@@ -587,7 +589,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                             selectExtension.deselect();
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
                 .create()
                 .show();
@@ -606,7 +608,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 .setCancelable(false)
                 .setTitle(R.string.app_name)
                 .setMessage(getResources().getString(R.string.group_make_cover_ask))
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             viewModel.setGroupCover(group.id, content.getCover());
@@ -614,7 +616,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                             selectExtension.deselect();
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
                 .create()
                 .show();
@@ -1154,7 +1156,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
             invalidateNextBookClick = true;
-            new Handler().postDelayed(() -> invalidateNextBookClick = false, 200);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filter(s -> s.equals(StatusContent.DOWNLOADED)).count();
             activity.get().updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
@@ -1253,7 +1255,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         item.setSwipeDirection(direction);
 
         if (item.getContent() != null) {
-            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(2000, this::onDeleteSwipedBook);
+            Debouncer<ContentItem> deleteDebouncer = new Debouncer<>(requireContext(), 2000, this::onDeleteSwipedBook);
             deleteDebouncer.submit(item);
 
             Runnable cancelSwipe = () -> {
