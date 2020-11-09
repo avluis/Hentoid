@@ -15,13 +15,13 @@ class UpdateAvailableNotification(private val updateUrl: String) : Notification 
         val pendingIntent = PendingIntentCompat.getForegroundService(context, intent)
 
         return NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            .setVibrate(longArrayOf(1, 1, 1))
-            .setContentTitle("An update is available!") // TODO find the kotlin way of using string resources
-            .setContentText("Tap to download")
-            .setContentIntent(pendingIntent)
-            .build()
+                .setSmallIcon(R.drawable.ic_hentoid_shape)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setVibrate(longArrayOf(1, 1, 1))
+                .setContentTitle(context.resources.getText(R.string.update_available))
+                .setContentText(context.resources.getText(R.string.tap_to_download))
+                .setContentIntent(pendingIntent)
+                .build()
     }
 }

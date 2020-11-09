@@ -7,6 +7,10 @@ import java.util.List;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.Site;
 
+/**
+ * Structure to describe Hentoid update informations
+ * Original source is stored on app/update.json
+ */
 public class UpdateInfo {
 
     @Json(name = "updateURL")

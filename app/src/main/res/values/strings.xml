@@ -11,6 +11,7 @@
     <string name="select_none">Select none</string>
     <string name="goto_page">Go to page…</string>
     <string name="confirm">Confirm</string>
+    <string name="please_wait">Please wait…</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -324,10 +325,14 @@
     <string name="book_fav_help">Mark/unmark book as favourite</string>
 
     <!-- Updates -->
-    <string name="download_update">An update is available!\nTap to start downloading.</string>
+    <string name="checking_updates">Checking for updates</string>
     <string name="update_available">An update is available!</string>
-    <string name="downloading_update">Downloading update:</string>
-    <string name="install_update">Tap to install the update!</string>
+    <string name="tap_to_download">Tap to download</string>
+    <string name="update_download_failed">Update download failed</string>
+    <string name="tap_to_retry">Tap to retry</string>
+    <string name="downloading_update">Downloading update</string>
+    <string name="update_ready">Update is ready!</string>
+    <string name="tap_to_install">Tap to install</string>
     <string name="error_dependency">Error parsing update dependency.\nPlease try again later.</string>
     <string name="error_network_summary">Network error, please try again later.</string>
     <string name="error_file">Cannot find update file on server.</string>

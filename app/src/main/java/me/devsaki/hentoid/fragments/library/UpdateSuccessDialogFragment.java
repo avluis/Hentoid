@@ -17,6 +17,7 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.json.GithubRelease;
 import me.devsaki.hentoid.retrofit.GithubServer;
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem;
 import timber.log.Timber;
@@ -69,7 +70,7 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
         );
     }
 
-    private void onCheckSuccess(GitHubReleaseItem.Struct latestReleaseInfo) {
+    private void onCheckSuccess(GithubRelease latestReleaseInfo) {
         itemAdapter.add(new GitHubReleaseItem(latestReleaseInfo));
     }
 

@@ -24,8 +24,8 @@ class UpdateInstallNotification(private val apkUri: Uri) : Notification {
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setVibrate(longArrayOf(1, 1, 1))
-                .setContentTitle("Update ready")
-                .setContentText("Tap to install")
+                .setContentTitle(context.resources.getText(R.string.update_ready))
+                .setContentText(context.resources.getText(R.string.tap_to_install))
                 .setContentIntent(pendingIntent)
                 .build()
     }
