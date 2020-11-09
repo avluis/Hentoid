@@ -48,6 +48,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -460,6 +461,13 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }
 
         if (!activity.get().collapseSearchMenu()) {
+            // If none of the above and a search filter is on => clear search filter
+            if (activity.get().isSearchQueryActive()) {
+                activity.get().setQuery("");
+                activity.get().setMetadata(Collections.emptyList());
+                activity.get().hideSearchSortBar(false);
+                viewModel.searchContent(activity.get().getQuery(), activity.get().getMetadata());
+            }
             // If none of the above, user is asking to leave => use double-tap
             if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
                 callback.remove();
