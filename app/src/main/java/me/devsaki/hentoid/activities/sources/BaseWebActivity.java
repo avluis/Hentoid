@@ -890,7 +890,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         try {
             List<ImageFile> imgs = parser.parseImageList(c);
             int coverCount = (imgs.get(0).isCover()) ? 1 : 0;
-            int maxImageOrder = Stream.of(c.getImageFiles()).filter(i -> i.getStatus().equals(StatusContent.DOWNLOADED)).map(ImageFile::getOrder).max(Integer::compareTo).get();
+            int maxImageOrder;
+            if (c.getImageFiles() != null)
+                maxImageOrder = Stream.of(c.getImageFiles()).filter(i -> i.getStatus().equals(StatusContent.DOWNLOADED)).map(ImageFile::getOrder).max(Integer::compareTo).get();
+            else
+                maxImageOrder = 0;
+
             if (imgs.size() - coverCount > maxImageOrder)
                 return Stream.of(imgs).filter(i -> i.getOrder() > maxImageOrder).toList();
         } catch (Exception e) {
@@ -905,7 +910,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         if (currentContent.equals(c)) { // User hasn't left the book page since
             // Append additional pages to the current book's list of pages
-            List<ImageFile> updatedImgs = new ArrayList<>(c.getImageFiles());
+            List<ImageFile> updatedImgs = new ArrayList<>();
+            if (c.getImageFiles() != null) updatedImgs.addAll(c.getImageFiles());
+
             updatedImgs.addAll(additionalImages);
             c.setImageFiles(updatedImgs);
             // Save it
@@ -958,9 +965,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         // Used to clear RxJava observers (avoiding memory leaks)
         protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
-        // Pre-built object to represent an empty input stream
-        // (will be used instead of the actual stream when the requested resource is blocked)
-        private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
         // Listener to the results of the page parser
         protected final WebContentListener listener;
         // List of the URL patterns identifying a parsable book gallery page
@@ -1107,8 +1111,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 @Nullable final Map<String, String> requestHeaders) {
             if (isUrlForbidden(url) || !url.startsWith("http")) return true;
 
+            // Download and open the torrent file
+            // NB : Opening the URL itself won't work when the tracker is private
+            // as the 3rd party torrent app doesn't have access to it
             if (HttpHelper.getExtensionFromUri(url).equals("torrent")) {
-                disposable = Single.fromCallable(() -> saveTorrent(view.getContext(), url, requestHeaders))
+                disposable = Single.fromCallable(() -> downloadFile(view.getContext(), url, requestHeaders))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(uri -> {
@@ -1126,36 +1133,34 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         /**
-         * Download the torrent file in the cache folder
-         * NB : Opening the URL itself won't work when the tracker is private
-         * as the 3rd party torrent app doesn't have access to it
+         * Download the resource at the given URL to the app's cache folder
          *
-         * @param context        TODO
-         * @param url
-         * @param requestHeaders
-         * @return
-         * @throws IOException
+         * @param context        Context to be used
+         * @param url            URL to load
+         * @param requestHeaders Request headers (optional)
+         * @return Saved file, if successful
+         * @throws IOException if anything horrible happens during the download
          */
-        private File saveTorrent(@NonNull final Context context,
-                                 @NonNull final String url,
-                                 @Nullable final Map<String, String> requestHeaders) throws IOException {
+        private File downloadFile(@NonNull final Context context,
+                                  @NonNull final String url,
+                                  @Nullable final Map<String, String> requestHeaders) throws IOException {
             List<Pair<String, String>> requestHeadersList;
             requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url, canUseSingleOkHttpRequest());
 
-            Response torrentFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().canKnowHentoidAgent());
-            ResponseBody body = torrentFileResponse.body();
+            Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().canKnowHentoidAgent());
+            ResponseBody body = onlineFileResponse.body();
             if (null == body)
                 throw new IOException("Empty response from server");
 
             File cacheDir = context.getCacheDir();
             // Using a random file name rather than the original name to avoid errors caused by path length
-            File torrentFile = new File(cacheDir.getAbsolutePath() + File.separator + new Random().nextInt(10000) + "." + getExtensionFromUri(url));
-            if (!torrentFile.createNewFile())
-                throw new IOException("Could not create file " + torrentFile.getPath());
+            File file = new File(cacheDir.getAbsolutePath() + File.separator + new Random().nextInt(10000) + "." + getExtensionFromUri(url));
+            if (!file.createNewFile())
+                throw new IOException("Could not create file " + file.getPath());
 
-            Uri torrentFileUri = Uri.fromFile(torrentFile);
+            Uri torrentFileUri = Uri.fromFile(file);
             FileHelper.saveBinary(context, torrentFileUri, body.bytes());
-            return torrentFile;
+            return file;
         }
 
         /**
