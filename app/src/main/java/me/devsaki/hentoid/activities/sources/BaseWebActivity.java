@@ -1105,6 +1105,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 @NonNull final WebView view,
                 @NonNull final String url,
                 @Nullable final Map<String, String> requestHeaders) {
+            if (isUrlForbidden(url) || !url.startsWith("http")) return true;
+
             if (HttpHelper.getExtensionFromUri(url).equals("torrent")) {
                 disposable = Single.fromCallable(() -> saveTorrent(view.getContext(), url, requestHeaders))
                         .subscribeOn(Schedulers.io())
@@ -1135,8 +1137,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          * @throws IOException
          */
         private File saveTorrent(@NonNull final Context context,
-                                @NonNull final String url,
-                                @Nullable final Map<String, String> requestHeaders) throws IOException {
+                                 @NonNull final String url,
+                                 @Nullable final Map<String, String> requestHeaders) throws IOException {
             List<Pair<String, String>> requestHeadersList;
             requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url, canUseSingleOkHttpRequest());
 
@@ -1222,17 +1224,13 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Nullable
         private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                    @Nullable final Map<String, String> headers) {
-            if (isUrlForbidden(url) || !url.startsWith("http")) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else {
-                if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
+            if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
 
-                // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
-                if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
-                    return parseResponse(url, headers, false, false);
+            // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
+            if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
+                return parseResponse(url, headers, false, false);
 
-                return null;
-            }
+            return null;
         }
 
         /**
