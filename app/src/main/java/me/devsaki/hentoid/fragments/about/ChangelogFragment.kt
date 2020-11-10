@@ -1,7 +1,9 @@
 package me.devsaki.hentoid.fragments.about
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.mikepenz.fastadapter.FastAdapter
@@ -47,8 +49,8 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
                 changelogDownloadLatestButton.visibility = View.VISIBLE
 
                 // TODO these 2 should be in a container layout which should be used for click listeners
-                changelogDownloadLatestText.setOnClickListener { onDownloadClick(latestApkUrl) }
-                changelogDownloadLatestButton.setOnClickListener { onDownloadClick(latestApkUrl) }
+                changelogDownloadLatestText.setOnClickListener { onDownloadClick(view.context, latestApkUrl) }
+                changelogDownloadLatestButton.setOnClickListener { onDownloadClick(view.context, latestApkUrl) }
             }
             // TODO show RecyclerView
         }
@@ -59,9 +61,10 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
         }
     }
 
-    private fun onDownloadClick(apkUrl: String) {
+    private fun onDownloadClick(context: Context, apkUrl: String) {
         // Download the latest update (equivalent to tapping the "Update available" notification)
         if (!UpdateDownloadService.isRunning() && apkUrl.isNotEmpty()) {
+            Toast.makeText(context, R.string.downloading_update, Toast.LENGTH_SHORT).show()
             val intent = UpdateDownloadService.makeIntent(requireContext(), apkUrl)
             requireContext().startService(intent)
         }
