@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities.sources;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -52,6 +53,7 @@ import org.jsoup.nodes.Element;
 import org.threeten.bp.Instant;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
@@ -65,6 +67,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -124,6 +127,7 @@ import timber.log.Timber;
 import static me.devsaki.hentoid.util.Helper.getChromeVersion;
 import static me.devsaki.hentoid.util.PermissionUtil.RQST_STORAGE_PERMISSION;
 import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
+import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -202,7 +206,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private int chromeVersion;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
-    // Disposable to be used for "more pages" search
+    // Disposable to be used for punctual search
     private Disposable disposable;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
@@ -1088,22 +1092,68 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Override
         @Deprecated
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return shouldOverrideUrlLoadingInternal(view, url);
+            return shouldOverrideUrlLoadingInternal(view, url, null);
         }
 
         @TargetApi(Build.VERSION_CODES.N)
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            return shouldOverrideUrlLoadingInternal(view, request.getUrl().toString());
+            return shouldOverrideUrlLoadingInternal(view, request.getUrl().toString(), request.getRequestHeaders());
         }
 
-        protected boolean shouldOverrideUrlLoadingInternal(@NonNull final WebView view, @NonNull final String url) {
+        protected boolean shouldOverrideUrlLoadingInternal(
+                @NonNull final WebView view,
+                @NonNull final String url,
+                @Nullable final Map<String, String> requestHeaders) {
             if (HttpHelper.getExtensionFromUri(url).equals("torrent")) {
-                FileHelper.openUri(view.getContext(), Uri.parse(url));
-                return true;
+                disposable = Single.fromCallable(() -> saveTorrent(view.getContext(), url, requestHeaders))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(uri -> {
+                            disposable.dispose();
+                            FileHelper.openFile(view.getContext(), uri);
+                        }, e -> {
+                            disposable.dispose();
+                            ToastUtil.toast("Downloading torrent failed : " + e.getMessage());
+                            Timber.w(e);
+                        });
             }
+
             String host = Uri.parse(url).getHost();
             return host != null && isHostNotInRestrictedDomains(host);
+        }
+
+        /**
+         * Download the torrent file in the cache folder
+         * NB : Opening the URL itself won't work when the tracker is private
+         * as the 3rd party torrent app doesn't have access to it
+         *
+         * @param context        TODO
+         * @param url
+         * @param requestHeaders
+         * @return
+         * @throws IOException
+         */
+        private File saveTorrent(@NonNull final Context context,
+                                @NonNull final String url,
+                                @Nullable final Map<String, String> requestHeaders) throws IOException {
+            List<Pair<String, String>> requestHeadersList;
+            requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url, canUseSingleOkHttpRequest());
+
+            Response torrentFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().canKnowHentoidAgent());
+            ResponseBody body = torrentFileResponse.body();
+            if (null == body)
+                throw new IOException("Empty response from server");
+
+            File cacheDir = context.getCacheDir();
+            // Using a random file name rather than the original name to avoid errors caused by path length
+            File torrentFile = new File(cacheDir.getAbsolutePath() + File.separator + new Random().nextInt(10000) + "." + getExtensionFromUri(url));
+            if (!torrentFile.createNewFile())
+                throw new IOException("Could not create file " + torrentFile.getPath());
+
+            Uri torrentFileUri = Uri.fromFile(torrentFile);
+            FileHelper.saveBinary(context, torrentFileUri, body.bytes());
+            return torrentFile;
         }
 
         /**
@@ -1217,17 +1267,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
             if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
-            List<Pair<String, String>> requestHeadersList = new ArrayList<>();
-
-            if (requestHeaders != null)
-                for (Map.Entry<String, String> entry : requestHeaders.entrySet())
-                    requestHeadersList.add(new Pair<>(entry.getKey(), entry.getValue()));
-
-            if (canUseSingleOkHttpRequest()) {
-                String cookie = CookieManager.getInstance().getCookie(urlStr);
-                if (cookie != null)
-                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
-            }
+            List<Pair<String, String>> requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr, canUseSingleOkHttpRequest());
 
             try {
                 // Query resource here, using OkHttp

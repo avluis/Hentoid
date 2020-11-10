@@ -13,6 +13,7 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,6 +125,23 @@ public class HttpHelper {
             List<String> values = entry.getValue();
             if (values != null)
                 result.put(entry.getKey(), TextUtils.join(getValuesSeparatorFromHttpHeader(entry.getKey()), values));
+        }
+
+        return result;
+    }
+
+    // TODO doc
+    public static List<Pair<String, String>> webResourceHeadersToOkHttpHeaders(@Nullable final Map<String, String> webResourceHeaders, @Nullable String url, boolean useCookies) {
+        List<Pair<String, String>> result = new ArrayList<>();
+
+        if (webResourceHeaders != null)
+            for (Map.Entry<String, String> entry : webResourceHeaders.entrySet())
+                result.add(new Pair<>(entry.getKey(), entry.getValue()));
+
+        if (useCookies) {
+            String cookie = CookieManager.getInstance().getCookie(url);
+            if (cookie != null)
+                result.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
         }
 
         return result;

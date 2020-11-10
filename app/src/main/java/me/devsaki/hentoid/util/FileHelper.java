@@ -235,6 +235,20 @@ public class FileHelper {
         return context.getContentResolver().openOutputStream(target.getUri(), "rwt"); // Always truncate file to whatever data needs to be written
     }
 
+    // TODO doc
+    @Nullable
+    public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
+        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
+            String path = fileUri.getPath();
+            if (null != path)
+                return getOutputStream(new File(fileUri.getPath()));
+        } else {
+            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
+            if (doc != null) return getOutputStream(context, doc);
+        }
+        return null;
+    }
+
     /**
      * Create an InputStream opened the given file
      *
@@ -247,17 +261,9 @@ public class FileHelper {
         return context.getContentResolver().openInputStream(target.getUri());
     }
 
+    // TODO doc
     public static InputStream getInputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
         return context.getContentResolver().openInputStream(fileUri);
-        /*
-        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
-
-        } else {
-            DocumentFile documentFile = getFileFromSingleUriString(context, fileUri.toString());
-            if (documentFile != null) return getInputStream(context, documentFile);
-        }
-        throw new IOException("Input stream couldn't be created for " + fileUri.toString());
-         */
     }
 
     /**
@@ -385,6 +391,7 @@ public class FileHelper {
                     } catch (ActivityNotFoundException e2) {
                         ToastUtil.toast(R.string.select_file_manager);
                         openFileWithIntent(context, uri, "*/*");
+                        // TODO if it also crashes after this call, tell the user to get DocumentsUI.apk ? (see #670)
                     }
                 }
             } else
@@ -440,16 +447,16 @@ public class FileHelper {
      * Save the given binary data in the given file, truncating the file length to the given data
      *
      * @param context    Context to use
-     * @param file       File to write to
+     * @param uri        Uri of the file to write to
      * @param binaryData Data to write
      * @throws IOException In case something horrible happens during I/O
      */
-    public static void saveBinaryInFile(@NonNull final Context context, @NonNull final DocumentFile file, byte[] binaryData) throws IOException {
+    public static void saveBinary(@NonNull final Context context, @NonNull final Uri uri, byte[] binaryData) throws IOException {
         byte[] buffer = new byte[1024];
         int count;
 
         try (InputStream input = new ByteArrayInputStream(binaryData)) {
-            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(context, file))) {
+            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(context, uri))) {
 
                 while ((count = input.read(buffer)) != -1) {
                     output.write(buffer, 0, count);

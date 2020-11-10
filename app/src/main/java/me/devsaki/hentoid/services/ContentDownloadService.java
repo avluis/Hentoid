@@ -907,7 +907,7 @@ public class ContentDownloadService extends IntentService {
         DocumentFile file = FileHelper.findOrCreateDocumentFile(this, dir, mimeType, fileName);
         if (null == file)
             throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));
-        FileHelper.saveBinaryInFile(this, file, binaryContent);
+        FileHelper.saveBinary(this, file.getUri(), binaryContent);
         return file;
     }
 

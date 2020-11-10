@@ -125,7 +125,7 @@ public class LogUtil {
 
             DocumentFile logDocumentFile = FileHelper.findOrCreateDocumentFile(context, folder, "text/plain", logFileName);
             if (logDocumentFile != null)
-                FileHelper.saveBinaryInFile(context, logDocumentFile, log.getBytes());
+                FileHelper.saveBinary(context, logDocumentFile.getUri(), log.getBytes());
             return logDocumentFile;
         } catch (Exception e) {
             Timber.e(e);
