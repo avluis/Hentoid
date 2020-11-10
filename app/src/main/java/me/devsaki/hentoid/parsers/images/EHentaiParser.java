@@ -13,6 +13,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,8 +47,9 @@ public class EHentaiParser implements ImageListParser {
 
         List<ImageFile> result = new ArrayList<>();
         boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
-        Map<String, String> downloadParams = new HashMap<>();
-        int order = 1;
+
+        List<Pair<String, String>> headers = new ArrayList<>();
+        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
 
         try {
             /*
@@ -59,9 +61,6 @@ public class EHentaiParser implements ImageListParser {
              */
 
             // 1- Detect the number of pages of the gallery
-            Element e;
-            List<Pair<String, String>> headers = new ArrayList<>();
-            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
             Document doc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
             if (doc != null) {
                 Elements elements = doc.select("table.ptt a");
@@ -89,42 +88,11 @@ public class EHentaiParser implements ImageListParser {
                 //    - grab the URL of the displayed image
                 //    - grab the alternate URL of the "Click here if the image fails loading" link
                 result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
-                ImageFile img;
+                int order = 1;
                 for (String pageUrl : pageUrls) {
                     if (processHalted) break;
-                    doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
-                    if (doc != null) {
-                        // Displayed image
-                        String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
-                        if (!imageUrl.isEmpty()) {
-                            // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
-                            if (imageUrl.contains("/509.gif"))
-                                throw new LimitReachedException("E-hentai download points regenerate over time or can be bought on e-hentai if you're in a hurry");
-                            img = ParseHelper.urlToImageFile(imageUrl, order++, pageUrls.size(), StatusContent.SAVED);
-                            result.add(img);
-
-                            // "Click here if the image fails loading" link
-                            elements = doc.select("#loadfail");
-                            if (!elements.isEmpty()) {
-                                e = elements.first();
-                                String arg = e.attr("onclick");
-                                // Get the argument between 's
-                                int quoteBegin = arg.indexOf('\'');
-                                int quoteEnd = arg.indexOf('\'', quoteBegin + 1);
-                                arg = arg.substring(quoteBegin + 1, quoteEnd);
-                                // Get the query URL
-                                if (pageUrl.contains("?")) pageUrl += "&";
-                                else pageUrl += "?";
-                                pageUrl += "nl=" + arg;
-                                // Get the final URL
-                                if (URLUtil.isValidUrl(pageUrl)) {
-                                    downloadParams.put("backupUrl", pageUrl);
-                                    String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
-                                    img.setDownloadParams(downloadParamsStr);
-                                }
-                            }
-                        }
-                    }
+                    ImageFile img = parsePage(pageUrl, headers, useHentoidAgent, order++, pageUrls.size());
+                    if (img != null) result.add(img);
                     progress.advance();
                 }
             }
@@ -136,6 +104,70 @@ public class EHentaiParser implements ImageListParser {
             EventBus.getDefault().unregister(this);
         }
         return result;
+    }
+
+    @Nullable
+    static ImageFile parsePage(
+            String pageUrl,
+            List<Pair<String, String>> headers,
+            boolean useHentoidAgent,
+            int order,
+            int nbPages
+    ) throws IOException, LimitReachedException {
+        ImageFile img = null;
+        Document doc = getOnlineDocument(pageUrl, headers, useHentoidAgent);
+        if (doc != null) {
+            // Displayed image
+            String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
+            if (!imageUrl.isEmpty()) {
+                // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
+                if (imageUrl.contains("/509.gif"))
+                    throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
+                img = ParseHelper.urlToImageFile(imageUrl, order, nbPages, StatusContent.SAVED);
+
+                // "Click here if the image fails loading" link
+                // -> add backup info to the image's downloadParams
+                Elements elements = doc.select("#loadfail");
+                if (!elements.isEmpty()) {
+                    Element e = elements.first();
+                    String arg = e.attr("onclick");
+                    // Get the argument between 's
+                    int quoteBegin = arg.indexOf('\'');
+                    int quoteEnd = arg.indexOf('\'', quoteBegin + 1);
+                    arg = arg.substring(quoteBegin + 1, quoteEnd);
+                    // Get the query URL
+                    if (pageUrl.contains("?")) pageUrl += "&";
+                    else pageUrl += "?";
+                    pageUrl += "nl=" + arg;
+                    // Get the final URL
+                    if (URLUtil.isValidUrl(pageUrl)) {
+                        Map<String, String> targetDownloadParams = new HashMap<>();
+                        targetDownloadParams.put("backupUrl", pageUrl);
+                        String downloadParamsStr = JsonHelper.serializeToJson(targetDownloadParams, JsonHelper.MAP_STRINGS);
+                        img.setDownloadParams(downloadParamsStr);
+                    }
+                }
+            }
+        }
+        return img;
+    }
+
+    static void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
+        Elements imageLinks = doc.select(".gdtm a"); // Normal thumbs
+        if (null == imageLinks || imageLinks.isEmpty())
+            imageLinks = doc.select(".gdtl a"); // Large thumbs
+        if (null == imageLinks || imageLinks.isEmpty())
+            imageLinks = doc.select("#gdt a"); // Universal, ID-based
+        for (Element e : imageLinks) pageUrls.add(e.attr("href"));
+    }
+
+    static String getDisplayedImageUrl(@Nonnull Document doc) {
+        Elements elements = doc.select("img#img");
+        if (!elements.isEmpty()) {
+            Element e = elements.first();
+            return e.attr("src");
+        }
+        return "";
     }
 
     @Nullable
@@ -152,24 +184,6 @@ public class EHentaiParser implements ImageListParser {
                 return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED));
         }
         return Optional.empty();
-    }
-
-    private void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
-        Elements imageLinks = doc.select(".gdtm a"); // Normal thumbs
-        if (null == imageLinks || imageLinks.isEmpty())
-            imageLinks = doc.select(".gdtl a"); // Large thumbs
-        if (null == imageLinks || imageLinks.isEmpty())
-            imageLinks = doc.select("#gdt a"); // Universal, ID-based
-        for (Element e : imageLinks) pageUrls.add(e.attr("href"));
-    }
-
-    private String getDisplayedImageUrl(@Nonnull Document doc) {
-        Elements elements = doc.select("img#img");
-        if (!elements.isEmpty()) {
-            Element e = elements.first();
-            return e.attr("src");
-        }
-        return "";
     }
 
     /**
