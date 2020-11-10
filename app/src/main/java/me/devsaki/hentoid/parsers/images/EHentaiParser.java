@@ -155,9 +155,11 @@ public class EHentaiParser implements ImageListParser {
     }
 
     private void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
-        Elements imageLinks = doc.select(".gdtm div a"); // Normal thumbs
+        Elements imageLinks = doc.select(".gdtm a"); // Normal thumbs
         if (null == imageLinks || imageLinks.isEmpty())
             imageLinks = doc.select(".gdtl a"); // Large thumbs
+        if (null == imageLinks || imageLinks.isEmpty())
+            imageLinks = doc.select("#gdt a"); // Universal, ID-based
         for (Element e : imageLinks) pageUrls.add(e.attr("href"));
     }
 

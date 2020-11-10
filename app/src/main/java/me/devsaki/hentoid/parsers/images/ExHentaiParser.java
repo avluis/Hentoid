@@ -177,14 +177,18 @@ public class ExHentaiParser implements ImageListParser {
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
             if (imageUrl.contains("/509.gif"))
                 throw new LimitReachedException("Exhentai download points regenerate over time or can be bought on e-hentai if you're in a hurry");
-            if (!imageUrl.isEmpty()) return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED));
+            if (!imageUrl.isEmpty())
+                return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED));
         }
         return Optional.empty();
     }
 
     private void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
-        Elements imageLinks = doc.select(".gdtm div a"); // Normal thumbs
-        if (null == imageLinks || imageLinks.isEmpty()) imageLinks = doc.select(".gdtl a"); // Large thumbs
+        Elements imageLinks = doc.select(".gdtm a"); // Normal thumbs
+        if (null == imageLinks || imageLinks.isEmpty())
+            imageLinks = doc.select(".gdtl a"); // Large thumbs
+        if (null == imageLinks || imageLinks.isEmpty())
+            imageLinks = doc.select("#gdt a"); // Universal, ID-based
         for (Element e : imageLinks) pageUrls.add(e.attr("href"));
     }
 
