@@ -92,6 +92,7 @@ public class ArchiveHelper {
         else return "";
     }
 
+    // TODO doc
     public static List<ArchiveEntry> getArchiveEntries(@NonNull final Context context, @NonNull final DocumentFile file) throws IOException {
         Helper.assertNonUiThread();
         try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
@@ -106,6 +107,7 @@ public class ArchiveHelper {
         }
     }
 
+    // TODO doc
     private static List<ArchiveEntry> getZipEntries(@NonNull final BufferedInputStream bis) throws IOException {
         Helper.assertNonUiThread();
         List<ArchiveEntry> result = new ArrayList<>();
@@ -119,6 +121,7 @@ public class ArchiveHelper {
         return result;
     }
 
+    // TODO doc
     private static List<ArchiveEntry> getRarEntries(@NonNull final BufferedInputStream bis) throws IOException {
         Helper.assertNonUiThread();
         List<ArchiveEntry> result = new ArrayList<>();
@@ -136,6 +139,7 @@ public class ArchiveHelper {
         return result;
     }
 
+    // TODO doc
     public static List<Uri> extractArchiveEntries(
             @NonNull final Context context,
             @NonNull final DocumentFile file,
@@ -157,6 +161,7 @@ public class ArchiveHelper {
         }
     }
 
+    // TODO doc
     private static List<Uri> extractZipEntries(
             @NonNull final BufferedInputStream bis,
             @Nullable final List<String> entriesToExtract,
@@ -212,6 +217,7 @@ public class ArchiveHelper {
         return result;
     }
 
+    // TODO doc
     private static List<Uri> extractRarEntries(
             @NonNull final BufferedInputStream bis,
             @Nullable final List<String> entriesToExtract,
@@ -267,6 +273,7 @@ public class ArchiveHelper {
 
     // ================= ZIP FILE CREATION
 
+    // TODO doc
     public static void zipFiles(@NonNull final Context context, @NonNull final List<DocumentFile> files, @NonNull final OutputStream out) throws IOException {
         Helper.assertNonUiThread();
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out))) {
@@ -276,6 +283,7 @@ public class ArchiveHelper {
         }
     }
 
+    // TODO doc
     private static void addFile(@NonNull final Context context,
                                 @NonNull final DocumentFile file,
                                 final ZipOutputStream stream,
