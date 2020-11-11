@@ -116,7 +116,7 @@ public class EHentaiParser implements ImageListParser {
 
         // B.2- Call the API to get the pictures URL
         for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
-            EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum).getKey(), mpvInfo.mpvkey, pageNum);
+            EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum - 1).getKey(), mpvInfo.mpvkey, pageNum);
             Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, JsonHelper.serializeToJson(query, EHentaiImageQuery.class));
             EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(response.body().string(), EHentaiImageResponse.class);
             if (1 == pageNum)
@@ -258,7 +258,7 @@ public class EHentaiParser implements ImageListParser {
                 String scriptStr = script.toString();
                 if (scriptStr.contains("pagecount")) {
                     result = new MpvInfo();
-                    String[] scriptLines = scriptStr.replace("\\n", "").split(";");
+                    String[] scriptLines = scriptStr.split("\\n");
                     for (String line : scriptLines) {
                         String[] parts = line.replace("  ", " ").replace(";", "").trim().split("=");
                         if (parts.length > 1) {
