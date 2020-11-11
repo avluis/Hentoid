@@ -221,7 +221,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (!(requireActivity() instanceof LibraryActivity))
             throw new IllegalStateException("Parent activity has to be a LibraryActivity");
         activity = new WeakReference<>((LibraryActivity) requireActivity());
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
+        activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
         listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);
     }
 
@@ -690,6 +690,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
         EventBus.getDefault().unregister(this);
+        if (callback != null) callback.remove();
         super.onDestroy();
     }
 

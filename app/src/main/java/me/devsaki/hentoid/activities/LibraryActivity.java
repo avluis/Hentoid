@@ -296,7 +296,6 @@ public class LibraryActivity extends BaseActivity {
             selectionToolbar.setOnMenuItemClickListener(null);
             selectionToolbar.setNavigationOnClickListener(null);
         }
-
         super.onDestroy();
     }
 
