@@ -767,6 +767,8 @@ public final class Preferences {
         public static final int PREF_VIEWER_SLIDESHOW_DELAY_4 = 1;
         public static final int PREF_VIEWER_SLIDESHOW_DELAY_8 = 2;
         public static final int PREF_VIEWER_SLIDESHOW_DELAY_16 = 3;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_1 = 4;
+        public static final int PREF_VIEWER_SLIDESHOW_DELAY_05 = 5;
         public static final int COLOR_THEME_LIGHT = Theme.LIGHT.getId();
         public static final int COLOR_THEME_DARK = Theme.DARK.getId();
         public static final int COLOR_THEME_BLACK = Theme.BLACK.getId();

@@ -32,6 +32,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -979,26 +980,33 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
 
         // Compute slideshow delay
         int delayPref = Preferences.getViewerSlideshowDelay();
-        int delaySec;
+        int delayMs;
 
         switch (delayPref) {
+            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_05:
+                delayMs = 500;
+                break;
+            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_1:
+                delayMs = 1000;
+                break;
             case Constant.PREF_VIEWER_SLIDESHOW_DELAY_4:
-                delaySec = 4;
+                delayMs = 4 * 1000;
                 break;
             case Constant.PREF_VIEWER_SLIDESHOW_DELAY_8:
-                delaySec = 8;
+                delayMs = 8 * 1000;
                 break;
             case Constant.PREF_VIEWER_SLIDESHOW_DELAY_16:
-                delaySec = 16;
+                delayMs = 16 * 1000;
                 break;
             default:
-                delaySec = 2;
+                delayMs = 2 * 1000;
         }
 
-        if (showToast) ToastUtil.toast(String.format("Starting slideshow (delay %ss)", delaySec));
+        if (showToast)
+            ToastUtil.toast(String.format(Locale.ENGLISH, "Starting slideshow (delay %.1fs)", delayMs / 1000f));
         scrollListener.disableScroll();
 
-        slideshowTimer = Observable.timer(delaySec, TimeUnit.SECONDS)
+        slideshowTimer = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.computation())
                 .repeat()
                 .observeOn(AndroidSchedulers.mainThread())

@@ -196,12 +196,16 @@
     </string-array>
 
     <string-array name="pref_viewer_slideshow_delay_entries">
+        <item>500ms</item>
+        <item>1s</item>
         <item>2s (default)</item>
         <item>4s</item>
         <item>8s</item>
         <item>16s</item>
     </string-array>
     <string-array name="pref_viewer_slideshow_delay_values">
+        <item>5</item>
+        <item>4</item>
         <item>0</item>
         <item>1</item>
         <item>2</item>
