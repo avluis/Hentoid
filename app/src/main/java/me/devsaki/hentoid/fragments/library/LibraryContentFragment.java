@@ -900,8 +900,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         // Drag, drop & swiping
         SimpleSwipeDrawerDragCallback dragSwipeCallback = new SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
-                .withSwipeLeft(80) // dimen.delete_drawer_width - required in DP units and not pixel units
-                .withSensitivity(5f)
+                .withSwipeLeft(Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width))
+                .withSensitivity(1.5f)
                 .withNotifyAllDrops(true);
         dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
