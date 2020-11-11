@@ -963,6 +963,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     class CustomWebViewClient extends WebViewClient {
 
+        // Pre-built object to represent an empty input stream
+        // (will be used instead of the actual stream when the requested resource is blocked)
+        private final ByteArrayInputStream NOTHING = new ByteArrayInputStream("".getBytes());
+
         // Used to clear RxJava observers (avoiding memory leaks)
         protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
         // Listener to the results of the page parser
@@ -1229,13 +1233,17 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Nullable
         private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                    @Nullable final Map<String, String> headers) {
-            if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
+            if (isUrlForbidden(url) || !url.startsWith("http")) {
+                return new WebResourceResponse("text/plain", "utf-8", NOTHING);
+            } else {
+                if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
 
-            // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
-            if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
-                return parseResponse(url, headers, false, false);
+                // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
+                if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
+                    return parseResponse(url, headers, false, false);
 
-            return null;
+                return null;
+            }
         }
 
         /**
