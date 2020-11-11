@@ -35,12 +35,12 @@ import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.GroupNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
@@ -235,7 +235,7 @@ public class LibraryViewModel extends AndroidViewModel {
      *
      * @param content Content whose favourite state to toggle
      */
-    public void toggleContentFavourite(@NonNull final Content content) {
+    public void toggleContentFavourite(@NonNull final Content content, @NonNull final Runnable onSuccess) {
         if (content.isBeingDeleted()) return;
 
         compositeDisposable.add(
@@ -243,8 +243,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                },
+                                v -> onSuccess.run(),
                                 Timber::e
                         )
         );
@@ -412,7 +411,7 @@ public class LibraryViewModel extends AndroidViewModel {
         if (localGroup != null) localGroup.picture.setAndPutTarget(cover);
     }
 
-    public void saveContentPositions(@NonNull final List<Content> orderedContent) {
+    public void saveContentPositions(@NonNull final List<Content> orderedContent, @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
                 Completable.fromRunnable(() -> doSaveContentPositions(orderedContent))
                         .subscribeOn(Schedulers.io())
@@ -420,8 +419,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .doOnComplete(() -> GroupHelper.updateGroupsJson(getApplication(), dao))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> { // Update is done through LiveData
-                                },
+                                onSuccess::run,
                                 Timber::e
                         )
         );
@@ -555,13 +553,13 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
-    public void moveBooksToNew(long[] bookIds, String newGroupName) {
+    public void moveBooksToNew(long[] bookIds, String newGroupName, @NonNull final Runnable onSuccess) {
         Group newGroup = new Group(Grouping.CUSTOM, newGroupName.trim(), -1);
         newGroup.id = dao.insertGroup(newGroup);
-        moveBooks(bookIds, newGroup);
+        moveBooks(bookIds, newGroup, onSuccess);
     }
 
-    public void moveBooks(long[] bookIds, @Nullable final Group group) {
+    public void moveBooks(long[] bookIds, @Nullable final Group group, @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
                 Observable.fromIterable(Helper.getListFromPrimitiveArray(bookIds))
                         .observeOn(Schedulers.io())
@@ -574,8 +572,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> { // Update is done through LiveData
-                                },
+                                v -> onSuccess.run(),
                                 Timber::e
                         )
         );

@@ -10,7 +10,7 @@ import android.widget.RadioButton;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.annimon.stream.Stream;
@@ -46,13 +46,13 @@ public class ChangeGroupDialogFragment extends DialogFragment {
     private RadioButton detachRadio;
 
 
-    public static void invoke(FragmentManager fragmentManager, long[] bookIds) {
+    public static void invoke(Fragment parent, long[] bookIds) {
         Bundle args = new Bundle();
         args.putLongArray(BOOK_IDS, bookIds);
 
-        ChangeGroupDialogFragment fragment = new ChangeGroupDialogFragment();
-        fragment.setArguments(args);
-        fragment.show(fragmentManager, null);
+        ChangeGroupDialogFragment dialogFragment = new ChangeGroupDialogFragment();
+        dialogFragment.setArguments(args);
+        dialogFragment.show(parent.getChildFragmentManager(), null);
     }
 
     @Nullable
@@ -150,19 +150,27 @@ public class ChangeGroupDialogFragment extends DialogFragment {
         LibraryViewModel viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         if (existingRadio.isChecked()) {
-            viewModel.moveBooks(bookIds, customGroups.get(existingSpin.getSelectedIndex()));
+            viewModel.moveBooks(bookIds, customGroups.get(existingSpin.getSelectedIndex()), getParent()::onChangeSuccess);
             dismiss();
         } else if (detachRadio.isChecked()) {
-            viewModel.moveBooks(bookIds, null);
+            viewModel.moveBooks(bookIds, null, getParent()::onChangeSuccess);
             dismiss();
         } else { // New group
             List<Group> groupMatchingName = Stream.of(customGroups).filter(g -> g.name.equalsIgnoreCase(newNameTxt.getText().toString())).toList();
             if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
-                viewModel.moveBooksToNew(bookIds, newNameTxt.getText().toString());
+                viewModel.moveBooksToNew(bookIds, newNameTxt.getText().toString(), getParent()::onChangeSuccess);
                 dismiss();
             } else {
                 ToastUtil.toast(R.string.group_name_exists);
             }
         }
+    }
+
+    private Parent getParent() {
+        return (Parent) getParentFragment();
+    }
+
+    public interface Parent {
+        void onChangeSuccess();
     }
 }

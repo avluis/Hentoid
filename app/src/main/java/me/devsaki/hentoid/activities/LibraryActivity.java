@@ -736,6 +736,7 @@ public class LibraryActivity extends BaseActivity {
     public void askDeleteItems(
             @NonNull final List<Content> contents,
             @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups,
+            @Nullable final Runnable onSuccess,
             @NonNull final SelectExtension<?> selectExtension) {
         // TODO display the number of books and groups that will be deleted
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
@@ -745,7 +746,7 @@ public class LibraryActivity extends BaseActivity {
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect();
-                            deleteItems(contents, groups);
+                            deleteItems(contents, groups, onSuccess);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
@@ -754,7 +755,8 @@ public class LibraryActivity extends BaseActivity {
 
     public void deleteItems(
             @NonNull final List<Content> contents,
-            @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups
+            @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups,
+            @Nullable final Runnable onSuccess
     ) {
         DeleteNotificationChannel.init(this);
         deleteNotificationManager = new NotificationManager(this, 1);
@@ -763,7 +765,10 @@ public class LibraryActivity extends BaseActivity {
         deleteMax = contents.size() + groups.size();
         deleteNotificationManager.notify(new DeleteStartNotification());
 
-        viewModel.deleteItems(contents, groups, this::onDeleteProgress, this::onDeleteSuccess, this::onDeleteError);
+        viewModel.deleteItems(contents, groups, this::onDeleteProgress, () -> {
+            onDeleteSuccess();
+            if (onSuccess != null) onSuccess.run();
+        }, this::onDeleteError);
     }
 
     /**

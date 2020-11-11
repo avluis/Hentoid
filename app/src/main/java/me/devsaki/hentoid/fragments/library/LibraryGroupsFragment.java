@@ -308,9 +308,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         // Leave edit mode by validating => Save new item position
         if (!activity.get().isEditMode()) {
-            viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
+            // Set ordering field to custom
             Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
             sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
+            // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
+            Preferences.setGroupSortDesc(false);
+            viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
         }
 
         setPagingMethod();
@@ -355,7 +358,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             if (!Preferences.getGroupingDisplay().canReorderGroups()) selectedGroups.clear();
 
             if (!selectedContent.isEmpty() || !selectedGroups.isEmpty())
-                activity.get().askDeleteItems(selectedContent, selectedGroups, selectExtension);
+                activity.get().askDeleteItems(selectedContent, selectedGroups, null, selectExtension);
         }
     }
 

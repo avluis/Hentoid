@@ -103,7 +103,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 
 @SuppressLint("NonConstantResourceId")
-public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
+public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ChangeGroupDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -400,10 +400,13 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         // Leave edit mode by validating => Save new item position
         if (!activity.get().isEditMode()) {
-            viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList());
-            group.hasCustomBookOrder = true;
+            // Set ordering field to custom
             Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
             sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
+            // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
+            Preferences.setContentSortDesc(false);
+            viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList(), this::refreshIfNeeded);
+            group.hasCustomBookOrder = true;
         } else if (group.hasCustomBookOrder) { // Enter edit mode -> warn if a custom order already exists
             new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_warning)
@@ -498,7 +501,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             if (!Preferences.isDeleteExternalLibrary())
                 selectedContent = Stream.of(selectedContent).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).toList();
             if (!selectedContent.isEmpty())
-                activity.get().askDeleteItems(selectedContent, Collections.emptyList(), selectExtension);
+                activity.get().askDeleteItems(selectedContent, Collections.emptyList(), this::refreshIfNeeded, selectExtension);
         }
     }
 
@@ -522,7 +525,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         selectExtension.deselect();
         List<Long> bookIds = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getId).toList();
-        ChangeGroupDialogFragment.invoke(getParentFragmentManager(), Helper.getPrimitiveLongArrayFromList(bookIds));
+        ChangeGroupDialogFragment.invoke(this, Helper.getPrimitiveLongArrayFromList(bookIds));
     }
 
     /**
@@ -984,10 +987,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             itemAdapter.set(Collections.emptyList());
         } else {
             @ContentItem.ViewType int viewType;
-            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
-                viewType = ContentItem.ViewType.LIBRARY; // Paged mode won't be used in edit mode
+            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay() || activity.get().isEditMode()) // Grid won't be used in edit mode
+                viewType = activity.get().isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
             else
-                viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
+                viewType = ContentItem.ViewType.LIBRARY_GRID;
             List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).toList();
             itemAdapter.set(contentItems);
         }
@@ -1113,7 +1116,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * @param content Content whose "favourite" button has been clicked on
      */
     private void onBookFavouriteClick(@NonNull Content content) {
-        viewModel.toggleContentFavourite(content);
+        viewModel.toggleContentFavourite(content, this::refreshIfNeeded);
     }
 
     /**
@@ -1258,6 +1261,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
         if (vh instanceof ISwipeableViewHolder) {
             ((ISwipeableViewHolder) vh).onSwiped();
+            Timber.i(">> ONSWIPED");
         }
     }
 
@@ -1266,6 +1270,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
         if (vh instanceof ISwipeableViewHolder) {
             ((ISwipeableViewHolder) vh).onUnswiped();
+            Timber.i(">> ONUNSWIPED");
         }
     }
 
@@ -1277,6 +1282,20 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
         }
 
-        activity.get().deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList());
+        activity.get().deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList(), this::refreshIfNeeded);
+    }
+
+    @Override
+    public void onChangeSuccess() {
+        refreshIfNeeded();
+    }
+
+    /**
+     * Force a new search when the sort order is custom
+     * (in that case, LiveData can't do its job because of https://github.com/objectbox/objectbox-java/issues/141)
+     */
+    private void refreshIfNeeded() {
+        if (Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
+            viewModel.updateContentOrder();
     }
 }
