@@ -17,7 +17,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery;
-import me.devsaki.hentoid.retrofit.sources.ExHentaiServer;
+import me.devsaki.hentoid.retrofit.sources.EHentaiServer;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
@@ -87,13 +87,13 @@ public class ExHentaiActivity extends BaseWebActivity {
 
             String[] galleryUrlParts = urlStr.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
-            compositeDisposable.add(ExHentaiServer.API.getGalleryMetadata(query, exhCookiesStr)
+            compositeDisposable.add(EHentaiServer.EXHENTAI_API.getGalleryMetadata(query, exhCookiesStr)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata ->
                             {
                                 isHtmlLoaded = true;
-                                Content content = metadata.toContent(urlStr);
+                                Content content = metadata.toContent(urlStr, Site.EXHENTAI);
                                 Map<String, String> params = new HashMap<>();
                                 params.put(HttpHelper.HEADER_COOKIE_KEY, exhCookiesStr);
                                 content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));

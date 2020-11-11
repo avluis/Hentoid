@@ -49,13 +49,13 @@ public class EHentaiActivity extends BaseWebActivity {
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             String[] galleryUrlParts = urlStr.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
-            compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
+            compositeDisposable.add(EHentaiServer.EHENTAI_API.getGalleryMetadata(query, null)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata ->
                             {
                                 isHtmlLoaded = true;
-                                listener.onResultReady(metadata.toContent(urlStr), quickDownload);
+                                listener.onResultReady(metadata.toContent(urlStr, Site.EHENTAI), quickDownload);
                             },
                             throwable -> {
                                 Timber.e(throwable, "Error parsing content.");

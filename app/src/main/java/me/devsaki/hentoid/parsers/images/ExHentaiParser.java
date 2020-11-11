@@ -23,13 +23,14 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.json.sources.EHentaiImageQuery;
+import me.devsaki.hentoid.json.sources.EHentaiImageResponse;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import okhttp3.Response;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
@@ -72,52 +73,28 @@ public class ExHentaiParser implements ImageListParser {
             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieValue));
 
             /*
-             * 1- Detect the number of pages of the gallery
+             * A/ Without multipage viewer
+             *    A.1- Detect the number of pages of the gallery
              *
-             * 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
+             *    A.2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
              *
-             * 3- Open all pages and grab the URL of the displayed image
+             *    A.3- Open all pages and grab the URL of the displayed image
+             *
+             * B/ With multipage viewer
+             *    B.1- Open the MPV and parse gallery metadata
+             *
+             *    B.2- Call the API to get the pictures URL
              */
-
-            // 1- Detect the number of pages of the gallery
-            Document doc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
-            if (doc != null) {
-                Elements elements = doc.select("table.ptt a");
-                if (null == elements || elements.isEmpty()) return result;
-
-                int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
-                int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
-
-                progress.start(nbGalleryPages + content.getQtyPages());
-
-                // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
-                List<String> pageUrls = new ArrayList<>();
-
-                EHentaiParser.fetchPageUrls(doc, pageUrls);
-
-                if (nbGalleryPages > 1) {
-                    for (int i = 1; i < nbGalleryPages && !processHalted; i++) {
-                        doc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent);
-                        if (doc != null) EHentaiParser.fetchPageUrls(doc, pageUrls);
-                        progress.advance();
-                    }
+            Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
+            if (galleryDoc != null) {
+                // Detect if multipage viewer is on
+                Elements elements = galleryDoc.select(".gm a[href*='/mpv/']");
+                if (!elements.isEmpty()) {
+                    String mpvUrl = elements.get(0).attr("href");
+                    result = loadMpv(mpvUrl, headers, useHentoidAgent);
+                } else {
+                    result = loadClassic(content, galleryDoc, headers, useHentoidAgent);
                 }
-
-                // 3- Open all pages and
-                //    - grab the URL of the displayed image
-                //    - grab the alternate URL of the "Click here if the image fails loading" link
-                result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
-                int order = 1;
-
-                for (String pageUrl : pageUrls) {
-                    if (processHalted) break;
-                    ImageFile img = EHentaiParser.parsePage(pageUrl, headers, useHentoidAgent, order++, pageUrls.size());
-                    if (img != null) result.add(img);
-                    progress.advance();
-                }
-
-                if (result.isEmpty() && doc != null)
-                    throw new EmptyResultException("urls:" + pageUrls.size() + ",page:" + Helper.encode64(doc.toString()));
             }
             progress.complete();
 
@@ -126,6 +103,85 @@ public class ExHentaiParser implements ImageListParser {
         } finally {
             EventBus.getDefault().unregister(this);
         }
+        return result;
+    }
+
+    private List<ImageFile> loadMpv(
+            @NonNull final String mpvUrl,
+            @NonNull final List<Pair<String, String>> headers,
+            boolean useHentoidAgent) throws IOException {
+        List<ImageFile> result = new ArrayList<>();
+
+        // B.1- Open the MPV and parse gallery metadata
+        EHentaiParser.MpvInfo mpvInfo = EHentaiParser.parseMpvPage(mpvUrl, headers, useHentoidAgent);
+
+        int pageCount = Math.min(mpvInfo.pagecount, mpvInfo.images.size());
+        progress.start(pageCount);
+
+        // B.2- Call the API to get the pictures URL
+        for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
+            EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum).getKey(), mpvInfo.mpvkey, pageNum);
+            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, JsonHelper.serializeToJson(query, EHentaiImageQuery.class));
+            EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(response.body().string(), EHentaiImageResponse.class);
+            if (1 == pageNum)
+                result.add(ImageFile.newCover(imageMetadata.getUrl(), StatusContent.SAVED));
+            result.add(ParseHelper.urlToImageFile(imageMetadata.getUrl(), pageNum, pageCount, StatusContent.SAVED));
+            progress.advance();
+            // Emulate JS loader
+            if (0 == pageNum % 10) {
+                try {
+                    Thread.sleep(750);
+                } catch (InterruptedException e) {
+                    Timber.w(e);
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private List<ImageFile> loadClassic(
+            @NonNull Content content,
+            @NonNull final Document galleryDoc,
+            @NonNull final List<Pair<String, String>> headers,
+            boolean useHentoidAgent) throws IOException, LimitReachedException {
+        List<ImageFile> result = new ArrayList<>();
+
+        // A.1- Detect the number of pages of the gallery
+        Elements elements = galleryDoc.select("table.ptt a");
+        if (null == elements || elements.isEmpty()) return result;
+
+        int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
+        int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
+
+        progress.start(nbGalleryPages + content.getQtyPages());
+
+        // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
+        List<String> pageUrls = new ArrayList<>();
+
+        EHentaiParser.fetchPageUrls(galleryDoc, pageUrls);
+
+        if (nbGalleryPages > 1) {
+            for (int i = 1; i < nbGalleryPages && !processHalted; i++) {
+                Document pageDoc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent);
+                if (pageDoc != null) EHentaiParser.fetchPageUrls(pageDoc, pageUrls);
+                progress.advance();
+            }
+        }
+
+        // 3- Open all pages and
+        //    - grab the URL of the displayed image
+        //    - grab the alternate URL of the "Click here if the image fails loading" link
+        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+        int order = 1;
+        for (String pageUrl : pageUrls) {
+            if (processHalted) break;
+            ImageFile img = EHentaiParser.parsePicturePage(pageUrl, headers, useHentoidAgent, order++, pageUrls.size());
+            if (img != null) result.add(img);
+            progress.advance();
+        }
+
         return result;
     }
 

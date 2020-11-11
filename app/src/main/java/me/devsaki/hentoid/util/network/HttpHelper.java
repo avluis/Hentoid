@@ -22,8 +22,10 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.util.Consts;
-import okhttp3.OkHttpClient;
+import me.devsaki.hentoid.util.JsonHelper;
+import okhttp3.MediaType;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
@@ -34,6 +36,8 @@ public class HttpHelper {
     public static final String HEADER_COOKIE_KEY = "cookie";
     public static final String HEADER_REFERER_KEY = "referer";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
+
+    public static final MediaType JSON_MEDIA_TYPE = MediaType.parse(JsonHelper.JSON_MIME_TYPE + "; charset=utf-8");
 
     private HttpHelper() {
         throw new IllegalStateException("Utility class");
@@ -79,15 +83,25 @@ public class HttpHelper {
      * @throws IOException in case something bad happens when trying to access the online resource
      */
     public static Response getOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
-        OkHttpClient okHttp = OkHttpClientSingleton.getInstance(TIMEOUT);
+        Request.Builder requestBuilder = buildRequest(url, headers, useHentoidAgent);
+        Request request = requestBuilder.get().build();
+        return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
+    }
+
+    public static Response postOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useHentoidAgent, @NonNull final String body) throws IOException {
+        Request.Builder requestBuilder = buildRequest(url, headers, useHentoidAgent);
+        Request request = requestBuilder.post(RequestBody.create(body, JSON_MEDIA_TYPE)).build();
+        return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
+    }
+
+    private static Request.Builder buildRequest(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useHentoidAgent) {
         Request.Builder requestBuilder = new Request.Builder().url(url);
         if (headers != null)
             for (Pair<String, String> header : headers)
                 if (header.second != null)
                     requestBuilder.addHeader(header.first, header.second);
         requestBuilder.header("User-Agent", useHentoidAgent ? Consts.USER_AGENT : Consts.USER_AGENT_NEUTRAL);
-        Request request = requestBuilder.get().build();
-        return okHttp.newCall(request).execute();
+        return requestBuilder;
     }
 
     /**
