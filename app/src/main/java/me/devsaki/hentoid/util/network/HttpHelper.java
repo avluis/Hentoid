@@ -74,7 +74,7 @@ public class HttpHelper {
     }
 
     /**
-     * Read a resource from the given URL, using the given headers and agent
+     * Read a resource from the given URL with HTTP GET, using the given headers and agent
      *
      * @param url             URL to read the resource from
      * @param headers         Headers to use when building the request
@@ -88,6 +88,16 @@ public class HttpHelper {
         return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
     }
 
+    /**
+     * Read a resource from the given URL with HTTP POST, using the given headers and agent
+     *
+     * @param url             URL to read the resource from
+     * @param headers         Headers to use when building the request
+     * @param useHentoidAgent True if the Hentoid User-Agent has to be used; false if a neutral User-Agent has to be used
+     * @param body            Body of the resource to post
+     * @return HTTP response
+     * @throws IOException in case something bad happens when trying to access the online resource
+     */
     public static Response postOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useHentoidAgent, @NonNull final String body) throws IOException {
         Request.Builder requestBuilder = buildRequest(url, headers, useHentoidAgent);
         Request request = requestBuilder.post(RequestBody.create(body, JSON_MEDIA_TYPE)).build();
