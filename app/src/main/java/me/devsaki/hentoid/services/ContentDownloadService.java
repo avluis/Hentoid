@@ -851,7 +851,7 @@ public class ContentDownloadService extends IntentService {
                 finalBinaryContent = processImage(img.getDownloadParams(), binaryContent);
             else throw new InvalidParameterException("No processing parameters found");
         }
-        img.setSize(binaryContent.length);
+        img.setSize((null == finalBinaryContent) ? binaryContent.length : finalBinaryContent.length);
 
         String fileExt = null;
         String mimeType = null;
