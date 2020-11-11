@@ -57,12 +57,13 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.ui.InputDialog;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.GroupDisplayItem;
@@ -436,7 +437,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (event.getRecipient() != RC_GROUPS) return;
         switch (event.getType()) {
             case EV_SEARCH:
-                viewModel.searchGroup(Preferences.getGroupingDisplay(), Helper.protect(event.getMessage()), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
+                if (event.getMessage() != null) onSubmitSearch(event.getMessage());
                 break;
             case EV_UPDATE_SORT:
                 updateSortControls();
@@ -569,6 +570,21 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         // Refresh groups
         // TODO do we really want to do that, especially when deleting content ?
         viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
+    }
+
+    // TODO doc
+    private void onSubmitSearch(@NonNull final String query) {
+        if (query.startsWith("http")) { // Quick-open a page
+            Site s = Site.searchByUrl(query);
+            if (null == s)
+                Snackbar.make(recyclerView, R.string.malformed_url, BaseTransientBottomBar.LENGTH_SHORT).show();
+            else if (s.equals(Site.NONE))
+                Snackbar.make(recyclerView, R.string.unsupported_site, BaseTransientBottomBar.LENGTH_SHORT).show();
+            else
+                ContentHelper.launchBrowserFor(requireContext(), s, query);
+        } else {
+            viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
+        }
     }
 
     /**
