@@ -673,15 +673,20 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void onCancelBook(@NonNull Content c) {
-        viewModel.cancel(Stream.of(c).toList(), this::onDeleteError);
+        viewModel.cancel(Stream.of(c).toList(), this::onDeleteError, this::onDeleteSuccess);
     }
 
     private void onCancelBooks(@NonNull List<Content> c) {
-        viewModel.cancel(c, this::onDeleteError);
+        viewModel.cancel(c, this::onDeleteError, this::onDeleteSuccess);
     }
 
     private void onCancelAll() {
-        viewModel.cancelAll(this::onDeleteError);
+        viewModel.cancelAll(this::onDeleteError, this::onDeleteSuccess);
+    }
+
+    private void onDeleteSuccess() {
+        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
+            selectionToolbar.setVisibility(View.GONE);
     }
 
     /**
@@ -694,6 +699,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
+        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
+            selectionToolbar.setVisibility(View.GONE);
     }
 
     /**

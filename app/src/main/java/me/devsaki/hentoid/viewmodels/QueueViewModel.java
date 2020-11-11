@@ -148,14 +148,14 @@ public class QueueViewModel extends AndroidViewModel {
      *
      * @param contents Contents whose download has to be canceled
      */
-    public void cancel(@NonNull List<Content> contents, Consumer<Throwable> onError) {
+    public void cancel(@NonNull List<Content> contents, Consumer<Throwable> onError, Runnable onSuccess) {
         // TODO isn't that a little excessive to send a cancel event for EVERY book ?
         for (Content c : contents)
             EventBus.getDefault().post(new DownloadEvent(c, DownloadEvent.EV_CANCEL));
-        remove(contents, onError);
+        remove(contents, onError, onSuccess);
     }
 
-    public void remove(@NonNull List<Content> content, Consumer<Throwable> onError) {
+    public void remove(@NonNull List<Content> content, Consumer<Throwable> onError, Runnable onSuccess) {
         compositeDisposable.add(
                 Observable.fromIterable(content)
                         .observeOn(Schedulers.io())
@@ -163,15 +163,13 @@ public class QueueViewModel extends AndroidViewModel {
                         .doOnComplete(this::saveQueue) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                    // Nothing to do here; UI callbacks are handled through LiveData
-                                },
+                                v -> onSuccess.run(),
                                 onError::accept
                         )
         );
     }
 
-    public void cancelAll(Consumer<Throwable> onError) {
+    public void cancelAll(Consumer<Throwable> onError, Runnable onSuccess) {
         List<QueueRecord> localQueue = dao.selectQueue();
         if (localQueue.isEmpty()) return;
 
@@ -184,9 +182,7 @@ public class QueueViewModel extends AndroidViewModel {
                         .doOnComplete(this::saveQueue) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                    // Nothing to do here; UI callbacks are handled through LiveData
-                                },
+                                v -> onSuccess.run(),
                                 onError::accept
                         )
         );

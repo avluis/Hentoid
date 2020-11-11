@@ -373,11 +373,16 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     }
 
     private void onDeleteBook(@NonNull Content c) {
-        viewModel.remove(Stream.of(c).toList(), this::onDeleteError);
+        viewModel.remove(Stream.of(c).toList(), this::onDeleteError, this::onDeleteSuccess);
     }
 
     private void onDeleteBooks(@NonNull List<Content> c) {
-        viewModel.remove(c, this::onDeleteError);
+        viewModel.remove(c, this::onDeleteError, this::onDeleteSuccess);
+    }
+
+    private void onDeleteSuccess() {
+        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
+            selectionToolbar.setVisibility(View.GONE);
     }
 
     /**
@@ -390,6 +395,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
             String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
+        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
+            selectionToolbar.setVisibility(View.GONE);
     }
 
 
