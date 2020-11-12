@@ -188,7 +188,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         recyclerView = requireViewById(rootView, R.id.queue_list);
 
         fastAdapter = FastAdapter.with(itemAdapter);
-//        fastAdapter.setHasStableIds(true);
+        fastAdapter.setHasStableIds(false);
         ContentItem item = new ContentItem(ContentItem.ViewType.QUEUE);
         fastAdapter.registerItemFactory(item.getType(), item);
 

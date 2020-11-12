@@ -104,7 +104,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         recyclerView = requireViewById(rootView, R.id.queue_list);
 
         fastAdapter = FastAdapter.with(itemAdapter);
-//        fastAdapter.setHasStableIds(true);
+        fastAdapter.setHasStableIds(false);
         ContentItem item = new ContentItem(ContentItem.ViewType.ERRORS);
         fastAdapter.registerItemFactory(item.getType(), item);
 
