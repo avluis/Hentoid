@@ -27,10 +27,12 @@ import me.devsaki.hentoid.json.sources.EHentaiImageQuery;
 import me.devsaki.hentoid.json.sources.EHentaiImageResponse;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
@@ -109,11 +111,13 @@ public class ExHentaiParser implements ImageListParser {
     private List<ImageFile> loadMpv(
             @NonNull final String mpvUrl,
             @NonNull final List<Pair<String, String>> headers,
-            boolean useHentoidAgent) throws IOException {
+            boolean useHentoidAgent) throws IOException, EmptyResultException {
         List<ImageFile> result = new ArrayList<>();
 
         // B.1- Open the MPV and parse gallery metadata
         EHentaiParser.MpvInfo mpvInfo = EHentaiParser.parseMpvPage(mpvUrl, headers, useHentoidAgent);
+        if (null == mpvInfo)
+            throw new EmptyResultException("No exploitable data has been found on the multiple page viewer");
 
         int pageCount = Math.min(mpvInfo.pagecount, mpvInfo.images.size());
         progress.start(pageCount);
@@ -122,7 +126,14 @@ public class ExHentaiParser implements ImageListParser {
         for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
             EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum).getKey(), mpvInfo.mpvkey, pageNum);
             Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, JsonHelper.serializeToJson(query, EHentaiImageQuery.class));
-            EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(response.body().string(), EHentaiImageResponse.class);
+            ResponseBody body = response.body();
+            if (null == body)
+                throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body");
+            if (!body.string().contains("{") || !body.string().contains("}"))
+                throw new EmptyResultException("API " + mpvInfo.api_url + " returned non-JSON data");
+
+            EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(body.string(), EHentaiImageResponse.class);
+
             if (1 == pageNum)
                 result.add(ImageFile.newCover(imageMetadata.getUrl(), StatusContent.SAVED));
             result.add(ParseHelper.urlToImageFile(imageMetadata.getUrl(), pageNum, pageCount, StatusContent.SAVED));
