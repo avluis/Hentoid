@@ -132,10 +132,11 @@ public class ExHentaiParser implements ImageListParser {
             ResponseBody body = response.body();
             if (null == body)
                 throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body. query=" + jsonRequest);
-            if (!body.string().contains("{") || !body.string().contains("}"))
+            String bodyStr = body.string();
+            if (!bodyStr.contains("{") || !bodyStr.contains("}"))
                 throw new EmptyResultException("API " + mpvInfo.api_url + " returned non-JSON data. query=" + jsonRequest);
 
-            EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(body.string(), EHentaiImageResponse.class);
+            EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(bodyStr, EHentaiImageResponse.class);
 
             if (1 == pageNum)
                 result.add(ImageFile.newCover(imageMetadata.getUrl(), StatusContent.SAVED));

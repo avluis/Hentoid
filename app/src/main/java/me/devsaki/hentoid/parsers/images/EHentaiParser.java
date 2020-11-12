@@ -86,6 +86,7 @@ public class EHentaiParser implements ImageListParser {
             Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
             if (galleryDoc != null) {
                 // Detect if multipage viewer is on
+//                result = loadMpv("https://e-hentai.org/mpv/530350/8b3c7e4a21/", headers, useHentoidAgent);
                 Elements elements = galleryDoc.select(".gm a[href*='/mpv/']");
                 if (!elements.isEmpty()) {
                     String mpvUrl = elements.get(0).attr("href");
@@ -128,10 +129,11 @@ public class EHentaiParser implements ImageListParser {
             ResponseBody body = response.body();
             if (null == body)
                 throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body. query=" + jsonRequest);
-            if (!body.string().contains("{") || !body.string().contains("}"))
+            String bodyStr = body.string();
+            if (!bodyStr.contains("{") || !bodyStr.contains("}"))
                 throw new EmptyResultException("API " + mpvInfo.api_url + " returned non-JSON data. query=" + jsonRequest);
 
-            EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(body.string(), EHentaiImageResponse.class);
+            EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(bodyStr, EHentaiImageResponse.class);
             if (1 == pageNum)
                 result.add(ImageFile.newCover(imageMetadata.getUrl(), StatusContent.SAVED));
             result.add(ParseHelper.urlToImageFile(imageMetadata.getUrl(), pageNum, pageCount, StatusContent.SAVED));
