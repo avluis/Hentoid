@@ -65,6 +65,8 @@ public class EHentaiParser implements ImageListParser {
 
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl()));
+        headers.add(new Pair<>(HttpHelper.HEADER_ACCEPT_KEY, "*/*"));
 
         List<ImageFile> result = Collections.emptyList();
         try {
@@ -121,12 +123,13 @@ public class EHentaiParser implements ImageListParser {
         // B.2- Call the API to get the pictures URL
         for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
             EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum - 1).getKey(), mpvInfo.mpvkey, pageNum);
-            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, JsonHelper.serializeToJson(query, EHentaiImageQuery.class));
+            String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
+            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
             ResponseBody body = response.body();
             if (null == body)
-                throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body");
+                throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body. query=" + jsonRequest);
             if (!body.string().contains("{") || !body.string().contains("}"))
-                throw new EmptyResultException("API " + mpvInfo.api_url + " returned non-JSON data");
+                throw new EmptyResultException("API " + mpvInfo.api_url + " returned non-JSON data. query=" + jsonRequest);
 
             EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(body.string(), EHentaiImageResponse.class);
             if (1 == pageNum)

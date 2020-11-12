@@ -22,7 +22,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.JsonHelper;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -33,11 +32,10 @@ import timber.log.Timber;
 public class HttpHelper {
 
     private static final int TIMEOUT = 30000; // 30 seconds
+    public static final String HEADER_ACCEPT_KEY = "accept";
     public static final String HEADER_COOKIE_KEY = "cookie";
     public static final String HEADER_REFERER_KEY = "referer";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
-
-    public static final MediaType JSON_MEDIA_TYPE = MediaType.parse(JsonHelper.JSON_MIME_TYPE + "; charset=utf-8");
 
     private HttpHelper() {
         throw new IllegalStateException("Utility class");
@@ -98,9 +96,14 @@ public class HttpHelper {
      * @return HTTP response
      * @throws IOException in case something bad happens when trying to access the online resource
      */
-    public static Response postOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useHentoidAgent, @NonNull final String body) throws IOException {
+    public static Response postOnlineResource(
+            @NonNull String url,
+            @Nullable List<Pair<String, String>> headers,
+            boolean useHentoidAgent,
+            @NonNull final String body,
+            @NonNull final String mimeType) throws IOException {
         Request.Builder requestBuilder = buildRequest(url, headers, useHentoidAgent);
-        Request request = requestBuilder.post(RequestBody.create(body, JSON_MEDIA_TYPE)).build();
+        Request request = requestBuilder.post(RequestBody.create(body, MediaType.parse(mimeType))).build();
         return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
     }
 
