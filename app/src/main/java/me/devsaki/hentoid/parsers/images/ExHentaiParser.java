@@ -126,7 +126,7 @@ public class ExHentaiParser implements ImageListParser {
 
         // B.2- Call the API to get the pictures URL
         for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
-            EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum).getKey(), mpvInfo.mpvkey, pageNum);
+            EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum - 1).getKey(), mpvInfo.mpvkey, pageNum);
             String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
             Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
             ResponseBody body = response.body();
