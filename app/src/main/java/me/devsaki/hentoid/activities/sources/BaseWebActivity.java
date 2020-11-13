@@ -318,9 +318,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         // Alert banner
-        alertBanner = findViewById(R.id.web_alert_group);
-        alertIcon = findViewById(R.id.web_alert_icon);
-        alertMessage = findViewById(R.id.web_alert_txt);
+        alertBanner = findViewById(R.id.top_alert);
+        alertIcon = findViewById(R.id.top_alert_icon);
+        alertMessage = findViewById(R.id.top_alert_txt);
         displayAlertBanner();
     }
 
