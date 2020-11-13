@@ -71,7 +71,7 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/importing_please_wait" />
+            tools:text="Site is broken, support coming soon !" />
 
         <ImageView
             android:id="@+id/top_alert_icon"
@@ -89,7 +89,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_margin="8dp"
-            android:onClick="onAlertCloseClick"
+            android:onClick="onTopAlertCloseClick"
             android:src="@drawable/ic_cancel"
             app:layout_constraintEnd_toEndOf="@id/top_alert_txt"
             app:layout_constraintTop_toTopOf="@id/top_alert_txt"
@@ -110,7 +110,7 @@
             android:id="@+id/bottom_alert_txt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?colorSecondary"
+            android:background="@color/black_opacity_50"
             android:minHeight="64dp"
             android:paddingStart="64dp"
             android:paddingTop="8dp"
@@ -120,14 +120,14 @@
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            tools:text="@string/importing_please_wait" />
+            tools:text="This book is tagged 'forbiddenTag'" />
 
         <ImageView
             android:id="@+id/bottom_alert_icon"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_margin="8dp"
-            android:src="@drawable/ic_nuclear"
+            android:src="@drawable/ic_forbidden"
             app:layout_constraintStart_toStartOf="@id/bottom_alert_txt"
             app:layout_constraintTop_toTopOf="@id/bottom_alert_txt"
             app:tint="@color/white_opacity_66"
@@ -138,7 +138,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_margin="8dp"
-            android:onClick="onAlertCloseClick"
+            android:onClick="onBottomAlertCloseClick"
             android:src="@drawable/ic_cancel"
             app:layout_constraintEnd_toEndOf="@id/bottom_alert_txt"
             app:layout_constraintTop_toTopOf="@id/bottom_alert_txt"

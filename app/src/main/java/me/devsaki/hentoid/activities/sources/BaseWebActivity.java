@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -88,13 +89,11 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AlertStatus;
-import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -185,10 +184,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private SwipeRefreshLayout swipeLayout;
     // Animated check (visual confirmation for quick download)
     ImageView animatedCheck;
-    // Alert message panel and text
-    private View alertBanner;
-    private ImageView alertIcon;
-    private TextView alertMessage;
+    // Alert message panels and text
+    private View topAlertBanner;
+    private ImageView topAlertIcon;
+    private TextView topAlertMessage;
+    private View bottomAlertBanner;
+    private TextView bottomAlertMessage;
 
     // === VARIABLES
     private CustomWebViewClient webClient;
@@ -317,11 +318,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
 
-        // Alert banner
-        alertBanner = findViewById(R.id.top_alert);
-        alertIcon = findViewById(R.id.top_alert_icon);
-        alertMessage = findViewById(R.id.top_alert_txt);
-        displayAlertBanner();
+        // Alert banners
+        topAlertBanner = findViewById(R.id.top_alert);
+        topAlertIcon = findViewById(R.id.top_alert_icon);
+        topAlertMessage = findViewById(R.id.top_alert_txt);
+
+        bottomAlertBanner = findViewById(R.id.bottom_alert);
+        bottomAlertMessage = findViewById(R.id.bottom_alert_txt);
+
+        displayTopAlertBanner();
     }
 
     /**
@@ -387,7 +392,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     public void onUpdateEvent(UpdateEvent event) {
         if (event.sourceAlerts.containsKey(getStartSite())) {
             alert = event.sourceAlerts.get(getStartSite());
-            displayAlertBanner();
+            displayTopAlertBanner();
         }
     }
 
@@ -570,19 +575,39 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * Displays the top alert banner
      * (the one that contains the alerts when downloads are broken or sites are unavailable)
      */
-    private void displayAlertBanner() {
-        if (alertMessage != null && alert != null) {
-            alertIcon.setImageResource(alert.getStatus().getIcon());
-            alertMessage.setText(formatAlertMessage(alert));
-            alertBanner.setVisibility(View.VISIBLE);
+    private void displayTopAlertBanner() {
+        if (topAlertMessage != null && alert != null) {
+            topAlertIcon.setImageResource(alert.getStatus().getIcon());
+            topAlertMessage.setText(formatAlertMessage(alert));
+            topAlertBanner.setVisibility(View.VISIBLE);
         }
     }
 
     /**
      * Handler for the close icon of the top alert banner
      */
-    public void onAlertCloseClick(View view) {
-        alertBanner.setVisibility(View.GONE);
+    public void onTopAlertCloseClick(View view) {
+        topAlertBanner.setVisibility(View.GONE);
+    }
+
+    /**
+     * Displays the bottom alert banner
+     * (the one that contains the alerts when reaching a book with unwanted tags)
+     */
+    private void displayBottomAlertBanner(@NonNull final List<String> unwantedTags) {
+        if (!unwantedTags.isEmpty()) {
+            bottomAlertMessage.setText(getResources().getString(R.string.alert_unwanted_tags, TextUtils.join(", ", unwantedTags)));
+            bottomAlertBanner.setVisibility(View.VISIBLE);
+        } else {
+            bottomAlertBanner.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Handler for the close icon of the bottom alert banner
+     */
+    public void onBottomAlertCloseClick(View view) {
+        bottomAlertBanner.setVisibility(View.GONE);
     }
 
 
@@ -752,24 +777,20 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         // Check if the tag blocker applies here
-        if (!Preferences.getBlockedTags().isEmpty()) {
-            List<String> tags = Stream.of(currentContent.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG)).map(Attribute::getName).toList();
-            for (String blocked : Preferences.getBlockedTags())
-                for (String tag : tags)
-                    if (Helper.isPresentAsWord(blocked, tag)) {
-                        if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.PREF_DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
-                            ToastUtil.toast(getResources().getString(R.string.blocked_tag, tag));
-                        } else { // Insert directly as an error
-                            List<ErrorRecord> errors = new ArrayList<>();
-                            errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tag : " + tag, Instant.now()));
-                            currentContent.setErrorLog(errors);
-                            currentContent.setStatus(StatusContent.ERROR);
-                            objectBoxDAO.insertContent(currentContent);
-                            ToastUtil.toast(getResources().getString(R.string.blocked_tag_queued, tag));
-                            changeActionMode(ActionMode.VIEW_QUEUE);
-                        }
-                        return;
-                    }
+        List<String> blockedTags = ContentHelper.getBlockedTags(currentContent);
+        if (!blockedTags.isEmpty()) {
+            if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.PREF_DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
+                ToastUtil.toast(getResources().getString(R.string.blocked_tag, blockedTags.get(0)));
+            } else { // Insert directly as an error
+                List<ErrorRecord> errors = new ArrayList<>();
+                errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tags : " + TextUtils.join(", ", blockedTags), Instant.now()));
+                currentContent.setErrorLog(errors);
+                currentContent.setStatus(StatusContent.ERROR);
+                objectBoxDAO.insertContent(currentContent);
+                ToastUtil.toast(getResources().getString(R.string.blocked_tag_queued, blockedTags.get(0)));
+                changeActionMode(ActionMode.VIEW_QUEUE);
+            }
+            return;
         }
 
         animatedCheck.setVisibility(View.VISIBLE);
@@ -858,6 +879,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (!quickDownload) changeActionMode(ActionMode.VIEW_QUEUE);
             result = ContentStatus.IN_QUEUE;
         }
+
+        webClient.setBlockedTags(ContentHelper.getBlockedTags(content));
 
         currentContent = content;
         return result;
@@ -985,6 +1008,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         private boolean isPageLoading = false;
         // Loading state of the HTML code of the current webpage (used to trigger the action button)
         boolean isHtmlLoaded = false;
+        // TODO doc
+        List<String> blockedTags = Collections.emptyList();
 
 
         CustomWebViewClient(String[] galleryUrl, WebContentListener listener) {
@@ -1008,6 +1033,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         void setResultUrlRewriter(@NonNull BiFunction<Uri, Integer, String> rewriter) {
             resultsUrlRewriter = rewriter;
+        }
+
+        void setBlockedTags(@NonNull final List<String> blockedTags) {
+            this.blockedTags = blockedTags;
         }
 
         /**
@@ -1202,6 +1231,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             forwardMenu.setEnabled(webView.canGoForward());
             boolean isResults = isResultsPage(Helper.protect(webView.getUrl()));
             changeSeekMode(isResults ? SeekMode.PAGE : SeekMode.GALLERY, isResults || backListContainsGallery(webView.copyBackForwardList()) > -1);
+            // Manager bottom alert banner visibility
+            if (isGalleryPage(webView.getUrl())) displayBottomAlertBanner(blockedTags);
+            else onBottomAlertCloseClick(null);
         }
 
         /**
@@ -1278,6 +1310,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
             if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
+            blockedTags = Collections.emptyList();
             List<Pair<String, String>> requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr, canUseSingleOkHttpRequest());
 
             try {

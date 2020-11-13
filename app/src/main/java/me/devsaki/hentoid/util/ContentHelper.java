@@ -767,6 +767,22 @@ public final class ContentHelper {
         context.startActivity(intent);
     }
 
+    // TODO doc
+    public static List<String> getBlockedTags(@NonNull final Content content) {
+        List<String> result = Collections.emptyList();
+        if (!Preferences.getBlockedTags().isEmpty()) {
+            List<String> tags = Stream.of(content.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG)).map(Attribute::getName).toList();
+            for (String blocked : Preferences.getBlockedTags())
+                for (String tag : tags)
+                    if (Helper.isPresentAsWord(blocked, tag)) {
+                        if (result.isEmpty()) result = new ArrayList<>();
+                        result.add(tag);
+                        break;
+                    }
+        }
+        return result;
+    }
+
     /**
      * Comparator to be used to sort files according to their names :
      * - Sort according to the concatenation of all its numerical characters, if any
