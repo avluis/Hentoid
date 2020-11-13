@@ -131,10 +131,10 @@ public class ExHentaiParser implements ImageListParser {
             Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
             ResponseBody body = response.body();
             if (null == body)
-                throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body. query=" + jsonRequest);
+                throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body");
             String bodyStr = body.string();
             if (!bodyStr.contains("{") || !bodyStr.contains("}"))
-                throw new EmptyResultException("API " + mpvInfo.api_url + " returned non-JSON data. query=" + jsonRequest);
+                throw new EmptyResultException("API " + mpvInfo.api_url + " returned non-JSON data");
 
             EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(bodyStr, EHentaiImageResponse.class);
 
