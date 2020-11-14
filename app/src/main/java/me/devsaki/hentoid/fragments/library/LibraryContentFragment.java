@@ -172,8 +172,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
         @Override
         public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-//            return oldItem.equals(newItem) && oldItem.getCover().equals(newItem.getCover());
-//            return oldItem.equals(newItem) && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl());
             return oldItem.equals(newItem);
         }
 
@@ -197,6 +195,9 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
+            }
+            if (oldItem.getReadPagesCount() != newItem.getReadPagesCount()) {
+                diffBundleBuilder.setReadPagesCount(newItem.getReadPagesCount());
             }
             if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
                 diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());
