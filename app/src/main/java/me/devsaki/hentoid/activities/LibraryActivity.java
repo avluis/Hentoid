@@ -118,9 +118,9 @@ public class LibraryActivity extends BaseActivity {
     // "Search" button on top menu
     private MenuItem searchMenu;
     // "Edit mode" / "Validate edit" button on top menu
-    private MenuItem editMenu;
+    private MenuItem reorderMenu;
     // "Cancel edit" button on top menu
-    private MenuItem editCancelMenu;
+    private MenuItem reorderCancelMenu;
     // "Create new group" button on top menu
     private MenuItem newGroupMenu;
     // "Toggle favourites" button on top menu
@@ -425,8 +425,8 @@ public class LibraryActivity extends BaseActivity {
         favsMenu = toolbar.getMenu().findItem(R.id.action_favourites);
         updateFavouriteFilter();
 
-        editMenu = toolbar.getMenu().findItem(R.id.action_edit);
-        editCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
+        reorderMenu = toolbar.getMenu().findItem(R.id.action_edit);
+        reorderCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
         newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
         sortMenu = toolbar.getMenu().findItem(R.id.action_order);
 
@@ -689,16 +689,17 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void updateToolbar() {
+        Grouping currentGrouping = Preferences.getGroupingDisplay();
+
         searchMenu.setVisible(!editMode);
-        newGroupMenu.setVisible(!editMode && isGroupDisplayed());
+        newGroupMenu.setVisible(!editMode && isGroupDisplayed() && currentGrouping.canReorderGroups());
         favsMenu.setVisible(!editMode && !isGroupDisplayed());
-        editMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_reorder_lines);
-        editCancelMenu.setVisible(editMode);
+        reorderMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_reorder_lines);
+        reorderCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
 
-        Grouping currentGrouping = Preferences.getGroupingDisplay();
-        if (isGroupDisplayed()) editMenu.setVisible(currentGrouping.canReorderGroups());
-        else editMenu.setVisible(currentGrouping.canReorderBooks());
+        if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
+        else reorderMenu.setVisible(currentGrouping.canReorderBooks());
 
         signalFragment(EV_UPDATE_SORT, null);
     }
