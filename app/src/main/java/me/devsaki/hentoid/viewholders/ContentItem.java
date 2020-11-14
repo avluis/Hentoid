@@ -305,6 +305,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             attachCover(item.content);
             attachFlag(item.content);
             attachTitle(item.content);
+            if (readingProgress != null) attachReadingProgress(item.content);
             if (tvArtist != null) attachArtist(item.content);
             if (tvSeries != null) attachSeries(item.content);
             if (tvPages != null) attachPages(item.content, item.viewType);
@@ -412,13 +413,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
             tvTitle.setText(title);
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
+        }
 
-            if (readingProgress != null) {
-                readingProgress.setVisibility(View.VISIBLE);
-                readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
-                readingProgress.setTotal(content.getImageFiles().size());
-                readingProgress.setProgress1(content.getLastReadPageIndex());
-            }
+        private void attachReadingProgress(@NonNull final Content content) {
+            readingProgress.setVisibility(View.VISIBLE);
+            readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
+            readingProgress.setTotal(content.getImageFiles().size());
+            readingProgress.setProgress1(content.getLastReadPageIndex());
         }
 
         private void attachArtist(@NonNull final Content content) {
