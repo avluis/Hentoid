@@ -532,11 +532,11 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     private Group doDeleteGroup(@NonNull final Group group) throws GroupNotRemovedException {
         Helper.assertNonUiThread();
-        if (!group.items.isEmpty()) throw new GroupNotRemovedException(group, "Group is not empty");
 
         try {
             // Check if given content still exists in DB
             Group theGroup = dao.selectGroup(group.id);
+            if (!theGroup.items.isEmpty()) throw new GroupNotRemovedException(group, "Group is not empty");
 
             if (theGroup != null) {
                 dao.deleteGroup(theGroup.id);
