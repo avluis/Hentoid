@@ -323,11 +323,13 @@ public class ObjectBoxDAO implements CollectionDAO {
         LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc));
         LiveData<List<Group>> workingData = livedata;
 
-        // Manually add items inside each groups (which doesn't contain any as they are dynamically generated)
+        // Download date grouping, groups are empty as they are dynamically generated
+        //   -> Manually add items inside each of them
+        //   -> Manually set a cover for each of them
         if (grouping == Grouping.DL_DATE.getId()) {
             MediatorLiveData<List<Group>> livedata2 = new MediatorLiveData<>();
             livedata2.addSource(livedata, v -> {
-                List<Group> enrichedWithItems = Stream.of(v).map(g -> g.setItems(selectGroupItemsByDlDate(g.propertyMin, g.propertyMax))).toList();
+                List<Group> enrichedWithItems = Stream.of(v).map(g -> enrichGroupWithItemsByDlDate(g, g.propertyMin, g.propertyMax)).toList();
                 livedata2.setValue(enrichedWithItems);
             });
             workingData = livedata2;
@@ -343,6 +345,14 @@ public class ObjectBoxDAO implements CollectionDAO {
             });
             return result;
         } else return workingData;
+    }
+
+    private Group enrichGroupWithItemsByDlDate(@NonNull final Group g, int minDays, int maxDays) {
+        List<GroupItem> items = selectGroupItemsByDlDate(minDays, maxDays);
+        g.setItems(items);
+        if (!items.isEmpty()) g.picture.setTarget(items.get(0).content.getTarget().getCover());
+
+        return g;
     }
 
     @Nullable
