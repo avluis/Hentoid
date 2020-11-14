@@ -125,7 +125,7 @@ public class ImageFile {
 
     public ImageFile setIsCover(boolean isCover) {
         this.isCover = isCover;
-        this.read = true;
+        if (isCover) this.read = true;
         return this;
     }
 

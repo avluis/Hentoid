@@ -423,7 +423,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (imgs != null) {
                 readingProgress.setVisibility(View.VISIBLE);
                 readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
-                readingProgress.setTotal(content.getImageFiles().size());
+                readingProgress.setTotal(content.getImageFiles().size() - 1); // Remove the cover
                 readingProgress.setProgress1(content.getReadPagesCount());
             }
         }
