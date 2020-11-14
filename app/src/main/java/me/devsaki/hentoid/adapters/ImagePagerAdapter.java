@@ -234,8 +234,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     @Nullable
-    public ImageFile getImageAt(int position) {
-        return (position >= 0 && position < getItemCount()) ? getItem(position) : null;
+    public ImageFile getImageAt(int index) {
+        return (index >= 0 && index < getItemCount()) ? getItem(index) : null;
     }
 
     public void destroy() {

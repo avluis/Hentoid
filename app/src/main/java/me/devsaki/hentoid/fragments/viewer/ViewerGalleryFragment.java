@@ -45,7 +45,7 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
-public class ImageGalleryFragment extends Fragment {
+public class ViewerGalleryFragment extends Fragment {
 
     private static final String KEY_FILTER_FAVOURITES = "filter_favourites";
 
@@ -69,8 +69,8 @@ public class ImageGalleryFragment extends Fragment {
     private boolean filterFavourites = false;
 
 
-    static ImageGalleryFragment newInstance(boolean filterFavourites) {
-        ImageGalleryFragment fragment = new ImageGalleryFragment();
+    static ViewerGalleryFragment newInstance(boolean filterFavourites) {
+        ViewerGalleryFragment fragment = new ViewerGalleryFragment();
         Bundle args = new Bundle();
         args.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
         fragment.setArguments(args);
@@ -223,7 +223,7 @@ public class ImageGalleryFragment extends Fragment {
                 if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
                     getParentFragmentManager()
                             .beginTransaction()
-                            .replace(android.R.id.content, new ImagePagerFragment())
+                            .replace(android.R.id.content, new ViewerPagerFragment())
                             .addToBackStack(null)
                             .commit();
                 } else { // Pager mode (Library -> pager -> gallery -> pager)

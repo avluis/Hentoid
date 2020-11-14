@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
-import me.devsaki.hentoid.fragments.viewer.ImageGalleryFragment;
-import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
+import me.devsaki.hentoid.fragments.viewer.ViewerGalleryFragment;
+import me.devsaki.hentoid.fragments.viewer.ViewerPagerFragment;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -61,8 +61,8 @@ public class ImageViewerActivity extends BaseActivity {
 
         if (null == savedInstanceState) {
             Fragment fragment;
-            if (Preferences.isViewerOpenBookInGalleryMode()) fragment = new ImageGalleryFragment();
-            else fragment = new ImagePagerFragment();
+            if (Preferences.isViewerOpenBookInGalleryMode()) fragment = new ViewerGalleryFragment();
+            else fragment = new ViewerPagerFragment();
 
             getSupportFragmentManager()
                     .beginTransaction()

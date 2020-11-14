@@ -70,7 +70,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant;
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
 //   - independent page mode (currently used for horizontal display)
-public class ImagePagerFragment extends Fragment implements BrowseModeDialogFragment.Parent, ContentPrefsDialogFragment.Parent, ViewerDeleteDialogFragment.Parent {
+public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDialogFragment.Parent, ViewerPrefsDialogFragment.Parent, ViewerDeleteDialogFragment.Parent {
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
@@ -241,7 +241,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
 
         setSystemBarsVisible(controlsOverlay.getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
         if (Preferences.Constant.PREF_VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
-            BrowseModeDialogFragment.invoke(this);
+            ViewerBrowseModeDialogFragment.invoke(this);
         updatePageDisplay();
         updateFavouritesGalleryButtonDisplay();
     }
@@ -384,7 +384,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
      * Show the book viewer settings dialog
      */
     private void onBookSettingsClick() {
-        ContentPrefsDialogFragment.invoke(this, bookPreferences);
+        ViewerPrefsDialogFragment.invoke(this, bookPreferences);
     }
 
     /**
@@ -407,7 +407,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
      */
     private void onPageMenuClick() {
         float currentScale = adapter.getScaleAtPosition(imageIndex);
-        ImageBottomSheetFragment.show(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+        ViewerBottomSheetFragment.show(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
     }
 
     /**
@@ -546,6 +546,8 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
 
         imageIndex = scrollPosition;
         highestImageIndexReached = Math.max(imageIndex, highestImageIndexReached);
+        ImageFile currentImage = adapter.getImageAt(imageIndex);
+        if (currentImage != null) viewModel.markPageAsRead(currentImage.getOrder());
 
         // Resets zoom if we're using horizontal (independent pages) mode
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
@@ -620,7 +622,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
      * @param prefs Shared preferences object
      * @param key   Key that has been changed
      */
-    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+    private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         switch (key) {
             case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
             case Preferences.Key.PREF_VIEWER_HOLD_TO_ZOOM:
@@ -824,7 +826,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
      *
      * @param pageNum Page number to go to (1-indexed)
      */
-    public void goToPage(int pageNum) {
+    private void goToPage(int pageNum) {
         int position = pageNum - 1;
         if (position == imageIndex || position < 0 || position > maxPosition)
             return;
@@ -931,7 +933,7 @@ public class ImagePagerFragment extends Fragment implements BrowseModeDialogFrag
         } else { // Pager mode (Library -> pager -> gallery -> pager)
             getParentFragmentManager()
                     .beginTransaction()
-                    .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
+                    .replace(android.R.id.content, ViewerGalleryFragment.newInstance(filterFavourites))
                     .addToBackStack(null)
                     .commit();
         }

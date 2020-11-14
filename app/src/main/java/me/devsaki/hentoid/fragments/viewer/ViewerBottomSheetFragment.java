@@ -41,7 +41,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
-public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
+public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
 
     private ImageViewerViewModel viewModel;
 
@@ -66,7 +66,7 @@ public class ImageBottomSheetFragment extends BottomSheetDialogFragment {
         builder.setImageIndex(imageIndex);
         builder.setScale(currentScale);
 
-        ImageBottomSheetFragment imageBottomSheetFragment = new ImageBottomSheetFragment();
+        ViewerBottomSheetFragment imageBottomSheetFragment = new ViewerBottomSheetFragment();
         imageBottomSheetFragment.setArguments(builder.getBundle());
         ThemeHelper.setStyle(context, imageBottomSheetFragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         imageBottomSheetFragment.show(fragmentManager, "imageBottomSheetFragment");

@@ -18,10 +18,10 @@ import static androidx.core.view.ViewCompat.requireViewById;
 /**
  * First-time use dialog for the choice of default app browse mode
  */
-public class BrowseModeDialogFragment extends DialogFragment {
+public class ViewerBrowseModeDialogFragment extends DialogFragment {
 
     public static void invoke(Fragment parent) {
-        BrowseModeDialogFragment fragment = new BrowseModeDialogFragment();
+        ViewerBrowseModeDialogFragment fragment = new ViewerBrowseModeDialogFragment();
         fragment.setCancelable(false);
         fragment.show(parent.getChildFragmentManager(), null);
     }

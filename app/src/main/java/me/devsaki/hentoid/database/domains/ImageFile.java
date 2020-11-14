@@ -24,6 +24,7 @@ public class ImageFile {
     private String url = "";
     private String name = "";
     private String fileUri = "";
+    private boolean read = false;
     private boolean favourite = false;
     private boolean isCover = false;
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
@@ -124,6 +125,7 @@ public class ImageFile {
 
     public ImageFile setIsCover(boolean isCover) {
         this.isCover = isCover;
+        this.read = true;
         return this;
     }
 
@@ -180,6 +182,14 @@ public class ImageFile {
     public ImageFile setSize(long size) {
         this.size = size;
         return this;
+    }
+
+    public boolean isRead() {
+        return read;
+    }
+
+    public void setRead(boolean read) {
+        this.read = read;
     }
 
     public ToOne<Content> getContent() {

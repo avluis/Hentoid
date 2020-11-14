@@ -13,6 +13,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.annimon.stream.IntStream;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
@@ -22,9 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -70,6 +74,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();  // Currently displayed set of images
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
     private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // shuffle state of the current book
+
+    // Write cache for read indicator (no need to update DB and JSON at every page turn)
+    private final Set<Integer> readPageNumbers = new HashSet<>();
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -223,10 +230,25 @@ public class ImageViewerViewModel extends AndroidViewModel {
         sortAndSetImages(imageFiles, isShuffled);
 
         if (theContent.getId() != loadedBookId) { // To be done once per book only
+            int startingIndex = 0;
             if (Preferences.isViewerResumeLastLeft())
-                setStartingIndex(theContent.getLastReadPageIndex());
-            else
-                setStartingIndex(0);
+                startingIndex = theContent.getLastReadPageIndex();
+            setStartingIndex(startingIndex);
+
+            // Init the read pages write cache
+            readPageNumbers.clear();
+            Collection<Integer> readPages = Stream.of(imageFiles).filter(ImageFile::isRead).map(ImageFile::getOrder).toList();
+
+            // Fix pre-v1.13 books where ImageFile.read has no value
+            if (readPages.isEmpty() && theContent.getLastReadPageIndex() > 0) {
+                int lastReadPageNumber = imageFiles.get(theContent.getLastReadPageIndex()).getOrder();
+                readPageNumbers.addAll(IntStream.rangeClosed(1, lastReadPageNumber).boxed().toList());
+            } else {
+                readPageNumbers.addAll(readPages);
+            }
+
+            // Mark initial page as read
+            markPageAsRead(imageFiles.get(startingIndex).getOrder());
         }
 
         loadedBookId = theContent.getId();
@@ -304,9 +326,20 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Content savedContent = collectionDao.selectContent(contentId);
         if (null == savedContent) return;
 
+        List<ImageFile> theImages = savedContent.getImageFiles();
+        if (null == theImages) return;
+
+        // Update image read status with the cached read statuses
+        long previousReadPagesCount = Stream.of(theImages).filter(ImageFile::isRead).count();
+        if (readPageNumbers.size() > previousReadPagesCount) {
+            for (ImageFile img : theImages)
+                if (readPageNumbers.contains(img.getOrder())) img.setRead(true);
+        }
+
+//        now updateReads isn 't the sole factor that decides whether the JSON is updated or not
         savedContent.setLastReadPageIndex(indexToSet);
-        if (updateReads)
-            ContentHelper.updateContentReads(getApplication(), collectionDao, savedContent);
+        if (updateReads || readPageNumbers.size() > previousReadPagesCount)
+            ContentHelper.updateContentReads(getApplication(), collectionDao, savedContent, theImages);
         else collectionDao.insertContent(savedContent);
     }
 
@@ -394,7 +427,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                         if (contentIds.size() > currentContentIndex)
                                             loadFromContent(contentIds.get(currentContentIndex));
                                     } else { // Close the viewer if the list is empty (single book)
-                                        content.setValue(null);
+                                        content.postValue(null);
                                     }
                                 },
                                 e -> {
@@ -474,7 +507,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         theContent.setFirst(0 == currentContentIndex);
         theContent.setLast(currentContentIndex >= contentIds.size() - 1);
-        content.setValue(theContent);
+        content.postValue(theContent);
 
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
@@ -484,6 +517,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private void postLoadProcessing(@NonNull Context context, @NonNull Content content) {
+        // Cache images in the Json file
         cacheJson(context, content);
     }
 
@@ -512,6 +546,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         theContent.setBookPreferences(newPrefs);
         // Persist in DB
         collectionDao.insertContent(theContent);
+        // Repost the updated content
         content.postValue(theContent);
 
         // Persist in JSON
@@ -546,5 +581,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (pictureCacheDir.exists()) return pictureCacheDir;
         else if (pictureCacheDir.mkdir()) return pictureCacheDir;
         else return null;
+    }
+
+    public void markPageAsRead(int pageNumber) {
+        readPageNumbers.add(pageNumber);
     }
 }

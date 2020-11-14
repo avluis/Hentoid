@@ -50,6 +50,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -416,10 +417,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         }
 
         private void attachReadingProgress(@NonNull final Content content) {
-            readingProgress.setVisibility(View.VISIBLE);
-            readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
-            readingProgress.setTotal(content.getImageFiles().size());
-            readingProgress.setProgress1(content.getLastReadPageIndex());
+            List<ImageFile> imgs = content.getImageFiles();
+            if (imgs != null) {
+                readingProgress.setVisibility(View.VISIBLE);
+                readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
+                readingProgress.setTotal(content.getImageFiles().size());
+                readingProgress.setProgress1(content.getReadPagesCount());
+            }
         }
 
         private void attachArtist(@NonNull final Content content) {

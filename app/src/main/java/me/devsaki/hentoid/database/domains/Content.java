@@ -749,6 +749,14 @@ public class Content implements Serializable {
         return result;
     }
 
+    public int getReadPagesCount() {
+        if (null == imageFiles) return 0;
+        int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::isRead).count();
+        if (0 == countReadPages && lastReadPageIndex > 0)
+            return lastReadPageIndex + 1; // pre-v1.13 content
+        else return countReadPages; // post v1.13 content
+    }
+
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {
         @Override

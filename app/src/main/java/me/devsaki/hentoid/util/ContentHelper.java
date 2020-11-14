@@ -212,9 +212,14 @@ public final class ContentHelper {
      * @param dao     DAO to use for the action
      * @param content Content to update
      */
-    public static void updateContentReads(@NonNull Context context, @Nonnull CollectionDAO dao, @NonNull Content content) {
+    public static void updateContentReads(
+            @NonNull Context context,
+            @Nonnull CollectionDAO dao,
+            @NonNull Content content,
+            @NonNull List<ImageFile> images) {
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         dao.insertContent(content);
+        dao.replaceImageList(content.getId(), images);
 
         if (!content.getJsonUri().isEmpty()) updateContentJson(context, content);
         else createContentJson(context, content);
