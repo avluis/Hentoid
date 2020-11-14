@@ -58,8 +58,9 @@ public class IntroActivity extends AppIntro2 {
         super.onSlideChanged(oldFragment, newFragment);
         if (oldFragment instanceof SourcesIntroFragment)
             setSourcePrefs(((SourcesIntroFragment) oldFragment).getSelection());
-        boolean isProgressButtonEnabled = !(newFragment instanceof ImportIntroFragment);
-        setButtonsEnabled(isProgressButtonEnabled);
+        boolean isBlockProgress = (newFragment instanceof ImportIntroFragment);
+        setButtonsEnabled(!isBlockProgress);
+        setNextPageSwipeLock(isBlockProgress);
     }
 
     public void onPermissionGranted() {
