@@ -536,7 +536,8 @@ public class LibraryViewModel extends AndroidViewModel {
         try {
             // Check if given content still exists in DB
             Group theGroup = dao.selectGroup(group.id);
-            if (!theGroup.items.isEmpty()) throw new GroupNotRemovedException(group, "Group is not empty");
+            if (!theGroup.items.isEmpty())
+                throw new GroupNotRemovedException(group, "Group is not empty");
 
             if (theGroup != null) {
                 dao.deleteGroup(theGroup.id);
@@ -580,13 +581,13 @@ public class LibraryViewModel extends AndroidViewModel {
 
     private Content doMoveBook(@NonNull final Content content, @Nullable final Group group) {
         Helper.assertNonUiThread();
-        // Get all groupItems for custom grouping
+        // Get all groupItems of the given content for custom grouping
         List<GroupItem> groupItems = dao.selectGroupItems(content.getId(), Grouping.CUSTOM);
         // Delete them all
         if (!groupItems.isEmpty())
             dao.deleteGroupItems(Stream.of(groupItems).map(gi -> gi.id).toList());
 
-        // Create the new links
+        // Create the new links from the given content to the target group
         if (group != null) {
             GroupItem newGroupItem = new GroupItem(content, group, -1);
             // Use this syntax because content will be persisted on JSON right after that
@@ -595,6 +596,11 @@ public class LibraryViewModel extends AndroidViewModel {
             content.groupItems.applyChangesToDb();
         }
         // updateContentOrder(); TODO is that necessary when moving when inside custom group ?
+
+        // Add a picture to the target group if it didn't have one
+        if (group.picture.isNull())
+            group.picture.setAndPutTarget(content.getCover());
+
         return content;
     }
 }
