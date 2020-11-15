@@ -171,6 +171,7 @@ public final class Preferences {
                 .apply();
     }
 
+    @Deprecated
     public static String getSettingsFolder() {
         return sharedPreferences.getString(Key.SETTINGS_FOLDER, "");
     }
