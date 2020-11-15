@@ -903,8 +903,10 @@ public class LibraryActivity extends BaseActivity {
         else if (item instanceof me.devsaki.hentoid.database.domains.Group)
             title = ((me.devsaki.hentoid.database.domains.Group) item).name;
 
-        if (title != null)
-            deleteNotificationManager.notify(new DeleteProgressNotification(title, deleteProgress++, deleteMax));
+        if (title != null) {
+            deleteProgress++;
+            deleteNotificationManager.notify(new DeleteProgressNotification(title, deleteProgress, deleteMax));
+        }
     }
 
     /**
@@ -944,7 +946,8 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void onContentArchiveProgress(Content content) {
-        archiveNotificationManager.notify(new ArchiveProgressNotification(content.getTitle(), archiveProgress++, archiveMax));
+        archiveProgress++;
+        archiveNotificationManager.notify(new ArchiveProgressNotification(content.getTitle(), archiveProgress, archiveMax));
     }
 
     /**
