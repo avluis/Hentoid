@@ -52,6 +52,9 @@ public class IntroActivity extends AppIntro2 {
         setSystemBackButtonLocked(true);
         setIndicatorEnabled(true);
 
+        // Set default color theme, in case user skips the slide
+        Preferences.setColorTheme(Preferences.Default.COLOR_THEME);
+
         setBackgroundResource(R.drawable.bg_pin_dialog);
     }
 
@@ -93,9 +96,14 @@ public class IntroActivity extends AppIntro2 {
         Preferences.setActiveSites(sources);
     }
 
+    // Validation of the final step of the wizard
     @Override
     public void onDonePressed(Fragment currentFragment) {
         Preferences.setIsFirstRun(false);
+        // Need to do that to avoid a useless reloading of the library screen upon loading prefs for the first time
+        Preferences.setLibraryDisplay(Preferences.Default.LIBRARY_DISPLAY);
+
+        // Load library screen
         Intent intent = new Intent(this, LibraryActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK);

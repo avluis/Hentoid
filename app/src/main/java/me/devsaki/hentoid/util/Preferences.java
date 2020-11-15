@@ -180,6 +180,12 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.LIBRARY_DISPLAY, Integer.toString(Default.LIBRARY_DISPLAY)) + "");
     }
 
+    public static void setLibraryDisplay(int displayMode) {
+        sharedPreferences.edit()
+                .putString(Key.LIBRARY_DISPLAY, Integer.toString(displayMode))
+                .apply();
+    }
+
     public static int getContentSortField() {
         return sharedPreferences.getInt(Key.ORDER_CONTENT_FIELD, Default.ORDER_CONTENT_FIELD);
     }
@@ -660,7 +666,7 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
+        public static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
         static final int QUANTITY_PER_PAGE_DEFAULT = 20;
         public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
         public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
@@ -699,7 +705,7 @@ public final class Preferences {
         static final int VIEWER_SLIDESHOW_DELAY = Constant.VIEWER_SLIDESHOW_DELAY_2;
         static final boolean VIEWER_HOLD_TO_ZOOM = false;
         static final boolean VIEWER_AUTO_ROTATE = false;
-        static final int COLOR_THEME = Constant.COLOR_THEME_LIGHT;
+        public static final int COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean QUEUE_AUTOSTART = true;
         static final boolean QUEUE_WIFI_ONLY = false;
         static final boolean DL_SIZE_WIFI = false;
