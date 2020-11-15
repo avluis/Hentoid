@@ -661,8 +661,8 @@ public final class Preferences {
 
         static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
         static final int QUANTITY_PER_PAGE_DEFAULT = 20;
-        static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
-        static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
+        public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
+        public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
         static final boolean ORDER_CONTENT_DESC = false;
         static final boolean ORDER_GROUP_DESC = false;
         static final int ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
@@ -730,6 +730,7 @@ public final class Preferences {
 
         public static final int ORDER_CONTENT_FAVOURITE = -2; // Artificial order created for clarity purposes
 
+        // Sorting field codes for content and group
         public static final int ORDER_FIELD_NONE = -1;
         public static final int ORDER_FIELD_TITLE = 0;
         public static final int ORDER_FIELD_ARTIST = 1;

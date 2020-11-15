@@ -329,34 +329,15 @@ public class LibraryActivity extends BaseActivity {
         // Search bar
         searchSortBar = findViewById(R.id.advanced_search_background);
 
-        // Groups menu
-        View groupsButton = findViewById(R.id.groups_btn);
-        groupsButton.setOnClickListener(v -> {
-            // Load and display the field popup menu
-            PopupMenu popup = new PopupMenu(this, groupsButton);
-            popup.getMenuInflater()
-                    .inflate(R.menu.library_groups_popup, popup.getMenu());
-            popup.getMenu().findItem(R.id.groups_custom).setVisible(isCustomGroupingAvailable);
-            popup.setOnMenuItemClickListener(item -> {
-                item.setChecked(true);
-                int fieldCode = getGroupingCodeFromMenuId(item.getItemId());
-                Preferences.setGroupingDisplay(fieldCode);
-                viewModel.setGroup(null);
-
-                // Update screen display
-                updateDisplay();
-                sortCommandsAutoHide(true, popup);
-                return true;
-            });
-            popup.show(); //showing popup menu
-            sortCommandsAutoHide(true, popup);
-        }); //closing the setOnClickListener method
+        // "Group by" menu
+        View groupByButton = findViewById(R.id.group_by_btn);
+        groupByButton.setOnClickListener(this::onGroupByButtonClick);
 
         // Link to advanced search
         advancedSearchButton = findViewById(R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
-        // Show artists/groups option for "sort by..." group display
+        // "Show artists/groups" menu (group tab only when Grouping.ARTIST is on)
         showArtistsGroupsButton = findViewById(R.id.groups_visibility_btn);
         showArtistsGroupsButton.setText(getArtistsGroupsTextFromPrefs());
         showArtistsGroupsButton.setOnClickListener(this::onGroupsVisibilityButtonClick);
@@ -590,18 +571,18 @@ public class LibraryActivity extends BaseActivity {
         updateSelectionToolbar(0, 0);
     }
 
-    private int getGroupingCodeFromMenuId(@IdRes int menuId) {
+    private Grouping getGroupingCodeFromMenuId(@IdRes int menuId) {
         switch (menuId) {
             case (R.id.groups_flat):
-                return Grouping.FLAT.getId();
+                return Grouping.FLAT;
             case (R.id.groups_by_artist):
-                return Grouping.ARTIST.getId();
+                return Grouping.ARTIST;
             case (R.id.groups_by_dl_date):
-                return Grouping.DL_DATE.getId();
+                return Grouping.DL_DATE;
             case (R.id.groups_custom):
-                return Grouping.CUSTOM.getId();
+                return Grouping.CUSTOM;
             default:
-                return Grouping.NONE.getId();
+                return Grouping.NONE;
         }
     }
 
@@ -646,6 +627,41 @@ public class LibraryActivity extends BaseActivity {
         signalFragment(EV_ADVANCED_SEARCH, null);
     }
 
+    /**
+     * Handler for the "Group by" button
+     */
+    private void onGroupByButtonClick(View groupByButton) {
+        // Load and display the field popup menu
+        PopupMenu popup = new PopupMenu(this, groupByButton);
+        popup.getMenuInflater()
+                .inflate(R.menu.library_groups_popup, popup.getMenu());
+        popup.getMenu().findItem(R.id.groups_custom).setVisible(isCustomGroupingAvailable);
+        popup.setOnMenuItemClickListener(item -> {
+            item.setChecked(true);
+            Grouping selectedGrouping = getGroupingCodeFromMenuId(item.getItemId());
+            Preferences.setGroupingDisplay(selectedGrouping.getId());
+
+            // Reset custom book ordering if reverting to a grouping where that doesn't apply
+            if (!selectedGrouping.canReorderBooks()
+                    && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
+                Preferences.setContentSortField(Preferences.Default.ORDER_CONTENT_FIELD);
+            }
+            // Reset custom group ordering if reverting to a grouping where that doesn't apply
+            if (!selectedGrouping.canReorderGroups()
+                    && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getGroupSortField()) {
+                Preferences.setGroupSortField(Preferences.Default.ORDER_GROUP_FIELD);
+            }
+            viewModel.setGroup(null);
+
+            // Update screen display
+            updateDisplay();
+            sortCommandsAutoHide(true, popup);
+            return true;
+        });
+        popup.show(); //showing popup menu
+        sortCommandsAutoHide(true, popup);
+    }
+
     private String getArtistsGroupsTextFromPrefs() {
         switch (Preferences.getArtistGroupVisibility()) {
             case Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS:
@@ -662,9 +678,9 @@ public class LibraryActivity extends BaseActivity {
     /**
      * Handler for the "Show artists/groups" button
      */
-    private void onGroupsVisibilityButtonClick(View v) {
+    private void onGroupsVisibilityButtonClick(View groupsVisibilityButton) {
         // Load and display the visibility popup menu
-        PopupMenu popup = new PopupMenu(this, v);
+        PopupMenu popup = new PopupMenu(this, groupsVisibilityButton);
         popup.getMenuInflater().inflate(R.menu.library_groups_visibility_popup, popup.getMenu());
         popup.setOnMenuItemClickListener(item -> {
             item.setChecked(true);

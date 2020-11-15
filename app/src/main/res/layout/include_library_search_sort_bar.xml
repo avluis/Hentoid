@@ -16,7 +16,7 @@
         tools:visibility="visible" />
 
     <ImageView
-        android:id="@+id/groups_btn"
+        android:id="@+id/group_by_btn"
         android:layout_width="32dp"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
@@ -39,7 +39,7 @@
         android:text="@string/title_activity_search"
         android:visibility="gone"
         app:layout_constraintEnd_toStartOf="@id/sort_direction_btn"
-        app:layout_constraintStart_toEndOf="@id/groups_btn"
+        app:layout_constraintStart_toEndOf="@id/group_by_btn"
         app:layout_constraintTop_toTopOf="@id/advanced_search_background"
         tools:visibility="visible" />
 
@@ -51,7 +51,7 @@
         android:gravity="center"
         android:text="@string/show_artists_and_groups"
         android:visibility="gone"
-        app:layout_constraintStart_toEndOf="@id/groups_btn"
+        app:layout_constraintStart_toEndOf="@id/group_by_btn"
         app:layout_constraintTop_toTopOf="@id/advanced_search_background"
         tools:visibility="gone" />
 
