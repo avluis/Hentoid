@@ -1,12 +1,15 @@
 package me.devsaki.hentoid.fragments.intro
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.include_import_steps.*
@@ -21,7 +24,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-// TODO: 6/23/2018 implement SlidePolicy to force user to select a storage option
 class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,6 +39,8 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         import_step1_button.setOnClickListener { ImportHelper.openFolderPicker(this, false) }
         import_step1_button.visibility = View.VISIBLE
+
+        skip_btn.setOnClickListener { askSkip() }
     }
 
     // Callback from the directory chooser
@@ -103,6 +107,19 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 nextStep()
             }
         }
+    }
+
+    private fun askSkip() {
+        val materialDialog: AlertDialog = MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.slide_04_skip_title)
+                .setMessage(R.string.slide_04_skip_msg)
+                .setCancelable(true)
+                .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int -> nextStep() }
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
+
+        materialDialog.setIcon(R.drawable.ic_warning);
+        materialDialog.show()
     }
 
     private fun nextStep() {

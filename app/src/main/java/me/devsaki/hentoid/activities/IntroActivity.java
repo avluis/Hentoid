@@ -4,10 +4,13 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.github.appintro.AppIntro2;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -48,7 +51,6 @@ public class IntroActivity extends AppIntro2 {
         setWizardMode(true); // Replaces skip button with back button
         setSystemBackButtonLocked(true);
         setIndicatorEnabled(true);
-        setSwipeLock(true);
 
         setBackgroundResource(R.drawable.bg_pin_dialog);
     }
@@ -58,8 +60,16 @@ public class IntroActivity extends AppIntro2 {
         super.onSlideChanged(oldFragment, newFragment);
         if (oldFragment instanceof SourcesIntroFragment)
             setSourcePrefs(((SourcesIntroFragment) oldFragment).getSelection());
-        boolean isProgressButtonEnabled = !(newFragment instanceof ImportIntroFragment);
-        setButtonsEnabled(isProgressButtonEnabled);
+
+        boolean canProgress = !(newFragment instanceof ImportIntroFragment);
+        setSwipeLock(!canProgress);
+        if (!canProgress) setButtonsEnabled(false);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        setSwipeLock(true);
     }
 
     public void onPermissionGranted() {
