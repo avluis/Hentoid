@@ -26,8 +26,8 @@ import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.util.Preferences;
 
-import static me.devsaki.hentoid.util.Preferences.Key.PREF_VIEWER_BROWSE_MODE;
-import static me.devsaki.hentoid.util.Preferences.Key.PREF_VIEWER_RENDERING;
+import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_BROWSE_MODE;
+import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_RENDERING;
 
 public final class ViewerPrefsDialogFragment extends DialogFragment {
 
@@ -43,9 +43,9 @@ public final class ViewerPrefsDialogFragment extends DialogFragment {
         ViewerPrefsDialogFragment fragment = new ViewerPrefsDialogFragment();
 
         Bundle args = new Bundle();
-        if (bookPrefs.containsKey(PREF_VIEWER_RENDERING))
+        if (bookPrefs.containsKey(VIEWER_RENDERING))
             args.putInt(RENDERING_MODE, Preferences.isContentSmoothRendering(bookPrefs) ? 1 : 0);
-        if (bookPrefs.containsKey(PREF_VIEWER_BROWSE_MODE))
+        if (bookPrefs.containsKey(VIEWER_BROWSE_MODE))
             args.putInt(BROWSE_MODE, Preferences.getContentBrowseMode(bookPrefs));
         fragment.setArguments(args);
 
@@ -129,9 +129,9 @@ public final class ViewerPrefsDialogFragment extends DialogFragment {
         okBtn.setOnClickListener(v -> {
             Map<String, String> newPrefs = new HashMap<>();
             if (renderSpin.getSelectedIndex() > 0)
-                newPrefs.put(PREF_VIEWER_RENDERING, (renderSpin.getSelectedIndex() - 1) + "");
+                newPrefs.put(VIEWER_RENDERING, (renderSpin.getSelectedIndex() - 1) + "");
             if (browseSpin.getSelectedIndex() > 0)
-                newPrefs.put(PREF_VIEWER_BROWSE_MODE, (browseSpin.getSelectedIndex() - 1) + "");
+                newPrefs.put(VIEWER_BROWSE_MODE, (browseSpin.getSelectedIndex() - 1) + "");
             parent.onBookPreferenceChanged(newPrefs);
             dismiss();
         });

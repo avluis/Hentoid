@@ -492,7 +492,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void onSharedPreferenceChanged(String key) {
         Timber.i("Prefs change detected : %s", key);
         switch (key) {
-            case Preferences.Key.PREF_COLOR_THEME:
+            case Preferences.Key.COLOR_THEME:
                 // Restart the app with the library activity on top
                 Intent intent = requireActivity().getIntent();
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -500,7 +500,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 requireActivity().finish();
                 startActivity(intent);
                 break;
-            case Preferences.Key.PREF_GROUPING_DISPLAY:
+            case Preferences.Key.GROUPING_DISPLAY:
             case Preferences.Key.ARTIST_GROUP_VISIBILITY:
                 viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
                 break;

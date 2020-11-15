@@ -624,25 +624,25 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         switch (key) {
-            case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
-            case Preferences.Key.PREF_VIEWER_HOLD_TO_ZOOM:
-            case Preferences.Key.PREF_VIEWER_CONTINUOUS:
+            case Preferences.Key.VIEWER_BROWSE_MODE:
+            case Preferences.Key.VIEWER_HOLD_TO_ZOOM:
+            case Preferences.Key.VIEWER_CONTINUOUS:
                 onBrowseModeChange();
                 break;
-            case Preferences.Key.PREF_VIEWER_KEEP_SCREEN_ON:
+            case Preferences.Key.VIEWER_KEEP_SCREEN_ON:
                 onUpdatePrefsScreenOn();
                 break;
-            case Preferences.Key.PREF_VIEWER_ZOOM_TRANSITIONS:
-            case Preferences.Key.PREF_VIEWER_SEPARATING_BARS:
-            case Preferences.Key.PREF_VIEWER_IMAGE_DISPLAY:
-            case Preferences.Key.PREF_VIEWER_AUTO_ROTATE:
-            case Preferences.Key.PREF_VIEWER_RENDERING:
+            case Preferences.Key.VIEWER_ZOOM_TRANSITIONS:
+            case Preferences.Key.VIEWER_SEPARATING_BARS:
+            case Preferences.Key.VIEWER_IMAGE_DISPLAY:
+            case Preferences.Key.VIEWER_AUTO_ROTATE:
+            case Preferences.Key.VIEWER_RENDERING:
                 onUpdateImageDisplay();
                 break;
-            case Preferences.Key.PREF_VIEWER_SWIPE_TO_FLING:
+            case Preferences.Key.VIEWER_SWIPE_TO_FLING:
                 onUpdateSwipeToFling();
                 break;
-            case Preferences.Key.PREF_VIEWER_DISPLAY_PAGENUM:
+            case Preferences.Key.VIEWER_DISPLAY_PAGENUM:
                 onUpdatePageNumDisplay();
                 break;
             default:

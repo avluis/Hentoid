@@ -72,7 +72,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
             when (preference.key) {
-                Preferences.Key.PREF_DRAWER_SOURCES -> {
+                Preferences.Key.DRAWER_SOURCES -> {
                     requireContext().startLocalActivity<DrawerEditActivity>()
                     true
                 }
@@ -103,7 +103,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                             .show()
                     true
                 }
-                Preferences.Key.PREF_REFRESH_LIBRARY -> {
+                Preferences.Key.REFRESH_LIBRARY -> {
                     if (ImportService.isRunning()) {
                         ToastUtil.toast(getString(R.string.pref_import_running))
                     } else {
@@ -123,12 +123,12 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     LibImportDialogFragment.invoke(parentFragmentManager)
                     true
                 }
-                Preferences.Key.PREF_VIEWER_RENDERING -> {
+                Preferences.Key.VIEWER_RENDERING -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
                         ToastUtil.toast(getString(R.string.pref_viewer_rendering_no_android5))
                     true
                 }
-                Preferences.Key.PREF_SETTINGS_FOLDER -> {
+                Preferences.Key.SETTINGS_FOLDER -> {
                     if (ImportService.isRunning()) {
                         ToastUtil.toast(getString(R.string.pref_import_running))
                     } else {
@@ -144,11 +144,11 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     LogsDialogFragment.invoke(parentFragmentManager)
                     true
                 }
-                Preferences.Key.PREF_APP_LOCK -> {
+                Preferences.Key.APP_LOCK -> {
                     requireContext().startLocalActivity<PinPreferenceActivity>()
                     true
                 }
-                Preferences.Key.PREF_CHECK_UPDATE_MANUAL -> {
+                Preferences.Key.CHECK_UPDATE_MANUAL -> {
                     onCheckUpdatePrefClick()
                     true
                 }
@@ -178,7 +178,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     }
 
     private fun onHentoidFolderChanged() {
-        val storageFolderPref: Preference? = findPreference(Preferences.Key.PREF_SETTINGS_FOLDER) as Preference?
+        val storageFolderPref: Preference? = findPreference(Preferences.Key.SETTINGS_FOLDER) as Preference?
         val uri = Uri.parse(Preferences.getStorageUri())
         storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri, true)
     }
@@ -231,12 +231,12 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
         when (key) {
-            Preferences.Key.PREF_COLOR_THEME -> onPrefColorThemeChanged()
-            Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS,
-            Preferences.Key.PREF_APP_PREVIEW,
-            Preferences.Key.PREF_ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
-            Preferences.Key.PREF_SETTINGS_FOLDER,
-            Preferences.Key.PREF_SD_STORAGE_URI -> onHentoidFolderChanged()
+            Preferences.Key.COLOR_THEME -> onPrefColorThemeChanged()
+            Preferences.Key.DL_THREADS_QUANTITY_LISTS,
+            Preferences.Key.APP_PREVIEW,
+            Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
+            Preferences.Key.SETTINGS_FOLDER,
+            Preferences.Key.SD_STORAGE_URI -> onHentoidFolderChanged()
             Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
         }
     }
