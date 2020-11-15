@@ -69,7 +69,9 @@ public class IntroActivity extends AppIntro2 {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // Next slide is the import slide
         setSwipeLock(true);
+        setButtonsEnabled(false);
     }
 
     public void onPermissionGranted() {
