@@ -39,8 +39,8 @@ public class DatabaseMaintenance {
         List<Observable<Float>> result = new ArrayList<>();
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
-        result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties1));
-        result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties2));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
         result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         return result;
@@ -113,7 +113,7 @@ public class DatabaseMaintenance {
         }
     }
 
-    private static void cleanProperties1(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+    private static void cleanPropertiesOneShot1(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         try {
             // Update URLs from deprecated Pururin image hosts
@@ -138,7 +138,7 @@ public class DatabaseMaintenance {
         }
     }
 
-    private static void cleanProperties2(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+    private static void cleanPropertiesOneShot2(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         try {
             // Update URLs from deprecated Tsumino image covers
@@ -201,6 +201,7 @@ public class DatabaseMaintenance {
                     int order = 1;
                     for (Attribute a : artists) {
                         Group group = new Group(Grouping.ARTIST, a.getName(), order++);
+                        group.setSubtype(a.getType().equals(AttributeType.ARTIST) ? Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS : Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS);
                         if (!a.contents.isEmpty())
                             group.picture.setTarget(a.contents.get(0).getCover());
                         bookInsertCount += a.contents.size();

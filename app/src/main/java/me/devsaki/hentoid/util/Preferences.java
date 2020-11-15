@@ -324,10 +324,10 @@ public final class Preferences {
     }
 
     public static int getContentDisplayMode(final Map<String, String> bookPrefs) {
-        if (Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(bookPrefs))
+        if (Constant.VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(bookPrefs))
             return Integer.parseInt(sharedPreferences.getString(Key.PREF_VIEWER_IMAGE_DISPLAY, Integer.toString(Default.PREF_VIEWER_IMAGE_DISPLAY)) + "");
         else
-            return Constant.PREF_VIEWER_DISPLAY_FIT; // The only relevant mode for vertical (aka. webtoon) display
+            return Constant.VIEWER_DISPLAY_FIT; // The only relevant mode for vertical (aka. webtoon) display
     }
 
     public static int getContentBrowseMode(final Map<String, String> bookPrefs) {
@@ -339,11 +339,11 @@ public final class Preferences {
     }
 
     public static int getContentDirection(final Map<String, String> bookPrefs) {
-        return (getContentBrowseMode(bookPrefs) == Constant.PREF_VIEWER_BROWSE_RTL) ? Constant.PREF_VIEWER_DIRECTION_RTL : Constant.PREF_VIEWER_DIRECTION_LTR;
+        return (getContentBrowseMode(bookPrefs) == Constant.VIEWER_BROWSE_RTL) ? Constant.VIEWER_DIRECTION_RTL : Constant.VIEWER_DIRECTION_LTR;
     }
 
     public static int getContentOrientation(final Map<String, String> bookPrefs) {
-        return (getContentBrowseMode(bookPrefs) == Constant.PREF_VIEWER_BROWSE_TTB) ? Constant.PREF_VIEWER_ORIENTATION_VERTICAL : Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL;
+        return (getContentBrowseMode(bookPrefs) == Constant.VIEWER_BROWSE_TTB) ? Constant.VIEWER_ORIENTATION_VERTICAL : Constant.VIEWER_ORIENTATION_HORIZONTAL;
     }
 
     public static int getViewerBrowseMode() {
@@ -369,7 +369,7 @@ public final class Preferences {
     }
 
     private static boolean isSmoothRendering(int mode) {
-        return (mode == Constant.PREF_VIEWER_RENDERING_SMOOTH && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
+        return (mode == Constant.VIEWER_RENDERING_SMOOTH && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M);
     }
 
     private static int getViewerRenderingMode() {
@@ -550,6 +550,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getArtistGroupVisibility() {
+        return Integer.parseInt(sharedPreferences.getString(Key.ARTIST_GROUP_VISIBILITY, Integer.toString(Default.ARTIST_GROUP_VISIBILITY)) + "");
+    }
+
+    public static void setArtistGroupVisibility(int artistGroupVisibility) {
+        sharedPreferences.edit()
+                .putString(Key.ARTIST_GROUP_VISIBILITY, Integer.toString(artistGroupVisibility))
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -631,6 +641,7 @@ public final class Preferences {
         static final String PREF_LOCK_TIMER = "pref_lock_timer";
         static final String PREF_DB_MAX_SIZE = "db_max_size";
         public static final String PREF_GROUPING_DISPLAY = "grouping_display";
+        public static final String ARTIST_GROUP_VISIBILITY = "artist_group_visibility";
 
         // Deprecated values kept for housekeeping/migration
         static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -659,7 +670,7 @@ public final class Preferences {
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
         static final int PREF_MEMORY_ALERT_DEFAULT = 110;
         static final boolean EXTERNAL_LIBRARY_DELETE = false;
-        static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
+        static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final boolean PREF_BROWSER_RESUME_LAST_DEFAULT = false;
@@ -669,9 +680,9 @@ public final class Preferences {
         static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
         static final boolean PREF_VIEWER_RESUME_LAST_LEFT = true;
         static final boolean PREF_VIEWER_KEEP_SCREEN_ON = true;
-        static final int PREF_VIEWER_IMAGE_DISPLAY = Constant.PREF_VIEWER_DISPLAY_FIT;
-        static final int PREF_VIEWER_RENDERING = Constant.PREF_VIEWER_RENDERING_SHARP;
-        static final int PREF_VIEWER_BROWSE_MODE = Constant.PREF_VIEWER_BROWSE_NONE;
+        static final int PREF_VIEWER_IMAGE_DISPLAY = Constant.VIEWER_DISPLAY_FIT;
+        static final int PREF_VIEWER_RENDERING = Constant.VIEWER_RENDERING_SHARP;
+        static final int PREF_VIEWER_BROWSE_MODE = Constant.VIEWER_BROWSE_NONE;
         static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final boolean PREF_VIEWER_ZOOM_TRANSITIONS = true;
@@ -682,9 +693,9 @@ public final class Preferences {
         static final boolean PREF_VIEWER_PAGE_TURN_VOLUME = true;
         static final boolean PREF_VIEWER_SWIPE_TO_FLING = false;
         static final boolean PREF_VIEWER_INVERT_VOLUME_ROCKER = false;
-        static final int PREF_VIEWER_SEPARATING_BARS = Constant.PREF_VIEWER_SEPARATING_BARS_OFF;
-        static final int PREF_VIEWER_READ_THRESHOLD = Constant.PREF_VIEWER_READ_THRESHOLD_1;
-        static final int PREF_VIEWER_SLIDESHOW_DELAY = Constant.PREF_VIEWER_SLIDESHOW_DELAY_2;
+        static final int PREF_VIEWER_SEPARATING_BARS = Constant.VIEWER_SEPARATING_BARS_OFF;
+        static final int PREF_VIEWER_READ_THRESHOLD = Constant.VIEWER_READ_THRESHOLD_1;
+        static final int PREF_VIEWER_SLIDESHOW_DELAY = Constant.VIEWER_SLIDESHOW_DELAY_2;
         static final boolean PREF_VIEWER_HOLD_TO_ZOOM = false;
         static final boolean PREF_VIEWER_AUTO_ROTATE = false;
         static final int PREF_COLOR_THEME = Constant.COLOR_THEME_LIGHT;
@@ -695,16 +706,17 @@ public final class Preferences {
         static final boolean PREF_DL_RETRIES_ACTIVE = false;
         static final int PREF_DL_RETRIES_NUMBER = 3;
         static final int PREF_DL_RETRIES_MEM_LIMIT = 100;
-        static final int PREF_DL_BLOCKED_TAGS_BEHAVIOUR = Constant.PREF_DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
+        static final int PREF_DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
         static final boolean PREF_DL_HITOMI_WEBP = true;
         static final boolean PREF_CHECK_UPDATES = true;
         // Default menu in v1.9.x
         static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HENTAICAFE, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, Site.FAKKU2, Site.NEXUS, Site.MUSES, Site.DOUJINS};
         static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
         static final boolean PREF_LOCK_ON_APP_RESTORE = false;
-        static final int PREF_LOCK_TIMER = Constant.PREF_LOCK_TIMER_30S;
+        static final int PREF_LOCK_TIMER = Constant.LOCK_TIMER_30S;
         static final long DB_MAX_SIZE_KB = 2L * 1024 * 1024; // 2GB
         static final int GROUPING_DISPLAY = Grouping.FLAT.getId();
+        static final int ARTIST_GROUP_VISIBILITY = Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -733,50 +745,68 @@ public final class Preferences {
 
         public static final int ORDER_ATTRIBUTES_ALPHABETIC = 0;
         static final int ORDER_ATTRIBUTES_COUNT = 1;
+
         public static final int LIBRARY_DISPLAY_LIST = 0;
         static final int LIBRARY_DISPLAY_GRID = 1;
-        static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
-        static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
-        static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
-        static final int PREF_FOLDER_NAMING_CONTENT_TITLE_AUTH_ID = 3;
-        public static final int PREF_DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE = 0;
-        public static final int PREF_DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1;
+
+        static final int FOLDER_NAMING_CONTENT_ID = 0;
+        static final int FOLDER_NAMING_CONTENT_TITLE_ID = 1;
+        static final int FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
+        static final int FOLDER_NAMING_CONTENT_TITLE_AUTH_ID = 3;
+
+        public static final int DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE = 0;
+        public static final int DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1;
+
         static final int TRUNCATE_FOLDER_NONE = 0;
-        public static final int PREF_VIEWER_DISPLAY_FIT = 0;
-        public static final int PREF_VIEWER_DISPLAY_FILL = 1;
-        public static final int PREF_VIEWER_DISPLAY_STRETCH = 2;
-        public static final int PREF_VIEWER_RENDERING_SHARP = 0;
-        public static final int PREF_VIEWER_RENDERING_SMOOTH = 1;
-        public static final int PREF_VIEWER_BROWSE_NONE = -1;
-        public static final int PREF_VIEWER_BROWSE_LTR = 0;
-        public static final int PREF_VIEWER_BROWSE_RTL = 1;
-        public static final int PREF_VIEWER_BROWSE_TTB = 2;
-        public static final int PREF_VIEWER_DIRECTION_LTR = 0;
-        public static final int PREF_VIEWER_DIRECTION_RTL = 1;
-        public static final int PREF_VIEWER_ORIENTATION_HORIZONTAL = 0;
-        public static final int PREF_VIEWER_ORIENTATION_VERTICAL = 1;
-        public static final int PREF_VIEWER_SEPARATING_BARS_OFF = 0;
-        public static final int PREF_VIEWER_SEPARATING_BARS_SMALL = 1;
-        public static final int PREF_VIEWER_SEPARATING_BARS_MEDIUM = 2;
-        public static final int PREF_VIEWER_SEPARATING_BARS_LARGE = 3;
-        public static final int PREF_VIEWER_READ_THRESHOLD_1 = 0;
-        public static final int PREF_VIEWER_READ_THRESHOLD_2 = 1;
-        public static final int PREF_VIEWER_READ_THRESHOLD_5 = 2;
-        public static final int PREF_VIEWER_READ_THRESHOLD_ALL = 3;
-        public static final int PREF_VIEWER_SLIDESHOW_DELAY_2 = 0;
-        public static final int PREF_VIEWER_SLIDESHOW_DELAY_4 = 1;
-        public static final int PREF_VIEWER_SLIDESHOW_DELAY_8 = 2;
-        public static final int PREF_VIEWER_SLIDESHOW_DELAY_16 = 3;
-        public static final int PREF_VIEWER_SLIDESHOW_DELAY_1 = 4;
-        public static final int PREF_VIEWER_SLIDESHOW_DELAY_05 = 5;
+
+        public static final int VIEWER_DISPLAY_FIT = 0;
+        public static final int VIEWER_DISPLAY_FILL = 1;
+        public static final int VIEWER_DISPLAY_STRETCH = 2;
+
+        public static final int VIEWER_RENDERING_SHARP = 0;
+        public static final int VIEWER_RENDERING_SMOOTH = 1;
+
+        public static final int VIEWER_BROWSE_NONE = -1;
+        public static final int VIEWER_BROWSE_LTR = 0;
+        public static final int VIEWER_BROWSE_RTL = 1;
+        public static final int VIEWER_BROWSE_TTB = 2;
+
+        public static final int VIEWER_DIRECTION_LTR = 0;
+        public static final int VIEWER_DIRECTION_RTL = 1;
+
+        public static final int VIEWER_ORIENTATION_HORIZONTAL = 0;
+        public static final int VIEWER_ORIENTATION_VERTICAL = 1;
+
+        public static final int VIEWER_SEPARATING_BARS_OFF = 0;
+        public static final int VIEWER_SEPARATING_BARS_SMALL = 1;
+        public static final int VIEWER_SEPARATING_BARS_MEDIUM = 2;
+        public static final int VIEWER_SEPARATING_BARS_LARGE = 3;
+
+        public static final int VIEWER_READ_THRESHOLD_1 = 0;
+        public static final int VIEWER_READ_THRESHOLD_2 = 1;
+        public static final int VIEWER_READ_THRESHOLD_5 = 2;
+        public static final int VIEWER_READ_THRESHOLD_ALL = 3;
+
+        public static final int VIEWER_SLIDESHOW_DELAY_2 = 0;
+        public static final int VIEWER_SLIDESHOW_DELAY_4 = 1;
+        public static final int VIEWER_SLIDESHOW_DELAY_8 = 2;
+        public static final int VIEWER_SLIDESHOW_DELAY_16 = 3;
+        public static final int VIEWER_SLIDESHOW_DELAY_1 = 4;
+        public static final int VIEWER_SLIDESHOW_DELAY_05 = 5;
+
         public static final int COLOR_THEME_LIGHT = Theme.LIGHT.getId();
         public static final int COLOR_THEME_DARK = Theme.DARK.getId();
         public static final int COLOR_THEME_BLACK = Theme.BLACK.getId();
-        public static final int PREF_LOCK_TIMER_OFF = 0;
-        public static final int PREF_LOCK_TIMER_10S = 1;
-        public static final int PREF_LOCK_TIMER_30S = 2;
-        public static final int PREF_LOCK_TIMER_1M = 3;
-        public static final int PREF_LOCK_TIMER_2M = 4;
+
+        public static final int LOCK_TIMER_OFF = 0;
+        public static final int LOCK_TIMER_10S = 1;
+        public static final int LOCK_TIMER_30S = 2;
+        public static final int LOCK_TIMER_1M = 3;
+        public static final int LOCK_TIMER_2M = 4;
+
+        public static final int ARTIST_GROUP_VISIBILITY_ARTISTS = 0;
+        public static final int ARTIST_GROUP_VISIBILITY_GROUPS = 1;
+        public static final int ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS = 2;
 
         // Deprecated values kept for housekeeping/migration
         @Deprecated

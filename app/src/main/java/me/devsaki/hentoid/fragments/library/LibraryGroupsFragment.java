@@ -179,7 +179,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         viewModel.getGroups().observe(getViewLifecycleOwner(), this::onGroupsChanged);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
 
-        viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc()); // Trigger a blank search
+        viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility()); // Trigger a blank search
     }
 
     /**
@@ -233,7 +233,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
                 Preferences.setGroupSortField(fieldCode);
                 // Run a new search
-                viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), fieldCode, Preferences.isGroupSortDesc());
+                viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), fieldCode, Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
                 activity.get().sortCommandsAutoHide(true, popup);
                 return true;
             });
@@ -491,15 +491,21 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      */
     private void onSharedPreferenceChanged(String key) {
         Timber.i("Prefs change detected : %s", key);
-        if (Preferences.Key.PREF_COLOR_THEME.equals(key)) {
-            // Restart the app with the library activity on top
-            Intent intent = requireActivity().getIntent();
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            requireActivity().finish();
-            startActivity(intent);
-        } else if (Preferences.Key.PREF_GROUPING_DISPLAY.equals(key)) {
-            viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
+        switch (key) {
+            case Preferences.Key.PREF_COLOR_THEME:
+                // Restart the app with the library activity on top
+                Intent intent = requireActivity().getIntent();
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                requireActivity().finish();
+                startActivity(intent);
+                break;
+            case Preferences.Key.PREF_GROUPING_DISPLAY:
+            case Preferences.Key.ARTIST_GROUP_VISIBILITY:
+                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+                break;
+            default:
+                // Nothing to handle thereo
         }
     }
 
@@ -569,7 +575,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         // Refresh groups
         // TODO do we really want to do that, especially when deleting content ?
-        viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
+        viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
     }
 
     // TODO doc
@@ -583,7 +589,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             else
                 ContentHelper.launchBrowserFor(requireContext(), s, query);
         } else {
-            viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc());
+            viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
         }
     }
 

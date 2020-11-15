@@ -779,7 +779,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         // Check if the tag blocker applies here
         List<String> blockedTags = ContentHelper.getBlockedTags(currentContent);
         if (!blockedTags.isEmpty()) {
-            if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.PREF_DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
+            if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
                 ToastUtil.toast(getResources().getString(R.string.blocked_tag, blockedTags.get(0)));
             } else { // Insert directly as an error
                 List<ErrorRecord> errors = new ArrayList<>();

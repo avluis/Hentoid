@@ -240,7 +240,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         super.onResume();
 
         setSystemBarsVisible(controlsOverlay.getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
-        if (Preferences.Constant.PREF_VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
+        if (Preferences.Constant.VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             ViewerBrowseModeDialogFragment.invoke(this);
         updatePageDisplay();
         updateFavouritesGalleryButtonDisplay();
@@ -537,9 +537,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (scrollPosition != imageIndex) {
             boolean isScrollLTR = true;
             int direction = Preferences.getContentDirection(bookPreferences);
-            if (Constant.PREF_VIEWER_DIRECTION_LTR == direction && imageIndex > scrollPosition)
+            if (Constant.VIEWER_DIRECTION_LTR == direction && imageIndex > scrollPosition)
                 isScrollLTR = false;
-            else if (Constant.PREF_VIEWER_DIRECTION_RTL == direction && imageIndex < scrollPosition)
+            else if (Constant.VIEWER_DIRECTION_RTL == direction && imageIndex < scrollPosition)
                 isScrollLTR = false;
             adapter.setScrollLTR(isScrollLTR);
         }
@@ -550,7 +550,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (currentImage != null) viewModel.markPageAsRead(currentImage.getOrder());
 
         // Resets zoom if we're using horizontal (independent pages) mode
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
+        if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
             adapter.resetScaleAtPosition(scrollPosition);
 
         updatePageDisplay();
@@ -689,8 +689,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         // LinearLayoutManager.setReverseLayout behaves _relatively_ to current Layout Direction
         // => need to know that direction before deciding how to set setReverseLayout
         if (View.LAYOUT_DIRECTION_LTR == controlsOverlay.getLayoutDirection())
-            currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_LTR;
-        else currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_RTL;
+            currentLayoutDirection = Preferences.Constant.VIEWER_DIRECTION_LTR;
+        else currentLayoutDirection = Preferences.Constant.VIEWER_DIRECTION_RTL;
         llm.setReverseLayout(Preferences.getContentDirection(bookPreferences) != currentLayoutDirection);
 
         int orientation = Preferences.getContentOrientation(bookPreferences);
@@ -700,7 +700,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         recyclerView.resetScale();
         onUpdateImageDisplay();
 
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == orientation) {
+        if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == orientation) {
             zoomFrame.enable();
             recyclerView.setLongTapZoomEnabled(Preferences.isViewerHoldToZoom());
         } else {
@@ -708,7 +708,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             recyclerView.setLongTapZoomEnabled(!Preferences.isViewerHoldToZoom());
         }
 
-        pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == orientation);
+        pageSnapWidget.setPageSnapEnabled(Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == orientation);
     }
 
     /**
@@ -717,7 +717,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * @return Preferred orientation, as LinearLayoutManager orientation code
      */
     private int getOrientation(int orientation) {
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == orientation) {
+        if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == orientation) {
             return LinearLayoutManager.HORIZONTAL;
         } else {
             return LinearLayoutManager.VERTICAL;
@@ -734,14 +734,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         }
 
         if (Preferences.isViewerTapTransitions()) {
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
                 recyclerView.smoothScrollToPosition(imageIndex + 1);
             else {
                 smoothScroller.setTargetPosition(imageIndex + 1);
                 llm.startSmoothScroll(smoothScroller);
             }
         } else {
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
                 recyclerView.scrollToPosition(imageIndex + 1);
             else
                 llm.scrollToPositionWithOffset(imageIndex + 1, 0);
@@ -848,7 +848,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isViewerTapToTurn()) return;
 
-        if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
+        if (Preferences.Constant.VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
             previousPage();
         else
             nextPage();
@@ -869,7 +869,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         // Side-tapping disabled when disabled in preferences
         if (!Preferences.isViewerTapToTurn()) return;
 
-        if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
+        if (Preferences.Constant.VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences))
             nextPage();
         else
             previousPage();
@@ -985,19 +985,19 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         int delayMs;
 
         switch (delayPref) {
-            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_05:
+            case Constant.VIEWER_SLIDESHOW_DELAY_05:
                 delayMs = 500;
                 break;
-            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_1:
+            case Constant.VIEWER_SLIDESHOW_DELAY_1:
                 delayMs = 1000;
                 break;
-            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_4:
+            case Constant.VIEWER_SLIDESHOW_DELAY_4:
                 delayMs = 4 * 1000;
                 break;
-            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_8:
+            case Constant.VIEWER_SLIDESHOW_DELAY_8:
                 delayMs = 8 * 1000;
                 break;
-            case Constant.PREF_VIEWER_SLIDESHOW_DELAY_16:
+            case Constant.VIEWER_SLIDESHOW_DELAY_16:
                 delayMs = 16 * 1000;
                 break;
             default:

@@ -27,6 +27,7 @@ public class Group {
     @Backlink(to = "group")
     public ToMany<GroupItem> items;
     public ToOne<ImageFile> picture;
+    public int subtype; // in Grouping.ARTIST : 0 = Artist; 1 = Group
     public int order;
     public boolean hasCustomBookOrder = false;
     public int propertyMin;
@@ -67,6 +68,14 @@ public class Group {
             this.items.addAll(items);
         }
         return this;
+    }
+
+    public int getSubtype() {
+        return subtype;
+    }
+
+    public void setSubtype(int subtype) {
+        this.subtype = subtype;
     }
 
     public int getOrder() {

@@ -37,13 +37,13 @@ public class ViewerBrowseModeDialogFragment extends DialogFragment {
         super.onViewCreated(rootView, savedInstanceState);
 
         View ltrButton = requireViewById(rootView, R.id.chooseHorizontalLtr);
-        ltrButton.setOnClickListener(v -> chooseBrowseMode(Preferences.Constant.PREF_VIEWER_BROWSE_LTR));
+        ltrButton.setOnClickListener(v -> chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_LTR));
 
         View rtlButton = requireViewById(rootView, R.id.chooseHorizontalRtl);
-        rtlButton.setOnClickListener(v -> chooseBrowseMode(Preferences.Constant.PREF_VIEWER_BROWSE_RTL));
+        rtlButton.setOnClickListener(v -> chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_RTL));
 
         View verticalButton = requireViewById(rootView, R.id.chooseVertical);
-        verticalButton.setOnClickListener(v -> chooseBrowseMode(Preferences.Constant.PREF_VIEWER_BROWSE_TTB));
+        verticalButton.setOnClickListener(v -> chooseBrowseMode(Preferences.Constant.VIEWER_BROWSE_TTB));
     }
 
     private void chooseBrowseMode(int browseMode) {

@@ -103,9 +103,11 @@ public class LibraryActivity extends BaseActivity {
 
     // ==== Advanced search / sort bar
     // Grey background of the advanced search / sort bar
-    private View advancedSearchBar;
+    private View searchSortBar;
     // Advanced search text button
     private View advancedSearchButton;
+    // Show artists / groups button
+    private TextView showArtistsGroupsButton;
     // CLEAR button
     private TextView searchClearButton;
     // Sort direction button
@@ -130,7 +132,7 @@ public class LibraryActivity extends BaseActivity {
     // Alert bars
     private Group permissionsAlertBar;
     private Group storageAlertBar;
-    private PopupMenu popup;
+    private PopupMenu autoHidePopup;
 
     // === SELECTION TOOLBAR
     private Toolbar selectionToolbar;
@@ -325,7 +327,7 @@ public class LibraryActivity extends BaseActivity {
         storageAlertBar = findViewById(R.id.library_storage_alert_group);
 
         // Search bar
-        advancedSearchBar = findViewById(R.id.advanced_search_background);
+        searchSortBar = findViewById(R.id.advanced_search_background);
 
         // Groups menu
         View groupsButton = findViewById(R.id.groups_btn);
@@ -353,6 +355,11 @@ public class LibraryActivity extends BaseActivity {
         // Link to advanced search
         advancedSearchButton = findViewById(R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
+
+        // Show artists/groups option for "sort by..." group display
+        showArtistsGroupsButton = findViewById(R.id.groups_visibility_btn);
+        showArtistsGroupsButton.setText(getArtistsGroupsTextFromPrefs());
+        showArtistsGroupsButton.setOnClickListener(this::onGroupsVisibilityButtonClick);
 
         // Clear search
         searchClearButton = findViewById(R.id.search_clear_btn);
@@ -475,7 +482,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     public void sortCommandsAutoHide(boolean hideSortOnly, PopupMenu popup) {
-        this.popup = popup;
+        this.autoHidePopup = popup;
         sortCommandsAutoHide.submit(hideSortOnly);
     }
 
@@ -517,7 +524,7 @@ public class LibraryActivity extends BaseActivity {
             return;
         }
 
-        advancedSearchBar.setVisibility(View.VISIBLE);
+        searchSortBar.setVisibility(View.VISIBLE);
         if (showAdvancedSearch != null)
             advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
 
@@ -529,13 +536,19 @@ public class LibraryActivity extends BaseActivity {
             sortDirectionButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
             sortFieldButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
         }
+
+        if (isGroupDisplayed() && Preferences.getGroupingDisplay().equals(Grouping.ARTIST)) {
+            showArtistsGroupsButton.setVisibility(View.VISIBLE);
+        } else {
+            showArtistsGroupsButton.setVisibility(View.GONE);
+        }
     }
 
     public void hideSearchSortBar(boolean hideSortOnly) {
         boolean isSearchVisible = (View.VISIBLE == advancedSearchButton.getVisibility() || View.VISIBLE == searchClearButton.getVisibility());
 
         if (!hideSortOnly || !isSearchVisible)
-            advancedSearchBar.setVisibility(View.GONE);
+            searchSortBar.setVisibility(View.GONE);
 
         if (!hideSortOnly) {
             advancedSearchButton.setVisibility(View.GONE);
@@ -544,8 +557,9 @@ public class LibraryActivity extends BaseActivity {
 
         sortDirectionButton.setVisibility(View.GONE);
         sortFieldButton.setVisibility(View.GONE);
+        showArtistsGroupsButton.setVisibility(View.GONE);
 
-        if (popup != null) popup.dismiss();
+        if (autoHidePopup != null) autoHidePopup.dismiss();
 
         // Restore CLEAR button if it's needed
         if (hideSortOnly && isSearchQueryActive()) searchClearButton.setVisibility(View.VISIBLE);
@@ -591,6 +605,18 @@ public class LibraryActivity extends BaseActivity {
         }
     }
 
+    private int getVisibilityCodeFromMenuId(@IdRes int menuId) {
+        switch (menuId) {
+            case (R.id.show_artists):
+                return Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS;
+            case (R.id.show_groups):
+                return Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS;
+            case (R.id.show_artists_and_groups):
+            default:
+                return Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
+        }
+    }
+
     /**
      * Update favourite filter button appearance on the action bar
      */
@@ -618,6 +644,38 @@ public class LibraryActivity extends BaseActivity {
      */
     private void onAdvancedSearchButtonClick() {
         signalFragment(EV_ADVANCED_SEARCH, null);
+    }
+
+    private String getArtistsGroupsTextFromPrefs() {
+        switch (Preferences.getArtistGroupVisibility()) {
+            case Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS:
+                return getResources().getString(R.string.show_artists);
+            case Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS:
+                return getResources().getString(R.string.show_groups);
+            case Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS:
+                return getResources().getString(R.string.show_artists_and_groups);
+            default:
+                return "";
+        }
+    }
+
+    /**
+     * Handler for the "Show artists/groups" button
+     */
+    private void onGroupsVisibilityButtonClick(View v) {
+        // Load and display the visibility popup menu
+        PopupMenu popup = new PopupMenu(this, v);
+        popup.getMenuInflater().inflate(R.menu.library_groups_visibility_popup, popup.getMenu());
+        popup.setOnMenuItemClickListener(item -> {
+            item.setChecked(true);
+            int code = getVisibilityCodeFromMenuId(item.getItemId());
+            Preferences.setArtistGroupVisibility(code);
+            showArtistsGroupsButton.setText(getArtistsGroupsTextFromPrefs());
+            sortCommandsAutoHide(true, popup);
+            return true;
+        });
+        popup.show();
+        sortCommandsAutoHide(true, popup);
     }
 
     /**

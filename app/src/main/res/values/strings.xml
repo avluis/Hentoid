@@ -325,6 +325,10 @@
     <string name="external_help">Belongs to the external library</string>
     <string name="view_source_help">View source in browser</string>
     <string name="book_fav_help">Mark/unmark book as favourite</string>
+    <!-- Visibility fields -->
+    <string name="show_artists">Show artists</string>
+    <string name="show_groups">Show groups</string>
+    <string name="show_artists_and_groups">Show artists &amp; groups</string>
 
     <!-- Updates -->
     <string name="checking_updates">Checking for updates</string>

@@ -377,6 +377,7 @@ public final class ContentHelper {
                                 Group group = a.getGroup().getTarget();
                                 if (null == group) {
                                     group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
+                                    group.setSubtype(a.getType().equals(AttributeType.ARTIST) ? Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS : Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS);
                                     if (!a.contents.isEmpty())
                                         group.picture.setTarget(a.contents.get(0).getCover());
                                 }
@@ -509,13 +510,13 @@ public final class ContentHelper {
         String author = content.getAuthor().toLowerCase().replaceAll(UNAUTHORIZED_CHARS, "_");
 
         switch (Preferences.getFolderNameFormat()) {
-            case Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID:
+            case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_ID:
                 result += title;
                 break;
-            case Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID:
+            case Preferences.Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID:
                 result += author + " - " + title;
                 break;
-            case Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_AUTH_ID:
+            case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_AUTH_ID:
                 result += title + " - " + author;
                 break;
         }
