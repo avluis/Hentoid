@@ -571,7 +571,7 @@ public class LibraryActivity extends BaseActivity {
         updateSelectionToolbar(0, 0);
     }
 
-    private Grouping getGroupingCodeFromMenuId(@IdRes int menuId) {
+    private Grouping getGroupingFromMenuId(@IdRes int menuId) {
         switch (menuId) {
             case (R.id.groups_flat):
                 return Grouping.FLAT;
@@ -583,6 +583,22 @@ public class LibraryActivity extends BaseActivity {
                 return Grouping.CUSTOM;
             default:
                 return Grouping.NONE;
+        }
+    }
+
+    private @IdRes
+    int getMenuIdFromGrouping(Grouping grouping) {
+        switch (grouping) {
+            case ARTIST:
+                return R.id.groups_by_artist;
+            case DL_DATE:
+                return R.id.groups_by_dl_date;
+            case CUSTOM:
+                return R.id.groups_custom;
+            case FLAT:
+            case NONE:
+            default:
+                return R.id.groups_flat;
         }
     }
 
@@ -645,10 +661,16 @@ public class LibraryActivity extends BaseActivity {
         PopupMenu popup = new PopupMenu(this, groupByButton);
         popup.getMenuInflater()
                 .inflate(R.menu.library_groups_popup, popup.getMenu());
+
         popup.getMenu().findItem(R.id.groups_custom).setVisible(isCustomGroupingAvailable);
+
+        // Mark current grouping
+        MenuItem currentItem = popup.getMenu().findItem(getMenuIdFromGrouping(Preferences.getGroupingDisplay()));
+        currentItem.setTitle(currentItem.getTitle() + " <");
+
         popup.setOnMenuItemClickListener(item -> {
             item.setChecked(true);
-            Grouping selectedGrouping = getGroupingCodeFromMenuId(item.getItemId());
+            Grouping selectedGrouping = getGroupingFromMenuId(item.getItemId());
             Preferences.setGroupingDisplay(selectedGrouping.getId());
 
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
@@ -740,7 +762,8 @@ public class LibraryActivity extends BaseActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         if (requestCode != PermissionUtil.RQST_STORAGE_PERMISSION) return;
         if (permissions.length < 2) return;
         if (grantResults.length == 0) return;
@@ -898,7 +921,8 @@ public class LibraryActivity extends BaseActivity {
      *
      * @param items Items to be archived if the answer is yes
      */
-    public void askArchiveItems(@NonNull final List<Content> items, @NonNull final SelectExtension<?> selectExtension) {
+    public void askArchiveItems(@NonNull final List<Content> items,
+                                @NonNull final SelectExtension<?> selectExtension) {
         // TODO display the number of books to archive
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         String title = getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size());
