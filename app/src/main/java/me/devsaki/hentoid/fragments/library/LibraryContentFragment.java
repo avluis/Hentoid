@@ -1166,7 +1166,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             invalidateNextBookClick = true;
             new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
-            long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filter(s -> s.equals(StatusContent.DOWNLOADED)).count();
+            long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
             activity.get().updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
