@@ -31,12 +31,20 @@ public class InputDialog {
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         input.setRawInputType(Configuration.KEYBOARD_12KEY);
 
-        DialogInterface.OnClickListener positive = (dialog, whichButton) -> {
+        DialogInterface.OnClickListener onOk = (dialog, whichButton) -> {
             if (input.getText().length() > 0)
                 onResult.accept(Integer.parseInt(input.getText().toString()));
+
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.toggleSoftInput(0, 0);
         };
 
-        showDialog(context, message, input, positive);
+        DialogInterface.OnClickListener onCancel = (dialog, whichButton) -> {
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.toggleSoftInput(0, 0);
+        };
+
+        showDialog(context, message, input, onOk, onCancel);
     }
 
     public static void invokeInputDialog(
@@ -54,27 +62,35 @@ public class InputDialog {
         EditText input = new EditText(context);
         if (text != null) input.setText(text);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
-//        input.setRawInputType(Configuration.);
 
-        DialogInterface.OnClickListener positive = (dialog, whichButton) -> {
+        DialogInterface.OnClickListener onOk = (dialog, whichButton) -> {
             if (input.getText().length() > 0)
                 onResult.accept(input.getText().toString().trim());
+
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.toggleSoftInput(0, 0);
         };
 
-        showDialog(context, message, input, positive);
+        DialogInterface.OnClickListener onCancel = (dialog, whichButton) -> {
+            InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.toggleSoftInput(0, 0);
+        };
+
+        showDialog(context, message, input, onOk, onCancel);
     }
 
     private static void showDialog(
             @NonNull final Context context,
             final @StringRes int message,
             @NonNull final EditText input,
-            @NonNull final DialogInterface.OnClickListener positive
+            @NonNull final DialogInterface.OnClickListener onOk,
+            @NonNull final DialogInterface.OnClickListener onCancel
     ) {
         AlertDialog materialDialog = new MaterialAlertDialogBuilder(context)
                 .setView(input)
                 .setMessage(message)
-                .setPositiveButton(android.R.string.ok, positive)
-                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(android.R.string.ok, onOk)
+                .setNegativeButton(android.R.string.cancel, onCancel)
                 .create();
 
         materialDialog.show();
