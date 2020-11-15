@@ -493,6 +493,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         Timber.i("Prefs change detected : %s", key);
         switch (key) {
             case Preferences.Key.COLOR_THEME:
+            case Preferences.Key.LIBRARY_DISPLAY:
                 // Restart the app with the library activity on top
                 Intent intent = requireActivity().getIntent();
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -505,7 +506,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
                 break;
             default:
-                // Nothing to handle thereo
+                // Nothing to handle there
         }
     }
 

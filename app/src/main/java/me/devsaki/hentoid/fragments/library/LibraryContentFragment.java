@@ -737,16 +737,22 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      */
     private void onSharedPreferenceChanged(String key) {
         Timber.i("Prefs change detected : %s", key);
-        if (Preferences.Key.ENDLESS_SCROLL.equals(key)) {
-            setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
-            viewModel.updateContentOrder(); // Trigger a blank search
-        } else if (Preferences.Key.COLOR_THEME.equals(key) || Preferences.Key.LIBRARY_DISPLAY.equals(key)) {
-            // Restart the app with the library activity on top
-            Intent intent = requireActivity().getIntent();
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            requireActivity().finish();
-            startActivity(intent);
+        switch (key) {
+            case Preferences.Key.COLOR_THEME:
+            case Preferences.Key.LIBRARY_DISPLAY:
+                // Restart the app with the library activity on top
+                Intent intent = requireActivity().getIntent();
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                requireActivity().finish();
+                startActivity(intent);
+                break;
+            case Preferences.Key.ENDLESS_SCROLL:
+                setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
+                viewModel.updateContentOrder(); // Trigger a blank search
+                break;
+            default:
+                // Nothing to handle there
         }
     }
 
