@@ -13,13 +13,15 @@ import me.devsaki.hentoid.database.domains.Content;
  * Tracks downloads events for interested subscribers.
  */
 public class DownloadEvent {
-    @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI, Motive.NO_STORAGE})
+    @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI, Motive.NO_STORAGE, Motive.NO_DOWNLOAD_FOLDER, Motive.DOWNLOAD_FOLDER_NOT_FOUND})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Motive {
         int NONE = -1;
         int NO_INTERNET = 0;
         int NO_WIFI = 1;
         int NO_STORAGE = 2;
+        int NO_DOWNLOAD_FOLDER = 3;
+        int DOWNLOAD_FOLDER_NOT_FOUND = 4;
     }
 
     public static final int EV_PROGRESS = 0;    // Download progress of current book (always one book at a time)

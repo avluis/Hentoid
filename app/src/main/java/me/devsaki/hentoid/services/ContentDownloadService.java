@@ -215,8 +215,19 @@ public class ContentDownloadService extends IntentService {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
+        // Check for download folder existence and available free space
+        if (Preferences.getStorageUri().trim().isEmpty()) {
+            Timber.w("No download folder set"); // May happen if user has skipped it during the intro
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
-        if (rootFolder != null && new FileHelper.MemoryUsageFigures(this, rootFolder).getfreeUsageMb() < 2) {
+        if (null == rootFolder) {
+            Timber.w("Download folder has not been found. Please select it again."); // May happen if the folder has been moved or deleted after it has been selected
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
+        if (new FileHelper.MemoryUsageFigures(this, rootFolder).getfreeUsageMb() < 2) {
             Timber.w("Device very low on storage space (<2 MB). Queue paused.");
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);

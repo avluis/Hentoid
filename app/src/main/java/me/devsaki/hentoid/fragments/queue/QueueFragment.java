@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -386,16 +387,29 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         errorStatsMenu.setVisible(event.pagesKO > 0);
 
         // Display motive, if any
-        if (event.motive != DownloadEvent.Motive.NONE) {
-            String motiveMsg = "";
-            if (event.motive == DownloadEvent.Motive.NO_INTERNET)
-                motiveMsg = getString(R.string.paused_no_internet);
-            else if (event.motive == DownloadEvent.Motive.NO_WIFI)
-                motiveMsg = getString(R.string.paused_no_wifi);
-            else if (event.motive == DownloadEvent.Motive.NO_STORAGE)
-                motiveMsg = getString(R.string.paused_no_storage);
-            Snackbar.make(recyclerView, motiveMsg, BaseTransientBottomBar.LENGTH_SHORT).show();
+        @StringRes int motiveMsg;
+        switch (event.motive) {
+            case DownloadEvent.Motive.NO_INTERNET:
+                motiveMsg = R.string.paused_no_internet;
+                break;
+            case DownloadEvent.Motive.NO_WIFI:
+                motiveMsg = R.string.paused_no_wifi;
+                break;
+            case DownloadEvent.Motive.NO_STORAGE:
+                motiveMsg = R.string.paused_no_storage;
+                break;
+            case DownloadEvent.Motive.NO_DOWNLOAD_FOLDER:
+                motiveMsg = R.string.paused_no_dl_folder;
+                break;
+            case DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND:
+                motiveMsg = R.string.paused_dl_folder_not_found;
+                break;
+            case DownloadEvent.Motive.NONE:
+            default: // NONE
+                motiveMsg = -1;
         }
+        if (motiveMsg != -1)
+            Snackbar.make(recyclerView, getString(motiveMsg), BaseTransientBottomBar.LENGTH_SHORT).show();
 
         switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
