@@ -2,7 +2,6 @@ package me.devsaki.hentoid.fragments.library;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -492,15 +491,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void onSharedPreferenceChanged(String key) {
         Timber.i("Prefs change detected : %s", key);
         switch (key) {
-            case Preferences.Key.COLOR_THEME:
-            case Preferences.Key.LIBRARY_DISPLAY:
-                // Restart the app with the library activity on top
-                Intent intent = requireActivity().getIntent();
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                requireActivity().finish();
-                startActivity(intent);
-                break;
             case Preferences.Key.GROUPING_DISPLAY:
             case Preferences.Key.ARTIST_GROUP_VISIBILITY:
                 viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());

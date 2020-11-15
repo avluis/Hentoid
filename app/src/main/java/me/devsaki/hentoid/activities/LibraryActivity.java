@@ -610,13 +610,23 @@ public class LibraryActivity extends BaseActivity {
      */
     private void onSharedPreferenceChanged(String key) {
         Timber.i("Prefs change detected : %s", key);
-        if (Preferences.Key.COLOR_THEME.equals(key)) {
-            // Restart the app with the library activity on top
-            Intent intent = getIntent();
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            finish();
-            startActivity(intent);
+        switch (key) {
+            case Preferences.Key.COLOR_THEME:
+            case Preferences.Key.LIBRARY_DISPLAY:
+                // Restart the app with the library activity on top
+                Intent intent = getIntent();
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                finish();
+                startActivity(intent);
+                break;
+            case Preferences.Key.SD_STORAGE_URI:
+            case Preferences.Key.EXTERNAL_LIBRARY_URI:
+                Preferences.setGroupingDisplay(Grouping.FLAT.getId());
+                viewModel.setGroup(null);
+                updateDisplay();
+            default:
+                // Nothing to handle there
         }
     }
 
