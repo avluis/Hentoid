@@ -98,6 +98,8 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
@@ -158,6 +160,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     private int topItemPosition = -1;
     // TODO doc
     private Group group = null;
+    // TODO doc
+    private boolean enabled = true;
 
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
@@ -212,17 +216,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                customBackPress();
-            }
-        };
-
         if (!(requireActivity() instanceof LibraryActivity))
             throw new IllegalStateException("Parent activity has to be a LibraryActivity");
         activity = new WeakReference<>((LibraryActivity) requireActivity());
-        activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
+
         listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);
     }
 
@@ -265,6 +262,14 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
     }
 
+    public void onEnable() {
+        enabled = true;
+    }
+
+    public void onDisable() {
+        enabled = false;
+    }
+
     /**
      * Initialize the UI components
      *
@@ -290,6 +295,18 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         setPagingMethod(Preferences.getEndlessScroll(), false);
 
         updateSortControls();
+        addCustomBackControl();
+    }
+
+    private void addCustomBackControl() {
+        if (callback != null) callback.remove();
+        callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                customBackPress();
+            }
+        };
+        activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
     }
 
     private void updateSortControls() {
@@ -683,7 +700,14 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 break;
             case EV_UPDATE_SORT:
                 updateSortControls();
+                addCustomBackControl();
                 activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
+                break;
+            case EV_ENABLE:
+                onEnable();
+                break;
+            case EV_DISABLE:
+                onDisable();
                 break;
             default:
                 // No default behaviour
@@ -710,7 +734,11 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (!activity.get().collapseSearchMenu()) {
             // If none of the above and we're into a grouping, go back to the groups view
             if (!Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
-                activity.get().goBackToGroups();
+                // Load an empty list to avoid having the image of the current list appear
+                // on screen next time the activity's ViewPager2 switches back to LibraryContentFragment
+                viewModel.clearContent();
+                // Let the list become visually empty before going back to the groups fragment
+                new Handler(Looper.getMainLooper()).postDelayed(() -> activity.get().goBackToGroups(), 100);
             }
             // If none of the above and a search filter is on => clear search filter
             else if (isSearchQueryActive()) {
@@ -1013,8 +1041,9 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      */
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">>Library changed ! Size=%s", result.size());
+        if (!enabled) return;
 
-        updateTitle(result.size(), totalContentCount);
+        activity.get().updateTitle(result.size(), totalContentCount);
 
         // Update background text
         if (result.isEmpty()) {
@@ -1064,20 +1093,17 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      */
     private void onTotalContentChanged(Integer count) {
         totalContentCount = count;
-        if (library != null) updateTitle(library.size(), totalContentCount);
-    }
-
-    // TODO doc
-    private void onGroupChanged(Group group) {
-        this.group = group;
+        if (library != null && enabled)
+            activity.get().updateTitle(library.size(), totalContentCount);
     }
 
     /**
-     * Update the screen title according to current search filter (#TOTAL BOOKS) if no filter is
-     * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
+     * LiveData callback when the selected group changes (when zooming on a group)
+     *
+     * @param group Currently selected group
      */
-    private void updateTitle(long totalSelectedCount, long totalCount) {
-        activity.get().updateTitle(totalSelectedCount, totalCount);
+    private void onGroupChanged(Group group) {
+        this.group = group;
     }
 
     /**

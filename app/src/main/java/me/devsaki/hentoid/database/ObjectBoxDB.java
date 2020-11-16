@@ -423,6 +423,10 @@ public class ObjectBoxDB {
         }
     }
 
+    Query<Content> selectNoContentQ() {
+        return store.boxFor(Content.class).query().equal(Content_.id, -1).build();
+    }
+
     Query<Content> selectContentSearchContentQ(
             String title,
             long groupId,

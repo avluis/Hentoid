@@ -42,7 +42,9 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
@@ -77,6 +79,8 @@ import timber.log.Timber;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
@@ -170,6 +174,8 @@ public class LibraryActivity extends BaseActivity {
     private boolean editMode = false;
     // True if there's at least one existing custom group; false instead
     private boolean isCustomGroupingAvailable;
+    // TODO doc
+    private final Map<Integer, String> titles = new HashMap<>();
 
 
     // Used to auto-hide the sort controls bar when no activity is detected
@@ -177,10 +183,6 @@ public class LibraryActivity extends BaseActivity {
 
 
     // === PUBLIC ACCESSORS (to be used by fragments)
-
-    public Toolbar getToolbar() {
-        return toolbar;
-    }
 
     public Toolbar getSelectionToolbar() {
         return selectionToolbar;
@@ -349,7 +351,7 @@ public class LibraryActivity extends BaseActivity {
             metadata.clear();
             mainSearchView.setQuery("", false);
             hideSearchSortBar(false);
-            signalFragment(EV_SEARCH, "");
+            signalCurrentFragment(EV_SEARCH, "");
         });
 
         // Sort controls
@@ -362,6 +364,7 @@ public class LibraryActivity extends BaseActivity {
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
+                enableCurrentFragment();
                 hideSearchSortBar(false);
                 updateToolbar();
                 updateSelectionToolbar(0, 0);
@@ -375,6 +378,7 @@ public class LibraryActivity extends BaseActivity {
         FragmentStateAdapter pagerAdapter = new LibraryPagerAdapter(this);
         viewPager.setAdapter(pagerAdapter);
         pagerAdapter.notifyDataSetChanged();
+        enableCurrentFragment();
     }
 
     private void initToolbar() {
@@ -426,7 +430,7 @@ public class LibraryActivity extends BaseActivity {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 query = s;
-                signalFragment(EV_SEARCH, query);
+                signalCurrentFragment(EV_SEARCH, query);
                 mainSearchView.clearFocus();
 
                 return true;
@@ -438,7 +442,7 @@ public class LibraryActivity extends BaseActivity {
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
                     query = "";
-                    signalFragment(EV_SEARCH, query);
+                    signalCurrentFragment(EV_SEARCH, query);
                     searchClearButton.setVisibility(View.GONE);
                 }
 
@@ -650,7 +654,7 @@ public class LibraryActivity extends BaseActivity {
      * Handler for the "Advanced search" button
      */
     private void onAdvancedSearchButtonClick() {
-        signalFragment(EV_ADVANCED_SEARCH, null);
+        signalCurrentFragment(EV_ADVANCED_SEARCH, null);
     }
 
     /**
@@ -669,8 +673,11 @@ public class LibraryActivity extends BaseActivity {
         currentItem.setTitle(currentItem.getTitle() + " <");
 
         popup.setOnMenuItemClickListener(item -> {
-            item.setChecked(true);
+            Grouping currentGrouping = Preferences.getGroupingDisplay();
             Grouping selectedGrouping = getGroupingFromMenuId(item.getItemId());
+            // Don't do anything if the current group is selected
+            if (currentGrouping.equals(selectedGrouping)) return false;
+
             Preferences.setGroupingDisplay(selectedGrouping.getId());
 
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
@@ -683,10 +690,10 @@ public class LibraryActivity extends BaseActivity {
                     && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getGroupSortField()) {
                 Preferences.setGroupSortField(Preferences.Default.ORDER_GROUP_FIELD);
             }
-            viewModel.setGroup(null);
 
-            // Update screen display
-            updateDisplay();
+            // Update screen display if needed (flat <-> the rest)
+            if (currentGrouping.equals(Grouping.FLAT) || selectedGrouping.equals(Grouping.FLAT))
+                updateDisplay();
             sortCommandsAutoHide(true, popup);
             return true;
         });
@@ -738,6 +745,7 @@ public class LibraryActivity extends BaseActivity {
             title = getResources().getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, totalCount);
         }
         toolbar.setTitle(title);
+        titles.put(viewPager.getCurrentItem(), title);
     }
 
     /**
@@ -782,15 +790,17 @@ public class LibraryActivity extends BaseActivity {
         callback.setEnabled(true);
     }
 
-    public void goBackToGroups() {
-        viewPager.setCurrentItem(0);
-    }
-
     private boolean isGroupDisplayed() {
         return (0 == viewPager.getCurrentItem() && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
     }
 
+    public void goBackToGroups() {
+        viewPager.setCurrentItem(0);
+        if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
+    }
+
     public void showBooksInGroup(me.devsaki.hentoid.database.domains.Group group) {
+        enableFragment(1);
         viewModel.setGroup(group);
         viewPager.setCurrentItem(1);
     }
@@ -808,7 +818,7 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
         else reorderMenu.setVisible(currentGrouping.canReorderBooks());
 
-        signalFragment(EV_UPDATE_SORT, null);
+        signalCurrentFragment(EV_UPDATE_SORT, null);
     }
 
     public void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
@@ -968,8 +978,22 @@ public class LibraryActivity extends BaseActivity {
         archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, true));
     }
 
-    private void signalFragment(int eventType, @Nullable String message) {
-        EventBus.getDefault().post(new CommunicationEvent(eventType, isGroupDisplayed() ? RC_GROUPS : RC_CONTENTS, message));
+    private void signalCurrentFragment(int eventType, @Nullable String message) {
+        signalFragment(isGroupDisplayed() ? 0 : 1, eventType, message);
+    }
+
+    private void signalFragment(int fragmentIndex, int eventType, @Nullable String message) {
+        EventBus.getDefault().post(new CommunicationEvent(eventType, (0 == fragmentIndex) ? RC_GROUPS : RC_CONTENTS, message));
+    }
+
+    private void enableCurrentFragment() {
+        if (isGroupDisplayed()) enableFragment(0);
+        else enableFragment(1);
+    }
+
+    private void enableFragment(int fragmentIndex) {
+        EventBus.getDefault().post(new CommunicationEvent(EV_ENABLE, (0 == fragmentIndex) ? RC_GROUPS : RC_CONTENTS, null));
+        EventBus.getDefault().post(new CommunicationEvent(EV_DISABLE, (0 == fragmentIndex) ? RC_CONTENTS : RC_GROUPS, null));
     }
 
     /**

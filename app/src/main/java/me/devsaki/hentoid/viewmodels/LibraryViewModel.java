@@ -59,6 +59,8 @@ public class LibraryViewModel extends AndroidViewModel {
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
     private final LiveData<Integer> totalContent;
+    private LiveData<Integer> currentGroupCountSource;
+    private final MediatorLiveData<Integer> totalGroups = new MediatorLiveData<>();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
     // Groups data
     private final MutableLiveData<Group> group = new MutableLiveData<>();
@@ -120,6 +122,11 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     @NonNull
+    public LiveData<Integer> getTotalGroup() {
+        return totalGroups;
+    }
+
+    @NonNull
     public LiveData<Boolean> isCustomGroupingAvailable() {
         return isCustomGroupingAvailable;
     }
@@ -171,6 +178,14 @@ public class LibraryViewModel extends AndroidViewModel {
         searchManager.setTags(metadata);
         newSearch.setValue(true);
         doSearchContent();
+    }
+
+    public void clearContent() {
+        if (currentSource != null) {
+            libraryPaged.removeSource(currentSource);
+            currentSource = dao.selectNoContent();
+            libraryPaged.addSource(currentSource, libraryPaged::setValue);
+        }
     }
 
     /**
@@ -225,6 +240,10 @@ public class LibraryViewModel extends AndroidViewModel {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
         currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility);
         groups.addSource(currentGroupsSource, groups::setValue);
+
+        if (currentGroupCountSource != null) totalGroups.removeSource(currentGroupCountSource);
+        currentGroupCountSource = dao.countLiveGroupsFor(grouping);
+        totalGroups.addSource(currentGroupCountSource, totalGroups::setValue);
     }
 
     // =========================
@@ -595,12 +614,12 @@ public class LibraryViewModel extends AndroidViewModel {
             content.groupItems.add(newGroupItem);
             // Commit new link to the DB
             content.groupItems.applyChangesToDb();
+
+            // Add a picture to the target group if it didn't have one
+            if (group.picture.isNull())
+                group.picture.setAndPutTarget(content.getCover());
         }
         // updateContentOrder(); TODO is that necessary when moving when inside custom group ?
-
-        // Add a picture to the target group if it didn't have one
-        if (group.picture.isNull())
-            group.picture.setAndPutTarget(content.getCover());
 
         return content;
     }

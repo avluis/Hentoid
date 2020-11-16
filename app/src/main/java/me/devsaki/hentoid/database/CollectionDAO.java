@@ -36,6 +36,8 @@ public interface CollectionDAO {
 
     // Low-level operations
 
+    LiveData<PagedList<Content>> selectNoContent();
+
     @Nullable
     Content selectContent(long id);
 
@@ -105,6 +107,8 @@ public interface CollectionDAO {
     Group selectGroupByName(int grouping, @NonNull final String name);
 
     long countGroupsFor(Grouping grouping);
+
+    LiveData<Integer> countLiveGroupsFor(@NonNull final Grouping grouping);
 
     long insertGroup(Group group);
 

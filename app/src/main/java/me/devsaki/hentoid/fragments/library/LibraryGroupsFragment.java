@@ -74,6 +74,8 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
@@ -124,26 +126,23 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private int totalContentCount;
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
+    // TODO doc
+    private boolean firstLibraryLoad = true;
 
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
+    // TODO doc
+    private boolean enabled = true;
 
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        callback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                customBackPress();
-            }
-        };
-
         if (!(requireActivity() instanceof LibraryActivity))
             throw new IllegalStateException("Parent activity has to be a LibraryActivity");
         activity = new WeakReference<>((LibraryActivity) requireActivity());
-        activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
+
         listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);
     }
 
@@ -176,9 +175,20 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         super.onViewCreated(view, savedInstanceState);
 
         viewModel.getGroups().observe(getViewLifecycleOwner(), this::onGroupsChanged);
+        viewModel.getTotalGroup().observe(getViewLifecycleOwner(), this::onTotalGroupsChanged);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
 
+        // Trigger a blank search
+        // TODO when group is reached from FLAT through the "group by" menu, this triggers a double-load and a screen blink
         viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility()); // Trigger a blank search
+    }
+
+    public void onEnable() {
+        enabled = true;
+    }
+
+    public void onDisable() {
+        enabled = false;
     }
 
     /**
@@ -204,6 +214,18 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         setPagingMethod();
 
         updateSortControls();
+        addCustomBackControl();
+    }
+
+    private void addCustomBackControl() {
+        if (callback != null) callback.remove();
+        callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                customBackPress();
+            }
+        };
+        activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
     }
 
     private void updateSortControls() {
@@ -440,7 +462,14 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 break;
             case EV_UPDATE_SORT:
                 updateSortControls();
+                addCustomBackControl();
                 activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
+                break;
+            case EV_ENABLE:
+                onEnable();
+                break;
+            case EV_DISABLE:
+                onDisable();
                 break;
             default:
                 // No default behaviour
@@ -540,9 +569,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
     private void onGroupsChanged(List<Group> result) {
         Timber.i(">>Groups changed ! Size=%s", result.size());
+        if (!enabled) return;
 
         boolean isEmpty = (result.isEmpty());
         emptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+
+        activity.get().updateTitle(result.size(), totalContentCount);
 
         final @GroupDisplayItem.ViewType int viewType =
                 activity.get().isEditMode() ? GroupDisplayItem.ViewType.LIBRARY_EDIT :
@@ -553,6 +585,20 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).toList();
         itemAdapter.set(groups);
         differEndCallback();
+
+        // Reset library load indicator
+        firstLibraryLoad = true;
+    }
+
+    /**
+     * LiveData callback when the total number of groups changes (because of book download of removal)
+     *
+     * @param count Current group count for the currently selected grouping
+     */
+    private void onTotalGroupsChanged(Integer count) {
+        if (!enabled) return;
+        totalContentCount = count;
+        activity.get().updateTitle(itemAdapter.getItemList().size(), totalContentCount);
     }
 
     /**
@@ -564,9 +610,14 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">>Library changed (groups) ! Size=%s", result.size());
 
-        // Refresh groups
+        // Refresh groups (new content -> updated book count or new groups)
         // TODO do we really want to do that, especially when deleting content ?
-        viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+        if (!firstLibraryLoad)
+            viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+        else {
+            Timber.i(">>Library changed (groups) : ignored");
+            firstLibraryLoad = false;
+        }
     }
 
     // TODO doc

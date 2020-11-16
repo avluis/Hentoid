@@ -6,12 +6,14 @@ public class CommunicationEvent {
 
     public static final int EV_SEARCH = 1;
     public static final int EV_ADVANCED_SEARCH = 2;
-    public static final int EV_UPDATE_SORT = 3;
-    public static final int EV_CLOSED = 3;
+    public static final int EV_UPDATE_SORT = 4;
+    public static final int EV_CLOSED = 5;
+    public static final int EV_ENABLE = 6;
+    public static final int EV_DISABLE = 7;
 
     public static final int RC_GROUPS = 1;
     public static final int RC_CONTENTS = 2;
-    public static final int RC_DRAWER = 2;
+    public static final int RC_DRAWER = 3;
 
     private final int type;
     private final int recipient;
