@@ -626,6 +626,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 //            item.setUndoSwipeAction(null);
             deleteActionRunnable = null;
             bookCard.setTranslationX(0f);
+            if (ivCover != null) Glide.with(ivCover).clear(ivCover);
         }
 
         @Override

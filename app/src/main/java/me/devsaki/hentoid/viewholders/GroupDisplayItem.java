@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -173,13 +174,15 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             title.setText(String.format("%s%s", item.group.name, (null == items || items.isEmpty()) ? "" : " (" + items.size() + ")"));
         }
 
-        private void attachCover(ImageFile cover) {
-            ivCover.setVisibility(View.VISIBLE);
+        private void attachCover(@NonNull ImageFile cover) {
             String thumbLocation = "";
             if (cover.getStatus().equals(StatusContent.DOWNLOADED) || cover.getStatus().equals(StatusContent.MIGRATED) || cover.getStatus().equals(StatusContent.EXTERNAL))
                 thumbLocation = cover.getFileUri();
             if (thumbLocation.isEmpty()) thumbLocation = cover.getUrl();
 
+            if (thumbLocation.isEmpty()) return;
+
+            ivCover.setVisibility(View.VISIBLE);
             if (thumbLocation.startsWith("http"))
                 Glide.with(ivCover)
                         .load(thumbLocation)
@@ -194,7 +197,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
         @Override
         public void unbindView(@NotNull GroupDisplayItem item) {
-            // No specific behaviour to implement
+            if (ivCover != null) Glide.with(ivCover).clear(ivCover);
         }
     }
 }
