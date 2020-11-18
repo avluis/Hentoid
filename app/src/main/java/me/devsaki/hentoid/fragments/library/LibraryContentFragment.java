@@ -932,6 +932,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         SimpleSwipeDrawerDragCallback dragSwipeCallback = new SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
                 .withSwipeLeft(Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width))
                 .withSensitivity(1.5f)
+                .withSurfaceThreshold(0.3f)
                 .withNotifyAllDrops(true);
         dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
@@ -1285,7 +1286,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
         if (vh instanceof ISwipeableViewHolder) {
             ((ISwipeableViewHolder) vh).onSwiped();
-            Timber.i(">> ONSWIPED");
         }
     }
 
@@ -1294,7 +1294,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
         if (vh instanceof ISwipeableViewHolder) {
             ((ISwipeableViewHolder) vh).onUnswiped();
-            Timber.i(">> ONUNSWIPED");
         }
     }
 

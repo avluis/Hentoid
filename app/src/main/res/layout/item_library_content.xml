@@ -15,13 +15,14 @@
         android:id="@+id/delete_btn"
         android:layout_width="80dp"
         android:layout_height="match_parent"
-        android:padding="8dp"
         android:layout_gravity="end"
-        android:clickable="false"
-        android:focusable="false"
+        android:background="@drawable/selector_button_neutral"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
         android:src="@drawable/ic_action_delete_forever"
         android:tooltipText="@string/external_help"
-        android:background="@drawable/selector_button_neutral"
+        android:visibility="gone"
         app:tint="?colorSecondary"
         tools:ignore="ContentDescription" />
 

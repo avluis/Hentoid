@@ -9,8 +9,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -526,10 +524,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
 
             if (deleteButton != null) {
-                deleteButton.setOnClickListener(v -> {
-                    if (deleteButton.isClickable()) deleteActionRunnable.run();
-                });
-                deleteButton.setClickable(false); // Listener is set but click is disabled until told the contrary
+                deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
             }
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
@@ -651,18 +646,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         @Override
         public void onSwiped() {
-            deleteButton.setClickable(true);
-            deleteButton.setFocusable(true);
+            deleteButton.setVisibility(View.VISIBLE);
         }
 
         @Override
         public void onUnswiped() {
-            // Clicking on the button on the right side quickly triggers an UNSWIPE then a SWIPE event with FastAdapter 5.3.0
-            // -> workaround to enable button click
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                deleteButton.setClickable(false);
-                deleteButton.setFocusable(false);
-            }, 150);
+            deleteButton.setVisibility(View.GONE);
         }
     }
 }

@@ -26,7 +26,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.13.0-RC1'
+        versionName '1.13.0-dev'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -140,7 +140,7 @@ dependencies {
      * UI
      */
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = "5.3.0"
+    def fastadapter_version = "5.3.1"
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"
