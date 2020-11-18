@@ -648,12 +648,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         @Override
         public void onSwiped() {
-            deleteButton.setVisibility(View.VISIBLE);
+            if (deleteButton != null) deleteButton.setVisibility(View.VISIBLE);
         }
 
         @Override
         public void onUnswiped() {
-            deleteButton.setVisibility(View.GONE);
+            if (deleteButton != null) deleteButton.setVisibility(View.GONE);
         }
     }
 }
