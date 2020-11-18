@@ -912,6 +912,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(c);
         try {
             List<ImageFile> imgs = parser.parseImageList(c);
+            if (imgs.isEmpty()) return result;
+
             int coverCount = (imgs.get(0).isCover()) ? 1 : 0;
             int maxImageOrder;
             if (c.getImageFiles() != null)
