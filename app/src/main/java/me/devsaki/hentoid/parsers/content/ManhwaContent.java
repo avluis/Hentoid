@@ -35,7 +35,7 @@ public class ManhwaContent implements ContentParser {
         result.setUrl(url.replace(Site.MANHWA.getUrl(), ""));
         result.setCoverImageUrl(coverUrl);
         String title = "<no title>";
-        if (!breadcrumbs.isEmpty()) {
+        if (breadcrumbs != null && !breadcrumbs.isEmpty()) {
             title = Helper.removeNonPrintableChars(breadcrumbs.get(breadcrumbs.size() - 1).text());
         }
         result.setTitle(title);
