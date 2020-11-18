@@ -19,6 +19,7 @@ import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -816,12 +817,12 @@ public final class ContentHelper {
     public static class InnerNameNumberComparator implements Comparator<String> {
         @Override
         public int compare(@NonNull String name1, @NonNull String name2) {
-            long innerNumber1 = Helper.extractNumeric(name1);
-            if (-1 == innerNumber1) return name1.compareTo(name2);
-            long innerNumber2 = Helper.extractNumeric(name2);
-            if (-1 == innerNumber2) return name1.compareTo(name2);
+            BigInteger innerNumber1 = Helper.extractNumeric(name1);
+            if (-1 == innerNumber1.intValue()) return name1.compareTo(name2);
+            BigInteger innerNumber2 = Helper.extractNumeric(name2);
+            if (-1 == innerNumber2.intValue()) return name1.compareTo(name2);
 
-            return Long.compare(innerNumber1, innerNumber2);
+            return innerNumber1.compareTo(innerNumber2);
         }
     }
 }

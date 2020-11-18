@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,8 +44,6 @@ public final class Helper {
     }
 
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
-
-    private static int DENSITY_DPI = -1;
 
 
     /**
@@ -177,11 +176,11 @@ public final class Helper {
      * @param str Value to convert
      * @return Integer representation of all the concatenated digits of the given value; -1 if no digit has been found
      */
-    public static long extractNumeric(@Nullable final String str) {
-        if (null == str) return -1;
+    public static BigInteger extractNumeric(@Nullable final String str) {
+        if (null == str) return BigInteger.valueOf(-1);
         String result = StringUtils.getDigits(str);
-        if (result.isEmpty()) return -1;
-        else return Long.parseLong(result);
+        if (result.isEmpty()) return BigInteger.valueOf(-1);
+        else return new BigInteger(result);
     }
 
     /**

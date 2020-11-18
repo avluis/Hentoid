@@ -46,7 +46,7 @@ public class HitomiGalleryInfo {
             String name2 = o2.getName();
             // Compare only when the entire file name is numerical (see follow-up comments on #640)
             if (Helper.isNumeric(FileHelper.getFileNameWithoutExtension(name1)) && Helper.isNumeric(FileHelper.getFileNameWithoutExtension(name2)))
-                return Long.compare(Helper.extractNumeric(name1), Helper.extractNumeric(name2));
+                return Helper.extractNumeric(name1).compareTo(Helper.extractNumeric(name2));
             else
                 return name1.compareTo(name2);
         }
