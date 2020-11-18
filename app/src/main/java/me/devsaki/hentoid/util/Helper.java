@@ -1,10 +1,12 @@
 package me.devsaki.hentoid.util;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Looper;
+import android.view.View;
 import android.webkit.WebSettings;
 
 import androidx.annotation.DimenRes;
@@ -356,5 +358,20 @@ public final class Helper {
 
     public static String protect(@Nullable String s) {
         return (null == s) ? "" : s;
+    }
+
+    public static boolean isValidContextForGlide(final View view) {
+        return isValidContextForGlide(view.getContext());
+    }
+
+    public static boolean isValidContextForGlide(final Context context) {
+        if (context == null) {
+            return false;
+        }
+        if (context instanceof Activity) {
+            final Activity activity = (Activity) context;
+            return !activity.isDestroyed() && !activity.isFinishing();
+        }
+        return true;
     }
 }

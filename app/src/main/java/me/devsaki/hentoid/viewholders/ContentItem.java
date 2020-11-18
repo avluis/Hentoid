@@ -57,6 +57,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LanguageHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -623,7 +624,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 //            item.setUndoSwipeAction(null);
             deleteActionRunnable = null;
             bookCard.setTranslationX(0f);
-            if (ivCover != null) Glide.with(ivCover).clear(ivCover);
+            if (ivCover != null && Helper.isValidContextForGlide(ivCover))
+                Glide.with(ivCover).clear(ivCover);
         }
 
         @Override

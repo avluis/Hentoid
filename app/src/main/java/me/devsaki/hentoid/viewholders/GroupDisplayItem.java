@@ -37,6 +37,7 @@ import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -197,7 +198,8 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
         @Override
         public void unbindView(@NotNull GroupDisplayItem item) {
-            if (ivCover != null) Glide.with(ivCover).clear(ivCover);
+            if (ivCover != null && Helper.isValidContextForGlide(ivCover))
+                Glide.with(ivCover).clear(ivCover);
         }
     }
 }
