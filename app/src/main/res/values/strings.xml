@@ -303,7 +303,7 @@
     <string name="group_remove">Detach from current group</string>
     <string name="group_name_exists">Group with that name already exists!</string>
     <!-- Groups -->
-    <string name="groups_flat">Flat</string>
+    <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
     <string name="groups_by_dl_date">By Download date</string>
     <string name="groups_custom">Custom</string>
