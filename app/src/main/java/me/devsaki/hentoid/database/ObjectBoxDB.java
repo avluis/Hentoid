@@ -468,7 +468,7 @@ public class ObjectBoxDB {
         }
         if (hasGroupFilter) {
             Group group = store.boxFor(Group.class).get(groupId);
-            if (group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
+            if (group != null && group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
                 applyDownloadDateFilter(query, group.propertyMin, group.propertyMax);
             else // Direct link to group
                 query.in(Content_.id, selectFilteredContent(groupId));
