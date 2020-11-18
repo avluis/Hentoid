@@ -24,7 +24,8 @@
         android:tooltipText="@string/external_help"
         android:visibility="gone"
         app:tint="?colorSecondary"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/item_card"
@@ -37,7 +38,7 @@
         android:focusable="false"
         android:longClickable="false"
         app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="invisible">
+        tools:visibility="visible">
 
         <!-- Dummy UI element to be able to attach to the top in library mode -->
         <View
