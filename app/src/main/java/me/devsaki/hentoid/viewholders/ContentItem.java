@@ -9,6 +9,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -304,6 +306,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (stringValue != null) item.content.getCover().setFileUri(stringValue);
             }
 
+            if (item.deleteAction != null)
+                deleteActionRunnable = () -> item.deleteAction.accept(item);
+
             updateLayoutVisibility(item);
             attachCover(item.content);
             attachFlag(item.content);
@@ -321,9 +326,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 DragDropUtil.bindDragHandle(this, item);
             if (tvUndoSwipe != null)
                 tvUndoSwipe.setOnClickListener(v -> item.undoSwipe());
-
-            if (item.deleteAction != null)
-                deleteActionRunnable = () -> item.deleteAction.accept(item);
         }
 
         private void updateLayoutVisibility(@NonNull final ContentItem item) {
@@ -655,8 +657,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         @Override
         public void onUnswiped() {
-            deleteButton.setClickable(false);
-            deleteButton.setFocusable(false);
+            // Clicking on the button on the right side quickly triggers an UNSWIPE then a SWIPE event with FastAdapter 5.3.0
+            // -> workaround to enable button click
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                deleteButton.setClickable(false);
+                deleteButton.setFocusable(false);
+            }, 150);
         }
     }
 }
