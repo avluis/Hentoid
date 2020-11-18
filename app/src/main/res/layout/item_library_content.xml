@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
@@ -11,35 +11,19 @@
     android:longClickable="true"
     tools:targetApi="o">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+    <ImageView
+        android:id="@+id/delete_btn"
+        android:layout_width="80dp"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        android:layout_gravity="end"
         android:clickable="false"
         android:focusable="false"
-        android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="@id/item_card"
-        app:layout_constraintTop_toTopOf="@id/item_card">
-
-        <TextView
-            android:id="@+id/delete_btn"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/selector_button_neutral"
-            android:clickable="false"
-            android:focusable="false"
-            android:gravity="center_vertical|center"
-            android:lines="1"
-            android:padding="8dp"
-            android:singleLine="true"
-            android:text="@string/menu_delete_single"
-            android:textAllCaps="true"
-            android:textColor="?colorSecondary"
-            android:textDirection="anyRtl"
-            android:textSize="@dimen/text_subtitle_2"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        android:src="@drawable/ic_action_delete_forever"
+        android:tooltipText="@string/external_help"
+        android:background="@drawable/selector_button_neutral"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/item_card"
@@ -51,7 +35,8 @@
         android:elevation="6dp"
         android:focusable="false"
         android:longClickable="false"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="invisible">
 
         <!-- Dummy UI element to be able to attach to the top in library mode -->
         <View
@@ -128,4 +113,4 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>
