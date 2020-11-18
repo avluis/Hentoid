@@ -2,7 +2,6 @@ package me.devsaki.hentoid.fragments.library;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -90,8 +89,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private OnBackPressedCallback callback;
     // Viewmodel
     private LibraryViewModel viewModel;
-    // Settings listener
-    private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = (p, k) -> onSharedPreferenceChanged(k);
     // Activity
     private WeakReference<LibraryActivity> activity;
 
@@ -158,8 +155,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_library_groups, container, false);
-
-        Preferences.registerPrefsChangedListener(prefsListener);
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
@@ -478,7 +473,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
     @Override
     public void onDestroy() {
-        Preferences.unregisterPrefsChangedListener(prefsListener);
         EventBus.getDefault().unregister(this);
         if (callback != null) callback.remove();
         super.onDestroy();
@@ -511,21 +505,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
                 llm.scrollToPositionWithOffset(0, 0);
             }
-        }
-    }
-
-    /**
-     * Callback for any change in Preferences
-     */
-    private void onSharedPreferenceChanged(String key) {
-        Timber.i("Prefs change detected : %s", key);
-        switch (key) {
-            case Preferences.Key.GROUPING_DISPLAY:
-            case Preferences.Key.ARTIST_GROUP_VISIBILITY:
-                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
-                break;
-            default:
-                // Nothing to handle there
         }
     }
 

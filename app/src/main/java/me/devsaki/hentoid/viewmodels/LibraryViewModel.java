@@ -235,7 +235,10 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void setGrouping(Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility) {
-        if (grouping.equals(Grouping.FLAT)) return;
+        if (grouping.equals(Grouping.FLAT)) {
+            setGroup(null);
+            return;
+        }
 
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
         currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility);
