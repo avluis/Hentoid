@@ -8,8 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.NaturalOrderComparator;
 
 public class HitomiGalleryInfo {
 
@@ -18,7 +17,7 @@ public class HitomiGalleryInfo {
     public List<HitomiGalleryPage> getFiles() {
         if (null == files) return Collections.emptyList();
             // Sort files by anything that resembles a number inside their names (Hitomi may order the pages wrongly)
-        else return Stream.of(files).sorted(new InnerNameNumberComparator()).toList();
+        else return Stream.of(files).sorted(new HitomiPageNameComparator()).toList();
     }
 
     public static class HitomiGalleryPage {
@@ -39,16 +38,10 @@ public class HitomiGalleryInfo {
         }
     }
 
-    private static class InnerNameNumberComparator implements Comparator<HitomiGalleryPage> {
+    private static class HitomiPageNameComparator implements Comparator<HitomiGalleryPage> {
         @Override
         public int compare(@NonNull HitomiGalleryPage o1, @NonNull HitomiGalleryPage o2) {
-            String name1 = o1.getName();
-            String name2 = o2.getName();
-            // Compare only when the entire file name is numerical (see follow-up comments on #640)
-            if (Helper.isNumeric(FileHelper.getFileNameWithoutExtension(name1)) && Helper.isNumeric(FileHelper.getFileNameWithoutExtension(name2)))
-                return Helper.extractNumeric(name1).compareTo(Helper.extractNumeric(name2));
-            else
-                return name1.compareTo(name2);
+            return new NaturalOrderComparator().compare(o1.getName(), o2.getName());
         }
     }
 }

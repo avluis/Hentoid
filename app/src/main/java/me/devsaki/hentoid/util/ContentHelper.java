@@ -19,7 +19,6 @@ import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -803,26 +802,14 @@ public final class ContentHelper {
             String name2 = o2.getName();
             if (null == name2) name2 = "";
 
-            return new InnerNameNumberComparator().compare(name1, name2);
+            return new NaturalOrderComparator().compare(name1, name2);
         }
     }
 
     private static class InnerNameNumberArchiveComparator implements Comparator<ArchiveHelper.ArchiveEntry> {
         @Override
         public int compare(@NonNull ArchiveHelper.ArchiveEntry o1, @NonNull ArchiveHelper.ArchiveEntry o2) {
-            return new ContentHelper.InnerNameNumberComparator().compare(o1.path, o2.path);
-        }
-    }
-
-    public static class InnerNameNumberComparator implements Comparator<String> {
-        @Override
-        public int compare(@NonNull String name1, @NonNull String name2) {
-            BigInteger innerNumber1 = Helper.extractNumeric(name1);
-            if (-1 == innerNumber1.intValue()) return name1.compareTo(name2);
-            BigInteger innerNumber2 = Helper.extractNumeric(name2);
-            if (-1 == innerNumber2.intValue()) return name1.compareTo(name2);
-
-            return innerNumber1.compareTo(innerNumber2);
+            return new NaturalOrderComparator().compare(o1.path, o2.path);
         }
     }
 }
