@@ -482,7 +482,7 @@ public final class Preferences {
     }
 
     public static List<String> getBlockedTags() {
-        return Stream.of(sharedPreferences.getString(Key.DL_BLOCKED_TAGS, "").split(",")).map(String::trim).toList();
+        return Stream.of(sharedPreferences.getString(Key.DL_BLOCKED_TAGS, "").split(",")).map(String::trim).filterNot(String::isEmpty).toList();
     }
 
     public static int getTagBlockingBehaviour() {
