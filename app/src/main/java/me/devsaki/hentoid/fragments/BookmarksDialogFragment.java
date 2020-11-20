@@ -120,6 +120,10 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
 
+        MaterialButton homepage = requireViewById(rootView, R.id.bookmark_homepage_btn);
+        homepage.setIcon(ContextCompat.getDrawable(requireContext(), site.getIco()));
+        homepage.setOnClickListener(v -> parent.openUrl(site.getUrl()));
+
         List<SiteBookmark> bookmarks = reloadBookmarks();
 
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
@@ -168,9 +172,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     private List<SiteBookmark> reloadBookmarks(CollectionDAO dao) {
         List<SiteBookmark> bookmarks;
         bookmarks = dao.selectBookmarks(site);
-        // Add the site homepage as the 1st bookmark
-        bookmarks.add(0, new SiteBookmark(site, getResources().getString(R.string.bookmark_homepage), site.getUrl()).setEditable(false));
-        itemAdapter.set(Stream.of(bookmarks).map(s -> new TextItem<>(s.getTitle(), s, false, s.isEditable(), touchHelper)).toList());
+        itemAdapter.set(Stream.of(bookmarks).map(s -> new TextItem<>(s.getTitle(), s, false, true, touchHelper)).toList());
         return bookmarks;
     }
 
@@ -272,7 +274,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
         if (1 == selectedItems.size()) {
             SiteBookmark b = Stream.of(selectedItems).findFirst().get().getTag();
-            if (b != null && b.isEditable())
+            if (b != null)
                 InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, b.getTitle(), this::onEditTitle);
         }
     }
@@ -304,7 +306,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         Set<TextItem<SiteBookmark>> selectedItems = selectExtension.getSelectedItems();
         Context context = getActivity();
         if (!selectedItems.isEmpty() && context != null) {
-            List<SiteBookmark> selectedContent = Stream.of(selectedItems).map(TextItem::getTag).withoutNulls().filter(SiteBookmark::isEditable).toList();
+            List<SiteBookmark> selectedContent = Stream.of(selectedItems).map(TextItem::getTag).withoutNulls().toList();
             if (!selectedContent.isEmpty()) {
                 CollectionDAO dao = new ObjectBoxDAO(context);
                 try {
