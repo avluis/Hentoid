@@ -399,6 +399,7 @@
     <string name="unbookmark_current">Remove bookmark on current page</string>
     <string name="bookmark_copy_url">Copy bookmark URL to clipboard</string>
     <string name="alert_unwanted_tags">This book is tagged with %s</string>
+    <string name="bookmark_homepage">Homepage</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>

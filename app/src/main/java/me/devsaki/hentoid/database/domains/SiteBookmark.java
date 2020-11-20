@@ -7,6 +7,7 @@ import java.util.Objects;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Transient;
 import me.devsaki.hentoid.enums.Site;
 
 /**
@@ -23,6 +24,9 @@ public class SiteBookmark {
     private String title;
     private String url;
     private int order = -1;
+
+    @Transient
+    private boolean editable = true;  // True if can be edited via the UI; false instead (default homepage bookmark)
 
     public SiteBookmark() {
     }  // Required for ObjectBox to work
@@ -55,6 +59,15 @@ public class SiteBookmark {
 
     public void setOrder(int order) {
         this.order = order;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public SiteBookmark setEditable(boolean editable) {
+        this.editable = editable;
+        return this;
     }
 
     @Override
