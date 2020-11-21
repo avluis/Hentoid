@@ -797,12 +797,7 @@ public final class ContentHelper {
     private static class InnerNameNumberFileComparator implements Comparator<DocumentFile> {
         @Override
         public int compare(@NonNull DocumentFile o1, @NonNull DocumentFile o2) {
-            String name1 = o1.getName();
-            if (null == name1) name1 = "";
-            String name2 = o2.getName();
-            if (null == name2) name2 = "";
-
-            return new NaturalOrderComparator().compare(name1, name2);
+            return new NaturalOrderComparator().compare(Helper.protect(o1.getName()), Helper.protect(o2.getName()));
         }
     }
 
