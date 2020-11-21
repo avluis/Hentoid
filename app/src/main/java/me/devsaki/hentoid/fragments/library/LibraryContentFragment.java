@@ -1073,7 +1073,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (newSearch) topItemPosition = 0;
 
         // Update displayed books
-        if (Preferences.getEndlessScroll() && !activity.get().isEditMode()) {
+        if (Preferences.getEndlessScroll() && !activity.get().isEditMode() && pagedItemAdapter != null) {
             pagedItemAdapter.submitList(result, this::differEndCallback);
         } else if (activity.get().isEditMode()) {
             populateAllResults(result);
