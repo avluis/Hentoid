@@ -58,7 +58,7 @@ public class ImportHelper {
     private static final int RQST_STORAGE_PERMISSION_HENTOID = 3;
     private static final int RQST_STORAGE_PERMISSION_EXTERNAL = 4;
 
-    @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.CREATE_FAIL, Result.OTHER})
+    @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.APP_FOLDER, Result.CREATE_FAIL, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Result {
         int OK_EMPTY_FOLDER = 0; // OK - Existing, empty Hentoid folder
@@ -66,8 +66,9 @@ public class ImportHelper {
         int OK_LIBRARY_DETECTED_ASK = 2; // OK - Existing Hentoid folder with books + we need to ask the user if he wants to import them
         int CANCELED = 3; // Operation canceled
         int INVALID_FOLDER = 4; // File or folder is invalid, cannot be found
-        int CREATE_FAIL = 5; // Hentoid folder could not be created
-        int OTHER = 6; // Any other issue
+        int APP_FOLDER = 5; // File or folder is already the app folder (and can't be used as an external folder)
+        int CREATE_FAIL = 6; // Hentoid folder could not be created
+        int OTHER = 7; // Any other issue
     }
 
     private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
@@ -254,8 +255,13 @@ public class ImportHelper {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return Result.INVALID_FOLDER;
         }
+        String folderUri = docFile.getUri().toString();
+        if (folderUri.equalsIgnoreCase(Preferences.getStorageUri())) {
+            Timber.w("Trying to set the app folder as the external library %s", treeUri.toString());
+            return Result.APP_FOLDER;
+        }
         // Set the folder as the app's external library folder
-        Preferences.setExternalLibraryUri(docFile.getUri().toString());
+        Preferences.setExternalLibraryUri(folderUri);
 
         // Start the import
         runExternalImport(context);
@@ -512,7 +518,7 @@ public class ImportHelper {
     /**
      * Create a cover and add it to the given image list
      *
-     * @param images Image list to generate the cover from (and add it to)
+     * @param images       Image list to generate the cover from (and add it to)
      * @param targetStatus Target StatusContent of the cover to create
      */
     private static void createCover(@NonNull final List<ImageFile> images, @NonNull final StatusContent targetStatus) {

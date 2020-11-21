@@ -46,8 +46,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     // Callback from the directory chooser
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        @ImportHelper.Result val result = ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data)
-        when (result) {
+        when (ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data)) {
             ImportHelper.Result.OK_EMPTY_FOLDER -> nextStep()
             ImportHelper.Result.OK_LIBRARY_DETECTED -> updateOnSelectFolder() // Import service is already launched by the Helper; nothing else to do
             ImportHelper.Result.OK_LIBRARY_DETECTED_ASK -> {
@@ -56,6 +55,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             }
             ImportHelper.Result.CANCELED -> Snackbar.make(main, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.INVALID_FOLDER -> Snackbar.make(main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.Result.APP_FOLDER -> Snackbar.make(main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.CREATE_FAIL -> Snackbar.make(main, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.OTHER -> Snackbar.make(main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
         }
@@ -118,7 +118,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 .setNegativeButton(android.R.string.cancel, null)
                 .create()
 
-        materialDialog.setIcon(R.drawable.ic_warning);
+        materialDialog.setIcon(R.drawable.ic_warning)
         materialDialog.show()
     }
 
