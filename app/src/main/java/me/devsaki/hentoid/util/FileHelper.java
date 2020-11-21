@@ -223,7 +223,7 @@ public class FileHelper {
     }
 
     /**
-     * Create an OutputStream opened the given file
+     * Create an OutputStream for the given file
      * NB : File length will be truncated to the length of the written data
      *
      * @param context Context to use
@@ -235,7 +235,15 @@ public class FileHelper {
         return context.getContentResolver().openOutputStream(target.getUri(), "rwt"); // Always truncate file to whatever data needs to be written
     }
 
-    // TODO doc
+    /**
+     * Create an OutputStream for the file at the given Uri
+     * NB : File length will be truncated to the length of the written data
+     *
+     * @param context Context to use
+     * @param fileUri Uri of the file to open the OutputStream on
+     * @return New OutputStream opened on the given file
+     * @throws IOException In case something horrible happens during I/O
+     */
     @Nullable
     public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
@@ -261,21 +269,33 @@ public class FileHelper {
         return context.getContentResolver().openInputStream(target.getUri());
     }
 
-    // TODO doc
+    /**
+     * Create an InputStream opened the file at the given Uri
+     *
+     * @param context Context to use
+     * @param fileUri Uri to open the InputStream on
+     * @return New InputStream opened on the given file
+     * @throws IOException In case something horrible happens during I/O
+     */
     public static InputStream getInputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
         return context.getContentResolver().openInputStream(fileUri);
     }
 
     /**
-     * Delete a file.
+     * Delete the given file
      *
-     * @param target The file.
+     * @param target File to delete
      */
     public static void removeFile(File target) {
         FileUtil.deleteFile(target);
     }
 
-    // TODO doc
+    /**
+     * Delete the file represented by the given Uri
+     *
+     * @param context Context to be used
+     * @param fileUri Uri to the file to delete
+     */
     public static void removeFile(@NonNull final Context context, @NonNull final Uri fileUri) {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
             String path = fileUri.getPath();
@@ -286,7 +306,6 @@ public class FileHelper {
             if (doc != null) doc.delete();
         }
     }
-
 
     /**
      * Return the DocumentFile with the given display name located in the given folder
@@ -1014,7 +1033,13 @@ public class FileHelper {
         return result.toString();
     }
 
-    // TODO doc
+    /**
+     * Indicate whether the file at the given Uri exists or not
+     *
+     * @param context Context to be used
+     * @param fileUri Uri to the file whose existence is to check
+     * @return True if the given Uri points to an existing file; false instead
+     */
     public static boolean fileExists(@NonNull final Context context, @NonNull final Uri fileUri) {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
             String path = fileUri.getPath();

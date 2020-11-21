@@ -45,6 +45,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
     private View step3check;
 
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
