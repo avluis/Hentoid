@@ -520,6 +520,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (site != null && !site.equals(Site.NONE)) {
                 int img = site.getIco();
                 ivSite.setImageResource(img);
+                ivSite.setVisibility(View.VISIBLE);
             } else {
                 ivSite.setVisibility(View.GONE);
             }
