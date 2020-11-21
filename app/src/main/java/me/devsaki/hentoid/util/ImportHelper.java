@@ -58,7 +58,7 @@ public class ImportHelper {
     private static final int RQST_STORAGE_PERMISSION_HENTOID = 3;
     private static final int RQST_STORAGE_PERMISSION_EXTERNAL = 4;
 
-    @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.APP_FOLDER, Result.CREATE_FAIL, Result.OTHER})
+    @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.DOWNLOAD_FOLDER, Result.APP_FOLDER, Result.CREATE_FAIL, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Result {
         int OK_EMPTY_FOLDER = 0; // OK - Existing, empty Hentoid folder
@@ -66,9 +66,10 @@ public class ImportHelper {
         int OK_LIBRARY_DETECTED_ASK = 2; // OK - Existing Hentoid folder with books + we need to ask the user if he wants to import them
         int CANCELED = 3; // Operation canceled
         int INVALID_FOLDER = 4; // File or folder is invalid, cannot be found
-        int APP_FOLDER = 5; // File or folder is already the app folder (and can't be used as an external folder)
-        int CREATE_FAIL = 6; // Hentoid folder could not be created
-        int OTHER = 7; // Any other issue
+        int APP_FOLDER = 5; // Selected folder is the app folder and can't be used as an external folder
+        int DOWNLOAD_FOLDER = 6; // Selected folder is the device's download folder and can't be used as a primary folder (downloads visibility + storage calculation issues)
+        int CREATE_FAIL = 7; // Hentoid folder could not be created
+        int OTHER = 8; // Any other issue
     }
 
     private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
@@ -200,6 +201,12 @@ public class ImportHelper {
         if (null == docFile || !docFile.exists()) {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return Result.INVALID_FOLDER;
+        }
+        // Check if the folder is not the device's Download folder
+        List<String> pathSegments = treeUri.getPathSegments();
+        if (pathSegments.size() > 1 && (pathSegments.get(1).equalsIgnoreCase("download") || pathSegments.get(1).equalsIgnoreCase("primary:download"))) {
+            Timber.e("Device's download folder detected : %s", treeUri.toString());
+            return Result.DOWNLOAD_FOLDER;
         }
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = addHentoidFolder(context, docFile);
