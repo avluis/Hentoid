@@ -161,7 +161,7 @@ dependencies {
     implementation "com.github.skydoves:powerspinner:1.1.5"
 
     // Popup menus with icons
-    implementation "com.github.skydoves:powermenu:2.1.7"
+    implementation 'com.github.skydoves:powermenu:2.1.8'
 
     // Fast scroller
     implementation "me.zhanghai.android.fastscroll:library:1.1.4"
