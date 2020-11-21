@@ -58,7 +58,8 @@ public class PermissionIntroFragment extends Fragment implements SlidePolicy {
     }
 
     private void invokeAskPermission() {
-        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PermissionUtil.RQST_STORAGE_PERMISSION);
+        if (parentActivity != null)
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PermissionUtil.RQST_STORAGE_PERMISSION);
     }
 
     @Override
