@@ -32,6 +32,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
@@ -52,6 +53,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -557,8 +559,17 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // diff calculations ignore certain items and desynch the "real" list from the one manipulated by selectExtension
         // => use a plain ItemAdapter.set for now (and live with the occasional blinking)
 //        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
-        itemAdapter.set(content);
-        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
+//        itemAdapter.set(content);
+        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, content))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(diffResult -> {
+                    FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
+                    differEndCallback();
+                })
+        );
+
+//        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
 
         updateControlBar();
 
