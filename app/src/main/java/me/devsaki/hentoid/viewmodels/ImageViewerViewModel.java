@@ -248,7 +248,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
             }
 
             // Mark initial page as read
-            markPageAsRead(imageFiles.get(startingIndex).getOrder());
+            if (startingIndex < imageFiles.size())
+                markPageAsRead(imageFiles.get(startingIndex).getOrder());
         }
 
         loadedBookId = theContent.getId();
