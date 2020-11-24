@@ -12,6 +12,7 @@ import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.mikepenz.fastadapter.diff.DiffCallback;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -51,6 +52,7 @@ import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.viewholders.ContentItem;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
@@ -211,13 +213,16 @@ public final class ContentHelper {
      * @param context Context to use for the action
      * @param dao     DAO to use for the action
      * @param content Content to update
+     *                TODO update doc
      */
     public static void updateContentReads(
             @NonNull Context context,
             @Nonnull CollectionDAO dao,
             @NonNull Content content,
+            int targetLastReadPageIndex,
             @NonNull List<ImageFile> images) {
         content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
+        content.setLastReadPageIndex(targetLastReadPageIndex);
         dao.insertContent(content);
         dao.replaceImageList(content.getId(), images);
 
@@ -807,4 +812,28 @@ public final class ContentHelper {
             return new NaturalOrderComparator().compare(o1.path, o2.path);
         }
     }
+
+    /**
+     * Diff calculation rules for ContentItem's
+     * <p>
+     * Created once and for all to be used by FastAdapter when posting updates without PagedList
+     */
+    public static final DiffCallback<ContentItem> CONTENT_ITEM_DIFF_CALLBACK = new DiffCallback<ContentItem>() {
+        @Override
+        public boolean areItemsTheSame(ContentItem oldItem, ContentItem newItem) {
+            return oldItem.getIdentifier() == newItem.getIdentifier();
+        }
+
+        @Override
+        public boolean areContentsTheSame(ContentItem oldItem, ContentItem newItem) {
+            return false; // Avoid keeping items un-updated as it ignores certain items and desynchronizes the "real" list from the one manipulated by selectExtension
+            // when using mass-moving (select multiple + move up/down) or when coming back from the image viewer
+        }
+
+        @Override
+        public @org.jetbrains.annotations.Nullable Object getChangePayload(ContentItem queueRecord, int i, ContentItem item1, int i1) {
+            return null;
+        }
+    };
+
 }

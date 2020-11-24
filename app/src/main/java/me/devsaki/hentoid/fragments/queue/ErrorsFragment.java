@@ -27,6 +27,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.select.SelectExtension;
@@ -38,7 +39,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
@@ -104,7 +108,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         recyclerView = requireViewById(rootView, R.id.queue_list);
 
         fastAdapter = FastAdapter.with(itemAdapter);
-        fastAdapter.setHasStableIds(false);
         ContentItem item = new ContentItem(ContentItem.ViewType.ERRORS);
         fastAdapter.registerItemFactory(item.getType(), item);
 
@@ -323,13 +326,16 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         mEmptyText.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS, null)).toList();
-        // When viewing books and going back (which triggers a book update without any impact on visuals),
-        // diff calculations ignore certain items and desynch the "real" list from the one manipulated by selectExtension
-        // => use a plain ItemAdapter.set for now (and live with the occasional blinking)
-        //FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
-        itemAdapter.set(content);
-        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
+        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS, null)).toList();
+        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(diffResult -> {
+                    FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
+                    differEndCallback();
+                })
+        );
+
     }
 
     /**

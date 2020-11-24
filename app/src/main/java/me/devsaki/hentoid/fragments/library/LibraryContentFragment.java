@@ -39,6 +39,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
@@ -61,6 +62,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
@@ -109,6 +114,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
+
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // ======== COMMUNICATION
     private OnBackPressedCallback callback;
@@ -718,6 +725,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
         EventBus.getDefault().unregister(this);
+        compositeDisposable.clear();
         if (callback != null) callback.remove();
         super.onDestroy();
     }
@@ -1005,23 +1013,36 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
 
         List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType, this::onDeleteSwipedBook)).toList();
-        itemAdapter.set(contentItems);
-        fastAdapter.notifyDataSetChanged();
+        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(diffResult -> {
+                    FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
+                    differEndCallback();
+                })
+        );
     }
 
     private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
+        List<ContentItem> contentItems;
         if (iLibrary.isEmpty()) {
-            itemAdapter.set(Collections.emptyList());
+            contentItems = Collections.emptyList();
         } else {
             @ContentItem.ViewType int viewType;
             if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay() || activity.get().isEditMode()) // Grid won't be used in edit mode
                 viewType = activity.get().isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
-            List<ContentItem> contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).toList();
-            itemAdapter.set(contentItems);
+            contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).toList();
         }
-        fastAdapter.notifyDataSetChanged();
+        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(diffResult -> {
+                    FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
+                    differEndCallback();
+                })
+        );
     }
 
     /**

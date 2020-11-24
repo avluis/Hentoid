@@ -302,7 +302,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             default:
                 readThresholdPosition = 1;
         }
-        boolean updateReads = (highestImageIndexReached + 1 >= readThresholdPosition);
+        boolean updateReads = (highestImageIndexReached + 1 >= readThresholdPosition || theContent.getReads() > 0);
 
         // Reset the memorized page index if it represents the last page
         int indexToSet = (index == theImages.size() - 1) ? 0 : index;
@@ -337,11 +337,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 if (readPageNumbers.contains(img.getOrder())) img.setRead(true);
         }
 
-//        now updateReads isn 't the sole factor that decides whether the JSON is updated or not
-        savedContent.setLastReadPageIndex(indexToSet);
-        if (updateReads || readPageNumbers.size() > previousReadPagesCount)
-            ContentHelper.updateContentReads(getApplication(), collectionDao, savedContent, theImages);
-        else collectionDao.insertContent(savedContent);
+        if (indexToSet != savedContent.getLastReadPageIndex() || updateReads || readPageNumbers.size() > previousReadPagesCount)
+            ContentHelper.updateContentReads(getApplication(), collectionDao, savedContent, indexToSet, theImages);
     }
 
     public void toggleShowFavouritePages(Consumer<Boolean> callback) {

@@ -553,13 +553,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        List<ContentItem> content = Stream.of(result).map(c -> new ContentItem(c, touchHelper)).toList();
-        // When using mass-moving (select multiple + move up/down),
-        // diff calculations ignore certain items and desynch the "real" list from the one manipulated by selectExtension
-        // => use a plain ItemAdapter.set for now (and live with the occasional blinking)
-//        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, content);
-//        itemAdapter.set(content);
-        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, content))
+        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper)).toList();
+        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(diffResult -> {
@@ -567,8 +562,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     differEndCallback();
                 })
         );
-
-//        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
 
         updateControlBar();
 
