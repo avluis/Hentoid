@@ -455,7 +455,7 @@ public class ImportHelper {
         List<ImageFile> images = new ArrayList<>();
         scanImages(context, bookFolder, client, targetStatus, false, images, imageFiles);
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
-        if (!coverExists) createCover(images, targetStatus);
+        if (!coverExists) createCover(images);
         result.setImageFiles(images);
         if (0 == result.getQtyPages())
             result.setQtyPages(images.size() - 1); // Minus the cover
@@ -496,7 +496,7 @@ public class ImportHelper {
         for (DocumentFile chapterFolder : chapterFolders)
             scanImages(context, chapterFolder, client, StatusContent.EXTERNAL, true, images, null);
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
-        if (!coverExists) createCover(images, StatusContent.EXTERNAL);
+        if (!coverExists) createCover(images);
         result.setImageFiles(images);
         if (0 == result.getQtyPages())
             result.setQtyPages(images.size() - 1); // Minus the cover
@@ -526,13 +526,12 @@ public class ImportHelper {
     /**
      * Create a cover and add it to the given image list
      *
-     * @param images       Image list to generate the cover from (and add it to)
-     * @param targetStatus Target StatusContent of the cover to create
+     * @param images Image list to generate the cover from (and add it to)
      */
-    private static void createCover(@NonNull final List<ImageFile> images, @NonNull final StatusContent targetStatus) {
+    public static void createCover(@NonNull final List<ImageFile> images) {
         if (!images.isEmpty()) {
             ImageFile firstImg = images.get(0);
-            ImageFile cover = new ImageFile(0, "", targetStatus, images.size());
+            ImageFile cover = new ImageFile(0, "", images.get(0).getStatus(), images.size());
             cover.setName(Consts.THUMB_FILE_NAME);
             cover.setUrl(firstImg.getUrl());
             cover.setFileUri(firstImg.getFileUri());
@@ -606,7 +605,7 @@ public class ImportHelper {
 
         List<ImageFile> images = ContentHelper.createImageListFromArchiveEntries(archive.getUri(), entryList, targetStatus, 1, "");
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
-        if (!coverExists) createCover(images, targetStatus);
+        if (!coverExists) createCover(images);
 
         // Create content envelope
         Content result = new Content().setSite(Site.NONE).setTitle((null == archive.getName()) ? "" : FileHelper.getFileNameWithoutExtension(archive.getName())).setUrl("");

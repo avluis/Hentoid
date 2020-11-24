@@ -2,6 +2,7 @@ package me.devsaki.hentoid.json;
 
 import androidx.annotation.Nullable;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImportHelper;
 
 public class JsonContent {
 
@@ -137,8 +139,11 @@ public class JsonContent {
             }
         }
         if (imageFiles != null) {
-            List<ImageFile> imgs = new ArrayList<>();
-            for (JsonImageFile img : imageFiles) imgs.add(img.toEntity(imageFiles.size()));
+            List<ImageFile> imgs = Stream.of(imageFiles).map(i -> i.toEntity(imageFiles.size())).toList();
+            // Fix empty covers
+            Optional<ImageFile> cover = Stream.of(imgs).filter(ImageFile::isCover).findFirst();
+            if (cover.isEmpty() || cover.get().getUrl().isEmpty()) ImportHelper.createCover(imgs);
+
             result.setImageFiles(imgs);
 
             // Fix books with incorrect QtyPages that may exist in old JSONs
