@@ -332,30 +332,21 @@ public class FileHelper {
      *
      * @param context Context to use
      * @param folder  Folder to check and set
-     * @param notify  true if the method is allowed to create a toast in case of any error -- TODO this parameter is a joke
-     * @return true if the given folder is valid and has been set; false if not
+     * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials could not be set
      */
-    public static boolean checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder, boolean notify) {
+    public static int checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
         // Validate folder
-        if (!folder.exists() && !folder.isDirectory()) {
-            if (notify)
-                ToastUtil.toast(context, R.string.error_creating_folder);
-            return false;
-        }
+        if (!folder.exists() && !folder.isDirectory()) return -1;
 
         // Remove and add back the nomedia file to test if the user has the I/O rights to the selected folder
         DocumentFile nomedia = findFile(context, folder, NOMEDIA_FILE_NAME);
         if (nomedia != null) nomedia.delete();
 
         nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
-        if (null == nomedia || !nomedia.exists()) {
-            if (notify)
-                ToastUtil.toast(context, R.string.error_write_permission);
-            return false;
-        }
+        if (null == nomedia || !nomedia.exists()) return -2;
 
         Preferences.setStorageUri(folder.getUri().toString());
-        return true;
+        return 0;
     }
 
     /**

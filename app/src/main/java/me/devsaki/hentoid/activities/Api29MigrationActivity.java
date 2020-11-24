@@ -150,8 +150,11 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
     private void scanLibrary(@NonNull final DocumentFile root) {
         // Check if the selected folder is valid (user error msgs are displayed inside this call)
-        if (!FileHelper.checkAndSetRootFolder(this, root, true)) {
+        int result = FileHelper.checkAndSetRootFolder(this, root);
+        if (result < 0) {
             step1button.setVisibility(View.VISIBLE);
+            if (-1 == result) ToastUtil.toast(this, R.string.error_creating_folder);
+            else if (-2 == result) ToastUtil.toast(this, R.string.error_write_permission);
             return;
         }
 

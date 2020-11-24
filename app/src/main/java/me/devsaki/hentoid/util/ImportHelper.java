@@ -215,8 +215,9 @@ public class ImportHelper {
             return Result.CREATE_FAIL;
         }
         // Set the folder as the app's downloads folder
-        if (!FileHelper.checkAndSetRootFolder(context, hentoidFolder, true)) {
-            Timber.e("Could not set the selected root folder %s", hentoidFolder.getUri().toString());
+        int result = FileHelper.checkAndSetRootFolder(context, hentoidFolder);
+        if (result < 0) {
+            Timber.e("Could not set the selected root folder (error = %d) %s", result, hentoidFolder.getUri().toString());
             return Result.INVALID_FOLDER;
         }
 
