@@ -93,7 +93,7 @@ public class LogsDialogFragment extends DialogFragment {
             else if (fileName.startsWith("cleanup")) label = "Primary library cleanup";
             else if (fileName.startsWith("api29_migration"))
                 label = "Library migration from Hentoid v1.11-";
-            else label = "Unknown";
+            else label = "[" + fileName + "]";
 
             Instant lastModified = Instant.ofEpochMilli(file.lastModified());
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm", Locale.ENGLISH);
