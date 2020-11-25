@@ -155,7 +155,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     @Override
     public int getLayoutRes() {
         if (ViewType.LIBRARY == viewType) return R.layout.item_library_content;
-        else if (ViewType.LIBRARY_GRID == viewType) return R.layout.item_library_content_grid2;
+        else if (ViewType.LIBRARY_GRID == viewType) return R.layout.item_library_content_grid;
         else return R.layout.item_queue;
     }
 
@@ -525,9 +525,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivSite.setVisibility(View.GONE);
             }
 
-            if (deleteButton != null) {
+            if (deleteButton != null)
                 deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
-            }
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 boolean isFirstItem = (0 == getAdapterPosition());

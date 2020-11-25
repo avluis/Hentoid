@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.DimenRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -937,8 +938,9 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         }
 
         // Drag, drop & swiping
+        @DimenRes int dimen = (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay()) ? R.dimen.delete_drawer_width_list : R.dimen.delete_drawer_width_grid;
         SimpleSwipeDrawerDragCallback dragSwipeCallback = new SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
-                .withSwipeLeft(Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width))
+                .withSwipeLeft(Helper.dimensAsDp(requireContext(), dimen))
                 .withSensitivity(1.5f)
                 .withSurfaceThreshold(0.3f)
                 .withNotifyAllDrops(true);
