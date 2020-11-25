@@ -8,11 +8,13 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/library_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:clipToPadding="false"
         android:paddingStart="@dimen/default_cardview_margin"
         android:paddingTop="@dimen/default_cardview_margin"
         android:paddingEnd="@dimen/default_cardview_margin"
+        app:layout_constraintBottom_toTopOf="@id/pager_background"
+        app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/item_library_content" />
 
     <include layout="@layout/include_library_pager" />
