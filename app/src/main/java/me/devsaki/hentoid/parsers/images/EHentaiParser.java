@@ -61,15 +61,16 @@ public class EHentaiParser implements ImageListParser {
     public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
-        boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
-
-        List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
-        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl()));
-        headers.add(new Pair<>(HttpHelper.HEADER_ACCEPT_KEY, "*/*"));
-
         List<ImageFile> result = Collections.emptyList();
         try {
+            // Retrieve and set cookies (optional; e-hentai can work without cookies even though certain galleries are unreachable)
+            String cookieStr = getCookieStr(content);
+
+            List<Pair<String, String>> headers = new ArrayList<>();
+            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+            headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl()));
+            headers.add(new Pair<>(HttpHelper.HEADER_ACCEPT_KEY, "*/*"));
+
             /*
              * A/ Without multipage viewer
              *    A.1- Detect the number of pages of the gallery
@@ -83,6 +84,7 @@ public class EHentaiParser implements ImageListParser {
              *
              *    B.2- Call the API to get the pictures URL
              */
+            boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
             Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
             if (galleryDoc != null) {
                 // Detect if multipage viewer is on
@@ -312,6 +314,32 @@ public class EHentaiParser implements ImageListParser {
                 return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED));
         }
         return Optional.empty();
+    }
+
+    /**
+     * Retrieve cookies (optional; e-hentai can work without cookies even though certain galleries are unreachable)
+     *
+     * @param content Content to retrieve cookies from
+     * @return Cookie string
+     */
+    private String getCookieStr(@NonNull final Content content) {
+        String result = "nw=1"; // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
+
+        String downloadParamsStr = content.getDownloadParams();
+        if (null == downloadParamsStr || downloadParamsStr.isEmpty()) return result;
+
+        Map<String, String> downloadParams;
+        try {
+            downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
+        } catch (IOException e) {
+            Timber.e(e);
+            return result;
+        }
+
+        if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) return result;
+
+        //return downloadParams.get(HttpHelper.HEADER_COOKIE_KEY) + "; nw=1";
+        return downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
     }
 
     /**

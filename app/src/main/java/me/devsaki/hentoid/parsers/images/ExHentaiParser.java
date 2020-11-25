@@ -13,6 +13,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -47,9 +48,7 @@ public class ExHentaiParser implements ImageListParser {
     public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
-        List<ImageFile> result = new ArrayList<>();
-        boolean useHentoidAgent = Site.EXHENTAI.canKnowHentoidAgent();
-
+        List<ImageFile> result = Collections.emptyList();
         try {
             String downloadParamsStr = content.getDownloadParams();
             if (null == downloadParamsStr || downloadParamsStr.isEmpty()) {
@@ -89,6 +88,7 @@ public class ExHentaiParser implements ImageListParser {
              *
              *    B.2- Call the API to get the pictures URL
              */
+            boolean useHentoidAgent = Site.EXHENTAI.canKnowHentoidAgent();
             Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
             if (galleryDoc != null) {
                 // Detect if multipage viewer is on
