@@ -327,15 +327,19 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
         // Update displayed books
         List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS, null)).toList();
-        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(diffResult -> {
-                    FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
-                    differEndCallback();
-                })
-        );
+        if (contentItems.isEmpty()) {
+            itemAdapter.set(contentItems); // Use set directly when the list is empty or FastAdapter crashes
+        } else {
 
+            compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(diffResult -> {
+                        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
+                        differEndCallback();
+                    })
+            );
+        }
     }
 
     /**

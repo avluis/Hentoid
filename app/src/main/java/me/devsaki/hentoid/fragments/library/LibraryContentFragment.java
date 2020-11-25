@@ -1035,14 +1035,19 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
             contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).toList();
         }
-        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(diffResult -> {
-                    FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
-                    differEndCallback();
-                })
-        );
+
+        if (contentItems.isEmpty()) {
+            itemAdapter.set(contentItems); // Use set directly when the list is empty or FastAdapter crashes
+        } else {
+            compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(diffResult -> {
+                        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
+                        differEndCallback();
+                    })
+            );
+        }
     }
 
     /**
