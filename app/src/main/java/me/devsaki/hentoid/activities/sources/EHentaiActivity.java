@@ -21,7 +21,7 @@ import timber.log.Timber;
  */
 public class EHentaiActivity extends BaseWebActivity {
 
-    private static final String DOMAIN_FILTER = "e-hentai.org";
+    private static final String[] DOMAIN_FILTER = {"e-hentai.org", "ehtracker.org"};
     private static final String[] GALLERY_FILTER = {"e-hentai.org/g/[0-9]+/[A-Za-z0-9\\-_]+"};
 
     Site getStartSite() {
@@ -49,13 +49,13 @@ public class EHentaiActivity extends BaseWebActivity {
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             String[] galleryUrlParts = urlStr.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
-            compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
+            compositeDisposable.add(EHentaiServer.EHENTAI_API.getGalleryMetadata(query, null)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata ->
                             {
                                 isHtmlLoaded = true;
-                                listener.onResultReady(metadata.toContent(urlStr), quickDownload);
+                                listener.onResultReady(metadata.toContent(urlStr, Site.EHENTAI), quickDownload);
                             },
                             throwable -> {
                                 Timber.e(throwable, "Error parsing content.");

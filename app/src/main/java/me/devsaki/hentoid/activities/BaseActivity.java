@@ -15,12 +15,12 @@ import me.devsaki.hentoid.util.ThemeHelper;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
-    public BaseActivity() {
+    protected BaseActivity() {
         super();
     }
 
     @ContentView
-    public BaseActivity(@LayoutRes int contentLayoutId) {
+    protected BaseActivity(@LayoutRes int contentLayoutId) {
         super(contentLayoutId);
     }
 
@@ -39,16 +39,16 @@ public abstract class BaseActivity extends AppCompatActivity {
             int lockDelayCode = Preferences.getLockTimer();
             int lockDelaySec;
             switch (lockDelayCode) {
-                case Preferences.Constant.PREF_LOCK_TIMER_10S:
+                case Preferences.Constant.LOCK_TIMER_10S:
                     lockDelaySec = 10;
                     break;
-                case Preferences.Constant.PREF_LOCK_TIMER_30S:
+                case Preferences.Constant.LOCK_TIMER_30S:
                     lockDelaySec = 30;
                     break;
-                case Preferences.Constant.PREF_LOCK_TIMER_1M:
+                case Preferences.Constant.LOCK_TIMER_1M:
                     lockDelaySec = 60;
                     break;
-                case Preferences.Constant.PREF_LOCK_TIMER_2M:
+                case Preferences.Constant.LOCK_TIMER_2M:
                     lockDelaySec = 120;
                     break;
                 default:

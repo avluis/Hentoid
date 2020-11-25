@@ -23,13 +23,42 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_anchor="@id/appBarLayout"
+        app:layout_behavior="me.devsaki.hentoid.widget.KeepWithinParentBoundsScrollingBehavior">
+        <!-- webview inserted here programmatically -->
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <ImageView
+        android:id="@+id/animated_check"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_gravity="center_horizontal|center_vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/swipe_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/swipe_container"
+        app:srcCompat="@drawable/check_mark_anim"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/top_alert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:visibility="gone"
+        app:layout_anchor="@id/appBarLayout"
+        app:layout_anchorGravity="bottom"
+        tools:visibility="visible">
 
         <TextView
-            android:id="@+id/web_alert_txt"
+            android:id="@+id/top_alert_txt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?colorSecondary"
@@ -42,68 +71,84 @@
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/importing_please_wait" />
+            tools:text="Site is broken, support coming soon !" />
 
         <ImageView
-            android:id="@+id/web_alert_icon"
+            android:id="@+id/top_alert_icon"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_margin="8dp"
             android:src="@drawable/ic_nuclear"
-            app:layout_constraintStart_toStartOf="@id/web_alert_txt"
-            app:layout_constraintTop_toTopOf="@id/web_alert_txt"
+            app:layout_constraintStart_toStartOf="@id/top_alert_txt"
+            app:layout_constraintTop_toTopOf="@id/top_alert_txt"
             app:tint="@color/white_opacity_66"
             tools:ignore="ContentDescription" />
 
         <ImageView
-            android:id="@+id/web_alert_close_btn"
+            android:id="@+id/top_alert_close_btn"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_margin="8dp"
-            android:onClick="onAlertCloseClick"
+            android:onClick="onTopAlertCloseClick"
             android:src="@drawable/ic_cancel"
-            app:layout_constraintEnd_toEndOf="@id/web_alert_txt"
-            app:layout_constraintTop_toTopOf="@id/web_alert_txt"
+            app:layout_constraintEnd_toEndOf="@id/top_alert_txt"
+            app:layout_constraintTop_toTopOf="@id/top_alert_txt"
             tools:ignore="ContentDescription" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/web_alert_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:constraint_referenced_ids="web_alert_icon,web_alert_txt,web_alert_close_btn"
-            tools:visibility="visible" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_alert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:visibility="gone"
+        app:layout_anchor="@id/bottom_navigation"
+        app:layout_anchorGravity="top"
+        tools:visibility="visible">
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/swipe_container"
+        <TextView
+            android:id="@+id/bottom_alert_txt"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
+            android:background="@color/black_opacity_50"
+            android:minHeight="64dp"
+            android:paddingStart="64dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="64dp"
+            android:paddingBottom="8dp"
+            android:text=""
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/web_alert_txt">
-            <!-- webview inserted here programmatically -->
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            tools:text="This book is tagged 'forbiddenTag'" />
 
         <ImageView
-            android:id="@+id/animated_check"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:visibility="gone"
-            app:tint="?colorSecondary"
-            app:layout_constraintTop_toTopOf="@id/swipe_container"
-            app:layout_constraintBottom_toBottomOf="@id/swipe_container"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@drawable/check_mark_anim"
-            tools:visibility="visible"
+            android:id="@+id/bottom_alert_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="8dp"
+            android:src="@drawable/ic_forbidden"
+            app:layout_constraintStart_toStartOf="@id/bottom_alert_txt"
+            app:layout_constraintTop_toTopOf="@id/bottom_alert_txt"
+            app:tint="@color/white_opacity_66"
             tools:ignore="ContentDescription" />
 
+        <ImageView
+            android:id="@+id/bottom_alert_close_btn"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_margin="8dp"
+            android:onClick="onBottomAlertCloseClick"
+            android:src="@drawable/ic_cancel"
+            app:layout_constraintEnd_toEndOf="@id/bottom_alert_txt"
+            app:layout_constraintTop_toTopOf="@id/bottom_alert_txt"
+            tools:ignore="ContentDescription" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?android:attr/actionBarSize"
         android:layout_gravity="bottom"
         android:background="?colorPrimary"
         app:itemIconTint="@color/white"

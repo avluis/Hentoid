@@ -7,8 +7,8 @@ import java.util.Date;
 import java.util.List;
 
 import io.reactivex.Single;
+import me.devsaki.hentoid.json.GithubRelease;
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton;
-import me.devsaki.hentoid.viewholders.GitHubReleaseItem;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.moshi.MoshiConverterFactory;
@@ -33,9 +33,9 @@ public class GithubServer {
     public interface Api {
 
         @GET("releases")
-        Single<List<GitHubReleaseItem.Struct>> getReleases();
+        Single<List<GithubRelease>> getReleases();
 
         @GET("releases/latest")
-        Single<GitHubReleaseItem.Struct> getLatestRelease();
+        Single<GithubRelease> getLatestRelease();
     }
 }

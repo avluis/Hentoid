@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="pref_library_display_entries">
+        <item>List (default)</item>
+        <item>Grid</item>
+    </string-array>
+    <string-array name="pref_library_display_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
     <string-array name="pref_quantity_per_page_entries">
         <item>20</item>
         <item>40</item>
@@ -140,6 +149,15 @@
         <item>100</item>
     </string-array>
 
+    <string-array name="pref_dl_blocked_tags_behaviour_entries">
+        <item>Don\'t queue</item>
+        <item>Queue as download error</item>
+    </string-array>
+    <string-array name="pref_dl_blocked_tags_behaviour_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
     <string-array name="pref_viewer_browse_mode_entries">
         <item>Left to Right</item>
         <item>Right to Left</item>
@@ -178,12 +196,16 @@
     </string-array>
 
     <string-array name="pref_viewer_slideshow_delay_entries">
+        <item>500ms</item>
+        <item>1s</item>
         <item>2s (default)</item>
         <item>4s</item>
         <item>8s</item>
         <item>16s</item>
     </string-array>
     <string-array name="pref_viewer_slideshow_delay_values">
+        <item>5</item>
+        <item>4</item>
         <item>0</item>
         <item>1</item>
         <item>2</item>

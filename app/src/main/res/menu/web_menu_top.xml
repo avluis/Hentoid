@@ -12,6 +12,12 @@
         android:tooltipText="@string/web_refresh_stop"
         app:showAsAction="always" />
     <item
+        android:id="@+id/web_menu_bookmark"
+        android:icon="@drawable/ic_bookmark"
+        android:title="@string/web_bookmarks"
+        android:tooltipText="@string/web_bookmarks"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/web_menu_copy"
         android:icon="@drawable/ic_action_copy"
         android:title="@string/web_copy_url"

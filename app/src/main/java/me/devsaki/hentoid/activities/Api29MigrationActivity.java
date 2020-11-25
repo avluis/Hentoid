@@ -21,6 +21,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.API29MigrationService;
+import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -44,6 +45,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
     private View step3check;
 
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,9 +122,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
             if (treeUri != null) onSelectSAFRootFolder(treeUri);
-        }/* else if (resultCode == RESULT_CANCELED) {
-            // Do nothing, user will have to push the button again
-        }*/
+        } // Do nothing for RESULT_CANCELED, user will have to push the button again
     }
 
     // Return from SAF picker
@@ -150,8 +150,11 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
     private void scanLibrary(@NonNull final DocumentFile root) {
         // Check if the selected folder is valid (user error msgs are displayed inside this call)
-        if (!FileHelper.checkAndSetRootFolder(this, root, true)) {
+        int result = FileHelper.checkAndSetRootFolder(this, root);
+        if (result < 0) {
             step1button.setVisibility(View.VISIBLE);
+            if (-1 == result) ToastUtil.toast(this, R.string.error_creating_folder);
+            else if (-2 == result) ToastUtil.toast(this, R.string.error_write_permission);
             return;
         }
 
@@ -173,16 +176,16 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMigrationEvent(ProcessEvent event) {
-        ProgressBar progressBar = (2 == event.step) ? step2progress : step3progress;
+        ProgressBar progressBar = (ImportService.STEP_2_BOOK_FOLDERS == event.step) ? step2progress : step3progress;
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             progressBar.setMax(event.elementsTotal);
             progressBar.setProgress(event.elementsOK + event.elementsKO);
-            if (3 == event.step) {
+            if (ImportService.STEP_3_BOOKS == event.step) {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
             }
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType && 3 == event.step) {
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType && ImportService.STEP_3_BOOKS == event.step) {
             step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
             step3check.setVisibility(View.VISIBLE);
             goToLibraryActivity();

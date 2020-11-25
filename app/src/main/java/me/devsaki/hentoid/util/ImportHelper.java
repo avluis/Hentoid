@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 
+import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -21,11 +22,14 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -49,44 +53,75 @@ public class ImportHelper {
     }
 
 
+    private static final String EXTERNAL_LIB_TAG = "external-library";
+
     private static final int RQST_STORAGE_PERMISSION_HENTOID = 3;
     private static final int RQST_STORAGE_PERMISSION_EXTERNAL = 4;
 
-    @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.CREATE_FAIL, Result.OTHER})
+    @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.DOWNLOAD_FOLDER, Result.APP_FOLDER, Result.CREATE_FAIL, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Result {
-        int OK_EMPTY_FOLDER = 0;
-        int OK_LIBRARY_DETECTED = 1;
-        int OK_LIBRARY_DETECTED_ASK = 2;
-        int CANCELED = 3;
-        int INVALID_FOLDER = 4;
-        int CREATE_FAIL = 5;
-        int OTHER = 6;
+        int OK_EMPTY_FOLDER = 0; // OK - Existing, empty Hentoid folder
+        int OK_LIBRARY_DETECTED = 1; // OK - En existing Hentoid folder with books
+        int OK_LIBRARY_DETECTED_ASK = 2; // OK - Existing Hentoid folder with books + we need to ask the user if he wants to import them
+        int CANCELED = 3; // Operation canceled
+        int INVALID_FOLDER = 4; // File or folder is invalid, cannot be found
+        int APP_FOLDER = 5; // Selected folder is the app folder and can't be used as an external folder
+        int DOWNLOAD_FOLDER = 6; // Selected folder is the device's download folder and can't be used as a primary folder (downloads visibility + storage calculation issues)
+        int CREATE_FAIL = 7; // Hentoid folder could not be created
+        int OTHER = 8; // Any other issue
     }
 
     private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
             || displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD);
 
+    /**
+     * Import options for the Hentoid folder
+     */
     public static class ImportOptions {
-        public boolean rename;
-        public boolean cleanAbsent;
-        public boolean cleanNoImages;
+        public boolean rename; // If true, rename folders with current naming convention
+        public boolean cleanNoJson; // If true, delete folders where no JSON file is found
+        public boolean cleanNoImages; // If true, delete folders where no supported images are found
     }
 
+    /**
+     * Indicate whether the given folder name is a valid Hentoid folder name
+     *
+     * @param folderName Folder name to test
+     * @return True if the given folder name is a valid Hentoid folder name; false if not
+     */
     public static boolean isHentoidFolderName(@NonNull final String folderName) {
         return hentoidFolderNames.accept(folderName);
     }
 
+    /**
+     * Open the SAF folder picker
+     *
+     * @param caller     Caller fragment
+     * @param isExternal True if the picker is used to import the external library; false if not TODO this parameter is weirdly designed
+     */
     public static void openFolderPicker(@NonNull final Fragment caller, boolean isExternal) {
         Intent intent = getFolderPickerIntent(caller.requireContext());
         caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
     }
 
+    /**
+     * Open the SAF folder picker
+     *
+     * @param caller     Caller activity
+     * @param isExternal True if the picker is used to import the external library; false if not TODO this parameter is weirdly designed
+     */
     public static void openFolderPicker(@NonNull final Activity caller, boolean isExternal) {
         Intent intent = getFolderPickerIntent(caller.getParent());
         caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
     }
 
+    /**
+     * Get the intent for the SAF folder picker properly set up, positioned on the Hentoid primary folder
+     *
+     * @param context Context to be used
+     * @return Intent for the SAF folder picker
+     */
     private static Intent getFolderPickerIntent(@NonNull final Context context) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -106,7 +141,15 @@ public class ImportHelper {
         return intent;
     }
 
-    // Return from SAF picker
+    /**
+     * Process the result of the SAF picker
+     *
+     * @param context     Context to be used
+     * @param requestCode Request code transmitted by the picker
+     * @param resultCode  Result code transmitted by the picker
+     * @param data        Intent data transmitted by the picker
+     * @return Standardized result - see ImportHelper.Result
+     */
     public static @Result
     int processPickerResult(
             @NonNull final Context context,
@@ -130,6 +173,16 @@ public class ImportHelper {
         } else return Result.OTHER;
     }
 
+    /**
+     * Scan the given tree URI for a Hentoid folder
+     * If none is found there, try to create one
+     *
+     * @param context         Context to be used
+     * @param treeUri         Tree URI of the folder where to find or create the Hentoid folder
+     * @param askScanExisting If true and an existing non-empty Hentoid folder is found, the user will be asked if he wants to import its contents
+     * @param options         Import options - See ImportHelper.ImportOptions
+     * @return Standardized result - see ImportHelper.Result
+     */
     public static @Result
     int setAndScanHentoidFolder(
             @NonNull final Context context,
@@ -149,6 +202,12 @@ public class ImportHelper {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return Result.INVALID_FOLDER;
         }
+        // Check if the folder is not the device's Download folder
+        List<String> pathSegments = treeUri.getPathSegments();
+        if (pathSegments.size() > 1 && (pathSegments.get(1).equalsIgnoreCase("download") || pathSegments.get(1).equalsIgnoreCase("primary:download"))) {
+            Timber.e("Device's download folder detected : %s", treeUri.toString());
+            return Result.DOWNLOAD_FOLDER;
+        }
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = addHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
@@ -156,8 +215,9 @@ public class ImportHelper {
             return Result.CREATE_FAIL;
         }
         // Set the folder as the app's downloads folder
-        if (!FileHelper.checkAndSetRootFolder(context, hentoidFolder, true)) {
-            Timber.e("Could not set the selected root folder %s", hentoidFolder.getUri().toString());
+        int result = FileHelper.checkAndSetRootFolder(context, hentoidFolder);
+        if (result < 0) {
+            Timber.e("Could not set the selected root folder (error = %d) %s", result, hentoidFolder.getUri().toString());
             return Result.INVALID_FOLDER;
         }
 
@@ -169,11 +229,23 @@ public class ImportHelper {
             } else return Result.OK_LIBRARY_DETECTED_ASK;
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
-            new ObjectBoxDAO(context).deleteAllInternalBooks(true);
+            CollectionDAO dao = new ObjectBoxDAO(context);
+            try {
+                dao.deleteAllInternalBooks(true);
+            } finally {
+                dao.cleanup();
+            }
             return Result.OK_EMPTY_FOLDER;
         }
     }
 
+    /**
+     * Scan the given tree URI for external books or Hentoid books
+     *
+     * @param context Context to be used
+     * @param treeUri Tree URI of the folder where to find external books or Hentoid books
+     * @return Standardized result - see ImportHelper.Result
+     */
     public static @Result
     int setAndScanExternalFolder(
             @NonNull final Context context,
@@ -191,14 +263,25 @@ public class ImportHelper {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return Result.INVALID_FOLDER;
         }
+        String folderUri = docFile.getUri().toString();
+        if (folderUri.equalsIgnoreCase(Preferences.getStorageUri())) {
+            Timber.w("Trying to set the app folder as the external library %s", treeUri.toString());
+            return Result.APP_FOLDER;
+        }
         // Set the folder as the app's external library folder
-        Preferences.setExternalLibraryUri(docFile.getUri().toString());
+        Preferences.setExternalLibraryUri(folderUri);
 
         // Start the import
         runExternalImport(context);
         return Result.OK_LIBRARY_DETECTED;
     }
 
+    /**
+     * Show the dialog to ask the user if he wants to import existing books
+     *
+     * @param context        Context to be used
+     * @param cancelCallback Callback to run when the dialog is canceled
+     */
     public static void showExistingLibraryDialog(
             @NonNull final Context context,
             @Nullable Runnable cancelCallback
@@ -208,12 +291,12 @@ public class ImportHelper {
                 .setCancelable(false)
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.contents_detected)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             runHentoidImport(context, null);
                         })
-                .setNegativeButton(android.R.string.no,
+                .setNegativeButton(R.string.no,
                         (dialog2, which) -> {
                             dialog2.dismiss();
                             if (cancelCallback != null) cancelCallback.run();
@@ -222,11 +305,17 @@ public class ImportHelper {
                 .show();
     }
 
-    // Count the elements inside each site's download folder (but not its subfolders)
-    //
-    // NB : this method works approximately because it doesn't try to count JSON files
-    // However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
-    // and might cause freezes -> we stick to that approximate method for ImportActivity
+    /**
+     * Detect whether the current Hentoid folder contains books or not
+     * by counting the elements inside each site's download folder (but not its subfolders)
+     * <p>
+     * NB : this method works approximately because it doesn't try to count JSON files
+     * However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
+     * and might cause freezes -> we stick to that approximate method for ImportActivity
+     *
+     * @param context Context to be used
+     * @return True if the current Hentoid folder contains at least one book; false if not
+     */
     private static boolean hasBooks(@NonNull final Context context) {
         List<DocumentFile> downloadDirs = new ArrayList<>();
 
@@ -252,6 +341,7 @@ public class ImportHelper {
 
         return false;
     }
+
 
     @Nullable
     private static DocumentFile addHentoidFolder(@NonNull final Context context, @NonNull final DocumentFile baseFolder) {
@@ -292,7 +382,7 @@ public class ImportHelper {
 
         ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();
         builder.setRefreshRename(null != options && options.rename);
-        builder.setRefreshCleanAbsent(null != options && options.cleanAbsent);
+        builder.setRefreshCleanNoJson(null != options && options.cleanNoJson);
         builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
         intent.putExtras(builder.getBundle());
 
@@ -322,6 +412,7 @@ public class ImportHelper {
             @NonNull final ContentProviderClient client,
             @NonNull final List<String> parentNames,
             @NonNull final StatusContent targetStatus,
+            @NonNull final CollectionDAO dao,
             @Nullable final List<DocumentFile> imageFiles,
             @Nullable final DocumentFile jsonFile) {
         Timber.d(">>>> scan book folder %s", bookFolder.getUri());
@@ -330,7 +421,7 @@ public class ImportHelper {
         if (jsonFile != null) {
             try {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
-                result = content.toEntity();
+                result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
             } catch (IOException ioe) {
                 Timber.w(ioe);
@@ -355,8 +446,10 @@ public class ImportHelper {
             }
             result.setSite(site);
             result.setDownloadDate(bookFolder.lastModified());
-            result.addAttributes(parentNamesAsTags(parentNames, targetStatus.equals(StatusContent.EXTERNAL)));
+            result.addAttributes(parentNamesAsTags(parentNames));
         }
+        if (targetStatus.equals(StatusContent.EXTERNAL))
+            result.addAttributes(newExternalAttribute());
 
         result.setStatus(targetStatus).setStorageUri(bookFolder.getUri().toString());
         List<ImageFile> images = new ArrayList<>();
@@ -376,6 +469,7 @@ public class ImportHelper {
             @NonNull final List<DocumentFile> chapterFolders,
             @NonNull final ContentProviderClient client,
             @NonNull final List<String> parentNames,
+            @NonNull final CollectionDAO dao,
             @Nullable final DocumentFile jsonFile) {
         Timber.d(">>>> scan chapter folder %s", parent.getUri());
 
@@ -383,7 +477,7 @@ public class ImportHelper {
         if (jsonFile != null) {
             try {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
-                result = content.toEntity();
+                result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
             } catch (IOException ioe) {
                 Timber.w(ioe);
@@ -392,8 +486,9 @@ public class ImportHelper {
         if (null == result) {
             result = new Content().setSite(Site.NONE).setTitle((null == parent.getName()) ? "" : parent.getName()).setUrl("");
             result.setDownloadDate(parent.lastModified());
-            result.addAttributes(parentNamesAsTags(parentNames, true));
+            result.addAttributes(parentNamesAsTags(parentNames));
         }
+        result.addAttributes(newExternalAttribute());
 
         result.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.getUri().toString());
         List<ImageFile> images = new ArrayList<>();
@@ -428,28 +523,110 @@ public class ImportHelper {
         images.addAll(ContentHelper.createImageListFromFiles(imageFiles, targetStatus, order, namePrefix));
     }
 
-    private static void createCover(@NonNull final List<ImageFile> images) {
+    /**
+     * Create a cover and add it to the given image list
+     *
+     * @param images Image list to generate the cover from (and add it to)
+     */
+    public static void createCover(@NonNull final List<ImageFile> images) {
         if (!images.isEmpty()) {
             ImageFile firstImg = images.get(0);
-            ImageFile cover = new ImageFile(0, "", StatusContent.DOWNLOADED, images.size());
+            ImageFile cover = new ImageFile(0, "", images.get(0).getStatus(), images.size());
             cover.setName(Consts.THUMB_FILE_NAME);
+            cover.setUrl(firstImg.getUrl());
             cover.setFileUri(firstImg.getFileUri());
             cover.setSize(firstImg.getSize());
+            cover.setMimeType(firstImg.getMimeType());
             cover.setIsCover(true);
             images.add(0, cover);
         }
     }
 
-    private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames, boolean addExternalTag) {
+    private static List<Attribute> newExternalAttribute() {
+        return Stream.of(new Attribute(AttributeType.TAG, EXTERNAL_LIB_TAG, EXTERNAL_LIB_TAG, Site.NONE)).toList();
+    }
+
+    public static void removeExternalAttribute(@NonNull final Content content) {
+        content.putAttributes(Stream.of(content.getAttributes()).filterNot(a -> a.getName().equalsIgnoreCase(EXTERNAL_LIB_TAG)).toList());
+    }
+
+    private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames) {
         AttributeMap result = new AttributeMap();
         // Don't include the very first one, it's the name of the root folder of the library
         if (parentNames.size() > 1) {
             for (int i = 1; i < parentNames.size(); i++)
                 result.add(new Attribute(AttributeType.TAG, parentNames.get(i), parentNames.get(i), Site.NONE));
         }
-        // Add a generic tag to filter external library books
-        if (addExternalTag)
-            result.add(new Attribute(AttributeType.TAG, "external-library", "external-library", Site.NONE));
         return result;
+    }
+
+    public static List<Content> scanForArchives(
+            @NonNull final Context context,
+            @NonNull final List<DocumentFile> subFolders,
+            @NonNull final ContentProviderClient client,
+            @NonNull final List<String> parentNames) {
+        List<Content> result = new ArrayList<>();
+
+        for (DocumentFile subfolder : subFolders) {
+            List<DocumentFile> archives = FileHelper.listFiles(context, subfolder, client, ArchiveHelper.getArchiveNamesFilter());
+            for (DocumentFile archive : archives) {
+                Content c = scanArchive(context, archive, parentNames, StatusContent.EXTERNAL);
+                if (!c.getStatus().equals(StatusContent.IGNORED))
+                    result.add(c);
+            }
+        }
+
+        return result;
+    }
+
+    public static Content scanArchive(
+            @NonNull final Context context,
+            @NonNull final DocumentFile archive,
+            @NonNull final List<String> parentNames,
+            @NonNull final StatusContent targetStatus) {
+        List<ArchiveHelper.ArchiveEntry> entries = Collections.emptyList();
+
+        try {
+            entries = ArchiveHelper.getArchiveEntries(context, archive);
+        } catch (Exception e) {
+            Timber.w(e);
+        }
+
+        // Look for the folder with the most images
+        Collection<List<ArchiveHelper.ArchiveEntry>> imageEntries = Stream.of(entries)
+                .filter(s -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(s.path)))
+                .collect(Collectors.groupingBy(ImportHelper::getFolders))
+                .values();
+
+        if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
+
+        // Sort by number of images desc
+        List<ArchiveHelper.ArchiveEntry> entryList = Stream.of(imageEntries).sortBy(ie -> -ie.size()).toList().get(0);
+
+        List<ImageFile> images = ContentHelper.createImageListFromArchiveEntries(archive.getUri(), entryList, targetStatus, 1, "");
+        boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
+        if (!coverExists) createCover(images);
+
+        // Create content envelope
+        Content result = new Content().setSite(Site.NONE).setTitle((null == archive.getName()) ? "" : FileHelper.getFileNameWithoutExtension(archive.getName())).setUrl("");
+        result.setDownloadDate(archive.lastModified());
+        result.addAttributes(parentNamesAsTags(parentNames));
+        result.addAttributes(newExternalAttribute());
+
+        result.setStatus(targetStatus).setStorageUri(archive.getUri().toString()); // Here storage URI is a file URI, not a folder
+
+        result.setImageFiles(images);
+        if (0 == result.getQtyPages())
+            result.setQtyPages(images.size() - 1); // Minus the cover
+        result.computeSize();
+        return result;
+    }
+
+    private static String getFolders(@NonNull final ArchiveHelper.ArchiveEntry entry) {
+        String path = entry.path;
+        int separatorIndex = path.lastIndexOf('/');
+        if (-1 == separatorIndex) return "";
+
+        return path.substring(0, separatorIndex);
     }
 }

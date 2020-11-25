@@ -24,13 +24,13 @@
             tools:text="root/path1/path2/image_name.jpg" />
 
         <TextView
-            android:id="@+id/image_dimensions"
+            android:id="@+id/image_stats"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textSize="@dimen/caption"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/image_path"
-            tools:text="1600 x 2300 (scale 86%)" />
+            tools:text="1600 x 2300 (scale 86%) - 8.86 MB" />
 
         <View
             android:id="@+id/img_divider"
@@ -38,7 +38,7 @@
             android:layout_height="1dp"
             android:layout_marginTop="12dp"
             android:background="?colorOnPrimary"
-            app:layout_constraintTop_toBottomOf="@id/image_dimensions" />
+            app:layout_constraintTop_toBottomOf="@id/image_stats" />
 
         <ImageView
             android:id="@+id/img_action_favourite"

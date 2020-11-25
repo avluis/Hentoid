@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/selector_button_solid_pressed" android:state_pressed="true" />
-    <item android:drawable="@drawable/selector_button_solid_base" android:state_pressed="false" />
+    <!-- Standard background color -->
+    <item android:state_pressed="false">
+        <shape>
+            <solid android:color="?colorPrimary" />
+        </shape>
+    </item>
+    <!-- Color when the button is pressed -->
+    <item android:state_pressed="true">
+        <shape>
+            <solid android:color="?colorPrimaryVariant" />
+        </shape>
+    </item>
 </selector>
+

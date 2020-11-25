@@ -10,9 +10,12 @@ class JsonImageFile {
     private String name;
     private boolean isCover;
     private boolean favourite;
+    private boolean isRead;
     private StatusContent status;
+    private String mimeType;
 
-    private JsonImageFile() {}
+    private JsonImageFile() {
+    }
 
     static JsonImageFile fromEntity(ImageFile f) {
         JsonImageFile result = new JsonImageFile();
@@ -22,6 +25,8 @@ class JsonImageFile {
         result.status = f.getStatus();
         result.isCover = f.isCover();
         result.favourite = f.isFavourite();
+        result.isRead = f.isRead();
+        result.mimeType = f.getMimeType();
         return result;
     }
 
@@ -30,6 +35,8 @@ class JsonImageFile {
         result.setName(name);
         result.setIsCover(isCover);
         result.setFavourite(favourite);
+        result.setRead(isRead);
+        result.setMimeType(mimeType);
         return result;
     }
 }

@@ -63,7 +63,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      *
      * @see Debouncer
      */
-    private final Debouncer<String> searchMasterDataDebouncer = new Debouncer<>(1000, this::searchMasterData);
+    private Debouncer<String> searchMasterDataDebouncer;
 
 
     // Panel that displays the "waiting for metadata info" visuals
@@ -115,6 +115,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         if (bundle != null) {
             SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(bundle);
             selectedAttributeTypes = parser.getAttributeTypes();
+            long groupId = parser.getGroupId();
             currentPage = 1;
 
             if (selectedAttributeTypes.isEmpty()) {
@@ -124,7 +125,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
             viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(SearchViewModel.class);
             viewModel.setAttributeTypes(selectedAttributeTypes);
+            viewModel.setGroup(groupId);
         }
+        searchMasterDataDebouncer = new Debouncer<>(context, 1000, this::searchMasterData);
     }
 
     @Override
@@ -268,7 +271,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
             viewModel.addSelectedAttribute(a);
-            searchMasterData(tagSearchView.getQuery().toString());
+            // Empty query and display all attributes again
+            tagSearchView.setQuery("", false);
+            searchMasterData("");
         }
     }
 

@@ -12,12 +12,16 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
-import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -26,17 +30,21 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
+import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ZipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.GroupNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.FileHelper.AUTHORIZED_CHARS;
 
 
 public class LibraryViewModel extends AndroidViewModel {
@@ -50,11 +58,18 @@ public class LibraryViewModel extends AndroidViewModel {
 
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
-    private LiveData<Integer> totalContent;
+    private final LiveData<Integer> totalContent;
+    private LiveData<Integer> currentGroupCountSource;
+    private final MediatorLiveData<Integer> totalGroups = new MediatorLiveData<>();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
+    // Groups data
+    private final MutableLiveData<Group> group = new MutableLiveData<>();
+    private LiveData<List<Group>> currentGroupsSource;
+    private final MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
+    private final MutableLiveData<Boolean> isCustomGroupingAvailable = new MutableLiveData<>();     // True if there's at least one existing custom group; false instead
 
     // Updated whenever a new search is performed
-    private MutableLiveData<Boolean> newSearch = new MutableLiveData<>();
+    private final MediatorLiveData<Boolean> newSearch = new MediatorLiveData<>();
 
 
     public LibraryViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -62,6 +77,7 @@ public class LibraryViewModel extends AndroidViewModel {
         dao = collectionDAO;
         searchManager = new ContentSearchManager(dao);
         totalContent = dao.countAllBooks();
+        isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
     }
 
     public void onSaveState(Bundle outState) {
@@ -76,7 +92,13 @@ public class LibraryViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
+        dao.cleanup();
         compositeDisposable.clear();
+    }
+
+    @NonNull
+    public LiveData<List<Group>> getGroups() {
+        return groups;
     }
 
     @NonNull
@@ -94,6 +116,21 @@ public class LibraryViewModel extends AndroidViewModel {
         return newSearch;
     }
 
+    @NonNull
+    public LiveData<Group> getGroup() {
+        return group;
+    }
+
+    @NonNull
+    public LiveData<Integer> getTotalGroup() {
+        return totalGroups;
+    }
+
+    @NonNull
+    public LiveData<Boolean> isCustomGroupingAvailable() {
+        return isCustomGroupingAvailable;
+    }
+
     public Bundle getSearchManagerBundle() {
         Bundle bundle = new Bundle();
         searchManager.saveToBundle(bundle);
@@ -107,7 +144,7 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Perform a new library search
      */
-    private void performSearch() {
+    private void doSearchContent() {
         if (currentSource != null) libraryPaged.removeSource(currentSource);
 
         searchManager.setContentSortField(Preferences.getContentSortField());
@@ -119,28 +156,47 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
-     * Perform a new universal search using the given query
+     * Perform a new content universal search using the given query
      *
      * @param query Query to use for the universal search
      */
-    public void searchUniversal(@NonNull String query) {
+    public void searchContentUniversal(@NonNull String query) {
         searchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
         searchManager.setQuery(query);
         newSearch.setValue(true);
-        performSearch();
+        doSearchContent();
     }
 
     /**
-     * Perform a new search using the given query and metadata
+     * Perform a new content search using the given query and metadata
      *
      * @param query    Query to use for the search
      * @param metadata Metadata to use for the search
      */
-    public void search(@NonNull String query, @NonNull List<Attribute> metadata) {
+    public void searchContent(@NonNull String query, @NonNull List<Attribute> metadata) {
         searchManager.setQuery(query);
         searchManager.setTags(metadata);
         newSearch.setValue(true);
-        performSearch();
+        doSearchContent();
+    }
+
+    public void clearContent() {
+        if (currentSource != null) {
+            libraryPaged.removeSource(currentSource);
+            currentSource = dao.selectNoContent();
+            libraryPaged.addSource(currentSource, libraryPaged::setValue);
+        }
+    }
+
+    /**
+     * Perform a new group search using the given query
+     *
+     * @param query Query to use for the search
+     */
+    public void searchGroup(Grouping grouping, @NonNull String query, int orderField, boolean orderDesc, int artistGroupVisibility) {
+        if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
+        currentGroupsSource = dao.selectGroups(grouping.getId(), query, orderField, orderDesc, artistGroupVisibility);
+        groups.addSource(currentGroupsSource, groups::setValue);
     }
 
     /**
@@ -149,7 +205,7 @@ public class LibraryViewModel extends AndroidViewModel {
     public void toggleFavouriteFilter() {
         searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
         newSearch.setValue(true);
-        performSearch();
+        doSearchContent();
     }
 
     /**
@@ -158,17 +214,40 @@ public class LibraryViewModel extends AndroidViewModel {
     public void setPagingMethod(boolean isEndless) {
         searchManager.setLoadAll(!isEndless);
         newSearch.setValue(true);
-        performSearch();
+        doSearchContent();
     }
 
     /**
-     * Update the order of the list
+     * Update the order of the content list
      */
-    public void updateOrder() {
+    public void updateContentOrder() {
         newSearch.setValue(true);
-        performSearch();
+        doSearchContent();
     }
 
+    public void setGroup(Group group) {
+        searchManager.setGroup(group);
+        this.group.postValue(group);
+        newSearch.setValue(true);
+        // Don't search now as the UI will inevitably search as well upon switching to books view
+        // TODO only useful when browsing custom groups ?
+        doSearchContent();
+    }
+
+    public void setGrouping(Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility) {
+        if (grouping.equals(Grouping.FLAT)) {
+            setGroup(null);
+            return;
+        }
+
+        if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
+        currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility);
+        groups.addSource(currentGroupsSource, groups::setValue);
+
+        if (currentGroupCountSource != null) totalGroups.removeSource(currentGroupCountSource);
+        currentGroupCountSource = dao.countLiveGroupsFor(grouping);
+        totalGroups.addSource(currentGroupCountSource, totalGroups::setValue);
+    }
 
     // =========================
     // ========= CONTENT ACTIONS
@@ -179,7 +258,7 @@ public class LibraryViewModel extends AndroidViewModel {
      *
      * @param content Content whose favourite state to toggle
      */
-    public void toggleContentFavourite(@NonNull final Content content) {
+    public void toggleContentFavourite(@NonNull final Content content, @NonNull final Runnable onSuccess) {
         if (content.isBeingDeleted()) return;
 
         compositeDisposable.add(
@@ -187,8 +266,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                },
+                                v -> onSuccess.run(),
                                 Timber::e
                         )
         );
@@ -210,7 +288,7 @@ public class LibraryViewModel extends AndroidViewModel {
             theContent.setFavourite(!theContent.isFavourite());
 
             // Persist in it JSON
-            if (!theContent.getJsonUri().isEmpty())
+            if (!theContent.getJsonUri().isEmpty()) // Having an active Content without JSON file shouldn't be possible after the API29 migration
                 ContentHelper.updateContentJson(getApplication(), theContent);
             else ContentHelper.createContentJson(getApplication(), theContent);
 
@@ -249,22 +327,39 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param contents List of content to be deleted
      * @param onError  Callback to run when an error occurs
      */
-    public void deleteItems(@NonNull final List<Content> contents, Consumer<Throwable> onError) {
+    public void deleteItems(@NonNull final List<Content> contents, @NonNull final List<Group> groups, Consumer<Object> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contents) flagContentDelete(c, true);
+        // TODO do the same blinking effect for groups ?
+
+        // First chain contents, then groups (to be sure to delete empty groups only)
+        List<Object> items = new ArrayList<>();
+        items.addAll(contents);
+        items.addAll(groups);
 
         compositeDisposable.add(
-                Observable.fromIterable(contents)
+                Observable.fromIterable(items)
                         .observeOn(Schedulers.io())
-                        .map(this::doDeleteContent)
+                        .map(this::doDeleteItem)
+                        .doOnComplete(() -> {
+                            if (!groups.isEmpty()) {
+                                isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
+                                GroupHelper.updateGroupsJson(getApplication(), dao);
+                            }
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                    // Nothing to do here; UI callbacks are handled through LiveData
-                                },
-                                onError::accept
+                                onProgress::accept,
+                                onError::accept,
+                                onSuccess::run
                         )
         );
+    }
+
+    private Object doDeleteItem(@NonNull final Object item) throws Exception {
+        if (item instanceof Content) return doDeleteContent((Content) item);
+        else if (item instanceof Group) return doDeleteGroup((Group) item);
+        else return null;
     }
 
     /**
@@ -281,7 +376,7 @@ public class LibraryViewModel extends AndroidViewModel {
             Content theContent = dao.selectContent(content.getId());
 
             if (theContent != null) {
-                ContentHelper.removeContent(getApplication(), theContent, dao);
+                ContentHelper.removeContent(getApplication(), dao, theContent);
                 Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
                 return theContent;
             }
@@ -295,43 +390,240 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
-    /**
-     * Archive the given Content into a temp ZIP file
-     *
-     * @param content   Content to be archived
-     * @param onSuccess Callback to run when the operation succeeds
-     */
-    public void archiveContent(@NonNull final Content content, Consumer<File> onSuccess) {
-        Timber.d("Building file list for: %s", content.getTitle());
+    public void archiveContents(@NonNull final List<Content> contentList, Consumer<Content> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
+        Timber.d("Building file list for %s books", contentList.size());
 
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        .map(this::doArchiveContent)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                onProgress::accept,
+                                onError::accept,
+                                onSuccess::run
+                        )
+        );
+    }
+
+    /**
+     * Archive the given Content into a ZIP file located into the device's 'Download' folder
+     *
+     * @param content Content to be archived
+     */
+    public Content doArchiveContent(@NonNull final Content content) throws IOException {
+        Helper.assertNonUiThread();
+        Timber.i(">> archive %s", content.getTitle());
         DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(getApplication(), content.getStorageUri());
-        if (null == bookFolder) return;
+        if (null == bookFolder) return null;
 
         List<DocumentFile> files = FileHelper.listFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive
         if (!files.isEmpty()) {
-            // Create folder to share from
-            File sharedDir = new File(getApplication().getExternalCacheDir() + "/shared");
-            if (FileHelper.createDirectory(sharedDir)) {
-                Timber.d("Shared folder created.");
-            }
-
-            // Clean directory (in case of previous job)
-            if (FileHelper.cleanDirectory(sharedDir)) {
-                Timber.d("Shared folder cleaned up.");
-            }
-
             // Build destination file
-            File dest = new File(getApplication().getExternalCacheDir() + "/shared",
-                    content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + ".zip");
-            Timber.d("Destination file: %s", dest);
+            String destName = ContentHelper.formatBookFolderName(content) + ".zip";
+            OutputStream destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
+            Timber.d("Destination file: %s", destName);
+            ArchiveHelper.zipFiles(getApplication(), files, destFile);
+            return content;
+        }
+        return null;
+    }
 
+    public void setGroupCover(long groupId, ImageFile cover) {
+        Group localGroup = dao.selectGroup(groupId);
+        if (localGroup != null) localGroup.picture.setAndPutTarget(cover);
+    }
+
+    public void saveContentPositions(@NonNull final List<Content> orderedContent, @NonNull final Runnable onSuccess) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doSaveContentPositions(orderedContent))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.io())
+                        .doOnComplete(() -> GroupHelper.updateGroupsJson(getApplication(), dao))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                onSuccess::run,
+                                Timber::e
+                        )
+        );
+    }
+
+    private void doSaveContentPositions(@NonNull final List<Content> orderedContent) {
+        Group localGroup = getGroup().getValue();
+        if (null == localGroup) return;
+
+        // Update the "has custom book order" group flag
+        localGroup.hasCustomBookOrder = true;
+
+        int order = 0;
+        for (Content c : orderedContent)
+            for (GroupItem gi : localGroup.items)
+                if (gi.content.getTargetId() == c.getId()) {
+                    gi.order = order++;
+                    dao.insertGroupItem(gi);
+                    break;
+                }
+        dao.insertGroup(localGroup);
+    }
+
+    public void saveGroupPositions(@NonNull final List<Group> orderedGroups) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doSaveGroupPositions(orderedGroups))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.io())
+                        .doOnComplete(() -> GroupHelper.updateGroupsJson(getApplication(), dao))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Update is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    private void doSaveGroupPositions(@NonNull final List<Group> orderedGroups) {
+        int order = 0;
+        for (Group g : orderedGroups) {
+            g.order = order++;
+            dao.insertGroup(g);
+        }
+    }
+
+    public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
+        // Check if the group already exists
+        List<Group> localGroups = getGroups().getValue();
+        if (null == localGroups) return;
+
+        List<Group> groupMatchingName = Stream.of(localGroups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
+        if (!groupMatchingName.isEmpty()) { // Existing group with the same name
+            onNameExists.run();
+        } else {
             compositeDisposable.add(
-                    Single.fromCallable(() -> ZipUtil.zipFiles(getApplication(), files, dest))
+                    Completable.fromRunnable(() -> dao.insertGroup(new Group(grouping, newGroupName, -1)))
                             .subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.io())
+                            .doOnComplete(() -> {
+                                isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
+                                GroupHelper.updateGroupsJson(getApplication(), dao);
+                            })
                             .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(onSuccess::accept,
-                                    Timber::e)
+                            .subscribe(
+                                    () -> { // Update is done through LiveData
+                                    },
+                                    Timber::e
+                            )
             );
         }
+    }
+
+    public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
+        // Check if the group already exists
+        List<Group> localGroups = getGroups().getValue();
+        if (null == localGroups) return;
+
+        List<Group> groupMatchingName = Stream.of(localGroups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
+        if (!groupMatchingName.isEmpty()) { // Existing group with the same name
+            onNameExists.run();
+        } else {
+            group.name = newGroupName;
+            compositeDisposable.add(
+                    Completable.fromRunnable(() -> dao.insertGroup(group))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.io())
+                            .doOnComplete(() -> {
+                                isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
+                                GroupHelper.updateGroupsJson(getApplication(), dao);
+                            })
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(
+                                    () -> { // Update is done through LiveData
+                                    },
+                                    Timber::e
+                            )
+            );
+        }
+    }
+
+    /**
+     * Delete the given group
+     * WARNING : If the group contains GroupItems, it will be ignored
+     * This method is aimed to be used to delete empty groups when using Custom grouping
+     *
+     * @param group Group to be deleted
+     * @return Group that has been deleted
+     * @throws GroupNotRemovedException When any issue occurs during removal
+     */
+    private Group doDeleteGroup(@NonNull final Group group) throws GroupNotRemovedException {
+        Helper.assertNonUiThread();
+
+        try {
+            // Check if given content still exists in DB
+            Group theGroup = dao.selectGroup(group.id);
+            if (!theGroup.items.isEmpty())
+                throw new GroupNotRemovedException(group, "Group is not empty");
+
+            if (theGroup != null) {
+                dao.deleteGroup(theGroup.id);
+                Timber.d("Removed group: %s from db.", theGroup.name);
+                return theGroup;
+            }
+            throw new GroupNotRemovedException(group, "Error when trying to delete : invalid group ID " + group.id);
+        } catch (GroupNotRemovedException gnre) {
+            Timber.e(gnre, "Error when trying to delete %s", group.id);
+            throw gnre;
+        } catch (Exception e) {
+            Timber.e(e, "Error when trying to delete %s", group.id);
+            throw new GroupNotRemovedException(group, "Error when trying to delete " + group.id + " : " + e.getMessage(), e);
+        }
+    }
+
+    public void moveBooksToNew(long[] bookIds, String newGroupName, @NonNull final Runnable onSuccess) {
+        Group newGroup = new Group(Grouping.CUSTOM, newGroupName.trim(), -1);
+        newGroup.id = dao.insertGroup(newGroup);
+        moveBooks(bookIds, newGroup, onSuccess);
+    }
+
+    public void moveBooks(long[] bookIds, @Nullable final Group group, @NonNull final Runnable onSuccess) {
+        compositeDisposable.add(
+                Observable.fromIterable(Helper.getListFromPrimitiveArray(bookIds))
+                        .observeOn(Schedulers.io())
+                        .map(dao::selectContent)
+                        .map(c -> doMoveBook(c, group))
+                        .doOnNext(c -> ContentHelper.updateContentJson(getApplication(), c))
+                        .doOnComplete(() -> {
+                            isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
+                            GroupHelper.updateGroupsJson(getApplication(), dao);
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> onSuccess.run(),
+                                Timber::e
+                        )
+        );
+    }
+
+    private Content doMoveBook(@NonNull final Content content, @Nullable final Group group) {
+        Helper.assertNonUiThread();
+        // Get all groupItems of the given content for custom grouping
+        List<GroupItem> groupItems = dao.selectGroupItems(content.getId(), Grouping.CUSTOM);
+        // Delete them all
+        if (!groupItems.isEmpty())
+            dao.deleteGroupItems(Stream.of(groupItems).map(gi -> gi.id).toList());
+
+        // Create the new links from the given content to the target group
+        if (group != null) {
+            GroupItem newGroupItem = new GroupItem(content, group, -1);
+            // Use this syntax because content will be persisted on JSON right after that
+            content.groupItems.add(newGroupItem);
+            // Commit new link to the DB
+            content.groupItems.applyChangesToDb();
+
+            // Add a picture to the target group if it didn't have one
+            if (group.picture.isNull())
+                group.picture.setAndPutTarget(content.getCover());
+        }
+        // updateContentOrder(); TODO is that necessary when moving when inside custom group ?
+
+        return content;
     }
 }

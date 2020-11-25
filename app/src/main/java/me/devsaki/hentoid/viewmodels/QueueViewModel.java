@@ -43,7 +43,7 @@ public class QueueViewModel extends AndroidViewModel {
     private LiveData<List<Content>> currentErrorsSource;
     private final MediatorLiveData<List<Content>> errors = new MediatorLiveData<>();
 
-    private final MutableLiveData<Long> contentIdToShowFirst = new MutableLiveData<>();     // ID of the content to show at 1st display
+    private final MutableLiveData<Integer> contentHashToShowFirst = new MutableLiveData<>();     // ID of the content to show at 1st display
 
 
     public QueueViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -55,6 +55,7 @@ public class QueueViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
+        dao.cleanup();
         compositeDisposable.clear();
     }
 
@@ -69,8 +70,8 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<Long> getContentIdToShowFirst() {
-        return contentIdToShowFirst;
+    public LiveData<Integer> getContentHashToShowFirst() {
+        return contentHashToShowFirst;
     }
 
 
@@ -102,23 +103,23 @@ public class QueueViewModel extends AndroidViewModel {
         Timber.d(">> move %s to %s", oldPosition, newPosition);
 
         // Get unpaged data to be sure we have everything in one collection
-        List<QueueRecord> queue = dao.selectQueue();
-        if (oldPosition < 0 || oldPosition >= queue.size()) return;
+        List<QueueRecord> localQueue = dao.selectQueue();
+        if (oldPosition < 0 || oldPosition >= localQueue.size()) return;
 
         // Move the item
-        QueueRecord fromValue = queue.get(oldPosition);
+        QueueRecord fromValue = localQueue.get(oldPosition);
         int delta = oldPosition < newPosition ? 1 : -1;
         for (int i = oldPosition; i != newPosition; i += delta) {
-            queue.set(i, queue.get(i + delta));
+            localQueue.set(i, localQueue.get(i + delta));
         }
-        queue.set(newPosition, fromValue);
+        localQueue.set(newPosition, fromValue);
 
         // Renumber everything
         int index = 1;
-        for (QueueRecord qr : queue) qr.rank = index++;
+        for (QueueRecord qr : localQueue) qr.setRank(index++);
 
         // Update queue in DB
-        dao.updateQueue(queue);
+        dao.updateQueue(localQueue);
 
         // If the 1st item is involved, signal it being skipped
         if (0 == newPosition || 0 == oldPosition)
@@ -127,17 +128,17 @@ public class QueueViewModel extends AndroidViewModel {
 
     public void invertQueue() {
         // Get unpaged data to be sure we have everything in one collection
-        List<QueueRecord> queue = dao.selectQueue();
-        if (queue.size() < 2) return;
+        List<QueueRecord> localQueue = dao.selectQueue();
+        if (localQueue.size() < 2) return;
 
         // Renumber everything in reverse order
         int index = 1;
-        for (int i = queue.size() - 1; i >= 0; i--) {
-            queue.get(i).rank = index++;
+        for (int i = localQueue.size() - 1; i >= 0; i--) {
+            localQueue.get(i).setRank(index++);
         }
 
         // Update queue and signal skipping the 1st item
-        dao.updateQueue(queue);
+        dao.updateQueue(localQueue);
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
     }
 
@@ -147,40 +148,41 @@ public class QueueViewModel extends AndroidViewModel {
      *
      * @param contents Contents whose download has to be canceled
      */
-    public void cancel(@NonNull List<Content> contents, Consumer<Throwable> onError) {
+    public void cancel(@NonNull List<Content> contents, Consumer<Throwable> onError, Runnable onSuccess) {
+        // TODO isn't that a little excessive to send a cancel event for EVERY book ?
         for (Content c : contents)
             EventBus.getDefault().post(new DownloadEvent(c, DownloadEvent.EV_CANCEL));
-        remove(contents, onError);
+        remove(contents, onError, onSuccess);
     }
 
-    public void remove(@NonNull List<Content> content, Consumer<Throwable> onError) {
+    public void remove(@NonNull List<Content> content, Consumer<Throwable> onError, Runnable onSuccess) {
         compositeDisposable.add(
                 Observable.fromIterable(content)
                         .observeOn(Schedulers.io())
                         .map(c -> doRemove(c.getId()))
+                        .doOnComplete(this::saveQueue) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> saveQueue(),
+                                v -> onSuccess.run(),
                                 onError::accept
                         )
         );
     }
 
-    public void cancelAll(Consumer<Throwable> onError) {
-        List<QueueRecord> queue = dao.selectQueue();
-        if (queue.isEmpty()) return;
+    public void cancelAll(Consumer<Throwable> onError, Runnable onSuccess) {
+        List<QueueRecord> localQueue = dao.selectQueue();
+        if (localQueue.isEmpty()) return;
 
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
 
         compositeDisposable.add(
-                Observable.fromIterable(queue)
+                Observable.fromIterable(localQueue)
                         .observeOn(Schedulers.io())
-                        .map(qr -> doRemove(qr.content.getTargetId()))
+                        .map(qr -> doRemove(qr.getContent().getTargetId()))
+                        .doOnComplete(this::saveQueue) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                    // Nothing to do here; UI callbacks are handled through LiveData
-                                },
+                                v -> onSuccess.run(),
                                 onError::accept
                         )
         );
@@ -190,11 +192,8 @@ public class QueueViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
         // Remove content altogether from the DB (including queue)
         Content content = dao.selectContent(contentId);
-        if (content != null) {
-            dao.deleteQueue(content);
-            // Remove the content from the disk and the DB
-            ContentHelper.removeContent(getApplication(), content, dao);
-        }
+        if (content != null)
+            ContentHelper.removeQueuedContent(getApplication(), dao, content);
         return true;
     }
 
@@ -207,8 +206,8 @@ public class QueueViewModel extends AndroidViewModel {
         dao.addContentToQueue(content, targetImageStatus);
     }
 
-    public void setContentIdToShowFirst(long id) {
-        contentIdToShowFirst.setValue(id);
+    public void setContentToShowFirst(int hash) {
+        contentHashToShowFirst.setValue(hash);
     }
 
     private void saveQueue() {

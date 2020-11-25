@@ -1,10 +1,38 @@
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawer_item_txt"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="start|center_vertical"
-    android:background="@color/transparent"
-    android:padding="8dp"
-    android:textSize="16sp"
-    tools:text="@string/app_name" />
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/item_txt"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:gravity="center_vertical"
+        android:minHeight="32dp"
+        android:textSize="@dimen/text_body_1"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/item_handle"
+        tools:text="@string/app_name" />
+
+    <ImageView
+        android:id="@+id/item_handle"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="center"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_reorder"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

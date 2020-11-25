@@ -2,6 +2,7 @@ package me.devsaki.hentoid.widget;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
@@ -17,7 +18,7 @@ public class ViewZoomGestureListener extends GestureDetector {
         scaledTouchSlopslop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
-    private final Handler handler = new Handler();
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private final int scaledTouchSlopslop;
     private final int longTapTime = ViewConfiguration.getLongPressTimeout();
     private final int doubleTapTime = ViewConfiguration.getDoubleTapTimeout();

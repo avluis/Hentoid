@@ -28,11 +28,13 @@ import com.annimon.stream.Stream;
 import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -54,13 +56,10 @@ public class FileHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    public static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
-
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
     private static final String PRIMARY_VOLUME_NAME = "primary";
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
-
 
     public static String getFileProviderAuthority() {
         return AUTHORITY;
@@ -142,7 +141,7 @@ public class FileHelper {
             Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
             Method getVolumeList = mStorageManager.getClass().getMethod("getVolumeList");
             Method getUuid = storageVolumeClazz.getMethod("getUuid");
-            Method getPath = storageVolumeClazz.getMethod("getPath");
+            @SuppressWarnings("JavaReflectionMemberAccess") Method getPath = storageVolumeClazz.getMethod("getPath");
             Method isPrimary = storageVolumeClazz.getMethod("isPrimary");
             Object result = getVolumeList.invoke(mStorageManager);
             if (null == result) return null;
@@ -219,12 +218,12 @@ public class FileHelper {
      * @param target File to open the OutputStream on
      * @return New OutputStream opened on the given file
      */
-    private static OutputStream getOutputStream(@NonNull final File target) throws IOException {
+    public static OutputStream getOutputStream(@NonNull final File target) throws IOException {
         return FileUtils.openOutputStream(target);
     }
 
     /**
-     * Create an OutputStream opened the given file
+     * Create an OutputStream for the given file
      * NB : File length will be truncated to the length of the written data
      *
      * @param context Context to use
@@ -234,6 +233,28 @@ public class FileHelper {
      */
     public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
         return context.getContentResolver().openOutputStream(target.getUri(), "rwt"); // Always truncate file to whatever data needs to be written
+    }
+
+    /**
+     * Create an OutputStream for the file at the given Uri
+     * NB : File length will be truncated to the length of the written data
+     *
+     * @param context Context to use
+     * @param fileUri Uri of the file to open the OutputStream on
+     * @return New OutputStream opened on the given file
+     * @throws IOException In case something horrible happens during I/O
+     */
+    @Nullable
+    public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
+        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
+            String path = fileUri.getPath();
+            if (null != path)
+                return getOutputStream(new File(fileUri.getPath()));
+        } else {
+            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
+            if (doc != null) return getOutputStream(context, doc);
+        }
+        return null;
     }
 
     /**
@@ -249,36 +270,40 @@ public class FileHelper {
     }
 
     /**
-     * Create a folder.
+     * Create an InputStream opened the file at the given Uri
      *
-     * @param file The folder to be created.
-     * @return true if creation was successful or the folder already exists
+     * @param context Context to use
+     * @param fileUri Uri to open the InputStream on
+     * @return New InputStream opened on the given file
+     * @throws IOException In case something horrible happens during I/O
      */
-    public static boolean createDirectory(@NonNull File file) {
-        return FileUtil.makeDir(file);
+    public static InputStream getInputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
+        return context.getContentResolver().openInputStream(fileUri);
     }
 
     /**
-     * Delete a file.
+     * Delete the given file
      *
-     * @param target The file.
+     * @param target File to delete
      */
     public static void removeFile(File target) {
         FileUtil.deleteFile(target);
     }
 
     /**
-     * Delete files in a target directory.
+     * Delete the file represented by the given Uri
      *
-     * @param target The folder.
-     * @return true if cleaned successfully.
+     * @param context Context to be used
+     * @param fileUri Uri to the file to delete
      */
-    public static boolean cleanDirectory(@NonNull File target) {
-        try {
-            return FileUtil.tryCleanDirectory(target);
-        } catch (Exception e) {
-            Timber.e(e, "Failed to clean directory");
-            return false;
+    public static void removeFile(@NonNull final Context context, @NonNull final Uri fileUri) {
+        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
+            String path = fileUri.getPath();
+            if (null != path)
+                removeFile(new File(fileUri.getPath()));
+        } else {
+            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
+            if (doc != null) doc.delete();
         }
     }
 
@@ -307,30 +332,21 @@ public class FileHelper {
      *
      * @param context Context to use
      * @param folder  Folder to check and set
-     * @param notify  true if the method is allowed to create a toast in case of any error -- TODO this parameter is a joke
-     * @return true if the given folder is valid and has been set; false if not
+     * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials could not be set
      */
-    public static boolean checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder, boolean notify) {
+    public static int checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
         // Validate folder
-        if (!folder.exists() && !folder.isDirectory()) {
-            if (notify)
-                ToastUtil.toast(context, R.string.error_creating_folder);
-            return false;
-        }
+        if (!folder.exists() && !folder.isDirectory()) return -1;
 
         // Remove and add back the nomedia file to test if the user has the I/O rights to the selected folder
         DocumentFile nomedia = findFile(context, folder, NOMEDIA_FILE_NAME);
         if (nomedia != null) nomedia.delete();
 
         nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
-        if (null == nomedia || !nomedia.exists()) {
-            if (notify)
-                ToastUtil.toast(context, R.string.error_write_permission);
-            return false;
-        }
+        if (null == nomedia || !nomedia.exists()) return -2;
 
         Preferences.setStorageUri(folder.getUri().toString());
-        return true;
+        return 0;
     }
 
     /**
@@ -357,6 +373,16 @@ public class FileHelper {
     }
 
     /**
+     * Open the given Uri using the device's app(s) of choice
+     *
+     * @param context Context to use
+     * @param uri     Uri of the resource to be opened
+     */
+    public static void openUri(@NonNull Context context, @NonNull Uri uri) {
+        tryOpenFile(context, uri, uri.getLastPathSegment(), false);
+    }
+
+    /**
      * Attempt to open the file or folder at the given Uri using the device's app(s) of choice
      *
      * @param context     Context to use
@@ -375,6 +401,7 @@ public class FileHelper {
                     } catch (ActivityNotFoundException e2) {
                         ToastUtil.toast(R.string.select_file_manager);
                         openFileWithIntent(context, uri, "*/*");
+                        // TODO if it also crashes after this call, tell the user to get DocumentsUI.apk ? (see #670)
                     }
                 }
             } else
@@ -396,6 +423,7 @@ public class FileHelper {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         myIntent.setDataAndTypeAndNormalize(uri, mimeType);
         myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        myIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(myIntent);
     }
 
@@ -406,16 +434,22 @@ public class FileHelper {
      * @return Extension of the given filename, without the "."
      */
     public static String getExtension(@NonNull final String fileName) {
-        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.US) : "";
+        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase(Locale.ENGLISH) : "";
     }
 
     /**
-     * Returns the name of the given filename, without the extension
+     * Returns the filename of the given file path, without the extension
      *
-     * @param fileName Filename
-     * @return Name of the given filename, without the extension
+     * @param filePath File path
+     * @return Name of the given file, without the extension
      */
-    public static String getFileNameWithoutExtension(@NonNull final String fileName) {
+    public static String getFileNameWithoutExtension(@NonNull final String filePath) {
+        int folderSeparatorIndex = filePath.lastIndexOf(File.separator);
+
+        String fileName;
+        if (-1 == folderSeparatorIndex) fileName = filePath;
+        else fileName = filePath.substring(folderSeparatorIndex + 1);
+
         return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf('.')) : fileName;
     }
 
@@ -423,16 +457,16 @@ public class FileHelper {
      * Save the given binary data in the given file, truncating the file length to the given data
      *
      * @param context    Context to use
-     * @param file       File to write to
+     * @param uri        Uri of the file to write to
      * @param binaryData Data to write
      * @throws IOException In case something horrible happens during I/O
      */
-    public static void saveBinaryInFile(@NonNull final Context context, @NonNull final DocumentFile file, byte[] binaryData) throws IOException {
+    public static void saveBinary(@NonNull final Context context, @NonNull final Uri uri, byte[] binaryData) throws IOException {
         byte[] buffer = new byte[1024];
         int count;
 
         try (InputStream input = new ByteArrayInputStream(binaryData)) {
-            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(context, file))) {
+            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(context, uri))) {
 
                 while ((count = input.read(buffer)) != -1) {
                     output.write(buffer, 0, count);
@@ -468,25 +502,29 @@ public class FileHelper {
      * @param extension File extension to get the mime-type for (without the ".")
      * @return Most relevant mime-type for the given file extension; generic mime-type if none found
      */
-    public static String getMimeTypeFromExtension(@NonNull String extension) {
+    private static String getMimeTypeFromExtension(@NonNull String extension) {
         if (extension.isEmpty()) return "application/octet-stream";
         String result = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         if (null == result) return "application/octet-stream";
         else return result;
     }
 
+    public static String getMimeTypeFromFileName(@NonNull String fileName) {
+        return getMimeTypeFromExtension(getExtension(fileName));
+    }
+
     /**
      * Share the given file using the device's app(s) of choice
      *
      * @param context Context to use
-     * @param f       File to share
+     * @param fileUri Uri of the file to share
      * @param title   Title of the user dialog
      */
-    public static void shareFile(final @NonNull Context context, final @NonNull DocumentFile f, final @NonNull String title) {
+    public static void shareFile(final @NonNull Context context, final @NonNull Uri fileUri, final @NonNull String title) {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("text/*");
         sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-        sharingIntent.putExtra(Intent.EXTRA_STREAM, f.getUri());
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
@@ -778,7 +816,14 @@ public class FileHelper {
         }
     }
 
-    // Legacy (non-SAF, pre-Android 10) version of openNewDownloadOutputStream
+    /**
+     * Legacy (non-SAF, pre-Android 10) version of openNewDownloadOutputStream
+     * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+     *
+     * @param fileName Name of the file to create
+     * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+     * @throws IOException If something horrible happens during I/O
+     */
     private static OutputStream openNewDownloadOutputStreamLegacy(@NonNull final String fileName) throws IOException {
         File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         if (null == downloadsFolder) throw new IOException("Downloads folder not found");
@@ -790,8 +835,17 @@ public class FileHelper {
         return getOutputStream(target);
     }
 
-    // Android 10 version of openNewDownloadOutputStream
-    // https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
+    /**
+     * Android 10 version of openNewDownloadOutputStream
+     * https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
+     * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+     *
+     * @param context  Context to use
+     * @param fileName Name of the file to create
+     * @param mimeType Mime-type of the file to create
+     * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+     * @throws IOException If something horrible happens during I/O
+     */
     @TargetApi(29)
     private static OutputStream openNewDownloadOutputStreamQ(
             @NonNull final Context context,
@@ -806,6 +860,17 @@ public class FileHelper {
         if (null == targetFileUri) throw new IOException("Target URI could not be formed");
 
         return resolver.openOutputStream(targetFileUri);
+    }
+
+    /**
+     * Format the given file size using human-readable units
+     * e.g. if the size represents more than 1M Bytes, the result is formatted as megabytes
+     *
+     * @param bytes Size to format, in bytes
+     * @return Given file size using human-readable units
+     */
+    public static String formatHumanReadableSize(long bytes) {
+        return FileUtils.byteCountToDisplaySize(bytes);
     }
 
     /**
@@ -929,6 +994,53 @@ public class FileHelper {
      */
     private static NameFilter createNameFilterEquals(@NonNull final String name) {
         return displayName -> displayName.equalsIgnoreCase(name);
+    }
+
+    /**
+     * Return the content of the given file as an UTF-8 string
+     * Leading BOMs are ignored
+     *
+     * @param context Context to be used
+     * @param f       File to read from
+     * @return Content of the given file as a string
+     */
+    static String readFileAsString(@NonNull final Context context, @NonNull DocumentFile f) {
+        StringBuilder result = new StringBuilder();
+        String sCurrentLine;
+        boolean isFirst = true;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(FileHelper.getInputStream(context, f)))) {
+            while ((sCurrentLine = br.readLine()) != null) {
+                if (isFirst) {
+                    // Strip UTF-8 BOMs if any
+                    if (sCurrentLine.charAt(0) == '\uFEFF')
+                        sCurrentLine = sCurrentLine.substring(1);
+                    isFirst = false;
+                }
+                result.append(sCurrentLine);
+            }
+        } catch (IOException | IllegalArgumentException e) {
+            Timber.e(e, "Error while reading %s", f.getUri().toString());
+        }
+        return result.toString();
+    }
+
+    /**
+     * Indicate whether the file at the given Uri exists or not
+     *
+     * @param context Context to be used
+     * @param fileUri Uri to the file whose existence is to check
+     * @return True if the given Uri points to an existing file; false instead
+     */
+    public static boolean fileExists(@NonNull final Context context, @NonNull final Uri fileUri) {
+        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
+            String path = fileUri.getPath();
+            if (path != null)
+                return new File(path).exists();
+            else return false;
+        } else {
+            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
+            return (doc != null);
+        }
     }
 
     @FunctionalInterface

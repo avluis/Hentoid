@@ -2,14 +2,14 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="@dimen/dialog_width"
     android:layout_height="wrap_content"
     android:layout_gravity="center_horizontal"
     android:gravity="center">
 
     <TextView
         android:id="@+id/updateSuccessText"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="?android:colorBackground"
         android:clickable="true"
@@ -27,7 +27,7 @@
 
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/changelogReleaseItem"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fadeScrollbars="false"
         android:paddingBottom="16dp"
@@ -40,6 +40,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/updateSuccessText"
         tools:listitem="@layout/item_changelog"
-        app:maxHeight="450dp"/>
+        app:maxHeight="@dimen/dialog_max_height"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

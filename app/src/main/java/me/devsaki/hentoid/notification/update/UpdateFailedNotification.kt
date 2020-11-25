@@ -18,13 +18,13 @@ class UpdateFailedNotification(private val downloadUri: Uri) : Notification {
         val pendingIntent = PendingIntentCompat.getForegroundService(context, intent)
 
         return NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            .setVibrate(longArrayOf(1, 1, 1))
-            .setContentTitle("Update download failed")
-            .setContentText("Tap to retry")
-            .setContentIntent(pendingIntent)
-            .build()
+                .setSmallIcon(R.drawable.ic_hentoid_shape)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setVibrate(longArrayOf(1, 1, 1))
+                .setContentTitle(context.resources.getText(R.string.update_download_failed))
+                .setContentText(context.resources.getText(R.string.tap_to_retry))
+                .setContentIntent(pendingIntent)
+                .build()
     }
 }

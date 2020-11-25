@@ -17,6 +17,7 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.json.GithubRelease;
 import me.devsaki.hentoid.retrofit.GithubServer;
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem;
 import timber.log.Timber;
@@ -30,7 +31,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 public class UpdateSuccessDialogFragment extends DialogFragment {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private ItemAdapter<GitHubReleaseItem> itemAdapter = new ItemAdapter<>();
+    private final ItemAdapter<GitHubReleaseItem> itemAdapter = new ItemAdapter<>();
 
     public static void invoke(FragmentManager fragmentManager) {
         UpdateSuccessDialogFragment fragment = new UpdateSuccessDialogFragment();
@@ -63,13 +64,13 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     }
 
     private void getReleases() {
-        compositeDisposable.add(GithubServer.API.getLatestRelease()
+        compositeDisposable.add(GithubServer.API.getLatestRelease() // No need to run on BG thread; retrofit already makes async calls
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onCheckSuccess, this::onCheckError)
         );
     }
 
-    private void onCheckSuccess(GitHubReleaseItem.Struct latestReleaseInfo) {
+    private void onCheckSuccess(GithubRelease latestReleaseInfo) {
         itemAdapter.add(new GitHubReleaseItem(latestReleaseInfo));
     }
 

@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 public class ImportActivityBundle {
     private static final String KEY_REFRESH = "refresh";
     private static final String KEY_REFRESH_RENAME = "rename";
-    private static final String KEY_REFRESH_CLEAN_ABSENT = "cleanAbsent";
+    private static final String KEY_REFRESH_CLEAN_NO_JSON = "cleanNoJson";
     private static final String KEY_REFRESH_CLEAN_NO_IMAGES = "cleanNoImages";
 
     private ImportActivityBundle() {
@@ -32,8 +32,8 @@ public class ImportActivityBundle {
             bundle.putBoolean(KEY_REFRESH_RENAME, rename);
         }
 
-        public void setRefreshCleanAbsent(boolean refresh) {
-            bundle.putBoolean(KEY_REFRESH_CLEAN_ABSENT, refresh);
+        public void setRefreshCleanNoJson(boolean refresh) {
+            bundle.putBoolean(KEY_REFRESH_CLEAN_NO_JSON, refresh);
         }
 
         public void setRefreshCleanNoImages(boolean refresh) {
@@ -61,8 +61,8 @@ public class ImportActivityBundle {
             return bundle.getBoolean(KEY_REFRESH_RENAME, false);
         }
 
-        public boolean getRefreshCleanAbsent() {
-            return bundle.getBoolean(KEY_REFRESH_CLEAN_ABSENT, false);
+        public boolean getRefreshCleanNoJson() {
+            return bundle.getBoolean(KEY_REFRESH_CLEAN_NO_JSON, false);
         }
 
         public boolean getRefreshCleanNoImages() {

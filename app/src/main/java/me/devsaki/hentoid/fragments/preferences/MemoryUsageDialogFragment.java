@@ -29,7 +29,6 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.CircularProgressView;
 
@@ -41,7 +40,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  */
 public class MemoryUsageDialogFragment extends DialogFragment {
 
-    private int _4dp;
+    private int ROW_PADDING;
 
     private TableLayout table;
     private ImageView foldUnfoldArrow;
@@ -62,7 +61,7 @@ public class MemoryUsageDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
 
-        _4dp = Helper.dpToPixel(requireContext(), 4);
+        ROW_PADDING = (int) getResources().getDimension(R.dimen.mem_row_padding);
 
         double deviceFreeGb = -1;
         double deviceTotalGb = -1;
@@ -94,12 +93,15 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         // Sort sources by largest size
         List<Map.Entry<Site, ImmutablePair<Integer, Long>>> sitesBySize = Stream.of(memUsage).sortBy(entry -> -entry.getValue().right).toList();
         for (Map.Entry<Site, ImmutablePair<Integer, Long>> entry : sitesBySize) {
-            addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", String.format(Locale.US, "%.1f MB", entry.getValue().right / (1024.0 * 1024)));
+            addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", String.format(Locale.ENGLISH, "%.1f MB", entry.getValue().right / (1024.0 * 1024)));
         }
 
         // Make details fold/unfold
         foldUnfoldArrow = requireViewById(rootView, R.id.memory_details_icon);
         requireViewById(rootView, R.id.memory_details).setOnClickListener(v -> onDetailsClick());
+
+        long dbMaxSizeKb = Preferences.getMaxDbSizeKb();
+        ((TextView) requireViewById(rootView, R.id.memory_db)).setText(getResources().getString(R.string.memory_database, FileHelper.formatHumanReadableSize(dao.getDbSizeBytes()), dao.getDbSizeBytes() * 100 / 1024f / dbMaxSizeKb));
     }
 
     private void onDetailsClick() {
@@ -122,7 +124,7 @@ public class MemoryUsageDialogFragment extends DialogFragment {
             TextView textView = new TextView(requireContext());
             textView.setLayoutParams(new TableRow.LayoutParams(column++));
             textView.setText(value);
-            textView.setPadding(_4dp, _4dp, _4dp, _4dp);
+            textView.setPadding(ROW_PADDING, ROW_PADDING, ROW_PADDING, ROW_PADDING);
             tableRow.addView(textView);
         }
 

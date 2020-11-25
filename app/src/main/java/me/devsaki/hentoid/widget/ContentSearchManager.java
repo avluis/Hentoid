@@ -16,12 +16,14 @@ import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.util.Preferences;
 
 public class ContentSearchManager {
 
     // Save state constants
     private static final String KEY_SELECTED_TAGS = "selected_tags";
+    private static final String KEY_GROUP = "group";
     private static final String KEY_FILTER_FAVOURITES = "filter_favs";
     private static final String KEY_QUERY = "query";
     private static final String KEY_SORT_FIELD = "sort_field";
@@ -40,6 +42,8 @@ public class ContentSearchManager {
     private List<Attribute> tags = new ArrayList<>();
     // Current search tags
     private boolean loadAll = false;
+    // Group
+    private long groupId;
     // Sort field and direction
     private int contentSortField = Preferences.getContentSortField();
     private boolean contentSortDesc = Preferences.isContentSortDesc();
@@ -82,6 +86,13 @@ public class ContentSearchManager {
         this.contentSortDesc = contentSortDesc;
     }
 
+    public void setGroup(Group group) {
+        if (group != null)
+            groupId = group.id;
+        else
+            groupId = -1;
+    }
+
     public List<Attribute> getTags() {
         return tags;
     }
@@ -99,6 +110,7 @@ public class ContentSearchManager {
         outState.putInt(KEY_CURRENT_PAGE, currentPage);
         String searchUri = SearchActivityBundle.Builder.buildSearchUri(tags).toString();
         outState.putString(KEY_SELECTED_TAGS, searchUri);
+        outState.putLong(KEY_GROUP, groupId);
     }
 
     public void loadFromBundle(@Nonnull Bundle state) {
@@ -110,23 +122,24 @@ public class ContentSearchManager {
 
         String searchUri = state.getString(KEY_SELECTED_TAGS);
         tags = SearchActivityBundle.Parser.parseSearchUri(Uri.parse(searchUri));
+        groupId = state.getLong(KEY_GROUP);
     }
 
     public LiveData<PagedList<Content>> getLibrary() {
         if (!getQuery().isEmpty())
-            return collectionDAO.searchBooksUniversal(getQuery(), contentSortField, contentSortDesc, filterFavourites, loadAll); // Universal search
+            return collectionDAO.searchBooksUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterFavourites, loadAll); // Universal search
         else if (!tags.isEmpty())
-            return collectionDAO.searchBooks("", tags, contentSortField, contentSortDesc, filterFavourites, loadAll); // Advanced search
+            return collectionDAO.searchBooks("", groupId, tags, contentSortField, contentSortDesc, filterFavourites, loadAll); // Advanced search
         else
-            return collectionDAO.getRecentBooks(contentSortField, contentSortDesc, filterFavourites, loadAll); // Default search (display recent)
+            return collectionDAO.getRecentBooks(groupId, contentSortField, contentSortDesc, filterFavourites, loadAll); // Default search (display recent)
     }
 
     public Single<List<Long>> searchLibraryForId() {
         if (!getQuery().isEmpty())
-            return collectionDAO.searchBookIdsUniversal(getQuery(), contentSortField, contentSortDesc, filterFavourites); // Universal search
+            return collectionDAO.searchBookIdsUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterFavourites); // Universal search
         else if (!tags.isEmpty())
-            return collectionDAO.searchBookIds("", tags, contentSortField, contentSortDesc, filterFavourites); // Advanced search
+            return collectionDAO.searchBookIds("", groupId, tags, contentSortField, contentSortDesc, filterFavourites); // Advanced search
         else
-            return collectionDAO.getRecentBookIds(contentSortField, contentSortDesc, filterFavourites); // Default search (display recent)
+            return collectionDAO.getRecentBookIds(groupId, contentSortField, contentSortDesc, filterFavourites); // Default search (display recent)
     }
 }

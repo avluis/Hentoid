@@ -8,6 +8,19 @@
         <PreferenceCategory
             android:title="@string/pref_cat_library"
             app:iconSpaceReserved="false">
+            <Preference
+                android:key="pref_drawer_sources"
+                android:summary="@string/pref_drawer_sources_summary"
+                android:title="@string/pref_drawer_sources_title"
+                app:iconSpaceReserved="false" />
+            <ListPreference
+                android:defaultValue="@string/pref_library_display_default"
+                android:entries="@array/pref_library_display_entries"
+                android:entryValues="@array/pref_library_display_values"
+                android:key="pref_library_display"
+                android:summary="@string/pref_library_display_summary"
+                android:title="@string/pref_library_display_title"
+                app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_endless_scroll_default"
                 android:disableDependentsState="true"
@@ -126,7 +139,7 @@
                 android:key="pref_memory_usage"
                 android:summary="@string/pref_memory_usage_summary"
                 android:title="@string/pref_memory_usage_title"
-                app:iconSpaceReserved="false"/>
+                app:iconSpaceReserved="false" />
             <ListPreference
                 android:defaultValue="@string/pref_memory_alert_default"
                 android:entries="@array/pref_memory_alert_entries"
@@ -146,10 +159,31 @@
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_external_library_delete_default"
+                android:enabled="false"
                 android:key="pref_external_library_delete"
                 android:summaryOff="@string/pref_external_library_delete_off"
                 android:summaryOn="@string/pref_external_library_delete_on"
                 android:title="@string/pref_external_library_delete_title"
+                app:iconSpaceReserved="false" />
+            <Preference
+                android:enabled="false"
+                android:key="pref_detach_external_library"
+                android:summary="@string/pref_external_library_detach_summary"
+                android:title="@string/pref_external_library_detach_title"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_metadata"
+            app:iconSpaceReserved="false">
+            <Preference
+                android:key="pref_export_library"
+                android:summary="@string/pref_export_library_summary"
+                android:title="@string/pref_export_library_title"
+                app:iconSpaceReserved="false" />
+            <Preference
+                android:key="pref_import_library"
+                android:summary="@string/pref_import_library_summary"
+                android:title="@string/pref_import_library_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
@@ -163,17 +197,12 @@
             <Preference
                 android:key="pref_delete_all_except_favs"
                 android:summary="@string/pref_delete_all_except_favs_summary"
-                android:title="@string/pref_delete_all_except_favs"
+                android:title="@string/pref_delete_all_except_favs_title"
                 app:iconSpaceReserved="false" />
             <Preference
-                android:key="pref_export_library"
-                android:summary="@string/pref_export_library_summary"
-                android:title="@string/pref_export_library_title"
-                app:iconSpaceReserved="false" />
-            <Preference
-                android:key="pref_import_library"
-                android:summary="@string/pref_import_library_summary"
-                android:title="@string/pref_import_library_title"
+                android:key="pref_latest_logs"
+                android:summary="@string/pref_latest_logs_summary"
+                android:title="@string/pref_latest_logs_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
@@ -212,6 +241,23 @@
             android:summary="@string/pref_attributes_list_order_summary"
             android:title="@string/pref_dl_size_wifi_threshold_title"
             app:iconSpaceReserved="false" />
+        <PreferenceCategory
+            android:title="@string/tag_blocking_screen_title"
+            app:iconSpaceReserved="false">
+            <EditTextPreference
+                android:key="pref_dl_blocked_tags"
+                android:summary="@string/pref_dl_blocked_tags_summary"
+                android:title="@string/pref_dl_blocked_tags_title"
+                app:iconSpaceReserved="false" />
+            <ListPreference
+                android:defaultValue="@string/pref_dl_blocked_tags_behaviour_default"
+                android:entries="@array/pref_dl_blocked_tags_behaviour_entries"
+                android:entryValues="@array/pref_dl_blocked_tags_behaviour_values"
+                android:key="pref_dl_blocked_tags_behaviour"
+                android:summary="@string/pref_attributes_list_order_summary"
+                android:title="@string/pref_dl_blocked_tags_behaviour_title"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/download_retries_screen_title"
             app:iconSpaceReserved="false">

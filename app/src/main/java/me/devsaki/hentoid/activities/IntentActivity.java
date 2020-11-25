@@ -50,9 +50,14 @@ public class IntentActivity extends AppCompatActivity {
     private void processIntent(Uri data) {
         Timber.d("Uri: %s", data);
 
-        Site site = Site.searchByUrl(data.getHost());
+        Site site = Site.searchByUrl(data.toString());
         if (site == null) {
-            Timber.d("Unrecognized site");
+            Timber.d("Invalid URL");
+            return;
+        }
+
+        if (site.equals(Site.NONE)) {
+            Timber.d("Unrecognized host : %s", data.getHost());
             return;
         }
 
@@ -108,6 +113,8 @@ public class IntentActivity extends AppCompatActivity {
             case LUSCIOUS:
             case PORNCOMIX:
             case HENTAI2READ:
+            case MRM:
+            case MANHWA:
                 return toParse;
             default:
                 return null;

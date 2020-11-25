@@ -28,17 +28,19 @@ import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AboutActivity;
-import me.devsaki.hentoid.activities.DrawerEditActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.DrawerItem;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
 
 public final class NavigationDrawerFragment extends Fragment {
 
@@ -46,8 +48,11 @@ public final class NavigationDrawerFragment extends Fragment {
 
     private final ItemAdapter<DrawerItem> drawerAdapter = new ItemAdapter<>();
     private final FastAdapter<DrawerItem> fastAdapter = FastAdapter.with(drawerAdapter);
+    private RecyclerView recyclerView;
 
     private UpdateEvent updateInfo;
+
+    private View aboutBadge;
 
 
     // Settings listener
@@ -61,17 +66,35 @@ public final class NavigationDrawerFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
+        Preferences.unregisterPrefsChangedListener(prefsListener);
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
 
-        View btn = requireViewById(rootView, R.id.drawer_prefs_btn);
+        View btn = requireViewById(rootView, R.id.drawer_about_btn);
+        btn.setOnClickListener(v -> onAboutClick());
+
+        btn = requireViewById(rootView, R.id.drawer_app_prefs_btn);
         btn.setOnClickListener(v -> onPrefsClick());
 
-        btn = requireViewById(rootView, R.id.drawer_edit_btn);
-        btn.setOnClickListener(v -> onEditClick());
+        btn = requireViewById(rootView, R.id.drawer_app_queue_btn);
+        btn.setOnClickListener(v -> onQueueClick());
+
+        aboutBadge = requireViewById(rootView, R.id.drawer_about_badge_btn);
 
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p));
-        RecyclerView recyclerView = requireViewById(rootView, R.id.drawer_list);
+        recyclerView = requireViewById(rootView, R.id.drawer_list);
         recyclerView.setAdapter(fastAdapter);
 
         updateItems();
@@ -87,9 +110,6 @@ public final class NavigationDrawerFragment extends Fragment {
         List<Site> activeSites = Preferences.getActiveSites();
         for (Site s : activeSites) drawerItems.add(new DrawerItem(s));
 
-        drawerItems.add(new DrawerItem("QUEUE", R.drawable.ic_action_download, QueueActivity.class));
-        drawerItems.add(new DrawerItem("ABOUT", R.drawable.ic_info, AboutActivity.class));
-
         drawerAdapter.clear();
         drawerAdapter.add(0, drawerItems);
         applyFlagsAndAlerts();
@@ -101,7 +121,7 @@ public final class NavigationDrawerFragment extends Fragment {
         return true;
     }
 
-    private void launchActivity(@NonNull Class activityClass) {
+    private void launchActivity(@NonNull Class<?> activityClass) {
         Intent intent = new Intent(parentActivity, activityClass);
         Bundle bundle = ActivityOptionsCompat
                 .makeCustomAnimation(parentActivity, R.anim.fade_in, R.anim.fade_out)
@@ -113,13 +133,7 @@ public final class NavigationDrawerFragment extends Fragment {
     }
 
     private void showFlagAboutItem() {
-        // About is always last
-        int aboutItemPos = drawerAdapter.getAdapterItemCount() - 1;
-        if (aboutItemPos > -1) {
-            DrawerItem item = drawerAdapter.getAdapterItem(aboutItemPos);
-            item.setFlagNew(true);
-            fastAdapter.notifyItemChanged(aboutItemPos);
-        }
+        if (aboutBadge != null) aboutBadge.setVisibility(View.VISIBLE);
     }
 
     private void showFlagAlerts(Map<Site, UpdateInfo.SourceAlert> alerts) {
@@ -153,25 +167,22 @@ public final class NavigationDrawerFragment extends Fragment {
         applyFlagsAndAlerts();
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDrawerClosed(CommunicationEvent event) {
+        if (event.getRecipient() != RC_DRAWER || null == recyclerView) return;
+        if (EV_CLOSED == event.getType()) recyclerView.scrollToPosition(0);
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
-        Preferences.unregisterPrefsChangedListener(prefsListener);
+    private void onAboutClick() {
+        launchActivity(AboutActivity.class);
     }
 
     private void onPrefsClick() {
         launchActivity(PrefsActivity.class);
     }
 
-    private void onEditClick() {
-        launchActivity(DrawerEditActivity.class);
+    private void onQueueClick() {
+        launchActivity(QueueActivity.class);
     }
 
     /**

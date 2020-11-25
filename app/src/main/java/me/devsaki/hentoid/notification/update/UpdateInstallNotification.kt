@@ -7,39 +7,40 @@ import android.net.Uri
 import android.os.Build
 import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
-import androidx.core.content.FileProvider
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.FileHelper
+import me.devsaki.hentoid.receiver.InstallRunReceiver
+import me.devsaki.hentoid.receiver.KEY_APK_PATH
 import me.devsaki.hentoid.util.notification.Notification
-import java.io.File
 
 private val APK_MIMETYPE = MimeTypeMap.getSingleton().getMimeTypeFromExtension("apk")
 
 class UpdateInstallNotification(private val apkUri: Uri) : Notification {
 
     override fun onCreateNotification(context: Context): android.app.Notification {
+        val pendingIntent = getIntent(context)
+
+        return NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
+                .setSmallIcon(R.drawable.ic_hentoid_shape)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setVibrate(longArrayOf(1, 1, 1))
+                .setContentTitle(context.resources.getText(R.string.update_ready))
+                .setContentText(context.resources.getText(R.string.tap_to_install))
+                .setContentIntent(pendingIntent)
+                .build()
+    }
+
+    private fun getIntent(context: Context): PendingIntent {
         val intent: Intent
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val f = File(apkUri.path)
-            val contentUri = FileProvider.getUriForFile(context, FileHelper.getFileProviderAuthority(), f)
-            intent = Intent(Intent.ACTION_INSTALL_PACKAGE, contentUri)
-            intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent = Intent(context, InstallRunReceiver::class.java)
+            intent.putExtra(KEY_APK_PATH, apkUri.path)
+            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT)
         } else {
             intent = Intent(Intent.ACTION_VIEW)
             intent.setDataAndType(apkUri, APK_MIMETYPE)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            PendingIntent.getActivity(context, 0, intent, 0)
         }
-
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
-
-        return NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            .setVibrate(longArrayOf(1, 1, 1))
-            .setContentTitle("Update ready")
-            .setContentText("Tap to install")
-            .setContentIntent(pendingIntent)
-            .build()
     }
 }

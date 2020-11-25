@@ -9,6 +9,7 @@ import com.annimon.stream.Stream;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,8 @@ import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
+import me.devsaki.hentoid.activities.sources.ManhwaActivity;
+import me.devsaki.hentoid.activities.sources.MrmActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
@@ -40,8 +43,10 @@ import me.devsaki.hentoid.activities.sources.PorncomixActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
 import me.devsaki.hentoid.activities.sources.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
@@ -52,6 +57,7 @@ import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
  * Created by DevSaki on 09/05/2015.
  * Content builder
  */
+@SuppressWarnings("UnusedReturnValue")
 @Entity
 public class Content implements Serializable {
 
@@ -70,8 +76,14 @@ public class Content implements Serializable {
     private StatusContent status;
     @Backlink(to = "content")
     private ToMany<ImageFile> imageFiles;
+    @Backlink(to = "content")
+    public ToMany<GroupItem> groupItems;
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
+    /**
+     * @deprecated Replaced by {@link me.devsaki.hentoid.services.ImportService} methods; class is kept for retrocompatibilty
+     */
+    @Deprecated
     private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite;
@@ -106,6 +118,11 @@ public class Content implements Serializable {
     private boolean isLast;         // True if current content is the last of its set in the DB query
     @Transient
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
+    @Transient
+    private int readPagesCount = -1;  // Read pages count fed by payload; only useful to update list display
+
+    public Content() {
+    }
 
 
     public ToMany<Attribute> getAttributes() {
@@ -118,6 +135,14 @@ public class Content implements Serializable {
 
     public void clearAttributes() {
         this.attributes.clear();
+    }
+
+    public void putAttributes(List<Attribute> attributes) {
+        // We do want to compare array references, not content
+        if (attributes != null && attributes != this.attributes) {
+            this.attributes.clear();
+            this.attributes.addAll(attributes);
+        }
     }
 
     public AttributeMap getAttributeMap() {
@@ -169,6 +194,7 @@ public class Content implements Serializable {
             case PURURIN:
                 paths = url.split("/");
                 return (paths.length > 1) ? paths[1] : paths[0];
+            case MRM:
             case HBROWSE:
                 return url.split("/")[0];
             case HITOMI:
@@ -189,6 +215,7 @@ public class Content implements Serializable {
             case FAKKU2:
             case HENTAIFOX:
             case PORNCOMIX:
+            case MANHWA:
                 paths = url.split("/");
                 return paths[paths.length - 1];
             case DOUJINS:
@@ -286,6 +313,10 @@ public class Content implements Serializable {
                 return Hentai2ReadActivity.class;
             case HENTAIFOX:
                 return HentaifoxActivity.class;
+            case MRM:
+                return MrmActivity.class;
+            case MANHWA:
+                return ManhwaActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -353,6 +384,8 @@ public class Content implements Serializable {
             case DOUJINS:
             case HBROWSE:
             case HENTAI2READ:
+            case MRM:
+            case MANHWA:
             default:
                 galleryConst = "";
         }
@@ -377,6 +410,8 @@ public class Content implements Serializable {
             case DOUJINS:
             case HBROWSE:
             case HENTAI2READ:
+            case MRM:
+            case MANHWA:
                 return getGalleryUrl();
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
@@ -582,6 +617,10 @@ public class Content implements Serializable {
         return storageFolder == null ? "" : storageFolder;
     }
 
+    /**
+     * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
+     */
+    @Deprecated
     public void resetStorageFolder() {
         storageFolder = "";
     }
@@ -660,10 +699,6 @@ public class Content implements Serializable {
         this.bookPreferences = bookPreferences;
     }
 
-    public void putBookPreferenceMap(String key, String value) {
-        bookPreferences.put(key, value);
-    }
-
     public int getLastReadPageIndex() {
         return lastReadPageIndex;
     }
@@ -703,6 +738,33 @@ public class Content implements Serializable {
     public void increaseNumberDownloadRetries() {
         this.numberDownloadRetries++;
     }
+
+    public boolean isArchive() {
+        return ArchiveHelper.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed !
+    }
+
+    public List<GroupItem> getGroupItems(Grouping grouping) {
+        List<GroupItem> result = new ArrayList<>();
+        for (GroupItem gi : groupItems)
+            if (gi.group.getTarget().grouping.equals(grouping)) result.add(gi);
+
+        return result;
+    }
+
+    public int getReadPagesCount() {
+        if (readPagesCount > -1) return readPagesCount;
+
+        if (null == imageFiles) return 0;
+        int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::isRead).filterNot(ImageFile::isCover).count();
+        if (0 == countReadPages && lastReadPageIndex > 0)
+            return lastReadPageIndex + 1; // pre-v1.13 content
+        else return countReadPages; // post v1.13 content
+    }
+
+    public void setReadPagesCount(int count) {
+        readPagesCount = count;
+    }
+
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {
         @Override

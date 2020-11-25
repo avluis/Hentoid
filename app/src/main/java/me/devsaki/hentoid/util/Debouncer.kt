@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util
 
+import android.content.Context
 import android.os.Handler
 
 import com.annimon.stream.function.Consumer
@@ -14,9 +15,9 @@ import com.annimon.stream.function.Consumer
  * @param <T> type of value that will be debounced
  * @see android.os.Looper
 </T> */
-class Debouncer<T>(private val delay: Long, private val callback: Consumer<T>) {
+class Debouncer<T>(context: Context, private val delay: Long, private val callback: Consumer<T>) {
 
-    private val handler = Handler()
+    private val handler = Handler(context.mainLooper)
 
     fun clear() {
         handler.removeCallbacksAndMessages(null)

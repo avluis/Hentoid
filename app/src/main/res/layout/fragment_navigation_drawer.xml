@@ -26,9 +26,9 @@
         tools:ignore="ContentDescription" />
 
     <ImageView
-        android:id="@+id/drawer_prefs_btn"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:id="@+id/drawer_app_prefs_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
@@ -40,21 +40,6 @@
         app:layout_constraintTop_toTopOf="@id/drawer_header"
         tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/drawer_edit_btn"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:adjustViewBounds="true"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/ic_edit"
-        app:layout_constraintRight_toRightOf="@id/drawer_header"
-        app:layout_constraintTop_toBottomOf="@id/drawer_prefs_btn"
-        tools:ignore="ContentDescription" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drawer_list"
         android:layout_width="match_parent"
@@ -64,9 +49,61 @@
         android:scrollbars="none"
         android:textIsSelectable="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/drawer_footer"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/drawer_header"
         tools:listitem="@layout/item_drawer" />
+
+    <View
+        android:id="@+id/drawer_footer"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="?colorPrimary"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/drawer_about_btn"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/title_activity_about"
+        android:textColor="@color/white_opacity_87"
+        app:icon="@drawable/ic_info"
+        app:iconTint="@color/white_opacity_87"
+        app:layout_constraintBottom_toBottomOf="@id/drawer_footer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/drawer_footer" />
+
+    <ImageView
+        android:id="@+id/drawer_about_badge_btn"
+        android:layout_width="14dp"
+        android:layout_height="14dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/ic_circle"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/drawer_about_btn"
+        app:layout_constraintTop_toTopOf="@id/drawer_about_btn"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="20dp"
+        app:tint="@color/accent_red"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/drawer_app_queue_btn"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:text="@string/title_activity_queue"
+        android:textColor="@color/white_opacity_87"
+        app:icon="@drawable/ic_action_download"
+        app:iconTint="@color/white_opacity_87"
+        app:layout_constraintBottom_toBottomOf="@id/drawer_footer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/drawer_footer" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

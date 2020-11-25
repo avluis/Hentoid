@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="350dp"
+    android:layout_width="@dimen/dialog_width"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:clipToPadding="false"
@@ -34,14 +34,25 @@
         android:id="@+id/export_favs_only"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:layout_marginStart="32dp"
-        android:switchPadding = "10dp"
+        android:switchPadding="10dp"
         android:text="@string/export_favs_only"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/export_file_library_chk"
-        tools:visibility="visible"
-        />
+        tools:visibility="visible" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/export_groups"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:switchPadding="10dp"
+        android:text="@string/export_groups"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_favs_only"
+        tools:visibility="visible" />
 
     <CheckBox
         android:id="@+id/export_file_queue_chk"
@@ -49,9 +60,31 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_favs_only"
+        app:layout_constraintTop_toBottomOf="@id/export_groups"
         tools:text="Export queue (235 books)"
         tools:visibility="visible" />
+
+    <CheckBox
+        android:id="@+id/export_file_bookmarks_chk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_file_queue_chk"
+        tools:text="Export bookmarks (25 items)"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/export_file_help_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/export_warning"
+        android:textColor="@color/white_opacity_87"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/export_warning_img"
+        app:layout_constraintTop_toBottomOf="@id/export_file_bookmarks_chk" />
 
     <ImageView
         android:id="@+id/export_warning_img"
@@ -65,18 +98,6 @@
         app:layout_constraintTop_toTopOf="@id/export_file_help_text"
         app:tint="?colorSecondary"
         tools:ignore="ContentDescription" />
-
-    <TextView
-        android:id="@+id/export_file_help_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/export_warning"
-        android:textColor="@color/white_opacity_87"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/export_warning_img"
-        app:layout_constraintTop_toBottomOf="@id/export_file_queue_chk" />
 
     <TextView
         android:id="@+id/export_run_btn"

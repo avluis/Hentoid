@@ -10,6 +10,7 @@ import com.skydoves.balloon.ArrowOrientation;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.ui.CarouselDecorator;
+import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.TooltipUtil;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -55,9 +56,11 @@ public class LibraryPager {
         pageCarousel = requireViewById(rootView, R.id.pager_pageCarousel);
         pageCarousel.setHasFixedSize(true);
 
+        View.OnTouchListener tapListener = new OnZoneTapListener(pageCarousel).setOnMiddleZoneTapListener(this::onCarouselClick);
         decorator = new CarouselDecorator(rootView.getContext(), R.layout.item_pagecarousel);
         decorator.decorate(pageCarousel);
         decorator.setOnPageChangeListener(this::pageChanged);
+        decorator.setTouchListener(tapListener);
 
         requireViewById(rootView, R.id.pager_btnPrevious).setOnClickListener(this::previousPage);
         requireViewById(rootView, R.id.pager_btnNext).setOnClickListener(this::nextPage);
@@ -136,6 +139,15 @@ public class LibraryPager {
      */
     public int getCurrentPageNumber() {
         return currentPageNumber;
+    }
+
+    private void onCarouselClick() {
+        InputDialog.invokeNumberInputDialog(pagerPanel.getContext(), R.string.goto_page, i -> {
+            if (i > 0 && i <= pageCount && i != currentPageNumber) {
+                setCurrentPage(i);
+                onPageChangeListener.run();
+            }
+        });
     }
 
     public void showTooltip(@NonNull final LifecycleOwner lifecycleOwner) {

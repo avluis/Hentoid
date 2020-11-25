@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -42,7 +44,6 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -63,10 +64,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     // Screen width and height; used to adjust dimensions of small images handled by Glide
-    final static int screenWidth = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
-    final static int screenHeight = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
+    static final int screenWidth = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
+    static final int screenHeight = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
 
-    private static final int PX_600_DP = Helper.dpToPixel(HentoidApp.getInstance(), 600);
+    private static final int PAGE_MIN_HEIGHT = (int) HentoidApp.getInstance().getResources().getDimension(R.dimen.page_min_height);
 
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
@@ -92,29 +93,30 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     public ImagePagerAdapter(Context context) {
         super(DIFF_CALLBACK);
-        refreshPrefs();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) rs = RenderScript.create(context);
     }
 
-    public void refreshPrefs() {
+    // Book prefs have to be set explicitely because the cached Content linked from each ImageFile
+    // might not have the latest properties
+    public void refreshPrefs(@NonNull final Map<String, String> bookPreferences) {
         int separatingBarsPrefs = Preferences.getViewerSeparatingBars();
         switch (separatingBarsPrefs) {
-            case Preferences.Constant.PREF_VIEWER_SEPARATING_BARS_SMALL:
+            case Preferences.Constant.VIEWER_SEPARATING_BARS_SMALL:
                 separatingBarsHeight = 4;
                 break;
-            case Preferences.Constant.PREF_VIEWER_SEPARATING_BARS_MEDIUM:
+            case Preferences.Constant.VIEWER_SEPARATING_BARS_MEDIUM:
                 separatingBarsHeight = 16;
                 break;
-            case Preferences.Constant.PREF_VIEWER_SEPARATING_BARS_LARGE:
+            case Preferences.Constant.VIEWER_SEPARATING_BARS_LARGE:
                 separatingBarsHeight = 64;
                 break;
             default:
                 separatingBarsHeight = 0;
         }
-        viewerOrientation = Preferences.getViewerOrientation();
         longTapZoomEnabled = Preferences.isViewerHoldToZoom();
-        displayMode = Preferences.getViewerDisplayMode();
         autoRotate = Preferences.isViewerAutoRotate();
+        displayMode = Preferences.getContentDisplayMode(bookPreferences);
+        viewerOrientation = Preferences.getContentOrientation(bookPreferences);
     }
 
     public void setRecyclerView(RecyclerView v) {
@@ -124,6 +126,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public void setItemTouchListener(View.OnTouchListener itemTouchListener) {
         this.itemTouchListener = itemTouchListener;
     }
+
 
     public boolean isFavouritePresent() {
         for (ImageFile img : getCurrentList())
@@ -136,7 +139,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if (null == img) return IMG_TYPE_OTHER;
 
         String extension = FileHelper.getExtension(img.getFileUri());
-
         if ("gif".equalsIgnoreCase(extension) || img.getMimeType().contains("gif")) {
             return IMG_TYPE_GIF;
         }
@@ -152,9 +154,9 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         int imageType = getImageType(getImageAt(position));
 
         if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType) return ViewType.IMAGEVIEW;
-        if (Preferences.Constant.PREF_VIEWER_DISPLAY_STRETCH == displayMode)
+        if (Preferences.Constant.VIEWER_DISPLAY_STRETCH == displayMode)
             return ViewType.IMAGEVIEW_STRETCH;
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+        if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
             return ViewType.SSIV_VERTICAL;
         return ViewType.SSIV_HORIZONTAL;
     }
@@ -168,17 +170,15 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if (ViewType.IMAGEVIEW == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
             // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
                 View image = view.findViewById(R.id.image);
                 image.setClickable(false);
                 image.setFocusable(false);
             }
         } else if (ViewType.IMAGEVIEW_STRETCH == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
-            {
-                ImageView image = view.findViewById(R.id.image);
-                image.setScaleType(ImageView.ScaleType.FIT_XY);
-            }
+            ImageView image = view.findViewById(R.id.image);
+            image.setScaleType(ImageView.ScaleType.FIT_XY);
         } else if (ViewType.SSIV_VERTICAL == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
             ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
@@ -187,8 +187,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
         }
 
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
-            view.setMinimumHeight(PX_600_DP); // Avoid stacking 0-px tall images on screen and load all of them at the same time
+        if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+            view.setMinimumHeight(PAGE_MIN_HEIGHT); // Avoid stacking 0-px tall images on screen and load all of them at the same time
 
         return new ImageViewHolder(view, viewType);
     }
@@ -203,7 +203,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             ssView.setOffsetLeftSide(isScrollLTR);
         }
 
-        int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+        int layoutStyle = (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
         ViewGroup.LayoutParams layoutParams = holder.imgView.getLayoutParams();
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = layoutStyle;
@@ -217,8 +217,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     public void onViewRecycled(@NonNull ImageViewHolder holder) {
         // Set the holder back to its original constraints while in vertical mode
         // (not doing this will cause super high memory usage by trying to load _all_ images)
-        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
-            holder.rootView.setMinimumHeight(PX_600_DP);
+        if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+            holder.rootView.setMinimumHeight(PAGE_MIN_HEIGHT);
 
             ViewGroup.LayoutParams layoutParams = holder.rootView.getLayoutParams();
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -234,8 +234,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     @Nullable
-    public ImageFile getImageAt(int position) {
-        return (position >= 0 && position < getItemCount()) ? getItem(position) : null;
+    public ImageFile getImageAt(int index) {
+        return (index >= 0 && index < getItemCount()) ? getItem(index) : null;
     }
 
     public void destroy() {
@@ -289,18 +289,21 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         private final View imgView;
 
         private ImageFile img;
+        private TextView noImgTxt = null;
 
         private ImageViewHolder(@NonNull View itemView, @ViewType int viewType) {
             super(itemView);
             this.viewType = viewType;
             rootView = itemView;
 
-            if (viewType == ViewType.IMAGEVIEW || viewType == ViewType.IMAGEVIEW_STRETCH)
+            if (viewType == ViewType.IMAGEVIEW || viewType == ViewType.IMAGEVIEW_STRETCH) {
                 imgView = itemView.findViewById(R.id.image);
-            else
+                noImgTxt = itemView.findViewById(R.id.viewer_no_page_txt);
+                noImgTxt.setVisibility(View.GONE);
+            } else
                 imgView = rootView;
 
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
                 imgView.setOnTouchListener(itemTouchListener);
         }
 
@@ -318,7 +321,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssView.setLongTapZoomEnabled(longTapZoomEnabled);
                 ssView.setAutoRotate(autoRotate);
                 if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
-                if (img.content.getTarget() != null && Preferences.isContentSmoothRendering(img.content.getTarget().getBookPreferences()))
+                if (img.getContent().getTarget() != null && Preferences.isContentSmoothRendering(img.getContent().getTarget().getBookPreferences()))
                     ssView.setRenderScript(rs);
                 else
                     ssView.setRenderScript(null);
@@ -340,7 +343,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         private int getScaleType() {
-            if (Preferences.Constant.PREF_VIEWER_DISPLAY_FILL == displayMode) {
+            if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) {
                 return CustomSubsamplingScaleImageView.ScaleType.SMART_FILL;
             } else {
                 return CustomSubsamplingScaleImageView.ScaleType.CENTER_INSIDE;
@@ -366,7 +369,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         private void adjustHeight(int imgWidth, int imgHeight, boolean resizeSmallPics) {
-            int rootLayoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+            int rootLayoutStyle = (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
             ViewGroup.LayoutParams layoutParams = rootView.getLayoutParams();
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
             layoutParams.height = rootLayoutStyle;
@@ -387,7 +390,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         private float getTargetScale(int imgWidth, int imgHeight, int displayMode) {
-            if (Preferences.Constant.PREF_VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
+            if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
                 if (imgHeight > imgWidth) {
                     // Fit to width
                     return screenWidth / (float) imgWidth;
@@ -405,7 +408,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         // == SUBSAMPLINGSCALEVIEW CALLBACKS
         @Override
         public void onReady() {
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
                 CustomSubsamplingScaleImageView scaleView = (CustomSubsamplingScaleImageView) imgView;
                 adjustHeight(0, (int) (scaleView.getScale() * scaleView.getSHeight()), false);
             }
@@ -424,7 +427,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         @Override
         public void onImageLoadError(Throwable e) {
             Timber.w(e, ">>>>IMG %s reloaded with Glide", img.getFileUri());
-            // Manually force mime-type as GIF to fall back to Glide
+            // Hack to fall back to glide by Manually forcing mime-type as GIF
             img.setMimeType("image/gif");
             // Reload adapter
             notifyItemChanged(getLayoutPosition());
@@ -444,12 +447,13 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         // == GLIDE CALLBACKS
         @Override
         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+            if (noImgTxt != null) noImgTxt.setVisibility(View.VISIBLE);
             return false;
         }
 
         @Override
         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
                 adjustHeight(resource.getIntrinsicWidth(), resource.getIntrinsicHeight(), true);
             return false;
         }
@@ -459,7 +463,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         private final Animatable2Compat.AnimationCallback animationCallback = new Animatable2Compat.AnimationCallback() {
             @Override
             public void onAnimationStart(Drawable drawable) {
-                if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
+                if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
                     adjustHeight(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), true);
             }
         };
@@ -470,7 +474,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
      */
     static class ImgLoader implements Loader {
 
-        private Uri uri;
+        private final Uri uri;
 
         ImgLoader(Uri uri) {
             this.uri = uri;
@@ -485,7 +489,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     static class ImgReader extends FilterReader {
-        private Uri uri;
+        private final Uri uri;
 
         private static InputStream getInputStream(Uri uri) throws IOException {
             return HentoidApp.getInstance().getContentResolver().openInputStream(uri);

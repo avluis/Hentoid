@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
-import com.squareup.moshi.Json;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +19,7 @@ import java.util.Locale;
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.json.GithubRelease;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -31,16 +31,22 @@ public class GitHubReleaseItem extends AbstractItem<GitHubReleaseItem.ReleaseVie
     private final String name;
     private final String description;
     private final Date creationDate;
+    private final String apkUrl;
 
-    public GitHubReleaseItem(Struct releaseStruct) {
+    public GitHubReleaseItem(GithubRelease releaseStruct) {
         tagName = releaseStruct.tagName.replace("v", "");
         name = releaseStruct.name;
         description = releaseStruct.body;
         creationDate = releaseStruct.creationDate;
+        apkUrl = releaseStruct.getApkAssetUrl();
     }
 
     public String getTagName() {
         return tagName;
+    }
+
+    public String getApkUrl() {
+        return apkUrl;
     }
 
     public boolean isTagPrior(@Nonnull String tagName) {
@@ -93,7 +99,7 @@ public class GitHubReleaseItem extends AbstractItem<GitHubReleaseItem.ReleaseVie
 
         @Override
         public void bindView(@NotNull GitHubReleaseItem item, @NotNull List<?> list) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
 
             setTitle(item.name + " (" + dateFormat.format(item.creationDate) + ")");
 
@@ -125,23 +131,6 @@ public class GitHubReleaseItem extends AbstractItem<GitHubReleaseItem.ReleaseVie
         @Override
         public void unbindView(@NotNull GitHubReleaseItem item) {
             // No specific behaviour to implement
-        }
-    }
-
-    public static class Struct {
-        @Json(name = "tag_name")
-        String tagName;
-        String name;
-        String body;
-        @Json(name = "created_at")
-        Date creationDate;
-
-        public String getName() {
-            return name;
-        }
-
-        public String getBody() {
-            return body;
         }
     }
 }

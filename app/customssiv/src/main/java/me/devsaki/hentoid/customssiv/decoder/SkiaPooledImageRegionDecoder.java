@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
@@ -15,7 +14,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
-import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.Keep;
@@ -25,7 +23,6 @@ import androidx.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -160,31 +157,11 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
     private void initialiseDecoder() throws IOException, PackageManager.NameNotFoundException {
         String uriString = uri.toString();
         BitmapRegionDecoder decoder;
-        long fileLength = Long.MAX_VALUE;
+        long localFileLength = Long.MAX_VALUE;
         if (uriString.startsWith(RESOURCE_PREFIX)) {
-            Resources res;
-            String packageName = uri.getAuthority();
-            if (context.getPackageName().equals(packageName)) {
-                res = context.getResources();
-            } else {
-                PackageManager pm = context.getPackageManager();
-                res = pm.getResourcesForApplication(packageName);
-            }
-
-            int id = 0;
-            List<String> segments = uri.getPathSegments();
-            int size = segments.size();
-            if (size == 2 && segments.get(0).equals("drawable")) {
-                String resName = segments.get(1);
-                id = res.getIdentifier(resName, "drawable", packageName);
-            } else if (size == 1 && TextUtils.isDigitsOnly(segments.get(0))) {
-                try {
-                    id = Integer.parseInt(segments.get(0));
-                } catch (NumberFormatException ignored) {
-                }
-            }
+            int id = SkiaDecoderHelper.getResourceId(context, uri);
             try (AssetFileDescriptor descriptor = context.getResources().openRawResourceFd(id)) {
-                fileLength = descriptor.getLength();
+                localFileLength = descriptor.getLength();
             } catch (Exception e) {
                 // Pooling disabled
             }
@@ -192,7 +169,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
         } else if (uriString.startsWith(ASSET_PREFIX)) {
             String assetName = uriString.substring(ASSET_PREFIX.length());
             try (AssetFileDescriptor descriptor = context.getAssets().openFd(assetName)) {
-                fileLength = descriptor.getLength();
+                localFileLength = descriptor.getLength();
             } catch (Exception e) {
                 // Pooling disabled
             }
@@ -202,7 +179,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
             try {
                 File file = new File(uriString);
                 if (file.exists()) {
-                    fileLength = file.length();
+                    localFileLength = file.length();
                 }
             } catch (Exception e) {
                 // Pooling disabled
@@ -215,7 +192,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
                 decoder = BitmapRegionDecoder.newInstance(input, false);
                 try (AssetFileDescriptor descriptor = contentResolver.openAssetFileDescriptor(uri, "r")) {
                     if (descriptor != null) {
-                        fileLength = descriptor.getLength();
+                        localFileLength = descriptor.getLength();
                     }
                 } catch (Exception e) {
                     // Stick with MAX_LENGTH
@@ -223,7 +200,7 @@ public class SkiaPooledImageRegionDecoder implements ImageRegionDecoder {
             }
         }
 
-        this.fileLength = fileLength;
+        this.fileLength = localFileLength;
         this.imageDimensions.set(decoder.getWidth(), decoder.getHeight());
         decoderLock.writeLock().lock();
         try {

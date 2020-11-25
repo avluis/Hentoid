@@ -12,6 +12,14 @@
         android:tooltipText="@string/menu_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="collapseActionView|always" />
+    <!-- Specific to groups -->
+    <item
+        android:id="@+id/action_group_new"
+        android:icon="@drawable/ic_new"
+        android:title="@string/menu_group_new"
+        android:tooltipText="@string/menu_group_new"
+        android:visible="false"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_favourites"
         android:checkable="true"
@@ -19,7 +27,20 @@
         android:icon="@drawable/ic_filter_favs_off"
         android:title="@string/menu_fav"
         android:tooltipText="@string/menu_fav"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_edit"
+        android:icon="@drawable/ic_reorder_lines"
+        android:title="@string/menu_edit_order"
+        android:tooltipText="@string/menu_edit_order"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_edit_cancel"
+        android:icon="@drawable/ic_close"
+        android:title="@string/menu_edit_cancel"
+        android:tooltipText="@string/menu_edit_cancel"
+        android:visible="false"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_order"
         android:icon="@drawable/ic_sort"

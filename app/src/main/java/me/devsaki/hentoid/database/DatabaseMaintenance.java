@@ -4,15 +4,24 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.BiConsumer;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 public class DatabaseMaintenance {
@@ -30,9 +39,10 @@ public class DatabaseMaintenance {
         List<Observable<Float>> result = new ArrayList<>();
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
-        result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties1));
-        result.add(createObservableFrom(context, DatabaseMaintenance::cleanProperties2));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
+        result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         return result;
     }
 
@@ -50,8 +60,17 @@ public class DatabaseMaintenance {
 
             // Unflag all books marked for deletion
             Timber.i("Unflag books : start");
-            db.flagContentById(db.selectAllFlaggedBooksQ().findIds(), false);
+            long[] ids = db.selectAllFlaggedBooksQ().findIds();
+            Timber.i("Unflag books : %s books detected", ids.length);
+            db.flagContentById(ids, false);
             Timber.i("Unflag books : done");
+
+            // Unflag all books signaled as being deleted
+            Timber.i("Unmark books as being deleted : start");
+            ids = db.selectAllMarkedBooksQ().findIds();
+            Timber.i("Unmark books as being deleted : %s books detected", ids.length);
+            db.markContentById(ids, false);
+            Timber.i("Unmark books as being deleted : done");
 
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
             Timber.i("Moving back isolated items to queue : start");
@@ -94,7 +113,7 @@ public class DatabaseMaintenance {
         }
     }
 
-    private static void cleanProperties1(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+    private static void cleanPropertiesOneShot1(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         try {
             // Update URLs from deprecated Pururin image hosts
@@ -119,7 +138,7 @@ public class DatabaseMaintenance {
         }
     }
 
-    private static void cleanProperties2(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+    private static void cleanPropertiesOneShot2(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         try {
             // Update URLs from deprecated Tsumino image covers
@@ -157,6 +176,80 @@ public class DatabaseMaintenance {
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Computing downloaded content size : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void createGroups(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Compute missing downloaded Content size according to underlying ImageFile sizes
+            Timber.i("Create non-existing groupings : start");
+            List<Grouping> groupingsToProcess = new ArrayList<>();
+            for (Grouping grouping : new Grouping[]{Grouping.ARTIST, Grouping.DL_DATE, Grouping.CUSTOM})
+                if (0 == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping);
+
+            Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
+            int bookInsertCount = 0;
+            List<ImmutableTriple<Group, Attribute, List<Content>>> toInsert = new ArrayList<>();
+            for (Grouping g : groupingsToProcess) {
+                if (g.equals(Grouping.ARTIST)) {
+                    List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0);
+                    artists.addAll(db.selectAvailableAttributes(AttributeType.CIRCLE, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0));
+                    int order = 1;
+                    for (Attribute a : artists) {
+                        Group group = new Group(Grouping.ARTIST, a.getName(), order++);
+                        group.setSubtype(a.getType().equals(AttributeType.ARTIST) ? Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS : Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS);
+                        if (!a.contents.isEmpty())
+                            group.picture.setTarget(a.contents.get(0).getCover());
+                        bookInsertCount += a.contents.size();
+
+                        toInsert.add(new ImmutableTriple<>(group, a, a.contents));
+                    }
+                } else if (g.equals(Grouping.DL_DATE)) {
+                    Group group = new Group(Grouping.DL_DATE, "Today", 1);
+                    group.propertyMin = 0;
+                    group.propertyMax = 1;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                    group = new Group(Grouping.DL_DATE, "Last 7 days", 2);
+                    group.propertyMin = 1;
+                    group.propertyMax = 8;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                    group = new Group(Grouping.DL_DATE, "Last 30 days", 3);
+                    group.propertyMin = 8;
+                    group.propertyMax = 31;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                    group = new Group(Grouping.DL_DATE, "Last 60 days", 4);
+                    group.propertyMin = 31;
+                    group.propertyMax = 61;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                    group = new Group(Grouping.DL_DATE, "Last year", 5);
+                    group.propertyMin = 61;
+                    group.propertyMax = 366;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                    group = new Group(Grouping.DL_DATE, "A long time ago", 6);
+                    group.propertyMin = 366;
+                    group.propertyMax = 9999999;
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                }
+            }
+
+            // Actual insert is inside its dedicated loop to allow displaying a proper progress bar
+            Timber.i("Create non-existing groupings : %s relations to create", bookInsertCount);
+            float pos = 1;
+            for (ImmutableTriple<Group, Attribute, List<Content>> data : toInsert) {
+                db.insertGroup(data.left);
+                if (data.middle != null) data.middle.putGroup(data.left);
+                int order = 0;
+                for (Content book : data.right) {
+                    GroupItem item = new GroupItem(book, data.left, order++);
+                    db.insertGroupItem(item);
+                    emitter.onNext(pos++ / bookInsertCount);
+                }
+            }
+            Timber.i("Create non-existing groupings : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();
