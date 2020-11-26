@@ -26,6 +26,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import timber.log.Timber;
 
 
@@ -192,8 +193,13 @@ public class QueueViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
         // Remove content altogether from the DB (including queue)
         Content content = dao.selectContent(contentId);
-        if (content != null)
-            ContentHelper.removeQueuedContent(getApplication(), dao, content);
+        try {
+            if (content != null)
+                ContentHelper.removeQueuedContent(getApplication(), dao, content);
+        } catch (ContentNotRemovedException e) {
+            // Don't throw the exception if we can't remove something that isn't there
+            if (!(e instanceof FileNotRemovedException && content.getStorageUri().isEmpty())) throw e;
+        }
         return true;
     }
 

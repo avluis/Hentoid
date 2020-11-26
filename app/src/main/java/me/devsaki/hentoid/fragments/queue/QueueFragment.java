@@ -79,7 +79,6 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.TooltipUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
-import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -717,12 +716,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void onDeleteError(Throwable t) {
         Timber.e(t);
         if (t instanceof ContentNotRemovedException) {
-            ContentNotRemovedException e = (ContentNotRemovedException) t;
-            // Don't warn about not finding the folder of an undownloaded book
-            if (e instanceof FileNotRemovedException && e.getContent().getStorageUri().isEmpty())
-                return;
-
-            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            String message = (null == t.getMessage()) ? "Content removal failed" : t.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
