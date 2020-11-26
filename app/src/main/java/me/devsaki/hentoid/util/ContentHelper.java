@@ -785,7 +785,7 @@ public final class ContentHelper {
             List<String> tags = Stream.of(content.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG)).map(Attribute::getName).toList();
             for (String blocked : Preferences.getBlockedTags())
                 for (String tag : tags)
-                    if (Helper.isPresentAsWord(blocked, tag)) {
+                    if (blocked.equalsIgnoreCase(tag) || Helper.isPresentAsWord(blocked, tag)) {
                         if (result.isEmpty()) result = new ArrayList<>();
                         result.add(tag);
                         break;
