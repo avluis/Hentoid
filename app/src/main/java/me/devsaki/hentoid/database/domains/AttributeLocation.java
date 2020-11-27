@@ -13,6 +13,8 @@ import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.Site;
 
 @Entity
+// This is a dumb struct class, nothing more
+@SuppressWarnings("squid:S1104")
 public class AttributeLocation {
 
     @Id

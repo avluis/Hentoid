@@ -99,10 +99,10 @@ public class QueueActivity extends BaseActivity {
         Intent intent = getIntent();
         if (intent != null && intent.getExtras() != null) {
             QueueActivityBundle.Parser parser = new QueueActivityBundle.Parser(intent.getExtras());
-            long contentId = parser.contentId();
-            if (contentId > 0) {
+            int contentHash = parser.contentHash();
+            if (contentHash > 0) {
                 if (parser.isErrorsTab()) viewPager.setCurrentItem(1);
-                viewModel.setContentIdToShowFirst(contentId);
+                viewModel.setContentToShowFirst(contentHash);
             }
         }
     }

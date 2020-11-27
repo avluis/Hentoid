@@ -14,6 +14,10 @@
     <dimen name="caption">12sp</dimen>
     <dimen name="overline">10sp</dimen>
 
+    <!-- generic app-wide dimensions -->
+    <dimen name="dialog_width">350dp</dimen>
+    <dimen name="dialog_max_height">450dp</dimen>
+
     <!-- navigation drawer -->
     <dimen name="drawer_layout_width">320dp</dimen>
     <dimen name="drawer_item_padding_start">24dp</dimen>
@@ -22,7 +26,7 @@
     <dimen name="drawer_image_height">160dp</dimen>
     <dimen name="drawer_header_icon_padding">12dp</dimen>
 
-    <!-- Elevation (V21+ API) -->
+    <!-- Elevation -->
     <dimen name="fab_default_elevation">2dp</dimen>
     <dimen name="drawer_layout_elevation">4dp</dimen>
     <dimen name="drawer_layout_header_elevation">6dp</dimen>
@@ -55,10 +59,20 @@
     <dimen name="default_cardview_margin">8dp</dimen>
     <dimen name="list_item_spacing">16dp</dimen>
     <dimen name="list_item_spacing_half">8dp</dimen>
+    <dimen name="card_grid_width">150dp</dimen>
+    <dimen name="card_grid_height">200dp</dimen>
+    <dimen name="delete_drawer_width">80dp</dimen>
 
     <!-- image viewer -->
     <dimen name="tap_zone_width">64dp</dimen>
+    <dimen name="page_min_height">600dp</dimen>
 
     <!-- fast scroller -->
     <dimen name="afs_min_touch_target_size">24dp</dimen>
+
+    <!-- prefs / memory usage dialog -->
+    <dimen name="mem_row_padding">4dp</dimen>
+
+    <!-- changelog -->
+    <dimen name="changelog_line_padding">8dp</dimen>
 </resources>

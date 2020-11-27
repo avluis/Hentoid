@@ -8,6 +8,9 @@
     <string name="off">Off</string>
     <string name="select_all">Select all</string>
     <string name="select_none">Select none</string>
+    <string name="goto_page">Go to page…</string>
+    <string name="confirm">Confirm</string>
+    <string name="please_wait">Please wait…</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -33,10 +36,16 @@
 
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
-    <string name="menu_order">Order books</string>
     <string name="menu_fav">Toggle favourite filter</string>
+    <string name="menu_group_new">New group</string>
+    <string name="menu_edit_order">Edit order</string>
+    <string name="menu_edit_name">Edit name</string>
+    <string name="menu_edit_cancel">Cancel edit</string>
+    <string name="menu_edit_warning_custom">The new custom ordering you\'re about to create will overwrite the previous one.</string>
+    <string name="menu_order">Order books</string>
     <string name="menu_delete_single">Delete</string>
     <string name="menu_delete_multi">Delete Items</string>
+    <string name="menu_change_group">Move to group…</string>
     <string name="menu_open_folder">Open containing folder</string>
     <string name="menu_redownload">Redownload</string>
     <string name="menu_redownload_scratch">Redownload from scratch</string>
@@ -83,15 +92,17 @@
     <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
     <string name="paused_no_internet">Cannot download - No internet</string>
     <string name="paused_no_wifi">Cannot download - No WiFi</string>
-    <string name="paused_no_storage">Cannot download - Low on storage</string>
+    <string name="paused_no_storage">Cannot download - Low on storage. Free space or change download folder location</string>
+    <string name="paused_no_dl_folder">Cannot download - No download folder. Use app settings to select one</string>
+    <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
-    <string name="work_series">Series: @series@</string>
-    <string name="work_artist">Artist: @artist@</string>
-    <string name="work_pages_queue">Pages: @pages@@missing@</string>
-    <string name="work_pages_library">%d pages / "%.1f MB</string>
+    <string name="work_series">Series: %s</string>
+    <string name="work_artist">Artist: %s</string>
+    <string name="work_pages_queue">Pages: %1$s%2$s</string>
+    <string name="work_pages_library">%1$d pages / "%2$.1f MB</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
@@ -109,11 +120,12 @@
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
     <string name="book_progress">%1$d / %2$d books</string>
+    <string name="group_progress">%1$d / %2$d groups</string>
 
     <!-- Import metadata -->
     <string name="import_title">Import metadata</string>
-    <string name="import_mode_add">Add to current library</string>
-    <string name="import_mode_replace">Replace library with imported books</string>
+    <string name="import_mode_add">Add imported items</string>
+    <string name="import_mode_replace">Replace with imported items</string>
     <string name="import_select_file">Select file to import</string>
     <string name="import_file_invalid">File %s is invalid</string>
     <plurals name="import_file_library">
@@ -124,11 +136,23 @@
         <item quantity="one">Import queue (%d book)</item>
         <item quantity="other">Import queue (%d books)</item>
     </plurals>
+    <plurals name="import_file_groups">
+        <item quantity="one">Import custom groups (%d group)</item>
+        <item quantity="other">Import custom groups (%d groups)</item>
+    </plurals>
+    <plurals name="import_file_bookmarks">
+        <item quantity="one">Import bookmarks (%d item)</item>
+        <item quantity="other">Import bookmarks (%d items)</item>
+    </plurals>
     <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue > Errors.</string>
     <string name="import_run">RUN IMPORT</string>
-    <plurals name="import_result">
+    <plurals name="import_result_books">
         <item quantity="one">%d book imported successfully</item>
         <item quantity="other">%d books imported successfully</item>
+    </plurals>
+    <plurals name="import_result_bookmarks">
+        <item quantity="one">%d bookmark imported successfully</item>
+        <item quantity="other">%d bookmarks imported successfully</item>
     </plurals>
 
     <!-- Export metadata -->
@@ -138,9 +162,14 @@
         <item quantity="other">Export library (%d books)</item>
     </plurals>
     <string name="export_favs_only">Only export favourites</string>
+    <string name="export_groups">Export custom groups</string>
     <plurals name="export_file_queue">
         <item quantity="one">Export queue (%d book)</item>
         <item quantity="other">Export queue (%d books)</item>
+    </plurals>
+    <plurals name="export_file_bookmarks">
+        <item quantity="one">Export bookmarks (%d item)</item>
+        <item quantity="other">Export bookmarks (%d items)</item>
     </plurals>
     <string name="export_warning">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
     <string name="export_run">RUN EXPORT</string>
@@ -151,6 +180,8 @@
     <string name="permissioncomplaint_snackbar_manual">You must manually grant permissions before you can continue</string>
     <string name="import_canceled">Import canceled</string>
     <string name="import_invalid">Invalid folder selected - please select another one</string>
+    <string name="import_app_folder">You cannot select the app folder as an external folder - please select another one</string>
+    <string name="import_download_folder">You shouldn\'t select your device\'s download folder - please create or select another one</string>
     <string name="import_create_fail">Hentoid folder creation failed - please select another location</string>
     <string name="import_other">Import has stopped</string>
     <string name="import_unexpected">Import has stopped unexpectedly</string>
@@ -170,7 +201,13 @@
     <string name="memory_total">Total : %.2f GB</string>
     <string name="memory_free">Free : %.2f GB</string>
     <string name="memory_hentoid">Hentoid : %.2f GB</string>
+    <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
     <string name="memory_details">View details</string>
+
+    <!-- Logs -->
+    <string name="logs_title">Latest logs</string>
+    <string name="logs_open">Open log</string>
+    <string name="logs_share">Share log</string>
 
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
@@ -181,16 +218,35 @@
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
-    <string name="redownload_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
+    <string name="redownload_dialog_message">Total images in download: %1$d\nImages without error: %2$d\nImages with error: %3$d</string>
+    <string name="redownload_first_error">First error : %s</string>
     <string name="redownload_action">REDOWNLOAD</string>
     <string name="redownload_open_log">Open error log</string>
     <string name="redownload_share_log">Share error log</string>
     <string name="redownload_generating_log_file">Generating log file…</string>
 
     <!-- Library fragment -->
+    <string name="open_drawer">Open drawer</string>
+    <string name="close_drawer">Close drawer</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
+    </plurals>
+    <plurals name="ask_archive_multiple">
+        <item quantity="one">Are you sure you wish to archive the selected item ?</item>
+        <item quantity="other">Are you sure you wish to archive the selected items ?</item>
+    </plurals>
+    <string name="new_group_name">Name of the new group ?</string>
+    <string name="group_edit_name">Edit group name</string>
+    <string name="delete_progress">Deleting books</string>
+    <plurals name="delete_success">
+        <item quantity="one">One book successfully deleted</item>
+        <item quantity="other">%d books successfully deleted</item>
+    </plurals>
+    <string name="archive_progress">Archiving books</string>
+    <plurals name="archive_success">
+        <item quantity="one">One book archived in your Download folder</item>
+        <item quantity="other">%d books archived in your Download folder</item>
     </plurals>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
     <string name="queue_empty">Why am I empty?</string>
@@ -203,11 +259,11 @@
     <string name="sd_access_fatal_error">Hendroid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
-    <string name="book_title">"This is a rather long title, just because we need it to be."</string>
-    <string name="book_series">"Series: Name"</string>
-    <string name="book_artist">"Artist: Name"</string>
-    <string name="book_pages_queue">"Pages: 1234; estimated 125 MB"</string>
-    <string name="book_pages_library">"1234 pages / 1125 MB"</string>
+    <string name="book_title">This is a rather long title, just because we need it to be.</string>
+    <string name="book_series">Series: Name</string>
+    <string name="book_artist">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
+    <string name="book_pages_queue">Pages: 1234; estimated 125 MB</string>
+    <string name="book_pages_library">1234 pages / 1125 MB</string>
     <string name="book_tags">""tag1, tag2, tag3, etc.</string>
     <plurals name="number_of_book_search_results">
         <item quantity="one">%d/%d result</item>
@@ -227,7 +283,7 @@
         <item quantity="one">One of the selected books is stored in the external library and cannot be redownloaded\nThis book will be ignored.</item>
         <item quantity="other">Some of the selected books are stored in the external library and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
-    <string name="deleted">Deleted</string>
+    <string name="about_to_delete">Book is about to be deleted…</string>
     <string name="help_search">Search anything : title, author, tag\nand launch code too !</string>
     <string name="help_page_slider">You can browse faster by sliding through page numbers</string>
     <plurals name="items_selected">
@@ -235,6 +291,26 @@
         <item quantity="other">%d items selected</item>
     </plurals>
     <string name="folder_undefined">Error - containing folder undefined</string>
+    <string name="malformed_url">Error - Malformed URL</string>
+    <string name="unsupported_site">Error - Site is not supported</string>
+    <plurals name="external_not_removed">
+        <item quantity="one">One book from the external library will not be removed</item>
+        <item quantity="other">%d books from the external library will not be removed</item>
+    </plurals>
+    <string name="group_make_cover">Set as group cover</string>
+    <string name="group_make_cover_ask">Are you sure to set this book\'s cover as the current group\'s cover ?</string>
+    <string name="group_change">Move to custom group</string>
+    <string name="group_existing">Existing group</string>
+    <string name="group_new">Create new</string>
+    <string name="group_new_name">New custom group name</string>
+    <string name="group_remove">Detach from current group</string>
+    <string name="group_name_exists">Group with that name already exists!</string>
+    <!-- Groups -->
+    <string name="groups_flat">All books</string>
+    <string name="groups_by_artist">By Artist</string>
+    <string name="groups_by_dl_date">By Download date</string>
+    <string name="groups_custom">Custom</string>
+    <string name="no_artist_group_name">[no artist]</string>
     <!-- Sorting fields -->
     <string name="sort_title">Title</string>
     <string name="sort_artist">Artist</string>
@@ -244,12 +320,23 @@
     <string name="sort_reads">Reads</string>
     <string name="sort_size">Size</string>
     <string name="sort_random">Random</string>
+    <string name="sort_custom">Custom</string>
     <string name="sort_invalid">-invalid-</string>
+    <string name="sort_books">Books</string>
     <!-- Item card tooltips -->
     <string name="drag_help">Drag item</string>
+    <string name="external_help">Belongs to the external library</string>
     <string name="view_source_help">View source in browser</string>
     <string name="book_fav_help">Mark/unmark book as favourite</string>
+    <!-- Visibility fields -->
+    <string name="show_artists">Show artists</string>
+    <string name="show_groups">Show groups</string>
+    <string name="show_artists_and_groups">Show artists &amp; groups</string>
 
+    <string name="tap_to_retry">Tap to retry</string>
+    <string name="downloading_update">Downloading update</string>
+    <string name="update_ready">Update is ready!</string>
+    <string name="tap_to_install">Tap to install</string>
     <!-- Alerts -->
     <string name="alert_orange">Be aware that downloads may fail on this site.\n%s</string>
     <string name="alert_red">The download button is currently broken for this site.\n%s</string>
@@ -286,6 +373,7 @@
     <string name="web_home">Back to library</string>
     <string name="web_back">Back</string>
     <string name="web_forward">Forward</string>
+    <string name="web_bookmarks">Bookmarks</string>
     <string name="web_refresh_stop">Refresh/stop</string>
     <string name="web_open_browser">Open in browser</string>
     <string name="web_download">Download</string>
@@ -294,6 +382,13 @@
     <string name="help_web_download">You\'ve reached a book page.\nTime to download with the bottom bar!</string>
     <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
     <string name="help_web_exh_account">Please use or create an ExHentai account</string>
+    <string name="blocked_tag">Book has a blocked tag (%s)\nDownload canceled</string>
+    <string name="blocked_tag_queued">Book has a blocked tag (%s)\nQueued as an error</string>
+    <string name="bookmark_current">Bookmark current page</string>
+    <string name="unbookmark_current">Remove bookmark on current page</string>
+    <string name="bookmark_copy_url">Copy bookmark URL to clipboard</string>
+    <string name="alert_unwanted_tags">This book is tagged with %s</string>
+    <string name="bookmark_homepage">Homepage</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
@@ -314,6 +409,7 @@
 
     <!-- Image viewer -->
     <string name="no_images">Could not load the book : No image found</string>
+    <string name="no_image">Image not found</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
@@ -343,6 +439,10 @@
     <string name="page_share_help">Share page using another app</string>
     <string name="page_delete_help">Delete page</string>
     <string name="viewer_ask_cover">Set this page as book cover?</string>
+    <string name="image_not_found">Image not found</string>
+    <string name="book_prefs">Book settings</string>
+    <string name="goto_app_prefs">App settings</string>
+    <string name="use_app_prefs">Use app settings (%s)</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

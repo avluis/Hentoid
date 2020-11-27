@@ -93,7 +93,7 @@ public class LogUtil {
             Instant end = Stream.of(info.log).withoutNulls().max((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
             long durationMs = end.toEpochMilli() - beginning.toEpochMilli();
             logStr.append("Start : ").append(beginning.toString()).append(LINE_SEPARATOR);
-            logStr.append("End : ").append(end.toString()).append(" (").append(Helper.formatTime(durationMs)).append(")").append(LINE_SEPARATOR);
+            logStr.append("End : ").append(end.toString()).append(" (").append(Helper.formatDuration(durationMs)).append(")").append(LINE_SEPARATOR);
             logStr.append("-----").append(LINE_SEPARATOR);
 
             // Log header
@@ -125,7 +125,7 @@ public class LogUtil {
 
             DocumentFile logDocumentFile = FileHelper.findOrCreateDocumentFile(context, folder, "text/plain", logFileName);
             if (logDocumentFile != null)
-                FileHelper.saveBinaryInFile(context, logDocumentFile, log.getBytes());
+                FileHelper.saveBinary(context, logDocumentFile.getUri(), log.getBytes());
             return logDocumentFile;
         } catch (Exception e) {
             Timber.e(e);

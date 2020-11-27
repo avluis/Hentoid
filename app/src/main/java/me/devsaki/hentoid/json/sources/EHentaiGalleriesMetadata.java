@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -11,11 +13,12 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
+@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public class EHentaiGalleriesMetadata {
     private List<EHentaiGalleryMetadata> gmetadata;
 
-    public Content toContent(@Nonnull String url) {
-        return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).toContent(url) : new Content();
+    public Content toContent(@Nonnull String url, @NonNull Site site) {
+        return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).toContent(url, site) : new Content();
     }
 
 
@@ -29,10 +32,10 @@ public class EHentaiGalleriesMetadata {
         private List<String> tags;
 
 
-        public Content toContent(@Nonnull String url) {
+        public Content toContent(@Nonnull String url, @NonNull Site site) {
             Content result = new Content();
 
-            result.setSite(Site.EHENTAI);
+            result.setSite(site);
 
             result.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
                     .setCoverImageUrl(thumb)
@@ -72,7 +75,7 @@ public class EHentaiGalleriesMetadata {
                     }
                 }
 
-                attributes.add(new Attribute(type, name, type.name() + "/" + name, Site.EHENTAI));
+                attributes.add(new Attribute(type, name, type.name() + "/" + name, site));
             }
             result.addAttributes(attributes);
 

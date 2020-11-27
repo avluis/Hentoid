@@ -6,17 +6,16 @@ buildscript {
         mavenCentral()
         jcenter()
         maven { url "https://jcenter.bintray.com" }
-        maven { url "https://dl.bintray.com/osborn/Android" }
+        maven { url "https://dl.bintray.com/osborn/Android" } // Glide integration for APNG library
     }
     dependencies {
-        //classpath 'com.android.tools.build:gradle:3.6.2'
-        classpath 'com.android.tools.build:gradle:3.5.2'
+        classpath 'com.android.tools.build:gradle:4.1.1'
         // classpath 'com.google.gms:google-services:4.3.4'
-        classpath 'io.objectbox:objectbox-gradle-plugin:2.6.0'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.10'
-        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7'
+        classpath 'io.objectbox:objectbox-gradle-plugin:2.7.1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.20'
+        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.0'
+        //classpath 'com.google.firebase:firebase-crashlytics-gradle:2.4.1'
         classpath 'de.mobilej.unmock:UnMockPlugin:0.7.6'
-        //classpath 'com.google.firebase:firebase-crashlytics-gradle:2.3.0'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -30,7 +29,7 @@ allprojects {
         jcenter()
         maven { url "https://jcenter.bintray.com" }
         maven { url 'https://jitpack.io' }
-        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://plugins.gradle.org/m2/" } // Sonarcloud
     }
 }
 

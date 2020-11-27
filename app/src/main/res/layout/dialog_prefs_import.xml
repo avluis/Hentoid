@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="350dp"
+    android:layout_width="@dimen/dialog_width"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:clipToPadding="false"
@@ -93,19 +93,24 @@
         tools:text="Import queue (235 books)"
         tools:visibility="visible" />
 
-    <ImageView
-        android:id="@+id/import_warning_img"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:adjustViewBounds="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_warning"
+    <CheckBox
+        android:id="@+id/import_file_groups_chk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/import_file_help_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/import_file_help_text"
-        app:tint="?colorSecondary"
-        tools:ignore="ContentDescription"
+        app:layout_constraintTop_toBottomOf="@id/import_file_queue_chk"
+        tools:text="Import custom groups (23 groups)"
+        tools:visibility="visible" />
+
+    <CheckBox
+        android:id="@+id/import_file_bookmarks_chk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/import_file_groups_chk"
+        tools:text="Import bookmarks (23 items)"
         tools:visibility="visible" />
 
     <TextView
@@ -119,7 +124,22 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/import_warning_img"
-        app:layout_constraintTop_toBottomOf="@id/import_file_queue_chk"
+        app:layout_constraintTop_toBottomOf="@id/import_file_bookmarks_chk"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/import_warning_img"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:adjustViewBounds="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_warning"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/import_file_help_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/import_file_help_text"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription"
         tools:visibility="visible" />
 
     <TextView

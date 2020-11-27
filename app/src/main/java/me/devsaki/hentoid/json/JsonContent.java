@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.json;
 
+import androidx.annotation.Nullable;
+
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
@@ -8,14 +11,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImportHelper;
 
 public class JsonContent {
 
@@ -35,8 +43,9 @@ public class JsonContent {
     private Map<String, String> bookPreferences = new HashMap<>();
 
     private Map<AttributeType, List<JsonAttribute>> attributes;
-    private List<JsonImageFile> imageFiles = new ArrayList<>();
-    private List<JsonErrorRecord> errorRecords = new ArrayList<>();
+    private final List<JsonImageFile> imageFiles = new ArrayList<>();
+    private final List<JsonErrorRecord> errorRecords = new ArrayList<>();
+    private final List<JsonGroupItem> groups = new ArrayList<>();
 
     private JsonContent() {
     }
@@ -92,10 +101,15 @@ public class JsonContent {
             for (ErrorRecord err : c.getErrorLog())
                 result.errorRecords.add(JsonErrorRecord.fromEntity(err));
 
+        if (c.groupItems != null && !c.groupItems.isEmpty())
+            for (GroupItem gi : c.groupItems)
+                if (gi.group.getTarget().hasCustomBookOrder) // Don't persist group info that can be auto-generated
+                    result.groups.add(JsonGroupItem.fromEntity(gi));
+
         return result;
     }
 
-    public Content toEntity() {
+    public Content toEntity(@Nullable final CollectionDAO dao) {
         Content result = new Content();
 
         if (null == site) site = Site.NONE;
@@ -125,8 +139,11 @@ public class JsonContent {
             }
         }
         if (imageFiles != null) {
-            List<ImageFile> imgs = new ArrayList<>();
-            for (JsonImageFile img : imageFiles) imgs.add(img.toEntity(imageFiles.size()));
+            List<ImageFile> imgs = Stream.of(imageFiles).map(i -> i.toEntity(imageFiles.size())).toList();
+            // Fix empty covers
+            Optional<ImageFile> cover = Stream.of(imgs).filter(ImageFile::isCover).findFirst();
+            if (cover.isEmpty() || cover.get().getUrl().isEmpty()) ImportHelper.createCover(imgs);
+
             result.setImageFiles(imgs);
 
             // Fix books with incorrect QtyPages that may exist in old JSONs
@@ -137,6 +154,17 @@ public class JsonContent {
             for (JsonErrorRecord err : errorRecords) errs.add(err.toEntity());
             result.setErrorLog(errs);
         }
+        if (groups != null && dao != null)
+            for (JsonGroupItem gi : groups) {
+                Group group = dao.selectGroupByName(gi.getGroupingId(), gi.getGroupName());
+                if (group != null) // Group already exists
+                    result.groupItems.add(gi.toEntity(result, group));
+                else if (gi.getGroupingId() == Grouping.CUSTOM.getId()) { // Create group from scratch
+                    Group newGroup = new Group(Grouping.CUSTOM, gi.getGroupName(), -1);
+                    newGroup.id = dao.insertGroup(newGroup);
+                    result.groupItems.add(gi.toEntity(result, newGroup));
+                }
+            }
 
         result.populateAuthor();
         result.populateUniqueSiteId();

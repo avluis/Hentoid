@@ -26,6 +26,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
@@ -59,9 +60,11 @@ public class HitomiParser implements ImageListParser {
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, pageUrl));
         Response response = HttpHelper.getOnlineResource(galleryJsonUrl, headers, Site.HITOMI.canKnowHentoidAgent());
-        if (null == response.body()) throw new IOException("Empty body");
 
-        String json = response.body().string().replace("var galleryinfo = ", "");
+        ResponseBody body = response.body();
+        if (null == body) throw new IOException("Empty body");
+
+        String json = body.string().replace("var galleryinfo = ", "");
         HitomiGalleryInfo gallery = JsonHelper.jsonToObject(json, HitomiGalleryInfo.class);
 
         Map<String, String> downloadParams = new HashMap<>();

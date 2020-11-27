@@ -1,7 +1,14 @@
 package me.devsaki.hentoid.json.sources;
 
+import androidx.annotation.NonNull;
+
+import com.annimon.stream.Stream;
+
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
+import me.devsaki.hentoid.util.NaturalOrderComparator;
 
 public class HitomiGalleryInfo {
 
@@ -9,7 +16,8 @@ public class HitomiGalleryInfo {
 
     public List<HitomiGalleryPage> getFiles() {
         if (null == files) return Collections.emptyList();
-        else return files;
+            // Sort files by anything that resembles a number inside their names (Hitomi may order the pages wrongly)
+        else return Stream.of(files).sorted(new HitomiPageNameComparator()).toList();
     }
 
     public static class HitomiGalleryPage {
@@ -26,8 +34,14 @@ public class HitomiGalleryInfo {
         }
 
         public String getName() {
-            return name;
+            return (null == name) ? "" : name;
         }
     }
 
+    private static class HitomiPageNameComparator implements Comparator<HitomiGalleryPage> {
+        @Override
+        public int compare(@NonNull HitomiGalleryPage o1, @NonNull HitomiGalleryPage o2) {
+            return new NaturalOrderComparator().compare(o1.getName(), o2.getName());
+        }
+    }
 }

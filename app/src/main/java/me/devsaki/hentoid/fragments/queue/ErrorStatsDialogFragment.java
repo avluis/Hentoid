@@ -177,7 +177,7 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         LogUtil.LogInfo logInfo = createLog();
         DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null)
-            FileHelper.shareFile(requireContext(), logFile, "Error log for queue");
+            FileHelper.shareFile(requireContext(), logFile.getUri(), "Error log for queue");
     }
 
     @Override

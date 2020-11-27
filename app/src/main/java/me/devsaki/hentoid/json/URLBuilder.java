@@ -5,6 +5,7 @@ package me.devsaki.hentoid.json;
  *
  * @deprecated Replaced by {@link me.devsaki.hentoid.services.ImportService} methods; class is kept for retrocompatibilty
  */
+@SuppressWarnings("DeprecatedIsStillUsed") // Shouldn't be used for new devs but still used to ensure retrocompatiblity with old files
 @Deprecated
 public class URLBuilder {
 

@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
  */
 public class QueueActivityBundle {
     private static final String KEY_IS_ERROR = "isError";
-    private static final String KEY_CONTENT_ID = "contentId";
+    private static final String KEY_CONTENT_HASH = "contentHash";
 
     private QueueActivityBundle() {
         throw new UnsupportedOperationException();
@@ -26,8 +26,8 @@ public class QueueActivityBundle {
             bundle.putBoolean(KEY_IS_ERROR, isError);
         }
 
-        public void setContentId(long contentId) {
-            bundle.putLong(KEY_CONTENT_ID, contentId);
+        public void setContentHash(int contentHash) {
+            bundle.putInt(KEY_CONTENT_HASH, contentHash);
         }
 
         public Bundle getBundle() {
@@ -47,8 +47,8 @@ public class QueueActivityBundle {
             return bundle.getBoolean(KEY_IS_ERROR, false);
         }
 
-        public long contentId() {
-            return bundle.getLong(KEY_CONTENT_ID, 0);
+        public int contentHash() {
+            return bundle.getInt(KEY_CONTENT_HASH, 0);
         }
     }
 }

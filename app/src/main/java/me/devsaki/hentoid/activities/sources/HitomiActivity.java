@@ -1,16 +1,20 @@
 package me.devsaki.hentoid.activities.sources;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -20,16 +24,17 @@ import timber.log.Timber;
 public class HitomiActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "hitomi.la";
-    private static final String[] GALLERY_FILTER = {"//hitomi.la/[A-Za-z0-9\\-]+/[^/]+-[0-9]{2,}.html$"};
-    private static final String[] blockedContent = {"hitomi-horizontal.js", "hitomi-vertical.js", "invoke.js", "ion.sound"};
-    private static final String[] jsWhitelist = {"galleries/[A-Za-z0-9\\-]+.js$", "jquery", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap"};
-    private static final String[] blockedJsContents = {"exoloader", "popunder"};
+    private static final String[] GALLERY_FILTER = {"//hitomi.la/[\\w%\\-]+/[^/]+-[0-9]{2,}.html$"};
+    private static final String[] RESULTS_FILTER = {"//hitomi.la[/]{0,1}$", "//hitomi.la[/]{0,1}\\?", "//hitomi.la/search.html", "//hitomi.la/index-[\\w%\\-\\.\\?]+", "//hitomi.la/(series|artist|tag|character)/[\\w%\\-\\.\\?]+"};
+    private static final String[] BLOCKED_CONTENT = {"hitomi-horizontal.js", "hitomi-vertical.js", "invoke.js", "ion.sound"};
+    private static final String[] JS_WHITELIST = {"galleries/[\\w%\\-]+.js$", "jquery", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap"};
+    private static final String[] BLOCKED_JS_CONTENTS = {"exoloader", "popunder"};
 
-    private static List<Pattern> whitelistUrlPattern = new ArrayList<>();
-    private static List<String> jsBlacklistCache = new ArrayList<>();
+    private static final List<Pattern> whitelistUrlPattern = new ArrayList<>();
+    private static final List<String> jsBlacklistCache = new ArrayList<>();
 
     static {
-        for (String s : jsWhitelist) whitelistUrlPattern.add(Pattern.compile(s));
+        for (String s : JS_WHITELIST) whitelistUrlPattern.add(Pattern.compile(s));
     }
 
     Site getStartSite() {
@@ -38,10 +43,29 @@ public class HitomiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        addContentBlockFilter(blockedContent);
+        addContentBlockFilter(BLOCKED_CONTENT);
         CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
+        client.setResultsUrlPatterns(RESULTS_FILTER);
+        client.setResultUrlRewriter(this::rewriteResultsUrl);
         return client;
+    }
+
+    private String rewriteResultsUrl(@NonNull Uri resultsUri, int page) {
+        Uri.Builder builder = resultsUri.buildUpon();
+
+        if (resultsUri.toString().contains("search"))
+            builder.fragment(page + ""); // https://hitomi.la/search.html?<searchTerm>#<page>
+        else {
+            Map<String, String> params = HttpHelper.extractParameters(resultsUri);
+            params.put("page", page + "");
+
+            builder.clearQuery();
+            for (String key : params.keySet())
+                builder.appendQueryParameter(key, params.get(key));
+        }
+
+        return builder.toString();
     }
 
     /**
@@ -67,10 +91,11 @@ public class HitomiActivity extends BaseWebActivity {
         Timber.d(">> examining grey file %s", url);
         try {
             Response response = HttpHelper.getOnlineResource(url, null, getStartSite().canKnowHentoidAgent());
-            if (null == response.body()) throw new IOException("Empty body");
+            ResponseBody body = response.body();
+            if (null == body) throw new IOException("Empty body");
 
-            String jsBody = response.body().string().toLowerCase();
-            for (String s : blockedJsContents)
+            String jsBody = body.string().toLowerCase();
+            for (String s : BLOCKED_JS_CONTENTS)
                 if (jsBody.contains(s)) {
                     jsBlacklistCache.add(url);
                     return true;

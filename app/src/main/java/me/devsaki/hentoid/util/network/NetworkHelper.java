@@ -34,6 +34,12 @@ public class NetworkHelper {
     }
 
 
+    /**
+     * Return the device's current connectivity
+     *
+     * @param context Context to be used
+     * @return Device's current connectivity
+     */
     @SuppressWarnings({"squid:CallToDeprecatedMethod"})
     public static @Connectivity
     int getConnectivity(@NonNull Context context) {
@@ -65,8 +71,14 @@ public class NetworkHelper {
         }
     }
 
+    /**
+     * Get the number of bytes received by the app through networking since device boot.
+     * Counts packets across all network interfaces.
+     *
+     * @param context Context to be used
+     * @return Number of bytes received by the app through networking since device boot.
+     */
     public static long getIncomingNetworkUsage(@NonNull final Context context) {
-        // Get running processes
         ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
         if (null == manager) return -1;
 

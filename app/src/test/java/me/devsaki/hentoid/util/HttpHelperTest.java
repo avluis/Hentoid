@@ -18,4 +18,16 @@ public class HttpHelperTest {
         assertEquals("ext", HttpHelper.getExtensionFromUri("http://aa.bb/a/u.1.ext?k"));
         assertEquals("ext", HttpHelper.getExtensionFromUri("http://aa.bb/a/u.ext?k.ext2"));
     }
+
+    @Test
+    public void fixUrl() {
+        assertEquals("http://abc.com/images", HttpHelper.fixUrl("images", "http://abc.com"));
+        assertEquals("http://abc.com/images", HttpHelper.fixUrl("images", "http://abc.com/"));
+        assertEquals("http://abc.com/images", HttpHelper.fixUrl("/images", "http://abc.com"));
+        assertEquals("http://abc.com/images", HttpHelper.fixUrl("/images", "http://abc.com/"));
+        assertEquals("http://abc.com/images", HttpHelper.fixUrl("http://abc.com/images", "http://abc.com/"));
+        assertEquals("http://abc.com/images", HttpHelper.fixUrl("http://abc.com/images", "http://abc.com"));
+        assertEquals("https://abc.com/images", HttpHelper.fixUrl("//abc.com/images", "http://abc.com/"));
+        assertEquals("https://abc.com/images", HttpHelper.fixUrl("//abc.com/images", "http://abc.com"));
+    }
 }

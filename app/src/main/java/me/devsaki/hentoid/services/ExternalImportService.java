@@ -32,16 +32,20 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.util.ImportHelper.scanArchive;
 import static me.devsaki.hentoid.util.ImportHelper.scanBookFolder;
 import static me.devsaki.hentoid.util.ImportHelper.scanChapterFolders;
+import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
 
 /**
  * Service responsible for importing an external library.
@@ -138,7 +142,7 @@ public class ExternalImportService extends IntentService {
 
             List<Content> library = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
-            scanFolderRecursive(rootFolder, client, new ArrayList<>(), library);
+            scanFolderRecursive(rootFolder, client, new ArrayList<>(), library, dao);
             eventComplete(2, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
@@ -146,7 +150,7 @@ public class ExternalImportService extends IntentService {
             dao.deleteAllExternalBooks();
 
             for (Content content : library) {
-                if (content.getJsonUri().isEmpty()) {
+                if (content.getJsonUri().isEmpty() && !content.isArchive()) {
                     Uri jsonUri = null;
                     try {
                         jsonUri = createJsonFileFor(content, client);
@@ -156,7 +160,7 @@ public class ExternalImportService extends IntentService {
                     }
                     if (jsonUri != null) content.setJsonUri(jsonUri.toString());
                 }
-                dao.insertContent(content);
+                ContentHelper.addContent(this, dao, content);
                 trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;
                 notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, library.size()));
@@ -196,7 +200,8 @@ public class ExternalImportService extends IntentService {
             @NonNull final DocumentFile root,
             @NonNull final ContentProviderClient client,
             @NonNull final List<String> parentNames,
-            @NonNull final List<Content> library) {
+            @NonNull final List<Content> library,
+            @NonNull final CollectionDAO dao) {
         if (parentNames.size() > 4) return; // We've descended too far
 
         String rootName = (null == root.getName()) ? "" : root.getName();
@@ -206,11 +211,15 @@ public class ExternalImportService extends IntentService {
         List<DocumentFile> files = FileHelper.listDocumentFiles(this, root, client);
         List<DocumentFile> subFolders = new ArrayList<>();
         List<DocumentFile> images = new ArrayList<>();
+        List<DocumentFile> archives = new ArrayList<>();
         DocumentFile json = null;
+
+        // Look for the interesting stuff
         for (DocumentFile file : files)
             if (file.getName() != null) {
                 if (file.isDirectory()) subFolders.add(file);
                 else if (ImageHelper.getImageNamesFilter().accept(file.getName())) images.add(file);
+                else if (ArchiveHelper.getArchiveNamesFilter().accept(file.getName())) archives.add(file);
                 else if (file.getName().equals(Consts.JSON_FILE_NAME_V2)) json = file;
             }
 
@@ -221,12 +230,25 @@ public class ExternalImportService extends IntentService {
                 // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
                 int nbPicturesInside = FileHelper.countFiles(subFolders.get(0), client, ImageHelper.getImageNamesFilter());
                 if (nbPicturesInside > 1) {
-                    library.add(scanChapterFolders(this, root, subFolders, client, parentNames, json));
+                    library.add(scanChapterFolders(this, root, subFolders, client, parentNames, dao, json));
                     return;
+                } else {
+                    int nbArchivesInside = FileHelper.countFiles(subFolders.get(0), client, ArchiveHelper.getArchiveNamesFilter());
+                    if (nbArchivesInside > 0) {
+                        List<Content> c = scanForArchives(this, subFolders, client, parentNames);
+                        library.addAll(c);
+                        return;
+                    }
                 }
             }
+        } else if (!archives.isEmpty()) { // We've got an archived book
+            for (DocumentFile archive : archives) {
+                Content c = scanArchive(this, archive, parentNames, StatusContent.EXTERNAL);
+                if (!c.getStatus().equals(StatusContent.IGNORED)) library.add(c);
+            }
+            return;
         } else if (images.size() > 2) { // We've got a book !
-            library.add(scanBookFolder(this, root, client, parentNames, StatusContent.EXTERNAL, images, json));
+            library.add(scanBookFolder(this, root, client, parentNames, StatusContent.EXTERNAL, dao, images, json));
             return;
         }
 
@@ -234,7 +256,7 @@ public class ExternalImportService extends IntentService {
         List<String> newParentNames = new ArrayList<>(parentNames);
         newParentNames.add(rootName);
         for (DocumentFile subfolder : subFolders)
-            scanFolderRecursive(subfolder, client, newParentNames, library);
+            scanFolderRecursive(subfolder, client, newParentNames, library, dao);
     }
 
     @Nullable

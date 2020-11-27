@@ -21,6 +21,7 @@ public class CarouselDecorator {
 
     private int pageCount;
     private OnPageChangeListener onPageChangeListener;
+    private View.OnTouchListener touchListener;
 
     public CarouselDecorator(Context context, @LayoutRes int itemLayout) {
         this.context = context;
@@ -41,6 +42,10 @@ public class CarouselDecorator {
 
     public void setOnPageChangeListener(OnPageChangeListener onPageChangeListener) {
         this.onPageChangeListener = onPageChangeListener;
+    }
+
+    public void setTouchListener(View.OnTouchListener touchListener) {
+        this.touchListener = touchListener;
     }
 
     public void decorate(RecyclerView recyclerView) {
@@ -71,6 +76,7 @@ public class CarouselDecorator {
         public CarouselViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(context);
             View view = inflater.inflate(itemLayout, parent, false);
+            view.setOnTouchListener(touchListener);
             return new CarouselViewHolder(view);
         }
 

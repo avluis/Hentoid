@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -46,14 +49,18 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.ErrorType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -68,7 +75,7 @@ import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH
  */
 public class LibImportDialogFragment extends DialogFragment {
 
-    private static int RQST_PICK_IMPORT_FILE = 4;
+    private static final int RQST_PICK_IMPORT_FILE = 4;
 
     @IntDef({Result.OK, Result.CANCELED, Result.INVALID_FOLDER, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
@@ -86,18 +93,22 @@ public class LibImportDialogFragment extends DialogFragment {
     private ProgressBar progressBar;
     private CheckBox libraryChk;
     private CheckBox queueChk;
+    private CheckBox groupsChk;
+    private CheckBox bookmarksChk;
     private View runBtn;
 
     // Variable used during the selection process
     private Uri selectedFileUri;
 
     // Variable used during the import process
-    private int totalBooks;
+    private CollectionDAO dao;
+    private int totalItems;
     private int currentProgress;
     private int nbSuccess;
     private int queueSize;
+    private int nbBookmarksSuccess = 0;
     private Map<Site, DocumentFile> siteFoldersCache = null;
-    private Map<Site, List<DocumentFile>> bookFoldersCache = new EnumMap<>(Site.class);
+    private final Map<Site, List<DocumentFile>> bookFoldersCache = new EnumMap<>(Site.class);
 
     // Disposable for RxJava
     private Disposable importDisposable = Disposables.empty();
@@ -209,7 +220,7 @@ public class LibImportDialogFragment extends DialogFragment {
 
             JsonContentCollection collection = collectionOptional.get();
             libraryChk = requireViewById(rootView, R.id.import_file_library_chk);
-            int librarySize = collection.getLibrary().size();
+            int librarySize = collection.getLibrary(null).size(); // Don't link the groups, just count the books
             if (librarySize > 0) {
                 libraryChk.setText(getResources().getQuantityString(R.plurals.import_file_library, librarySize, librarySize));
                 libraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
@@ -222,6 +233,20 @@ public class LibImportDialogFragment extends DialogFragment {
                 queueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
                 queueChk.setVisibility(View.VISIBLE);
             }
+            groupsChk = requireViewById(rootView, R.id.import_file_groups_chk);
+            int mGroupsSize = collection.getCustomGroups().size();
+            if (mGroupsSize > 0) {
+                groupsChk.setText(getResources().getQuantityString(R.plurals.import_file_groups, mGroupsSize, mGroupsSize));
+                groupsChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+                groupsChk.setVisibility(View.VISIBLE);
+            }
+            bookmarksChk = requireViewById(rootView, R.id.import_file_bookmarks_chk);
+            int bookmarksSize = collection.getBookmarks().size();
+            if (bookmarksSize > 0) {
+                bookmarksChk.setText(getResources().getQuantityString(R.plurals.import_file_bookmarks, bookmarksSize, bookmarksSize));
+                bookmarksChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+                bookmarksChk.setVisibility(View.VISIBLE);
+            }
             requireViewById(rootView, R.id.import_warning_img).setVisibility(View.VISIBLE);
             requireViewById(rootView, R.id.import_file_help_text).setVisibility(View.VISIBLE);
             runBtn = requireViewById(rootView, R.id.import_run_btn);
@@ -229,14 +254,14 @@ public class LibImportDialogFragment extends DialogFragment {
             runBtn.setEnabled(false);
 
             RadioButton addChk = requireViewById(rootView, R.id.import_mode_add);
-            runBtn.setOnClickListener(v -> runImport(collection, addChk.isChecked(), libraryChk.isChecked(), queueChk.isChecked()));
+            runBtn.setOnClickListener(v -> runImport(collection, addChk.isChecked(), libraryChk.isChecked(), queueChk.isChecked(), groupsChk.isChecked(), bookmarksChk.isChecked()));
         }
     }
 
     // Gray out run button if no option is selected
     // TODO create a custom style to visually gray out the button when it's disabled
     private void refreshDisplay() {
-        runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked());
+        runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked() || bookmarksChk.isChecked());
     }
 
     private Optional<JsonContentCollection> deserialiseJson(@NonNull DocumentFile jsonFile) {
@@ -250,41 +275,84 @@ public class LibImportDialogFragment extends DialogFragment {
         return Optional.of(result);
     }
 
-    private void runImport(@NonNull JsonContentCollection collection, boolean add, boolean importLibrary, boolean importQueue) {
+    private void runImport(
+            @NonNull final JsonContentCollection collection,
+            boolean add,
+            boolean importLibrary,
+            boolean importQueue,
+            boolean importCustomGroups,
+            boolean importBookmarks) {
         requireViewById(rootView, R.id.import_mode).setEnabled(false);
         libraryChk.setEnabled(false);
         queueChk.setEnabled(false);
+        groupsChk.setEnabled(false);
+        bookmarksChk.setEnabled(false);
         runBtn.setVisibility(View.GONE);
         setCancelable(false);
 
-        CollectionDAO dao = new ObjectBoxDAO(requireContext());
+        dao = new ObjectBoxDAO(requireContext());
         if (!add) {
             if (importLibrary) dao.deleteAllInternalBooks(false);
             if (importQueue) dao.deleteAllQueuedBooks();
+            if (importCustomGroups) dao.deleteAllGroups(Grouping.CUSTOM);
+            if (importBookmarks) dao.deleteAllBookmarks();
         }
 
-        List<Content> all = new ArrayList<>();
-        if (importLibrary) all.addAll(collection.getLibrary());
-        if (importQueue) all.addAll(collection.getQueue());
+        if (importBookmarks) {
+            // Don't import bookmarks that have the same URL as existing ones
+            Set<String> existingBookmarkUrls = dao.selectAllBookmarkUrls();
+            List<SiteBookmark> bookmarksToImport = Stream.of(collection.getBookmarks()).filterNot(b -> existingBookmarkUrls.contains(b.getUrl())).toList();
+            dao.insertBookmarks(bookmarksToImport);
+            nbBookmarksSuccess = bookmarksToImport.size();
+        }
 
-        totalBooks = all.size();
-        currentProgress = 0;
-        nbSuccess = 0;
-        progressBar.setMax(totalBooks);
+        List<Content> contentToImport = new ArrayList<>();
+        if (importLibrary) contentToImport.addAll(collection.getLibrary(dao));
+        if (importQueue) contentToImport.addAll(collection.getQueue());
         queueSize = (int) dao.countAllQueueBooks();
 
-        importDisposable = Observable.fromIterable(all)
+        if (importCustomGroups)
+            // Chain group import followed by content import
+            runImportItems(
+                    collection.getCustomGroups(),
+                    dao,
+                    true,
+                    () -> runImportItems(contentToImport, dao, false, this::finish)
+            );
+        else // Run content import alone
+            runImportItems(contentToImport, dao, false, this::finish);
+    }
+
+    private void runImportItems(@NonNull final List<?> items,
+                                @NonNull final CollectionDAO dao,
+                                boolean isGroup,
+                                @NonNull final Runnable onFinish) {
+        totalItems = items.size();
+        currentProgress = 0;
+        nbSuccess = 0;
+        progressBar.setMax(totalItems);
+
+        importDisposable = Observable.fromIterable(items)
                 .observeOn(Schedulers.io())
-                .map(c -> importContent(c, dao))
+                .map(c -> importItem(c, dao))
+                .doOnComplete(() -> {
+                    if (isGroup) GroupHelper.updateGroupsJson(requireContext(), dao);
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        this::nextOK,
-                        this::nextKO,
-                        this::finish
+                        b -> nextOK(isGroup),
+                        e -> nextKO(e, isGroup),
+                        onFinish::run
                 );
     }
 
-    private boolean importContent(@NonNull Content c, CollectionDAO dao) {
+    private boolean importItem(@NonNull final Object o, @NonNull final CollectionDAO dao) {
+        if (o instanceof Content) importContent((Content) o, dao);
+        else if (o instanceof Group) importGroup((Group) o, dao);
+        return true;
+    }
+
+    private void importContent(@NonNull final Content c, @NonNull final CollectionDAO dao) {
         // Try to map the imported content to an existing book in the downloads folder
         // Folder names can be formatted in many ways _but_ they always contain the book unique ID !
         if (null == siteFoldersCache) siteFoldersCache = getSiteFolders();
@@ -292,7 +360,7 @@ public class LibImportDialogFragment extends DialogFragment {
         if (siteFolder != null) mapToContent(c, siteFolder);
         Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
         if (null == duplicate) {
-            long newContentId = dao.insertContent(c);
+            long newContentId = ContentHelper.addContent(requireContext(), dao, c);
             // Insert queued content into the queue
             if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
                 List<QueueRecord> lst = new ArrayList<>();
@@ -300,11 +368,9 @@ public class LibImportDialogFragment extends DialogFragment {
                 dao.updateQueue(lst);
             }
         }
-
-        return true;
     }
 
-    private void mapToContent(@NonNull Content c, @NonNull DocumentFile siteFolder) {
+    private void mapToContent(@NonNull final Content c, @NonNull final DocumentFile siteFolder) {
         List<DocumentFile> bookfolders;
         if (bookFoldersCache.containsKey(c.getSite()))
             bookfolders = bookFoldersCache.get(c.getSite());
@@ -361,19 +427,24 @@ public class LibImportDialogFragment extends DialogFragment {
         return result;
     }
 
-    private void nextOK(boolean dummy) {
+    private void importGroup(@NonNull final Group group, @NonNull final CollectionDAO dao) {
+        if (null == dao.selectGroupByName(Grouping.CUSTOM.getId(), group.name))
+            dao.insertGroup(group);
+    }
+
+    private void nextOK(boolean isGroup) {
         nbSuccess++;
-        updateProgress();
+        updateProgress(isGroup);
     }
 
-    private void nextKO(Throwable e) {
+    private void nextKO(Throwable e, boolean isGroup) {
         Timber.w(e);
-        updateProgress();
+        updateProgress(isGroup);
     }
 
-    private void updateProgress() {
+    private void updateProgress(boolean isGroup) {
         currentProgress++;
-        progressTxt.setText(getResources().getString(R.string.book_progress, currentProgress, totalBooks));
+        progressTxt.setText(getResources().getString(isGroup ? R.string.group_progress : R.string.book_progress, currentProgress, totalItems));
         progressBar.setProgress(currentProgress);
         progressTxt.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.VISIBLE);
@@ -381,9 +452,13 @@ public class LibImportDialogFragment extends DialogFragment {
 
     private void finish() {
         importDisposable.dispose();
-        Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result, nbSuccess, nbSuccess), LENGTH_LONG).show();
+        if (dao != null) dao.cleanup();
+        if (nbSuccess > 0)
+            Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result_books, nbSuccess, nbSuccess), LENGTH_LONG).show();
+        else if (nbBookmarksSuccess > 0)
+            Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result_bookmarks, nbBookmarksSuccess, nbBookmarksSuccess), LENGTH_LONG).show();
 
         // Dismiss after 3s, for the user to be able to see the snackbar
-        new Handler().postDelayed(this::dismiss, 3000);
+        new Handler(Looper.getMainLooper()).postDelayed(this::dismiss, 3000);
     }
 }

@@ -6,8 +6,10 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- Somehow needed by Firebase for reliable local dispatching on non-Google Play devices -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -22,17 +24,17 @@
         android:allowBackup="false"
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
+        android:largeHeap="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/Theme.Light"
         android:requestLegacyExternalStorage="true"
-        android:largeHeap="true"
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.SplashActivity"
-            android:theme="@style/Theme.Light.Splash"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:theme="@style/Theme.Light.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -93,6 +95,12 @@
             android:name=".activities.sources.HentaifoxActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.MrmActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
+            android:name=".activities.sources.ManhwaActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -134,11 +142,11 @@
         <activity
             android:name=".activities.DrawerEditActivity"
             android:label="@string/title_activity_drawer_edit"
-            tools:ignore="UnusedAttribute"/>
+            tools:ignore="UnusedAttribute" />
         <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
-            tools:ignore="UnusedAttribute"/>
+            tools:ignore="UnusedAttribute" />
         <activity
             android:name=".activities.UnlockActivity"
             android:noHistory="true"
@@ -377,6 +385,28 @@
                     android:pathPattern="/gallery/..*/"
                     android:scheme="https" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="myreadingmanga.info"
+                    android:pathPattern="/..*/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="manhwahentai.me"
+                    android:pathPattern="/..*/..*"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <activity
@@ -393,10 +423,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <service android:name=".services.UpdateCheckService" />
-
-        <service android:name=".services.UpdateDownloadService" />
-
         <service android:name=".services.ImportService" />
 
         <service android:name=".services.ExternalImportService" />
@@ -404,6 +430,14 @@
         <service android:name=".services.API29MigrationService" />
 
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
+
+        <receiver android:name=".receiver.ArchiveNotificationSuccessReceiver" />
+
+        <receiver android:name=".receiver.DownloadNotificationPauseReceiver" />
+
+        <receiver android:name=".receiver.InstallRunReceiver" />
+
+        <receiver android:name=".receiver.InstallCompletedReceiver" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -8,7 +8,7 @@
 
     <LinearLayout
         android:id="@+id/changelogReleaseLayout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:colorBackground"
         android:orientation="vertical"
@@ -38,7 +38,7 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/changelogReleaseDescription"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?colorSurface"
             android:orientation="vertical"

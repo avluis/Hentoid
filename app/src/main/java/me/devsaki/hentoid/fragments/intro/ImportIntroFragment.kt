@@ -1,12 +1,15 @@
 package me.devsaki.hentoid.fragments.intro
 
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.include_import_steps.*
@@ -21,7 +24,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-// TODO: 6/23/2018 implement ISlidePolicy to force user to select a storage option
 class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,13 +39,14 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         import_step1_button.setOnClickListener { ImportHelper.openFolderPicker(this, false) }
         import_step1_button.visibility = View.VISIBLE
+
+        skip_btn.setOnClickListener { askSkip() }
     }
 
     // Callback from the directory chooser
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        @ImportHelper.Result val result = ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data)
-        when (result) {
+        when (ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data)) {
             ImportHelper.Result.OK_EMPTY_FOLDER -> nextStep()
             ImportHelper.Result.OK_LIBRARY_DETECTED -> updateOnSelectFolder() // Import service is already launched by the Helper; nothing else to do
             ImportHelper.Result.OK_LIBRARY_DETECTED_ASK -> {
@@ -52,6 +55,8 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             }
             ImportHelper.Result.CANCELED -> Snackbar.make(main, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.INVALID_FOLDER -> Snackbar.make(main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.Result.APP_FOLDER -> Snackbar.make(main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.Result.DOWNLOAD_FOLDER -> Snackbar.make(main, R.string.import_download_folder, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.CREATE_FAIL -> Snackbar.make(main, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show()
             ImportHelper.Result.OTHER -> Snackbar.make(main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
         }
@@ -103,6 +108,19 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 nextStep()
             }
         }
+    }
+
+    private fun askSkip() {
+        val materialDialog: AlertDialog = MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.slide_04_skip_title)
+                .setMessage(R.string.slide_04_skip_msg)
+                .setCancelable(true)
+                .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int -> nextStep() }
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
+
+        materialDialog.setIcon(R.drawable.ic_warning)
+        materialDialog.show()
     }
 
     private fun nextStep() {

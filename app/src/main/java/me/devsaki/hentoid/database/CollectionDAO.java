@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -18,10 +19,14 @@ import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 
@@ -31,8 +36,12 @@ public interface CollectionDAO {
 
     // Low-level operations
 
+    LiveData<PagedList<Content>> selectNoContent();
+
     @Nullable
     Content selectContent(long id);
+
+    List<Content> selectContent(long[] id);
 
     @Nullable
     Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged);
@@ -85,29 +94,64 @@ public interface CollectionDAO {
 
     void deleteAllExternalBooks();
 
+    // Groups
+
+    LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility);
+
+    List<Group> selectGroups(int grouping);
+
+    @Nullable
+    Group selectGroup(long groupId);
+
+    @Nullable
+    Group selectGroupByName(int grouping, @NonNull final String name);
+
+    long countGroupsFor(Grouping grouping);
+
+    LiveData<Integer> countLiveGroupsFor(@NonNull final Grouping grouping);
+
+    long insertGroup(Group group);
+
+    void deleteGroup(long groupId);
+
+    void deleteAllGroups(Grouping grouping);
+
+    void flagAllGroups(Grouping grouping);
+
+    void deleteAllFlaggedGroups();
+
+    long insertGroupItem(GroupItem item);
+
+    List<GroupItem> selectGroupItems(long contentId, Grouping grouping);
+
+    List<GroupItem> selectGroupItemsByDlDate(int minDays, int maxDays);
+
+    void deleteGroupItems(List<Long> groupItemIds);
+
 
     // High-level queries (internal and external locations)
 
     Single<List<Long>> getStoredBookIds(boolean nonFavouriteOnly, boolean includeQueued);
 
-    Single<List<Long>> getRecentBookIds(int orderField, boolean orderDesc, boolean favouritesOnly);
 
-    Single<List<Long>> searchBookIds(String query, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly);
+    Single<List<Long>> getRecentBookIds(long groupId, int orderField, boolean orderDesc, boolean favouritesOnly);
 
-    Single<List<Long>> searchBookIdsUniversal(String query, int orderField, boolean orderDesc, boolean favouritesOnly);
+    Single<List<Long>> searchBookIds(String query, long groupId, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly);
+
+    Single<List<Long>> searchBookIdsUniversal(String query, long groupId, int orderField, boolean orderDesc, boolean favouritesOnly);
 
 
-    LiveData<PagedList<Content>> searchBooksUniversal(String query, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
+    LiveData<PagedList<Content>> getRecentBooks(long groupId, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
-    LiveData<PagedList<Content>> searchBooks(String query, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
+    LiveData<PagedList<Content>> searchBooks(String query, long groupId, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
-    LiveData<PagedList<Content>> getRecentBooks(int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
+    LiveData<PagedList<Content>> searchBooksUniversal(String query, long groupId, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
 
     LiveData<List<Content>> getErrorContent();
 
 
-    LiveData<Integer> countBooks(String query, List<Attribute> metadata, boolean favouritesOnly);
+    LiveData<Integer> countBooks(String query, long groupId, List<Attribute> metadata, boolean favouritesOnly);
 
     LiveData<Integer> countAllBooks();
 
@@ -169,9 +213,30 @@ public interface CollectionDAO {
     void insertSiteHistory(@NonNull Site site, @NonNull String url);
 
 
+    // BOOKMARKS
+
+    long countAllBookmarks();
+
+    List<SiteBookmark> selectAllBookmarks();
+
+    Set<String> selectAllBookmarkUrls();
+
+    List<SiteBookmark> selectBookmarks(@NonNull Site s);
+
+    long insertBookmark(@NonNull SiteBookmark bookmark);
+
+    void insertBookmarks(@NonNull List<SiteBookmark> bookmarks);
+
+    void deleteBookmark(long bookmarkId);
+
+    void deleteAllBookmarks();
+
+
     // RESOURCES
 
     void cleanup();
+
+    long getDbSizeBytes();
 
 
     // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
@@ -182,8 +247,9 @@ public interface CollectionDAO {
 
 
     // RESULTS STRUCTURES
+
+    // This is a dumb struct class, nothing more
     @SuppressWarnings("squid:S1104")
-            // This is a dumb struct class, nothing more
     class AttributeQueryResult {
         public List<Attribute> attributes = new ArrayList<>();
         public long totalSelectedAttributes = 0;

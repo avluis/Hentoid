@@ -105,7 +105,7 @@ public class UnlockActivity extends AppCompatActivity implements UnlockPinDialog
                 finish();
                 return;
             }
-            Class c = Content.getWebActivityClass(Site.searchByCode(siteCode));
+            Class<?> c = Content.getWebActivityClass(Site.searchByCode(siteCode));
             targetIntent = new Intent(HentoidApp.getInstance(), c);
             targetIntent.setAction(Intent.ACTION_VIEW);
         }

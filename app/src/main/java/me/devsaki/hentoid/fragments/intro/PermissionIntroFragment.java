@@ -16,7 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.github.paolorotolo.appintro.ISlidePolicy;
+import com.github.appintro.SlidePolicy;
 import com.google.android.material.snackbar.Snackbar;
 
 import me.devsaki.hentoid.BuildConfig;
@@ -26,7 +26,7 @@ import me.devsaki.hentoid.util.PermissionUtil;
 
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
-public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
+public class PermissionIntroFragment extends Fragment implements SlidePolicy {
 
     private IntroActivity parentActivity;
 
@@ -58,7 +58,8 @@ public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
     }
 
     private void invokeAskPermission() {
-        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PermissionUtil.RQST_STORAGE_PERMISSION);
+        if (parentActivity != null)
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PermissionUtil.RQST_STORAGE_PERMISSION);
     }
 
     @Override

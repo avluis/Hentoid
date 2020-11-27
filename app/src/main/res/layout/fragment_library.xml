@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -30,37 +29,13 @@
 
     <include layout="@layout/include_library_search_sort_bar" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/library_list"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/library_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:paddingStart="@dimen/default_cardview_margin"
-        android:paddingTop="@dimen/default_cardview_margin"
-        android:paddingEnd="@dimen/default_cardview_margin"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@id/pager_background"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/advanced_search_background"
-        tools:listitem="@layout/item_library" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/advanced_search_background" />
 
     <include layout="@layout/include_library_alert_bar" />
-
-    <include layout="@layout/include_library_pager" />
-
-    <TextView
-        android:id="@+id/library_empty_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="150dp"
-        android:gravity="center"
-        android:text="@string/downloads_empty_library"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

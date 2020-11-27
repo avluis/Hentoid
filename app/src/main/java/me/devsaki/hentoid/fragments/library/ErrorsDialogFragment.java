@@ -104,13 +104,12 @@ public class ErrorsDialogFragment extends DialogFragment {
         }
 
         TextView details = rootView.findViewById(R.id.redownload_detail);
-        String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
-        details.setText(message);
+        details.setText(context.getString(R.string.redownload_dialog_message, images, images - imgErrors, imgErrors));
 
         if (content.getErrorLog() != null && !content.getErrorLog().isEmpty()) {
             TextView firstErrorTxt = rootView.findViewById(R.id.redownload_detail_first_error);
             ErrorRecord firstError = content.getErrorLog().get(0);
-            message = String.format("First error : %s", firstError.getType().getName());
+            String message = context.getString(R.string.redownload_first_error, firstError.getType().getName());
             if (!firstError.getDescription().isEmpty())
                 message += String.format(" - %s", firstError.getDescription());
             firstErrorTxt.setText(message);
@@ -149,7 +148,7 @@ public class ErrorsDialogFragment extends DialogFragment {
         LogUtil.LogInfo logInfo = createLog(content);
         DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
         if (logFile != null)
-            FileHelper.shareFile(requireContext(), logFile, "Error log for book ID " + content.getUniqueSiteId());
+            FileHelper.shareFile(requireContext(), logFile.getUri(), "Error log for book ID " + content.getUniqueSiteId());
     }
 
     private void redownload(@NonNull final Content content) {

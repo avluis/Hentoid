@@ -1,0 +1,78 @@
+New
+
+    + Support for myreadingmanga.info (yaoi / bara only)
+    + Support for Manwha hentai
+    + E-hentai / Exhentai : Hentoid now works when the multipage viewer is enabled as default viewer
+    + Web browser : New "page" button on the bottom bar to type a specific page number to navigate to (Hitomi, Nhentai and Hentai Cafe only)
+    + Web browser : torrent files are now opened with your favourite torrent app
+    Web browser : when viewing a book that is present in your library, a new download button appears if the book has been updated with new pages. That allows you to update your download with the new pages.
+    + Web browser : A warning is displayed on a book page if it contains blocked content
+    + Web browser : New bookmarks management dialog
+    + Downloader : Downloads can now be blocked if they contain specific tags that you define (e.g. "scat, guro")
+    + Library screen : Groups are here ! Use the "folder" icon that appears on the left side of the bar with advanced search and the sorting options
+        Auto group by artist
+        Auto group by download date
+        Create your own groups - Select book > Move to group...
+    Library screen : Swipe to delete is back with lowered sensitivity (same as for queue screen)
+    Library screen : Archiving multiple books is now possible (multi-select > "archive" icon)
+    + Library screen : Deleting and archiving progression is now signaled with notifications
+    + Library screen : Language is now displayed with a flag
+    + Library screen : Option to display books on a grid (Nhentai-style with multiple books on a single row)
+    + Library screen / paged mode : Tapping the page number allows you to type a specific page number to navigate to
+    + Library screen : Reading progress is displayed as a circle on the top right corner
+    + Library screen : Submitting an URL to the search bar opens the Hentoid browser if the site is supported
+    + Image viewer : 1s and 0.5s slideshow delays have been added
+    + Image viewer : Browse mode (LTR, TRL, vertical) can now be set and will be remembered for each specific book
+    + Preferences : External library can now be detached
+    Preferences : App logs can now be opened and shared from the app (no need to open the Hentoid folder)
+    + External library : Support for ZIP, EPUB, CBZ, RAR and CBR archives
+
+Changed
+
+    Prevent Hentoid's primary folder to be selected as the external library's folder
+    Prevent the device's download folder to be selected as Hentoid's primary folder
+    Web browser : "Back to gallery" icon updated to something hopefully more explicit
+    + Download notifications now include current download speed, downloaded/estimated size and a pause button
+    Library screen : Left navigation drawer has been redesigned to make the queue always accessible without scrolling
+    Library screen : Archived books now end up in your device's Download folder
+    Library screen : "Delete" icon stays the same, no matter how many books are selected
+    Library screen : Swipe to delete is now youtube-style (swipe to show button, then tap)
+    + Library screen : back button removes active search filter
+    + Library screen : New icon showing a book is part of the external library (left to the site icon)
+    Image viewer : Single "Book settings" screen that leads to apps settings
+    Image viewer : Better display when images or pages are not found
+    Image viewer : Using the "delete" button on the top bar now asks if you want to delete the book or the page
+    + Image viewer : Page stats now display the size of the file
+    + Image viewer : "Fill screen" now works as expected
+    Improve sorting by file name when importing external content
+
+Fixed
+
+    Hitomi : Fix wrong page order on certain books
+    Porncomix : Fix books with duplicate images messing up download integrity controls
+    Fakku downloads : File size is now correctly reported on the library screen for new downloads; refresh your library to fix old downloads
+    Queue screen / errors : Leaving the "redownload from scratch" dialog removes selection
+    Queue screen / errors : Selection still works after reading books
+    Queue screen : Crashes on some devices when items are added or removed
+    Rare cases where books would disappear from the library list when viewed during their download
+    Library screen : Empty covers when importing certain external folders
+    Library screen : Invisible source button on certain non-external books when external books are in the library
+    Library screen : Books won't blink endlessly anymore when restarting the app after closing it in the middle of a delete operation
+    Image viewer : Rotating the device doesn't reset to the first viewed book anymore
+    Image viewer : Deleting the 1st queued book from the image viewer properly cancels its download
+    Image viewer : APNG books animate again after refreshing/reimporting your collection (requires a redownload for bugged books)
+    External library : Images are now sorted in the correct numerical order
+    External library : Hentoid books imported in the external library now have the 'external-library' tag
+    Misc. minor display and navigation issues
+
+
+
+
+The APK can now be installed on Android 11
+E-hentai : Books that are visible only to logged-in users are now detected properly ("no images have been found" error)
+Tag blocker : Blocked tags with multiple words (e.g. "gender bender") are correctly detected
+Queue screen : No crashes when the queue becomes empty
+Queue screen : deleting multiple non-downloaded items with multi-select now deletes all of them
+Library screen : Paged mode pager doesn't cover the bottom of the last card anymore
+
+

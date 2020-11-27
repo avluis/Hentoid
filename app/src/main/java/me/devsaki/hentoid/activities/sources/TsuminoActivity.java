@@ -74,7 +74,7 @@ public class TsuminoActivity extends BaseWebActivity {
                 downloadFabPressed = false;
                 int currentIndex = webView.copyBackForwardList().getCurrentIndex();
                 webView.goBackOrForward(historyIndex - currentIndex);
-                processDownload(false);
+                processDownload(false, false);
             }
         }
     }

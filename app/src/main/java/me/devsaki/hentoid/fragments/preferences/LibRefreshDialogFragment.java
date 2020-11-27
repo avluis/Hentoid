@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
+import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -159,7 +161,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             res -> {
-                                if (ImportHelper.Result.INVALID_FOLDER == res || ImportHelper.Result.CREATE_FAIL == res)
+                                if (ImportHelper.Result.INVALID_FOLDER == res || ImportHelper.Result.CREATE_FAIL == res || ImportHelper.Result.APP_FOLDER == res || ImportHelper.Result.DOWNLOAD_FOLDER == res)
                                     dismiss();
                             },
                             Timber::w
@@ -168,7 +170,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         } else {
             ImportHelper.ImportOptions options = new ImportHelper.ImportOptions();
             options.rename = rename;
-            options.cleanAbsent = cleanAbsent;
+            options.cleanNoJson = cleanAbsent;
             options.cleanNoImages = cleanNoImages;
 
             Uri rootUri = Uri.parse(Preferences.getStorageUri());
@@ -264,6 +266,14 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 Snackbar.make(rootView, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
                 setCancelable(true);
                 break;
+            case ImportHelper.Result.APP_FOLDER:
+                Snackbar.make(rootView, R.string.import_app_folder, BaseTransientBottomBar.LENGTH_LONG).show();
+                setCancelable(true);
+                break;
+            case ImportHelper.Result.DOWNLOAD_FOLDER:
+                Snackbar.make(rootView, R.string.import_download_folder, BaseTransientBottomBar.LENGTH_LONG).show();
+                setCancelable(true);
+                break;
             case ImportHelper.Result.CREATE_FAIL:
                 Snackbar.make(rootView, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show();
                 setCancelable(true);
@@ -299,10 +309,10 @@ public class LibRefreshDialogFragment extends DialogFragment {
     public void onImportEvent(ProcessEvent event) {
         ProgressBar progressBar;
         switch (event.step) {
-            case (2):
+            case (ImportService.STEP_2_BOOK_FOLDERS):
                 progressBar = step2progress;
                 break;
-            case (3):
+            case (ImportService.STEP_3_BOOKS):
                 progressBar = step3progress;
                 break;
             default:
@@ -318,7 +328,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step2Txt.setText(event.elementName);
                 progressBar.setIndeterminate(true);
             }
-            if (3 == event.step) {
+            if (ImportService.STEP_3_BOOKS == event.step) {
                 step2progress.setIndeterminate(false);
                 step2progress.setMax(1);
                 step2progress.setProgress(1);
@@ -326,23 +336,23 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
-            } else if (4 == event.step) {
+            } else if (ImportService.STEP_4_QUEUE == event.step) {
                 step3check.setVisibility(View.VISIBLE);
                 step4block.setVisibility(View.VISIBLE);
             }
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            if (2 == event.step) {
+            if (ImportService.STEP_2_BOOK_FOLDERS == event.step) {
                 step2progress.setIndeterminate(false);
                 step2progress.setMax(1);
                 step2progress.setProgress(1);
                 step2Txt.setVisibility(View.GONE);
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
-            } else if (3 == event.step) {
+            } else if (ImportService.STEP_3_BOOKS == event.step) {
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
                 step3check.setVisibility(View.VISIBLE);
                 step4block.setVisibility(View.VISIBLE);
-            } else if (4 == event.step) {
+            } else if (ImportService.STEP_4_QUEUE == event.step) {
                 step4check.setVisibility(View.VISIBLE);
                 isServiceGracefulClose = true;
                 dismiss();
@@ -360,7 +370,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         if (event.service != ServiceDestroyedEvent.Service.IMPORT) return;
         if (!isServiceGracefulClose) {
             Snackbar.make(rootView, R.string.import_unexpected, BaseTransientBottomBar.LENGTH_LONG).show();
-            new Handler().postDelayed(this::dismiss, 3000);
+            new Handler(Looper.getMainLooper()).postDelayed(this::dismiss, 3000);
         }
     }
 }

@@ -1,15 +1,19 @@
 package me.devsaki.hentoid.util;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Looper;
-import android.util.DisplayMetrics;
+import android.view.View;
 import android.webkit.WebSettings;
 
+import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.annimon.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -39,11 +43,13 @@ public final class Helper {
 
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
 
-    private static int DENSITY_DPI = -1;
 
-    private static FileHelper.NameFilter imageNamesFilter;
-
-
+    /**
+     * Return the given string formatted with a capital letter as its first letter
+     *
+     * @param s String to format
+     * @return Given string formatted with a capital letter as its first letter
+     */
     public static String capitalizeString(String s) {
         if (s == null || s.isEmpty()) return s;
         else if (s.length() == 1) return s.toUpperCase();
@@ -51,7 +57,7 @@ public final class Helper {
     }
 
     /**
-     * Transforms the given int to format with a given length
+     * Transform the given int to format with a given length
      * - If the given length is shorter than the actual length of the string, it will be truncated
      * - If the given length is longer than the actual length of the string, it will be left-padded with the character 0
      *
@@ -71,6 +77,18 @@ public final class Helper {
         return result;
     }
 
+    // TODO doc
+    public static boolean isPresentAsWord(@NonNull final String toDetect, @NonNull final String expression) {
+        String[] words = expression.split("\\W");
+        return Stream.of(words).anyMatch(w -> w.equalsIgnoreCase(toDetect));
+    }
+
+    /**
+     * Decode the given base-64-encoded string
+     *
+     * @param encodedString Base-64 encoded string to decode
+     * @return Decoded string
+     */
     public static String decode64(String encodedString) {
         // Pure Java
         //byte[] decodedBytes = org.apache.commons.codec.binary.Base64.decodeBase64(encodedString);
@@ -79,49 +97,98 @@ public final class Helper {
         return new String(decodedBytes);
     }
 
+    /**
+     * Encode the given base-64-encoded string
+     *
+     * @param rawString Raw string to encode
+     * @return Encoded string
+     */
     public static String encode64(String rawString) {
         return android.util.Base64.encodeToString(rawString.getBytes(), android.util.Base64.DEFAULT);
     }
 
-    public static int dpToPixel(@NonNull final Context context, int dp) {
-        if (-1 == DENSITY_DPI) DENSITY_DPI = context.getResources().getDisplayMetrics().densityDpi;
-        float scaleFactor = (1.0f / DisplayMetrics.DENSITY_DEFAULT) * DENSITY_DPI;
-        return (int) (dp * scaleFactor);
+    /**
+     * Retreives the given dimension value as DP, not pixels
+     *
+     * @param context Context to use to access resources
+     * @param id      Dimension resource ID to get the value from
+     * @return Given dimension value as DP
+     */
+    public static int dimensAsDp(@NonNull final Context context, @DimenRes int id) {
+        return (int) (context.getResources().getDimension(id) / context.getResources().getDisplayMetrics().density);
     }
 
-
+    /**
+     * Create a Collections.List from the given array of primitive values
+     *
+     * @param input Array of primitive values to transform
+     * @return Given values contained in a Collections.List
+     */
     public static List<Long> getListFromPrimitiveArray(long[] input) {
         List<Long> list = new ArrayList<>(input.length);
         for (long n : input) list.add(n);
         return list;
     }
 
+    /**
+     * Create a Collections.List from the given array of primitive values
+     *
+     * @param input Array of primitive values to transform
+     * @return Given values contained in a Collections.List
+     */
     public static List<Integer> getListFromPrimitiveArray(int[] input) {
         List<Integer> list = new ArrayList<>(input.length);
         for (int n : input) list.add(n);
         return list;
     }
 
-    public static long[] getPrimitiveLongArrayFromList(List<Long> integers) {
-        long[] ret = new long[integers.size()];
-        Iterator<Long> iterator = integers.iterator();
+    /**
+     * Create an array of primitive types from the given List of values
+     *
+     * @param input List of values to transform
+     * @return Given values as an array of primitive types
+     */
+    public static long[] getPrimitiveLongArrayFromList(List<Long> input) {
+        long[] ret = new long[input.size()];
+        Iterator<Long> iterator = input.iterator();
         for (int i = 0; i < ret.length; i++) {
             ret[i] = iterator.next();
         }
         return ret;
     }
 
-    // Match a number with optional '-' and decimal.
-    public static boolean isNumeric(String str) {
+    /**
+     * Determine whether the given string represents a numeric value or not
+     *
+     * @param str Value to test
+     * @return True if the given value is numeric (including negative and decimal numbers); false if not
+     */
+    public static boolean isNumeric(@NonNull final String str) {
         Matcher m = NUMERIC_PATTERN.matcher(str);
         return m.matches();
     }
 
+    /**
+     * Inclusively coerce the given value between the given min and max values
+     *
+     * @param value Value to coerce
+     * @param min   Min limit (inclusive)
+     * @param max   Max limit (inclusive)
+     * @return Given value inclusively coerced between the given min and max
+     */
     public static float coerceIn(float value, float min, float max) {
         if (value < min) return min;
         else return Math.min(value, max);
     }
 
+    /**
+     * Duplicate the given InputStream as many times as given
+     *
+     * @param stream           Initial InputStream to duplicate
+     * @param numberDuplicates Number of duplicates to create
+     * @return List containing the given number of duplicated InputStreams
+     * @throws IOException If anything goes wrong during the duplication
+     */
     public static List<InputStream> duplicateInputStream(@Nonnull InputStream stream, int numberDuplicates) throws IOException {
         List<InputStream> result = new ArrayList<>();
 
@@ -138,6 +205,13 @@ public final class Helper {
         return result;
     }
 
+    /**
+     * Copy plain text to the device's clipboard
+     *
+     * @param context Context to be used
+     * @param text    Text to copy
+     * @return True if the copy has succeeded; false if not
+     */
     public static boolean copyPlainTextToClipboard(@NonNull Context context, @NonNull String text) {
         ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
         if (clipboard != null) {
@@ -147,7 +221,13 @@ public final class Helper {
         } else return false;
     }
 
-    // https://stackoverflow.com/a/18603020/8374722
+    /**
+     * Remove all non-printable characters from the given string
+     * https://stackoverflow.com/a/18603020/8374722
+     *
+     * @param s String to cleanup
+     * @return Given string stripped from all its non-printable characters
+     */
     public static String removeNonPrintableChars(@Nullable final String s) {
         if (null == s || s.isEmpty()) return "";
 
@@ -173,18 +253,35 @@ public final class Helper {
         return newString.toString();
     }
 
-    public static String replaceUnicode(@NonNull final String s) {
+    /**
+     * Unescape all escaped characters from the given string (Java convention)
+     *
+     * @param s String to be cleaned up
+     * @return Given string where all escaped characters have been unescaped
+     */
+    public static String replaceEscapedChars(@NonNull final String s) {
         return StringEscapeUtils.unescapeJava(s);
     }
 
-    // Fix for a crash on 5.1.1
-    // https://stackoverflow.com/questions/41025200/android-view-inflateexception-error-inflating-class-android-webkit-webview
-    // As fallback solution _only_ since it breaks other stuff in the webview (choice in SELECT tags for instance)
+    /**
+     * Fix for a crash on 5.1.1
+     * https://stackoverflow.com/questions/41025200/android-view-inflateexception-error-inflating-class-android-webkit-webview
+     * As fallback solution _only_ since it breaks other stuff in the webview (choice in SELECT tags for instance)
+     *
+     * @param context Context to fix
+     * @return Fixed context
+     */
     public static Context getFixedContext(Context context) {
         return context.createConfigurationContext(new Configuration());
     }
 
-    public static int getChromeVersion(Context context) {
+    /**
+     * Get the version of Chrome installed on the device
+     *
+     * @param context Context to be used
+     * @return Version of Chrome installed on the device
+     */
+    public static int getChromeVersion(@NonNull final Context context) {
         String chromeString = "Chrome/";
         String defaultUserAgent = WebSettings.getDefaultUserAgent(context);
         if (defaultUserAgent.contains(chromeString)) {
@@ -195,6 +292,10 @@ public final class Helper {
         } else return -1;
     }
 
+    /**
+     * Crashes if called on the UI thread
+     * To be used as a marker wherever processing in a background thread is mandatory
+     */
     public static void assertNonUiThread() {
         if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
             throw new IllegalStateException("This should not be run on the UI thread");
@@ -220,7 +321,7 @@ public final class Helper {
      * @param ms Duration to format, in milliseconds
      * @return FormattedDuration
      */
-    public static String formatTime(long ms) {
+    public static String formatDuration(long ms) {
         long seconds = (long) Math.floor(ms / 1000f);
         int h = (int) Math.floor(seconds / 3600f);
         int m = (int) Math.floor((seconds - 3600f * h) / 60);
@@ -237,5 +338,24 @@ public final class Helper {
             return hStr + ":" + mStr + ":" + sStr;
         else
             return mStr + ":" + sStr;
+    }
+
+    public static String protect(@Nullable String s) {
+        return (null == s) ? "" : s;
+    }
+
+    public static boolean isValidContextForGlide(final View view) {
+        return isValidContextForGlide(view.getContext());
+    }
+
+    public static boolean isValidContextForGlide(final Context context) {
+        if (context == null) {
+            return false;
+        }
+        if (context instanceof Activity) {
+            final Activity activity = (Activity) context;
+            return !activity.isDestroyed() && !activity.isFinishing();
+        }
+        return true;
     }
 }
