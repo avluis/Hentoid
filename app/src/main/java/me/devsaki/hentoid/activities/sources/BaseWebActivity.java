@@ -178,6 +178,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private MenuItem backMenu;
     private MenuItem forwardMenu;
     private MenuItem seekMenu;
+    private MenuItem languageMenu;
     private MenuItem refreshStopMenu;
     private MenuItem actionMenu;
     // Swipe layout
@@ -298,6 +299,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         // Top toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
+        languageMenu = toolbar.getMenu().findItem(R.id.web_menu_language);
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
 
         bottomToolbar = findViewById(R.id.bottom_navigation);
@@ -316,6 +318,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+        }
+
+        //Hide language button for every site except Hitomi
+        if(!getStartSite().equals(Site.HITOMI)) {
+            languageMenu.setVisible(false);
         }
 
         // Alert banners
@@ -372,6 +379,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 break;
             case R.id.web_menu_bookmark:
                 this.onBookmarkClick();
+                break;
+            case R.id.web_menu_language:
+                this.onLanguageClick();
                 break;
             case R.id.web_menu_refresh_stop:
                 this.onRefreshStopClick();
@@ -655,6 +665,30 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     private void onBookmarkClick() {
         BookmarksDialogFragment.invoke(this, getStartSite(), Helper.protect(webView.getTitle()), Helper.protect(webView.getUrl()));
+    }
+
+    /**
+     * Handler for the "language" button of the browser
+     */
+    private void onLanguageClick() {
+        //only support Hitomi for now
+        if(getStartSite().equals(Site.HITOMI)) {
+
+            //replace last occurence of -all to -english
+
+            String url = webView.getUrl();
+            String partOld = "-all";
+            String partNew = "-english";
+
+            StringBuilder strb = new StringBuilder(url);
+            int index=strb.lastIndexOf(partOld);
+            strb.replace(index,partOld.length()+index,partNew);
+            String newUrl = strb.toString();
+
+            webView.loadUrl(newUrl);
+
+            //webView.reload();
+        }
     }
 
     /**

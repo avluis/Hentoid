@@ -374,6 +374,7 @@
     <string name="web_back">Back</string>
     <string name="web_forward">Forward</string>
     <string name="web_bookmarks">Bookmarks</string>
+    <string name="web_language">Change language</string>
     <string name="web_refresh_stop">Refresh/stop</string>
     <string name="web_open_browser">Open in browser</string>
     <string name="web_download">Download</string>

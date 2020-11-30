@@ -235,7 +235,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         super.onCreate(savedInstanceState);
 
         ExtensionsFactories.INSTANCE.register(new SelectExtensionFactory());
-        //EventBus.getDefault().register(this);
+        EventBus.getDefault().register(this);
         setRetainInstance(true);
     }
 

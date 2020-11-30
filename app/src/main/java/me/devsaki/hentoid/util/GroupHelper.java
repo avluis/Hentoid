@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
+//import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.IOException;
 import java.util.List;
@@ -101,8 +101,8 @@ public final class GroupHelper {
             // even though all the file existence checks are in place
             // ("Failed to determine if primary:.Hentoid/groups.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/groups.json at /storage/emulated/0/.Hentoid/groups.json")
             Timber.e(e);
-            FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
-            crashlytics.recordException(e);
+            //FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+            //crashlytics.recordException(e);
             return false;
         }
         return true;

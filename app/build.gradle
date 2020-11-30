@@ -27,8 +27,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
-        versionCode 158
-        versionName '1.13.1'
+        versionCode 159
+        versionName '1.13.1.1'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -246,10 +246,10 @@ dependencies {
      * ANALYTICS
      */
     // Firebase
-    implementation 'com.google.firebase:firebase-analytics:18.0.0'
+    //implementation 'com.google.firebase:firebase-analytics:18.0.0'
 
     // Crashlytics
-    implementation 'com.google.firebase:firebase-crashlytics:17.3.0'
+    //implementation 'com.google.firebase:firebase-crashlytics:17.3.0'
 
 
     implementation project(path: ':app:customssiv')
