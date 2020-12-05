@@ -1,10 +1,12 @@
 package me.devsaki.hentoid.util.network;
 
+import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 
 import androidx.annotation.NonNull;
 
@@ -21,7 +23,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.BuildConfig;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -36,6 +38,17 @@ public class HttpHelper {
     public static final String HEADER_COOKIE_KEY = "cookie";
     public static final String HEADER_REFERER_KEY = "referer";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
+
+    // User agent parts; initialized at startup
+    // Some security mechanisms do check if Android devices connect with an Android mobile agent
+    public static final String MOBILE_USER_AGENT_PATTERN = "Mozilla/5.0 (Linux; Android \"%s\"; \"%s\") AppleWebKit/537.36 (KHTML, like Gecko) %s Mobile Safari/537.36";
+    // For future use to display sites with desktop layouts
+    public static final String DESKTOP_USER_AGENT_PATTERN = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) %s Safari/537.36";
+
+    public static String defaultUserAgent = null;
+    public static String defaultChromeAgent = null;
+    public static int defaultChromeVersion = -1;
+
 
     private HttpHelper() {
         throw new IllegalStateException("Utility class");
@@ -64,7 +77,7 @@ public class HttpHelper {
      */
     @Nullable
     public static Document getOnlineDocument(String url, List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
-        ResponseBody resource = getOnlineResource(url, headers, useHentoidAgent).body();
+        ResponseBody resource = getOnlineResource(url, headers, true, useHentoidAgent).body();
         if (resource != null) {
             return Jsoup.parse(resource.string());
         }
@@ -80,8 +93,8 @@ public class HttpHelper {
      * @return HTTP response
      * @throws IOException in case something bad happens when trying to access the online resource
      */
-    public static Response getOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
-        Request.Builder requestBuilder = buildRequest(url, headers, useHentoidAgent);
+    public static Response getOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) throws IOException {
+        Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent);
         Request request = requestBuilder.get().build();
         return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
     }
@@ -102,18 +115,18 @@ public class HttpHelper {
             boolean useHentoidAgent,
             @NonNull final String body,
             @NonNull final String mimeType) throws IOException {
-        Request.Builder requestBuilder = buildRequest(url, headers, useHentoidAgent);
+        Request.Builder requestBuilder = buildRequest(url, headers, true, useHentoidAgent);
         Request request = requestBuilder.post(RequestBody.create(body, MediaType.parse(mimeType))).build();
         return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
     }
 
-    private static Request.Builder buildRequest(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useHentoidAgent) {
+    private static Request.Builder buildRequest(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) {
         Request.Builder requestBuilder = new Request.Builder().url(url);
         if (headers != null)
             for (Pair<String, String> header : headers)
                 if (header.second != null)
                     requestBuilder.addHeader(header.first, header.second);
-        requestBuilder.header("User-Agent", useHentoidAgent ? Consts.USER_AGENT : Consts.USER_AGENT_NEUTRAL);
+        requestBuilder.header("User-Agent", useMobileAgent ? getMobileUserAgent(useHentoidAgent) : getDesktopUserAgent(useHentoidAgent));
         return requestBuilder;
     }
 
@@ -356,12 +369,66 @@ public class HttpHelper {
      */
     public static String peekCookies(@NonNull final String url) {
         try {
-            Response response = getOnlineResource(url, null, false);
+            Response response = getOnlineResource(url, null, true, false);
             List<String> cookielist = response.headers().values("Set-Cookie");
             return TextUtils.join("; ", cookielist);
         } catch (IOException e) {
             Timber.e(e);
         }
         return "";
+    }
+
+    // TODO doc
+    public static void initUserAgents(@NonNull final Context context) {
+        String chromeString = "Chrome/";
+        defaultUserAgent = WebSettings.getDefaultUserAgent(context);
+        if (defaultUserAgent.contains(chromeString)) {
+            int chromeIndex = defaultUserAgent.indexOf(chromeString);
+            int spaceIndex = defaultUserAgent.indexOf(' ', chromeIndex);
+            int dotIndex = defaultUserAgent.indexOf('.', chromeIndex);
+            String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
+            defaultChromeVersion = Integer.parseInt(version);
+            defaultChromeAgent = defaultUserAgent.substring(chromeIndex, spaceIndex);
+        }
+        Timber.i("defaultUserAgent = %s", defaultUserAgent);
+        Timber.i("defaultChromeAgent = %s", defaultChromeAgent);
+        Timber.i("defaultChromeVersion = %s", defaultChromeVersion);
+    }
+
+    // TODO doc
+    public static String getMobileUserAgent(boolean withHentoid) {
+        /*
+        if (null == defaultUserAgent)
+            throw new RuntimeException("Call initUserAgents first to initialize them !");
+        String result = String.format(MOBILE_USER_AGENT_PATTERN, Build.VERSION.RELEASE, Build.MODEL, defaultChromeAgent);
+        if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME;
+        return result;
+         */
+        return getDefaultUserAgent(withHentoid);
+    }
+
+    // TODO doc
+    public static String getDesktopUserAgent(boolean withHentoid) {
+        if (null == defaultChromeAgent)
+            throw new RuntimeException("Call initUserAgents first to initialize them !");
+        String result = String.format(DESKTOP_USER_AGENT_PATTERN, defaultChromeAgent);
+        if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME;
+        return result;
+    }
+
+    // TODO doc
+    public static String getDefaultUserAgent(boolean withHentoid) {
+        if (null == defaultUserAgent)
+            throw new RuntimeException("Call initUserAgents first to initialize them !");
+        String result = defaultUserAgent;
+        if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME;
+        return result;
+    }
+
+    // TODO doc
+    public static int getChromeVersion() {
+        if (-1 == defaultChromeVersion)
+            throw new RuntimeException("Call initUserAgents first to initialize them !");
+        return defaultChromeVersion;
     }
 }

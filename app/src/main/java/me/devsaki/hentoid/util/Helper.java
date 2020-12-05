@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Looper;
 import android.view.View;
-import android.webkit.WebSettings;
 
 import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
@@ -273,23 +272,6 @@ public final class Helper {
      */
     public static Context getFixedContext(Context context) {
         return context.createConfigurationContext(new Configuration());
-    }
-
-    /**
-     * Get the version of Chrome installed on the device
-     *
-     * @param context Context to be used
-     * @return Version of Chrome installed on the device
-     */
-    public static int getChromeVersion(@NonNull final Context context) {
-        String chromeString = "Chrome/";
-        String defaultUserAgent = WebSettings.getDefaultUserAgent(context);
-        if (defaultUserAgent.contains(chromeString)) {
-            int chromeIndex = defaultUserAgent.indexOf(chromeString);
-            int dotIndex = defaultUserAgent.indexOf('.', chromeIndex);
-            String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
-            return Integer.parseInt(version);
-        } else return -1;
     }
 
     /**

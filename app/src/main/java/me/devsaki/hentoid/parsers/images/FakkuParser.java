@@ -17,6 +17,7 @@ import me.devsaki.fakku.PageInfo;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.FakkuGalleryMetadata;
 import me.devsaki.hentoid.parsers.ParseHelper;
@@ -66,7 +67,7 @@ public class FakkuParser implements ImageListParser {
         String readUrl = content.getGalleryUrl().replace("www", "books").replace("/hentai", "//hentai") + "/read";
 
         // Get the raw content of the page to detect if it's JSON (no JSON = probably trying to get a premium book with a non-premium account)
-        ResponseBody response = HttpHelper.getOnlineResource(readUrl, headers, false).body();
+        ResponseBody response = HttpHelper.getOnlineResource(readUrl, headers, Site.FAKKU2.useMobileAgent(), Site.FAKKU2.useHentoidAgent()).body();
         if (null == response) throw new IOException("Could not load response");
 
         String rawResource = response.string().trim();

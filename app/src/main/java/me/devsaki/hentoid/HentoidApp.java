@@ -29,7 +29,7 @@ import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ShortcutHelper;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 /**
@@ -109,9 +109,12 @@ public class HentoidApp extends Application {
         // (defaults to Bitmap.Config.RGB_565 if not set)
         CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.ARGB_8888);
 
-        // Init version number on first run
+        // Init version number
         if (0 == Preferences.getLastKnownAppVersionCode())
             Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
+
+        // Init HTTP user agents
+        HttpHelper.initUserAgents(this);
 
         // Firebase
         boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
@@ -133,11 +136,6 @@ public class HentoidApp extends Application {
             } else {
                 startService(intent);
             }
-        }
-
-        // Build Android shortcuts
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            ShortcutHelper.buildShortcuts(this);
         }
 
         // Send stats to Firebase

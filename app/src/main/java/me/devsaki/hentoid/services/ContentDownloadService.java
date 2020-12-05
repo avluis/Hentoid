@@ -691,7 +691,7 @@ public class ContentDownloadService extends IntentService {
                 Request.Method.GET,
                 HttpHelper.fixUrl(img.getUrl(), site.getUrl()),
                 headers,
-                site.canKnowHentoidAgent(),
+                site.useHentoidAgent(),
                 result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal),
                 error -> onRequestError(error, img, dir, backupUrlFinal));
     }

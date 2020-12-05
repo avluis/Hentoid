@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.util.Consts;
 import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -15,7 +14,8 @@ import okhttp3.Request;
 /**
  * Manages a single instance of OkHttpClient per timeout delay
  */
-@SuppressWarnings("squid:S3077") // https://stackoverflow.com/questions/11639746/what-is-the-point-of-making-the-singleton-instance-volatile-while-using-double-l
+@SuppressWarnings("squid:S3077")
+// https://stackoverflow.com/questions/11639746/what-is-the-point-of-making-the-singleton-instance-volatile-while-using-double-l
 public class OkHttpClientSingleton {
 
     private static volatile SparseArray<OkHttpClient> instance = new SparseArray<>();
@@ -54,7 +54,7 @@ public class OkHttpClientSingleton {
     private static okhttp3.Response rewriteUserAgentInterceptor(Interceptor.Chain chain) throws IOException {
         Request request = chain.request()
                 .newBuilder()
-                .header("User-Agent", Consts.USER_AGENT_NEUTRAL)
+                .header("User-Agent", HttpHelper.getMobileUserAgent(false))
                 .build();
         return chain.proceed(request);
     }
