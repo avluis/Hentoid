@@ -119,6 +119,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private long backButtonPressed;
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
+    // TODO doc
+    private int previousSelectedCount = 0;
     // Total number of books in the whole unfiltered library
     private int totalContentCount;
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
@@ -519,7 +521,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         fastAdapter.setHasStableIds(true);
 
         // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onGroupClick(i, p));
+        fastAdapter.setOnClickListener((v, a, i, p) -> onGroupClick(p, i));
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
@@ -527,6 +529,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             selectExtension.setSelectable(true);
             selectExtension.setMultiSelect(true);
             selectExtension.setSelectOnLongClick(true);
+            selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
         }
 
@@ -619,16 +622,15 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      *
      * @param item GroupDisplayItem that has been clicked on
      */
-    private boolean onGroupClick(@NonNull GroupDisplayItem item, int position) {
+    private boolean onGroupClick(int position, @NonNull GroupDisplayItem item) {
         if (selectExtension.getSelectedItems().isEmpty()) {
-            if (!invalidateNextBookClick && item.getGroup() != null && !item.getGroup().isBeingDeleted()) {
+            if (item.getGroup() != null && !item.getGroup().isBeingDeleted()) {
                 topItemPosition = position;
                 activity.get().showBooksInGroup(item.getGroup());
-            } else invalidateNextBookClick = false;
-
+            }
             return true;
-        } else {
-            selectExtension.setSelectOnLongClick(false);
+        } else if (!invalidateNextBookClick) {
+            selectExtension.toggleSelection(position);
         }
         return false;
     }
@@ -638,18 +640,21 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      */
     private void onSelectionChanged() {
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
-        int selectedTotalCount = selectedItems.size();
+        int selectedCount = selectedItems.size();
 
-        if (0 == selectedTotalCount) {
+        if (0 == selectedCount) {
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
-            selectExtension.setSelectOnLongClick(true);
-            invalidateNextBookClick = true;
-            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().count();
-            activity.get().updateSelectionToolbar(selectedTotalCount, selectedLocalCount);
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
+
+        if (1 == selectedCount && 0 == previousSelectedCount) {
+            invalidateNextBookClick = true;
+            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 450);
+        }
+        previousSelectedCount = selectedCount;
     }
 
     /**

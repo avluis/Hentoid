@@ -91,6 +91,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
+    // TODO doc
+    private int previousSelectedCount = 0;
     // Used to show a given item at first display
     private long contentHashToDisplayFirst = -1;
     // Used to start processing when the recyclerView has finished updating
@@ -117,6 +119,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
             selectExtension.setSelectable(true);
             selectExtension.setMultiSelect(true);
             selectExtension.setSelectOnLongClick(true);
+            selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
         }
 
@@ -133,7 +136,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         touchHelper.attachToRecyclerView(recyclerView);
 
         // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
+        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(p, i));
 
         // Fast scroller
         new FastScrollerBuilder(recyclerView).build();
@@ -330,8 +333,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         if (contentItems.isEmpty()) {
             itemAdapter.set(contentItems); // Use set directly when the list is empty or FastAdapter crashes
         } else {
-
-            compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
+            compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems))
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(diffResult -> {
@@ -367,17 +369,17 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         contentHashToDisplayFirst = contentHash;
     }
 
-    private boolean onBookClick(ContentItem item) {
+    private boolean onBookClick(int position, ContentItem item) {
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty()) {
             Content c = item.getContent();
-            if (!invalidateNextBookClick && c != null) {
+            if (c != null) {
                 if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
                     ToastUtil.toast(R.string.err_no_content);
-            } else invalidateNextBookClick = false;
+            }
 
             return true;
-        } else {
-            selectExtension.setSelectOnLongClick(false);
+        } else if (!invalidateNextBookClick) {
+            selectExtension.toggleSelection(position);
         }
         return false;
     }
@@ -454,13 +456,16 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
-            selectExtension.setSelectOnLongClick(true);
-            invalidateNextBookClick = true;
-            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
         }
+
+        if (1 == selectedCount && 0 == previousSelectedCount) {
+            invalidateNextBookClick = true;
+            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 450);
+        }
+        previousSelectedCount = selectedCount;
     }
 
     private void askRedownloadSelectedScratch() {

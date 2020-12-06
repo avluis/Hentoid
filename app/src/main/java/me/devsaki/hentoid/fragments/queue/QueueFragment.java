@@ -122,7 +122,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private ItemTouchHelper touchHelper;
 
     // Download speed calculator
-    private final DownloadSpeedCalculator downloadSpeedCalulator = new DownloadSpeedCalculator();
+    private final DownloadSpeedCalculator downloadSpeedCalculator = new DownloadSpeedCalculator();
 
     // State
     private boolean isPreparingDownload = false;
@@ -132,6 +132,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
+    // TODO doc
+    private int previousSelectedCount = 0;
     // Used to show a given item at first display
     private long contentHashToDisplayFirst = -1;
 
@@ -200,6 +202,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             selectExtension.setSelectable(true);
             selectExtension.setMultiSelect(true);
             selectExtension.setSelectOnLongClick(true);
+            selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
         }
 
@@ -222,7 +225,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         touchHelper.attachToRecyclerView(recyclerView);
 
         // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(i));
+        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(p, i));
 
         initToolbar();
         initSelectionToolbar();
@@ -510,7 +513,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     message.append(" (").append(pagesKO).append(" errors)");
                 if (numberRetries > 0)
                     message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
-                int avgSpeedKbps = (int) downloadSpeedCalulator.getAvgSpeedKbps();
+                int avgSpeedKbps = (int) downloadSpeedCalculator.getAvgSpeedKbps();
                 if (avgSpeedKbps > 0)
                     message.append(String.format(Locale.ENGLISH, " @ %d KBps", avgSpeedKbps));
 
@@ -556,7 +559,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         if (contentItems.isEmpty()) {
             itemAdapter.set(contentItems); // Use set directly when the list is empty or FastAdapter crashes
         } else {
-            compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems, ContentHelper.CONTENT_ITEM_DIFF_CALLBACK, true))
+            compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems))
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(diffResult -> {
@@ -565,12 +568,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     })
             );
         }
-
         updateControlBar();
 
         // Signal swipe-to-cancel though a tooltip
         if (!isEmpty)
-            TooltipUtil.showTooltip(requireContext(), R.string.help_swipe_cancel, ArrowOrientation.BOTTOM, recyclerView, getViewLifecycleOwner());
+            TooltipUtil.showTooltip(
+                    requireContext(), R.string.help_swipe_cancel, ArrowOrientation.BOTTOM, recyclerView,
+                    getViewLifecycleOwner());
     }
 
     private void onContentHashToShowFirstChanged(Integer contentHash) {
@@ -665,31 +669,28 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
     }
 
-    private boolean onBookClick(ContentItem item) {
+    private boolean onBookClick(int position, ContentItem item) {
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty()) {
             Content c = item.getContent();
-            if (!invalidateNextBookClick) {
-                // Process the click
-                if (null == c) {
+            // Process the click
+            if (null == c) {
+                ToastUtil.toast(R.string.err_no_content);
+                return false;
+            }
+            // Retrieve the latest version of the content if storage URI is unknown
+            // (may happen when the item is fetched before it is processed by the downloader)
+            if (c.getStorageUri().isEmpty())
+                c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
+
+            if (c != null) {
+                if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
                     ToastUtil.toast(R.string.err_no_content);
-                    return false;
-                }
-                // Retrieve the latest version of the content if storage URI is unknown
-                // (may happen when the item is fetched before it is processed by the downloader)
-                if (c.getStorageUri().isEmpty())
-                    c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
-
-                if (c != null) {
-                    if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
-                        ToastUtil.toast(R.string.err_no_content);
-                    return true;
-                } else return false;
-            } else invalidateNextBookClick = false;
-
-            return true;
-        } else {
-            selectExtension.setSelectOnLongClick(false);
+                return true;
+            } else return false;
+        } else if (!invalidateNextBookClick) {
+            selectExtension.toggleSelection(position);
         }
+
         return false;
     }
 
@@ -811,7 +812,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void updateNetworkUsage(long bytesReceived) {
-        downloadSpeedCalulator.addSampleNow(bytesReceived);
+        downloadSpeedCalculator.addSampleNow(bytesReceived);
     }
 
     private void initSelectionToolbar() {
@@ -871,13 +872,16 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
-            selectExtension.setSelectOnLongClick(true);
-            invalidateNextBookClick = true;
-            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
         }
+
+        if (1 == selectedCount && 0 == previousSelectedCount) {
+            invalidateNextBookClick = true;
+            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 450);
+        }
+        previousSelectedCount = selectedCount;
     }
 
     /**
