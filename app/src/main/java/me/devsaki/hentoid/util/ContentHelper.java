@@ -209,20 +209,19 @@ public final class ContentHelper {
 
     /**
      * Update the given Content's number of reads in both DB and JSON file
-     *
-     * @param context Context to use for the action
+     *  @param context Context to use for the action
      * @param dao     DAO to use for the action
      * @param content Content to update
-     *                TODO update doc
      */
-    public static void updateContentReads(
+    public static void updateContentReadStats(
             @NonNull Context context,
             @Nonnull CollectionDAO dao,
             @NonNull Content content,
+            @NonNull List<ImageFile> images,
             int targetLastReadPageIndex,
-            @NonNull List<ImageFile> images) {
-        content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
+            boolean updateReads) {
         content.setLastReadPageIndex(targetLastReadPageIndex);
+        if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         dao.insertContent(content);
         dao.replaceImageList(content.getId(), images);
 

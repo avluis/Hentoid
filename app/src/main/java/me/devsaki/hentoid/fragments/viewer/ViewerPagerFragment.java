@@ -83,7 +83,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private ImageViewerViewModel viewModel;
     private int imageIndex = -1; // 0-based image index
-    private int highestImageIndexReached = -1; // To manage "Mark book as read after N pages" pref
     private int maxPosition; // For navigation
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
     private boolean hasGalleryBeenShown = false;
@@ -207,7 +206,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         outState.putBoolean(KEY_SLIDESHOW_ON, (slideshowTimer != null));
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         if (viewModel != null) {
-            viewModel.setStartingIndex(imageIndex); // Memorize the current page
+            viewModel.setReaderStartingIndex(imageIndex); // Memorize the current page
             viewModel.onSaveState(outState);
         }
     }
@@ -249,7 +248,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     // Make sure position is saved when app is closed by the user
     @Override
     public void onStop() {
-        viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
+        viewModel.onLeaveBook(imageIndex);
         if (slideshowTimer != null) slideshowTimer.dispose();
         ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
         super.onStop();
@@ -545,7 +544,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         }
 
         imageIndex = scrollPosition;
-        highestImageIndexReached = Math.max(imageIndex, highestImageIndexReached);
         ImageFile currentImage = adapter.getImageAt(imageIndex);
         if (currentImage != null) viewModel.markPageAsRead(currentImage.getOrder());
 
@@ -767,8 +765,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Load next book
      */
     private void nextBook() {
-        viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
-        highestImageIndexReached = -1;
+        viewModel.onLeaveBook(imageIndex);
         viewModel.loadNextContent();
     }
 
@@ -776,8 +773,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Load previous book
      */
     private void previousBook() {
-        viewModel.onLeaveBook(imageIndex, highestImageIndexReached);
-        highestImageIndexReached = -1;
+        viewModel.onLeaveBook(imageIndex);
         viewModel.loadPreviousContent();
     }
 
@@ -926,7 +922,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void displayGallery(boolean filterFavourites) {
         hasGalleryBeenShown = true;
-        viewModel.setStartingIndex(imageIndex); // Memorize the current page
+        viewModel.setReaderStartingIndex(imageIndex); // Memorize the current page
 
         if (getParentFragmentManager().getBackStackEntryCount() > 0) { // Gallery mode (Library -> gallery -> pager)
             getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
