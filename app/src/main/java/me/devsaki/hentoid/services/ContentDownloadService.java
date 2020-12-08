@@ -852,21 +852,34 @@ public class ContentDownloadService extends IntentService {
                                              boolean hasImageProcessing) throws IOException, UnsupportedContentException {
 
         if (!dir.exists()) {
+            // NB : Should not raise an exception here because that's what happens when some previously queued downloads are completed
+            // after a queued book has been manually deleted (and its folder with it)
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getUri().toString());
             return null;
         }
 
-        byte[] finalBinaryContent = null;
+        byte[] processedBinaryContent = null;
         if (hasImageProcessing && !img.getName().equals(Consts.THUMB_FILE_NAME)) {
             if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty())
-                finalBinaryContent = processImage(img.getDownloadParams(), binaryContent);
+                processedBinaryContent = processImage(img.getDownloadParams(), binaryContent);
             else throw new InvalidParameterException("No processing parameters found");
         }
-        img.setSize((null == finalBinaryContent) ? (null == binaryContent) ? 0 : binaryContent.length : finalBinaryContent.length);
+        binaryContent = (null == processedBinaryContent) ? binaryContent : processedBinaryContent;
+        img.setSize((null == binaryContent) ? 0 : binaryContent.length);
 
+        // Determine the extension of the file
         String fileExt = null;
         String mimeType = null;
-        // Determine the extension of the file
+
+        // Check for picture validity if it's < 1KB (might be plain test or HTML if things have gone wrong... or a small GIF! )
+        if (img.getSize() < 1024 && binaryContent != null) {
+            mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
+            if (mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
+                Timber.w("Small non-image data received from %s", img.getUrl());
+                throw new UnsupportedContentException(String.format("Small non-image data received from %s - data not processed", img.getUrl()));
+            }
+            fileExt = FileHelper.getExtensionFromMimeType(mimeType);
+        }
 
         // Use the Content-type contained in the HTTP headers of the response
         if (null != contentType) {
@@ -885,7 +898,7 @@ public class ContentDownloadService extends IntentService {
         }
         // No extension detected in the URL => Read binary header of the file to detect known formats
         // If PNG, peek into the file to see if it is an animated PNG or not (no other way to do that)
-        if (fileExt.isEmpty() || fileExt.equals("png")) {
+        if (binaryContent != null && (fileExt.isEmpty() || fileExt.equals("png"))) {
             mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
             fileExt = FileHelper.getExtensionFromMimeType(mimeType);
             Timber.d("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
@@ -896,13 +909,13 @@ public class ContentDownloadService extends IntentService {
             mimeType = "image/jpeg";
             Timber.d("Using default extension for %s -> %s", img.getUrl(), fileExt);
         }
-        if (null == mimeType) mimeType = "image/*";
+        if (null == mimeType) mimeType = ImageHelper.MIME_IMAGE_GENERIC;
         img.setMimeType(mimeType);
 
         if (!ImageHelper.isImageExtensionSupported(fileExt))
-            throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - image not processed", fileExt, img.getUrl()));
+            throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - data not processed", fileExt, img.getUrl()));
         else
-            return saveImage(dir, img.getName() + "." + fileExt, mimeType, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
+            return saveImage(dir, img.getName() + "." + fileExt, mimeType, binaryContent);
     }
 
     /**
