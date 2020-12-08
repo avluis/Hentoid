@@ -1,13 +1,13 @@
 package me.devsaki.hentoid.parsers.images
 
+import me.devsaki.fakku.NexusParser
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.json.sources.NexusGallery
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.JsonHelper
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.jsoup.nodes.Document
 import java.util.*
-import kotlin.experimental.xor
 
 class NexusParser2 : BaseParser() {
     override fun parseImages(content: Content): MutableList<String> {
@@ -27,9 +27,10 @@ class NexusParser2 : BaseParser() {
     }
 
     private fun decodePages(code: String): List<String> {
-        val bin: ByteArray = Helper.decode64(code)
-        val result: MutableList<String> = ArrayList()
-        result.add(String(bin))
-        return result
+        val parser = NexusParser()
+        val result = parser.decodePages(code, BuildConfig.FK_TOKEN)
+
+        val json: NexusGallery = JsonHelper.jsonToObject(result, NexusGallery::class.java)
+        return json.toUrls()
     }
 }
