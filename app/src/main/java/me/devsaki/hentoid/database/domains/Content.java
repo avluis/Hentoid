@@ -595,6 +595,10 @@ public class Content implements Serializable {
         return size;
     }
 
+    public void forceSize(long size) {
+        this.size = size;
+    }
+
     public void computeSize() {
         size = getDownloadedPagesSize();
     }

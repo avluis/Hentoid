@@ -126,8 +126,10 @@ public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
         if (imageIndex >= images.size())
             imageIndex = images.size() - 1; // Might happen when deleting the last page
         image = images.get(imageIndex);
+
         String filePath;
-        if (image.getContent().getTarget().isArchive()) {
+        boolean isArchive = image.getContent().getTarget().isArchive();
+        if (isArchive) {
             filePath = image.getUrl();
             int lastSeparator = filePath.lastIndexOf('/');
             String archiveUri = filePath.substring(0, lastSeparator);
@@ -141,7 +143,13 @@ public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
         boolean imageExists = FileHelper.fileExists(requireContext(), Uri.parse(image.getFileUri()));
         if (imageExists) {
             Point dimensions = getImageDimensions(requireContext(), image.getFileUri());
-            String sizeStr = FileHelper.formatHumanReadableSize(image.getSize());
+            String sizeStr;
+            if (image.getSize() > 0) {
+                sizeStr = FileHelper.formatHumanReadableSize(image.getSize());
+            } else {
+                long size = FileHelper.fileSizeFromUri(requireContext(), Uri.parse(image.getFileUri()));
+                sizeStr = FileHelper.formatHumanReadableSize(size);
+            }
             imgStats.setText(String.format(Locale.ENGLISH, "%s x %s (scale %.0f%%) - %s", dimensions.x, dimensions.y, scale * 100, sizeStr));
         } else {
             imgStats.setText(R.string.image_not_found);
@@ -154,7 +162,7 @@ public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
         }
 
         // Don't allow deleting the image if it is archived
-        if (image.getContent().getTarget().isArchive()) {
+        if (isArchive) {
             deleteButton.setImageTintList(ColorStateList.valueOf(grayColor));
             deleteButton.setEnabled(false);
         } else {
