@@ -849,6 +849,14 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         // Editing will always be done in Endless mode
         viewModel.setPagingMethod(isEndless || isEditMode);
 
+        // RecyclerView horizontal centering
+        ViewGroup.LayoutParams layoutParams = recyclerView.getLayoutParams();
+        if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+        else
+            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        recyclerView.setLayoutParams(layoutParams);
+
         // Pager appearance
         if (!isEndless && !isEditMode) {
             pager.setCurrentPage(1);
