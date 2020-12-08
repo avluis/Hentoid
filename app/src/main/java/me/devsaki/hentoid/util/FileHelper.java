@@ -1043,6 +1043,24 @@ public class FileHelper {
         }
     }
 
+    /**
+     * Return the size of the file at the given Uri, in bytes
+     *
+     * @param context Context to be used
+     * @param fileUri Uri to the file whose size to retrieve
+     * @return Size of the file at the given Uri; -1 if it cannot be found
+     */
+    public static long fileSizeFromUri(@NonNull final Context context, @NonNull final Uri fileUri) {
+        if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
+            String path = fileUri.getPath();
+            if (path != null) return new File(path).length();
+        } else {
+            DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
+            if (doc != null) return doc.length();
+        }
+        return -1;
+    }
+
     @FunctionalInterface
     public interface NameFilter {
 
