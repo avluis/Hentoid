@@ -36,7 +36,7 @@ import me.devsaki.hentoid.parsers.images.LusciousParser;
 import me.devsaki.hentoid.parsers.images.ManhwaParser;
 import me.devsaki.hentoid.parsers.images.MrmParser;
 import me.devsaki.hentoid.parsers.images.MusesParser;
-import me.devsaki.hentoid.parsers.images.NexusParser;
+import me.devsaki.hentoid.parsers.images.NexusParser2;
 import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
@@ -121,7 +121,7 @@ public class ContentParserFactory {
             case FAKKU2:
                 return new FakkuParser();
             case NEXUS:
-                return new NexusParser();
+                return new NexusParser2();
             case LUSCIOUS:
                 return new LusciousParser();
             case PORNCOMIX:

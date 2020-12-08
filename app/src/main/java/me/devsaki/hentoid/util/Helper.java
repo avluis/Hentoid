@@ -88,12 +88,12 @@ public final class Helper {
      * @param encodedString Base-64 encoded string to decode
      * @return Decoded string
      */
-    public static String decode64(String encodedString) {
+    public static byte[] decode64(String encodedString) {
         // Pure Java
         //byte[] decodedBytes = org.apache.commons.codec.binary.Base64.decodeBase64(encodedString);
         // Android
-        byte[] decodedBytes = android.util.Base64.decode(encodedString, android.util.Base64.DEFAULT);
-        return new String(decodedBytes);
+        return android.util.Base64.decode(encodedString, android.util.Base64.DEFAULT);
+//        return new String(decodedBytes);
     }
 
     /**

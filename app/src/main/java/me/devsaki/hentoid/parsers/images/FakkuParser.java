@@ -103,7 +103,7 @@ public class FakkuParser implements ImageListParser {
 
         List<PageInfo> pageInfo = null;
         if (info.getKeyData() != null)
-            pageInfo = FakkuDecode.getBookPageData(info.getKeyHash(), Helper.decode64(info.getKeyData()), pid, BuildConfig.FK_TOKEN);
+            pageInfo = FakkuDecode.getBookPageData(info.getKeyHash(), new String(Helper.decode64(info.getKeyData())), pid, BuildConfig.FK_TOKEN);
         progress.advance();
 
         result = new ArrayList<>();
