@@ -150,6 +150,16 @@ public class ExternalImportService extends IntentService {
             dao.deleteAllExternalBooks();
 
             for (Content content : library) {
+
+                // If the same location is already in the DB, that means the user is trying to import
+                // a subfolder of the Hentoid main folder (yes, it has happened) => ignore these books
+                Content existingDuplicate = dao.selectContentByFolderUri(content.getStorageUri(), false);
+                if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
+                    booksKO++;
+                    trace(Log.INFO, 1, log, "Import book KO! (folder already in collection) : %s", content.getStorageUri());
+                    continue;
+                }
+
                 if (content.getJsonUri().isEmpty() && !content.isArchive()) {
                     Uri jsonUri = null;
                     try {
