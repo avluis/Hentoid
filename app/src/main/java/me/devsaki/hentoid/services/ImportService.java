@@ -219,7 +219,7 @@ public class ImportService extends IntentService {
                 }
 
                 // Find the corresponding flagged book in the library
-                Content existingFlaggedContent = dao.selectContentByFolderUri(bookFolder.getUri().toString(), true);
+                Content existingFlaggedContent = dao.selectContentByStorageUri(bookFolder.getUri().toString(), true);
 
                 // Detect JSON and try to parse it
                 try {

@@ -267,8 +267,8 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Nullable
-    public Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged) {
-        return db.selectContentByFolderUri(folderUri, onlyFlagged);
+    public Content selectContentByStorageUri(@NonNull final String folderUri, boolean onlyFlagged) {
+        return db.selectContentByStorageUri(folderUri, onlyFlagged);
     }
 
     public long insertContent(@NonNull final Content content) {
