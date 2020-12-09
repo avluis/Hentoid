@@ -68,6 +68,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         import_step1_check.visibility = View.VISIBLE
         import_step2.visibility = View.VISIBLE
         import_step2_bar.isIndeterminate = true
+        skip_btn.visibility = View.INVISIBLE
     }
 
     private fun onCancelExistingLibraryDialog() {
@@ -76,6 +77,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         import_step1_folder.text = ""
         import_step1_check.visibility = View.INVISIBLE
         import_step2.visibility = View.INVISIBLE
+        skip_btn.visibility = View.VISIBLE
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -126,5 +128,6 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     private fun nextStep() {
         val parentActivity = context as IntroActivity
         parentActivity.nextStep()
+        skip_btn.visibility = View.VISIBLE
     }
 }
