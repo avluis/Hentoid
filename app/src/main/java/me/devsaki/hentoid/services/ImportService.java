@@ -13,9 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
-import com.annimon.stream.Optional;
-import com.annimon.stream.Stream;
-
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
@@ -260,26 +257,16 @@ public class ImportService extends IntentService {
                             }
                         }
 
-                        // Attach file Uri's to the book's images
+                        // Attach image file Uri's to the book's images
                         List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, imageNames);
-                        if (!imageFiles.isEmpty()) { // No images described in the JSON -> recreate them
+                        if (!imageFiles.isEmpty()) {
+                            // No images described in the JSON -> recreate them
                             if (contentImages.isEmpty()) {
                                 contentImages = ContentHelper.createImageListFromFiles(imageFiles);
                                 content.setImageFiles(contentImages);
                                 content.getCover().setUrl(content.getCoverImageUrl());
                             } else { // Existing images described in the JSON -> map them
                                 contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
-                                // If no cover is defined, get it too
-                                if (StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) {
-                                    Optional<DocumentFile> file = Stream.of(imageFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
-                                    if (file.isPresent()) {
-                                        ImageFile cover = new ImageFile(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
-                                        cover.setName(Consts.THUMB_FILE_NAME);
-                                        cover.setFileUri(file.get().getUri().toString());
-                                        cover.setIsCover(true);
-                                        contentImages.add(0, cover);
-                                    }
-                                }
                                 content.setImageFiles(contentImages);
                             }
                         }

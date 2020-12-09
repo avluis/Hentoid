@@ -57,6 +57,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LanguageHelper;
@@ -347,9 +348,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         private void attachCover(@NonNull final Content content) {
             String thumbLocation = "";
-            if (content.getCover().getStatus().equals(StatusContent.DOWNLOADED) || content.getCover().getStatus().equals(StatusContent.MIGRATED) || content.getCover().getStatus().equals(StatusContent.EXTERNAL))
-                thumbLocation = content.getCover().getFileUri();
-            if (thumbLocation.isEmpty()) thumbLocation = content.getCover().getUrl();
+            ImageFile cover = content.getCover();
+            if (Helper.getListFromPrimitiveArray(ContentHelper.getLibraryStatuses()).contains(cover.getStatus().getCode()))
+                thumbLocation = cover.getFileUri();
+            if (thumbLocation.isEmpty()) thumbLocation = cover.getUrl();
             if (thumbLocation.isEmpty()) thumbLocation = content.getCoverImageUrl();
 
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)

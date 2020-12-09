@@ -673,19 +673,30 @@ public final class ContentHelper {
     public static List<ImageFile> matchFilesToImageList(@NonNull final List<DocumentFile> files, @NonNull final List<ImageFile> images) {
         Map<String, ImmutablePair<String, Long>> fileNameProperties = new HashMap<>(files.size());
         List<ImageFile> result = new ArrayList<>();
+        boolean coverFound = false;
 
+        // Put file names into a Map to speed up the lookup
         for (DocumentFile file : files)
             fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
 
+        // Look up similar names between images and file names
         for (ImageFile img : images) {
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
             if (fileNameProperties.containsKey(imgName)) {
                 ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
-                if (property != null)
-                    result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED).setIsCover(imgName.equals(Consts.THUMB_FILE_NAME)));
+                if (property != null) {
+                    if (imgName.equals(Consts.THUMB_FILE_NAME)) {
+                        coverFound = true;
+                        img.setIsCover(true);
+                    }
+                    result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
+                }
             } else
                 Timber.i(">> img dropped %s", imgName);
         }
+
+        // If no thumb found, set the 1st image as cover
+        if (!coverFound && !result.isEmpty()) result.get(0).setIsCover(true);
         return result;
     }
 
@@ -730,17 +741,23 @@ public final class ContentHelper {
         Helper.assertNonUiThread();
         List<ImageFile> result = new ArrayList<>();
         int order = startingOrder;
+        boolean coverFound = false;
         // Sort files by anything that resembles a number inside their names
         List<DocumentFile> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberFileComparator()).collect(toList());
         for (DocumentFile f : fileList) {
             String name = namePrefix + ((f.getName() != null) ? f.getName() : "");
             ImageFile img = new ImageFile();
-            if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
+            if (name.startsWith(Consts.THUMB_FILE_NAME)) {
+                coverFound = true;
+                img.setIsCover(true);
+            }
             else order++;
             img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.getUri().toString()).setStatus(targetStatus).setFileUri(f.getUri().toString()).setSize(f.length());
             img.setMimeType(FileHelper.getMimeTypeFromFileName(name));
             result.add(img);
         }
+        // If no thumb found, set the 1st image as cover
+        if (!coverFound && !result.isEmpty()) result.get(0).setIsCover(true);
         return result;
     }
 
