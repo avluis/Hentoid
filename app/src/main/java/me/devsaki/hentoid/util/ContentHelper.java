@@ -536,6 +536,8 @@ public final class ContentHelper {
         if (truncLength > 0 && titleLength + suffix.length() > truncLength)
             result = result.substring(0, truncLength - suffix.length() - 1);
 
+        // We always add the unique ID at the end of the folder name to avoid collisions between two books with the same title from the same source
+        // (e.g. different scans, different languages)
         result += suffix;
 
         return result;
