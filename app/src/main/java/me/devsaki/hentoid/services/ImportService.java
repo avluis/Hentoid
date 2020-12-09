@@ -231,7 +231,8 @@ public class ImportService extends IntentService {
                         Content existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
                         if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
                             booksKO++;
-                            trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book KO! (already in queue) : %s", bookFolder.getUri().toString());
+                            String location = ContentHelper.isInQueue(existingDuplicate.getStatus()) ? "queue" : "collection";
+                            trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book KO! (already in " + location + ") : %s", bookFolder.getUri().toString());
                             continue;
                         }
 

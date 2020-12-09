@@ -853,8 +853,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
         Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
 
-        boolean isInCollection = (contentDB != null && Helper.getListFromPrimitiveArray(ContentHelper.getLibraryStatuses()).contains(contentDB.getStatus().getCode()));
-        boolean isInQueue = (contentDB != null && Helper.getListFromPrimitiveArray(ContentHelper.getQueueStatuses()).contains(contentDB.getStatus().getCode()));
+        boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
+        boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
 
         if (!isInCollection && !isInQueue) {
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB

@@ -267,8 +267,10 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Nullable
-    public Content selectContentByStorageUri(@NonNull final String folderUri, boolean onlyFlagged) {
-        return db.selectContentByStorageUri(folderUri, onlyFlagged);
+    public Content selectContentByStorageUri(@NonNull final String storageUri, boolean onlyFlagged) {
+        // Select only the "document" part of the URI, as the "tree" part can vary
+        String docPart = storageUri.substring(storageUri.indexOf("/document/"));
+        return db.selectContentEndWithStorageUri(docPart, onlyFlagged);
     }
 
     public long insertContent(@NonNull final Content content) {

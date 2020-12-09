@@ -150,13 +150,25 @@ public class ExternalImportService extends IntentService {
             dao.deleteAllExternalBooks();
 
             for (Content content : library) {
-
-                // If the same location is already in the DB, that means the user is trying to import
+                // If the same book folder is already in the DB, that means the user is trying to import
                 // a subfolder of the Hentoid main folder (yes, it has happened) => ignore these books
+                String duplicateOrigin = "folder";
                 Content existingDuplicate = dao.selectContentByStorageUri(content.getStorageUri(), false);
+
+                // The very same book may also exist in the DB under a different folder,
+                if (null == existingDuplicate) {
+                    existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
+                    // Ignore the duplicate if it is queued; we do prefer to import a full book
+                    if (existingDuplicate != null) {
+                        if (ContentHelper.isInQueue(existingDuplicate.getStatus()))
+                            existingDuplicate = null;
+                        else duplicateOrigin = "book";
+                    }
+                }
+
                 if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
                     booksKO++;
-                    trace(Log.INFO, 1, log, "Import book KO! (folder already in collection) : %s", content.getStorageUri());
+                    trace(Log.INFO, 1, log, "Import book KO! (" + duplicateOrigin + " already in collection) : %s", content.getStorageUri());
                     continue;
                 }
 

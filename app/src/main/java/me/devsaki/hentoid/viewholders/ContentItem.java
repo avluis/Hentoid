@@ -347,10 +347,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         }
 
         private void attachCover(@NonNull final Content content) {
-            String thumbLocation = "";
             ImageFile cover = content.getCover();
-            if (Helper.getListFromPrimitiveArray(ContentHelper.getLibraryStatuses()).contains(cover.getStatus().getCode()))
-                thumbLocation = cover.getFileUri();
+            String thumbLocation = "";
+            if (ContentHelper.isInLibrary(cover.getStatus())) thumbLocation = cover.getFileUri();
             if (thumbLocation.isEmpty()) thumbLocation = cover.getUrl();
             if (thumbLocation.isEmpty()) thumbLocation = content.getCoverImageUrl();
 

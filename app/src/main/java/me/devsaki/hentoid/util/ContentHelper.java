@@ -79,8 +79,16 @@ public final class ContentHelper {
         return libraryStatus;
     }
 
+    public static boolean isInLibrary(@NonNull final StatusContent status) {
+        return Helper.getListFromPrimitiveArray(libraryStatus).contains(status.getCode());
+    }
+
     public static int[] getQueueStatuses() {
         return queueStatus;
+    }
+
+    public static boolean isInQueue(@NonNull final StatusContent status) {
+        return Helper.getListFromPrimitiveArray(queueStatus).contains(status.getCode());
     }
 
     /**
@@ -209,7 +217,8 @@ public final class ContentHelper {
 
     /**
      * Update the given Content's number of reads in both DB and JSON file
-     *  @param context Context to use for the action
+     *
+     * @param context Context to use for the action
      * @param dao     DAO to use for the action
      * @param content Content to update
      */
@@ -750,8 +759,7 @@ public final class ContentHelper {
             if (name.startsWith(Consts.THUMB_FILE_NAME)) {
                 coverFound = true;
                 img.setIsCover(true);
-            }
-            else order++;
+            } else order++;
             img.setName(FileHelper.getFileNameWithoutExtension(name)).setOrder(order).setUrl(f.getUri().toString()).setStatus(targetStatus).setFileUri(f.getUri().toString()).setSize(f.length());
             img.setMimeType(FileHelper.getMimeTypeFromFileName(name));
             result.add(img);
