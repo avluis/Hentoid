@@ -38,10 +38,6 @@ dependencies {
     // v1.3.2 is bugged when loading large PNGs through Glide
     implementation 'androidx.exifinterface:exifinterface:1.2.0'
 
-    testImplementation 'junit:junit:4.13.1'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-
     // Timber (Extensible Logger): github.com/JakeWharton/timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
