@@ -942,6 +942,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void setSystemBarsVisible(boolean visible) {
         int uiOptions;
+        // TODO wait until androidx.core is out of alpha and use WindowCompat (see https://stackoverflow.com/questions/62643517/immersive-fullscreen-on-android-11)
         if (visible) {
             uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
