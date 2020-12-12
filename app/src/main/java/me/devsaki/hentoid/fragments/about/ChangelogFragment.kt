@@ -2,15 +2,17 @@ package me.devsaki.hentoid.fragments.about
 
 import android.content.Context
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
-import kotlinx.android.synthetic.main.fragment_changelog.*
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.databinding.FragmentChangelogBinding
 import me.devsaki.hentoid.services.UpdateDownloadService
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem
 import me.devsaki.hentoid.viewmodels.ChangelogViewModel
@@ -20,12 +22,26 @@ import java.util.*
 // TODO - invisible init while loading
 class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
 
+    private var _binding: FragmentChangelogBinding? = null
+    private val binding get() = _binding!!
+
     private val viewModel by viewModels<ChangelogViewModel>()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        toolbar.setNavigationOnClickListener { requireActivity().onBackPressed() }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = FragmentChangelogBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        changelogRecycler.setHasFixedSize(true)
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        binding.toolbar.setNavigationOnClickListener { requireActivity().onBackPressed() }
+
+        binding.changelogRecycler.setHasFixedSize(true)
 
         // TODO - observe update availability through event bus instead of parsing changelog
         viewModel.successValueLive.observe(viewLifecycleOwner) { releasesInfo ->
@@ -42,15 +58,15 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
             }
             val itemAdapter = ItemAdapter<GitHubReleaseItem>()
             itemAdapter.add(releases)
-            changelogRecycler.adapter = FastAdapter.with(itemAdapter)
+            binding.changelogRecycler.adapter = FastAdapter.with(itemAdapter)
             if (releasesInfo.size > releases.size) {
-                changelogDownloadLatestText.text = getString(R.string.get_latest, latestTagName)
-                changelogDownloadLatestText.visibility = View.VISIBLE
-                changelogDownloadLatestButton.visibility = View.VISIBLE
+                binding.changelogDownloadLatestText.text = getString(R.string.get_latest, latestTagName)
+                binding.changelogDownloadLatestText.visibility = View.VISIBLE
+                binding.changelogDownloadLatestButton.visibility = View.VISIBLE
 
                 // TODO these 2 should be in a container layout which should be used for click listeners
-                changelogDownloadLatestText.setOnClickListener { onDownloadClick(view.context, latestApkUrl) }
-                changelogDownloadLatestButton.setOnClickListener { onDownloadClick(view.context, latestApkUrl) }
+                binding.changelogDownloadLatestText.setOnClickListener { onDownloadClick(view.context, latestApkUrl) }
+                binding.changelogDownloadLatestButton.setOnClickListener { onDownloadClick(view.context, latestApkUrl) }
             }
             // TODO show RecyclerView
         }

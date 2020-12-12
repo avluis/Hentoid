@@ -3,9 +3,9 @@ package me.devsaki.hentoid.activities
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import kotlinx.android.synthetic.main.activity_about.*
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.databinding.ActivityAboutBinding
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.fragments.about.ChangelogFragment
 import me.devsaki.hentoid.fragments.about.LicensesFragment
@@ -19,26 +19,29 @@ import org.greenrobot.eventbus.ThreadMode
 
 class AboutActivity : BaseActivity() {
 
+    private lateinit var binding: ActivityAboutBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         ThemeHelper.applyTheme(this)
 
-        setContentView(R.layout.activity_about)
+        binding = ActivityAboutBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        toolbar.setNavigationOnClickListener { onBackPressed() }
+        binding.toolbar.setNavigationOnClickListener { onBackPressed() }
 
-        appLogo.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB_WIKI) }
-        githubText.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB) }
-        discordText.setOnClickListener { startBrowserActivity(Consts.URL_DISCORD) }
-        redditText.setOnClickListener { startBrowserActivity(Consts.URL_REDDIT) }
+        binding.appLogo.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB_WIKI) }
+        binding.githubText.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB) }
+        binding.discordText.setOnClickListener { startBrowserActivity(Consts.URL_DISCORD) }
+        binding.redditText.setOnClickListener { startBrowserActivity(Consts.URL_REDDIT) }
 
-        tv_version_name.text = getString(R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
-        tv_chrome_version_name.text = getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
+        binding.tvVersionName.text = getString(R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+        binding.tvChromeVersionName.text = getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
 
-        changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
+        binding.changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
 
-        licensesButton.setOnClickListener { showFragment(LicensesFragment()) }
+        binding.licensesButton.setOnClickListener { showFragment(LicensesFragment()) }
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
     }
@@ -52,7 +55,7 @@ class AboutActivity : BaseActivity() {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onUpdateEvent(event: UpdateEvent) {
-        if (event.hasNewVersion) changelogButton.setText(R.string.view_changelog_flagged)
+        if (event.hasNewVersion) binding.changelogButton.setText(R.string.view_changelog_flagged)
     }
 
     override fun onDestroy() {

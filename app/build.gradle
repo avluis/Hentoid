@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.sonarqube'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -38,6 +37,9 @@ android {
 
         renderscriptTargetApi 21
         renderscriptSupportModeEnabled false
+    }
+    buildFeatures {
+        viewBinding true
     }
     buildTypes {
         debug {
