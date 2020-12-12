@@ -913,6 +913,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
+                .setOnCancelListener(dialog -> selectExtension.deselect())
                 .create().show();
     }
 }

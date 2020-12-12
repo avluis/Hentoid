@@ -575,6 +575,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
+                .setOnCancelListener(dialog -> selectExtension.deselect())
                 .create().show();
     }
 }

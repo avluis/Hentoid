@@ -872,6 +872,7 @@ public class LibraryActivity extends BaseActivity {
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
+                .setOnCancelListener(dialog -> selectExtension.deselect())
                 .create().show();
     }
 
