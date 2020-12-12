@@ -128,6 +128,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private boolean isPreparingDownload = false;
     private boolean isPaused = false;
     private boolean isEmpty = false;
+    // Indicate if the fragment is currently canceling all items
+    private boolean isCancelingAll = false;
 
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
@@ -438,6 +440,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 update(event.eventType);
                 break;
             default: // EV_PAUSE, EV_CANCEL
+                // Don't update the UI if it is in the process of canceling all items
+                if (isCancelingAll) return;
                 dlPreparationProgressBar.setVisibility(View.GONE);
                 updateProgressFirstItem(true);
                 update(event.eventType);
@@ -550,6 +554,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         Timber.d(">>Queue changed ! Size=%s", result.size());
         isEmpty = (result.isEmpty());
         isPaused = (!isEmpty && (ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
+
+        // Don't process changes while everything is being canceled, it usually kills the UI as too many changes are processed at the same time
+        if (isCancelingAll && !isEmpty) return;
 
         // Update list visibility
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
@@ -695,18 +702,20 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void onCancelBook(@NonNull Content c) {
-        viewModel.cancel(Stream.of(c).toList(), this::onDeleteError, this::onDeleteSuccess);
+        viewModel.cancel(Stream.of(c).toList(), this::onDeleteError, this::onDeleteComplete);
     }
 
     private void onCancelBooks(@NonNull List<Content> c) {
-        viewModel.cancel(c, this::onDeleteError, this::onDeleteSuccess);
+        viewModel.cancel(c, this::onDeleteError, this::onDeleteComplete);
     }
 
     private void onCancelAll() {
-        viewModel.cancelAll(this::onDeleteError, this::onDeleteSuccess);
+        isCancelingAll = true;
+        viewModel.cancelAll(this::onDeleteError, this::onDeleteComplete);
     }
 
-    private void onDeleteSuccess() {
+    private void onDeleteComplete() {
+        isCancelingAll = false;
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }
@@ -716,6 +725,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      */
     private void onDeleteError(Throwable t) {
         Timber.e(t);
+        isCancelingAll = false;
         if (t instanceof ContentNotRemovedException) {
             String message = (null == t.getMessage()) ? "Content removal failed" : t.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
