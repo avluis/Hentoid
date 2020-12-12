@@ -97,6 +97,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     private long contentHashToDisplayFirst = -1;
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
+    // Indicate if the fragment is currently canceling all items
+    private boolean isDeletingAll = false;
 
 
     @Override
@@ -325,6 +327,9 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     private void onErrorsChanged(List<Content> result) {
         Timber.i(">>Errors changed ! Size=%s", result.size());
 
+        // Don't process changes while everything is being canceled, it usually kills the UI as too many changes are processed at the same time
+        if (isDeletingAll && !result.isEmpty()) return;
+
         // Update list visibility
         mEmptyText.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
 
@@ -385,14 +390,16 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     }
 
     private void onDeleteBook(@NonNull Content c) {
-        viewModel.remove(Stream.of(c).toList(), this::onDeleteError, this::onDeleteSuccess);
+        viewModel.remove(Stream.of(c).toList(), this::onDeleteError, this::onDeleteComplete);
     }
 
     private void onDeleteBooks(@NonNull List<Content> c) {
-        viewModel.remove(c, this::onDeleteError, this::onDeleteSuccess);
+        isDeletingAll = true;
+        viewModel.remove(c, this::onDeleteError, this::onDeleteComplete);
     }
 
-    private void onDeleteSuccess() {
+    private void onDeleteComplete() {
+        isDeletingAll = false;
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }
@@ -401,6 +408,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
      * Callback for the failure of the "delete item" action
      */
     private void onDeleteError(Throwable t) {
+        isDeletingAll = false;
         Timber.e(t);
         if (t instanceof ContentNotRemovedException) {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
