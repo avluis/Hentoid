@@ -55,16 +55,21 @@
         app:layout_constraintTop_toTopOf="@id/advanced_search_background"
         tools:visibility="gone" />
 
-    <TextView
+    <ImageView
         android:id="@+id/search_clear_btn"
-        style="@style/TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="@string/downloads_filter_clear"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="4dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_cancel"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/advanced_search_background"
+        app:layout_constraintBottom_toBottomOf="@id/advanced_search_background"
+        tools:ignore="ContentDescription"
         tools:visibility="gone" />
 
     <ImageView

@@ -113,7 +113,7 @@ public class LibraryActivity extends BaseActivity {
     // Show artists / groups button
     private TextView showArtistsGroupsButton;
     // CLEAR button
-    private TextView searchClearButton;
+    private View searchClearButton;
     // Sort direction button
     private ImageView sortDirectionButton;
     // Sort field button
