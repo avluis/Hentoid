@@ -63,6 +63,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
@@ -299,13 +300,7 @@ public class LibImportDialogFragment extends DialogFragment {
             if (importBookmarks) dao.deleteAllBookmarks();
         }
 
-        if (importBookmarks) {
-            // Don't import bookmarks that have the same URL as existing ones
-            Set<SiteBookmark> existingBookmarkUrls = new HashSet<>(dao.selectAllBookmarks());
-            List<SiteBookmark> bookmarksToImport = Stream.of(collection.getBookmarks()).filterNot(existingBookmarkUrls::contains).toList();
-            dao.insertBookmarks(bookmarksToImport);
-            nbBookmarksSuccess = bookmarksToImport.size();
-        }
+        if (importBookmarks) nbBookmarksSuccess = ImportHelper.importBookmarks(dao, collection.getBookmarks());
 
         List<Content> contentToImport = new ArrayList<>();
         if (importLibrary) contentToImport.addAll(collection.getLibrary(dao));
