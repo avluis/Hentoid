@@ -672,23 +672,25 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     private void onLanguageClick() {
         //only support Hitomi for now
-        if(getStartSite().equals(Site.HITOMI)) {
+        try {
+            if (getStartSite().equals(Site.HITOMI)) {
 
-            //replace last occurence of -all to -english
+                //replace last occurence of -all to -english
 
-            String url = webView.getUrl();
-            String partOld = "-all";
-            String partNew = "-english";
+                String url = webView.getUrl();
+                String partOld = "-all";
+                String partNew = "-english";
 
-            StringBuilder strb = new StringBuilder(url);
-            int index=strb.lastIndexOf(partOld);
-            strb.replace(index,partOld.length()+index,partNew);
-            String newUrl = strb.toString();
+                StringBuilder strb = new StringBuilder(url);
+                int index = strb.lastIndexOf(partOld);
+                strb.replace(index, partOld.length() + index, partNew);
+                String newUrl = strb.toString();
 
-            webView.loadUrl(newUrl);
+                webView.loadUrl(newUrl);
 
-            //webView.reload();
-        }
+                //webView.reload();
+            }
+        } catch(Exception e) {}
     }
 
     /**
