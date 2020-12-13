@@ -234,7 +234,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             // Update icon
             sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
             // Run a new search
-            viewModel.updateContentOrder();
+            viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), Preferences.getGroupSortField(), sortDesc, Preferences.getArtistGroupVisibility());
             activity.get().sortCommandsAutoHide(true, null);
         });
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getGroupSortField()));
