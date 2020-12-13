@@ -874,7 +874,7 @@ public class ContentDownloadService extends IntentService {
         // Check for picture validity if it's < 1KB (might be plain test or HTML if things have gone wrong... or a small GIF! )
         if (img.getSize() < 1024 && binaryContent != null) {
             mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
-            if (mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
+            if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
                 Timber.w("Small non-image data received from %s", img.getUrl());
                 throw new UnsupportedContentException(String.format("Small non-image data received from %s - data not processed", img.getUrl()));
             }
