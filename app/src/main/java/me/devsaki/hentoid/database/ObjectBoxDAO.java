@@ -351,7 +351,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     private Group enrichGroupWithItemsByDlDate(@NonNull final Group g, int minDays, int maxDays) {
-        List<GroupItem> items = selectGroupItemsByDlDate(minDays, maxDays);
+        List<GroupItem> items = selectGroupItemsByDlDate(g, minDays, maxDays);
         g.setItems(items);
         if (!items.isEmpty()) g.picture.setTarget(items.get(0).content.getTarget().getCover());
 
@@ -432,8 +432,9 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectGroupItems(contentId, grouping.getId());
     }
 
-    public List<GroupItem> selectGroupItemsByDlDate(int minDays, int maxDays) {
-        return db.selectGroupItemsByDlDate(minDays, maxDays);
+    private List<GroupItem> selectGroupItemsByDlDate(@NonNull final Group group, int minDays, int maxDays) {
+        List<Content> contentResult = db.selectContentByDlDate(minDays, maxDays);
+        return Stream.of(contentResult).map(c -> new GroupItem(c, group, -1)).toList();
     }
 
     public void deleteGroupItem(long groupItemId) {

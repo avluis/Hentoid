@@ -759,6 +759,20 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.ERROR.getCode()).orderDesc(Content_.downloadDate).build();
     }
 
+    List<Content> selectContentByDlDate(int minDays, int maxDays) {
+        QueryBuilder<Content> qb = store.boxFor(Content.class).query();
+        qb.in(Content_.status, libraryStatus);
+        applyDownloadDateFilter(qb, minDays, maxDays);
+        return qb.build().find();
+    }
+
+    private void applyDownloadDateFilter(@NonNull final QueryBuilder<Content> qb, int minDays, int maxDays) {
+        long today = Instant.now().toEpochMilli();
+        long minDownloadDate = today - (maxDays * DAY_IN_MILLIS);
+        long maxDownloadDate = today - (minDays * DAY_IN_MILLIS);
+        qb.between(Content_.downloadDate, minDownloadDate, maxDownloadDate);
+    }
+
     private Query<Attribute> queryAvailableAttributes(
             @NonNull final AttributeType type,
             String filter,
@@ -1043,19 +1057,6 @@ public class ObjectBoxDB {
         QueryBuilder<GroupItem> qb = store.boxFor(GroupItem.class).query().equal(GroupItem_.contentId, contentId);
         qb.link(GroupItem_.group).equal(Group_.grouping, groupingId);
         return qb.build().find();
-    }
-
-    List<GroupItem> selectGroupItemsByDlDate(int minDays, int maxDays) {
-        QueryBuilder<GroupItem> qb = store.boxFor(GroupItem.class).query();
-        applyDownloadDateFilter(qb.link(GroupItem_.content), minDays, maxDays);
-        return qb.build().find();
-    }
-
-    private void applyDownloadDateFilter(@NonNull final QueryBuilder<Content> qb, int minDays, int maxDays) {
-        long today = Instant.now().toEpochMilli();
-        long minDownloadDate = today - (maxDays * DAY_IN_MILLIS);
-        long maxDownloadDate = today - (minDays * DAY_IN_MILLIS);
-        qb.between(Content_.downloadDate, minDownloadDate, maxDownloadDate);
     }
 
     void deleteGroupItem(long groupItemId) {
