@@ -17,12 +17,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -649,10 +646,6 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public List<SiteBookmark> selectAllBookmarks() {
         return db.selectBookmarksQ(null).find();
-    }
-
-    public Set<String> selectAllBookmarkUrls() {
-        return new HashSet<>(Arrays.asList(db.selectAllBooksmarkUrls()));
     }
 
     public void deleteAllBookmarks() {

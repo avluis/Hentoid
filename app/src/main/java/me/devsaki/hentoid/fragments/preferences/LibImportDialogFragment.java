@@ -33,6 +33,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -300,8 +301,8 @@ public class LibImportDialogFragment extends DialogFragment {
 
         if (importBookmarks) {
             // Don't import bookmarks that have the same URL as existing ones
-            Set<String> existingBookmarkUrls = dao.selectAllBookmarkUrls();
-            List<SiteBookmark> bookmarksToImport = Stream.of(collection.getBookmarks()).filterNot(b -> existingBookmarkUrls.contains(b.getUrl())).toList();
+            Set<SiteBookmark> existingBookmarkUrls = new HashSet<>(dao.selectAllBookmarks());
+            List<SiteBookmark> bookmarksToImport = Stream.of(collection.getBookmarks()).filterNot(existingBookmarkUrls::contains).toList();
             dao.insertBookmarks(bookmarksToImport);
             nbBookmarksSuccess = bookmarksToImport.size();
         }
