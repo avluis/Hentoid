@@ -1186,4 +1186,14 @@ public class ObjectBoxDB {
         return query.build().findIds();
     }
 
+    // Select all duplicate bookmarks that end with a "/"
+    public Query<SiteBookmark> selectAllDuplicateBookmarks() {
+        String[] urls = selectAllBooksmarkUrls();
+        for (int i = 0; i < urls.length; i++) urls[i] = urls[i] + "/";
+
+        QueryBuilder<SiteBookmark> query = store.boxFor(SiteBookmark.class).query();
+        query.in(SiteBookmark_.url, urls);
+
+        return query.build();
+    }
 }

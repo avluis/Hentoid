@@ -70,4 +70,11 @@ public class SiteBookmark {
     public int hashCode() {
         return Objects.hash(getUrl());
     }
+
+    // Quick comparator to avoid host/someurl and host/someurl/ to be considered as different by the bookmarks managaer
+    public static boolean urlsAreSame(String url1, String url2) {
+        String url1_ = url1.endsWith("/") ? url1.substring(0, url1.length() - 1) : url1;
+        String url2_ = url2.endsWith("/") ? url2.substring(0, url2.length() - 1) : url2;
+        return url1_.equalsIgnoreCase(url2_);
+    }
 }
