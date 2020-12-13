@@ -15,7 +15,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/viewer_current_page_text" />
+        app:layout_constraintTop_toTopOf="@id/viewer_pager_left_txt" />
 
     <ImageButton
         android:id="@+id/viewer_prev_book_btn"
@@ -36,7 +36,7 @@
         tools:visibility="visible" />
 
     <TextView
-        android:id="@+id/viewer_current_page_text"
+        android:id="@+id/viewer_pager_left_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -59,12 +59,12 @@
         android:progressBackgroundTint="?colorOnPrimary"
         android:progressTint="?colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/viewer_max_page_text"
-        app:layout_constraintStart_toEndOf="@id/viewer_current_page_text"
+        app:layout_constraintEnd_toStartOf="@id/viewer_pager_right_txt"
+        app:layout_constraintStart_toEndOf="@id/viewer_pager_left_txt"
         tools:targetApi="lollipop" />
 
     <TextView
-        android:id="@+id/viewer_max_page_text"
+        android:id="@+id/viewer_pager_right_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -131,33 +131,33 @@
     <!-- Image previews used when tracking -->
 
     <ImageView
-        android:id="@+id/viewer_image_preview1"
+        android:id="@+id/image_preview_1"
         android:layout_width="0dp"
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintEnd_toStartOf="@id/viewer_image_preview2"
+        app:layout_constraintEnd_toStartOf="@id/image_preview_2"
         app:layout_constraintStart_toStartOf="parent"
         tools:ignore="ContentDescription" />
 
     <ImageView
-        android:id="@+id/viewer_image_preview2"
+        android:id="@+id/image_preview_2"
         android:layout_width="0dp"
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintEnd_toStartOf="@id/viewer_image_preview3"
-        app:layout_constraintStart_toEndOf="@id/viewer_image_preview1"
+        app:layout_constraintEnd_toStartOf="@id/image_preview_3"
+        app:layout_constraintStart_toEndOf="@id/image_preview_1"
         tools:ignore="ContentDescription" />
 
     <ImageView
-        android:id="@+id/viewer_image_preview3"
+        android:id="@+id/image_preview_3"
         android:layout_width="0dp"
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/viewer_image_preview2"
+        app:layout_constraintStart_toEndOf="@id/image_preview_2"
         tools:ignore="ContentDescription" />
 
     <androidx.appcompat.widget.Toolbar
