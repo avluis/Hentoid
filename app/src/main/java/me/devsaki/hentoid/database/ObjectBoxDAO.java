@@ -664,10 +664,14 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public long insertBookmark(@NonNull final SiteBookmark bookmark) {
+        // Auto-number max order when not provided
+        if (-1 == bookmark.getOrder())
+            bookmark.setOrder(db.getMaxBookmarkOrderFor(bookmark.getSite()) + 1);
         return db.insertBookmark(bookmark);
     }
 
     public void insertBookmarks(@NonNull List<SiteBookmark> bookmarks) {
+        // Mass insert method; no need to renumber here
         db.insertBookmarks(bookmarks);
     }
 

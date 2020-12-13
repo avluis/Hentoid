@@ -1023,6 +1023,10 @@ public class ObjectBoxDB {
         store.boxFor(SiteBookmark.class).remove(bookmarkId);
     }
 
+    int getMaxBookmarkOrderFor(@NonNull final Site site) {
+        return (int) store.boxFor(SiteBookmark.class).query().equal(SiteBookmark_.site, site.getCode()).build().property(SiteBookmark_.order).max();
+    }
+
     long insertGroup(Group group) {
         return store.boxFor(Group.class).put(group);
     }
