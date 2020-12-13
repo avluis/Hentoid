@@ -73,7 +73,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private LiveData<List<ImageFile>> currentImageSource;
     private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();  // Currently displayed set of images
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
-    private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // shuffle state of the current book
+    private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // Shuffle state of the current book
+    private int thumbIndex;                                                             // Index of the thumbnail among loaded pages
 
     // Write cache for read indicator (no need to update DB and JSON at every page turn)
     private final Set<Integer> readPageNumbers = new HashSet<>();
@@ -152,7 +153,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    public void setStartingIndex(int index) {
+    public void setReaderStartingIndex(int index) {
         startingIndex.setValue(index);
     }
 
@@ -230,14 +231,25 @@ public class ImageViewerViewModel extends AndroidViewModel {
         sortAndSetImages(imageFiles, isShuffled);
 
         if (theContent.getId() != loadedBookId) { // To be done once per book only
-            int startingIndex = 0;
+            int collectionStartingIndex = 0;
+            // Auto-restart at last read position if asked to
             if (Preferences.isViewerResumeLastLeft())
-                startingIndex = theContent.getLastReadPageIndex();
-            setStartingIndex(startingIndex);
+                collectionStartingIndex = theContent.getLastReadPageIndex();
+            // Correct offset with the thumb index
+            thumbIndex = -1;
+            for (int i = 0; i < imageFiles.size(); i++)
+                if (!imageFiles.get(i).isReadable()) {
+                    thumbIndex = i;
+                    break;
+                }
+
+            if (thumbIndex == collectionStartingIndex) collectionStartingIndex += 1;
+
+            setReaderStartingIndex(collectionStartingIndex - thumbIndex - 1);
 
             // Init the read pages write cache
             readPageNumbers.clear();
-            Collection<Integer> readPages = Stream.of(imageFiles).filter(ImageFile::isRead).map(ImageFile::getOrder).toList();
+            Collection<Integer> readPages = Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).map(ImageFile::getOrder).toList();
 
             // Fix pre-v1.13 books where ImageFile.read has no value
             if (readPages.isEmpty() && theContent.getLastReadPageIndex() > 0) {
@@ -248,8 +260,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
             }
 
             // Mark initial page as read
-            if (startingIndex < imageFiles.size())
-                markPageAsRead(imageFiles.get(startingIndex).getOrder());
+            if (collectionStartingIndex < imageFiles.size())
+                markPageAsRead(imageFiles.get(collectionStartingIndex).getOrder());
         }
 
         loadedBookId = theContent.getId();
@@ -267,11 +279,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void sortAndSetImages(@NonNull List<ImageFile> imgs, boolean shuffle) {
         if (shuffle) {
             Collections.shuffle(imgs);
-            // Don't keep the cover
-            imgs = Stream.of(imgs).filter(img -> !img.isCover()).toList();
+            // Don't keep the cover thumb
+            imgs = Stream.of(imgs).filter(ImageFile::isReadable).toList();
         } else {
-            // Sort images according to their Order; don't keep the cover
-            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).filter(img -> !img.isCover()).toList();
+            // Sort images according to their Order; don't keep the cover thumb
+            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).filter(ImageFile::isReadable).toList();
         }
 
         if (showFavourites)
@@ -282,7 +294,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         images.setValue(imgs);
     }
 
-    public void onLeaveBook(int index, int highestImageIndexReached) {
+    public void onLeaveBook(int readerIndex) {
         List<ImageFile> theImages = images.getValue();
         Content theContent = content.getValue();
         if (null == theImages || null == theContent) return;
@@ -302,10 +314,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
             default:
                 readThresholdPosition = 1;
         }
-        boolean updateReads = (highestImageIndexReached + 1 >= readThresholdPosition || theContent.getReads() > 0);
+        int collectionIndex = readerIndex + thumbIndex + 1;
+        boolean updateReads = (readPageNumbers.size() >= readThresholdPosition || theContent.getReads() > 0);
 
         // Reset the memorized page index if it represents the last page
-        int indexToSet = (index == theImages.size() - 1) ? 0 : index;
+        int indexToSet = (collectionIndex >= theImages.size() - 1) ? 0 : collectionIndex;
 
         compositeDisposable.add(
                 Completable.fromRunnable(() -> doLeaveBook(theContent.getId(), indexToSet, updateReads))
@@ -338,7 +351,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
 
         if (indexToSet != savedContent.getLastReadPageIndex() || updateReads || readPageNumbers.size() > previousReadPagesCount)
-            ContentHelper.updateContentReads(getApplication(), collectionDao, savedContent, indexToSet, theImages);
+            ContentHelper.updateContentReadStats(getApplication(), collectionDao, savedContent, theImages, indexToSet, updateReads);
     }
 
     public void toggleShowFavouritePages(Consumer<Boolean> callback) {

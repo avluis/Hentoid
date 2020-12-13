@@ -28,6 +28,7 @@
         android:paddingTop="@dimen/default_cardview_margin"
         android:paddingEnd="@dimen/default_cardview_margin"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

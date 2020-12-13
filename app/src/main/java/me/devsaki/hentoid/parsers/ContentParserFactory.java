@@ -7,7 +7,6 @@ import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
 import me.devsaki.hentoid.parsers.content.HbrowseContent;
-import me.devsaki.hentoid.parsers.content.HbrowseContent;
 import me.devsaki.hentoid.parsers.content.Hentai2ReadContent;
 import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
 import me.devsaki.hentoid.parsers.content.HentaifoxContent;
@@ -15,7 +14,6 @@ import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.ManhwaContent;
 import me.devsaki.hentoid.parsers.content.MrmContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
-import me.devsaki.hentoid.parsers.content.NexusContent;
 import me.devsaki.hentoid.parsers.content.NhentaiContent;
 import me.devsaki.hentoid.parsers.content.PorncomixContent;
 import me.devsaki.hentoid.parsers.content.PururinContent;
@@ -26,7 +24,6 @@ import me.devsaki.hentoid.parsers.images.DummyParser;
 import me.devsaki.hentoid.parsers.images.EHentaiParser;
 import me.devsaki.hentoid.parsers.images.ExHentaiParser;
 import me.devsaki.hentoid.parsers.images.HbrowseParser;
-import me.devsaki.hentoid.parsers.images.HbrowseParser;
 import me.devsaki.hentoid.parsers.images.Hentai2ReadParser;
 import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.images.HentaifoxParser;
@@ -36,7 +33,7 @@ import me.devsaki.hentoid.parsers.images.LusciousParser;
 import me.devsaki.hentoid.parsers.images.ManhwaParser;
 import me.devsaki.hentoid.parsers.images.MrmParser;
 import me.devsaki.hentoid.parsers.images.MusesParser;
-import me.devsaki.hentoid.parsers.images.NexusParser;
+//import me.devsaki.hentoid.parsers.images.NexusParser2;
 import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
@@ -69,8 +66,8 @@ public class ContentParserFactory {
                 return TsuminoContent.class;
             case PURURIN:
                 return PururinContent.class;
-            case NEXUS:
-                return NexusContent.class;
+            //case NEXUS:
+            //    return NexusContent.class;
             case MUSES:
                 return MusesContent.class;
             case DOUJINS:
@@ -116,8 +113,8 @@ public class ContentParserFactory {
                 return new EHentaiParser();
             case EXHENTAI:
                 return new ExHentaiParser();
-            case NEXUS:
-                return new NexusParser();
+            //case NEXUS:
+            //    return new NexusParser2();
             case LUSCIOUS:
                 return new LusciousParser();
             case PORNCOMIX:

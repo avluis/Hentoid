@@ -3,6 +3,8 @@ package me.devsaki.hentoid.activities;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,6 +35,8 @@ import me.devsaki.hentoid.util.ThemeHelper;
  * Set storage directory and library import
  */
 public class IntroActivity extends AppIntro2 {
+
+    private Handler autoEndHandler = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +71,12 @@ public class IntroActivity extends AppIntro2 {
         boolean canProgress = !(newFragment instanceof ImportIntroFragment);
         setSwipeLock(!canProgress);
         if (!canProgress) setButtonsEnabled(false);
+
+        // Auto-validate the last screen after 2 seconds of inactivity
+        if (newFragment instanceof EndIntroFragment) {
+            autoEndHandler = new Handler(Looper.getMainLooper());
+            autoEndHandler.postDelayed(() -> onDonePressed(newFragment), 2000);
+        }
     }
 
     @Override
@@ -83,7 +93,6 @@ public class IntroActivity extends AppIntro2 {
 
     public void nextStep() {
         goToNextSlide(false);
-        setButtonsEnabled(false);
     }
 
     public void setThemePrefs(int pref) {
@@ -99,6 +108,8 @@ public class IntroActivity extends AppIntro2 {
     // Validation of the final step of the wizard
     @Override
     public void onDonePressed(Fragment currentFragment) {
+        autoEndHandler.removeCallbacksAndMessages(null);
+
         Preferences.setIsFirstRun(false);
         // Need to do that to avoid a useless reloading of the library screen upon loading prefs for the first time
         Preferences.setLibraryDisplay(Preferences.Default.LIBRARY_DISPLAY);

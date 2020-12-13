@@ -28,7 +28,6 @@ import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
-import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
@@ -37,7 +36,6 @@ import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.ManhwaActivity;
 import me.devsaki.hentoid.activities.sources.MrmActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
-import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
 import me.devsaki.hentoid.activities.sources.PorncomixActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
@@ -204,8 +202,8 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case TSUMINO:
-            case NEXUS:
-                return url.replace("/", "");
+            //case NEXUS:
+            //    return url.replace("/", "");
             case HENTAICAFE:
                 return url.replace("/?p=", "");
             case MUSES:
@@ -288,8 +286,8 @@ public class Content implements Serializable {
                 return EHentaiActivity.class;
             case EXHENTAI:
                 return ExHentaiActivity.class;
-            case NEXUS:
-                return NexusActivity.class;
+            //case NEXUS:
+            //    return NexusActivity.class;
             case MUSES:
                 return MusesActivity.class;
             case DOUJINS:
@@ -356,9 +354,9 @@ public class Content implements Serializable {
             case TSUMINO:
                 galleryConst = "/entry";
                 break;
-            case NEXUS:
-                galleryConst = "/view";
-                break;
+            //case NEXUS:
+            //    galleryConst = "/view";
+            //    break;
             case LUSCIOUS:
                 return site.getUrl().replace("/manga/", "") + url;
             case PORNCOMIX:
@@ -402,8 +400,8 @@ public class Content implements Serializable {
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
             case PURURIN:
                 return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
-            case NEXUS:
-                return site.getUrl() + "/read" + url + "/001";
+            //case NEXUS:
+            //    return site.getUrl() + "/read" + url + "/001";
             case MUSES:
                 return site.getUrl().replace("album", "picture") + "/1";
             case LUSCIOUS:
@@ -576,6 +574,10 @@ public class Content implements Serializable {
 
     public long getSize() {
         return size;
+    }
+
+    public void forceSize(long size) {
+        this.size = size;
     }
 
     public void computeSize() {

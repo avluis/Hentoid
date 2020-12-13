@@ -1,0 +1,3 @@
+Fixed search bar in main view
+Added language menu icon in hitomi.la to change language to English
+Removed some analytics bits for F-droid

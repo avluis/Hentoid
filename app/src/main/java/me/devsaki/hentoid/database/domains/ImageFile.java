@@ -10,6 +10,7 @@ import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ImageHelper;
 
 /**
  * Created by DevSaki on 10/05/2015.
@@ -163,7 +164,7 @@ public class ImageFile {
     }
 
     public String getMimeType() {
-        return (null == mimeType) ? "image/*" : mimeType;
+        return (null == mimeType) ? ImageHelper.MIME_IMAGE_GENERIC : mimeType;
     }
 
     public ImageFile setMimeType(String mimeType) {
@@ -198,6 +199,10 @@ public class ImageFile {
 
     public void setContent(ToOne<Content> content) {
         this.content = content;
+    }
+
+    public boolean isReadable() {
+        return !name.equals(Consts.THUMB_FILE_NAME);
     }
 
     @Override

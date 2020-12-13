@@ -57,6 +57,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LanguageHelper;
@@ -155,7 +156,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     @Override
     public int getLayoutRes() {
         if (ViewType.LIBRARY == viewType) return R.layout.item_library_content;
-        else if (ViewType.LIBRARY_GRID == viewType) return R.layout.item_library_content_grid2;
+        else if (ViewType.LIBRARY_GRID == viewType) return R.layout.item_library_content_grid;
         else return R.layout.item_queue;
     }
 
@@ -346,10 +347,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         }
 
         private void attachCover(@NonNull final Content content) {
+            ImageFile cover = content.getCover();
             String thumbLocation = "";
-            if (content.getCover().getStatus().equals(StatusContent.DOWNLOADED) || content.getCover().getStatus().equals(StatusContent.MIGRATED) || content.getCover().getStatus().equals(StatusContent.EXTERNAL))
-                thumbLocation = content.getCover().getFileUri();
-            if (thumbLocation.isEmpty()) thumbLocation = content.getCover().getUrl();
+            if (ContentHelper.isInLibrary(cover.getStatus())) thumbLocation = cover.getFileUri();
+            if (thumbLocation.isEmpty()) thumbLocation = cover.getUrl();
             if (thumbLocation.isEmpty()) thumbLocation = content.getCoverImageUrl();
 
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
@@ -525,9 +526,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivSite.setVisibility(View.GONE);
             }
 
-            if (deleteButton != null) {
+            if (deleteButton != null)
                 deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
-            }
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 boolean isFirstItem = (0 == getAdapterPosition());

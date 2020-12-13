@@ -106,7 +106,6 @@ import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.InputDialog;
-import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -123,7 +122,6 @@ import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.Helper.getChromeVersion;
 import static me.devsaki.hentoid.util.PermissionUtil.RQST_STORAGE_PERMISSION;
 import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
@@ -204,8 +202,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // Indicates which mode the seek button is in
     protected @SeekMode
     int seekButtonMode;
-    // Version of installed Chrome client
-    private int chromeVersion;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
     // Disposable to be used for punctual search
@@ -547,14 +543,17 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(webView, true);
 
-        Timber.i("Using agent %s", webView.getSettings().getUserAgentString());
-        chromeVersion = getChromeVersion(this);
-
         WebSettings webSettings = webView.getSettings();
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
 
-        webSettings.setUserAgentString(Consts.USER_AGENT_NEUTRAL);
+        String userAgent;
+        if (getStartSite().useMobileAgent())
+            userAgent = HttpHelper.getMobileUserAgent(getStartSite().useHentoidAgent());
+        else
+            userAgent = HttpHelper.getDesktopUserAgent(getStartSite().useHentoidAgent());
+        Timber.i("Using user-agent %s", userAgent);
+        webSettings.setUserAgentString(userAgent);
 
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
@@ -891,8 +890,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
         Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
 
-        boolean isInCollection = (contentDB != null && Helper.getListFromPrimitiveArray(ContentHelper.getLibraryStatuses()).contains(contentDB.getStatus().getCode()));
-        boolean isInQueue = (contentDB != null && Helper.getListFromPrimitiveArray(ContentHelper.getQueueStatuses()).contains(contentDB.getStatus().getCode()));
+        boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
+        boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
 
         if (!isInCollection && !isInQueue) {
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
@@ -1158,7 +1157,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          */
         private boolean canUseSingleOkHttpRequest() {
             return (Preferences.isBrowserAugmented()
-                    && (chromeVersion < 45 || chromeVersion > 71)
+                    && (HttpHelper.getChromeVersion() < 45 || HttpHelper.getChromeVersion() > 71)
             );
         }
 
@@ -1219,7 +1218,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             List<Pair<String, String>> requestHeadersList;
             requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url, canUseSingleOkHttpRequest());
 
-            Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().canKnowHentoidAgent());
+            Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
             ResponseBody body = onlineFileResponse.body();
             if (null == body)
                 throw new IOException("Empty response from server");
@@ -1355,7 +1354,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
             try {
                 // Query resource here, using OkHttp
-                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().canKnowHentoidAgent());
+                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
                 ResponseBody body = response.body();
                 if (null == body) throw new IOException("Empty body");
 

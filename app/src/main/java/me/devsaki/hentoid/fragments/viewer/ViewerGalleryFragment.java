@@ -219,7 +219,7 @@ public class ViewerGalleryFragment extends Fragment {
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty()) {
             ImageFile img = item.getImage();
             if (!invalidateNextBookClick && img != null) {
-                viewModel.setStartingIndex(img.getDisplayOrder());
+                viewModel.setReaderStartingIndex(img.getDisplayOrder());
                 if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
                     getParentFragmentManager()
                             .beginTransaction()

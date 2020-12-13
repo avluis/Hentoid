@@ -457,8 +457,10 @@ public class ImportHelper {
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
         result.setImageFiles(images);
-        if (0 == result.getQtyPages())
-            result.setQtyPages(images.size() - 1); // Minus the cover
+        if (0 == result.getQtyPages()) {
+            int countUnreadable = (int) Stream.of(images).filterNot(ImageFile::isReadable).count();
+            result.setQtyPages(images.size() - countUnreadable); // Minus unreadable pages (cover thumb)
+        }
         result.computeSize();
         return result;
     }
@@ -498,8 +500,10 @@ public class ImportHelper {
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
         result.setImageFiles(images);
-        if (0 == result.getQtyPages())
-            result.setQtyPages(images.size() - 1); // Minus the cover
+        if (0 == result.getQtyPages()) {
+            int countUnreadable = (int) Stream.of(images).filterNot(ImageFile::isReadable).count();
+            result.setQtyPages(images.size() - countUnreadable); // Minus unreadable pages (cover thumb)
+        }
         result.computeSize();
         return result;
     }
@@ -530,15 +534,8 @@ public class ImportHelper {
      */
     public static void createCover(@NonNull final List<ImageFile> images) {
         if (!images.isEmpty()) {
-            ImageFile firstImg = images.get(0);
-            ImageFile cover = new ImageFile(0, "", images.get(0).getStatus(), images.size());
-            cover.setName(Consts.THUMB_FILE_NAME);
-            cover.setUrl(firstImg.getUrl());
-            cover.setFileUri(firstImg.getFileUri());
-            cover.setSize(firstImg.getSize());
-            cover.setMimeType(firstImg.getMimeType());
-            cover.setIsCover(true);
-            images.add(0, cover);
+            // Set the 1st element as cover
+            images.get(0).setIsCover(true);
         }
     }
 
@@ -603,7 +600,7 @@ public class ImportHelper {
         // Sort by number of images desc
         List<ArchiveHelper.ArchiveEntry> entryList = Stream.of(imageEntries).sortBy(ie -> -ie.size()).toList().get(0);
 
-        List<ImageFile> images = ContentHelper.createImageListFromArchiveEntries(archive.getUri(), entryList, targetStatus, 1, "");
+        List<ImageFile> images = ContentHelper.createImageListFromArchiveEntries(archive.getUri(), entryList, targetStatus, 0, "");
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
 
@@ -616,9 +613,14 @@ public class ImportHelper {
         result.setStatus(targetStatus).setStorageUri(archive.getUri().toString()); // Here storage URI is a file URI, not a folder
 
         result.setImageFiles(images);
-        if (0 == result.getQtyPages())
-            result.setQtyPages(images.size() - 1); // Minus the cover
+        if (0 == result.getQtyPages()) {
+            int countUnreadable = (int) Stream.of(images).filterNot(ImageFile::isReadable).count();
+            result.setQtyPages(images.size() - countUnreadable); // Minus unreadable pages (cover thumb)
+        }
         result.computeSize();
+        // e.g. when the ZIP table doesn't contain any size entry
+        if (result.getSize() <= 0) result.forceSize(archive.length());
+
         return result;
     }
 

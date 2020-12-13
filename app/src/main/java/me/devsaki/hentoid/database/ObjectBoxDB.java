@@ -355,8 +355,8 @@ public class ObjectBoxDB {
     }
 
     @Nullable
-    Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged) {
-        QueryBuilder<Content> queryBuilder = store.boxFor(Content.class).query().equal(Content_.storageUri, folderUri);
+    Content selectContentEndWithStorageUri(@NonNull final String folderUriEnd, boolean onlyFlagged) {
+        QueryBuilder<Content> queryBuilder = store.boxFor(Content.class).query().endsWith(Content_.storageUri, folderUriEnd);
         if (onlyFlagged) queryBuilder.equal(Content_.isFlaggedForDeletion, true);
 
         return queryBuilder.build().findFirst();

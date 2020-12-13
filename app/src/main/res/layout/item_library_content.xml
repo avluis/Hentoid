@@ -13,7 +13,7 @@
 
     <ImageView
         android:id="@+id/delete_btn"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/delete_drawer_width_list"
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:background="@drawable/selector_button_neutral"

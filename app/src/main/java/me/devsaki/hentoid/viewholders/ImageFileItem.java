@@ -20,6 +20,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.util.Helper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -105,7 +106,8 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
 
         @Override
         public void unbindView(@NotNull ImageFileItem item) {
-            // No specific behaviour to implement
+            if (image != null && Helper.isValidContextForGlide(image))
+                Glide.with(image).clear(image);
         }
     }
 }

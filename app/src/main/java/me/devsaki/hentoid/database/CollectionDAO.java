@@ -44,7 +44,7 @@ public interface CollectionDAO {
     List<Content> selectContent(long[] id);
 
     @Nullable
-    Content selectContentByFolderUri(@NonNull final String folderUri, boolean onlyFlagged);
+    Content selectContentByStorageUri(@NonNull final String folderUri, boolean onlyFlagged);
 
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url);

@@ -77,7 +77,7 @@ public class SearchContentIdDialogFragment extends DialogFragment {
                     sites.add(Site.ASMHENTAI_COMICS);
                 if (!foundSitesList.contains(Site.HENTAICAFE.getCode())) sites.add(Site.HENTAICAFE);
                 if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
-                if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
+                //if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
                 if (!foundSitesList.contains(Site.LUSCIOUS.getCode())) sites.add(Site.LUSCIOUS);
                 if (!foundSitesList.contains(Site.HBROWSE.getCode())) sites.add(Site.HBROWSE);
                 if (!foundSitesList.contains(Site.HENTAIFOX.getCode())) sites.add(Site.HENTAIFOX);
@@ -108,8 +108,8 @@ public class SearchContentIdDialogFragment extends DialogFragment {
                 return site.getUrl() + "/hc.fyi/" + id;
             case TSUMINO:
                 return site.getUrl() + "/entry/" + id;
-            case NEXUS:
-                return site.getUrl() + "/view/" + id;
+            //case NEXUS:
+            //    return site.getUrl() + "/view/" + id;
             case LUSCIOUS:
                 return site.getUrl().replace("manga", "albums") + id + "/";
             case HBROWSE:

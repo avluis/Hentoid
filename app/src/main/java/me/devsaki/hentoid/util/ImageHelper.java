@@ -24,12 +24,15 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
  */
 public final class ImageHelper {
 
+    private static final Charset CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1;
+    public static final String MIME_IMAGE_GENERIC = "image/*";
+
+    private static FileHelper.NameFilter imageNamesFilter;
+
+
     private ImageHelper() {
         throw new IllegalStateException("Utility class");
     }
-
-    private static FileHelper.NameFilter imageNamesFilter;
-    private static final Charset CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1;
 
     /**
      * Determine if the given image file extension is supported by the app
@@ -88,7 +91,7 @@ public final class ImageHelper {
                 && (byte) 0x57 == binary[8] && (byte) 0x45 == binary[9] && (byte) 0x42 == binary[10] && (byte) 0x50 == binary[11])
             return "image/webp";
         else if ((byte) 0x42 == binary[0] && (byte) 0x4D == binary[1]) return "image/bmp";
-        else return "image/*";
+        else return MIME_IMAGE_GENERIC;
     }
 
     /**

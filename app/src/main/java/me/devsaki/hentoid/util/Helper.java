@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Looper;
 import android.view.View;
-import android.webkit.WebSettings;
 
 import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
@@ -89,12 +88,12 @@ public final class Helper {
      * @param encodedString Base-64 encoded string to decode
      * @return Decoded string
      */
-    public static String decode64(String encodedString) {
+    public static byte[] decode64(String encodedString) {
         // Pure Java
         //byte[] decodedBytes = org.apache.commons.codec.binary.Base64.decodeBase64(encodedString);
         // Android
-        byte[] decodedBytes = android.util.Base64.decode(encodedString, android.util.Base64.DEFAULT);
-        return new String(decodedBytes);
+        return android.util.Base64.decode(encodedString, android.util.Base64.DEFAULT);
+//        return new String(decodedBytes);
     }
 
     /**
@@ -273,23 +272,6 @@ public final class Helper {
      */
     public static Context getFixedContext(Context context) {
         return context.createConfigurationContext(new Configuration());
-    }
-
-    /**
-     * Get the version of Chrome installed on the device
-     *
-     * @param context Context to be used
-     * @return Version of Chrome installed on the device
-     */
-    public static int getChromeVersion(@NonNull final Context context) {
-        String chromeString = "Chrome/";
-        String defaultUserAgent = WebSettings.getDefaultUserAgent(context);
-        if (defaultUserAgent.contains(chromeString)) {
-            int chromeIndex = defaultUserAgent.indexOf(chromeString);
-            int dotIndex = defaultUserAgent.indexOf('.', chromeIndex);
-            String version = defaultUserAgent.substring(chromeIndex + chromeString.length(), dotIndex);
-            return Integer.parseInt(version);
-        } else return -1;
     }
 
     /**

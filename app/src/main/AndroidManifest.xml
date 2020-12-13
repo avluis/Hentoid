@@ -67,9 +67,9 @@
         <activity
             android:name=".activities.sources.EHentaiActivity"
             android:configChanges="orientation|screenSize" />
-        <activity
+        <!--<activity
             android:name=".activities.sources.NexusActivity"
-            android:configChanges="orientation|screenSize" />
+            android:configChanges="orientation|screenSize" />-->
         <activity
             android:name=".activities.sources.MusesActivity"
             android:configChanges="orientation|screenSize" />

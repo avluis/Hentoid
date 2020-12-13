@@ -751,7 +751,7 @@ public final class Preferences {
 
         //static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         // Default menu in v1.9.x
-        static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HENTAICAFE, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, Site.NEXUS, Site.MUSES, Site.DOUJINS};
+        static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HENTAICAFE, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, /*Site.NEXUS,*/ Site.MUSES, Site.DOUJINS};
         static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
 
         static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;

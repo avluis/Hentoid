@@ -100,8 +100,8 @@ public class IntentActivity extends AppCompatActivity {
             case EHENTAI:
             case EXHENTAI:
                 return toParse.replace("g/", "");
-            case NEXUS:
-                return toParse.replace("/view", "");
+            //case NEXUS:
+            //    return toParse.replace("/view", "");
             case HBROWSE:
                 return toParse.substring(1);
             case HENTAIFOX:

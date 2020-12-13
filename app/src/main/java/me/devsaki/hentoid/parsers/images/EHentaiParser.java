@@ -84,7 +84,7 @@ public class EHentaiParser implements ImageListParser {
              *
              *    B.2- Call the API to get the pictures URL
              */
-            boolean useHentoidAgent = Site.EHENTAI.canKnowHentoidAgent();
+            boolean useHentoidAgent = Site.EHENTAI.useHentoidAgent();
             Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
             if (galleryDoc != null) {
                 // Detect if multipage viewer is on
@@ -304,7 +304,7 @@ public class EHentaiParser implements ImageListParser {
             Exception {
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
-        Document doc = getOnlineDocument(url, headers, Site.EHENTAI.canKnowHentoidAgent());
+        Document doc = getOnlineDocument(url, headers, Site.EHENTAI.useHentoidAgent());
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
