@@ -32,6 +32,8 @@ public class DatabaseMaintenance {
         throw new IllegalStateException("Utility class");
     }
 
+    // TODO separate pre-processing actions that _need_ to happen before the library screen is displayed
+    // versus general cleanup actions that may be processed in the background as the app starts (e.g. cleanBookmarksOneShot)
 
     /**
      * Clean up and upgrade database
