@@ -1243,13 +1243,24 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
+            String url = request.getUrl().toString();
+
             // Data fetched with POST is out of scope of analysis and adblock
             if (!request.getMethod().equalsIgnoreCase("get")) {
-                Timber.v("[%s] ignored by interceptor; method = %s", request.getUrl().toString(), request.getMethod());
+                // When setting cookies manually with CookieManager.setCookie, subsequent POST calls
+                // on the same domain don't reuse these cookies -> need to set them manually
+                if (!request.getRequestHeaders().containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
+                    String domain = HttpHelper.getDomainFromUri(url);
+                    String existingCookiesStr = CookieManager.getInstance().getCookie(domain);
+                    if (existingCookiesStr != null && !existingCookiesStr.isEmpty()) {
+                        Timber.v("Adding cookies to %s call : %s", request.getMethod(), existingCookiesStr);
+                        request.getRequestHeaders().put(HttpHelper.HEADER_COOKIE_KEY, existingCookiesStr);
+                    }
+                }
+                Timber.v("[%s] ignored by interceptor; method = %s", url, request.getMethod());
                 return super.shouldInterceptRequest(view, request);
             }
 
-            String url = request.getUrl().toString();
             WebResourceResponse result = shouldInterceptRequestInternal(url, request.getRequestHeaders());
             if (result != null) return result;
             else return super.shouldInterceptRequest(view, request);
@@ -1317,6 +1328,13 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             try {
                 // Query resource here, using OkHttp
                 Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
+
+                // Scram if the response is something else than html
+                Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
+                if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
+                    return null;
+
+                // Scram if the response is empty
                 ResponseBody body = response.body();
                 if (null == body) throw new IOException("Empty body");
 
@@ -1348,13 +1366,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                     // Convert OkHttp response to the expected format
                     result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
 
-                    // Manually set cookie if present in response header (won't be set by Android if we don't do this)
-                    if (result.getResponseHeaders().containsKey("set-cookie")) {
+                    // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
+                    if (result.getResponseHeaders().containsKey("set-cookie") || result.getResponseHeaders().containsKey("Set-Cookie")) {
                         String cookiesStr = result.getResponseHeaders().get("set-cookie");
-                        if (cookiesStr != null) {
-                            Map<String, String> cookies = HttpHelper.parseCookies(cookiesStr);
-                            HttpHelper.setDomainCookies(urlStr, cookies);
-                        }
+                        if (null == cookiesStr) cookiesStr = result.getResponseHeaders().get("Set-Cookie");
+                        if (cookiesStr != null) HttpHelper.setCookies(cookiesStr);
                     }
                 } else {
                     parserStream = body.byteStream();
