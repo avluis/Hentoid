@@ -140,14 +140,16 @@ public class HttpHelper {
         final String contentTypeValue = resp.header(HEADER_CONTENT_TYPE);
 
         WebResourceResponse result;
+        Map<String, String> responseHeaders = okHttpHeadersToWebResourceHeaders(resp.headers().toMultimap());
+        String message = resp.message();
+        if (message.trim().isEmpty()) message = "None";
         if (contentTypeValue != null) {
             Pair<String, String> details = cleanContentType(contentTypeValue);
-            result = new WebResourceResponse(details.first, details.second, is);
+            Timber.i(">> WRResponse %s mime = %s encd = %s code = %s msg = %s", resp.request().url(), details.first, details.second, resp.code(), message);
+            result = new WebResourceResponse(details.first, details.second, resp.code(), message, responseHeaders, is);
         } else {
-            result = new WebResourceResponse("application/octet-stream", null, is);
+            result = new WebResourceResponse("application/octet-stream", null, resp.code(), message, responseHeaders, is);
         }
-
-        result.setResponseHeaders(okHttpHeadersToWebResourceHeaders(resp.headers().toMultimap()));
 
         return result;
     }
@@ -267,11 +269,52 @@ public class HttpHelper {
         String[] cookiesParts = cookiesStr.split(";");
         for (String cookie : cookiesParts) {
             String[] cookieParts = cookie.trim().split("=");
-            if (cookieParts.length > 1)
-                result.put(cookieParts[0], cookieParts[1]);
+            result.put(cookieParts[0], (1 == cookieParts.length) ? "" : cookieParts[1]);
         }
 
         return result;
+    }
+
+    public static void setDomainCookies(String url, String cookieStr) {
+        CookieManager mgr = CookieManager.getInstance();
+        String domain = getDomainFromUri(url);
+
+        /*
+        Check if given cookies are already registered
+
+        Rationale : setting any cookie programmatically will set it as a _session_ cookie.
+        It's not smart to do that if the very same cookie is already set for a longer lifespan.
+         */
+        Map<String, String> cookies = parseCookies(cookieStr);
+        Map<String, String> params = new HashMap<>();
+        Map<String, String> values = new HashMap<>();
+
+        for (Map.Entry<String, String> entry : cookies.entrySet()) {
+            if ( entry.getKey().toLowerCase())
+        }
+
+        String existingCookiesStr = mgr.getCookie(domain);
+        if (existingCookiesStr != null) {
+            Map<String, String> existingCookies = parseCookies(existingCookiesStr);
+
+            for (Map.Entry<String, String> entry : cookies.entrySet()) {
+                String key = entry.getKey();
+                String value = (null == entry.getValue()) ? "" : entry.getValue();
+                if (!existingCookies.containsKey(key)) cookiesToSet.put(key, value);
+                else {
+                    String val = existingCookies.get(key);
+                    if (val != null && !val.equals(cookies.get(key)))
+                        cookiesToSet.put(key, cookies.get(key));
+                }
+            }
+        } else {
+            cookiesToSet = cookies;
+        }
+
+        for (Map.Entry<String, String> entry : cookiesToSet.entrySet())
+            mgr.setCookie(domain, entry.getKey() + "=" + entry.getValue());
+
+        mgr.flush();
     }
 
     /**
@@ -307,6 +350,8 @@ public class HttpHelper {
                         cookiesToSet.put(key, cookies.get(key));
                 }
             }
+        } else {
+            cookiesToSet = cookies;
         }
 
         for (Map.Entry<String, String> entry : cookiesToSet.entrySet())
