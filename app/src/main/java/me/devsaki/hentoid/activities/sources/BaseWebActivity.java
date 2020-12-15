@@ -542,7 +542,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             userAgent = HttpHelper.getMobileUserAgent(getStartSite().useHentoidAgent());
         else
             userAgent = HttpHelper.getDesktopUserAgent(getStartSite().useHentoidAgent());
-        Timber.i("Using user-agent %s", userAgent);
+        Timber.i("%s : using user-agent %s", getStartSite().name(), userAgent);
         webSettings.setUserAgentString(userAgent);
 
         webSettings.setDomStorageEnabled(true);
@@ -1247,16 +1247,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
             // Data fetched with POST is out of scope of analysis and adblock
             if (!request.getMethod().equalsIgnoreCase("get")) {
-                // When setting cookies manually with CookieManager.setCookie, subsequent POST calls
-                // on the same domain don't reuse these cookies -> need to set them manually
-                if (!request.getRequestHeaders().containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
-                    String domain = HttpHelper.getDomainFromUri(url);
-                    String existingCookiesStr = CookieManager.getInstance().getCookie(domain);
-                    if (existingCookiesStr != null && !existingCookiesStr.isEmpty()) {
-                        Timber.v("Adding cookies to %s call : %s", request.getMethod(), existingCookiesStr);
-                        request.getRequestHeaders().put(HttpHelper.HEADER_COOKIE_KEY, existingCookiesStr);
-                    }
-                }
                 Timber.v("[%s] ignored by interceptor; method = %s", url, request.getMethod());
                 return super.shouldInterceptRequest(view, request);
             }
@@ -1329,6 +1319,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 // Query resource here, using OkHttp
                 Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
 
+                // Scram if the response is an error
+                if (response.code() >= 400) return null;
+
                 // Scram if the response is something else than html
                 Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
                 if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
@@ -1355,12 +1348,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
                     // Remove dirty elements from HTML resources
                     if (dirtyElements != null) {
-                        String mimeType = response.header(HEADER_CONTENT_TYPE);
-                        if (mimeType != null) {
-                            mimeType = HttpHelper.cleanContentType(mimeType).first.toLowerCase();
-                            if (mimeType.contains("html"))
-                                browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
-                        }
+                        browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
+                        if (null == browserStream) return null;
                     }
 
                     // Convert OkHttp response to the expected format
@@ -1369,8 +1358,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                     // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
                     if (result.getResponseHeaders().containsKey("set-cookie") || result.getResponseHeaders().containsKey("Set-Cookie")) {
                         String cookiesStr = result.getResponseHeaders().get("set-cookie");
-                        if (null == cookiesStr) cookiesStr = result.getResponseHeaders().get("Set-Cookie");
-                        if (cookiesStr != null) HttpHelper.setCookies(cookiesStr);
+                        if (null == cookiesStr)
+                            cookiesStr = result.getResponseHeaders().get("Set-Cookie");
+                        if (cookiesStr != null) HttpHelper.setCookies(urlStr, cookiesStr);
                     }
                 } else {
                     parserStream = body.byteStream();
@@ -1440,9 +1430,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          * @param dirtyElements CSS selectors of the nodes to remove
          * @return Stream containing the HTML document stripped from the elements to remove
          */
+        @Nullable
         private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, @NonNull List<String> dirtyElements) {
             try {
                 Document doc = Jsoup.parse(stream, null, baseUri);
+
                 for (String s : dirtyElements)
                     for (Element e : doc.select(s)) {
                         Timber.d("[%s] Removing node %s", baseUri, e.toString());
@@ -1451,7 +1443,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
                 Timber.e(e);
-                return stream;
+                return null;
             }
         }
 

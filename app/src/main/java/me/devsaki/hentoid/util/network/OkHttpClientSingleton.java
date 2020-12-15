@@ -52,10 +52,9 @@ public class OkHttpClientSingleton {
     }
 
     private static okhttp3.Response rewriteUserAgentInterceptor(Interceptor.Chain chain) throws IOException {
-        Request request = chain.request()
-                .newBuilder()
-                .header("User-Agent", HttpHelper.getMobileUserAgent(false))
-                .build();
-        return chain.proceed(request);
+        Request.Builder builder = chain.request().newBuilder();
+        if (null == chain.request().header("User-Agent") && null == chain.request().header("user-agent"))
+            builder.header("User-Agent", HttpHelper.getMobileUserAgent(false));
+        return chain.proceed(builder.build());
     }
 }
