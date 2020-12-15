@@ -90,7 +90,7 @@ public class QueueViewModel extends AndroidViewModel {
         queue.addSource(currentQueueSource, queue::setValue);
         // Errors
         if (currentErrorsSource != null) errors.removeSource(currentErrorsSource);
-        currentErrorsSource = dao.getErrorContent();
+        currentErrorsSource = dao.selectErrorContent();
         errors.addSource(currentErrorsSource, errors::setValue);
     }
 

@@ -145,7 +145,9 @@ public interface CollectionDAO {
     LiveData<PagedList<Content>> searchBooksUniversal(String query, long groupId, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
 
-    LiveData<List<Content>> getErrorContent();
+    LiveData<List<Content>> selectErrorContent();
+
+    List<Content> selectErrorContentList();
 
 
     LiveData<Integer> countBooks(String query, long groupId, List<Attribute> metadata, boolean favouritesOnly);

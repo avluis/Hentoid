@@ -136,8 +136,12 @@ public class ObjectBoxDAO implements CollectionDAO {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
-    public LiveData<List<Content>> getErrorContent() {
+    public LiveData<List<Content>> selectErrorContent() {
         return new ObjectBoxLiveData<>(db.selectErrorContentQ());
+    }
+
+    public List<Content> selectErrorContentList() {
+        return db.selectErrorContentQ().find();
     }
 
     public LiveData<Integer> countAllBooks() {
