@@ -19,8 +19,9 @@
 	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"254"},
 	  {"sourceName":"ASMHENTAI", "status":"RED", "fixedByBuild":"255"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"257"},
-	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"284" },
-	  {"sourceName":"NEXUS", "status":"GREY"  }
+	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"284"},
+	  {"sourceName":"NEXUS", "status":"GREY"},
+	  {"sourceName":"TSUMINO", "status":"RED"}
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
