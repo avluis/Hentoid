@@ -537,13 +537,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
 
-        String userAgent;
-        if (getStartSite().useMobileAgent())
-            userAgent = HttpHelper.getMobileUserAgent(getStartSite().useHentoidAgent());
-        else
-            userAgent = HttpHelper.getDesktopUserAgent(getStartSite().useHentoidAgent());
-        Timber.i("%s : using user-agent %s", getStartSite().name(), userAgent);
-        webSettings.setUserAgentString(userAgent);
+        Timber.i("%s : using user-agent %s", getStartSite().name(), getStartSite().getUserAgent());
+        webSettings.setUserAgentString(getStartSite().getUserAgent());
 
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
@@ -955,7 +950,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
         if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent)) {
-            changeActionMode(ActionMode.READ);
+            if (event.content.getStatus().equals(StatusContent.DOWNLOADED))
+                changeActionMode(ActionMode.READ);
         }
     }
 

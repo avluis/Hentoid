@@ -149,6 +149,13 @@ public enum Site {
             return description;
     }
 
+    public String getUserAgent() {
+        if (useMobileAgent())
+            return HttpHelper.getMobileUserAgent(useHentoidAgent());
+        else
+            return HttpHelper.getDesktopUserAgent(useHentoidAgent());
+    }
+
     public static class SiteConverter implements PropertyConverter<Site, Long> {
         @Override
         public Site convertToEntityProperty(Long databaseValue) {

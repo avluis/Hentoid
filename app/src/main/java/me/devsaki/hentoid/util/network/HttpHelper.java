@@ -38,6 +38,7 @@ public class HttpHelper {
     public static final String HEADER_COOKIE_KEY = "cookie";
     public static final String HEADER_REFERER_KEY = "referer";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    public static final String HEADER_USER_AGENT = "User-Agent";
 
     public static final Set<String> COOKIES_STANDARD_ATTRS = Set.of("expires", "max-age", "domain", "path", "secure", "httponly", "samesite");
 
@@ -129,7 +130,7 @@ public class HttpHelper {
                 if (header.second != null)
                     requestBuilder.addHeader(header.first, header.second);
 
-        requestBuilder.header("User-Agent", useMobileAgent ? getMobileUserAgent(useHentoidAgent) : getDesktopUserAgent(useHentoidAgent));
+        requestBuilder.header(HEADER_USER_AGENT, useMobileAgent ? getMobileUserAgent(useHentoidAgent) : getDesktopUserAgent(useHentoidAgent));
 
         return requestBuilder;
     }
