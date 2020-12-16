@@ -138,7 +138,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     // TODO doc
     private int previousSelectedCount = 0;
     // Used to show a given item at first display
-    private long contentHashToDisplayFirst = -1;
+    private long contentHashToDisplayFirst = 0;
 
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
@@ -595,10 +595,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
-        if (contentHashToDisplayFirst > -1) {
+        if (contentHashToDisplayFirst != 0) {
             int targetPos = fastAdapter.getPosition(contentHashToDisplayFirst);
             if (targetPos > -1) listRefreshDebouncer.submit(targetPos);
-            contentHashToDisplayFirst = -1;
+            contentHashToDisplayFirst = 0;
             return;
         }
         // Reposition the list on the initial top item position

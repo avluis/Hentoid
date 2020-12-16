@@ -48,8 +48,8 @@ import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.fragments.library.ErrorsDialogFragment;
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
+import me.devsaki.hentoid.fragments.library.ErrorsDialogFragment;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -95,7 +95,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     // TODO doc
     private int previousSelectedCount = 0;
     // Used to show a given item at first display
-    private long contentHashToDisplayFirst = -1;
+    private long contentHashToDisplayFirst = 0;
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
     // Indicate if the fragment is currently canceling all items
@@ -355,10 +355,10 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
-        if (contentHashToDisplayFirst > -1) {
+        if (contentHashToDisplayFirst != 0) {
             int targetPos = fastAdapter.getPosition(contentHashToDisplayFirst);
             if (targetPos > -1) listRefreshDebouncer.submit(targetPos);
-            contentHashToDisplayFirst = -1;
+            contentHashToDisplayFirst = 0;
         }
     }
 
