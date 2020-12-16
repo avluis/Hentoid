@@ -702,19 +702,20 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void onCancelBook(@NonNull Content c) {
-        viewModel.cancel(Stream.of(c).toList(), this::onDeleteError, this::onDeleteComplete);
+        viewModel.cancel(Stream.of(c).toList(), this::onCancelError, this::onCancelComplete);
     }
 
     private void onCancelBooks(@NonNull List<Content> c) {
-        viewModel.cancel(c, this::onDeleteError, this::onDeleteComplete);
+        isCancelingAll = true;
+        viewModel.cancel(c, this::onCancelError, this::onCancelComplete);
     }
 
     private void onCancelAll() {
         isCancelingAll = true;
-        viewModel.cancelAll(this::onDeleteError, this::onDeleteComplete);
+        viewModel.cancelAll(this::onCancelError, this::onCancelComplete);
     }
 
-    private void onDeleteComplete() {
+    private void onCancelComplete() {
         isCancelingAll = false;
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
@@ -723,7 +724,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     /**
      * Callback for the failure of the "delete item" action
      */
-    private void onDeleteError(Throwable t) {
+    private void onCancelError(Throwable t) {
         Timber.e(t);
         isCancelingAll = false;
         if (t instanceof ContentNotRemovedException) {
