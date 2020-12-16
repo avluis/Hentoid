@@ -16,7 +16,9 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +42,7 @@ public class HttpHelper {
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_USER_AGENT = "User-Agent";
 
-    public static final Set<String> COOKIES_STANDARD_ATTRS = Set.of("expires", "max-age", "domain", "path", "secure", "httponly", "samesite");
+    public static final Set<String> COOKIES_STANDARD_ATTRS = new HashSet<>();
 
     // To display sites with desktop layouts
     public static final String DESKTOP_USER_AGENT_PATTERN = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) %s Safari/537.36";
@@ -48,6 +50,12 @@ public class HttpHelper {
     public static String defaultUserAgent = null;
     public static String defaultChromeAgent = null;
     public static int defaultChromeVersion = -1;
+
+
+    static {
+        // Can't be done on the variable initializer as Set.of is only available since API R
+        COOKIES_STANDARD_ATTRS.addAll(Arrays.asList("expires", "max-age", "domain", "path", "secure", "httponly", "samesite"));
+    }
 
 
     private HttpHelper() {
