@@ -147,7 +147,6 @@ public class HttpHelper {
         if (message.trim().isEmpty()) message = "None";
         if (contentTypeValue != null) {
             Pair<String, String> details = cleanContentType(contentTypeValue);
-            Timber.i(">> WRResponse %s mime = %s encd = %s code = %s msg = %s", resp.request().url(), details.first, details.second, resp.code(), message);
             result = new WebResourceResponse(details.first, details.second, resp.code(), message, responseHeaders, is);
         } else {
             result = new WebResourceResponse("application/octet-stream", null, resp.code(), message, responseHeaders, is);
