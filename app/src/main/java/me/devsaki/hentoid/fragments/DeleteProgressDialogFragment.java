@@ -27,7 +27,7 @@ public class DeleteProgressDialogFragment extends DialogFragment {
     private static final String TITLE = "title";
     private DialogPrefsDeleteBinding binding = null;
 
-    private String title;
+    private String dialogTitle;
 
     public static void invoke(@NonNull final FragmentManager fragmentManager, @NonNull final String title) {
         DeleteProgressDialogFragment fragment = new DeleteProgressDialogFragment();
@@ -44,7 +44,7 @@ public class DeleteProgressDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
-        title = getArguments().getString(TITLE, "");
+        dialogTitle = getArguments().getString(TITLE, "");
 
         EventBus.getDefault().register(this);
     }
@@ -67,7 +67,7 @@ public class DeleteProgressDialogFragment extends DialogFragment {
     @Override
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
-        binding.deleteTitle.setText(title);
+        binding.deleteTitle.setText(dialogTitle);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

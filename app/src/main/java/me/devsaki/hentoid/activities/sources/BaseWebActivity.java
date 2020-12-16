@@ -950,9 +950,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent)) {
-            if (event.content.getStatus().equals(StatusContent.DOWNLOADED))
-                changeActionMode(ActionMode.READ);
+        if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
+            changeActionMode(ActionMode.READ);
         }
     }
 

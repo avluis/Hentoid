@@ -22,7 +22,6 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.annimon.stream.Optional;
-import com.annimon.stream.Stream;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -33,10 +32,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -52,7 +49,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.QueueRecord;
-import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
@@ -300,7 +296,8 @@ public class LibImportDialogFragment extends DialogFragment {
             if (importBookmarks) dao.deleteAllBookmarks();
         }
 
-        if (importBookmarks) nbBookmarksSuccess = ImportHelper.importBookmarks(dao, collection.getBookmarks());
+        if (importBookmarks)
+            nbBookmarksSuccess = ImportHelper.importBookmarks(dao, collection.getBookmarks());
 
         List<Content> contentToImport = new ArrayList<>();
         if (importLibrary) contentToImport.addAll(collection.getLibrary(dao));
