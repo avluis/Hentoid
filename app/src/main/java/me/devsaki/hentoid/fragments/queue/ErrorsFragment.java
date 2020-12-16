@@ -394,7 +394,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     }
 
     private void onDeleteBooks(@NonNull List<Content> c) {
-        isDeletingAll = true;
+        isDeletingAll = (c.size() > 2);
         viewModel.remove(c, this::onDeleteError, this::onDeleteComplete);
     }
 

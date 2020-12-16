@@ -706,7 +706,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void onCancelBooks(@NonNull List<Content> c) {
-        isCancelingAll = true;
+        isCancelingAll = (c.size() > 2);
         viewModel.cancel(c, this::onCancelError, this::onCancelComplete);
     }
 
