@@ -81,7 +81,7 @@ public class LibDeleteDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
 
-        progressTxt = rootView.findViewById(R.id.delete_progress_test);
+        progressTxt = rootView.findViewById(R.id.delete_progress);
         progressBar = rootView.findViewById(R.id.delete_bar);
 
         progressBar.setMax(booksList.length);
