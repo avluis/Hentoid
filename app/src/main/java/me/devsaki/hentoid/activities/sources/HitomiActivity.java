@@ -61,8 +61,8 @@ public class HitomiActivity extends BaseWebActivity {
             params.put("page", page + "");
 
             builder.clearQuery();
-            for (String key : params.keySet())
-                builder.appendQueryParameter(key, params.get(key));
+            for (Map.Entry<String, String> param : params.entrySet())
+                builder.appendQueryParameter(param.getKey(), param.getValue());
         }
 
         return builder.toString();
