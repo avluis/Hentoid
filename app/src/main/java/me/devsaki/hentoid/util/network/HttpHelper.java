@@ -42,10 +42,7 @@ public class HttpHelper {
 
     public static final Set<String> COOKIES_STANDARD_ATTRS = Set.of("expires", "max-age", "domain", "path", "secure", "httponly", "samesite");
 
-    // User agent parts; initialized at startup
-    // Some security mechanisms do check if Android devices connect with an Android mobile agent
-    public static final String MOBILE_USER_AGENT_PATTERN = "Mozilla/5.0 (Linux; Android \"%s\"; \"%s\") AppleWebKit/537.36 (KHTML, like Gecko) %s Mobile Safari/537.36";
-    // For future use to display sites with desktop layouts
+    // To display sites with desktop layouts
     public static final String DESKTOP_USER_AGENT_PATTERN = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) %s Safari/537.36";
 
     public static String defaultUserAgent = null;
@@ -337,62 +334,6 @@ public class HttpHelper {
         Timber.v("Setting cookie for %s : %s", url, cookieStrToSet.toString());
 
         mgr.flush();
-    }
-
-    /**
-     * Set a new cookie for the domain of the given url, using the CookieManager
-     * If the cookie already exists, replace it
-     *
-     * @param url     Full URL of the cookie
-     * @param cookies Cookies to set using key = name and value = value
-     */
-    public static void setDomainCookies(String url, Map<String, String> cookies) {
-        CookieManager mgr = CookieManager.getInstance();
-        String domain = getDomainFromUri(url);
-
-        /*
-        Check if given cookies are already registered
-
-        Rationale : setting any cookie programmatically will set it as a _session_ cookie.
-        It's not smart to do that if the very same cookie is already set for a longer lifespan.
-         */
-        Map<String, String> cookiesToSet = new HashMap<>();
-
-        String existingCookiesStr = mgr.getCookie(domain);
-        if (existingCookiesStr != null) {
-            Map<String, String> existingCookies = parseCookies(existingCookiesStr);
-
-            for (Map.Entry<String, String> entry : cookies.entrySet()) {
-                String key = entry.getKey();
-                String value = (null == entry.getValue()) ? "" : entry.getValue();
-                if (!existingCookies.containsKey(key)) cookiesToSet.put(key, value);
-                else {
-                    String val = existingCookies.get(key);
-                    if (val != null && !val.equals(cookies.get(key)))
-                        cookiesToSet.put(key, cookies.get(key));
-                }
-            }
-        } else {
-            cookiesToSet = cookies;
-        }
-
-        for (Map.Entry<String, String> entry : cookiesToSet.entrySet())
-            mgr.setCookie(domain, entry.getKey() + "=" + entry.getValue());
-
-        mgr.flush();
-    }
-
-    /**
-     * Determine whether the given URL is associated with a cookie with the given name
-     *
-     * @param url        URL to test against
-     * @param cookieName Cookie name to test against on the given URl's domain
-     * @return True if the given URL's domain is associated with a cookie with the given name; false if not
-     */
-    public static boolean hasDomainCookie(@NonNull final String url, @NonNull final String cookieName) {
-        String domain = getDomainFromUri(url);
-        String existingCookiesStr = CookieManager.getInstance().getCookie(domain);
-        return (existingCookiesStr != null && existingCookiesStr.toLowerCase().contains(cookieName.toLowerCase() + "="));
     }
 
     /**
