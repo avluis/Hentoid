@@ -717,6 +717,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     private void onCancelComplete() {
         isCancelingAll = false;
+        viewModel.refresh();
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }
@@ -727,6 +728,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void onCancelError(Throwable t) {
         Timber.e(t);
         isCancelingAll = false;
+        viewModel.refresh();
         if (t instanceof ContentNotRemovedException) {
             String message = (null == t.getMessage()) ? "Content removal failed" : t.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();

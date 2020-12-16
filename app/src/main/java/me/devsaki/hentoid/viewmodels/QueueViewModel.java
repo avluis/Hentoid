@@ -83,7 +83,7 @@ public class QueueViewModel extends AndroidViewModel {
     /**
      * Perform a new search
      */
-    private void refresh() {
+    public void refresh() {
         // Queue
         if (currentQueueSource != null) queue.removeSource(currentQueueSource);
         currentQueueSource = dao.getQueueContent();

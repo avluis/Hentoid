@@ -400,6 +400,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
     private void onDeleteComplete() {
         isDeletingAll = false;
+        viewModel.refresh();
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }
@@ -409,6 +410,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
      */
     private void onDeleteError(Throwable t) {
         isDeletingAll = false;
+        viewModel.refresh();
         Timber.e(t);
         if (t instanceof ContentNotRemovedException) {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
