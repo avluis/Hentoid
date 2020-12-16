@@ -19,6 +19,7 @@ import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
+import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
 import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.services.UpdateCheckService
@@ -232,7 +233,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     ) { dialog1: DialogInterface, _: Int ->
                         dialog1.dismiss()
                         searchDisposable.dispose()
-                        LibDeleteDialogFragment.invoke(parentFragmentManager, resources.getString(R.string.delete_title))
+                        DeleteProgressDialogFragment.invoke(parentFragmentManager, resources.getString(R.string.delete_title))
                         viewModel.deleteItems(list)
                     }
                     .setNegativeButton(R.string.no

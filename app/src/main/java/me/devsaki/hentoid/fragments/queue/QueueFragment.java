@@ -69,7 +69,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
-import me.devsaki.hentoid.fragments.preferences.LibDeleteDialogFragment;
+import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -709,14 +709,14 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void onCancelBooks(@NonNull List<Content> c) {
         if (c.size() > 2) {
             isCancelingAll = true;
-            LibDeleteDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
+            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
         }
         viewModel.cancel(c, this::onCancelError, this::onCancelComplete);
     }
 
     private void onCancelAll() {
         isCancelingAll = true;
-        LibDeleteDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
+        DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
         viewModel.cancelAll(this::onCancelError, this::onCancelComplete);
     }
 

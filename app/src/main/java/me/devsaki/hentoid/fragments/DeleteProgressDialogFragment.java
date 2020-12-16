@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.preferences;
+package me.devsaki.hentoid.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -22,7 +22,7 @@ import me.devsaki.hentoid.events.ProcessEvent;
  * Created by Robb on 11/2018
  * Launcher dialog for the library refresh feature
  */
-public class LibDeleteDialogFragment extends DialogFragment {
+public class DeleteProgressDialogFragment extends DialogFragment {
 
     private static final String TITLE = "title";
     private DialogPrefsDeleteBinding binding = null;
@@ -30,7 +30,7 @@ public class LibDeleteDialogFragment extends DialogFragment {
     private String title;
 
     public static void invoke(@NonNull final FragmentManager fragmentManager, @NonNull final String title) {
-        LibDeleteDialogFragment fragment = new LibDeleteDialogFragment();
+        DeleteProgressDialogFragment fragment = new DeleteProgressDialogFragment();
 
         Bundle args = new Bundle();
         args.putString(TITLE, title);

@@ -49,7 +49,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.fragments.library.ErrorsDialogFragment;
-import me.devsaki.hentoid.fragments.preferences.LibDeleteDialogFragment;
+import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -397,7 +397,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     private void onDeleteBooks(@NonNull List<Content> c) {
         if (c.size() > 2) {
             isDeletingAll = true;
-            LibDeleteDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
+            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
         }
         viewModel.remove(c, this::onDeleteError, this::onDeleteComplete);
     }
