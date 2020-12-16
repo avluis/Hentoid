@@ -106,7 +106,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                             ) { dialog1: DialogInterface, _: Int ->
                                 dialog1.dismiss()
                                 Preferences.setExternalLibraryUri("")
-                                viewModel.removeAllExternalContent();
+                                viewModel.removeAllExternalContent()
                                 ToastUtil.toast(getString(R.string.prefs_external_library_detached))
                             }
                             .setNegativeButton(R.string.no
