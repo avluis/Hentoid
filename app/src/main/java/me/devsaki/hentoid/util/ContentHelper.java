@@ -36,7 +36,6 @@ import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
@@ -311,23 +310,6 @@ public final class ContentHelper {
                 throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
             }
         }
-    }
-
-    // TODO doc
-    public static void removeAllExternalContent(@NonNull final Context context) {
-        // Remove all external books from DB
-        CollectionDAO dao = new ObjectBoxDAO(context);
-        try {
-            dao.deleteAllExternalBooks();
-        } finally {
-            dao.cleanup();
-        }
-
-        // Remove all images stored in the app's persistent folder (archive covers)
-        File appFolder = context.getFilesDir();
-        File[] images = appFolder.listFiles((dir, name) -> ImageHelper.isSupportedImage(name));
-        if (images != null)
-            for (File f : images) FileHelper.removeFile(f);
     }
 
     /**

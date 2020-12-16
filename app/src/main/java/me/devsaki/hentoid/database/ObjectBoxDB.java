@@ -1172,7 +1172,7 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    long[] selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued) {
+    List<Content> selectStoredContent(boolean nonFavouritesOnly, boolean includeQueued) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         if (includeQueued)
             query.in(Content_.status, new int[]{
@@ -1188,7 +1188,7 @@ public class ObjectBoxDB {
         query.notNull(Content_.storageUri);
         query.notEqual(Content_.storageUri, "");
         if (nonFavouritesOnly) query.equal(Content_.favourite, false);
-        return query.build().findIds();
+        return query.build().find();
     }
 
     // Select all duplicate bookmarks that end with a "/"

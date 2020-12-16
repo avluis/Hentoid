@@ -86,8 +86,8 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public Single<List<Long>> getStoredBookIds(boolean nonFavouritesOnly, boolean includeQueued) {
-        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectStoredContentIds(nonFavouritesOnly, includeQueued)))
+    public Single<List<Content>> getStoredBooks(boolean nonFavouritesOnly, boolean includeQueued) {
+        return Single.fromCallable(() -> db.selectStoredContent(nonFavouritesOnly, includeQueued))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }

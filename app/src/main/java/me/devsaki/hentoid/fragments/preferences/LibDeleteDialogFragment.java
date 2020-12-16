@@ -4,29 +4,19 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
-import java.util.List;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.disposables.Disposables;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
-import timber.log.Timber;
+import me.devsaki.hentoid.databinding.DialogPrefsDeleteBinding;
+import me.devsaki.hentoid.events.ProcessEvent;
 
 /**
  * Created by Robb on 11/2018
@@ -34,22 +24,16 @@ import timber.log.Timber;
  */
 public class LibDeleteDialogFragment extends DialogFragment {
 
-    private static final String BOOK_LIST = "book_list";
+    private static final String TITLE = "title";
+    private DialogPrefsDeleteBinding binding = null;
 
-    private long[] booksList;
+    private String title;
 
-    private TextView progressTxt;
-    private ProgressBar progressBar;
-
-    private CollectionDAO dao;
-    private Disposable searchDisposable = Disposables.empty();
-
-
-    public static void invoke(@NonNull final FragmentManager fragmentManager, @NonNull final List<Long> bookList) {
+    public static void invoke(@NonNull final FragmentManager fragmentManager, @NonNull final String title) {
         LibDeleteDialogFragment fragment = new LibDeleteDialogFragment();
 
         Bundle args = new Bundle();
-        args.putLongArray(BOOK_LIST, Helper.getPrimitiveLongArrayFromList(bookList));
+        args.putString(TITLE, title);
         fragment.setArguments(args);
 
         fragment.show(fragmentManager, null);
@@ -60,58 +44,40 @@ public class LibDeleteDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
-        booksList = getArguments().getLongArray(BOOK_LIST);
+        title = getArguments().getString(TITLE, "");
+
+        EventBus.getDefault().register(this);
     }
 
     @Override
     public void onDestroyView() {
-        if (searchDisposable != null) searchDisposable.dispose();
-        if (dao != null) dao.cleanup();
+        EventBus.getDefault().unregister(this);
         super.onDestroyView();
+        binding = null;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
+        binding = DialogPrefsDeleteBinding.inflate(inflater, container, false);
         setCancelable(false);
-        return inflater.inflate(R.layout.dialog_prefs_delete, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
-
-        progressTxt = rootView.findViewById(R.id.delete_progress);
-        progressBar = rootView.findViewById(R.id.delete_bar);
-
-        progressBar.setMax(booksList.length);
-
-        dao = new ObjectBoxDAO(getActivity());
-        searchDisposable = Observable.fromIterable(Helper.getListFromPrimitiveArray(booksList))
-                .observeOn(Schedulers.io())
-                .map(id -> dao.selectContent(id))
-                .map(this::deleteItem)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        this::next,
-                        Timber::w,
-                        this::finish
-                );
+        binding.deleteTitle.setText(title);
     }
 
-    private boolean deleteItem(@NonNull Content c) throws ContentNotRemovedException {
-        ContentHelper.removeContent(requireActivity(), dao, c);
-        return true;
-    }
-
-    private void next(boolean b) {
-        int currentProgress = progressBar.getProgress() + 1;
-        progressTxt.setText(getString(R.string.book_progress, currentProgress, progressBar.getMax()));
-        progressBar.setProgress(currentProgress);
-    }
-
-    private void finish() {
-        searchDisposable.dispose();
-        dismiss();
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        binding.deleteBar.setMax(event.elementsTotal);
+        if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            binding.deleteProgress.setText(getString(R.string.book_progress, event.elementsOK + event.elementsKO, event.elementsTotal));
+            binding.deleteBar.setProgress(event.elementsOK + event.elementsKO);
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            dismiss();
+        }
     }
 }
