@@ -874,7 +874,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             result = ContentStatus.IN_QUEUE;
         }
 
-        webClient.setBlockedTags(ContentHelper.getBlockedTags(content));
+        if (webClient != null)
+            webClient.setBlockedTags(ContentHelper.getBlockedTags(content));
 
         currentContent = content;
         return result;
