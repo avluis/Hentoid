@@ -13,6 +13,7 @@ import com.annimon.stream.function.Consumer;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -23,6 +24,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -154,6 +156,8 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     public void remove(@NonNull List<Content> content, Consumer<Throwable> onError, Runnable onComplete) {
+        AtomicInteger nbDeleted = new AtomicInteger();
+
         compositeDisposable.add(
                 Observable.fromIterable(content)
                         .observeOn(Schedulers.io())
@@ -162,9 +166,17 @@ public class QueueViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> {
+                                    nbDeleted.getAndIncrement();
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbDeleted.get(), 0, content.size()));
                                 },
-                                onError::accept,
-                                onComplete::run
+                                t -> {
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, content.size()));
+                                    onError.accept(t);
+                                },
+                                () -> {
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, content.size()));
+                                    onComplete.run();
+                                }
                         )
         );
     }
@@ -175,6 +187,8 @@ public class QueueViewModel extends AndroidViewModel {
 
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
 
+        AtomicInteger nbDeleted = new AtomicInteger();
+
         compositeDisposable.add(
                 Observable.fromIterable(localQueue)
                         .observeOn(Schedulers.io())
@@ -183,10 +197,17 @@ public class QueueViewModel extends AndroidViewModel {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> {
-                                    // Nothing specific
+                                    nbDeleted.getAndIncrement();
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbDeleted.get(), 0, localQueue.size()));
                                 },
-                                onError::accept,
-                                onComplete::run
+                                t -> {
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    onError.accept(t);
+                                },
+                                () -> {
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    onComplete.run();
+                                }
                         )
         );
     }
