@@ -157,6 +157,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     @Override
     public void onDestroyView() {
+        indexRefreshDebouncer.clear();
         binding.recyclerView.setAdapter(null);
         binding = null;
         super.onDestroyView();
@@ -448,7 +449,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         // -> activate scroll listener manually
         if (currentPosition == startingIndex) onScrollPositionChange(startingIndex);
         else {
-            if (LinearLayoutManager.HORIZONTAL == llm.getOrientation())
+            if (LinearLayoutManager.HORIZONTAL == llm.getOrientation() && binding != null)
                 binding.recyclerView.scrollToPosition(startingIndex);
             else
                 llm.scrollToPositionWithOffset(startingIndex, 0);
@@ -515,6 +516,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * @param scrollPosition New 0-based scroll position
      */
     private void onScrollPositionChange(int scrollPosition) {
+        if (null == binding) return;
+
         if (scrollPosition != imageIndex) {
             boolean isScrollLTR = true;
             int direction = Preferences.getContentDirection(bookPreferences);
@@ -578,9 +581,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Update the display of the favourites gallery launcher
      */
     private void updateFavouritesGalleryButtonDisplay() {
-        if (adapter.isFavouritePresent())
-            binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.VISIBLE);
-        else binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.INVISIBLE);
+        if (binding != null)
+            if (adapter.isFavouritePresent())
+                binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.VISIBLE);
+            else binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.INVISIBLE);
     }
 
     /**
