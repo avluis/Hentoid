@@ -41,7 +41,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) : A
 
     fun deleteItems(items: List<Content>) {
         val context = getApplication<Application>().applicationContext
-        var nbDeleted = 0;
+        var nbDeleted = 0
 
         deleteDisposable = Observable.fromIterable(items)
                 .observeOn(Schedulers.io())
