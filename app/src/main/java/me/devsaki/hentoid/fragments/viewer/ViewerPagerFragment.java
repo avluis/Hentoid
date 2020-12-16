@@ -157,8 +157,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
+        binding.recyclerView.setAdapter(null);
         binding = null;
+        super.onDestroyView();
     }
 
     @Override
@@ -245,7 +246,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             adapter.setRecyclerView(null);
             adapter.destroy();
         }
-        binding.recyclerView.setAdapter(null);
         super.onDestroy();
     }
 
