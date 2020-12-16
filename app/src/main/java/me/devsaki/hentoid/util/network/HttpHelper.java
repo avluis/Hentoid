@@ -404,13 +404,6 @@ public class HttpHelper {
 
     // TODO doc
     public static String getMobileUserAgent(boolean withHentoid) {
-        /*
-        if (null == defaultUserAgent)
-            throw new RuntimeException("Call initUserAgents first to initialize them !");
-        String result = String.format(MOBILE_USER_AGENT_PATTERN, Build.VERSION.RELEASE, Build.MODEL, defaultChromeAgent);
-        if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME;
-        return result;
-         */
         return getDefaultUserAgent(withHentoid);
     }
 

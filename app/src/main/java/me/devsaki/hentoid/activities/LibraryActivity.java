@@ -645,6 +645,7 @@ public class LibraryActivity extends BaseActivity {
                 Preferences.setGroupingDisplay(Grouping.FLAT.getId());
                 viewModel.setGroup(null);
                 updateDisplay();
+                break;
             case Preferences.Key.GROUPING_DISPLAY:
             case Preferences.Key.ARTIST_GROUP_VISIBILITY:
                 viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
