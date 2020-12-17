@@ -327,11 +327,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int actualProgress = progress;
-                if (Constant.VIEWER_DIRECTION_RTL == Preferences.getContentDirection(bookPreferences)) {
-                    actualProgress = seekBar.getMax() - progress;
-                }
-                if (fromUser) seekToPosition(actualProgress);
+                if (fromUser) seekToPosition(progress);
             }
         });
 
