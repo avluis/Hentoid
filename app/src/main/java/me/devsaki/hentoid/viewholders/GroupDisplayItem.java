@@ -35,8 +35,8 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
 
@@ -167,8 +167,11 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
                 DragDropUtil.bindDragHandle(this, item);
             }
 
-            if (item.group.picture != null && ivCover != null) {
-                ImageFile cover = item.group.picture.getTarget();
+            if (ivCover != null) {
+                ImageFile cover = null;
+                if (!item.group.picture.isNull()) cover = item.group.picture.getTarget();
+                else if (!item.group.items.isEmpty() && !item.group.items.get(0).content.isNull())
+                    cover = item.group.items.get(0).content.getTarget().getCover();
                 if (cover != null) attachCover(cover);
             }
             List<GroupItem> items = item.group.items;
@@ -177,9 +180,10 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
         private void attachCover(@NonNull ImageFile cover) {
             String thumbLocation = "";
-            if (cover.getStatus().equals(StatusContent.DOWNLOADED) || cover.getStatus().equals(StatusContent.MIGRATED) || cover.getStatus().equals(StatusContent.EXTERNAL))
-                thumbLocation = cover.getFileUri();
+            if (ContentHelper.isInLibrary(cover.getStatus())) thumbLocation = cover.getFileUri();
             if (thumbLocation.isEmpty()) thumbLocation = cover.getUrl();
+            if (thumbLocation.isEmpty())
+                thumbLocation = cover.getContent().getTarget().getCoverImageUrl();
 
             if (thumbLocation.isEmpty()) return;
 

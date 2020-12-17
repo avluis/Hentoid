@@ -525,7 +525,7 @@ public class Content implements Serializable {
             for (ImageFile img : images)
                 if (img.isCover()) return img;
         }
-        return new ImageFile();
+        return new ImageFile(0, getCoverImageUrl(), StatusContent.ONLINE, 1);
     }
 
     public String getCoverImageUrl() {
