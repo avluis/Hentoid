@@ -7,21 +7,23 @@ import androidx.annotation.NonNull;
  */
 public enum Grouping {
 
-    FLAT(0, "Flat", false, false),
-    ARTIST(1, "By artist", false, true),
-    DL_DATE(2, "By download date", false, false),
-    CUSTOM(98, "Custom", true, true),
-    NONE(99, "None", false, false);
+    FLAT(0, "Flat", false, false, false),
+    ARTIST(1, "By artist", false, true, true),
+    DL_DATE(2, "By download date", false, false, false),
+    CUSTOM(98, "Custom", true, true, true),
+    NONE(99, "None", false, false, false);
 
     private final int id;
     private final String name;
     private final boolean canReorderGroups;
+    private final boolean canDeleteGroups;
     private final boolean canReorderBooks;
 
-    Grouping(int id, @NonNull String name, boolean canReorderGroups, boolean canReorderBooks) {
+    Grouping(int id, @NonNull String name, boolean canReorderGroups, boolean canDeleteGroups, boolean canReorderBooks) {
         this.id = id;
         this.name = name;
         this.canReorderGroups = canReorderGroups;
+        this.canDeleteGroups = canDeleteGroups;
         this.canReorderBooks = canReorderBooks;
     }
 
@@ -31,6 +33,10 @@ public enum Grouping {
 
     public String getName() {
         return name;
+    }
+
+    public boolean canDeleteGroups() {
+        return canDeleteGroups;
     }
 
     public boolean canReorderGroups() {
