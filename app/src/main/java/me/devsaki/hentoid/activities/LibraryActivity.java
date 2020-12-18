@@ -832,7 +832,7 @@ public class LibraryActivity extends BaseActivity {
 
         if (isGroupDisplayed()) {
             editNameMenu.setVisible(!isMultipleSelection && Preferences.getGroupingDisplay().canReorderGroups());
-            deleteMenu.setVisible(Preferences.getGroupingDisplay().canDeleteGroups());
+            deleteMenu.setVisible(true);
             shareMenu.setVisible(false);
             archiveMenu.setVisible(true);
             changeGroupMenu.setVisible(false);

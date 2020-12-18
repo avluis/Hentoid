@@ -373,15 +373,17 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                     Snackbar.make(recyclerView, getResources().getQuantityString(R.plurals.external_not_removed, diff, diff), BaseTransientBottomBar.LENGTH_LONG).show();
                     selectedContent = contentToDelete;
                     // Rebuild the groups list from the remaining contents if needed
-                    if (Preferences.getGroupingDisplay().canReorderGroups())
+                    if (Preferences.getGroupingDisplay().canDeleteGroups())
                         selectedGroups = Stream.of(selectedContent).flatMap(c -> Stream.of(c.groupItems)).map(gi -> gi.group.getTarget()).toList();
                 }
             }
-            // Non-custom groups -> groups are removed automatically as soon as they don't contain any content => no need to remove the groups manually
-            if (!Preferences.getGroupingDisplay().canReorderGroups()) selectedGroups.clear();
+            // Don't remove non-deletable groups
+            if (!Preferences.getGroupingDisplay().canDeleteGroups()) selectedGroups.clear();
 
             if (!selectedContent.isEmpty() || !selectedGroups.isEmpty())
                 activity.get().askDeleteItems(selectedContent, selectedGroups, null, selectExtension);
+            else
+                selectExtension.deselect();
         }
     }
 
