@@ -1315,8 +1315,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 // Query resource here, using OkHttp
                 Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
 
-                // Scram if the response is an error
-                if (response.code() >= 400) return null;
+                // Scram if the response is a redirection or an error
+                if (response.code() >= 300) return null;
 
                 // Scram if the response is something else than html
                 Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
