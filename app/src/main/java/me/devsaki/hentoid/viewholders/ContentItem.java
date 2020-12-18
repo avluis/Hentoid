@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -72,6 +73,7 @@ import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
 public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable, ISwipeable {
 
+    private static final int ITEM_HORIZONTAL_MARGIN_PX;
     private static final RequestOptions glideRequestOptions;
 
     @IntDef({ViewType.LIBRARY, ViewType.LIBRARY_GRID, ViewType.LIBRARY_EDIT, ViewType.QUEUE, ViewType.ERRORS})
@@ -101,6 +103,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     static {
         Context context = HentoidApp.getInstance();
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
+
+        int screenWidthPx = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels - (2 * (int) context.getResources().getDimension(R.dimen.default_cardview_margin));
+        int gridHorizontalWidthPx = (int) context.getResources().getDimension(R.dimen.card_grid_width);
+        int nbItems = (int) Math.floor(screenWidthPx * 1f / gridHorizontalWidthPx);
+        int remainingSpacePx = screenWidthPx % gridHorizontalWidthPx;
+        ITEM_HORIZONTAL_MARGIN_PX = remainingSpacePx / (nbItems * 2);
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
@@ -330,6 +338,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         private void updateLayoutVisibility(@NonNull final ContentItem item) {
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
+
+            if (Preferences.Constant.LIBRARY_DISPLAY_GRID == Preferences.getLibraryDisplay()) {
+                ViewGroup.LayoutParams layoutParams = baseLayout.getLayoutParams();
+                if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
+                    ((ViewGroup.MarginLayoutParams) layoutParams).setMarginStart(ITEM_HORIZONTAL_MARGIN_PX);
+                    ((ViewGroup.MarginLayoutParams) layoutParams).setMarginEnd(ITEM_HORIZONTAL_MARGIN_PX);
+                }
+                baseLayout.setLayoutParams(layoutParams);
+            }
+
             if (item.getContent() != null && item.getContent().isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
