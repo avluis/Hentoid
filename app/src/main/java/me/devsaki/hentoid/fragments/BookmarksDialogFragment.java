@@ -153,7 +153,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         copyMenu = selectionToolbar.getMenu().findItem(R.id.action_copy);
 
         bookmarkCurrentBtn = requireViewById(rootView, R.id.bookmark_current_btn);
-        Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> b.getUrl().equals(url)).findFirst();
+        Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> SiteBookmark.urlsAreSame(b.getUrl(), url)).findFirst();
         if (currentBookmark.isPresent()) bookmarkId = currentBookmark.get().id;
         updateBookmarkButton();
     }

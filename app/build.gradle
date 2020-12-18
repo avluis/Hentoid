@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 // apply plugin: 'io.fabric'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.sonarqube'
 //apply plugin: 'com.google.firebase.crashlytics'
@@ -27,8 +26,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
-        versionCode 160
-        versionName '1.13.2'
+        versionCode 161
+        versionName '1.13.3'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -40,6 +39,9 @@ android {
 
         renderscriptTargetApi 21
         renderscriptSupportModeEnabled false
+    }
+    buildFeatures {
+        viewBinding true
     }
     buildTypes {
         debug {

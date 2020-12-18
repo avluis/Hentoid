@@ -64,10 +64,11 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     // Screen width and height; used to adjust dimensions of small images handled by Glide
-    static final int screenWidth = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
-    static final int screenHeight = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
+    static final int SCREEN_WIDTH = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
+    static final int SCREEN_HEIGHT = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
 
     private static final int PAGE_MIN_HEIGHT = (int) HentoidApp.getInstance().getResources().getDimension(R.dimen.page_min_height);
+
 
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
@@ -377,7 +378,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
             int targetImgHeight = imgHeight;
             // If we display a picture smaller than the screen dimensions, we have to zoom it
-            if (resizeSmallPics && imgHeight < screenHeight && imgWidth < screenWidth) {
+            if (resizeSmallPics && imgHeight < SCREEN_HEIGHT && imgWidth < SCREEN_WIDTH) {
                 targetImgHeight = Math.round(imgHeight * getTargetScale(imgWidth, imgHeight, displayMode));
                 ViewGroup.LayoutParams imgLayoutParams = imgView.getLayoutParams();
                 imgLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -393,15 +394,15 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
                 if (imgHeight > imgWidth) {
                     // Fit to width
-                    return screenWidth / (float) imgWidth;
+                    return SCREEN_WIDTH / (float) imgWidth;
                 } else {
-                    if (screenHeight > screenWidth)
-                        return screenHeight / (float) imgHeight; // Fit to height when in portrait mode
+                    if (SCREEN_HEIGHT > SCREEN_WIDTH)
+                        return SCREEN_HEIGHT / (float) imgHeight; // Fit to height when in portrait mode
                     else
-                        return screenWidth / (float) imgWidth; // Fit to width when in landscape mode
+                        return SCREEN_WIDTH / (float) imgWidth; // Fit to width when in landscape mode
                 }
             } else { // Fit screen
-                return Math.min(screenWidth / (float) imgWidth, screenHeight / (float) imgHeight);
+                return Math.min(SCREEN_WIDTH / (float) imgWidth, SCREEN_HEIGHT / (float) imgHeight);
             }
         }
 

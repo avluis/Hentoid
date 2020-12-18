@@ -1,0 +1,20 @@
+
+Changed
+
+    Library screen : Replace advanced search "CLEAR" text button by a cancel icon
+    Library screen : Invert QUEUE and ABOUT buttons position on the left drawer
+    Image viewer : Bottom scroller is displayed right to left when reading direction is right to left
+
+Fixed
+
+    Tsumino : Align with new site security
+    Browser : Bottom bar doesn't display a "read" icon when the book goes directly into the errors queue anymore
+    Site bookmarks : host/someurl/ and host/someurl are considered the same URL + auto cleanup for existing duplicates
+    Queue screen : Prevent the UI from crashing when mass-deleting many items at once
+    Queue screen : Auto-scroll queue from the browser to a given book now works for all books
+    Queue & library screens : Deselect items when dismissing "are you sure you want to delete" dialog
+    Library screen / groups : Fix display of group book count when grouping by download date
+    Library screen / groups : Fix sort direction button not working
+    When plugging a fresh install to an existing Hentoid folder, restore the whole error queue including books that haven't been downloaded at all
+
+

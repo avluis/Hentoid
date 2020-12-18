@@ -5,8 +5,10 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
+import androidx.lifecycle.ViewModelProvider
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
@@ -17,13 +19,18 @@ import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
+import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
 import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.util.*
+import me.devsaki.hentoid.viewmodels.PreferencesViewModel
+import me.devsaki.hentoid.viewmodels.ViewModelFactory
 
 
 class PreferenceFragment : PreferenceFragmentCompat(),
         SharedPreferences.OnSharedPreferenceChangeListener {
+
+    lateinit var viewModel: PreferencesViewModel
 
     companion object {
         private const val KEY_ROOT = "root"
@@ -47,6 +54,12 @@ class PreferenceFragment : PreferenceFragmentCompat(),
             val root = arguments.getCharSequence(KEY_ROOT)
             if (root != null) preferenceScreen = findPreference(root)
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val vmFactory = ViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider(requireActivity(), vmFactory)[PreferencesViewModel::class.java]
     }
 
     override fun onResume() {
@@ -92,7 +105,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                             ) { dialog1: DialogInterface, _: Int ->
                                 dialog1.dismiss()
                                 Preferences.setExternalLibraryUri("")
-                                ContentHelper.removeAllExternalContent(requireContext())
+                                viewModel.removeAllExternalContent()
                                 ToastUtil.toast(getString(R.string.prefs_external_library_detached))
                             }
                             .setNegativeButton(R.string.no
@@ -213,7 +226,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         val dao = ObjectBoxDAO(activity)
         var searchDisposable = Disposables.empty()
 
-        searchDisposable = dao.getStoredBookIds(true, false).subscribe { list ->
+        searchDisposable = dao.getStoredBooks(true, false).subscribe { list ->
             MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_warning)
                     .setCancelable(false)
@@ -223,7 +236,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     ) { dialog1: DialogInterface, _: Int ->
                         dialog1.dismiss()
                         searchDisposable.dispose()
-                        LibDeleteDialogFragment.invoke(parentFragmentManager, list)
+                        DeleteProgressDialogFragment.invoke(parentFragmentManager, resources.getString(R.string.delete_title))
+                        viewModel.deleteItems(list)
                     }
                     .setNegativeButton(R.string.no
                     ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }

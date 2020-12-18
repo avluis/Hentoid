@@ -41,7 +41,6 @@ import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
@@ -173,8 +172,12 @@ public final class ContentHelper {
     public static boolean updateQueueJson(@NonNull Context context, @NonNull CollectionDAO dao) {
         Helper.assertNonUiThread();
         List<QueueRecord> queue = dao.selectQueue();
+        List<Content> errors = dao.selectErrorContentList();
+
         // Save current queue (to be able to restore it in case the app gets uninstalled)
         List<Content> queuedContent = Stream.of(queue).map(qr -> qr.getContent().getTarget()).withoutNulls().toList();
+        if (errors != null) queuedContent.addAll(errors);
+
         JsonContentCollection contentCollection = new JsonContentCollection();
         contentCollection.setQueue(queuedContent);
 
@@ -340,23 +343,6 @@ public final class ContentHelper {
                 throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
             }
         }
-    }
-
-    // TODO doc
-    public static void removeAllExternalContent(@NonNull final Context context) {
-        // Remove all external books from DB
-        CollectionDAO dao = new ObjectBoxDAO(context);
-        try {
-            dao.deleteAllExternalBooks();
-        } finally {
-            dao.cleanup();
-        }
-
-        // Remove all images stored in the app's persistent folder (archive covers)
-        File appFolder = context.getFilesDir();
-        File[] images = appFolder.listFiles((dir, name) -> ImageHelper.isSupportedImage(name));
-        if (images != null)
-            for (File f : images) FileHelper.removeFile(f);
     }
 
     /**

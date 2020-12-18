@@ -547,13 +547,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
 
-        String userAgent;
-        if (getStartSite().useMobileAgent())
-            userAgent = HttpHelper.getMobileUserAgent(getStartSite().useHentoidAgent());
-        else
-            userAgent = HttpHelper.getDesktopUserAgent(getStartSite().useHentoidAgent());
-        Timber.i("Using user-agent %s", userAgent);
-        webSettings.setUserAgentString(userAgent);
+        Timber.i("%s : using user-agent %s", getStartSite().name(), getStartSite().getUserAgent());
+        webSettings.setUserAgentString(getStartSite().getUserAgent());
 
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
@@ -916,7 +911,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             result = ContentStatus.IN_QUEUE;
         }
 
-        webClient.setBlockedTags(ContentHelper.getBlockedTags(content));
+        if (webClient != null)
+            webClient.setBlockedTags(ContentHelper.getBlockedTags(content));
 
         currentContent = content;
         return result;
@@ -991,7 +987,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent)) {
+        if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
             changeActionMode(ActionMode.READ);
         }
     }
@@ -1281,13 +1277,14 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
+            String url = request.getUrl().toString();
+
             // Data fetched with POST is out of scope of analysis and adblock
             if (!request.getMethod().equalsIgnoreCase("get")) {
-                Timber.v("[%s] ignored by interceptor; method = %s", request.getUrl().toString(), request.getMethod());
+                Timber.v("[%s] ignored by interceptor; method = %s", url, request.getMethod());
                 return super.shouldInterceptRequest(view, request);
             }
 
-            String url = request.getUrl().toString();
             WebResourceResponse result = shouldInterceptRequestInternal(url, request.getRequestHeaders());
             if (result != null) return result;
             else return super.shouldInterceptRequest(view, request);
@@ -1355,6 +1352,16 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             try {
                 // Query resource here, using OkHttp
                 Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
+
+                // Scram if the response is an error
+                if (response.code() >= 400) return null;
+
+                // Scram if the response is something else than html
+                Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
+                if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
+                    return null;
+
+                // Scram if the response is empty
                 ResponseBody body = response.body();
                 if (null == body) throw new IOException("Empty body");
 
@@ -1375,24 +1382,19 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
                     // Remove dirty elements from HTML resources
                     if (dirtyElements != null) {
-                        String mimeType = response.header(HEADER_CONTENT_TYPE);
-                        if (mimeType != null) {
-                            mimeType = HttpHelper.cleanContentType(mimeType).first.toLowerCase();
-                            if (mimeType.contains("html"))
-                                browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
-                        }
+                        browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
+                        if (null == browserStream) return null;
                     }
 
                     // Convert OkHttp response to the expected format
                     result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
 
-                    // Manually set cookie if present in response header (won't be set by Android if we don't do this)
-                    if (result.getResponseHeaders().containsKey("set-cookie")) {
+                    // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
+                    if (result.getResponseHeaders().containsKey("set-cookie") || result.getResponseHeaders().containsKey("Set-Cookie")) {
                         String cookiesStr = result.getResponseHeaders().get("set-cookie");
-                        if (cookiesStr != null) {
-                            Map<String, String> cookies = HttpHelper.parseCookies(cookiesStr);
-                            HttpHelper.setDomainCookies(urlStr, cookies);
-                        }
+                        if (null == cookiesStr)
+                            cookiesStr = result.getResponseHeaders().get("Set-Cookie");
+                        if (cookiesStr != null) HttpHelper.setCookies(urlStr, cookiesStr);
                     }
                 } else {
                     parserStream = body.byteStream();
@@ -1462,9 +1464,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
          * @param dirtyElements CSS selectors of the nodes to remove
          * @return Stream containing the HTML document stripped from the elements to remove
          */
+        @Nullable
         private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, @NonNull List<String> dirtyElements) {
             try {
                 Document doc = Jsoup.parse(stream, null, baseUri);
+
                 for (String s : dirtyElements)
                     for (Element e : doc.select(s)) {
                         Timber.d("[%s] Removing node %s", baseUri, e.toString());
@@ -1473,7 +1477,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
                 Timber.e(e);
-                return stream;
+                return null;
             }
         }
 

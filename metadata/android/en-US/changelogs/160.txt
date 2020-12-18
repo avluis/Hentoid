@@ -1,3 +1,23 @@
-Fixed search bar in main view
-Added language menu icon in hitomi.la to change language to English
-Removed some analytics bits for F-droid
+New
+
+    Library screen : Grid mode can now use swipe to delete
+
+Changed
+
+    Last screen of intro wizard auto-validates after 2 seconds
+    Removed Hentai Nexus because it needs closed source library for decoding images
+
+Fixed
+
+    Hitomi : Pictures displayed in the Hitomi reader now have the correct size on all devices
+    Queue / errors tab : All items are now displayed when the list changes
+    Downloader : Small non-image downloads (e.g. "Invalid request" text on exHentai) are now detected as errors
+    Library screen : Grid mode columns are now properly distributed horizontally
+    Library screen : Swipe to delete doesn't stay stuck in the middle of swipe movement (rare)
+    Library screen : Hi-res PNG covers are loaded correctly again
+    External library : Import now detects all folders and archives
+    External library : Page numbering is fixed (no more starting at page 2)
+    External library : Fix invalid archive size when ZIP file doesn't have any size entry
+    Picture viewer : "Mark as read after N pages" works again
+
+

@@ -13,6 +13,7 @@ import com.annimon.stream.function.Consumer;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -23,6 +24,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -83,14 +85,14 @@ public class QueueViewModel extends AndroidViewModel {
     /**
      * Perform a new search
      */
-    private void refresh() {
+    public void refresh() {
         // Queue
         if (currentQueueSource != null) queue.removeSource(currentQueueSource);
         currentQueueSource = dao.getQueueContent();
         queue.addSource(currentQueueSource, queue::setValue);
         // Errors
         if (currentErrorsSource != null) errors.removeSource(currentErrorsSource);
-        currentErrorsSource = dao.getErrorContent();
+        currentErrorsSource = dao.selectErrorContent();
         errors.addSource(currentErrorsSource, errors::setValue);
     }
 
@@ -149,14 +151,13 @@ public class QueueViewModel extends AndroidViewModel {
      *
      * @param contents Contents whose download has to be canceled
      */
-    public void cancel(@NonNull List<Content> contents, Consumer<Throwable> onError, Runnable onSuccess) {
-        // TODO isn't that a little excessive to send a cancel event for EVERY book ?
-        for (Content c : contents)
-            EventBus.getDefault().post(new DownloadEvent(c, DownloadEvent.EV_CANCEL));
-        remove(contents, onError, onSuccess);
+    public void cancel(@NonNull List<Content> contents, Consumer<Throwable> onError, Runnable onComplete) {
+        remove(contents, onError, onComplete);
     }
 
-    public void remove(@NonNull List<Content> content, Consumer<Throwable> onError, Runnable onSuccess) {
+    public void remove(@NonNull List<Content> content, Consumer<Throwable> onError, Runnable onComplete) {
+        AtomicInteger nbDeleted = new AtomicInteger();
+
         compositeDisposable.add(
                 Observable.fromIterable(content)
                         .observeOn(Schedulers.io())
@@ -164,17 +165,29 @@ public class QueueViewModel extends AndroidViewModel {
                         .doOnComplete(this::saveQueue) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> onSuccess.run(),
-                                onError::accept
+                                v -> {
+                                    nbDeleted.getAndIncrement();
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbDeleted.get(), 0, content.size()));
+                                },
+                                t -> {
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, content.size()));
+                                    onError.accept(t);
+                                },
+                                () -> {
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, content.size()));
+                                    onComplete.run();
+                                }
                         )
         );
     }
 
-    public void cancelAll(Consumer<Throwable> onError, Runnable onSuccess) {
+    public void cancelAll(Consumer<Throwable> onError, Runnable onComplete) {
         List<QueueRecord> localQueue = dao.selectQueue();
         if (localQueue.isEmpty()) return;
 
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
+
+        AtomicInteger nbDeleted = new AtomicInteger();
 
         compositeDisposable.add(
                 Observable.fromIterable(localQueue)
@@ -183,8 +196,18 @@ public class QueueViewModel extends AndroidViewModel {
                         .doOnComplete(this::saveQueue) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> onSuccess.run(),
-                                onError::accept
+                                v -> {
+                                    nbDeleted.getAndIncrement();
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbDeleted.get(), 0, localQueue.size()));
+                                },
+                                t -> {
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    onError.accept(t);
+                                },
+                                () -> {
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    onComplete.run();
+                                }
                         )
         );
     }
@@ -193,12 +216,13 @@ public class QueueViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
         // Remove content altogether from the DB (including queue)
         Content content = dao.selectContent(contentId);
+        if (null == content) return true;
         try {
-            if (content != null)
-                ContentHelper.removeQueuedContent(getApplication(), dao, content);
+            ContentHelper.removeQueuedContent(getApplication(), dao, content);
         } catch (ContentNotRemovedException e) {
             // Don't throw the exception if we can't remove something that isn't there
-            if (!(e instanceof FileNotRemovedException && content.getStorageUri().isEmpty())) throw e;
+            if (!(e instanceof FileNotRemovedException && content.getStorageUri().isEmpty()))
+                throw e;
         }
         return true;
     }

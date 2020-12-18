@@ -606,6 +606,9 @@ public class ContentDownloadService extends IntentService {
                 Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
                 EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages, sizeDownloadedBytes));
 
+                if (ContentHelper.updateQueueJson(this, dao)) Timber.i("Queue JSON successfully saved");
+                else Timber.w("Queue JSON saving failed");
+
                 // Tracking Event (Download Completed)
                 HentoidApp.trackDownloadEvent("Completed");
             } else {
@@ -876,7 +879,7 @@ public class ContentDownloadService extends IntentService {
         // Check for picture validity if it's < 1KB (might be plain test or HTML if things have gone wrong... or a small GIF! )
         if (img.getSize() < 1024 && binaryContent != null) {
             mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
-            if (mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
+            if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
                 Timber.w("Small non-image data received from %s", img.getUrl());
                 throw new UnsupportedContentException(String.format("Small non-image data received from %s - data not processed", img.getUrl()));
             }
@@ -999,6 +1002,10 @@ public class ContentDownloadService extends IntentService {
         dao.insertContent(content);
         dao.deleteQueue(content);
         HentoidApp.trackDownloadEvent("Error");
+
+        if (ContentHelper.updateQueueJson(this, dao)) Timber.i("Queue JSON successfully saved");
+        else Timber.w("Queue JSON saving failed");
+
         notificationManager.notify(new DownloadErrorNotification(content));
     }
 }

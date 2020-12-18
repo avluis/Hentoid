@@ -17,12 +17,9 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -89,8 +86,8 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public Single<List<Long>> getStoredBookIds(boolean nonFavouritesOnly, boolean includeQueued) {
-        return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectStoredContentIds(nonFavouritesOnly, includeQueued)))
+    public Single<List<Content>> getStoredBooks(boolean nonFavouritesOnly, boolean includeQueued) {
+        return Single.fromCallable(() -> db.selectStoredContent(nonFavouritesOnly, includeQueued))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -139,8 +136,12 @@ public class ObjectBoxDAO implements CollectionDAO {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
-    public LiveData<List<Content>> getErrorContent() {
+    public LiveData<List<Content>> selectErrorContent() {
         return new ObjectBoxLiveData<>(db.selectErrorContentQ());
+    }
+
+    public List<Content> selectErrorContentList() {
+        return db.selectErrorContentQ().find();
     }
 
     public LiveData<Integer> countAllBooks() {
@@ -354,7 +355,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     private Group enrichGroupWithItemsByDlDate(@NonNull final Group g, int minDays, int maxDays) {
-        List<GroupItem> items = selectGroupItemsByDlDate(minDays, maxDays);
+        List<GroupItem> items = selectGroupItemsByDlDate(g, minDays, maxDays);
         g.setItems(items);
         if (!items.isEmpty()) g.picture.setTarget(items.get(0).content.getTarget().getCover());
 
@@ -435,8 +436,9 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectGroupItems(contentId, grouping.getId());
     }
 
-    public List<GroupItem> selectGroupItemsByDlDate(int minDays, int maxDays) {
-        return db.selectGroupItemsByDlDate(minDays, maxDays);
+    private List<GroupItem> selectGroupItemsByDlDate(@NonNull final Group group, int minDays, int maxDays) {
+        List<Content> contentResult = db.selectContentByDlDate(minDays, maxDays);
+        return Stream.of(contentResult).map(c -> new GroupItem(c, group, -1)).toList();
     }
 
     public void deleteGroupItem(long groupItemId) {
@@ -651,10 +653,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectBookmarksQ(null).find();
     }
 
-    public Set<String> selectAllBookmarkUrls() {
-        return new HashSet<>(Arrays.asList(db.selectAllBooksmarkUrls()));
-    }
-
     public void deleteAllBookmarks() {
         db.selectBookmarksQ(null).remove();
     }
@@ -664,10 +662,14 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public long insertBookmark(@NonNull final SiteBookmark bookmark) {
+        // Auto-number max order when not provided
+        if (-1 == bookmark.getOrder())
+            bookmark.setOrder(db.getMaxBookmarkOrderFor(bookmark.getSite()) + 1);
         return db.insertBookmark(bookmark);
     }
 
     public void insertBookmarks(@NonNull List<SiteBookmark> bookmarks) {
+        // Mass insert method; no need to renumber here
         db.insertBookmarks(bookmarks);
     }
 

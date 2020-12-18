@@ -24,7 +24,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -34,6 +36,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -630,5 +633,13 @@ public class ImportHelper {
         if (-1 == separatorIndex) return "";
 
         return path.substring(0, separatorIndex);
+    }
+
+    public static int importBookmarks(@NonNull final CollectionDAO dao, List<SiteBookmark> bookmarks) {
+        // Don't import bookmarks that have the same URL as existing ones
+        Set<SiteBookmark> existingBookmarkUrls = new HashSet<>(dao.selectAllBookmarks());
+        List<SiteBookmark> bookmarksToImport = Stream.of(new HashSet<>(bookmarks)).filterNot(existingBookmarkUrls::contains).toList();
+        dao.insertBookmarks(bookmarksToImport);
+        return bookmarksToImport.size();
     }
 }

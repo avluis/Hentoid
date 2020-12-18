@@ -113,7 +113,7 @@ public class LibraryActivity extends BaseActivity {
     // Show artists / groups button
     private TextView showArtistsGroupsButton;
     // CLEAR button
-    private TextView searchClearButton;
+    private View searchClearButton;
     // Sort direction button
     private ImageView sortDirectionButton;
     // Sort field button
@@ -647,6 +647,7 @@ public class LibraryActivity extends BaseActivity {
                 Preferences.setGroupingDisplay(Grouping.FLAT.getId());
                 viewModel.setGroup(null);
                 updateDisplay();
+                break;
             case Preferences.Key.GROUPING_DISPLAY:
             case Preferences.Key.ARTIST_GROUP_VISIBILITY:
                 viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
@@ -874,6 +875,7 @@ public class LibraryActivity extends BaseActivity {
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
+                .setOnCancelListener(dialog -> selectExtension.deselect())
                 .create().show();
     }
 

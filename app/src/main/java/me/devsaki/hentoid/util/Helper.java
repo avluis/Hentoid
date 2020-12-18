@@ -90,10 +90,9 @@ public final class Helper {
      */
     public static byte[] decode64(String encodedString) {
         // Pure Java
-        //byte[] decodedBytes = org.apache.commons.codec.binary.Base64.decodeBase64(encodedString);
+        // return org.apache.commons.codec.binary.Base64.decodeBase64(encodedString);
         // Android
         return android.util.Base64.decode(encodedString, android.util.Base64.DEFAULT);
-//        return new String(decodedBytes);
     }
 
     /**

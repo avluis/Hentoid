@@ -61,7 +61,6 @@ public class ExHentaiActivity extends BaseWebActivity {
             if (url.startsWith("https://exhentai.org")) {
                 CookieManager mgr = CookieManager.getInstance();
                 String cookiesStr = mgr.getCookie(".exhentai.org");
-//                logCookies("ex", (null == cookiesStr) ? "null" : cookiesStr);
                 if (cookiesStr != null && !cookiesStr.contains("ipb_member_id=")) {
                     mgr.removeAllCookies(null);
                     webView.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/");
@@ -71,7 +70,6 @@ public class ExHentaiActivity extends BaseWebActivity {
             if (url.startsWith("https://forums.e-hentai.org/index.php")) {
                 CookieManager mgr = CookieManager.getInstance();
                 String cookiesStr = mgr.getCookie(".e-hentai.org");
-//                logCookies("e-h", (null == cookiesStr) ? "null" : cookiesStr);
                 if (cookiesStr != null && cookiesStr.contains("ipb_member_id="))
                     webView.loadUrl("https://exhentai.org/");
             }

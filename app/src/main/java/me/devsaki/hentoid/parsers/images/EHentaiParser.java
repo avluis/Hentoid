@@ -337,8 +337,6 @@ public class EHentaiParser implements ImageListParser {
         }
 
         if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) return result;
-
-        //return downloadParams.get(HttpHelper.HEADER_COOKIE_KEY) + "; nw=1";
         return downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
     }
 

@@ -7,7 +7,7 @@
     tools:context=".activities.ImageViewerActivity">
 
     <me.devsaki.hentoid.views.ZoomableFrame
-        android:id="@+id/image_viewer_zoom_frame"
+        android:id="@+id/zoom_frame"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <me.devsaki.hentoid.views.ZoomableRecyclerView
-            android:id="@+id/image_viewer_zoom_recycler"
+            android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="?android:windowBackground"
@@ -63,7 +63,7 @@
         tools:visibility="visible" />
 
     <include
-        android:id="@+id/image_viewer_controls_overlay"
+        android:id="@+id/controls_overlay"
         layout="@layout/include_viewer_bottom_bar"
         android:clickable="true"
         android:focusable="true"

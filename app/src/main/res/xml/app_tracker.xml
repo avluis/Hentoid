@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- End current session if app sleeps for a period of time -->
-    <integer name="ga_sessionTimeout">300</integer>
-
-    <!-- Enable automatic Activity measurement -->
-    <bool name="ga_autoActivityTracking">true</bool>
-
-    <!--  The property id associated with this analytics tracker -->
-    <string name="ga_trackingId">UA-12419409-5</string>
-
-    <!-- Additional metrics -->
-    <!-- Sampling Rate -->
-    <string name="ga_sampleFrequency">100.0</string>
-
-    <!-- Track app crashes -->
-    <bool name="ga_reportUncaughtExceptions">true</bool>
-
     <!-- Manually defined screen names -->
     <screenName name="me.devsaki.hentoid.activities.DownloadsActivity">Home: Downloads</screenName>
     <screenName name="me.devsaki.hentoid.activities.QueueActivity">Home: Queue</screenName>

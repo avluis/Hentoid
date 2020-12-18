@@ -416,11 +416,17 @@ public class ImportService extends IntentService {
             List<QueueRecord> lst = new ArrayList<>();
             int count = 1;
             for (Content c : queuedContent) {
-                // Only add at the end of the queue if it isn't a duplicate
                 Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
                 if (null == duplicate) {
-                    long newContentId = ContentHelper.addContent(this, dao, c);
-                    lst.add(new QueueRecord(newContentId, queueSize++));
+                    if (c.getStatus().equals(StatusContent.ERROR)) {
+                        // Add error books as library entries, not queue entries
+                        c.computeSize();
+                        ContentHelper.addContent(this, dao, c);
+                    } else {
+                        // Only add at the end of the queue if it isn't a duplicate
+                        long newContentId = ContentHelper.addContent(this, dao, c);
+                        lst.add(new QueueRecord(newContentId, queueSize++));
+                    }
                 }
                 eventProgress(STEP_4_QUEUE, queuedContent.size(), count++, 0);
             }

@@ -16,7 +16,9 @@ import org.jsoup.nodes.Document;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,16 +40,22 @@ public class HttpHelper {
     public static final String HEADER_COOKIE_KEY = "cookie";
     public static final String HEADER_REFERER_KEY = "referer";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    public static final String HEADER_USER_AGENT = "User-Agent";
 
-    // User agent parts; initialized at startup
-    // Some security mechanisms do check if Android devices connect with an Android mobile agent
-    public static final String MOBILE_USER_AGENT_PATTERN = "Mozilla/5.0 (Linux; Android \"%s\"; \"%s\") AppleWebKit/537.36 (KHTML, like Gecko) %s Mobile Safari/537.36";
-    // For future use to display sites with desktop layouts
+    public static final Set<String> COOKIES_STANDARD_ATTRS = new HashSet<>();
+
+    // To display sites with desktop layouts
     public static final String DESKTOP_USER_AGENT_PATTERN = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) %s Safari/537.36";
 
     public static String defaultUserAgent = null;
     public static String defaultChromeAgent = null;
     public static int defaultChromeVersion = -1;
+
+
+    static {
+        // Can't be done on the variable initializer as Set.of is only available since API R
+        COOKIES_STANDARD_ATTRS.addAll(Arrays.asList("expires", "max-age", "domain", "path", "secure", "httponly", "samesite"));
+    }
 
 
     private HttpHelper() {
@@ -126,7 +134,9 @@ public class HttpHelper {
             for (Pair<String, String> header : headers)
                 if (header.second != null)
                     requestBuilder.addHeader(header.first, header.second);
-        requestBuilder.header("User-Agent", useMobileAgent ? getMobileUserAgent(useHentoidAgent) : getDesktopUserAgent(useHentoidAgent));
+
+        requestBuilder.header(HEADER_USER_AGENT, useMobileAgent ? getMobileUserAgent(useHentoidAgent) : getDesktopUserAgent(useHentoidAgent));
+
         return requestBuilder;
     }
 
@@ -140,14 +150,15 @@ public class HttpHelper {
         final String contentTypeValue = resp.header(HEADER_CONTENT_TYPE);
 
         WebResourceResponse result;
+        Map<String, String> responseHeaders = okHttpHeadersToWebResourceHeaders(resp.headers().toMultimap());
+        String message = resp.message();
+        if (message.trim().isEmpty()) message = "None";
         if (contentTypeValue != null) {
             Pair<String, String> details = cleanContentType(contentTypeValue);
-            result = new WebResourceResponse(details.first, details.second, is);
+            result = new WebResourceResponse(details.first, details.second, resp.code(), message, responseHeaders, is);
         } else {
-            result = new WebResourceResponse("application/octet-stream", null, is);
+            result = new WebResourceResponse("application/octet-stream", null, resp.code(), message, responseHeaders, is);
         }
-
-        result.setResponseHeaders(okHttpHeadersToWebResourceHeaders(resp.headers().toMultimap()));
 
         return result;
     }
@@ -180,8 +191,10 @@ public class HttpHelper {
 
         if (useCookies) {
             String cookie = CookieManager.getInstance().getCookie(url);
-            if (cookie != null)
+            if (cookie != null) {
+                cookie = HttpHelper.removeParams(cookie);
                 result.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
+            }
         }
 
         return result;
@@ -267,65 +280,67 @@ public class HttpHelper {
         String[] cookiesParts = cookiesStr.split(";");
         for (String cookie : cookiesParts) {
             String[] cookieParts = cookie.trim().split("=");
-            if (cookieParts.length > 1)
-                result.put(cookieParts[0], cookieParts[1]);
+            result.put(cookieParts[0], (1 == cookieParts.length) ? "" : cookieParts[1]);
         }
 
         return result;
     }
 
-    /**
-     * Set a new cookie for the domain of the given url, using the CookieManager
-     * If the cookie already exists, replace it
-     *
-     * @param url     Full URL of the cookie
-     * @param cookies Cookies to set using key = name and value = value
-     */
-    public static void setDomainCookies(String url, Map<String, String> cookies) {
-        CookieManager mgr = CookieManager.getInstance();
-        String domain = getDomainFromUri(url);
+    public static String removeParams(@NonNull String cookieStr) {
+        Map<String, String> cookies = parseCookies(cookieStr);
+        List<String> namesToSet = new ArrayList<>();
+        for (Map.Entry<String, String> entry : cookies.entrySet()) {
+            if (!COOKIES_STANDARD_ATTRS.contains(entry.getKey().toLowerCase()))
+                namesToSet.add(entry.getKey() + "=" + entry.getValue());
+        }
+        return TextUtils.join("; ", namesToSet);
+    }
 
+    public static void setCookies(String url, String cookieStr) {
         /*
         Check if given cookies are already registered
 
         Rationale : setting any cookie programmatically will set it as a _session_ cookie.
         It's not smart to do that if the very same cookie is already set for a longer lifespan.
          */
-        Map<String, String> cookiesToSet = new HashMap<>();
+        Map<String, String> cookies = parseCookies(cookieStr);
+        Map<String, String> names = new HashMap<>();
 
-        String existingCookiesStr = mgr.getCookie(domain);
-        if (existingCookiesStr != null) {
-            Map<String, String> existingCookies = parseCookies(existingCookiesStr);
+        List<String> paramsToSet = new ArrayList<>();
+        List<String> namesToSet = new ArrayList<>();
 
-            for (Map.Entry<String, String> entry : cookies.entrySet()) {
-                String key = entry.getKey();
-                String value = (null == entry.getValue()) ? "" : entry.getValue();
-                if (!existingCookies.containsKey(key)) cookiesToSet.put(key, value);
-                else {
-                    String val = existingCookies.get(key);
-                    if (val != null && !val.equals(cookies.get(key)))
-                        cookiesToSet.put(key, cookies.get(key));
-                }
-            }
+        for (Map.Entry<String, String> entry : cookies.entrySet()) {
+            if (COOKIES_STANDARD_ATTRS.contains(entry.getKey().toLowerCase())) {
+                if (entry.getValue().isEmpty())
+                    paramsToSet.add(entry.getKey());
+                else
+                    paramsToSet.add(entry.getKey() + "=" + entry.getValue());
+            } else names.put(entry.getKey(), entry.getValue());
         }
 
-        for (Map.Entry<String, String> entry : cookiesToSet.entrySet())
-            mgr.setCookie(domain, entry.getKey() + "=" + entry.getValue());
+        CookieManager mgr = CookieManager.getInstance();
+        String existingCookiesStr = mgr.getCookie(url);
+        if (existingCookiesStr != null) {
+            Map<String, String> existingCookies = parseCookies(existingCookiesStr);
+            for (Map.Entry<String, String> entry : names.entrySet()) {
+                String key = entry.getKey();
+                String value = (null == entry.getValue()) ? "" : entry.getValue();
+                if (!existingCookies.containsKey(key)) namesToSet.add(key + "=" + value);
+            }
+        } else {
+            for (Map.Entry<String, String> name : names.entrySet())
+                namesToSet.add(name.getKey() + "=" + name.getValue());
+        }
+
+        StringBuilder cookieStrToSet = new StringBuilder();
+
+        cookieStrToSet.append(TextUtils.join("; ", paramsToSet));
+        for (String name : namesToSet) cookieStrToSet.append("; ").append(name);
+
+        mgr.setCookie(url, cookieStrToSet.toString());
+        Timber.v("Setting cookie for %s : %s", url, cookieStrToSet.toString());
 
         mgr.flush();
-    }
-
-    /**
-     * Determine whether the given URL is associated with a cookie with the given name
-     *
-     * @param url        URL to test against
-     * @param cookieName Cookie name to test against on the given URl's domain
-     * @return True if the given URL's domain is associated with a cookie with the given name; false if not
-     */
-    public static boolean hasDomainCookie(@NonNull final String url, @NonNull final String cookieName) {
-        String domain = getDomainFromUri(url);
-        String existingCookiesStr = CookieManager.getInstance().getCookie(domain);
-        return (existingCookiesStr != null && existingCookiesStr.toLowerCase().contains(cookieName.toLowerCase() + "="));
     }
 
     /**
@@ -397,13 +412,6 @@ public class HttpHelper {
 
     // TODO doc
     public static String getMobileUserAgent(boolean withHentoid) {
-        /*
-        if (null == defaultUserAgent)
-            throw new RuntimeException("Call initUserAgents first to initialize them !");
-        String result = String.format(MOBILE_USER_AGENT_PATTERN, Build.VERSION.RELEASE, Build.MODEL, defaultChromeAgent);
-        if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME;
-        return result;
-         */
         return getDefaultUserAgent(withHentoid);
     }
 

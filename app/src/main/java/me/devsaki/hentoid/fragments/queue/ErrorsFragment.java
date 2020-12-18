@@ -48,6 +48,7 @@ import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
 import me.devsaki.hentoid.fragments.library.ErrorsDialogFragment;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -94,9 +95,11 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     // TODO doc
     private int previousSelectedCount = 0;
     // Used to show a given item at first display
-    private long contentHashToDisplayFirst = -1;
+    private long contentHashToDisplayFirst = 0;
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
+    // Indicate if the fragment is currently canceling all items
+    private boolean isDeletingAll = false;
 
 
     @Override
@@ -325,6 +328,9 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     private void onErrorsChanged(List<Content> result) {
         Timber.i(">>Errors changed ! Size=%s", result.size());
 
+        // Don't process changes while everything is being canceled, it usually kills the UI as too many changes are processed at the same time
+        if (isDeletingAll && !result.isEmpty()) return;
+
         // Update list visibility
         mEmptyText.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
 
@@ -349,10 +355,10 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
-        if (contentHashToDisplayFirst > -1) {
+        if (contentHashToDisplayFirst != 0) {
             int targetPos = fastAdapter.getPosition(contentHashToDisplayFirst);
             if (targetPos > -1) listRefreshDebouncer.submit(targetPos);
-            contentHashToDisplayFirst = -1;
+            contentHashToDisplayFirst = 0;
         }
     }
 
@@ -372,10 +378,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     private boolean onBookClick(int position, ContentItem item) {
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty()) {
             Content c = item.getContent();
-            if (c != null) {
-                if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
-                    ToastUtil.toast(R.string.err_no_content);
-            }
+            if (c != null && !ContentHelper.openHentoidViewer(requireContext(), c, null))
+                ToastUtil.toast(R.string.err_no_content);
 
             return true;
         } else if (!invalidateNextBookClick) {
@@ -385,14 +389,20 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
     }
 
     private void onDeleteBook(@NonNull Content c) {
-        viewModel.remove(Stream.of(c).toList(), this::onDeleteError, this::onDeleteSuccess);
+        viewModel.remove(Stream.of(c).toList(), this::onDeleteError, this::onDeleteComplete);
     }
 
     private void onDeleteBooks(@NonNull List<Content> c) {
-        viewModel.remove(c, this::onDeleteError, this::onDeleteSuccess);
+        if (c.size() > 2) {
+            isDeletingAll = true;
+            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
+        }
+        viewModel.remove(c, this::onDeleteError, this::onDeleteComplete);
     }
 
-    private void onDeleteSuccess() {
+    private void onDeleteComplete() {
+        isDeletingAll = false;
+        viewModel.refresh();
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }
@@ -401,6 +411,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
      * Callback for the failure of the "delete item" action
      */
     private void onDeleteError(Throwable t) {
+        isDeletingAll = false;
+        viewModel.refresh();
         Timber.e(t);
         if (t instanceof ContentNotRemovedException) {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
@@ -567,6 +579,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
+                .setOnCancelListener(dialog -> selectExtension.deselect())
                 .create().show();
     }
 }

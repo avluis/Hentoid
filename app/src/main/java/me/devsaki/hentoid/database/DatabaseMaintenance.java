@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.objectbox.query.Query;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.BiConsumer;
@@ -18,6 +19,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -30,6 +32,8 @@ public class DatabaseMaintenance {
         throw new IllegalStateException("Utility class");
     }
 
+    // TODO separate pre-processing actions that _need_ to happen before the library screen is displayed
+    // versus general cleanup actions that may be processed in the background as the app starts (e.g. cleanBookmarksOneShot)
 
     /**
      * Clean up and upgrade database
@@ -41,6 +45,7 @@ public class DatabaseMaintenance {
         result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanBookmarksOneShot));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
         result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         return result;
@@ -155,6 +160,21 @@ public class DatabaseMaintenance {
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Upgrading Tsumino covers : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void cleanBookmarksOneShot(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Detect duplicate bookmarks (host/someurl and host/someurl/)
+            Timber.i("Detecting duplicate bookmarks : start");
+            Query<SiteBookmark> contents = db.selectAllDuplicateBookmarks();
+            Timber.i("Detecting duplicate bookmarks : %d favourites detected", contents.count());
+            contents.remove();
+            Timber.i("Detecting duplicate bookmarks : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

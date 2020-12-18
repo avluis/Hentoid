@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_gravity="center"
     android:clipToPadding="false"
     android:padding="16dp">
@@ -13,22 +13,21 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="@string/delete_title"
         android:textAlignment="center"
         android:textSize="@dimen/text_header_6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/delete_title" />
 
     <TextView
-        android:id="@+id/delete_progress_test"
+        android:id="@+id/delete_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text=" "
-        tools:text="@string/book_progress"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/delete_title" />
+        app:layout_constraintTop_toBottomOf="@id/delete_title"
+        tools:text="@string/book_progress" />
 
     <ProgressBar
         android:id="@+id/delete_bar"
@@ -38,6 +37,6 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/delete_progress_test" />
+        app:layout_constraintTop_toBottomOf="@id/delete_progress" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

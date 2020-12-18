@@ -22,7 +22,6 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.annimon.stream.Optional;
-import com.annimon.stream.Stream;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -35,7 +34,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -51,7 +49,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.QueueRecord;
-import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
@@ -62,6 +59,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
@@ -298,13 +296,8 @@ public class LibImportDialogFragment extends DialogFragment {
             if (importBookmarks) dao.deleteAllBookmarks();
         }
 
-        if (importBookmarks) {
-            // Don't import bookmarks that have the same URL as existing ones
-            Set<String> existingBookmarkUrls = dao.selectAllBookmarkUrls();
-            List<SiteBookmark> bookmarksToImport = Stream.of(collection.getBookmarks()).filterNot(b -> existingBookmarkUrls.contains(b.getUrl())).toList();
-            dao.insertBookmarks(bookmarksToImport);
-            nbBookmarksSuccess = bookmarksToImport.size();
-        }
+        if (importBookmarks)
+            nbBookmarksSuccess = ImportHelper.importBookmarks(dao, collection.getBookmarks());
 
         List<Content> contentToImport = new ArrayList<>();
         if (importLibrary) contentToImport.addAll(collection.getLibrary(dao));

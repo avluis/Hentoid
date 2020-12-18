@@ -11,7 +11,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -124,14 +123,12 @@ public interface CollectionDAO {
 
     List<GroupItem> selectGroupItems(long contentId, Grouping grouping);
 
-    List<GroupItem> selectGroupItemsByDlDate(int minDays, int maxDays);
-
     void deleteGroupItems(List<Long> groupItemIds);
 
 
     // High-level queries (internal and external locations)
 
-    Single<List<Long>> getStoredBookIds(boolean nonFavouriteOnly, boolean includeQueued);
+    Single<List<Content>> getStoredBooks(boolean nonFavouriteOnly, boolean includeQueued);
 
 
     Single<List<Long>> getRecentBookIds(long groupId, int orderField, boolean orderDesc, boolean favouritesOnly);
@@ -148,7 +145,9 @@ public interface CollectionDAO {
     LiveData<PagedList<Content>> searchBooksUniversal(String query, long groupId, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
 
-    LiveData<List<Content>> getErrorContent();
+    LiveData<List<Content>> selectErrorContent();
+
+    List<Content> selectErrorContentList();
 
 
     LiveData<Integer> countBooks(String query, long groupId, List<Attribute> metadata, boolean favouritesOnly);
@@ -218,8 +217,6 @@ public interface CollectionDAO {
     long countAllBookmarks();
 
     List<SiteBookmark> selectAllBookmarks();
-
-    Set<String> selectAllBookmarkUrls();
 
     List<SiteBookmark> selectBookmarks(@NonNull Site s);
 
