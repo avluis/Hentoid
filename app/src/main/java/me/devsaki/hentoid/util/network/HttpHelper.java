@@ -164,10 +164,11 @@ public class HttpHelper {
     }
 
     /**
-     * "Flatten"" HTTP headers from the OKHTTP convention to be used with {@link android.webkit.WebResourceRequest} or {@link android.webkit.WebResourceResponse}
+     * "Flatten"" HTTP headers from an OkHttp-compatible structure to a Webkit-compatible structure
+     * to be used with {@link android.webkit.WebResourceRequest} or {@link android.webkit.WebResourceResponse}
      *
-     * @param okHttpHeaders HTTP Headers orgarnized according to the convention used by OKHTTP
-     * @return "Flattened" HTTP headers
+     * @param okHttpHeaders HTTP Headers structured according to the convention used by OkHttp
+     * @return "Flattened" HTTP headers structured according to the convention used by Webkit
      */
     private static Map<String, String> okHttpHeadersToWebResourceHeaders(@NonNull final Map<String, List<String>> okHttpHeaders) {
         Map<String, String> result = new HashMap<>();
@@ -181,20 +182,24 @@ public class HttpHelper {
         return result;
     }
 
-    // TODO doc
-    public static List<Pair<String, String>> webResourceHeadersToOkHttpHeaders(@Nullable final Map<String, String> webResourceHeaders, @Nullable String url, boolean useCookies) {
+    /**
+     * Convert HTTP headers from a Webkit-compatible structure to an OkHttp-compatible structure
+     *
+     * @param webResourceHeaders HTTP Headers structured according to the convention used by Webkit
+     * @param url                Corresponding URL
+     * @return HTTP Headers structured according to the convention used by OkHttp
+     */
+    public static List<Pair<String, String>> webResourceHeadersToOkHttpHeaders(@Nullable final Map<String, String> webResourceHeaders, @Nullable String url) {
         List<Pair<String, String>> result = new ArrayList<>();
 
         if (webResourceHeaders != null)
             for (Map.Entry<String, String> entry : webResourceHeaders.entrySet())
                 result.add(new Pair<>(entry.getKey(), entry.getValue()));
 
-        if (useCookies) {
-            String cookie = CookieManager.getInstance().getCookie(url);
-            if (cookie != null) {
-                cookie = HttpHelper.removeParams(cookie);
-                result.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
-            }
+        String cookie = CookieManager.getInstance().getCookie(url);
+        if (cookie != null) {
+            cookie = HttpHelper.stripParams(cookie);
+            result.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
         }
 
         return result;
@@ -286,7 +291,7 @@ public class HttpHelper {
         return result;
     }
 
-    public static String removeParams(@NonNull String cookieStr) {
+    public static String stripParams(@NonNull String cookieStr) {
         Map<String, String> cookies = parseCookies(cookieStr);
         List<String> namesToSet = new ArrayList<>();
         for (Map.Entry<String, String> entry : cookies.entrySet()) {
