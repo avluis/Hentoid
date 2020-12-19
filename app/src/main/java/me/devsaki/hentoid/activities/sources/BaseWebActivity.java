@@ -249,6 +249,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         universalBlockedContent.add("realsrv.com");
         universalBlockedContent.add("smartclick.net");
         universalBlockedContent.add("ulukaris.com");
+        universalBlockedContent.add("alliedthirteen.com");
+        universalBlockedContent.add("acknowledgenightsabstain.com");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -1212,7 +1214,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                                   @NonNull final String url,
                                   @Nullable final Map<String, String> requestHeaders) throws IOException {
             List<Pair<String, String>> requestHeadersList;
-            requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url, canUseSingleOkHttpRequest());
+            requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
 
             Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
             ResponseBody body = onlineFileResponse.body();
@@ -1347,14 +1349,14 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
             blockedTags = Collections.emptyList();
-            List<Pair<String, String>> requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr, canUseSingleOkHttpRequest());
+            List<Pair<String, String>> requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr);
 
             try {
                 // Query resource here, using OkHttp
                 Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
 
-                // Scram if the response is an error
-                if (response.code() >= 400) return null;
+                // Scram if the response is a redirection or an error
+                if (response.code() >= 300) return null;
 
                 // Scram if the response is something else than html
                 Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
@@ -1427,17 +1429,17 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         /**
          * Process Content parsed from a webpage
          *
-         * @param content       Content to be processed
-         * @param headersList   HTTP headers of the request that has generated the Content
-         * @param quickDownload True if the present call has been triggered by a quick download action
+         * @param content        Content to be processed
+         * @param requestHeaders HTTP headers of the request that has generated the Content
+         * @param quickDownload  True if the present call has been triggered by a quick download action
          */
-        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList, boolean quickDownload) {
+        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> requestHeaders, boolean quickDownload) {
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
 
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
-            for (Pair<String, String> p : headersList)
+            for (Pair<String, String> p : requestHeaders)
                 if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
                     params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
 

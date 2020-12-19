@@ -64,7 +64,7 @@ public class EHentaiActivity extends BaseWebActivity {
 
                                 // Save cookies for future calls during download
                                 Map<String, String> params = new HashMap<>();
-                                for (Pair<String, String> p : HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr, true))
+                                for (Pair<String, String> p : HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr))
                                     if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
                                         params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
                                 content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));

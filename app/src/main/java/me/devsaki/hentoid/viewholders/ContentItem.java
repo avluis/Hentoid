@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -72,6 +73,7 @@ import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
 public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable, ISwipeable {
 
+    private static final int ITEM_HORIZONTAL_MARGIN_PX;
     private static final RequestOptions glideRequestOptions;
 
     @IntDef({ViewType.LIBRARY, ViewType.LIBRARY_GRID, ViewType.LIBRARY_EDIT, ViewType.QUEUE, ViewType.ERRORS})
@@ -93,14 +95,18 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     // Drag, drop & swipe
     private final ItemTouchHelper touchHelper;
-    private int swipeDirection = 0;
     private boolean isSwipeable = true;
-    private Runnable undoSwipeAction; // Action to run when hitting the "undo" button
 
 
     static {
         Context context = HentoidApp.getInstance();
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
+
+        int screenWidthPx = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels - (2 * (int) context.getResources().getDimension(R.dimen.default_cardview_margin));
+        int gridHorizontalWidthPx = (int) context.getResources().getDimension(R.dimen.card_grid_width);
+        int nbItems = (int) Math.floor(screenWidthPx * 1f / gridHorizontalWidthPx);
+        int remainingSpacePx = screenWidthPx % gridHorizontalWidthPx;
+        ITEM_HORIZONTAL_MARGIN_PX = remainingSpacePx / (nbItems * 2);
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
@@ -132,10 +138,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     // Constructor for queued item
-    public ContentItem(@NonNull QueueRecord record, ItemTouchHelper touchHelper) {
+    public ContentItem(@NonNull QueueRecord record, ItemTouchHelper touchHelper, @Nullable final Consumer<ContentItem> deleteAction) {
         content = record.getContent().getTarget();
         viewType = ViewType.QUEUE;
         this.touchHelper = touchHelper;
+        this.deleteAction = deleteAction;
         isEmpty = (null == content);
 //        setIdentifier(record.id);
         if (content != null) setIdentifier(content.hashCode());
@@ -189,25 +196,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         else return null;
     }
 
-    public void setUndoSwipeAction(Runnable undoSwipeAction) {
-        this.undoSwipeAction = undoSwipeAction;
-    }
-
-    public void setSwipeDirection(int direction) {
-        swipeDirection = direction;
-        isSwipeable = (0 == direction);
-    }
-
     private long generateIdForPlaceholder() {
         long result = new Random().nextLong();
         // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
         while (result < 1e6) result = new Random().nextLong();
         return result;
-    }
-
-    private void undoSwipe() {
-        isSwipeable = true;
-        undoSwipeAction.run();
     }
 
 
@@ -223,9 +216,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private final ImageView ivSite;
         private final ImageView ivError;
 
-        private final View swipeResult;
         private final View bookCard;
-        private final View tvUndoSwipe;
         private final View deleteButton;
 
         // Specific to library content
@@ -258,9 +249,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvPages = itemView.findViewById(R.id.tvPages);
             ivError = itemView.findViewById(R.id.ivError);
             // Swipe elements
-            swipeResult = itemView.findViewById(R.id.swipe_result_content);
             bookCard = itemView.findViewById(R.id.item_card);
-            tvUndoSwipe = itemView.findViewById(R.id.undo_swipe);
             deleteButton = itemView.findViewById(R.id.delete_btn);
 
             if (viewType == ViewType.LIBRARY) {
@@ -324,12 +313,20 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 updateProgress(item.content, baseLayout, getAdapterPosition(), false);
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
-            if (tvUndoSwipe != null)
-                tvUndoSwipe.setOnClickListener(v -> item.undoSwipe());
         }
 
         private void updateLayoutVisibility(@NonNull final ContentItem item) {
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
+
+            if (Preferences.Constant.LIBRARY_DISPLAY_GRID == Preferences.getLibraryDisplay()) {
+                ViewGroup.LayoutParams layoutParams = baseLayout.getLayoutParams();
+                if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
+                    ((ViewGroup.MarginLayoutParams) layoutParams).setMarginStart(ITEM_HORIZONTAL_MARGIN_PX);
+                    ((ViewGroup.MarginLayoutParams) layoutParams).setMarginEnd(ITEM_HORIZONTAL_MARGIN_PX);
+                }
+                baseLayout.setLayoutParams(layoutParams);
+            }
+
             if (item.getContent() != null && item.getContent().isBeingDeleted())
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
@@ -338,12 +335,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             // Unread indicator
             if (ivNew != null)
                 ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
-
-            // Swipe
-            if (swipeResult != null) {
-                bookCard.setVisibility((item.swipeDirection != 0) ? View.INVISIBLE : View.VISIBLE);
-                swipeResult.setVisibility((item.swipeDirection != 0) ? View.VISIBLE : View.GONE);
-            }
         }
 
         private void attachCover(@NonNull final Content content) {
@@ -624,7 +615,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         @Override
         public void unbindView(@NotNull ContentItem item) {
-//            item.setUndoSwipeAction(null);
             deleteActionRunnable = null;
             bookCard.setTranslationX(0f);
             if (ivCover != null && Helper.isValidContextForGlide(ivCover))

@@ -46,6 +46,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -309,7 +310,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 editSelectedItemName();
                 break;
             case R.id.action_delete:
-                purgeSelectedItems();
+                deleteSelectedItems();
                 break;
             case R.id.action_archive:
                 archiveSelectedItems();
@@ -355,11 +356,14 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     /**
      * Callback for the "delete item" action button
      */
-    private void purgeSelectedItems() {
+    private void deleteSelectedItems() {
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             List<Group> selectedGroups = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().toList();
-            List<Content> selectedContent = Stream.of(selectedGroups).map(Group::getContents).single();
+            List<List<Content>> selectedContentLists = Stream.of(selectedGroups).map(Group::getContents).toList();
+            List<Content> selectedContent = new ArrayList<>();
+            for (List<Content> list : selectedContentLists) selectedContent.addAll(list);
+
             // Remove external items if they can't be deleted
             if (!Preferences.isDeleteExternalLibrary()) {
                 List<Content> contentToDelete = Stream.of(selectedContent).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).toList();
@@ -369,15 +373,17 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                     Snackbar.make(recyclerView, getResources().getQuantityString(R.plurals.external_not_removed, diff, diff), BaseTransientBottomBar.LENGTH_LONG).show();
                     selectedContent = contentToDelete;
                     // Rebuild the groups list from the remaining contents if needed
-                    if (Preferences.getGroupingDisplay().canReorderGroups())
+                    if (Preferences.getGroupingDisplay().canDeleteGroups())
                         selectedGroups = Stream.of(selectedContent).flatMap(c -> Stream.of(c.groupItems)).map(gi -> gi.group.getTarget()).toList();
                 }
             }
-            // Non-custom groups -> groups are removed automatically as soon as they don't contain any content => no need to remove the groups manually
-            if (!Preferences.getGroupingDisplay().canReorderGroups()) selectedGroups.clear();
+            // Don't remove non-deletable groups
+            if (!Preferences.getGroupingDisplay().canDeleteGroups()) selectedGroups.clear();
 
             if (!selectedContent.isEmpty() || !selectedGroups.isEmpty())
                 activity.get().askDeleteItems(selectedContent, selectedGroups, null, selectExtension);
+            else
+                selectExtension.deselect();
         }
     }
 

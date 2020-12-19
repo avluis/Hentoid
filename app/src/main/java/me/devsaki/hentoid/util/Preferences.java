@@ -791,7 +791,7 @@ public final class Preferences {
         static final int ORDER_ATTRIBUTES_COUNT = 1;
 
         public static final int LIBRARY_DISPLAY_LIST = 0;
-        static final int LIBRARY_DISPLAY_GRID = 1;
+        public static final int LIBRARY_DISPLAY_GRID = 1;
 
         static final int FOLDER_NAMING_CONTENT_ID = 0;
         static final int FOLDER_NAMING_CONTENT_TITLE_ID = 1;

@@ -1,0 +1,15 @@
+Changed
+
+    Queue / errors screen : Replace old swipe-to-delete with new one (same as library screen)
+
+Fixed
+
+    Tsumino : Prevent some pages from crashing
+    Hentai2Read : Block some ads
+    Web browser : Allow downloading from cookie-protected sites with augmented mode off
+    Library screen : Vertical scroll bar is back on the side of the screen in grid mode
+    Library screen / groups : Fix multiple cases where the group cover was not displayed
+    Library screen / groups : Deleting multiple groups after multi-select is now possible
+    Picture viewer : Bottom slider now works properly when sliding in RTL mode
+
+

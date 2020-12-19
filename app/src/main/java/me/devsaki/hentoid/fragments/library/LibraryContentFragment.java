@@ -480,7 +480,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 shareSelectedItems();
                 break;
             case R.id.action_delete:
-                purgeSelectedItems();
+                deleteSelectedItems();
                 break;
             case R.id.action_archive:
                 archiveSelectedItems();
@@ -521,7 +521,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     /**
      * Callback for the "delete item" action button
      */
-    private void purgeSelectedItems() {
+    private void deleteSelectedItems() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
@@ -854,10 +854,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         // RecyclerView horizontal centering
         ViewGroup.LayoutParams layoutParams = recyclerView.getLayoutParams();
-        if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
-            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
-        else
-            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
         recyclerView.setLayoutParams(layoutParams);
 
         // Pager appearance

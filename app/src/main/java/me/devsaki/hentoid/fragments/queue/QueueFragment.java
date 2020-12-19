@@ -17,7 +17,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -32,13 +31,11 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
-import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
-import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.select.SelectExtension;
-import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
-import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
+import com.mikepenz.fastadapter.swipe.SimpleSwipeDrawerCallback;
+import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDrawerDragCallback;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 import com.skydoves.balloon.ArrowOrientation;
 
@@ -53,7 +50,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -84,6 +80,7 @@ import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
+import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.CircularProgressView;
@@ -96,7 +93,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
  */
-public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
+public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -217,11 +214,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         new FastScrollerBuilder(recyclerView).build();
 
         // Drag, drop & swiping
-        SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
-                this,
-                this,
-                ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
-        dragSwipeCallback.setNotifyAllDrops(true);
+        SimpleSwipeDrawerDragCallback dragSwipeCallback = new SimpleSwipeDrawerDragCallback(this, ItemTouchHelper.LEFT, this)
+                .withSwipeLeft(Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list))
+                .withSensitivity(1.5f)
+                .withSurfaceThreshold(0.3f)
+                .withNotifyAllDrops(true);
         dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 
         touchHelper = new ItemTouchHelper(dragSwipeCallback);
@@ -563,19 +560,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper)).toList();
-        if (contentItems.isEmpty()) {
-            itemAdapter.set(contentItems); // Use set directly when the list is empty or FastAdapter crashes
-        } else {
-            compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems))
-                    .subscribeOn(Schedulers.computation())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(diffResult -> {
-                        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
-                        differEndCallback();
-                    })
-            );
-        }
+        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, this::onCancelSwipedBook)).toList();
+        itemAdapter.setNewList(contentItems, true);
+        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
         updateControlBar();
 
         // Signal swipe-to-cancel though a tooltip
@@ -702,8 +689,15 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         return false;
     }
 
-    private void onCancelBook(@NonNull Content c) {
-        viewModel.cancel(Stream.of(c).toList(), this::onCancelError, this::onCancelComplete);
+    private void onCancelSwipedBook(@NonNull final ContentItem item) {
+        // Deleted book is the last selected books => disable selection mode
+        if (item.isSelected()) {
+            selectExtension.deselect(item);
+            if (selectExtension.getSelectedItems().isEmpty())
+                selectionToolbar.setVisibility(View.GONE);
+        }
+
+        viewModel.cancel(Stream.of(item.getContent()).toList(), this::onCancelError, this::onCancelComplete);
     }
 
     private void onCancelBooks(@NonNull List<Content> c) {
@@ -797,22 +791,17 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     @Override
     public void itemSwiped(int position, int direction) {
-        ContentItem item = itemAdapter.getAdapterItem(position);
-        item.setSwipeDirection(direction);
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
+        if (vh instanceof ISwipeableViewHolder) {
+            ((ISwipeableViewHolder) vh).onSwiped();
+        }
+    }
 
-        if (item.getContent() != null) {
-            Debouncer<Content> cancelDebouncer = new Debouncer<>(requireContext(), 2000, this::onCancelBook);
-            cancelDebouncer.submit(item.getContent());
-
-            Runnable cancelSwipe = () -> {
-                cancelDebouncer.clear();
-                item.setSwipeDirection(0);
-                int position1 = itemAdapter.getAdapterPosition(item);
-                if (position1 != RecyclerView.NO_POSITION)
-                    fastAdapter.notifyItemChanged(position1);
-            };
-            item.setUndoSwipeAction(cancelSwipe);
-            fastAdapter.notifyItemChanged(position);
+    @Override
+    public void itemUnswiped(int position) {
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
+        if (vh instanceof ISwipeableViewHolder) {
+            ((ISwipeableViewHolder) vh).onUnswiped();
         }
     }
 

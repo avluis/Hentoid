@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -311,44 +312,25 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.viewerSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                binding.controlsOverlay.imagePreview1.setVisibility(View.VISIBLE);
-                binding.controlsOverlay.imagePreview2.setVisibility(View.VISIBLE);
-                binding.controlsOverlay.imagePreview3.setVisibility(View.VISIBLE);
+                binding.controlsOverlay.imagePreviewLeft.setVisibility(View.VISIBLE);
+                binding.controlsOverlay.imagePreviewCenter.setVisibility(View.VISIBLE);
+                binding.controlsOverlay.imagePreviewRight.setVisibility(View.VISIBLE);
                 binding.recyclerView.setVisibility(View.INVISIBLE);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                binding.controlsOverlay.imagePreview1.setVisibility(View.INVISIBLE);
-                binding.controlsOverlay.imagePreview2.setVisibility(View.INVISIBLE);
-                binding.controlsOverlay.imagePreview3.setVisibility(View.INVISIBLE);
+                binding.controlsOverlay.imagePreviewLeft.setVisibility(View.INVISIBLE);
+                binding.controlsOverlay.imagePreviewCenter.setVisibility(View.INVISIBLE);
+                binding.controlsOverlay.imagePreviewRight.setVisibility(View.INVISIBLE);
                 binding.recyclerView.setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                int actualProgress = progress;
-                if (Constant.VIEWER_DIRECTION_RTL == Preferences.getContentDirection(bookPreferences)) {
-                    actualProgress = seekBar.getMax() - progress;
-                }
-                if (fromUser) seekToPosition(actualProgress);
+                if (fromUser) seekToPosition(progress);
             }
         });
-
-        // Page number text and button around the slider
-        // called by onBrowseModeChanged
-        /*
-        int direction = Preferences.getContentDirection(bookPreferences);
-        if (Constant.VIEWER_DIRECTION_LTR == direction) {
-            pageCurrentNumber = requireViewById(rootView, R.id.viewer_pager_left_txt);
-            pageMaxNumber = requireViewById(rootView, R.id.viewer_pager_right_txt);
-        } else if (Constant.VIEWER_DIRECTION_RTL == direction) {
-            pageCurrentNumber = requireViewById(rootView, R.id.viewer_pager_right_txt);
-            pageMaxNumber = requireViewById(rootView, R.id.viewer_pager_left_txt);
-        }
-        pageMaxNumber.setOnClickListener(null);
-        pageCurrentNumber.setOnClickListener(v -> InputDialog.invokeNumberInputDialog(requireActivity(), R.string.goto_page, this::goToPage));
-         */
 
         // Gallery
         binding.controlsOverlay.viewerGalleryBtn.setOnClickListener(v -> displayGallery(false));
@@ -784,31 +766,42 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * @param position Position to go to (0-indexed)
      */
     private void seekToPosition(int position) {
-        if (View.VISIBLE == binding.controlsOverlay.imagePreview2.getVisibility()) {
-            ImageFile img = adapter.getImageAt(position - 1);
-            if (img != null) {
-                Glide.with(binding.controlsOverlay.imagePreview1)
-                        .load(Uri.parse(img.getFileUri()))
-                        .apply(glideRequestOptions)
-                        .into(binding.controlsOverlay.imagePreview1);
-                binding.controlsOverlay.imagePreview1.setVisibility(View.VISIBLE);
-            } else binding.controlsOverlay.imagePreview1.setVisibility(View.INVISIBLE);
+        if (View.VISIBLE == binding.controlsOverlay.imagePreviewCenter.getVisibility()) {
+            ImageView previousImageView;
+            ImageView nextImageView;
+            if (Constant.VIEWER_DIRECTION_LTR == Preferences.getContentDirection(bookPreferences)) {
+                previousImageView = binding.controlsOverlay.imagePreviewLeft;
+                nextImageView = binding.controlsOverlay.imagePreviewRight;
+            } else {
+                previousImageView = binding.controlsOverlay.imagePreviewRight;
+                nextImageView = binding.controlsOverlay.imagePreviewLeft;
+            }
 
-            img = adapter.getImageAt(position);
-            if (img != null)
-                Glide.with(binding.controlsOverlay.imagePreview2)
-                        .load(Uri.parse(img.getFileUri()))
-                        .apply(glideRequestOptions)
-                        .into(binding.controlsOverlay.imagePreview2);
+            ImageFile previousImg = adapter.getImageAt(position - 1);
+            ImageFile currentImg = adapter.getImageAt(position);
+            ImageFile nextImg = adapter.getImageAt(position + 1);
 
-            img = adapter.getImageAt(position + 1);
-            if (img != null) {
-                Glide.with(binding.controlsOverlay.imagePreview3)
-                        .load(Uri.parse(img.getFileUri()))
+            if (previousImg != null) {
+                Glide.with(previousImageView)
+                        .load(Uri.parse(previousImg.getFileUri()))
                         .apply(glideRequestOptions)
-                        .into(binding.controlsOverlay.imagePreview3);
-                binding.controlsOverlay.imagePreview3.setVisibility(View.VISIBLE);
-            } else binding.controlsOverlay.imagePreview3.setVisibility(View.INVISIBLE);
+                        .into(previousImageView);
+                previousImageView.setVisibility(View.VISIBLE);
+            } else previousImageView.setVisibility(View.INVISIBLE);
+
+            if (currentImg != null)
+                Glide.with(binding.controlsOverlay.imagePreviewCenter)
+                        .load(Uri.parse(currentImg.getFileUri()))
+                        .apply(glideRequestOptions)
+                        .into(binding.controlsOverlay.imagePreviewCenter);
+
+            if (nextImg != null) {
+                Glide.with(nextImageView)
+                        .load(Uri.parse(nextImg.getFileUri()))
+                        .apply(glideRequestOptions)
+                        .into(nextImageView);
+                nextImageView.setVisibility(View.VISIBLE);
+            } else nextImageView.setVisibility(View.INVISIBLE);
         }
 
         if (position == imageIndex + 1 || position == imageIndex - 1) {
