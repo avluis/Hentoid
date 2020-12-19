@@ -14,7 +14,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -31,7 +30,7 @@ import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.select.SelectExtension;
-import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
+import com.mikepenz.fastadapter.swipe.SimpleSwipeDrawerCallback;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -53,11 +52,13 @@ import me.devsaki.hentoid.fragments.library.ErrorsDialogFragment;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
+import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
@@ -69,7 +70,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
  * Created by Robb on 04/2020
  * Presents the list of downloads with errors
  */
-public class ErrorsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback, ErrorsDialogFragment.Parent {
+public class ErrorsFragment extends Fragment implements ItemTouchCallback, ErrorsDialogFragment.Parent, SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -131,9 +132,10 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         llm = (LinearLayoutManager) recyclerView.getLayoutManager();
 
         // Swiping
-        SimpleSwipeCallback swipeCallback = new SimpleSwipeCallback(
-                this,
-                ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
+        SimpleSwipeDrawerCallback swipeCallback = new SimpleSwipeDrawerCallback(ItemTouchHelper.LEFT, this)
+                .withSwipeLeft(Helper.dimensAsDp(requireContext(), R.dimen.delete_drawer_width_list))
+                .withSensitivity(1.5f)
+                .withSurfaceThreshold(0.3f);
 
         touchHelper = new ItemTouchHelper(swipeCallback);
         touchHelper.attachToRecyclerView(recyclerView);
@@ -335,7 +337,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         mEmptyText.setVisibility(result.isEmpty() ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS, null)).toList();
+        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, ContentItem.ViewType.ERRORS, this::onDeleteSwipedBook)).toList();
         if (contentItems.isEmpty()) {
             itemAdapter.set(contentItems); // Use set directly when the list is empty or FastAdapter crashes
         } else {
@@ -388,8 +390,15 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
         return false;
     }
 
-    private void onDeleteBook(@NonNull Content c) {
-        viewModel.remove(Stream.of(c).toList(), this::onDeleteError, this::onDeleteComplete);
+    private void onDeleteSwipedBook(@NonNull final ContentItem item) {
+        // Deleted book is the last selected books => disable selection mode
+        if (item.isSelected()) {
+            selectExtension.deselect(item);
+            if (selectExtension.getSelectedItems().isEmpty())
+                selectionToolbar.setVisibility(View.GONE);
+        }
+
+        viewModel.remove(Stream.of(item.getContent()).toList(), this::onDeleteError, this::onDeleteComplete);
     }
 
     private void onDeleteBooks(@NonNull List<Content> c) {
@@ -441,22 +450,17 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Simpl
 
     @Override
     public void itemSwiped(int position, int direction) {
-        ContentItem item = itemAdapter.getAdapterItem(position);
-        item.setSwipeDirection(direction);
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
+        if (vh instanceof ISwipeableViewHolder) {
+            ((ISwipeableViewHolder) vh).onSwiped();
+        }
+    }
 
-        if (item.getContent() != null) {
-            Debouncer<Content> deleteDebouncer = new Debouncer<>(this.requireContext(), 2000, this::onDeleteBook);
-            deleteDebouncer.submit(item.getContent());
-
-            Runnable cancelSwipe = () -> {
-                deleteDebouncer.clear();
-                item.setSwipeDirection(0);
-                int position1 = itemAdapter.getAdapterPosition(item);
-                if (position1 != RecyclerView.NO_POSITION)
-                    fastAdapter.notifyItemChanged(position1);
-            };
-            item.setUndoSwipeAction(cancelSwipe);
-            fastAdapter.notifyItemChanged(position);
+    @Override
+    public void itemUnswiped(int position) {
+        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
+        if (vh instanceof ISwipeableViewHolder) {
+            ((ISwipeableViewHolder) vh).onUnswiped();
         }
     }
 

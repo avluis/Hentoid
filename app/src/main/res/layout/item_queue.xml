@@ -5,10 +5,27 @@
     android:id="@+id/item"
     android:layout_width="match_parent"
     android:layout_height="105dp"
+    android:layout_marginBottom="@dimen/default_cardview_margin"
     android:clickable="true"
     android:focusable="true"
-    android:paddingBottom="@dimen/default_cardview_margin"
+    android:longClickable="true"
     tools:targetApi="o">
+
+    <ImageView
+        android:id="@+id/delete_btn"
+        android:layout_width="@dimen/delete_drawer_width_list"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="@drawable/selector_button_neutral"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_action_delete_forever"
+        android:tooltipText="@string/external_help"
+        android:visibility="gone"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/item_card"
@@ -80,8 +97,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:maxLines="1"
             android:ellipsize="end"
+            android:maxLines="1"
             android:singleLine="true"
             android:textColor="@color/card_tags_light"
             android:textSize="@dimen/caption"
@@ -210,45 +227,4 @@
             tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <LinearLayout
-        android:id="@+id/swipe_result_content"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#FF0000"
-        android:clickable="false"
-        android:focusable="false"
-        android:gravity="center_vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:id="@+id/swiped_text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center_vertical|start"
-            android:lines="1"
-            android:singleLine="true"
-            android:text="@string/canceled"
-            android:textColor="@android:color/primary_text_dark"
-            android:textDirection="anyRtl"
-            android:textSize="@dimen/text_subtitle_2" />
-
-        <TextView
-            android:id="@+id/undo_swipe"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:fontFamily="sans-serif"
-            android:gravity="center_vertical|start"
-            android:lines="1"
-            android:singleLine="true"
-            android:text="@string/undo"
-            android:textAllCaps="true"
-            android:textColor="@android:color/primary_text_dark"
-            android:textDirection="anyRtl"
-            android:textSize="@dimen/text_subtitle_2"
-            android:textStyle="bold" />
-    </LinearLayout>
-
 </FrameLayout>
