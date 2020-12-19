@@ -131,33 +131,33 @@
     <!-- Image previews used when tracking -->
 
     <ImageView
-        android:id="@+id/image_preview_1"
+        android:id="@+id/image_preview_left"
         android:layout_width="0dp"
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintEnd_toStartOf="@id/image_preview_2"
+        app:layout_constraintEnd_toStartOf="@id/image_preview_center"
         app:layout_constraintStart_toStartOf="parent"
         tools:ignore="ContentDescription" />
 
     <ImageView
-        android:id="@+id/image_preview_2"
+        android:id="@+id/image_preview_center"
         android:layout_width="0dp"
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
-        app:layout_constraintEnd_toStartOf="@id/image_preview_3"
-        app:layout_constraintStart_toEndOf="@id/image_preview_1"
+        app:layout_constraintEnd_toStartOf="@id/image_preview_right"
+        app:layout_constraintStart_toEndOf="@id/image_preview_left"
         tools:ignore="ContentDescription" />
 
     <ImageView
-        android:id="@+id/image_preview_3"
+        android:id="@+id/image_preview_right"
         android:layout_width="0dp"
         android:layout_height="200dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/image_preview_2"
+        app:layout_constraintStart_toEndOf="@id/image_preview_center"
         tools:ignore="ContentDescription" />
 
     <androidx.appcompat.widget.Toolbar
