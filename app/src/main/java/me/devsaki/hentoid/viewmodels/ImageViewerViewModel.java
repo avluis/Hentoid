@@ -17,7 +17,7 @@ import com.annimon.stream.IntStream;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +29,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -40,6 +43,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -82,6 +86,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
+    private Disposable unarchiveDisposable = Disposables.empty();
+    private Disposable imageLoadDisposable = Disposables.empty();
 
 
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -158,21 +164,45 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
-        compositeDisposable.add(
-                Single.fromCallable(() -> doSetImages(theContent, imgs))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .map(p -> initViewer(p.left, p.right))
-                        .observeOn(Schedulers.io())
-                        .subscribe(
-                                // Cache JSON and record 1 more view for the new content
-                                c -> postLoadProcessing(getApplication().getApplicationContext(), c),
-                                Timber::e
-                        )
-        );
+        Observable<ImageFile> observable;
+        if (theContent.isArchive())
+            observable = Observable.create(emitter -> processArchiveImages(theContent, imgs, emitter));
+        else
+            observable = Observable.create(emitter -> processDiskImages(theContent, imgs, emitter));
+
+        AtomicInteger nbProcessed = new AtomicInteger();
+        imageLoadDisposable = observable
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .doOnComplete(
+                        // Cache JSON and record 1 more view for the new content
+                        // Called this way to properly run on io thread
+                        () -> postLoadProcessing(getApplication().getApplicationContext(), theContent)
+                )
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        imageFile -> {
+                            nbProcessed.getAndIncrement();
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbProcessed.get(), 0, imgs.size()));
+                        },
+                        t -> {
+                            Timber.e(t);
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, imgs.size()));
+                        },
+                        () -> {
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, imgs.size()));
+                            initViewer(theContent, imgs);
+                            imageLoadDisposable.dispose();
+                        }
+                );
     }
 
-    private ImmutablePair<Content, List<ImageFile>> doSetImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) throws IOException {
+    private void processDiskImages(
+            @NonNull Content theContent,
+            @NonNull List<ImageFile> imgs,
+            @NonNull final ObservableEmitter<ImageFile> emitter) {
+        if (theContent.isArchive())
+            throw new IllegalArgumentException("Content must not be an archive");
         boolean missingUris = Stream.of(imgs).filter(img -> img.getFileUri().isEmpty()).count() > 0;
         List<ImageFile> imageFiles = new ArrayList<>(imgs);
 
@@ -184,50 +214,84 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     imageFiles = ContentHelper.createImageListFromFiles(pictureFiles);
                     theContent.setImageFiles(imageFiles);
                     collectionDao.insertContent(theContent);
-                } else
+                } else {
+                    // Match files for viewer display; no need to persist that
                     ContentHelper.matchFilesToImageList(pictureFiles, imageFiles);
+                }
             }
         }
 
-        // Empty the cache folder where previous cached images might be
-        // TODO create a smarter cache that works with a window of a given size
+        // Replace initial images with updated images
+        imgs.clear();
+        imgs.addAll(imageFiles);
+
+        emitter.onComplete();
+    }
+
+    private void emptyCacheFolder() {
         File cachePicFolder = getOrCreatePictureCacheFolder();
         if (cachePicFolder != null) {
             File[] files = cachePicFolder.listFiles();
             if (files != null)
                 for (File f : files)
                     if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
-
-
-            // Extract the images if they are contained within an archive
-            if (theContent.isArchive()) {
-                // Unzip the archive in the app's cache folder
-                DocumentFile zipFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
-                // TODO stream that so that loading isn't blocked
-                if (zipFile != null) {
-                    List<Uri> unzippedFilesUris = ArchiveHelper.extractArchiveEntries(
-                            getApplication(),
-                            zipFile,
-                            Stream.of(imageFiles).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
-                            cachePicFolder,
-                            null);
-
-                    // Feed the Uri's of unzipped files back into the corresponding images for viewing
-                    for (ImageFile img : imageFiles) {
-                        for (Uri unzippedUri : unzippedFilesUris)
-                            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(FileHelper.getFileNameWithoutExtension(unzippedUri.getPath()))) {
-                                img.setFileUri(unzippedUri.toString());
-                                break;
-                            }
-                    }
-                }
-            }
         }
-
-        return new ImmutablePair<>(theContent, imageFiles);
     }
 
-    private Content initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
+    private void processArchiveImages(
+            @NonNull Content theContent,
+            @NonNull List<ImageFile> imgs,
+            @NonNull final ObservableEmitter<ImageFile> emitter) throws IOException {
+        if (!theContent.isArchive())
+            throw new IllegalArgumentException("Content must be an archive");
+        List<ImageFile> imageFiles = new ArrayList<>(imgs);
+
+        // TODO create a smarter cache that works with a window of a given size
+        File cachePicFolder = getOrCreatePictureCacheFolder();
+        if (cachePicFolder != null) {
+            // Empty the cache folder where previous cached images might be
+            File[] files = cachePicFolder.listFiles();
+            if (files != null)
+                for (File f : files)
+                    if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
+
+            // Extract the images if they are contained within an archive
+            // Unzip the archive in the app's cache folder
+            DocumentFile zipFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
+            // TODO replace that with a proper on-demand loading
+            if (zipFile != null) {
+                unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
+                        getApplication(),
+                        zipFile,
+                        Stream.of(imageFiles).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
+                        cachePicFolder,
+                        null)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.computation())
+                        .subscribe(
+                                uri -> emitter.onNext(mapUriToImageFile(imgs, uri)),
+                                Timber::e,
+                                () -> {
+                                    unarchiveDisposable.dispose();
+                                    emitter.onComplete();
+                                }
+                        );
+            }
+        }
+    }
+
+    // TODO doc
+    private ImageFile mapUriToImageFile(@NonNull final List<ImageFile> imageFiles, @NonNull final Uri uri) {
+        // Feed the Uri's of unzipped files back into the corresponding images for viewing
+        for (ImageFile img : imageFiles) {
+            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(FileHelper.getFileNameWithoutExtension(uri.getPath())))
+                return img.setFileUri(uri.toString());
+        }
+        return new ImageFile();
+    }
+
+    private void initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
+        Timber.i("> initViewer");
         sortAndSetImages(imageFiles, isShuffled);
 
         if (theContent.getId() != loadedBookId) { // To be done once per book only
@@ -265,7 +329,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
 
         loadedBookId = theContent.getId();
-        return theContent;
     }
 
     public void onShuffleClick() {
@@ -334,6 +397,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doLeaveBook(final long contentId, int indexToSet, boolean updateReads) {
         Helper.assertNonUiThread();
+
+        // Empty cache
+        emptyCacheFolder();
 
         // Get a fresh version of current content in case it has been updated since the initial load
         // (that can be the case when viewing a book that is being downloaded)
@@ -548,7 +614,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doUpdateContentPreferences(@NonNull final Context context, @NonNull final Content c, @NonNull final Map<String, String> newPrefs) {
+    private void doUpdateContentPreferences(@NonNull final Context context,
+                                            @NonNull final Content c, @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
         Content theContent = collectionDao.selectContent(c.getId());

@@ -30,6 +30,11 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -47,6 +52,7 @@ import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.databinding.FragmentViewerPagerBinding;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
@@ -212,6 +218,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
 
@@ -244,12 +256,24 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     @Override
     public void onDestroy() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         Preferences.unregisterPrefsChangedListener(listener);
         if (adapter != null) {
             adapter.setRecyclerView(null);
             adapter.destroy();
         }
         super.onDestroy();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        if (null == binding) return;
+        if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            adapter.submitList(Collections.emptyList()); // Empty display until loading is complete
+            binding.viewerLoadingTxt.setText(getResources().getString(R.string.loading_images, event.elementsKO + event.elementsOK, event.elementsTotal));
+            binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType)
+            binding.viewerLoadingTxt.setVisibility(View.GONE);
     }
 
     private void initPager() {
@@ -898,7 +922,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (binding != null) binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
+                        if (binding != null)
+                            binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
                         setSystemBarsVisible(true);
                     }
                 });
@@ -912,7 +937,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (binding != null) binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
+                        if (binding != null)
+                            binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
                     }
                 });
         setSystemBarsVisible(false);

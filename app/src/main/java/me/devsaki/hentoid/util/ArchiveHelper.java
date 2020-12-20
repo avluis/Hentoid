@@ -25,6 +25,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import timber.log.Timber;
 
 /**
@@ -140,6 +142,28 @@ public class ArchiveHelper {
     }
 
     // TODO doc
+    public static Observable<Uri> extractArchiveEntriesRx(
+            @NonNull final Context context,
+            @NonNull final DocumentFile file,
+            @Nullable final List<String> entriesToExtract,
+            @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+            @Nullable final List<String> targetNames) throws IOException {
+        Helper.assertNonUiThread();
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+            byte[] header = new byte[4];
+            bis.mark(header.length);
+            if (bis.read(header) < header.length) return Observable.empty();
+            bis.reset();
+            String mimeType = getMimeTypeFromArchiveBinary(header);
+            if (mimeType.equals(ZIP_MIME_TYPE))
+                return Observable.create(emitter -> extractZipEntries(context, file, entriesToExtract, targetFolder, targetNames, emitter));
+            else if (mimeType.equals(RAR_MIME_TYPE))
+                return Observable.create(emitter -> extractRarEntries(context, file, entriesToExtract, targetFolder, targetNames, emitter));
+            else return Observable.empty();
+        }
+    }
+
+    // TODO doc
     public static List<Uri> extractArchiveEntries(
             @NonNull final Context context,
             @NonNull final DocumentFile file,
@@ -154,10 +178,22 @@ public class ArchiveHelper {
             bis.reset();
             String mimeType = getMimeTypeFromArchiveBinary(header);
             if (mimeType.equals(ZIP_MIME_TYPE))
-                return extractZipEntries(bis, entriesToExtract, targetFolder, targetNames);
+                return extractZipEntries(bis, entriesToExtract, targetFolder, targetNames, null);
             else if (mimeType.equals(RAR_MIME_TYPE))
-                return extractRarEntries(bis, entriesToExtract, targetFolder, targetNames);
+                return extractRarEntries(bis, entriesToExtract, targetFolder, targetNames, null);
             else return Collections.emptyList();
+        }
+    }
+
+    private static void extractZipEntries(
+            @NonNull final Context context,
+            @NonNull final DocumentFile file,
+            @Nullable final List<String> entriesToExtract,
+            @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+            @Nullable final List<String> targetNames,
+            @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+            extractZipEntries(bis, entriesToExtract, targetFolder, targetNames, emitter);
         }
     }
 
@@ -166,7 +202,8 @@ public class ArchiveHelper {
             @NonNull final BufferedInputStream bis,
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames) throws IOException {
+            @Nullable final List<String> targetNames,
+            @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         Helper.assertNonUiThread();
         List<Uri> result = new ArrayList<>();
         int index = 0;
@@ -198,7 +235,7 @@ public class ArchiveHelper {
                         if (0 == existing.length) {
                             targetFile = new File(targetFolder.getAbsolutePath() + File.separator + fileName);
                             if (!targetFile.createNewFile())
-                                throw new IOException("Could not create file " + targetFile.getPath());
+                                Timber.w("File already exists : %s", targetFile.getAbsolutePath());
                         } else {
                             targetFile = existing[0];
                         }
@@ -208,13 +245,27 @@ public class ArchiveHelper {
                                 out.write(buffer, 0, count);
                         }
                         result.add(Uri.fromFile(targetFile));
+                        if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
                     }
                     input.closeEntry();
                 }
                 entry = input.getNextEntry();
             }
         }
+        if (emitter != null) emitter.onComplete();
         return result;
+    }
+
+    private static void extractRarEntries(
+            @NonNull final Context context,
+            @NonNull final DocumentFile file,
+            @Nullable final List<String> entriesToExtract,
+            @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+            @Nullable final List<String> targetNames,
+            @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+            extractRarEntries(bis, entriesToExtract, targetFolder, targetNames, emitter);
+        }
     }
 
     // TODO doc
@@ -222,7 +273,8 @@ public class ArchiveHelper {
             @NonNull final BufferedInputStream bis,
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames) throws IOException {
+            @Nullable final List<String> targetNames,
+            @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         Helper.assertNonUiThread();
         List<Uri> result = new ArrayList<>();
         int index = 0;
@@ -261,6 +313,7 @@ public class ArchiveHelper {
                             while ((count = entryInput.read(buffer)) != -1)
                                 out.write(buffer, 0, count);
                         }
+                        if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
                         result.add(Uri.fromFile(targetFile));
                     }
                 }
@@ -268,6 +321,7 @@ public class ArchiveHelper {
         } catch (RarException e) {
             Timber.w(e);
         }
+        if (emitter != null) emitter.onComplete();
         return result;
     }
 
