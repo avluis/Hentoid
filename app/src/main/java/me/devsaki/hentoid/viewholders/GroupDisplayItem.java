@@ -182,7 +182,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             String thumbLocation = "";
             if (ContentHelper.isInLibrary(cover.getStatus())) thumbLocation = cover.getFileUri();
             if (thumbLocation.isEmpty()) thumbLocation = cover.getUrl();
-            if (thumbLocation.isEmpty())
+            if (thumbLocation.isEmpty() && !cover.getContent().isNull())
                 thumbLocation = cover.getContent().getTarget().getCoverImageUrl();
 
             if (thumbLocation.isEmpty()) return;
