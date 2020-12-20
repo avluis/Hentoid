@@ -396,6 +396,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Activated when all displayed items are placed on their definitive position
      */
     private void differEndCallback() {
+        if (null == binding) return;
+
         maxPosition = adapter.getItemCount() - 1;
         binding.controlsOverlay.viewerSeekbar.setMax(maxPosition);
 
