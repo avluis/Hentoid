@@ -829,6 +829,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handler for tapping on the left zone of the screen
      */
     private void onLeftTap() {
+        if (null == binding) return;
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
@@ -850,6 +852,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handler for tapping on the right zone of the screen
      */
     private void onRightTap() {
+        if (null == binding) return;
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
@@ -871,6 +875,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handler for tapping on the middle zone of the screen
      */
     private void onMiddleTap() {
+        if (null == binding) return;
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
