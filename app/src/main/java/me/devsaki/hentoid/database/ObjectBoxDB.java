@@ -664,7 +664,11 @@ public class ObjectBoxDB {
     private long[] selectFilteredContent(long groupId) {
         if (groupId < 1) return new long[0];
 
-        return Helper.getPrimitiveLongArrayFromList(store.boxFor(Group.class).get(groupId).getContentIds());
+        Box<Group> box = store.boxFor(Group.class);
+        Group group = box.get(groupId);
+        if (null == group) return new long[0];
+
+        return Helper.getPrimitiveLongArrayFromList(group.getContentIds());
     }
 
     private long[] selectFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
