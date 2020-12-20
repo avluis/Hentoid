@@ -266,8 +266,8 @@ public class LibraryActivity extends BaseActivity {
                 int origEdgeSize = origEdgeSizeInt;
                 int newEdgeSize = origEdgeSize * 2;
                 edgeSizeField.setInt(vdh, newEdgeSize);
+                Timber.d("Left drawer : new drag size of %d pixels", newEdgeSize);
             }
-
         } catch (Exception e) {
             Timber.e(e);
         }
