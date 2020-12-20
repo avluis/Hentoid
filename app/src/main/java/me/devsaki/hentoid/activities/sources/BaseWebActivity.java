@@ -958,8 +958,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
     }
 
-    void showTooltip(@StringRes int resource) {
-        TooltipUtil.showTooltip(this, resource, ArrowOrientation.BOTTOM, bottomToolbar, this);
+    void showTooltip(@StringRes int resource, boolean always) {
+        TooltipUtil.showTooltip(this, resource, ArrowOrientation.BOTTOM, bottomToolbar, this, always);
     }
 
     /**
@@ -1212,7 +1212,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 actionMenu.setEnabled(false);
             }
             // Display download button tooltip if a book page has been reached
-            if (isGalleryPage(url)) showTooltip(R.string.help_web_download);
+            if (isGalleryPage(url)) showTooltip(R.string.help_web_download, false);
         }
 
         @Override

@@ -17,7 +17,7 @@ public class FakkuActivity extends BaseWebActivity {
         CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
 
-        showTooltip(R.string.help_web_fakku_account); // Kinda hacky, but it's better than creating a whole new class just for that
+        showTooltip(R.string.help_web_fakku_account, false); // Kinda hacky, but it's better than creating a whole new class just for that
 
         return client;
     }
