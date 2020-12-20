@@ -23,6 +23,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.Group;
 import androidx.core.view.GravityCompat;
+import androidx.customview.widget.ViewDragHelper;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -41,6 +42,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -243,6 +245,32 @@ public class LibraryActivity extends BaseActivity {
             }
 
         });
+
+        // Hack DrawerLayout to make the drag zone larger
+        // Source : https://stackoverflow.com/a/36157701/8374722
+        try {
+            // get dragger responsible for the dragging of the left drawer
+            Field draggerField = DrawerLayout.class.getDeclaredField("mLeftDragger");
+            draggerField.setAccessible(true);
+            ViewDragHelper vdh = (ViewDragHelper) draggerField.get(drawerLayout);
+
+            // get access to the private field which defines
+            // how far from the edge dragging can start
+            Field edgeSizeField = ViewDragHelper.class.getDeclaredField("mEdgeSize");
+            edgeSizeField.setAccessible(true);
+
+            // increase the edge size - while x2 should be good enough,
+            // try bigger values to easily see the difference
+            Integer origEdgeSizeInt = (Integer) edgeSizeField.get(vdh);
+            if (origEdgeSizeInt != null) {
+                int origEdgeSize = origEdgeSizeInt;
+                int newEdgeSize = origEdgeSize * 2;
+                edgeSizeField.setInt(vdh, newEdgeSize);
+            }
+
+        } catch (Exception e) {
+            Timber.e(e);
+        }
 
         callback = new OnBackPressedCallback(false) {
             @Override
