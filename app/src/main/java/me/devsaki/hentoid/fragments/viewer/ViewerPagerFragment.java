@@ -898,7 +898,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
+                        if (binding != null) binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
                         setSystemBarsVisible(true);
                     }
                 });
@@ -912,7 +912,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
+                        if (binding != null) binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
                     }
                 });
         setSystemBarsVisible(false);
