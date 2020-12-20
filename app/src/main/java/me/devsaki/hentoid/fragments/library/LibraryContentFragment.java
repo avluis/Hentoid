@@ -40,7 +40,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
-import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
@@ -63,10 +62,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
@@ -1022,14 +1018,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
 
         List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType, this::onDeleteSwipedBook)).toList();
-        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(diffResult -> {
-                    FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
-                    differEndCallback();
-                })
-        );
+        itemAdapter.setNewList(contentItems, true);
+        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
     }
 
     private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
@@ -1045,18 +1035,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).toList();
         }
 
-        if (contentItems.isEmpty()) {
-            itemAdapter.set(contentItems); // Use set directly when the list is empty or FastAdapter crashes
-        } else {
-            compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(diffResult -> {
-                        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
-                        differEndCallback();
-                    })
-            );
-        }
+        itemAdapter.setNewList(contentItems, true);
+        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
     }
 
     /**
