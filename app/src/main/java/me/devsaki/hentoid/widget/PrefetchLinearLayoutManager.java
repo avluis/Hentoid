@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public class PrefetchLinearLayoutManager extends LinearLayoutManager {
 
     private int extraLayoutSpace = -1;
-
+    private int rawDeltaPx = 0;
 
     public PrefetchLinearLayoutManager(Context context) {
         super(context);
@@ -28,5 +28,21 @@ public class PrefetchLinearLayoutManager extends LinearLayoutManager {
     protected void calculateExtraLayoutSpace(@NonNull RecyclerView.State state, @NonNull int[] extraLayoutSpace) {
         extraLayoutSpace[0] = 0;
         extraLayoutSpace[1] = this.extraLayoutSpace;
+    }
+
+    public int getRawDeltaPx() {
+        return rawDeltaPx;
+    }
+
+    @Override
+    public int scrollHorizontallyBy(int dx, RecyclerView.Recycler recycler, RecyclerView.State state) {
+        if (canScrollHorizontally()) rawDeltaPx = dx;
+        return super.scrollHorizontallyBy(dx, recycler, state);
+    }
+
+    @Override
+    public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
+        if (canScrollVertically()) rawDeltaPx = dy;
+        return super.scrollVerticallyBy(dy, recycler, state);
     }
 }

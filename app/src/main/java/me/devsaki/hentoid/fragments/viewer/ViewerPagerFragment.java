@@ -775,16 +775,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Load next book
      */
     private void nextBook() {
-        viewModel.onLeaveBook(imageIndex);
-        viewModel.loadNextContent();
+        viewModel.loadNextContent(imageIndex);
     }
 
     /**
      * Load previous book
      */
     private void previousBook() {
-        viewModel.onLeaveBook(imageIndex);
-        viewModel.loadPreviousContent();
+        viewModel.loadPreviousContent(imageIndex);
     }
 
     /**

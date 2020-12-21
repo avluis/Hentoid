@@ -74,8 +74,12 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
                 if (!(llm.findLastVisibleItemPosition() == llm.getItemCount() - 1 || 0 == llm.findFirstVisibleItemPosition()))
                     return;
 
+                int scrollDirection = 0;
+                if (llm instanceof PrefetchLinearLayoutManager)
+                    scrollDirection = ((PrefetchLinearLayoutManager) llm).getRawDeltaPx();
+
                 if (recyclerView.computeHorizontalScrollOffset() == dragStartPositionX && !isSettlingX && llm.canScrollHorizontally()) {
-                    if (0 == dragStartPositionX && !llm.getReverseLayout())
+                    if (0 == dragStartPositionX && !llm.getReverseLayout() && scrollDirection <= 0)
                         onStartOutOfBoundScroll.run();
                     else if (0 == dragStartPositionX) onEndOutOfBoundScroll.run();
                     else if (llm.getReverseLayout()) onStartOutOfBoundScroll.run();

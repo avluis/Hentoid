@@ -571,16 +571,24 @@ public class ImageViewerViewModel extends AndroidViewModel {
         ContentHelper.setContentCover(page, collectionDao, getApplication());
     }
 
-    public void loadNextContent() {
-        if (currentContentIndex < contentIds.size() - 1) currentContentIndex++;
-        if (!contentIds.isEmpty())
-            loadFromContent(contentIds.get(currentContentIndex));
+    public void loadNextContent(int readerIndex) {
+        if (currentContentIndex < contentIds.size() - 1) {
+            currentContentIndex++;
+            if (!contentIds.isEmpty()) {
+                onLeaveBook(readerIndex);
+                loadFromContent(contentIds.get(currentContentIndex));
+            }
+        }
     }
 
-    public void loadPreviousContent() {
-        if (currentContentIndex > 0) currentContentIndex--;
-        if (!contentIds.isEmpty())
-            loadFromContent(contentIds.get(currentContentIndex));
+    public void loadPreviousContent(int readerIndex) {
+        if (currentContentIndex > 0) {
+            currentContentIndex--;
+            if (!contentIds.isEmpty()) {
+                onLeaveBook(readerIndex);
+                loadFromContent(contentIds.get(currentContentIndex));
+            }
+        }
     }
 
     private void processContent(@NonNull Content theContent) {
