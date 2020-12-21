@@ -158,7 +158,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
             if (oldItem.getGroup().picture.getTargetId() != newItem.getGroup().picture.getTargetId()) {
                 diffBundleBuilder.setCoverUri(newItem.getGroup().picture.getTarget().getUsableUri());
-                Timber.d("> bundle built");
             }
 
             if (diffBundleBuilder.isEmpty()) return null;
@@ -602,13 +601,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                                 GroupDisplayItem.ViewType.LIBRARY :
                                 GroupDisplayItem.ViewType.LIBRARY_GRID;
 
-        Timber.d("> let's go");
         List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK);
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
-
-//        itemAdapter.set(groups);
-//        differEndCallback();
 
         // Reset library load indicator
         firstLibraryLoad = true;

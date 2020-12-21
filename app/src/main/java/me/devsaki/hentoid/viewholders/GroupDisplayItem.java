@@ -40,7 +40,6 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
-import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
@@ -165,8 +164,6 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) coverUri = stringValue;
-
-                Timber.d("> bindView payload %s", coverUri);
             }
 
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
