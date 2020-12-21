@@ -824,28 +824,4 @@ public final class ContentHelper {
             return new NaturalOrderComparator().compare(o1.path, o2.path);
         }
     }
-
-    /**
-     * Diff calculation rules for ContentItem's
-     * <p>
-     * Created once and for all to be used by FastAdapter when posting updates without PagedList
-     */
-    public static final DiffCallback<ContentItem> CONTENT_ITEM_DIFF_CALLBACK = new DiffCallback<ContentItem>() {
-        @Override
-        public boolean areItemsTheSame(ContentItem oldItem, ContentItem newItem) {
-            return oldItem.getIdentifier() == newItem.getIdentifier();
-        }
-
-        @Override
-        public boolean areContentsTheSame(ContentItem oldItem, ContentItem newItem) {
-            return false; // Avoid keeping items un-updated as it ignores certain items and desynchronizes the "real" list from the one manipulated by selectExtension
-            // when using mass-moving (select multiple + move up/down) or when coming back from the image viewer
-        }
-
-        @Override
-        public @org.jetbrains.annotations.Nullable Object getChangePayload(ContentItem queueRecord, int i, ContentItem item1, int i1) {
-            return null;
-        }
-    };
-
 }
