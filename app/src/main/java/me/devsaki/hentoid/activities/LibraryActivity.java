@@ -828,6 +828,8 @@ public class LibraryActivity extends BaseActivity {
     }
 
     public void goBackToGroups() {
+        enableFragment(0);
+        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
     }

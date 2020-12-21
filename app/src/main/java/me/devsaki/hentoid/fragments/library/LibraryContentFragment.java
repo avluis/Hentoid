@@ -175,7 +175,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
 
     /**
-     * Diff calculation rules for list items
+     * Diff calculation rules for contents
      * <p>
      * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
      */
@@ -1056,7 +1056,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * @param result Current library according to active filters
      */
     private void onLibraryChanged(PagedList<Content> result) {
-        Timber.i(">>Library changed ! Size=%s", result.size());
+        Timber.i(">> Library changed ! Size=%s", result.size());
         if (!enabled) return;
 
         activity.get().updateTitle(result.size(), totalContentCount);

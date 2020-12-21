@@ -22,6 +22,8 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,6 +33,8 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.DiffCallback;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
@@ -54,6 +58,7 @@ import java.util.Set;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
+import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.Site;
@@ -136,6 +141,32 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private boolean enabled = true;
 
 
+    public static final DiffCallback<GroupDisplayItem> GROUPITEM_DIFF_CALLBACK = new DiffCallback<GroupDisplayItem>() {
+        @Override
+        public boolean areItemsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
+            return oldItem.getGroup().equals(newItem.getGroup());
+        }
+
+        @Override
+        public boolean areContentsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
+            return oldItem.getGroup().picture.getTargetId() == newItem.getGroup().picture.getTargetId();
+        }
+
+        @Override
+        public @org.jetbrains.annotations.Nullable Object getChangePayload(GroupDisplayItem oldItem, int oldPos, GroupDisplayItem newItem, int newPos) {
+            GroupItemBundle.Builder diffBundleBuilder = new GroupItemBundle.Builder();
+
+            if (oldItem.getGroup().picture.getTargetId() != newItem.getGroup().picture.getTargetId()) {
+                diffBundleBuilder.setCoverUri(newItem.getGroup().picture.getTarget().getUsableUri());
+                Timber.d("> bundle built");
+            }
+
+            if (diffBundleBuilder.isEmpty()) return null;
+            else return diffBundleBuilder.getBundle();
+        }
+    };
+
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -172,6 +203,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        firstLibraryLoad = true;
         viewModel.getGroups().observe(getViewLifecycleOwner(), this::onGroupsChanged);
         viewModel.getTotalGroup().observe(getViewLifecycleOwner(), this::onTotalGroupsChanged);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
@@ -181,11 +213,11 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility()); // Trigger a blank search
     }
 
-    public void onEnable() {
+    public void enable() {
         enabled = true;
     }
 
-    public void onDisable() {
+    public void disable() {
         enabled = false;
     }
 
@@ -469,10 +501,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
                 break;
             case EV_ENABLE:
-                onEnable();
+                enable();
                 break;
             case EV_DISABLE:
-                onDisable();
+                disable();
                 break;
             default:
                 // No default behaviour
@@ -556,7 +588,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     private void onGroupsChanged(List<Group> result) {
-        Timber.i(">>Groups changed ! Size=%s", result.size());
+        Timber.i(">> Groups changed ! Size=%s", result.size());
         if (!enabled) return;
 
         boolean isEmpty = (result.isEmpty());
@@ -570,9 +602,13 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                                 GroupDisplayItem.ViewType.LIBRARY :
                                 GroupDisplayItem.ViewType.LIBRARY_GRID;
 
+        Timber.d("> let's go");
         List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).toList();
-        itemAdapter.set(groups);
-        differEndCallback();
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK);
+        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
+
+//        itemAdapter.set(groups);
+//        differEndCallback();
 
         // Reset library load indicator
         firstLibraryLoad = true;

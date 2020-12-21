@@ -441,10 +441,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         return Stream.of(contentResult).map(c -> new GroupItem(c, group, -1)).toList();
     }
 
-    public void deleteGroupItem(long groupItemId) {
-        db.deleteGroupItem(groupItemId);
-    }
-
     public void deleteGroupItems(@NonNull final List<Long> groupItemIds) {
         // Check if one of the GroupItems to delete is linked to the content that contains the group's cover picture
         List<GroupItem> groupItems = db.selectGroupItems(Helper.getPrimitiveLongArrayFromList(groupItemIds));
