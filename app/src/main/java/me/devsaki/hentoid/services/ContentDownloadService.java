@@ -606,7 +606,8 @@ public class ContentDownloadService extends IntentService {
                 Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
                 EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages, sizeDownloadedBytes));
 
-                if (ContentHelper.updateQueueJson(this, dao)) Timber.i("Queue JSON successfully saved");
+                if (ContentHelper.updateQueueJson(this, dao))
+                    Timber.i("Queue JSON successfully saved");
                 else Timber.w("Queue JSON saving failed");
 
                 // Tracking Event (Download Completed)
@@ -929,8 +930,11 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String
-            fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
+    private DocumentFile saveImage(
+            @NonNull DocumentFile dir,
+            @NonNull String fileName,
+            @NonNull String mimeType,
+            byte[] binaryContent) throws IOException {
         DocumentFile file = FileHelper.findOrCreateDocumentFile(this, dir, mimeType, fileName);
         if (null == file)
             throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));
