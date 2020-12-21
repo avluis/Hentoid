@@ -22,8 +22,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -144,7 +142,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     public static final DiffCallback<GroupDisplayItem> GROUPITEM_DIFF_CALLBACK = new DiffCallback<GroupDisplayItem>() {
         @Override
         public boolean areItemsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
-            return oldItem.getGroup().equals(newItem.getGroup());
+            return oldItem.getIdentifier() == newItem.getIdentifier();
         }
 
         @Override
