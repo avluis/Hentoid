@@ -203,7 +203,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * Toggle the favourite filter
      */
     public void toggleFavouriteFilter() {
-        searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
+        searchManager.setFilterBookFavourites(!searchManager.isFilterBookFavourites());
         newSearch.setValue(true);
         doSearchContent();
     }

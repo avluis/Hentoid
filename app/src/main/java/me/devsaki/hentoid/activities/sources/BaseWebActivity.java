@@ -346,7 +346,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         // Priority 2 : Last viewed position, if option enabled
         if (Preferences.isBrowserResumeLast()) {
-            SiteHistory siteHistory = objectBoxDAO.getHistory(getStartSite());
+            SiteHistory siteHistory = objectBoxDAO.selectHistory(getStartSite());
             if (siteHistory != null && !siteHistory.getUrl().isEmpty()) return siteHistory.getUrl();
         }
 

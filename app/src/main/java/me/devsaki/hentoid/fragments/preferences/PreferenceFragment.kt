@@ -223,7 +223,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         val dao = ObjectBoxDAO(activity)
         var searchDisposable = Disposables.empty()
 
-        searchDisposable = dao.getStoredBooks(true, false).subscribe { list ->
+        searchDisposable = dao.selectStoredBooks(true, false).subscribe { list ->
             MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_warning)
                     .setCancelable(false)

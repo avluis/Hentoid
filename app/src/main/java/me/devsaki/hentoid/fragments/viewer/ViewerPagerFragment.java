@@ -388,7 +388,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handle click on "Show favourite pages" action button
      */
     private void onShowFavouriteClick() {
-        viewModel.toggleShowFavouritePages(this::updateShowFavouriteDisplay);
+        viewModel.toggleFilterFavouritePages(this::updateShowFavouriteDisplay);
     }
 
     /**

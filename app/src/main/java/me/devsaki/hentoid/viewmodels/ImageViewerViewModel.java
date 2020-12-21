@@ -62,6 +62,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Collection DAO
     private final CollectionDAO collectionDao;
+    private ContentSearchManager searchManager;
 
     // Settings
     private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
@@ -71,7 +72,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
     private List<Long> contentIds = Collections.emptyList();                         // Content Ids of the whole collection ordered according to current filter
     private int currentContentIndex = -1;                                            // Index of current content within the above list
-    private long loadedBookId = -1;                                                  // ID of currently loaded book
+    private long loadedContentId = -1;                                                  // ID of currently loaded book
 
     // Pictures data
     private LiveData<List<ImageFile>> currentImageSource;
@@ -142,10 +143,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void loadFromSearchParams(long contentId, @NonNull Bundle bundle) {
-        // Technical
-        ContentSearchManager searchManager = new ContentSearchManager(collectionDao);
+        searchManager = new ContentSearchManager(collectionDao);
         searchManager.loadFromBundle(bundle);
+        applySearchParams(contentId);
+    }
 
+    private void applySearchParams(long contentId) {
         searchDisposable.dispose();
         searchDisposable = searchManager.searchLibraryForId().subscribe(
                 list -> {
@@ -294,7 +297,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Timber.i("> initViewer");
         sortAndSetImages(imageFiles, isShuffled);
 
-        if (theContent.getId() != loadedBookId) { // To be done once per book only
+        if (theContent.getId() != loadedContentId) { // To be done once per book only
             int collectionStartingIndex = 0;
             // Auto-restart at last read position if asked to
             if (Preferences.isViewerResumeLastLeft())
@@ -328,7 +331,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 markPageAsRead(imageFiles.get(collectionStartingIndex).getOrder());
         }
 
-        loadedBookId = theContent.getId();
+        loadedContentId = theContent.getId();
     }
 
     public void onShuffleClick() {
@@ -420,11 +423,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
             ContentHelper.updateContentReadStats(getApplication(), collectionDao, savedContent, theImages, indexToSet, updateReads);
     }
 
-    public void toggleShowFavouritePages(Consumer<Boolean> callback) {
+    public void toggleFilterFavouritePages(Consumer<Boolean> callback) {
         Content c = content.getValue();
         if (c != null) {
             showFavourites = !showFavourites;
-            processContent(c);
+            searchManager.setFilterPageFavourites(showFavourites);
+            //processContent(c);
+            applySearchParams(loadedContentId);
             callback.accept(showFavourites);
         }
     }
@@ -483,7 +488,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void deleteBook(Consumer<Throwable> onError) {
-        Content targetContent = collectionDao.selectContent(loadedBookId);
+        Content targetContent = collectionDao.selectContent(loadedContentId);
         if (null == targetContent) return;
 
         // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
@@ -589,7 +594,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) images.removeSource(currentImageSource);
-        currentImageSource = collectionDao.getDownloadedImagesFromContent(theContent.getId());
+        currentImageSource = collectionDao.selectDownloadedImagesFromContent(theContent.getId());
         images.addSource(currentImageSource, imgs -> setImages(theContent, imgs));
     }
 

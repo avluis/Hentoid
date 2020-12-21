@@ -31,8 +31,10 @@ public class ContentSearchManager {
 
     private final CollectionDAO collectionDAO;
 
-    // Favourite filter active
-    private boolean filterFavourites = false;
+    // Book favourite filter
+    private boolean filterBookFavourites = false;
+    // Page favourite filter
+    private boolean filterPageFavourites = false;
     // Full-text query
     private String query = "";
     // Current search tags
@@ -50,12 +52,16 @@ public class ContentSearchManager {
         this.collectionDAO = collectionDAO;
     }
 
-    public void setFilterFavourites(boolean filterFavourites) {
-        this.filterFavourites = filterFavourites;
+    public void setFilterBookFavourites(boolean filterBookFavourites) {
+        this.filterBookFavourites = filterBookFavourites;
     }
 
-    public boolean isFilterFavourites() {
-        return filterFavourites;
+    public boolean isFilterBookFavourites() {
+        return filterBookFavourites;
+    }
+
+    public void setFilterPageFavourites(boolean filterPageFavourites) {
+        this.filterPageFavourites = filterPageFavourites;
     }
 
     public void setLoadAll(boolean loadAll) {
@@ -100,7 +106,7 @@ public class ContentSearchManager {
 
 
     public void saveToBundle(@Nonnull Bundle outState) {
-        outState.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
+        outState.putBoolean(KEY_FILTER_FAVOURITES, filterBookFavourites);
         outState.putString(KEY_QUERY, query);
         outState.putInt(KEY_SORT_FIELD, contentSortField);
         outState.putBoolean(KEY_SORT_DESC, contentSortDesc);
@@ -110,7 +116,7 @@ public class ContentSearchManager {
     }
 
     public void loadFromBundle(@Nonnull Bundle state) {
-        filterFavourites = state.getBoolean(KEY_FILTER_FAVOURITES, false);
+        filterBookFavourites = state.getBoolean(KEY_FILTER_FAVOURITES, false);
         query = state.getString(KEY_QUERY, "");
         contentSortField = state.getInt(KEY_SORT_FIELD, Preferences.getContentSortField());
         contentSortDesc = state.getBoolean(KEY_SORT_DESC, Preferences.isContentSortDesc());
@@ -122,19 +128,19 @@ public class ContentSearchManager {
 
     public LiveData<PagedList<Content>> getLibrary() {
         if (!getQuery().isEmpty())
-            return collectionDAO.searchBooksUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterFavourites, loadAll); // Universal search
+            return collectionDAO.searchBooksUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterBookFavourites, loadAll); // Universal search
         else if (!tags.isEmpty())
-            return collectionDAO.searchBooks("", groupId, tags, contentSortField, contentSortDesc, filterFavourites, loadAll); // Advanced search
+            return collectionDAO.searchBooks("", groupId, tags, contentSortField, contentSortDesc, filterBookFavourites, loadAll); // Advanced search
         else
-            return collectionDAO.getRecentBooks(groupId, contentSortField, contentSortDesc, filterFavourites, loadAll); // Default search (display recent)
+            return collectionDAO.selectRecentBooks(groupId, contentSortField, contentSortDesc, filterBookFavourites, loadAll); // Default search (display recent)
     }
 
     public Single<List<Long>> searchLibraryForId() {
         if (!getQuery().isEmpty())
-            return collectionDAO.searchBookIdsUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterFavourites); // Universal search
+            return collectionDAO.searchBookIdsUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterBookFavourites, filterPageFavourites); // Universal search
         else if (!tags.isEmpty())
-            return collectionDAO.searchBookIds("", groupId, tags, contentSortField, contentSortDesc, filterFavourites); // Advanced search
+            return collectionDAO.searchBookIds("", groupId, tags, contentSortField, contentSortDesc, filterBookFavourites, filterPageFavourites); // Advanced search
         else
-            return collectionDAO.getRecentBookIds(groupId, contentSortField, contentSortDesc, filterFavourites); // Default search (display recent)
+            return collectionDAO.selectRecentBookIds(groupId, contentSortField, contentSortDesc, filterBookFavourites, filterPageFavourites); // Default search (display recent)
     }
 }
