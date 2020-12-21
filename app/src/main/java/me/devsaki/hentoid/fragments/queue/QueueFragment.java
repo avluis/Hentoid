@@ -31,6 +31,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.select.SelectExtension;
@@ -561,7 +562,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         // Update displayed books
         List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, this::onCancelSwipedBook)).withoutNulls().toList();
-        itemAdapter.setNewList(contentItems, true);
+//        itemAdapter.setNewList(contentItems, true);
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems);
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
         updateControlBar();
 
