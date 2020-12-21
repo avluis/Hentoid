@@ -28,12 +28,9 @@ public class ContentSearchManager {
     private static final String KEY_QUERY = "query";
     private static final String KEY_SORT_FIELD = "sort_field";
     private static final String KEY_SORT_DESC = "sort_desc";
-    private static final String KEY_CURRENT_PAGE = "current_page";
 
     private final CollectionDAO collectionDAO;
 
-    // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
-    private int currentPage = 1;
     // Favourite filter active
     private boolean filterFavourites = false;
     // Full-text query
@@ -107,7 +104,6 @@ public class ContentSearchManager {
         outState.putString(KEY_QUERY, query);
         outState.putInt(KEY_SORT_FIELD, contentSortField);
         outState.putBoolean(KEY_SORT_DESC, contentSortDesc);
-        outState.putInt(KEY_CURRENT_PAGE, currentPage);
         String searchUri = SearchActivityBundle.Builder.buildSearchUri(tags).toString();
         outState.putString(KEY_SELECTED_TAGS, searchUri);
         outState.putLong(KEY_GROUP, groupId);
@@ -118,7 +114,6 @@ public class ContentSearchManager {
         query = state.getString(KEY_QUERY, "");
         contentSortField = state.getInt(KEY_SORT_FIELD, Preferences.getContentSortField());
         contentSortDesc = state.getBoolean(KEY_SORT_DESC, Preferences.isContentSortDesc());
-        currentPage = state.getInt(KEY_CURRENT_PAGE);
 
         String searchUri = state.getString(KEY_SELECTED_TAGS);
         tags = SearchActivityBundle.Parser.parseSearchUri(Uri.parse(searchUri));
