@@ -21,7 +21,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.Group;
 import androidx.core.view.GravityCompat;
 import androidx.customview.widget.ViewDragHelper;
 import androidx.documentfile.provider.DocumentFile;
@@ -121,7 +120,15 @@ public class LibraryActivity extends BaseActivity {
     // Sort field button
     private TextView sortFieldButton;
 
-    // === TOOLBAR
+    // === Alert bar
+    // Background and text of the alert bar
+    private TextView alertTxt;
+    // Icon of the alert bar
+    private View alertIcon;
+    // Action button ("fix") of the alert bar
+    private View alertFixBtn;
+
+    // === Toolbar
     private Toolbar toolbar;
     // "Search" button on top menu
     private MenuItem searchMenu;
@@ -136,11 +143,9 @@ public class LibraryActivity extends BaseActivity {
     // "Sort" button on top menu
     private MenuItem sortMenu;
     // Alert bars
-    private Group permissionsAlertBar;
-    private Group storageAlertBar;
     private PopupMenu autoHidePopup;
 
-    // === SELECTION TOOLBAR
+    // === Selection toolbar
     private Toolbar selectionToolbar;
     private MenuItem editNameMenu;
     private MenuItem deleteMenu;
@@ -176,7 +181,7 @@ public class LibraryActivity extends BaseActivity {
     private boolean editMode = false;
     // True if there's at least one existing custom group; false instead
     private boolean isCustomGroupingAvailable;
-    // TODO doc
+    // Titles of each of the Viewpager2's tabs
     private final Map<Integer, String> titles = new HashMap<>();
 
 
@@ -340,11 +345,14 @@ public class LibraryActivity extends BaseActivity {
         if (!PermissionUtil.checkExternalStorageReadWritePermission(this)) {
             ((TextView) findViewById(R.id.library_alert_txt)).setText(R.string.permissions_lost);
             findViewById(R.id.library_alert_fix_btn).setOnClickListener(v -> fixPermissions());
-            permissionsAlertBar.setVisibility(View.VISIBLE);
+            alertTxt.setVisibility(View.VISIBLE);
+            alertIcon.setVisibility(View.VISIBLE);
+            alertFixBtn.setVisibility(View.VISIBLE);
         } else if (isLowOnSpace()) { // Else display low space alert
             ((TextView) findViewById(R.id.library_alert_txt)).setText(R.string.low_memory);
-            permissionsAlertBar.setVisibility(View.GONE);
-            storageAlertBar.setVisibility(View.VISIBLE);
+            alertTxt.setVisibility(View.VISIBLE);
+            alertIcon.setVisibility(View.VISIBLE);
+            alertFixBtn.setVisibility(View.GONE);
         }
     }
 
@@ -353,8 +361,9 @@ public class LibraryActivity extends BaseActivity {
      */
     private void initUI() {
         // Permissions alert bar
-        permissionsAlertBar = findViewById(R.id.library_permissions_alert_group);
-        storageAlertBar = findViewById(R.id.library_storage_alert_group);
+        alertTxt = findViewById(R.id.library_alert_txt);
+        alertIcon = findViewById(R.id.library_alert_icon);
+        alertFixBtn = findViewById(R.id.library_alert_fix_btn);
 
         // Search bar
         searchSortBar = findViewById(R.id.advanced_search_background);
@@ -809,7 +818,9 @@ public class LibraryActivity extends BaseActivity {
         if (permissions.length < 2) return;
         if (grantResults.length == 0) return;
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            permissionsAlertBar.setVisibility(View.GONE);
+            alertTxt.setVisibility(View.GONE);
+            alertIcon.setVisibility(View.GONE);
+            alertFixBtn.setVisibility(View.GONE);
         } // Don't show rationales here; the alert still displayed on screen should be enough
     }
 
