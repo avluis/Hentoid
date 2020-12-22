@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
@@ -49,6 +50,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
+import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.databinding.FragmentViewerPagerBinding;
@@ -479,7 +481,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         isContentArchive = content.isArchive();
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
-        updateBookNavigation(content);
+        updateNavigationUi(content);
     }
 
     /**
@@ -574,7 +576,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      *
      * @param content Current book
      */
-    private void updateBookNavigation(@Nonnull Content content) {
+    private void updateNavigationUi(@Nonnull Content content) {
         if (content.isFirst())
             binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.INVISIBLE);
         else binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.VISIBLE);
@@ -666,6 +668,13 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onUpdateImageDisplay() {
         adapter.refreshPrefs(bookPreferences);
+
+        // Needs ARGB_8888 to be able to resize images using RenderScript
+        if (Preferences.isContentSmoothRendering(bookPreferences))
+            CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.ARGB_8888);
+        else
+            CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.RGB_565);
+
         binding.recyclerView.setAdapter(null);
         binding.recyclerView.setLayoutManager(null);
         binding.recyclerView.getRecycledViewPool().clear();
