@@ -210,12 +210,14 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility()); // Trigger a blank search
     }
 
-    public void enable() {
+    public void onEnable() {
         enabled = true;
+        callback.setEnabled(true);
     }
 
-    public void disable() {
+    public void onDisable() {
         enabled = false;
+        callback.setEnabled(false);
     }
 
     /**
@@ -498,10 +500,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
                 break;
             case EV_ENABLE:
-                enable();
+                onEnable();
                 break;
             case EV_DISABLE:
-                disable();
+                onDisable();
                 break;
             default:
                 // No default behaviour

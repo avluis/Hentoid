@@ -320,10 +320,12 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
     public void onEnable() {
         enabled = true;
+        callback.setEnabled(true);
     }
 
     public void onDisable() {
         enabled = false;
+        callback.setEnabled(false);
     }
 
     /**
