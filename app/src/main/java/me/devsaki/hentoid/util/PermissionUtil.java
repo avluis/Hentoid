@@ -48,15 +48,4 @@ public class PermissionUtil {
             return false;
         }
     }
-
-    public static boolean requestExternalStorageReadWritePermission(Fragment fragment, int permissionRequestCode) {
-        if (checkExternalStorageReadWritePermission(fragment.requireActivity()))
-            return true;
-        else {
-            fragment.requestPermissions(new String[]{
-                    Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionRequestCode);
-
-            return false;
-        }
-    }
 }

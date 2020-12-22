@@ -215,7 +215,7 @@ public class ContentDownloadService extends IntentService {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
-        // Check for download folder existence and available free space
+        // Check for download folder existence, available free space and credentials
         if (Preferences.getStorageUri().trim().isEmpty()) {
             Timber.w("No download folder set"); // May happen if user has skipped it during the intro
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
@@ -227,12 +227,16 @@ public class ContentDownloadService extends IntentService {
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
+        if (-2 == FileHelper.createNoMedia(this, rootFolder)) {
+            Timber.w("Insufficient credentials on download folder. Please select it again.");
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
         if (new FileHelper.MemoryUsageFigures(this, rootFolder).getfreeUsageMb() < 2) {
             Timber.w("Device very low on storage space (<2 MB). Queue paused.");
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
-
 
         // Work on first item of queue
 

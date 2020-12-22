@@ -72,6 +72,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -408,6 +409,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND:
                 motiveMsg = R.string.paused_dl_folder_not_found;
+                break;
+            case DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS:
+                motiveMsg = R.string.paused_dl_folder_credentials;
+                PermissionUtil.requestExternalStorageReadWritePermission(getActivity(), PermissionUtil.RQST_STORAGE_PERMISSION);
                 break;
             case DownloadEvent.Motive.NONE:
             default: // NONE
