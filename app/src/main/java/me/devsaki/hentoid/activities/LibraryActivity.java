@@ -733,6 +733,9 @@ public class LibraryActivity extends BaseActivity {
                 Preferences.setGroupSortField(Preferences.Default.ORDER_GROUP_FIELD);
             }
 
+            // Go back to groups tab if we're not
+            goBackToGroups();
+
             // Update screen display if needed (flat <-> the rest)
             if (currentGrouping.equals(Grouping.FLAT) || selectedGrouping.equals(Grouping.FLAT))
                 updateDisplay();
@@ -839,6 +842,8 @@ public class LibraryActivity extends BaseActivity {
     }
 
     public void goBackToGroups() {
+        if (isGroupDisplayed()) return;
+
         enableFragment(0);
         viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
         viewPager.setCurrentItem(0);
