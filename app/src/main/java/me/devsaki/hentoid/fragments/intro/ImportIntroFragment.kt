@@ -118,7 +118,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 mergedBinding.importStep2Check.visibility = View.VISIBLE
                 mergedBinding.importStep3.visibility = View.VISIBLE
                 mergedBinding.importStep3Text.text = resources.getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal)
-            } else if (ImportService.STEP_4_QUEUE == event.step) {
+            } else if (ImportService.STEP_4_QUEUE_FINAL == event.step) {
                 mergedBinding.importStep3Check.visibility = View.VISIBLE
                 mergedBinding.importStep4.visibility = View.VISIBLE
             }
@@ -133,7 +133,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     mergedBinding.importStep3Check.visibility = View.VISIBLE
                     mergedBinding.importStep4.visibility = View.VISIBLE
                 }
-                ImportService.STEP_4_QUEUE == event.step -> {
+                ImportService.STEP_4_QUEUE_FINAL == event.step -> {
                     mergedBinding.importStep4Check.visibility = View.VISIBLE
                     nextStep()
                 }

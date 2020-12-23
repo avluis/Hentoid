@@ -143,7 +143,7 @@ public class ExternalImportService extends IntentService {
             List<Content> library = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
             scanFolderRecursive(rootFolder, client, new ArrayList<>(), library, dao);
-            eventComplete(2, 0, 0, 0, null);
+            eventComplete(ImportService.STEP_2_BOOK_FOLDERS, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
             trace(Log.DEBUG, 0, log, "Import books starting - initial detected count : %s", library.size() + "");
@@ -186,10 +186,10 @@ public class ExternalImportService extends IntentService {
                 trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;
                 notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, library.size()));
-                eventProgress(3, library.size(), booksOK, booksKO);
+                eventProgress(ImportService.STEP_3_BOOKS, library.size(), booksOK, booksKO);
             }
             trace(Log.INFO, 2, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", library.size() + "");
-            eventComplete(3, library.size(), booksOK, booksKO, null);
+            eventComplete(ImportService.STEP_3_BOOKS, library.size(), booksOK, booksKO, null);
 
             // Write log in root folder
             logFile = LogUtil.writeLog(this, buildLogInfo(log));
@@ -200,7 +200,7 @@ public class ExternalImportService extends IntentService {
             else
                 client.release();
 
-            eventComplete(4, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
+            eventComplete(ImportService.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
             dao.cleanup();
         }

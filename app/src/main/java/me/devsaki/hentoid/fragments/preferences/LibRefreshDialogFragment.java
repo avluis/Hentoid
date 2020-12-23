@@ -336,7 +336,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
-            } else if (ImportService.STEP_4_QUEUE == event.step) {
+            } else if (ImportService.STEP_4_QUEUE_FINAL == event.step) {
                 step3check.setVisibility(View.VISIBLE);
                 step4block.setVisibility(View.VISIBLE);
             }
@@ -352,7 +352,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
                 step3check.setVisibility(View.VISIBLE);
                 step4block.setVisibility(View.VISIBLE);
-            } else if (ImportService.STEP_4_QUEUE == event.step) {
+            } else if (ImportService.STEP_4_QUEUE_FINAL == event.step) {
                 step4check.setVisibility(View.VISIBLE);
                 isServiceGracefulClose = true;
                 dismiss();
