@@ -150,15 +150,15 @@ public class ChangeGroupDialogFragment extends DialogFragment {
         LibraryViewModel viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         if (existingRadio.isChecked()) {
-            viewModel.moveBooks(bookIds, customGroups.get(existingSpin.getSelectedIndex()), getParent()::onChangeSuccess);
+            viewModel.moveBooks(bookIds, customGroups.get(existingSpin.getSelectedIndex()), getParent()::onChangeGroupSuccess);
             dismiss();
         } else if (detachRadio.isChecked()) {
-            viewModel.moveBooks(bookIds, null, getParent()::onChangeSuccess);
+            viewModel.moveBooks(bookIds, null, getParent()::onChangeGroupSuccess);
             dismiss();
         } else { // New group
             List<Group> groupMatchingName = Stream.of(customGroups).filter(g -> g.name.equalsIgnoreCase(newNameTxt.getText().toString())).toList();
             if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
-                viewModel.moveBooksToNew(bookIds, newNameTxt.getText().toString(), getParent()::onChangeSuccess);
+                viewModel.moveBooksToNew(bookIds, newNameTxt.getText().toString(), getParent()::onChangeGroupSuccess);
                 dismiss();
             } else {
                 ToastUtil.toast(R.string.group_name_exists);
@@ -171,6 +171,6 @@ public class ChangeGroupDialogFragment extends DialogFragment {
     }
 
     public interface Parent {
-        void onChangeSuccess();
+        void onChangeGroupSuccess();
     }
 }

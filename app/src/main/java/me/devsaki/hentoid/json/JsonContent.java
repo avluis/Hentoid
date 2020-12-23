@@ -102,9 +102,11 @@ public class JsonContent {
                 result.errorRecords.add(JsonErrorRecord.fromEntity(err));
 
         if (c.groupItems != null && !c.groupItems.isEmpty())
-            for (GroupItem gi : c.groupItems)
-                if (gi.group.getTarget().hasCustomBookOrder) // Don't persist group info that can be auto-generated
+            for (GroupItem gi : c.groupItems) {
+                Group g = gi.group.getTarget();
+                if (g != null && (g.grouping.equals(Grouping.CUSTOM) || g.hasCustomBookOrder)) // Don't persist group info that can be auto-generated
                     result.groups.add(JsonGroupItem.fromEntity(gi));
+            }
 
         return result;
     }

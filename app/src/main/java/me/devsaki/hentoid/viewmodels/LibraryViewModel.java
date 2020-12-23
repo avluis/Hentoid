@@ -622,7 +622,6 @@ public class LibraryViewModel extends AndroidViewModel {
             if (group.picture.isNull())
                 group.picture.setAndPutTarget(content.getCover());
         }
-        // updateContentOrder(); TODO is that necessary when moving when inside custom group ?
 
         return content;
     }

@@ -1379,7 +1379,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     }
 
     @Override
-    public void onChangeSuccess() {
+    public void onChangeGroupSuccess() {
         refreshIfNeeded();
     }
 
