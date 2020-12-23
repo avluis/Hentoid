@@ -126,7 +126,6 @@ public final class ContentHelper {
      */
     public static void updateContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        if (content.isArchive()) return;
 
         DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
         if (null == file)
@@ -146,7 +145,7 @@ public final class ContentHelper {
      */
     public static void createContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        if (content.isArchive()) return;
+        if (content.isArchive()) return; // Keep that as is, we can't find the parent folder anyway
 
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return;

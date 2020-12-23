@@ -120,6 +120,8 @@ public class Content implements Serializable {
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
     @Transient
     private int readPagesCount = -1;  // Read pages count fed by payload; only useful to update list display
+    @Transient
+    private String archiveLocationUri;  // Only used when importing external archives
 
     public Content() {
     }
@@ -748,6 +750,14 @@ public class Content implements Serializable {
 
     public boolean isArchive() {
         return ArchiveHelper.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed !
+    }
+
+    public String getArchiveLocationUri() {
+        return archiveLocationUri;
+    }
+
+    public void setArchiveLocationUri(String archiveLocationUri) {
+        this.archiveLocationUri = archiveLocationUri;
     }
 
     public List<GroupItem> getGroupItems(Grouping grouping) {
