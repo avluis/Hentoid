@@ -71,7 +71,7 @@ import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH
  * Created by Robb on 05/2020
  * Dialog for the library metadata import feature
  */
-public class LibImportDialogFragment extends DialogFragment {
+public class MetaImportDialogFragment extends DialogFragment {
 
     private static final int RQST_PICK_IMPORT_FILE = 4;
 
@@ -113,14 +113,14 @@ public class LibImportDialogFragment extends DialogFragment {
 
 
     public static void invoke(@NonNull final FragmentManager fragmentManager) {
-        LibImportDialogFragment fragment = new LibImportDialogFragment();
+        MetaImportDialogFragment fragment = new MetaImportDialogFragment();
         fragment.show(fragmentManager, null);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_prefs_import, container, false);
+        return inflater.inflate(R.layout.dialog_prefs_meta_import, container, false);
     }
 
     @Override

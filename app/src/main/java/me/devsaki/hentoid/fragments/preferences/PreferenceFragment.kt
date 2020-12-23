@@ -129,11 +129,11 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     true
                 }
                 Preferences.Key.EXPORT_LIBRARY -> {
-                    LibExportDialogFragment.invoke(parentFragmentManager)
+                    MetaExportDialogFragment.invoke(parentFragmentManager)
                     true
                 }
                 Preferences.Key.IMPORT_LIBRARY -> {
-                    LibImportDialogFragment.invoke(parentFragmentManager)
+                    MetaImportDialogFragment.invoke(parentFragmentManager)
                     true
                 }
                 Preferences.Key.VIEWER_RENDERING -> {
