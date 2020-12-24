@@ -44,8 +44,8 @@ public class NhentaiActivity extends BaseWebActivity {
         params.put("page", page + "");
 
         builder.clearQuery();
-        for (String key : params.keySet())
-            builder.appendQueryParameter(key, params.get(key));
+        for (Map.Entry<String, String> entry : params.entrySet())
+            builder.appendQueryParameter(entry.getKey(), entry.getValue());
 
         return builder.toString();
     }
