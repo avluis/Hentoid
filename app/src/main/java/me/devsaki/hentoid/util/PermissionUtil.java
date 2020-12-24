@@ -5,7 +5,6 @@ import android.app.Activity;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
