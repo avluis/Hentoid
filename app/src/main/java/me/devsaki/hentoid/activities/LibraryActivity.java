@@ -308,7 +308,7 @@ public class LibraryActivity extends BaseActivity {
         initSelectionToolbar();
 
         onCreated();
-        sortCommandsAutoHide = new Debouncer<>(this, 2500, this::hideSearchSortBar);
+        sortCommandsAutoHide = new Debouncer<>(this, 3000, this::hideSearchSortBar);
 
         EventBus.getDefault().register(this);
     }
