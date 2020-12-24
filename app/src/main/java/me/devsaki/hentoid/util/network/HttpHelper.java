@@ -33,6 +33,9 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
+/**
+ * Helper for HTTP protocol operations
+ */
 public class HttpHelper {
 
     private static final int TIMEOUT = 30000; // 30 seconds

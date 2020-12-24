@@ -19,6 +19,9 @@ import java.util.List;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 
+/**
+ * Helper for general newtworking
+ */
 public class NetworkHelper {
 
     private NetworkHelper() {
