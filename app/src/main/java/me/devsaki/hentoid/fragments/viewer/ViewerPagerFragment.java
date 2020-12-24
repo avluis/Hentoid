@@ -593,9 +593,11 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void updateFavouritesGalleryButtonDisplay() {
         if (binding != null)
-            if (adapter.isFavouritePresent())
+            if (adapter.isFavouritePresent()) {
                 binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.VISIBLE);
-            else binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.INVISIBLE);
+            } else {
+                binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.INVISIBLE);
+            }
     }
 
     /**
