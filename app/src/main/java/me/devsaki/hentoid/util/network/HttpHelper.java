@@ -36,6 +36,8 @@ import timber.log.Timber;
 public class HttpHelper {
 
     private static final int TIMEOUT = 30000; // 30 seconds
+
+    // Keywords of the HTTP protocol
     public static final String HEADER_ACCEPT_KEY = "accept";
     public static final String HEADER_COOKIE_KEY = "cookie";
     public static final String HEADER_REFERER_KEY = "referer";
@@ -128,6 +130,15 @@ public class HttpHelper {
         return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
     }
 
+    /**
+     * Build an HTTP request using the given arguments
+     *
+     * @param url             URL to read the resource from
+     * @param headers         Headers to use when building the request
+     * @param useMobileAgent  True if a mobile User-Agent has to be used; false if a desktop User-Agent has to be used
+     * @param useHentoidAgent True if the Hentoid User-Agent has to be used; false if a neutral User-Agent has to be used
+     * @return HTTP request built with the given arguments
+     */
     private static Request.Builder buildRequest(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) {
         Request.Builder requestBuilder = new Request.Builder().url(url);
         if (headers != null)
@@ -291,6 +302,13 @@ public class HttpHelper {
         return result;
     }
 
+    /**
+     * Strip the given cookie string from the standard parameters
+     * i.e. only return the cookie values
+     *
+     * @param cookieStr The cookie as a string, using the format of the 'Set-Cookie' HTTP response header
+     * @return Cookie string without the standard parameters
+     */
     public static String stripParams(@NonNull String cookieStr) {
         Map<String, String> cookies = parseCookies(cookieStr);
         List<String> namesToSet = new ArrayList<>();
@@ -301,6 +319,12 @@ public class HttpHelper {
         return TextUtils.join("; ", namesToSet);
     }
 
+    /**
+     * Set session cookies for the given URL, keeping existing cookies if they are still active
+     *
+     * @param url       Url to set the cookies for
+     * @param cookieStr The cookie as a string, using the format of the 'Set-Cookie' HTTP response header
+     */
     public static void setCookies(String url, String cookieStr) {
         /*
         Check if given cookies are already registered
@@ -370,8 +394,13 @@ public class HttpHelper {
         } else return url;
     }
 
-    // TODO Doc
-    public static Map<String, String> extractParameters(@NonNull final Uri uri) {
+    /**
+     * Parse the parameters of the given Uri into a map
+     *
+     * @param uri Uri to parse the paramaters from
+     * @return Parsed parameters, where each key is the parameters name and each corresponding value their respective value
+     */
+    public static Map<String, String> parseParameters(@NonNull final Uri uri) {
         Map<String, String> result = new HashMap<>();
 
         Set<String> keys = uri.getQueryParameterNames();
@@ -398,7 +427,11 @@ public class HttpHelper {
         return "";
     }
 
-    // TODO doc
+    /**
+     * Initialize the app's user agents
+     *
+     * @param context Context to be used
+     */
     public static void initUserAgents(@NonNull final Context context) {
         String chromeString = "Chrome/";
         defaultUserAgent = WebSettings.getDefaultUserAgent(context);
@@ -415,12 +448,22 @@ public class HttpHelper {
         Timber.i("defaultChromeVersion = %s", defaultChromeVersion);
     }
 
-    // TODO doc
+    /**
+     * Get the app's mobile user agent
+     *
+     * @param withHentoid True if the Hentoid user-agent has to appear
+     * @return The app's mobile user agent
+     */
     public static String getMobileUserAgent(boolean withHentoid) {
         return getDefaultUserAgent(withHentoid);
     }
 
-    // TODO doc
+    /**
+     * Get the app's desktop user agent
+     *
+     * @param withHentoid True if the Hentoid user-agent has to appear
+     * @return The app's desktop user agent
+     */
     public static String getDesktopUserAgent(boolean withHentoid) {
         if (null == defaultChromeAgent)
             throw new RuntimeException("Call initUserAgents first to initialize them !");
@@ -429,7 +472,12 @@ public class HttpHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Get the app's default user agent
+     *
+     * @param withHentoid True if the Hentoid user-agent has to appear
+     * @return The app's default user agent
+     */
     public static String getDefaultUserAgent(boolean withHentoid) {
         if (null == defaultUserAgent)
             throw new RuntimeException("Call initUserAgents first to initialize them !");
@@ -438,7 +486,11 @@ public class HttpHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Get the app's Chrome version
+     *
+     * @return The app's Chrome version
+     */
     public static int getChromeVersion() {
         if (-1 == defaultChromeVersion)
             throw new RuntimeException("Call initUserAgents first to initialize them !");
