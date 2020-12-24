@@ -76,7 +76,14 @@ public final class Helper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Indicate of the given string is present as a word inside the given expression
+     * "present as a word" means present as a substring separated from other substrings by separating characters
+     *
+     * @param toDetect   String whose presence to detect within the given expression
+     * @param expression Expression where the given string will be searched for
+     * @return True if the given string is present as a word inside the given expression; false if not
+     */
     public static boolean isPresentAsWord(@NonNull final String toDetect, @NonNull final String expression) {
         String[] words = expression.split("\\W");
         return Stream.of(words).anyMatch(w -> w.equalsIgnoreCase(toDetect));
@@ -86,7 +93,7 @@ public final class Helper {
      * Decode the given base-64-encoded string
      *
      * @param encodedString Base-64 encoded string to decode
-     * @return Decoded string
+     * @return Raw decoded data
      */
     public static byte[] decode64(String encodedString) {
         // Pure Java
@@ -321,6 +328,12 @@ public final class Helper {
             return mStr + ":" + sStr;
     }
 
+    /**
+     * Return the given value, or an empty string if it's null
+     *
+     * @param s String to protect if its value its null
+     * @return The given value, or an empty string if it's null
+     */
     public static String protect(@Nullable String s) {
         return (null == s) ? "" : s;
     }
