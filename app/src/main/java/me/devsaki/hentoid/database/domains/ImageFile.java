@@ -10,6 +10,7 @@ import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 
 /**
@@ -203,6 +204,16 @@ public class ImageFile {
 
     public boolean isReadable() {
         return !name.equals(Consts.THUMB_FILE_NAME);
+    }
+
+    public String getUsableUri() {
+        String result = "";
+        if (ContentHelper.isInLibrary(getStatus())) result = getFileUri();
+        if (result.isEmpty()) result = getUrl();
+        if (result.isEmpty() && !getContent().isNull())
+            result = getContent().getTarget().getCoverImageUrl();
+
+        return result;
     }
 
     @Override

@@ -88,7 +88,7 @@ public class QueueViewModel extends AndroidViewModel {
     public void refresh() {
         // Queue
         if (currentQueueSource != null) queue.removeSource(currentQueueSource);
-        currentQueueSource = dao.getQueueContent();
+        currentQueueSource = dao.selectQueueContent();
         queue.addSource(currentQueueSource, queue::setValue);
         // Errors
         if (currentErrorsSource != null) errors.removeSource(currentErrorsSource);

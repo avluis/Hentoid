@@ -215,7 +215,7 @@ public class ContentDownloadService extends IntentService {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
-        // Check for download folder existence and available free space
+        // Check for download folder existence, available free space and credentials
         if (Preferences.getStorageUri().trim().isEmpty()) {
             Timber.w("No download folder set"); // May happen if user has skipped it during the intro
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
@@ -227,12 +227,16 @@ public class ContentDownloadService extends IntentService {
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
+        if (-2 == FileHelper.createNoMedia(this, rootFolder)) {
+            Timber.w("Insufficient credentials on download folder. Please select it again.");
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
+            return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
+        }
         if (new FileHelper.MemoryUsageFigures(this, rootFolder).getfreeUsageMb() < 2) {
             Timber.w("Device very low on storage space (<2 MB). Queue paused.");
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
-
 
         // Work on first item of queue
 
@@ -606,7 +610,8 @@ public class ContentDownloadService extends IntentService {
                 Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
                 EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages, sizeDownloadedBytes));
 
-                if (ContentHelper.updateQueueJson(this, dao)) Timber.i("Queue JSON successfully saved");
+                if (ContentHelper.updateQueueJson(this, dao))
+                    Timber.i("Queue JSON successfully saved");
                 else Timber.w("Queue JSON saving failed");
 
                 // Tracking Event (Download Completed)
@@ -674,16 +679,16 @@ public class ContentDownloadService extends IntentService {
 
         String backupUrl = "";
 
-        Map<String, String> headers = new HashMap<>();
+        Map<String, String> requestHeaders = new HashMap<>();
         Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
         if (!downloadParams.isEmpty()) {
             if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
                 String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                if (value != null) headers.put(HttpHelper.HEADER_COOKIE_KEY, value);
+                if (value != null) requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, value);
             }
             if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
                 String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
-                if (value != null) headers.put(HttpHelper.HEADER_REFERER_KEY, value);
+                if (value != null) requestHeaders.put(HttpHelper.HEADER_REFERER_KEY, value);
             }
             if (downloadParams.containsKey("backupUrl"))
                 backupUrl = downloadParams.get("backupUrl");
@@ -693,15 +698,19 @@ public class ContentDownloadService extends IntentService {
         return new InputStreamVolleyRequest(
                 Request.Method.GET,
                 HttpHelper.fixUrl(img.getUrl(), site.getUrl()),
-                headers,
+                requestHeaders,
                 site.useHentoidAgent(),
-                result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal),
-                error -> onRequestError(error, img, dir, backupUrlFinal));
+                result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
+                error -> onRequestError(error, img, dir, backupUrlFinal, requestHeaders));
     }
 
-    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>>
-                                          result, @NonNull ImageFile img, @NonNull DocumentFile dir, boolean hasImageProcessing,
-                                  @NonNull String backupUrl) {
+    private void onRequestSuccess(
+            Map.Entry<byte[], Map<String, String>> result,
+            @NonNull ImageFile img,
+            @NonNull DocumentFile dir,
+            boolean hasImageProcessing,
+            @NonNull String backupUrl,
+            @NonNull Map<String, String> requestHeaders) {
         try {
             if (result != null) {
                 DocumentFile imgFile = processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey(), hasImageProcessing);
@@ -713,7 +722,7 @@ public class ContentDownloadService extends IntentService {
             }
         } catch (UnsupportedContentException e) {
             Timber.w(e);
-            if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl);
+            if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);
             else {
                 Timber.w("No backup URL found - aborting this image");
                 updateImageStatusUri(img, false, "");
@@ -730,11 +739,15 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    private void onRequestError(VolleyError error, @NonNull ImageFile
-            img, @NonNull DocumentFile dir, @NonNull String backupUrl) {
+    private void onRequestError(
+            VolleyError error,
+            @NonNull ImageFile img,
+            @NonNull DocumentFile dir,
+            @NonNull String backupUrl,
+            @NonNull Map<String, String> requestHeaders) {
         // Try with the backup URL, if it exists and if the current image isn't a backup itself
         if (!img.isBackup() && !backupUrl.isEmpty()) {
-            tryUsingBackupUrl(img, dir, backupUrl);
+            tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);
             return;
         }
 
@@ -763,8 +776,11 @@ public class ContentDownloadService extends IntentService {
         logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
     }
 
-    private void tryUsingBackupUrl(@NonNull ImageFile img, @NonNull DocumentFile
-            dir, @NonNull String backupUrl) {
+    private void tryUsingBackupUrl(
+            @NonNull ImageFile img,
+            @NonNull DocumentFile dir,
+            @NonNull String backupUrl,
+            @NonNull Map<String, String> requestHeaders) {
         Timber.i("Using backup URL %s", backupUrl);
         Content content = img.getContent().getTarget();
         if (null == content) return;
@@ -775,7 +791,7 @@ public class ContentDownloadService extends IntentService {
         // per Volley behaviour, this method is called on the UI thread
         // -> need to create a new thread to do a network call
         compositeDisposable.add(
-                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, img.getOrder(), content.getQtyPages()))
+                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, requestHeaders, img.getOrder(), content.getQtyPages()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.computation())
                         .subscribe(
@@ -929,8 +945,11 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private DocumentFile saveImage(@NonNull DocumentFile dir, @NonNull String
-            fileName, @NonNull String mimeType, byte[] binaryContent) throws IOException {
+    private DocumentFile saveImage(
+            @NonNull DocumentFile dir,
+            @NonNull String fileName,
+            @NonNull String mimeType,
+            byte[] binaryContent) throws IOException {
         DocumentFile file = FileHelper.findOrCreateDocumentFile(this, dir, mimeType, fileName);
         if (null == file)
             throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));

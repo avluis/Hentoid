@@ -31,6 +31,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.select.SelectExtension;
@@ -71,6 +72,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -408,6 +410,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             case DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND:
                 motiveMsg = R.string.paused_dl_folder_not_found;
                 break;
+            case DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS:
+                motiveMsg = R.string.paused_dl_folder_credentials;
+                PermissionUtil.requestExternalStorageReadWritePermission(getActivity(), PermissionUtil.RQST_STORAGE_PERMISSION);
+                break;
             case DownloadEvent.Motive.NONE:
             default: // NONE
                 motiveMsg = -1;
@@ -560,8 +566,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, this::onCancelSwipedBook)).toList();
-        itemAdapter.setNewList(contentItems, true);
+        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, this::onCancelSwipedBook)).withoutNulls().toList();
+//        itemAdapter.setNewList(contentItems, true);
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems);
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
         updateControlBar();
 

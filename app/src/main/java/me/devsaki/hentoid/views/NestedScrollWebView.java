@@ -96,6 +96,8 @@ public class NestedScrollWebView extends WebView {
                 stopNestedScroll();
                 result = super.onTouchEvent(event);
                 break;
+            default:
+                // No default action
         }
         return result;
     }

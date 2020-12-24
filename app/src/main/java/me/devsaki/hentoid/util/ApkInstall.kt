@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo.INSTALL_LOCATION_AUTO
 import android.content.pm.PackageInstaller
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
@@ -38,10 +39,11 @@ class ApkInstall {
                     DocumentFile.fromSingleUri(app, apkUri)?.length() ?: -1
             val params =
                     PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+            params.setInstallLocation(INSTALL_LOCATION_AUTO)
             val sessionId = installer.createSession(params)
             val session = installer.openSession(sessionId)
 
-            session.openWrite(NAME, 0, length).use { sessionStream ->
+            session.openWrite(NAME, 0, -1).use { sessionStream ->
                 apkStream.copyTo(sessionStream)
                 session.fsync(sessionStream)
             }

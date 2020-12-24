@@ -34,6 +34,8 @@ public class JsonHelper {
 
     public static final String JSON_MIME_TYPE = "application/json";
 
+    private static final FileHelper.NameFilter jsonFilter = displayName -> FileHelper.getExtension(displayName).equalsIgnoreCase("json");
+
     public static final Type MAP_STRINGS = Types.newParameterizedType(Map.class, String.class, String.class);
 
     private static final Moshi MOSHI = new Moshi.Builder()
@@ -190,5 +192,14 @@ public class JsonHelper {
         JsonAdapter<T> jsonAdapter = MOSHI.adapter(type);
 
         return jsonAdapter.lenient().fromJson(s);
+    }
+
+    /**
+     * Build a {@link FileHelper.NameFilter} only accepting json files
+     *
+     * @return {@link FileHelper.NameFilter} only accepting json files
+     */
+    public static FileHelper.NameFilter getJsonNamesFilter() {
+        return jsonFilter;
     }
 }

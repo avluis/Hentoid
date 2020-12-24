@@ -57,7 +57,7 @@ public class HitomiActivity extends BaseWebActivity {
         if (resultsUri.toString().contains("search"))
             builder.fragment(page + ""); // https://hitomi.la/search.html?<searchTerm>#<page>
         else {
-            Map<String, String> params = HttpHelper.extractParameters(resultsUri);
+            Map<String, String> params = HttpHelper.parseParameters(resultsUri);
             params.put("page", page + "");
 
             builder.clearQuery();

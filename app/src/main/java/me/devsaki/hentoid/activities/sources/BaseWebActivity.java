@@ -40,6 +40,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiFunction;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -345,7 +346,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         // Priority 2 : Last viewed position, if option enabled
         if (Preferences.isBrowserResumeLast()) {
-            SiteHistory siteHistory = objectBoxDAO.getHistory(getStartSite());
+            SiteHistory siteHistory = objectBoxDAO.selectHistory(getStartSite());
             if (siteHistory != null && !siteHistory.getUrl().isEmpty()) return siteHistory.getUrl();
         }
 
@@ -912,14 +913,14 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (imgs.isEmpty()) return result;
 
             int coverCount = (imgs.get(0).isCover()) ? 1 : 0;
-            int maxImageOrder;
+            Optional<Integer> maxImageOrder;
             if (c.getImageFiles() != null)
-                maxImageOrder = Stream.of(c.getImageFiles()).filter(i -> i.getStatus().equals(StatusContent.DOWNLOADED)).map(ImageFile::getOrder).max(Integer::compareTo).get();
+                maxImageOrder = Stream.of(c.getImageFiles()).filter(i -> i.getStatus().equals(StatusContent.DOWNLOADED)).map(ImageFile::getOrder).max(Integer::compareTo);
             else
-                maxImageOrder = 0;
+                maxImageOrder = Optional.of(0);
 
-            if (imgs.size() - coverCount > maxImageOrder)
-                return Stream.of(imgs).filter(i -> i.getOrder() > maxImageOrder).toList();
+            if (maxImageOrder.isPresent() && imgs.size() - coverCount > maxImageOrder.get())
+                return Stream.of(imgs).filter(i -> i.getOrder() > maxImageOrder.get()).toList();
         } catch (Exception e) {
             Timber.w(e);
         }
@@ -957,8 +958,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
     }
 
-    void showTooltip(@StringRes int resource) {
-        TooltipUtil.showTooltip(this, resource, ArrowOrientation.BOTTOM, bottomToolbar, this);
+    void showTooltip(@StringRes int resource, boolean always) {
+        TooltipUtil.showTooltip(this, resource, ArrowOrientation.BOTTOM, bottomToolbar, this, always);
     }
 
     /**
@@ -1211,7 +1212,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 actionMenu.setEnabled(false);
             }
             // Display download button tooltip if a book page has been reached
-            if (isGalleryPage(url)) showTooltip(R.string.help_web_download);
+            if (isGalleryPage(url)) showTooltip(R.string.help_web_download, false);
         }
 
         @Override

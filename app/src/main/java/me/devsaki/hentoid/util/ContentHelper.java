@@ -12,7 +12,6 @@ import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.mikepenz.fastadapter.diff.DiffCallback;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
@@ -51,7 +50,6 @@ import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
-import me.devsaki.hentoid.viewholders.ContentItem;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
@@ -126,7 +124,6 @@ public final class ContentHelper {
      */
     public static void updateContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        if (content.isArchive()) return;
 
         DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
         if (null == file)
@@ -146,7 +143,7 @@ public final class ContentHelper {
      */
     public static void createContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        if (content.isArchive()) return;
+        if (content.isArchive()) return; // Keep that as is, we can't find the parent folder anyway
 
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return;
@@ -755,8 +752,18 @@ public final class ContentHelper {
         return result;
     }
 
+    /**
+     * Create a list of ImageFiles from the given archive entries
+     *
+     * @param archiveFileUri Uri of the archive file the entries have been read from
+     * @param files          Entries to create the ImageFile list with
+     * @param targetStatus   Target status of the ImageFiles
+     * @param startingOrder  Starting order of the first ImageFile to add; will be numbered incrementally from that number on
+     * @param namePrefix     Prefix to add to image names
+     * @return List of ImageFiles contructed from the given parameters
+     */
     public static List<ImageFile> createImageListFromArchiveEntries(
-            @NonNull final Uri zipFileUri,
+            @NonNull final Uri archiveFileUri,
             @NonNull final List<ArchiveHelper.ArchiveEntry> files,
             @NonNull final StatusContent targetStatus,
             int startingOrder,
@@ -768,7 +775,7 @@ public final class ContentHelper {
         List<ArchiveHelper.ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).collect(toList());
         for (ArchiveHelper.ArchiveEntry f : fileList) {
             String name = namePrefix + f.path;
-            String path = zipFileUri.toString() + File.separator + f.path;
+            String path = archiveFileUri.toString() + File.separator + f.path;
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
@@ -779,7 +786,14 @@ public final class ContentHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Launch the web browser for the given site and URL
+     * TODO make sure the URL and the site are compatible
+     *
+     * @param context   COntext to be used
+     * @param s         Site to navigate to
+     * @param targetUrl Url to navigate to
+     */
     public static void launchBrowserFor(@NonNull final Context context, @NonNull final Site s, @NonNull final String targetUrl) {
         Intent intent = new Intent(context, Content.getWebActivityClass(s));
 
@@ -790,7 +804,13 @@ public final class ContentHelper {
         context.startActivity(intent);
     }
 
-    // TODO doc
+    /**
+     * Get the blocked tags of the given Content
+     * NB : Blocked tags are detected according to the current app Preferences
+     *
+     * @param content Content to extract blocked tags from
+     * @return List of blocked tags from the given Content
+     */
     public static List<String> getBlockedTags(@NonNull final Content content) {
         List<String> result = Collections.emptyList();
         if (!Preferences.getBlockedTags().isEmpty()) {
@@ -807,9 +827,7 @@ public final class ContentHelper {
     }
 
     /**
-     * Comparator to be used to sort files according to their names :
-     * - Sort according to the concatenation of all its numerical characters, if any
-     * - If none, sort alphabetically (default string compare)
+     * Comparator to be used to sort files according to their names
      */
     private static class InnerNameNumberFileComparator implements Comparator<DocumentFile> {
         @Override
@@ -818,34 +836,13 @@ public final class ContentHelper {
         }
     }
 
+    /**
+     * Comparator to be used to sort archive entries according to their names
+     */
     private static class InnerNameNumberArchiveComparator implements Comparator<ArchiveHelper.ArchiveEntry> {
         @Override
         public int compare(@NonNull ArchiveHelper.ArchiveEntry o1, @NonNull ArchiveHelper.ArchiveEntry o2) {
             return new NaturalOrderComparator().compare(o1.path, o2.path);
         }
     }
-
-    /**
-     * Diff calculation rules for ContentItem's
-     * <p>
-     * Created once and for all to be used by FastAdapter when posting updates without PagedList
-     */
-    public static final DiffCallback<ContentItem> CONTENT_ITEM_DIFF_CALLBACK = new DiffCallback<ContentItem>() {
-        @Override
-        public boolean areItemsTheSame(ContentItem oldItem, ContentItem newItem) {
-            return oldItem.getIdentifier() == newItem.getIdentifier();
-        }
-
-        @Override
-        public boolean areContentsTheSame(ContentItem oldItem, ContentItem newItem) {
-            return false; // Avoid keeping items un-updated as it ignores certain items and desynchronizes the "real" list from the one manipulated by selectExtension
-            // when using mass-moving (select multiple + move up/down) or when coming back from the image viewer
-        }
-
-        @Override
-        public @org.jetbrains.annotations.Nullable Object getChangePayload(ContentItem queueRecord, int i, ContentItem item1, int i1) {
-            return null;
-        }
-    };
-
 }
