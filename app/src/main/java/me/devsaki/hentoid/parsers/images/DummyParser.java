@@ -6,6 +6,7 @@ import com.annimon.stream.Optional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -19,7 +20,7 @@ public class DummyParser implements ImageListParser {
     }
 
     @Override
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) {
         return Optional.of(ParseHelper.urlToImageFile(url, order, maxPages, StatusContent.SAVED));
     }
 }

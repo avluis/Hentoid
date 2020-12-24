@@ -41,8 +41,8 @@ public class ExHentaiActivity extends BaseWebActivity {
     @Override
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new ExHentaiWebClient(GALLERY_FILTER, this);
-        // Set image display to "extended"
-        CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");
+        CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");  // Show thumbs in results page ("extended display")
+        CookieManager.getInstance().setCookie(".exhentai.org", "nw=1"); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         // ExH serves images through hosts that use http connections, which is detected as "mixed content" by the app
         webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         return client;

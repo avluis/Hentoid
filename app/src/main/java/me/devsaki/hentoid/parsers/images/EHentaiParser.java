@@ -300,11 +300,9 @@ public class EHentaiParser implements ImageListParser {
     }
 
     @Nullable
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) throws
-            Exception {
-        List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
-        Document doc = getOnlineDocument(url, headers, Site.EHENTAI.useHentoidAgent());
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) throws Exception {
+        List<Pair<String, String>> reqHeaders = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
+        Document doc = getOnlineDocument(url, reqHeaders, Site.EHENTAI.useHentoidAgent());
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
@@ -322,22 +320,11 @@ public class EHentaiParser implements ImageListParser {
      * @param content Content to retrieve cookies from
      * @return Cookie string
      */
-    private String getCookieStr(@NonNull final Content content) {
-        String result = "nw=1"; // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
-
-        String downloadParamsStr = content.getDownloadParams();
-        if (null == downloadParamsStr || downloadParamsStr.isEmpty()) return result;
-
-        Map<String, String> downloadParams;
-        try {
-            downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
-        } catch (IOException e) {
-            Timber.e(e);
-            return result;
-        }
-
-        if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) return result;
-        return downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+    public static String getCookieStr(@NonNull final Content content) {
+        String cookieStr = ParseHelper.getSavedCookieStr(content.getDownloadParams());
+        if (cookieStr.isEmpty())
+            return "nw=1"; // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
+        else return cookieStr;
     }
 
     /**

@@ -129,7 +129,7 @@ public class HitomiParser implements ImageListParser {
         return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % nbFrontends))) + suffix;
     }
 
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) {
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) {
         // Hitomi does not use backup URLs
         return Optional.of(new ImageFile(order, url, StatusContent.SAVED, maxPages));
     }
