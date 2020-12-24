@@ -1,7 +1,7 @@
 {
   "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.13.4/hentoid1134-311.apk",
   "versionCode": "311",
-  "updateURL.beta": "https://bitrise-prod-build-storage.s3.amazonaws.com/builds/6686981f66d94c2f/artifacts/60016413/app-debug-bitrise-signed.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIV2YZWMVCNWNR2HA%2F20201224%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20201224T093352Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=66454aa24cf511da49fc7bac4619d310f90d21c896e196ddb578eb797c7b5b9c",
+  "updateURL.beta": "https://bitrise-prod-build-storage.s3.amazonaws.com/builds/42c55cb2405ad3b3/artifacts/60121751/app-debug-bitrise-signed.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIV2YZWMVCNWNR2HA%2F20201224%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20201224T105024Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=652648449d3d2e7e56ce0a8fe06f5ff45b6cbdd7055dba3dd5888617b614edda",
   "versionCode.beta": "2000",
   "sourceAlerts":[
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
