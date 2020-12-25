@@ -36,7 +36,8 @@ public class EHentaiActivity extends BaseWebActivity {
     @Override
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new EHentaiWebClient(GALLERY_FILTER, this);
-        CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "sl=dm_2");
+        CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "sl=dm_2"); // Show thumbs in results page ("extended display")
+        CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "nw=1"); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         client.restrictTo(DOMAIN_FILTER);
         // E-h serves images through hosts that use http connections, which is detected as "mixed content" by the app
         webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);

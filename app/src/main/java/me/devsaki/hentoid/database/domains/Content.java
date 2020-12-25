@@ -67,7 +67,7 @@ public class Content implements Serializable {
     private String author;
     private ToMany<Attribute> attributes;
     private String coverImageUrl;
-    private Integer qtyPages = 0; // Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
+    private Integer qtyPages; // Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
     private long uploadDate;
     private long downloadDate = 0;
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
@@ -118,6 +118,8 @@ public class Content implements Serializable {
     private int numberDownloadRetries = 0;  // Current number of download retries current content has gone through
     @Transient
     private int readPagesCount = -1;  // Read pages count fed by payload; only useful to update list display
+    @Transient
+    private String archiveLocationUri;  // Only used when importing external archives
 
     public Content() {
     }
@@ -451,7 +453,7 @@ public class Content implements Serializable {
     }
 
     public int getQtyPages() {
-        return qtyPages;
+        return (null == qtyPages) ? 0 : qtyPages;
     }
 
     public Content setQtyPages(int qtyPages) {
@@ -531,7 +533,10 @@ public class Content implements Serializable {
     }
 
     public double getPercent() {
-        return progress * 1.0 / qtyPages;
+        if (getQtyPages() > 0)
+            return progress * 1.0 / getQtyPages();
+        else
+            return 0;
     }
 
     public void setProgress(long progress) {
@@ -731,6 +736,14 @@ public class Content implements Serializable {
 
     public boolean isArchive() {
         return ArchiveHelper.isSupportedArchive(getStorageUri()); // Warning : this shortcut assumes the URI contains the file name, which is not guaranteed !
+    }
+
+    public String getArchiveLocationUri() {
+        return archiveLocationUri;
+    }
+
+    public void setArchiveLocationUri(String archiveLocationUri) {
+        this.archiveLocationUri = archiveLocationUri;
     }
 
     public List<GroupItem> getGroupItems(Grouping grouping) {

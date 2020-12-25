@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -9,6 +11,7 @@ import org.jsoup.nodes.Element;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -19,7 +22,9 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.network.HttpHelper;
 
 public class ParseHelper {
 
@@ -161,5 +166,19 @@ public class ParseHelper {
 
     public static void signalProgress(int current, int max) {
         EventBus.getDefault().post(new DownloadPreparationEvent(current, max));
+    }
+
+    public static String getSavedCookieStr(String downloadParams) {
+        Map<String, String> downloadParamsMap = ContentHelper.parseDownloadParams(downloadParams);
+        if (downloadParamsMap.containsKey(HttpHelper.HEADER_COOKIE_KEY))
+            return Helper.protect(downloadParamsMap.get(HttpHelper.HEADER_COOKIE_KEY));
+
+        return "";
+    }
+
+    public static void addSavedCookiesToHeader(String downloadParams, List<Pair<String, String>> headers) {
+        String cookieStr = getSavedCookieStr(downloadParams);
+        if (!cookieStr.isEmpty())
+            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
     }
 }

@@ -118,7 +118,7 @@ public class SearchViewModel extends ViewModel {
     public void setAttributeQuery(String query, int pageNum, int itemsPerPage) {
         filterDisposable.dispose();
         filterDisposable = collectionDAO
-                .getAttributeMasterDataPaged(
+                .selectAttributeMasterDataPaged(
                         attributeTypes,
                         query,
                         selectedAttributes.getValue(),

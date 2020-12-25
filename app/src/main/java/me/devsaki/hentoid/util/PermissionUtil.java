@@ -5,7 +5,6 @@ import android.app.Activity;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
@@ -43,17 +42,6 @@ public class PermissionUtil {
             return true;
         else {
             ActivityCompat.requestPermissions(activity, new String[]{
-                    Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionRequestCode);
-
-            return false;
-        }
-    }
-
-    public static boolean requestExternalStorageReadWritePermission(Fragment fragment, int permissionRequestCode) {
-        if (checkExternalStorageReadWritePermission(fragment.requireActivity()))
-            return true;
-        else {
-            fragment.requestPermissions(new String[]{
                     Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, permissionRequestCode);
 
             return false;

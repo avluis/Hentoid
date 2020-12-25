@@ -90,6 +90,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private int displayMode;
     private boolean longTapZoomEnabled;
     private boolean autoRotate;
+    private boolean isSmoothRendering;
 
 
     public ImagePagerAdapter(Context context) {
@@ -118,6 +119,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         autoRotate = Preferences.isViewerAutoRotate();
         displayMode = Preferences.getContentDisplayMode(bookPreferences);
         viewerOrientation = Preferences.getContentOrientation(bookPreferences);
+        isSmoothRendering = Preferences.isContentSmoothRendering(bookPreferences);
     }
 
     public void setRecyclerView(RecyclerView v) {
@@ -322,7 +324,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssView.setLongTapZoomEnabled(longTapZoomEnabled);
                 ssView.setAutoRotate(autoRotate);
                 if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
-                if (img.getContent().getTarget() != null && Preferences.isContentSmoothRendering(img.getContent().getTarget().getBookPreferences()))
+                if (isSmoothRendering)
                     ssView.setRenderScript(rs);
                 else
                     ssView.setRenderScript(null);

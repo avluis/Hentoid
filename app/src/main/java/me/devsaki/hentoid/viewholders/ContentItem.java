@@ -339,11 +339,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         private void attachCover(@NonNull final Content content) {
             ImageFile cover = content.getCover();
-            String thumbLocation = "";
-            if (ContentHelper.isInLibrary(cover.getStatus())) thumbLocation = cover.getFileUri();
-            if (thumbLocation.isEmpty()) thumbLocation = cover.getUrl();
-            if (thumbLocation.isEmpty()) thumbLocation = content.getCoverImageUrl();
+            String thumbLocation = cover.getUsableUri();
+            if (thumbLocation.isEmpty()) {
+                ivCover.setVisibility(View.INVISIBLE);
+                return;
+            }
 
+            ivCover.setVisibility(View.VISIBLE);
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")
                     && content.getDownloadParams() != null

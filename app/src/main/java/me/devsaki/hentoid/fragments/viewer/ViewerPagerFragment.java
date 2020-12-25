@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,6 +31,11 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -44,9 +50,11 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
+import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.databinding.FragmentViewerPagerBinding;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
@@ -189,7 +197,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(KEY_HUD_VISIBLE, binding.controlsOverlay.getRoot().getVisibility());
+        if (binding != null)
+            outState.putInt(KEY_HUD_VISIBLE, binding.controlsOverlay.getRoot().getVisibility());
         outState.putBoolean(KEY_SLIDESHOW_ON, (slideshowTimer != null));
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         if (viewModel != null) {
@@ -208,6 +217,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) startSlideshow(false);
         }
         binding.controlsOverlay.getRoot().setVisibility(hudVisibility);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
     }
 
     @Override
@@ -243,12 +258,24 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     @Override
     public void onDestroy() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         Preferences.unregisterPrefsChangedListener(listener);
         if (adapter != null) {
             adapter.setRecyclerView(null);
             adapter.destroy();
         }
         super.onDestroy();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        if (null == binding) return;
+        if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            adapter.submitList(Collections.emptyList()); // Empty display until loading is complete
+            binding.viewerLoadingTxt.setText(getResources().getString(R.string.loading_images, event.elementsKO + event.elementsOK, event.elementsTotal));
+            binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType)
+            binding.viewerLoadingTxt.setVisibility(View.GONE);
     }
 
     private void initPager() {
@@ -363,7 +390,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handle click on "Show favourite pages" action button
      */
     private void onShowFavouriteClick() {
-        viewModel.toggleShowFavouritePages(this::updateShowFavouriteDisplay);
+        viewModel.toggleFilterFavouritePages(this::updateShowFavouriteDisplay);
     }
 
     /**
@@ -396,6 +423,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Activated when all displayed items are placed on their definitive position
      */
     private void differEndCallback() {
+        if (null == binding) return;
+
         maxPosition = adapter.getItemCount() - 1;
         binding.controlsOverlay.viewerSeekbar.setMax(maxPosition);
 
@@ -452,7 +481,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         isContentArchive = content.isArchive();
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
-        updateBookNavigation(content);
+        updateNavigationUi(content);
     }
 
     /**
@@ -547,7 +576,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      *
      * @param content Current book
      */
-    private void updateBookNavigation(@Nonnull Content content) {
+    private void updateNavigationUi(@Nonnull Content content) {
         if (content.isFirst())
             binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.INVISIBLE);
         else binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.VISIBLE);
@@ -564,9 +593,11 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void updateFavouritesGalleryButtonDisplay() {
         if (binding != null)
-            if (adapter.isFavouritePresent())
+            if (adapter.isFavouritePresent()) {
                 binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.VISIBLE);
-            else binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.INVISIBLE);
+            } else {
+                binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.INVISIBLE);
+            }
     }
 
     /**
@@ -639,6 +670,13 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onUpdateImageDisplay() {
         adapter.refreshPrefs(bookPreferences);
+
+        // Needs ARGB_8888 to be able to resize images using RenderScript
+        if (Preferences.isContentSmoothRendering(bookPreferences))
+            CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.ARGB_8888);
+        else
+            CustomSubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.RGB_565);
+
         binding.recyclerView.setAdapter(null);
         binding.recyclerView.setLayoutManager(null);
         binding.recyclerView.getRecycledViewPool().clear();
@@ -748,16 +786,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Load next book
      */
     private void nextBook() {
-        viewModel.onLeaveBook(imageIndex);
-        viewModel.loadNextContent();
+        viewModel.loadNextContent(imageIndex);
     }
 
     /**
      * Load previous book
      */
     private void previousBook() {
-        viewModel.onLeaveBook(imageIndex);
-        viewModel.loadPreviousContent();
+        viewModel.loadPreviousContent(imageIndex);
     }
 
     /**
@@ -827,6 +863,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handler for tapping on the left zone of the screen
      */
     private void onLeftTap() {
+        if (null == binding) return;
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
@@ -848,6 +886,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handler for tapping on the right zone of the screen
      */
     private void onRightTap() {
+        if (null == binding) return;
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
@@ -869,6 +909,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handler for tapping on the middle zone of the screen
      */
     private void onMiddleTap() {
+        if (null == binding) return;
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
@@ -889,7 +931,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
+                        if (binding != null)
+                            binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
                         setSystemBarsVisible(true);
                     }
                 });
@@ -903,7 +946,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
+                        if (binding != null)
+                            binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
                     }
                 });
         setSystemBarsVisible(false);

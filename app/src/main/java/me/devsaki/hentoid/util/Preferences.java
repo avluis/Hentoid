@@ -713,7 +713,7 @@ public final class Preferences {
         static final boolean BROWSER_AUGMENTED_DEFAULT = true;
         static final boolean BROWSER_QUICK_DL = true;
         static final int DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
-        static final int FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
+        static final int FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_100;
         static final boolean VIEWER_RESUME_LAST_LEFT = true;
         static final boolean VIEWER_KEEP_SCREEN_ON = true;
         static final int VIEWER_IMAGE_DISPLAY = Constant.VIEWER_DISPLAY_FIT;
@@ -801,7 +801,7 @@ public final class Preferences {
         public static final int DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE = 0;
         public static final int DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1;
 
-        static final int TRUNCATE_FOLDER_NONE = 0;
+        static final int TRUNCATE_FOLDER_100 = 100;
 
         public static final int VIEWER_DISPLAY_FIT = 0;
         public static final int VIEWER_DISPLAY_FILL = 1;

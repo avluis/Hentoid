@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,11 +33,11 @@ import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.ui.BlinkAnimation;
-import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
 
@@ -63,9 +64,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
     // Drag, drop & swipe
     private final ItemTouchHelper touchHelper;
-    private int swipeDirection = 0;
     private boolean isSwipeable = true;
-    private Runnable undoSwipeAction; // Action to run when hitting the "undo" button
 
 
     static {
@@ -140,6 +139,8 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
         private ImageView ivCover;
         private View ivReorder;
 
+        private String coverUri = "";
+
         GroupViewHolder(View view, @ContentItem.ViewType int viewType) {
             super(view);
             baseLayout = requireViewById(view, R.id.item);
@@ -154,7 +155,16 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
 
         @Override
-        public void bindView(@NotNull GroupDisplayItem item, @NotNull List<?> list) {
+        public void bindView(@NotNull GroupDisplayItem item, @NotNull List<?> payloads) {
+
+            // Payloads are set when the content stays the same but some properties alone change
+            if (!payloads.isEmpty()) {
+                Bundle bundle = (Bundle) payloads.get(0);
+                GroupItemBundle.Parser bundleParser = new GroupItemBundle.Parser(bundle);
+
+                String stringValue = bundleParser.getCoverUri();
+                if (stringValue != null) coverUri = stringValue;
+            }
 
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
             if (item.getGroup() != null && item.getGroup().isBeingDeleted())
@@ -179,13 +189,12 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
         }
 
         private void attachCover(@NonNull ImageFile cover) {
-            String thumbLocation = "";
-            if (ContentHelper.isInLibrary(cover.getStatus())) thumbLocation = cover.getFileUri();
-            if (thumbLocation.isEmpty()) thumbLocation = cover.getUrl();
-            if (thumbLocation.isEmpty())
-                thumbLocation = cover.getContent().getTarget().getCoverImageUrl();
-
-            if (thumbLocation.isEmpty()) return;
+            String thumbLocation = coverUri;
+            if (thumbLocation.isEmpty()) thumbLocation = cover.getUsableUri();
+            if (thumbLocation.isEmpty()) {
+                ivCover.setVisibility(View.INVISIBLE);
+                return;
+            }
 
             ivCover.setVisibility(View.VISIBLE);
             if (thumbLocation.startsWith("http"))

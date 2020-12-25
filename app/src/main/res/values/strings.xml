@@ -95,6 +95,7 @@
     <string name="paused_no_storage">Cannot download - Low on storage. Free space or change download folder location</string>
     <string name="paused_no_dl_folder">Cannot download - No download folder. Use app settings to select one</string>
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
+    <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
 
     <!-- TextViews -->
@@ -382,6 +383,8 @@
     <string name="help_web_download">You\'ve reached a book page.\nTime to download with the bottom bar!</string>
     <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
     <string name="help_web_exh_account">Please use or create an ExHentai account</string>
+    <string name="help_web_invalid_exh_credentials">Invalid credentials, please log in again</string>
+    <string name="help_web_incomplete_exh_credentials">Incomplete credentials, please log in again. If the issue persists, consider accessing the site from another country or creating a new account.</string>
     <string name="blocked_tag">Book has a blocked tag (%s)\nDownload canceled</string>
     <string name="blocked_tag_queued">Book has a blocked tag (%s)\nQueued as an error</string>
     <string name="bookmark_current">Bookmark current page</string>
@@ -409,6 +412,7 @@
 
     <!-- Image viewer -->
     <string name="no_images">Could not load the book : No image found</string>
+    <string name="loading_images">Loading : %1$d/%2$d</string>
     <string name="no_image">Image not found</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>

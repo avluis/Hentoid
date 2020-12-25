@@ -68,7 +68,7 @@ public class ImportService extends IntentService {
     public static final int STEP_1 = 1;
     public static final int STEP_2_BOOK_FOLDERS = 2;
     public static final int STEP_3_BOOKS = 3;
-    public static final int STEP_4_QUEUE = 4;
+    public static final int STEP_4_QUEUE_FINAL = 4;
 
     private static boolean running;
     private ServiceNotificationManager notificationManager;
@@ -355,7 +355,7 @@ public class ImportService extends IntentService {
             // 4th pass : Import queue JSON
             DocumentFile queueFile = FileHelper.findFile(this, rootFolder, client, Consts.QUEUE_JSON_FILE_NAME);
             if (queueFile != null) importQueue(queueFile, dao, log);
-            else trace(Log.INFO, STEP_4_QUEUE, log, "No queue file found");
+            else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
         } finally {
             // Write log in root folder
             DocumentFile logFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
@@ -370,7 +370,7 @@ public class ImportService extends IntentService {
             dao.deleteAllFlaggedGroups();
             dao.cleanup();
 
-            eventComplete(STEP_4_QUEUE, bookFolders.size(), booksOK, booksKO, logFile);
+            eventComplete(STEP_4_QUEUE_FINAL, bookFolders.size(), booksOK, booksKO, logFile);
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
         }
 
@@ -405,14 +405,14 @@ public class ImportService extends IntentService {
     }
 
     private void importQueue(@NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogUtil.LogEntry> log) {
-        trace(Log.INFO, STEP_4_QUEUE, log, "Queue JSON found");
-        eventProgress(STEP_4_QUEUE, -1, 0, 0);
+        trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Queue JSON found");
+        eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseCollectionJson(queueFile);
         if (null != contentCollection) {
             int queueSize = (int) dao.countAllQueueBooks();
             List<Content> queuedContent = contentCollection.getQueue();
-            eventProgress(STEP_4_QUEUE, queuedContent.size(), 0, 0);
-            trace(Log.INFO, STEP_4_QUEUE, log, "Queue JSON deserialized : %s books detected", queuedContent.size() + "");
+            eventProgress(STEP_4_QUEUE_FINAL, queuedContent.size(), 0, 0);
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Queue JSON deserialized : %s books detected", queuedContent.size() + "");
             List<QueueRecord> lst = new ArrayList<>();
             int count = 1;
             for (Content c : queuedContent) {
@@ -428,12 +428,12 @@ public class ImportService extends IntentService {
                         lst.add(new QueueRecord(newContentId, queueSize++));
                     }
                 }
-                eventProgress(STEP_4_QUEUE, queuedContent.size(), count++, 0);
+                eventProgress(STEP_4_QUEUE_FINAL, queuedContent.size(), count++, 0);
             }
             dao.updateQueue(lst);
-            trace(Log.INFO, STEP_4_QUEUE, log, "Import queue succeeded");
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import queue succeeded");
         } else {
-            trace(Log.INFO, STEP_4_QUEUE, log, "Import queue failed : Queue JSON unreadable");
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import queue failed : Queue JSON unreadable");
         }
     }
 

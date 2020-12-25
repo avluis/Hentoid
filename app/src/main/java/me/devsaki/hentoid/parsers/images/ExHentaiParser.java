@@ -36,6 +36,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.parsers.images.EHentaiParser.getCookieStr;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class ExHentaiParser implements ImageListParser {
@@ -50,28 +51,11 @@ public class ExHentaiParser implements ImageListParser {
 
         List<ImageFile> result = Collections.emptyList();
         try {
-            String downloadParamsStr = content.getDownloadParams();
-            if (null == downloadParamsStr || downloadParamsStr.isEmpty()) {
-                Timber.e("Download parameters not set");
-                return result;
-            }
-
-            Map<String, String> downloadParams;
-            try {
-                downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
-            } catch (IOException e) {
-                Timber.e(e);
-                return result;
-            }
-
-            if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
-                Timber.e("Download parameters do not contain any cookie");
-                return result;
-            }
+            // Retrieve and set cookies (optional; e-hentai can work without cookies even though certain galleries are unreachable)
+            String cookieStr = getCookieStr(content);
 
             List<Pair<String, String>> headers = new ArrayList<>();
-            String cookieValue = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY) + "; nw=1"; // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
-            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieValue));
+            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
             headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl()));
             headers.add(new Pair<>(HttpHelper.HEADER_ACCEPT_KEY, "*/*"));
 
@@ -201,10 +185,9 @@ public class ExHentaiParser implements ImageListParser {
     }
 
     @Nullable
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, int order, int maxPages) throws Exception {
-        List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
-        Document doc = getOnlineDocument(url, headers, Site.EXHENTAI.useHentoidAgent());
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) throws Exception {
+        List<Pair<String, String>> reqHeaders = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
+        Document doc = getOnlineDocument(url, reqHeaders, Site.EXHENTAI.useHentoidAgent());
         if (doc != null) {
             String imageUrl = EHentaiParser.getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached

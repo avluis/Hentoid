@@ -15,6 +15,7 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 
 import com.annimon.stream.Collectors;
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -564,13 +565,28 @@ public class ImportHelper {
             @NonNull final Context context,
             @NonNull final List<DocumentFile> subFolders,
             @NonNull final ContentProviderClient client,
-            @NonNull final List<String> parentNames) {
+            @NonNull final List<String> parentNames,
+            @NonNull final CollectionDAO dao) {
         List<Content> result = new ArrayList<>();
 
         for (DocumentFile subfolder : subFolders) {
-            List<DocumentFile> archives = FileHelper.listFiles(context, subfolder, client, ArchiveHelper.getArchiveNamesFilter());
+            List<DocumentFile> files = FileHelper.listFiles(context, subfolder, client, null);
+
+            List<DocumentFile> archives = new ArrayList<>();
+            List<DocumentFile> jsons = new ArrayList<>();
+
+            // Look for the interesting stuff
+            for (DocumentFile file : files)
+                if (file.getName() != null) {
+                    if (ArchiveHelper.getArchiveNamesFilter().accept(file.getName()))
+                        archives.add(file);
+                    else if (JsonHelper.getJsonNamesFilter().accept(file.getName()))
+                        jsons.add(file);
+                }
+
             for (DocumentFile archive : archives) {
-                Content c = scanArchive(context, archive, parentNames, StatusContent.EXTERNAL);
+                DocumentFile json = getFileWithName(jsons, archive.getName());
+                Content c = scanArchive(context, subfolder, archive, parentNames, StatusContent.EXTERNAL, dao, json);
                 if (!c.getStatus().equals(StatusContent.IGNORED))
                     result.add(c);
             }
@@ -581,11 +597,25 @@ public class ImportHelper {
 
     public static Content scanArchive(
             @NonNull final Context context,
+            @NonNull final DocumentFile parentFolder,
             @NonNull final DocumentFile archive,
             @NonNull final List<String> parentNames,
-            @NonNull final StatusContent targetStatus) {
-        List<ArchiveHelper.ArchiveEntry> entries = Collections.emptyList();
+            @NonNull final StatusContent targetStatus,
+            @NonNull final CollectionDAO dao,
+            @Nullable final DocumentFile jsonFile) {
 
+        Content result = null;
+        if (jsonFile != null) {
+            try {
+                JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
+                result = content.toEntity(dao);
+                result.setJsonUri(jsonFile.getUri().toString());
+            } catch (IOException ioe) {
+                Timber.w(ioe);
+            }
+        }
+
+        List<ArchiveHelper.ArchiveEntry> entries = Collections.emptyList();
         try {
             entries = ArchiveHelper.getArchiveEntries(context, archive);
         } catch (Exception e) {
@@ -608,12 +638,14 @@ public class ImportHelper {
         if (!coverExists) createCover(images);
 
         // Create content envelope
-        Content result = new Content().setSite(Site.NONE).setTitle((null == archive.getName()) ? "" : FileHelper.getFileNameWithoutExtension(archive.getName())).setUrl("");
-        result.setDownloadDate(archive.lastModified());
-        result.addAttributes(parentNamesAsTags(parentNames));
-        result.addAttributes(newExternalAttribute());
-
+        if (null == result) {
+            result = new Content().setSite(Site.NONE).setTitle((null == archive.getName()) ? "" : FileHelper.getFileNameWithoutExtension(archive.getName())).setUrl("");
+            result.setDownloadDate(archive.lastModified());
+            result.addAttributes(parentNamesAsTags(parentNames));
+            result.addAttributes(newExternalAttribute());
+        }
         result.setStatus(targetStatus).setStorageUri(archive.getUri().toString()); // Here storage URI is a file URI, not a folder
+        result.setArchiveLocationUri(parentFolder.getUri().toString());
 
         result.setImageFiles(images);
         if (0 == result.getQtyPages()) {
@@ -641,5 +673,14 @@ public class ImportHelper {
         List<SiteBookmark> bookmarksToImport = Stream.of(new HashSet<>(bookmarks)).filterNot(existingBookmarkUrls::contains).toList();
         dao.insertBookmarks(bookmarksToImport);
         return bookmarksToImport.size();
+    }
+
+    @Nullable
+    public static DocumentFile getFileWithName(List<DocumentFile> files, @Nullable String name) {
+        if (null == name) return null;
+
+        String targetBareName = FileHelper.getFileNameWithoutExtension(name);
+        Optional<DocumentFile> file = Stream.of(files).filter(f -> (f.getName() != null && FileHelper.getFileNameWithoutExtension(f.getName()).equalsIgnoreCase(targetBareName))).findFirst();
+        return file.orElse(null);
     }
 }

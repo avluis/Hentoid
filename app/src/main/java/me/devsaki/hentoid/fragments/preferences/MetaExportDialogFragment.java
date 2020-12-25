@@ -49,7 +49,7 @@ import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH
  * Created by Robb on 05/2020
  * Dialog for the library metadata export feature
  */
-public class LibExportDialogFragment extends DialogFragment {
+public class MetaExportDialogFragment extends DialogFragment {
 
     // UI
     private ViewGroup rootView;
@@ -68,14 +68,14 @@ public class LibExportDialogFragment extends DialogFragment {
 
 
     public static void invoke(@NonNull final FragmentManager fragmentManager) {
-        LibExportDialogFragment fragment = new LibExportDialogFragment();
+        MetaExportDialogFragment fragment = new MetaExportDialogFragment();
         fragment.show(fragmentManager, null);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_prefs_export, container, false);
+        return inflater.inflate(R.layout.dialog_prefs_meta_export, container, false);
     }
 
     @Override

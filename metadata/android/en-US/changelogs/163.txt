@@ -1,0 +1,29 @@
+New
+
+    Display specific feedback when getting a blank exhentai page
+
+Changed
+
+    Library screen : Drag zone of left drawer is now larger
+    Library screen : Search & sort bar auto-disappearance delay has been slightly increased
+    Library screen / groups : Choosing a new grouping when inside a group goes back to groups display
+    Image viewer : Display unarchiving progress on screen while reading an external archive
+    Downloader : Default folder name truncation set to 100 characters to avoid I/O issues
+
+Fixed
+
+    Many cases of crash (thanks to Firebase reports)
+    External library : External books keep their custom group after refreshing the external library (you'll need to reimport your external library first)
+    Downloader : Make sure .nomedia file is present before download starts
+    Downloader : Better detection of credentials issues before download starts
+    Library screen : Fix visibility of the alert bar
+    Library screen / paged mode : Turning a favourite on/off now updates the icon properly
+    Library screen / groups : Updating a group cover properly updates the cover when going back to groups screen
+    Library screen / groups : Fix double back button not leaving the app after looking inside a group
+    Library screen / groups : Properly update custom group covers when moving books from one group to another
+    Picture viewer : Fix pictures being inverted on some devices (make sure you only have sharp rendering active)
+    Picture viewer : Only go through relevant books when activating "show favourite pages only"
+    Picture viewer : Properly detect scroll direction where there's a single item in the list
+    Intro wizard : Fix updating the wrong progress bar when importing queue
+
+

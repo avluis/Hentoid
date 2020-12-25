@@ -15,9 +15,23 @@
         android:paddingEnd="64dp"
         android:paddingBottom="8dp"
         android:text="@string/permissions_lost"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/advanced_search_background" />
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/advanced_search_background"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/library_alert_icon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_warning"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/library_alert_txt"
+        app:layout_constraintStart_toStartOf="@id/library_alert_txt"
+        app:layout_constraintTop_toTopOf="@id/library_alert_txt"
+        app:tint="@color/white_opacity_66"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/library_alert_fix_btn"
@@ -27,35 +41,9 @@
         android:background="?colorSecondary"
         android:text="@string/fix_permissions"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/library_alert_txt"
         app:layout_constraintEnd_toEndOf="@id/library_alert_txt"
-        app:layout_constraintTop_toTopOf="@id/library_alert_txt" />
-
-    <ImageView
-        android:id="@+id/library_alert_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="8dp"
-        android:src="@drawable/ic_warning"
-        app:layout_constraintBottom_toBottomOf="@id/library_alert_txt"
-        app:layout_constraintStart_toStartOf="@id/library_alert_txt"
         app:layout_constraintTop_toTopOf="@id/library_alert_txt"
-        app:tint="@color/white_opacity_66"
-        tools:ignore="ContentDescription" />
-
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/library_permissions_alert_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:constraint_referenced_ids="library_alert_icon, library_alert_fix_btn, library_alert_txt"
-        tools:visibility="visible" />
-
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/library_storage_alert_group"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:constraint_referenced_ids="library_alert_icon, library_alert_txt"
         tools:visibility="visible" />
 </merge>

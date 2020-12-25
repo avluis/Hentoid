@@ -41,8 +41,8 @@ public class ExHentaiActivity extends BaseWebActivity {
     @Override
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new ExHentaiWebClient(GALLERY_FILTER, this);
-        // Set image display to "extended"
-        CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");
+        CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");  // Show thumbs in results page ("extended display")
+        CookieManager.getInstance().setCookie(".exhentai.org", "nw=1"); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         // ExH serves images through hosts that use http connections, which is detected as "mixed content" by the app
         webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         return client;
@@ -61,9 +61,13 @@ public class ExHentaiActivity extends BaseWebActivity {
             if (url.startsWith("https://exhentai.org")) {
                 CookieManager mgr = CookieManager.getInstance();
                 String cookiesStr = mgr.getCookie(".exhentai.org");
-                if (cookiesStr != null && !cookiesStr.contains("ipb_member_id=")) {
+                if (cookiesStr != null && (!cookiesStr.contains("ipb_member_id=") || cookiesStr.contains("igneous=mystery"))) {
                     mgr.removeAllCookies(null);
                     webView.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/");
+                    if (cookiesStr.contains("igneous=mystery"))
+                        showTooltip(R.string.help_web_incomplete_exh_credentials, true);
+                    else
+                        showTooltip(R.string.help_web_invalid_exh_credentials, true);
                 }
             }
 
@@ -74,7 +78,7 @@ public class ExHentaiActivity extends BaseWebActivity {
                     webView.loadUrl("https://exhentai.org/");
             }
 
-            showTooltip(R.string.help_web_exh_account);
+            showTooltip(R.string.help_web_exh_account, false);
         }
 
         private void logCookies(@NonNull final String prefix, @NonNull final String cookieStr) {

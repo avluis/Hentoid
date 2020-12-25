@@ -40,6 +40,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.DiffCallback;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
@@ -179,7 +180,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
 
     /**
-     * Diff calculation rules for list items
+     * Diff calculation rules for contents
      * <p>
      * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
      */
@@ -222,6 +223,54 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         }
 
     }).build();
+
+    public static final DiffCallback<ContentItem> CONTENT_ITEM_DIFF_CALLBACK = new DiffCallback<ContentItem>() {
+        @Override
+        public boolean areItemsTheSame(ContentItem oldItem, ContentItem newItem) {
+            return oldItem.getIdentifier() == newItem.getIdentifier();
+        }
+
+        @Override
+        public boolean areContentsTheSame(ContentItem oldContentItem, ContentItem newContentItem) {
+            Content oldItem = oldContentItem.getContent();
+            Content newItem = newContentItem.getContent();
+
+            if (null == oldItem || null == newItem) return false;
+
+            return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
+                    && oldItem.getSite().equals(newItem.getSite())
+                    && oldItem.getLastReadDate() == newItem.getLastReadDate()
+                    && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())
+//                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
+                    && oldItem.isFavourite() == newItem.isFavourite();
+        }
+
+        @Override
+        public @org.jetbrains.annotations.Nullable Object getChangePayload(ContentItem oldContentItem, int oldPos, ContentItem newContentItem, int newPos) {
+            Content oldItem = oldContentItem.getContent();
+            Content newItem = newContentItem.getContent();
+
+            if (null == oldItem || null == newItem) return false;
+
+            ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
+
+            if (oldItem.isFavourite() != newItem.isFavourite()) {
+                diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+            }
+            if (oldItem.getReads() != newItem.getReads()) {
+                diffBundleBuilder.setReads(newItem.getReads());
+            }
+            if (oldItem.getReadPagesCount() != newItem.getReadPagesCount()) {
+                diffBundleBuilder.setReadPagesCount(newItem.getReadPagesCount());
+            }
+            if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
+                diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());
+            }
+
+            if (diffBundleBuilder.isEmpty()) return null;
+            else return diffBundleBuilder.getBundle();
+        }
+    };
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -274,10 +323,12 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
     public void onEnable() {
         enabled = true;
+        callback.setEnabled(true);
     }
 
     public void onDisable() {
         enabled = false;
+        callback.setEnabled(false);
     }
 
     /**
@@ -1025,14 +1076,9 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
 
         List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType, this::onDeleteSwipedBook)).toList();
-        compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(diffResult -> {
-                    FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
-                    differEndCallback();
-                })
-        );
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK);
+        //itemAdapter.setNewList(contentItems, true);
+        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
     }
 
     private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
@@ -1047,19 +1093,9 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
             contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).toList();
         }
-
-        if (contentItems.isEmpty()) {
-            itemAdapter.set(contentItems); // Use set directly when the list is empty or FastAdapter crashes
-        } else {
-            compositeDisposable.add(Single.fromCallable(() -> FastAdapterDiffUtil.INSTANCE.calculateDiff(itemAdapter, contentItems))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(diffResult -> {
-                        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, diffResult);
-                        differEndCallback();
-                    })
-            );
-        }
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK);
+        //itemAdapter.setNewList(contentItems, true);
+        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
     }
 
     /**
@@ -1079,7 +1115,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * @param result Current library according to active filters
      */
     private void onLibraryChanged(PagedList<Content> result) {
-        Timber.i(">>Library changed ! Size=%s", result.size());
+        Timber.i(">> Library changed ! Size=%s", result.size());
         if (!enabled) return;
 
         activity.get().updateTitle(result.size(), totalContentCount);
@@ -1353,7 +1389,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     }
 
     @Override
-    public void onChangeSuccess() {
+    public void onChangeGroupSuccess() {
         refreshIfNeeded();
     }
 

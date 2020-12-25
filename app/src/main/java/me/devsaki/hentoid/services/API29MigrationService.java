@@ -150,7 +150,7 @@ public class API29MigrationService extends IntentService {
 
         // 2nd pass : scan every book in the library and match actual URIs to it
         dao = new ObjectBoxDAO(this);
-        searchDisposable = dao.getOldStoredBookIds()
+        searchDisposable = dao.selectOldStoredBookIds()
                 .observeOn(Schedulers.from(tasks::add))
                 .subscribe(
                         list -> {

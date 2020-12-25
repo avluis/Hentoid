@@ -22,6 +22,16 @@ public class TooltipUtil {
     }
 
 
+    public static void showTooltipAlways(
+            @NonNull Context context,
+            @StringRes int message,
+            @NonNull ArrowOrientation orientation,
+            @NonNull View anchor,
+            @NonNull LifecycleOwner lifecycleOwner
+    ) {
+        showTooltip(context, message, orientation, anchor, lifecycleOwner, true);
+    }
+
     public static void showTooltip(
             @NonNull Context context,
             @StringRes int message,
@@ -29,10 +39,21 @@ public class TooltipUtil {
             @NonNull View anchor,
             @NonNull LifecycleOwner lifecycleOwner
     ) {
-        String prefName = "tooltip." + getViewName(anchor);
-        if (context instanceof Activity) prefName += "." + ((Activity)context).getLocalClassName();
+        showTooltip(context, message, orientation, anchor, lifecycleOwner, false);
+    }
 
-        Balloon balloon = new Balloon.Builder(context)
+    public static void showTooltip(
+            @NonNull Context context,
+            @StringRes int message,
+            @NonNull ArrowOrientation orientation,
+            @NonNull View anchor,
+            @NonNull LifecycleOwner lifecycleOwner,
+            boolean always
+    ) {
+        String prefName = "tooltip." + getViewName(anchor);
+        if (context instanceof Activity) prefName += "." + ((Activity) context).getLocalClassName();
+
+        Balloon.Builder balloonBuilder = new Balloon.Builder(context)
                 .setArrowSize(10)
                 .setArrowOrientation(orientation)
                 .setArrowVisible(true)
@@ -48,9 +69,11 @@ public class TooltipUtil {
                 .setDismissWhenClicked(true)
                 .setDismissWhenTouchOutside(true)
                 .setBalloonAnimation(BalloonAnimation.OVERSHOOT)
-                .setLifecycleOwner(lifecycleOwner)
-                .setPreferenceName(prefName)
-                .build();
+                .setLifecycleOwner(lifecycleOwner);
+
+        if (!always) balloonBuilder.setPreferenceName(prefName);
+
+        Balloon balloon = balloonBuilder.build();
 
         if (orientation.equals(ArrowOrientation.BOTTOM)) balloon.showAlignTop(anchor);
         else if (orientation.equals(ArrowOrientation.TOP)) balloon.showAlignBottom(anchor);

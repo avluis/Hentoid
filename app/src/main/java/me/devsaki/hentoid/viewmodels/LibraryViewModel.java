@@ -203,7 +203,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * Toggle the favourite filter
      */
     public void toggleFavouriteFilter() {
-        searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
+        searchManager.setFilterBookFavourites(!searchManager.isFilterBookFavourites());
         newSearch.setValue(true);
         doSearchContent();
     }
@@ -606,9 +606,22 @@ public class LibraryViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
         // Get all groupItems of the given content for custom grouping
         List<GroupItem> groupItems = dao.selectGroupItems(content.getId(), Grouping.CUSTOM);
-        // Delete them all
-        if (!groupItems.isEmpty())
+
+        if (!groupItems.isEmpty()) {
+            // Update the cover of the old groups if they used a picture from the book that is being moved
+            for (GroupItem gi : groupItems) {
+                Group g = gi.group.getTarget();
+                if (g != null && !g.picture.isNull()) {
+                    ImageFile groupCover = g.picture.getTarget();
+                    if (groupCover.getContent().getTargetId() == content.getId()) {
+                        updateGroupCover(g, content.getId());
+                    }
+                }
+            }
+
+            // Delete them all
             dao.deleteGroupItems(Stream.of(groupItems).map(gi -> gi.id).toList());
+        }
 
         // Create the new links from the given content to the target group
         if (group != null) {
@@ -622,8 +635,27 @@ public class LibraryViewModel extends AndroidViewModel {
             if (group.picture.isNull())
                 group.picture.setAndPutTarget(content.getCover());
         }
-        // updateContentOrder(); TODO is that necessary when moving when inside custom group ?
 
         return content;
+    }
+
+    private void updateGroupCover(@NonNull final Group g, long contentIdToRemove) {
+        List<Content> groupsContents = g.getContents();
+
+        // Empty group cover if there's just one content inside
+        if (1 == groupsContents.size() && groupsContents.get(0).getId() == contentIdToRemove) {
+            g.picture.setAndPutTarget(null);
+            return;
+        }
+
+        // Choose 1st valid content cover
+        for (Content c : groupsContents)
+            if (c.getId() != contentIdToRemove) {
+                ImageFile cover = c.getCover();
+                if (cover.getId() > -1) {
+                    g.picture.setAndPutTarget(cover);
+                    return;
+                }
+            }
     }
 }

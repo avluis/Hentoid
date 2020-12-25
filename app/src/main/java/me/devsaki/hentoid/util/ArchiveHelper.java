@@ -25,6 +25,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import timber.log.Timber;
 
 /**
@@ -40,16 +42,17 @@ public class ArchiveHelper {
 
     public static final String ZIP_MIME_TYPE = "application/zip";
     public static final String RAR_MIME_TYPE = "application/x-rar-compressed";
-    private static FileHelper.NameFilter archiveNamesFilter;
+
+    private static final FileHelper.NameFilter archiveNamesFilter = displayName -> isArchiveExtensionSupported(FileHelper.getExtension(displayName));
 
     private static final int BUFFER = 32 * 1024;
 
 
     /**
-     * Determine if the given archive file extension is supported by the app
+     * Determine if the given file extension is supported by the app as an archive
      *
      * @param extension File extension to test
-     * @return True if the app supports the reading of files with the given extension; false if not
+     * @return True if the app supports the reading of files with the given extension as archives; false if not
      */
     public static boolean isArchiveExtensionSupported(@NonNull final String extension) {
         return extension.equalsIgnoreCase("zip")
@@ -59,6 +62,12 @@ public class ArchiveHelper {
                 || extension.equalsIgnoreCase("rar");
     }
 
+    /**
+     * Determine if the given file name is supported by the app as an archive
+     *
+     * @param fileName File name to test
+     * @return True if the app supports the reading of the given file name as an archive; false if not
+     */
     public static boolean isSupportedArchive(@NonNull final String fileName) {
         return isArchiveExtensionSupported(FileHelper.getExtension(fileName));
     }
@@ -69,8 +78,6 @@ public class ArchiveHelper {
      * @return {@link FileHelper.NameFilter} only accepting archive files supported by the app
      */
     public static FileHelper.NameFilter getArchiveNamesFilter() {
-        if (null == archiveNamesFilter)
-            archiveNamesFilter = displayName -> isArchiveExtensionSupported(FileHelper.getExtension(displayName));
         return archiveNamesFilter;
     }
 
@@ -92,7 +99,14 @@ public class ArchiveHelper {
         else return "";
     }
 
-    // TODO doc
+    /**
+     * Get the entries of the given archive file
+     *
+     * @param context Context to be used
+     * @param file    Archive file to read
+     * @return List of the entries of the given archive file; an empty list if the archive file is not supported
+     * @throws IOException If something horrible happens during I/O
+     */
     public static List<ArchiveEntry> getArchiveEntries(@NonNull final Context context, @NonNull final DocumentFile file) throws IOException {
         Helper.assertNonUiThread();
         try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
@@ -107,7 +121,13 @@ public class ArchiveHelper {
         }
     }
 
-    // TODO doc
+    /**
+     * Get the entries of the given ZIP file
+     *
+     * @param bis Stream to read from
+     * @return List of the entries of the given ZIP file
+     * @throws IOException If something horrible happens during I/O
+     */
     private static List<ArchiveEntry> getZipEntries(@NonNull final BufferedInputStream bis) throws IOException {
         Helper.assertNonUiThread();
         List<ArchiveEntry> result = new ArrayList<>();
@@ -121,7 +141,13 @@ public class ArchiveHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Get the entries of the given RAR file
+     *
+     * @param bis Stream to read from
+     * @return List of the entries of the given RAR file
+     * @throws IOException If something horrible happens during I/O
+     */
     private static List<ArchiveEntry> getRarEntries(@NonNull final BufferedInputStream bis) throws IOException {
         Helper.assertNonUiThread();
         List<ArchiveEntry> result = new ArrayList<>();
@@ -139,7 +165,50 @@ public class ArchiveHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Extract the given entries from the given archive file
+     * This is the variant to be used with RxJava
+     *
+     * @param context          Context to be used
+     * @param file             Archive file to extract from
+     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
+     * @param targetFolder     Target folder to create the archives into
+     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @return Observable that follows the extraction of each entry
+     * @throws IOException If something horrible happens during I/O
+     */
+    public static Observable<Uri> extractArchiveEntriesRx(
+            @NonNull final Context context,
+            @NonNull final DocumentFile file,
+            @Nullable final List<String> entriesToExtract,
+            @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+            @Nullable final List<String> targetNames) throws IOException {
+        Helper.assertNonUiThread();
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+            byte[] header = new byte[4];
+            bis.mark(header.length);
+            if (bis.read(header) < header.length) return Observable.empty();
+            bis.reset();
+            String mimeType = getMimeTypeFromArchiveBinary(header);
+            if (mimeType.equals(ZIP_MIME_TYPE))
+                return Observable.create(emitter -> extractZipEntries(context, file, entriesToExtract, targetFolder, targetNames, emitter));
+            else if (mimeType.equals(RAR_MIME_TYPE))
+                return Observable.create(emitter -> extractRarEntries(context, file, entriesToExtract, targetFolder, targetNames, emitter));
+            else return Observable.empty();
+        }
+    }
+
+    /**
+     * Extract the given entries from the given archive file
+     *
+     * @param context          Context to be used
+     * @param file             Archive file to extract from
+     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
+     * @param targetFolder     Target folder to create the archives into
+     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @return List of the Uri's of the extracted files
+     * @throws IOException If something horrible happens during I/O
+     */
     public static List<Uri> extractArchiveEntries(
             @NonNull final Context context,
             @NonNull final DocumentFile file,
@@ -154,19 +223,53 @@ public class ArchiveHelper {
             bis.reset();
             String mimeType = getMimeTypeFromArchiveBinary(header);
             if (mimeType.equals(ZIP_MIME_TYPE))
-                return extractZipEntries(bis, entriesToExtract, targetFolder, targetNames);
+                return extractZipEntries(bis, entriesToExtract, targetFolder, targetNames, null);
             else if (mimeType.equals(RAR_MIME_TYPE))
-                return extractRarEntries(bis, entriesToExtract, targetFolder, targetNames);
+                return extractRarEntries(bis, entriesToExtract, targetFolder, targetNames, null);
             else return Collections.emptyList();
         }
     }
 
-    // TODO doc
+    /**
+     * Extract the given entries from the given ZIP file
+     *
+     * @param context          Context to be used
+     * @param file             Archive file to extract from
+     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
+     * @param targetFolder     Target folder to create the archives into
+     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @param emitter          Optional emitter to be used when the method is used with RxJava
+     * @throws IOException If something horrible happens during I/O
+     */
+    private static void extractZipEntries(
+            @NonNull final Context context,
+            @NonNull final DocumentFile file,
+            @Nullable final List<String> entriesToExtract,
+            @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+            @Nullable final List<String> targetNames,
+            @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+            extractZipEntries(bis, entriesToExtract, targetFolder, targetNames, emitter);
+        }
+    }
+
+    /**
+     * Extract the given entries from the given ZIP file
+     *
+     * @param bis              Stream to read from
+     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
+     * @param targetFolder     Target folder to create the archives into
+     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @param emitter          Optional emitter to be used when the method is used with RxJava
+     * @return List of the Uri's of the extracted files
+     * @throws IOException If something horrible happens during I/O
+     */
     private static List<Uri> extractZipEntries(
             @NonNull final BufferedInputStream bis,
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames) throws IOException {
+            @Nullable final List<String> targetNames,
+            @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         Helper.assertNonUiThread();
         List<Uri> result = new ArrayList<>();
         int index = 0;
@@ -198,7 +301,7 @@ public class ArchiveHelper {
                         if (0 == existing.length) {
                             targetFile = new File(targetFolder.getAbsolutePath() + File.separator + fileName);
                             if (!targetFile.createNewFile())
-                                throw new IOException("Could not create file " + targetFile.getPath());
+                                Timber.w("File already exists : %s", targetFile.getAbsolutePath());
                         } else {
                             targetFile = existing[0];
                         }
@@ -208,21 +311,57 @@ public class ArchiveHelper {
                                 out.write(buffer, 0, count);
                         }
                         result.add(Uri.fromFile(targetFile));
+                        if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
                     }
                     input.closeEntry();
                 }
                 entry = input.getNextEntry();
             }
         }
+        if (emitter != null) emitter.onComplete();
         return result;
     }
 
-    // TODO doc
+    /**
+     * Extract the given entries from the given RAR file
+     *
+     * @param context          Context to be used
+     * @param file             Archive file to extract from
+     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
+     * @param targetFolder     Target folder to create the archives into
+     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @param emitter          Optional emitter to be used when the method is used with RxJava
+     * @throws IOException If something horrible happens during I/O
+     */
+    private static void extractRarEntries(
+            @NonNull final Context context,
+            @NonNull final DocumentFile file,
+            @Nullable final List<String> entriesToExtract,
+            @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
+            @Nullable final List<String> targetNames,
+            @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+            extractRarEntries(bis, entriesToExtract, targetFolder, targetNames, emitter);
+        }
+    }
+
+    /**
+     * Extract the given entries from the given RAR file
+     *
+     * @param bis              Stream to read from
+     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
+     * @param targetFolder     Target folder to create the archives into
+     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @param emitter          Optional emitter to be used when the method is used with RxJava
+     * @return List of the Uri's of the extracted files
+     * @throws IOException If something horrible happens during I/O
+     */
     private static List<Uri> extractRarEntries(
             @NonNull final BufferedInputStream bis,
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames) throws IOException {
+            @Nullable final List<String> targetNames,
+            @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         Helper.assertNonUiThread();
         List<Uri> result = new ArrayList<>();
         int index = 0;
@@ -261,6 +400,7 @@ public class ArchiveHelper {
                             while ((count = entryInput.read(buffer)) != -1)
                                 out.write(buffer, 0, count);
                         }
+                        if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
                         result.add(Uri.fromFile(targetFile));
                     }
                 }
@@ -268,12 +408,20 @@ public class ArchiveHelper {
         } catch (RarException e) {
             Timber.w(e);
         }
+        if (emitter != null) emitter.onComplete();
         return result;
     }
 
     // ================= ZIP FILE CREATION
 
-    // TODO doc
+    /**
+     * Archive the given files into the given output stream
+     *
+     * @param context Context to be used
+     * @param files   List of the files to be archived
+     * @param out     Output stream to write to
+     * @throws IOException If something horrible happens during I/O
+     */
     public static void zipFiles(@NonNull final Context context, @NonNull final List<DocumentFile> files, @NonNull final OutputStream out) throws IOException {
         Helper.assertNonUiThread();
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out))) {
@@ -283,11 +431,19 @@ public class ArchiveHelper {
         }
     }
 
-    // TODO doc
+    /**
+     * Add the given file to the given ZipOutputStream
+     *
+     * @param context Context to be used
+     * @param file    File to be added
+     * @param stream  ZipOutputStream to write to
+     * @param buffer  Buffer to be used
+     * @throws IOException If something horrible happens during I/O
+     */
     private static void addFile(@NonNull final Context context,
                                 @NonNull final DocumentFile file,
                                 final ZipOutputStream stream,
-                                final byte[] data) throws IOException {
+                                final byte[] buffer) throws IOException {
         Timber.d("Adding: %s", file);
         try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)) {
 
@@ -295,14 +451,15 @@ public class ArchiveHelper {
             stream.putNextEntry(zipEntry);
             int count;
 
-            while ((count = origin.read(data, 0, BUFFER)) != -1) {
-                stream.write(data, 0, count);
+            while ((count = origin.read(buffer, 0, BUFFER)) != -1) {
+                stream.write(buffer, 0, count);
             }
         }
     }
 
     @SuppressWarnings("squid:S1104")
     // This is a dumb struct class, nothing more
+    // Describes an entry inside an archive
     public static class ArchiveEntry {
         public String path;
         public long size;
