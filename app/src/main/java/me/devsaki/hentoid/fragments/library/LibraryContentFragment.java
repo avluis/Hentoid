@@ -37,6 +37,7 @@ import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
@@ -827,6 +828,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         switch (key) {
             case Preferences.Key.ENDLESS_SCROLL:
                 setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
+                FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
                 viewModel.updateContentOrder(); // Trigger a blank search
                 break;
             default:

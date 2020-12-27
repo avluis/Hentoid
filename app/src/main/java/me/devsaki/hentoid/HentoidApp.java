@@ -14,6 +14,7 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.jakewharton.threetenabp.AndroidThreeTen;
 
 import org.threeten.bp.Instant;
@@ -134,6 +135,8 @@ public class HentoidApp extends Application {
         // Send stats to Firebase
         FirebaseAnalytics.getInstance(this).setUserProperty("color_theme", Integer.toString(Preferences.getColorTheme()));
         FirebaseAnalytics.getInstance(this).setUserProperty("endless", Boolean.toString(Preferences.getEndlessScroll()));
+
+        FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
 
         // Plug the lifecycle listener to handle locking
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
