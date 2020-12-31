@@ -392,7 +392,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     private void onDeleteBooks(@NonNull List<Content> c) {
         if (c.size() > 2) {
             isDeletingAll = true;
-            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
+            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
         }
         viewModel.remove(c, this::onDeleteError, this::onDeleteComplete);
     }
