@@ -106,6 +106,7 @@ public class IntentActivity extends AppCompatActivity {
                 return toParse.replace("/view", "");
             case HBROWSE:
                 return toParse.substring(1);
+            case IMHENTAI:
             case HENTAIFOX:
                 return toParse.replace("/gallery", "");
             case MUSES:
