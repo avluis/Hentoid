@@ -179,6 +179,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * <p>
      * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
      */
+    /*
     private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
         @Override
         public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
@@ -218,6 +219,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         }
 
     }).build();
+
+     */
 
     public static final DiffCallback<ContentItem> CONTENT_ITEM_DIFF_CALLBACK = new DiffCallback<ContentItem>() {
         @Override

@@ -413,7 +413,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (null == theImages) return;
 
         // Update image read status with the cached read statuses
-        long previousReadPagesCount = Stream.of(theImages).filter(ImageFile::isRead).count();
+        long previousReadPagesCount = Stream.of(theImages).filter(ImageFile::isRead).filter(ImageFile::isReadable).count();
         if (readPageNumbers.size() > previousReadPagesCount) {
             for (ImageFile img : theImages)
                 if (readPageNumbers.contains(img.getOrder())) img.setRead(true);
