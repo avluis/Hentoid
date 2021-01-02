@@ -144,7 +144,7 @@ public class ParseHelper {
         if (null == childElementClass) {
             name = element.ownText();
         } else {
-            name = element.selectFirst("." + childElementClass).text();
+            name = element.selectFirst("." + childElementClass).ownText();
         }
         name = Helper.removeNonPrintableChars(name);
         name = removeBrackets(name);
