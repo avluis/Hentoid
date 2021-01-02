@@ -117,7 +117,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
 
     // == FASTADAPTER COMPONENTS AND HELPERS
-    private FastAdapter<ContentItem> fastAdapter;
+    // Use a non-paged model adapter; drag & drop doesn't work with paged content, as Adapter.move is not supported and move from DB refreshes the whole list
+    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
+    private final FastAdapter<ContentItem> fastAdapter = FastAdapter.with(itemAdapter);
     private SelectExtension<ContentItem> selectExtension;
     private ItemTouchHelper touchHelper;
 
@@ -147,10 +149,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
     private int topItemPosition = -1;
     private int offsetTop = 0;
-
-
-    // Use a non-paged model adapter; drag & drop doesn't work with paged content, as Adapter.move is not supported and move from DB refreshes the whole list
-    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
 
 
     @Override
@@ -194,7 +192,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Book list
         recyclerView = requireViewById(rootView, R.id.queue_list);
 
-        fastAdapter = FastAdapter.with(itemAdapter);
         ContentItem item = new ContentItem(ContentItem.ViewType.QUEUE);
         fastAdapter.registerItemFactory(item.getType(), item);
 

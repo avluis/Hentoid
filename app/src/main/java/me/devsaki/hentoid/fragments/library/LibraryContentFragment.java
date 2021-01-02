@@ -39,14 +39,12 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mikepenz.fastadapter.FastAdapter;
-import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.diff.DiffCallback;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
-import com.mikepenz.fastadapter.paged.PagedModelAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
 import com.mikepenz.fastadapter.swipe.SimpleSwipeDrawerCallback;
@@ -144,9 +142,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     private TextView sortFieldButton;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
-    private ItemAdapter<ContentItem> itemAdapter;
-    private PagedModelAdapter<Content, ContentItem> pagedItemAdapter;
-    private FastAdapter<ContentItem> fastAdapter;
+    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
+    private final FastAdapter<ContentItem> fastAdapter = FastAdapter.with(itemAdapter);
     private SelectExtension<ContentItem> selectExtension;
     private ItemTouchHelper touchHelper;
 
@@ -717,7 +714,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (viewModel != null) viewModel.onSaveState(outState);
-        if (fastAdapter != null) fastAdapter.saveInstanceState(outState);
+        fastAdapter.saveInstanceState(outState);
 
         // Remember current position in the sorted list
         int currentPosition = getTopItemPosition();
@@ -735,7 +732,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (null == savedInstanceState) return;
 
         if (viewModel != null) viewModel.onRestoreState(savedInstanceState);
-        if (fastAdapter != null) fastAdapter.withSavedInstanceState(savedInstanceState);
+        fastAdapter.withSavedInstanceState(savedInstanceState);
         // Mark last position in the list to be the one it will come back to
         topItemPosition = savedInstanceState.getInt(KEY_LAST_LIST_POSITION, 0);
     }
@@ -916,17 +913,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 viewType = ContentItem.ViewType.LIBRARY;
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook));
-            fastAdapter = FastAdapter.with(pagedItemAdapter);
             ContentItem item = new ContentItem(viewType);
             fastAdapter.registerItemFactory(item.getType(), item);
-
-            itemAdapter = null;
-        } else { // Paged mode or edit mode
-            itemAdapter = new ItemAdapter<>();
-            fastAdapter = FastAdapter.with(itemAdapter);
-
-            pagedItemAdapter = null;
         }
         fastAdapter.setHasStableIds(true);
 
@@ -1143,8 +1131,14 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (newSearch) topItemPosition = 0;
 
         // Update displayed books
-        if (Preferences.getEndlessScroll() && !activity.get().isEditMode() && pagedItemAdapter != null) {
-            pagedItemAdapter.submitList(result, this::differEndCallback);
+        if (Preferences.getEndlessScroll() && !activity.get().isEditMode()) {
+            @ContentItem.ViewType int viewType;
+            if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay() || activity.get().isEditMode()) // Grid won't be used in edit mode
+                viewType = activity.get().isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
+            else
+                viewType = ContentItem.ViewType.LIBRARY_GRID;
+            List<ContentItem> contentItems = Stream.of(result).withoutNulls().map(c -> new ContentItem(c, null, viewType, this::onDeleteSwipedBook)).toList();
+            FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK);
         } else if (activity.get().isEditMode()) {
             populateAllResults(result);
         } else { // Paged mode
@@ -1313,11 +1307,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      */
     private int getTopItemPosition() {
         return Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
-    }
-
-    private IAdapter<ContentItem> getItemAdapter() {
-        if (itemAdapter != null) return itemAdapter;
-        else return pagedItemAdapter;
     }
 
     /**
