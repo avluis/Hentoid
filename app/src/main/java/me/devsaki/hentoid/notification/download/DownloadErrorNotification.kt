@@ -27,7 +27,7 @@ class DownloadErrorNotification : Notification {
         NotificationCompat.Builder(context, DownloadNotificationChannel.ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setContentTitle(context.getString(R.string.download_error))
-            .setContentText(content?.title ?: "")
+            .setContentText(content?.title)
             .setContentIntent(getDefaultIntent(context))
             .setDeleteIntent(getDeleteIntent(context))
             .setLocalOnly(true)
