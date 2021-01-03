@@ -111,7 +111,7 @@ public class QueueActivity extends BaseActivity {
     private void onTabSelected(int position) {
         // Update permanent toolbar
         invertQueueMenu.setVisible(0 == position);
-        cancelAllMenu.setVisible(0 == position);
+        cancelAllMenu.setVisible(true);
         redownloadAllMenu.setVisible(1 == position);
         if (1 == position)
             errorStatsMenu.setVisible(false); // That doesn't mean it should be visible at all times on tab 0 !

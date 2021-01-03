@@ -252,10 +252,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         cancelAllMenu.setOnMenuItemClickListener(item -> {
             // Don't do anything if the queue is empty
             if (0 == itemAdapter.getAdapterItemCount()) return true;
-                // Just do it if the queue has a single item
-            else if (1 == itemAdapter.getAdapterItemCount()) onCancelAll();
-                // Ask if there's more than 1 item
-            else
+
+            // Just do it if the queue has a single item
+            if (1 == itemAdapter.getAdapterItemCount()) onCancelAll();
+            else // Ask if there's more than 1 item
                 new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                         .setIcon(R.drawable.ic_warning)
                         .setCancelable(false)

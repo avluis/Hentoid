@@ -194,27 +194,16 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         QueueActivity activity = (QueueActivity) requireActivity();
         MenuItem redownloadAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_redownload_all);
         redownloadAllMenu.setOnMenuItemClickListener(item -> {
-            // Don't do anything if the queue is empty
-            if (0 == itemAdapter.getAdapterItemCount()) return true;
-                // Just do it if the queue has a single item
-            else if (1 == itemAdapter.getAdapterItemCount()) redownloadAll();
-                // Ask if there's more than 1 item
-            else
-                new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
-                        .setIcon(R.drawable.ic_warning)
-                        .setTitle(R.string.app_name)
-                        .setMessage(getString(R.string.confirm_redownload_all, fastAdapter.getItemCount()))
-                        .setPositiveButton(R.string.yes,
-                                (dialog1, which) -> {
-                                    dialog1.dismiss();
-                                    redownloadAll();
-                                })
-                        .setNegativeButton(R.string.no,
-                                (dialog12, which) -> dialog12.dismiss())
-                        .create()
-                        .show();
+            onRedownloadAllClick();
             return true;
         });
+
+        MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
+        cancelAllMenu.setOnMenuItemClickListener(item -> {
+            onCancelAllClick();
+            return true;
+        });
+
         MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
         invertMenu.setOnMenuItemClickListener(item -> {
             viewModel.invertQueue();
@@ -397,6 +386,12 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         viewModel.remove(c, this::onDeleteError, this::onDeleteComplete);
     }
 
+    private void doCancelAll() {
+        isDeletingAll = true;
+        DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
+        viewModel.removeAll(this::onDeleteError, this::onDeleteComplete);
+    }
+
     private void onDeleteComplete() {
         isDeletingAll = false;
         viewModel.refresh();
@@ -420,6 +415,49 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
             selectionToolbar.setVisibility(View.GONE);
     }
 
+    private void onRedownloadAllClick() {
+        // Don't do anything if the queue is empty
+        if (0 == itemAdapter.getAdapterItemCount()) return;
+
+        // Just do it if the queue has a single item
+        if (1 == itemAdapter.getAdapterItemCount()) redownloadAll();
+        else // Ask if there's more than 1 item
+            new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                    .setIcon(R.drawable.ic_warning)
+                    .setTitle(R.string.app_name)
+                    .setMessage(getString(R.string.confirm_redownload_all, fastAdapter.getItemCount()))
+                    .setPositiveButton(R.string.yes,
+                            (dialog1, which) -> {
+                                dialog1.dismiss();
+                                redownloadAll();
+                            })
+                    .setNegativeButton(R.string.no,
+                            (dialog12, which) -> dialog12.dismiss())
+                    .create()
+                    .show();
+    }
+
+    private void onCancelAllClick() {
+        // Don't do anything if the queue is empty
+        if (0 == itemAdapter.getAdapterItemCount()) return;
+
+        // Just do it if the queue has a single item
+        if (1 == itemAdapter.getAdapterItemCount()) doCancelAll();
+        else // Ask if there's more than 1 item
+            new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                    .setIcon(R.drawable.ic_warning)
+                    .setTitle(R.string.app_name)
+                    .setMessage(getString(R.string.confirm_cancel_all_errors, fastAdapter.getItemCount()))
+                    .setPositiveButton(R.string.yes,
+                            (dialog1, which) -> {
+                                dialog1.dismiss();
+                                doCancelAll();
+                            })
+                    .setNegativeButton(R.string.no,
+                            (dialog12, which) -> dialog12.dismiss())
+                    .create()
+                    .show();
+    }
 
     /**
      * DRAG, DROP & SWIPE METHODS
