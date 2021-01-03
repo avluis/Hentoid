@@ -15,8 +15,8 @@ import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class ImhentaiContent implements ContentParser {
-    @Selector(value = "div.left_cover img", attr = "src")
-    private String cover;
+    @Selector(value = "div.left_cover img")
+    private Element cover;
     @Selector(value = "div.right_details h1", defValue = "")
     private String title;
     @Selector("li.pages")
@@ -40,7 +40,11 @@ public class ImhentaiContent implements ContentParser {
 
         result.setUrl(url.replace(Site.IMHENTAI.getUrl(), "").replace("/gallery", ""));
 
-        result.setCoverImageUrl(cover);
+        if (cover != null) {
+            String coverUrl = cover.attr("src");
+            if (coverUrl.isEmpty()) coverUrl = cover.attr("data-cfsrc"); // Cloudflare-served image
+            result.setCoverImageUrl(coverUrl);
+        }
         String str = !title.isEmpty() ? Helper.removeNonPrintableChars(title) : "";
         str = ParseHelper.removeTextualTags(str);
         result.setTitle(str);
