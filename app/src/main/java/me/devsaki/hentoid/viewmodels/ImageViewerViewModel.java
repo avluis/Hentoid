@@ -427,7 +427,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Content c = content.getValue();
         if (c != null) {
             showFavourites = !showFavourites;
-            searchManager.setFilterPageFavourites(showFavourites);
+            if (searchManager != null) searchManager.setFilterPageFavourites(showFavourites);
             //processContent(c);
             applySearchParams(loadedContentId);
             callback.accept(showFavourites);
