@@ -49,6 +49,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
@@ -459,7 +460,7 @@ public class Content implements Serializable {
     }
 
     public String getTitle() {
-        return title;
+        return Helper.protect(title);
     }
 
     public Content setTitle(String title) {
