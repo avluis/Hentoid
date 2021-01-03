@@ -469,8 +469,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             Context context = tvPages.getContext();
 
             String template;
-            String nbPages = content.getQtyPages() + "";
             if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS || viewType == ViewType.LIBRARY_EDIT) {
+                String nbPages = content.getQtyPages() + "";
                 if (viewType == ViewType.ERRORS) {
                     long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
                     if (nbMissingPages > 0)
