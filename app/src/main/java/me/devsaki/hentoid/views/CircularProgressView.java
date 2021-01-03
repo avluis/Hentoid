@@ -56,9 +56,9 @@ public class CircularProgressView extends View {
 
         drawProgress(canvas, (int) 360f, totalPaint);
         if (total != 0 && progress1 != 0)
-            drawProgress(canvas, total == progress1 ? 360 : (int) ((360f / total) * progress1), progress1Paint);
+            drawProgress(canvas, total <= progress1 ? 360 : (int) ((360f / total) * progress1), progress1Paint);
         if (total != 0 && progress2 != 0)
-            drawProgress(canvas, total == progress2 ? 360 : (int) ((360f / total) * progress2), progress2Paint);
+            drawProgress(canvas, total <= progress2 ? 360 : (int) ((360f / total) * progress2), progress2Paint);
 
         canvas.restore();
     }
