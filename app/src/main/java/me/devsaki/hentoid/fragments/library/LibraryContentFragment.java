@@ -22,6 +22,7 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -1106,10 +1107,14 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         activity.get().updateTitle(result.size(), totalContentCount);
 
         // Update background text
-        if (result.isEmpty()) {
+        @StringRes int backgroundText = -1;
+        if (result.isEmpty() && isSearchQueryActive())
+            backgroundText = R.string.search_entry_not_found;
+        else if (0 == totalContentCount) backgroundText = R.string.downloads_empty_library;
+
+        if (backgroundText != -1) {
             emptyText.setVisibility(View.VISIBLE);
-            if (isSearchQueryActive()) emptyText.setText(R.string.search_entry_not_found);
-            else emptyText.setText(R.string.downloads_empty_library);
+            emptyText.setText(backgroundText);
         } else emptyText.setVisibility(View.GONE);
 
         // Update visibility of advanced search bar
