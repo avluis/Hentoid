@@ -126,8 +126,6 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
 
         List<SiteBookmark> bookmarks = reloadBookmarks();
 
-        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
-
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
         if (selectExtension != null) {
@@ -146,6 +144,8 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         touchHelper.attachToRecyclerView(recyclerView);
 
         recyclerView.setAdapter(fastAdapter);
+
+        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
 
         selectionToolbar = requireViewById(rootView, R.id.toolbar);
         selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
