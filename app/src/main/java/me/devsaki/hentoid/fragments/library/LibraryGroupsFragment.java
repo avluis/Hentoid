@@ -555,7 +555,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         itemAdapter = new ItemAdapter<>();
         fastAdapter = FastAdapter.with(itemAdapter);
-        fastAdapter.setHasStableIds(true);
+        if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
 
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onGroupClick(p, i));

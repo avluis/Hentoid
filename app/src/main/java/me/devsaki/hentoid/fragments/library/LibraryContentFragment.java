@@ -27,8 +27,6 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -919,7 +917,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             ContentItem item = new ContentItem(viewType);
             fastAdapter.registerItemFactory(item.getType(), item);
         }
-        fastAdapter.setHasStableIds(true);
+        if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
 
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(p, i));
