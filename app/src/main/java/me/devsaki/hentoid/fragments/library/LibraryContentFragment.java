@@ -1120,6 +1120,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
         if (newSearch && Helper.isNumeric(query)) {
             ArrayList<Integer> siteCodes = Stream.of(result)
+                    .withoutNulls()
                     .filter(content -> query.equals(content.getUniqueSiteId()))
                     .map(Content::getSite)
                     .map(Site::getCode)
