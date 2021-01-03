@@ -1108,9 +1108,11 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         // Update background text
         @StringRes int backgroundText = -1;
-        if (result.isEmpty() && isSearchQueryActive())
-            backgroundText = R.string.search_entry_not_found;
-        else if (0 == totalContentCount) backgroundText = R.string.downloads_empty_library;
+        if (result.isEmpty()) {
+            if (isSearchQueryActive())
+                backgroundText = R.string.search_entry_not_found;
+            else if (0 == totalContentCount) backgroundText = R.string.downloads_empty_library;
+        }
 
         if (backgroundText != -1) {
             emptyText.setVisibility(View.VISIBLE);
