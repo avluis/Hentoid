@@ -41,6 +41,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.events.ProcessEvent;
@@ -89,6 +90,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private Disposable searchDisposable = Disposables.empty();
     private Disposable unarchiveDisposable = Disposables.empty();
     private Disposable imageLoadDisposable = Disposables.empty();
+    private Disposable leaveDisposable = Disposables.empty();
 
 
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -294,7 +296,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private void initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
-        Timber.i("> initViewer");
         sortAndSetImages(imageFiles, isShuffled);
 
         if (theContent.getId() != loadedContentId) { // To be done once per book only
@@ -386,16 +387,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Reset the memorized page index if it represents the last page
         int indexToSet = (collectionIndex >= theImages.size()) ? 0 : collectionIndex;
 
-        compositeDisposable.add(
+        leaveDisposable =
                 Completable.fromRunnable(() -> doLeaveBook(theContent.getId(), indexToSet, updateReads))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> { // No feedback needed
-                                },
+                                () -> leaveDisposable.dispose(),
                                 Timber::e
-                        )
-        );
+                        );
     }
 
     private void doLeaveBook(final long contentId, int indexToSet, boolean updateReads) {
@@ -404,23 +403,29 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Empty cache
         emptyCacheFolder();
 
-        // Get a fresh version of current content in case it has been updated since the initial load
-        // (that can be the case when viewing a book that is being downloaded)
-        Content savedContent = collectionDao.selectContent(contentId);
-        if (null == savedContent) return;
+        // Use a brand new DAO for that (the viewmodel's DAO may be in the process of being cleaned up)
+        CollectionDAO dao = new ObjectBoxDAO(getApplication());
+        try {
+            // Get a fresh version of current content in case it has been updated since the initial load
+            // (that can be the case when viewing a book that is being downloaded)
+            Content savedContent = dao.selectContent(contentId);
+            if (null == savedContent) return;
 
-        List<ImageFile> theImages = savedContent.getImageFiles();
-        if (null == theImages) return;
+            List<ImageFile> theImages = savedContent.getImageFiles();
+            if (null == theImages) return;
 
-        // Update image read status with the cached read statuses
-        long previousReadPagesCount = Stream.of(theImages).filter(ImageFile::isRead).filter(ImageFile::isReadable).count();
-        if (readPageNumbers.size() > previousReadPagesCount) {
-            for (ImageFile img : theImages)
-                if (readPageNumbers.contains(img.getOrder())) img.setRead(true);
+            // Update image read status with the cached read statuses
+            long previousReadPagesCount = Stream.of(theImages).filter(ImageFile::isRead).filter(ImageFile::isReadable).count();
+            if (readPageNumbers.size() > previousReadPagesCount) {
+                for (ImageFile img : theImages)
+                    if (readPageNumbers.contains(img.getOrder())) img.setRead(true);
+            }
+
+            if (indexToSet != savedContent.getLastReadPageIndex() || updateReads || readPageNumbers.size() > previousReadPagesCount)
+                ContentHelper.updateContentReadStats(getApplication(), dao, savedContent, theImages, indexToSet, updateReads);
+        } finally {
+            dao.cleanup();
         }
-
-        if (indexToSet != savedContent.getLastReadPageIndex() || updateReads || readPageNumbers.size() > previousReadPagesCount)
-            ContentHelper.updateContentReadStats(getApplication(), collectionDao, savedContent, theImages, indexToSet, updateReads);
     }
 
     public void toggleFilterFavouritePages(Consumer<Boolean> callback) {
