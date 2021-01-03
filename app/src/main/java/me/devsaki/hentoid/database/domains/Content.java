@@ -779,9 +779,9 @@ public class Content implements Serializable {
         if (readPagesCount > -1) return readPagesCount;
 
         if (null == imageFiles) return 0;
-        int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::isRead).filterNot(ImageFile::isCover).count();
+        int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).count();
         if (0 == countReadPages && lastReadPageIndex > 0)
-            return lastReadPageIndex + 1; // pre-v1.13 content
+            return lastReadPageIndex; // pre-v1.13 content
         else return countReadPages; // post v1.13 content
     }
 

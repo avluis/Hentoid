@@ -231,7 +231,7 @@ public final class ContentHelper {
             boolean updateReads) {
         content.setLastReadPageIndex(targetLastReadPageIndex);
         if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
-        content.setImageFiles(images);
+        dao.replaceImageList(content.getId(), images);
         dao.insertContent(content);
 
         if (!content.getJsonUri().isEmpty()) updateContentJson(context, content);
