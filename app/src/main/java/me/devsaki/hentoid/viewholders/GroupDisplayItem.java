@@ -34,6 +34,7 @@ import java.util.List;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -180,8 +181,10 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             if (ivCover != null) {
                 ImageFile cover = null;
                 if (!item.group.picture.isNull()) cover = item.group.picture.getTarget();
-                else if (!item.group.items.isEmpty() && !item.group.items.get(0).content.isNull())
-                    cover = item.group.items.get(0).content.getTarget().getCover();
+                else if (!item.group.items.isEmpty()) {
+                    Content c = item.group.items.get(0).content.getTarget();
+                    if (c != null) cover = c.getCover();
+                }
                 if (cover != null) attachCover(cover);
             }
             List<GroupItem> items = item.group.items;
