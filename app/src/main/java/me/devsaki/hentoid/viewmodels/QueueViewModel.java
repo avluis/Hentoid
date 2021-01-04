@@ -155,6 +155,13 @@ public class QueueViewModel extends AndroidViewModel {
         remove(contents, onError, onComplete);
     }
 
+    public void removeAll(Consumer<Throwable> onError, Runnable onComplete) {
+        List<Content> errors = dao.selectErrorContentList();
+        if (errors.isEmpty()) return;
+
+        remove(errors, onError, onComplete);
+    }
+
     public void remove(@NonNull List<Content> content, Consumer<Throwable> onError, Runnable onComplete) {
         AtomicInteger nbDeleted = new AtomicInteger();
 

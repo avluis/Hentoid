@@ -33,6 +33,7 @@ import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
+import me.devsaki.hentoid.activities.sources.ImhentaiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.ManhwaActivity;
 import me.devsaki.hentoid.activities.sources.MrmActivity;
@@ -48,6 +49,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
@@ -218,6 +220,7 @@ public class Content implements Serializable {
             case HENTAIFOX:
             case PORNCOMIX:
             case MANHWA:
+            case IMHENTAI:
                 paths = url.split("/");
                 return paths[paths.length - 1];
             case DOUJINS:
@@ -319,6 +322,8 @@ public class Content implements Serializable {
                 return MrmActivity.class;
             case MANHWA:
                 return ManhwaActivity.class;
+            case IMHENTAI:
+                return ImhentaiActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -354,6 +359,7 @@ public class Content implements Serializable {
         switch (site) {
             case HENTAIFOX:
             case PURURIN:
+            case IMHENTAI:
                 galleryConst = "/gallery";
                 break;
             case HITOMI:
@@ -414,6 +420,7 @@ public class Content implements Serializable {
             case HENTAI2READ:
             case MRM:
             case MANHWA:
+            case IMHENTAI:
                 return getGalleryUrl();
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
@@ -453,7 +460,7 @@ public class Content implements Serializable {
     }
 
     public String getTitle() {
-        return title;
+        return Helper.protect(title);
     }
 
     public Content setTitle(String title) {
@@ -772,9 +779,9 @@ public class Content implements Serializable {
         if (readPagesCount > -1) return readPagesCount;
 
         if (null == imageFiles) return 0;
-        int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::isRead).filterNot(ImageFile::isCover).count();
+        int countReadPages = (int) Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).count();
         if (0 == countReadPages && lastReadPageIndex > 0)
-            return lastReadPageIndex + 1; // pre-v1.13 content
+            return lastReadPageIndex; // pre-v1.13 content
         else return countReadPages; // post v1.13 content
     }
 

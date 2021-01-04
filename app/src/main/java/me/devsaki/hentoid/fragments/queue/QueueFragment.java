@@ -117,7 +117,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
 
     // == FASTADAPTER COMPONENTS AND HELPERS
-    private FastAdapter<ContentItem> fastAdapter;
+    // Use a non-paged model adapter; drag & drop doesn't work with paged content, as Adapter.move is not supported and move from DB refreshes the whole list
+    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
+    private final FastAdapter<ContentItem> fastAdapter = FastAdapter.with(itemAdapter);
     private SelectExtension<ContentItem> selectExtension;
     private ItemTouchHelper touchHelper;
 
@@ -147,10 +149,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
     private int topItemPosition = -1;
     private int offsetTop = 0;
-
-
-    // Use a non-paged model adapter; drag & drop doesn't work with paged content, as Adapter.move is not supported and move from DB refreshes the whole list
-    private final ItemAdapter<ContentItem> itemAdapter = new ItemAdapter<>();
 
 
     @Override
@@ -194,7 +192,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Book list
         recyclerView = requireViewById(rootView, R.id.queue_list);
 
-        fastAdapter = FastAdapter.with(itemAdapter);
         ContentItem item = new ContentItem(ContentItem.ViewType.QUEUE);
         fastAdapter.registerItemFactory(item.getType(), item);
 
@@ -255,10 +252,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         cancelAllMenu.setOnMenuItemClickListener(item -> {
             // Don't do anything if the queue is empty
             if (0 == itemAdapter.getAdapterItemCount()) return true;
-                // Just do it if the queue has a single item
-            else if (1 == itemAdapter.getAdapterItemCount()) onCancelAll();
-                // Ask if there's more than 1 item
-            else
+
+            // Just do it if the queue has a single item
+            if (1 == itemAdapter.getAdapterItemCount()) onCancelAll();
+            else // Ask if there's more than 1 item
                 new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                         .setIcon(R.drawable.ic_warning)
                         .setCancelable(false)
@@ -710,14 +707,14 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void onCancelBooks(@NonNull List<Content> c) {
         if (c.size() > 2) {
             isCancelingAll = true;
-            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
+            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
         }
         viewModel.cancel(c, this::onCancelError, this::onCancelComplete);
     }
 
     private void onCancelAll() {
         isCancelingAll = true;
-        DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.delete_progress));
+        DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
         viewModel.cancelAll(this::onCancelError, this::onCancelComplete);
     }
 

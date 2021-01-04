@@ -555,10 +555,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         itemAdapter = new ItemAdapter<>();
         fastAdapter = FastAdapter.with(itemAdapter);
-        fastAdapter.setHasStableIds(true);
-
-        // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onGroupClick(p, i));
+        if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
@@ -582,6 +579,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             touchHelper = new ItemTouchHelper(dragSwipeCallback);
             touchHelper.attachToRecyclerView(recyclerView);
         }
+
+        // Item click listener
+        fastAdapter.setOnClickListener((v, a, i, p) -> onGroupClick(p, i));
 
         recyclerView.setAdapter(fastAdapter);
     }

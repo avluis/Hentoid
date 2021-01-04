@@ -57,11 +57,11 @@ public class ASMHentaiContent implements ContentParser {
 
         AttributeMap attributes = new AttributeMap();
 
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.ASMHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.ASMHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.ASMHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.ASMHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, "badge", Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, "badge", Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, "badge", Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, "badge", Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, "badge", Site.ASMHENTAI);
 
         result.addAttributes(attributes);
 

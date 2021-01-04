@@ -73,8 +73,13 @@ public class MemoryUsageDialogFragment extends DialogFragment {
             deviceTotalGb = memUsage.getTotalSpaceMb() / 1024;
         }
 
+        Map<Site, ImmutablePair<Integer, Long>> memUsage;
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
-        Map<Site, ImmutablePair<Integer, Long>> memUsage = dao.selectMemoryUsagePerSource();
+        try {
+            memUsage = dao.selectMemoryUsagePerSource();
+        } finally {
+            dao.cleanup();
+        }
         double hentoidUsageGb = Stream.of(memUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight)) * 1.0 / (1024 * 1024 * 1024);
 
         CircularProgressView donut = requireViewById(rootView, R.id.memory_global_graph);

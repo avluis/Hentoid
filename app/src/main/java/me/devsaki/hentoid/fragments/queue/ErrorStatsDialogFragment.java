@@ -97,7 +97,12 @@ public class ErrorStatsDialogFragment extends DialogFragment {
 
     private void updateStats(long contentId) {
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
-        List<ErrorRecord> errors = dao.selectErrorRecordByContentId(contentId);
+        List<ErrorRecord> errors;
+        try {
+            errors = dao.selectErrorRecordByContentId(contentId);
+        } finally {
+            dao.cleanup();
+        }
         Map<ErrorType, Integer> errorsByType = new EnumMap<>(ErrorType.class);
 
         for (ErrorRecord error : errors) {
@@ -139,8 +144,14 @@ public class ErrorStatsDialogFragment extends DialogFragment {
     }
 
     private LogUtil.LogInfo createLog() {
+        Content content;
         CollectionDAO dao = new ObjectBoxDAO(getContext());
-        Content content = dao.selectContent(currentId);
+        try {
+            content = dao.selectContent(currentId);
+        } finally {
+            dao.cleanup();
+        }
+
         if (null == content) {
             Snackbar snackbar = Snackbar.make(rootView, R.string.content_not_found, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.show();

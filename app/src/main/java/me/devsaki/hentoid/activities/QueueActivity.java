@@ -17,6 +17,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.List;
 
@@ -110,7 +111,7 @@ public class QueueActivity extends BaseActivity {
     private void onTabSelected(int position) {
         // Update permanent toolbar
         invertQueueMenu.setVisible(0 == position);
-        cancelAllMenu.setVisible(0 == position);
+        cancelAllMenu.setVisible(true);
         redownloadAllMenu.setVisible(1 == position);
         if (1 == position)
             errorStatsMenu.setVisible(false); // That doesn't mean it should be visible at all times on tab 0 !
@@ -122,6 +123,11 @@ public class QueueActivity extends BaseActivity {
             selectionToolbar.inflateMenu(R.menu.queue_queue_selection_menu);
         else
             selectionToolbar.inflateMenu(R.menu.queue_error_selection_menu);
+
+        // Log the view of the tab
+        Bundle bundle = new Bundle();
+        bundle.putInt("tag", position);
+        FirebaseAnalytics.getInstance(this).logEvent("view_queue_tab", bundle);
     }
 
     public Toolbar getToolbar() {

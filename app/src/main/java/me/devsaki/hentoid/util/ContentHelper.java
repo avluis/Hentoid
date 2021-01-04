@@ -62,6 +62,7 @@ public final class ContentHelper {
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
     private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
     private static final int[] queueStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode()};
+    private static final int[] queueTabStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode()};
 
     // TODO empty this cache at some point
     private static final Map<String, String> fileNameMatchCache = new HashMap<>();
@@ -86,6 +87,10 @@ public final class ContentHelper {
 
     public static boolean isInQueue(@NonNull final StatusContent status) {
         return Helper.getListFromPrimitiveArray(queueStatus).contains(status.getCode());
+    }
+
+    private static boolean isInQueueTab(@NonNull final StatusContent status) {
+        return Helper.getListFromPrimitiveArray(queueTabStatus).contains(status.getCode());
     }
 
     /**
@@ -231,8 +236,8 @@ public final class ContentHelper {
             boolean updateReads) {
         content.setLastReadPageIndex(targetLastReadPageIndex);
         if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
-        dao.insertContent(content);
         dao.replaceImageList(content.getId(), images);
+        dao.insertContent(content);
 
         if (!content.getJsonUri().isEmpty()) updateContentJson(context, content);
         else createContentJson(context, content);
@@ -319,13 +324,16 @@ public final class ContentHelper {
      */
     public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
-        // Check if the content is on top of the queue; if so, send a CANCEL event
-        List<QueueRecord> queue = dao.selectQueue();
-        if (!queue.isEmpty() && queue.get(0).getContent().getTargetId() == content.getId())
-            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
 
-        // Remove from queue
-        dao.deleteQueue(content);
+        // Check if the content is on top of the queue; if so, send a CANCEL event
+        if (isInQueueTab(content.getStatus())) {
+            List<QueueRecord> queue = dao.selectQueue();
+            if (!queue.isEmpty() && queue.get(0).getContent().getTargetId() == content.getId())
+                EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+
+            // Remove from queue
+            dao.deleteQueue(content);
+        }
 
         // Remove content itself
         removeContent(context, dao, content);

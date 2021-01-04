@@ -231,13 +231,17 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     .setMessage(getString(R.string.pref_ask_delete_all_except_favs, list.size))
                     .setPositiveButton(R.string.yes
                     ) { dialog1: DialogInterface, _: Int ->
+                        dao.cleanup()
                         dialog1.dismiss()
                         searchDisposable.dispose()
                         DeleteProgressDialogFragment.invoke(parentFragmentManager, resources.getString(R.string.delete_title))
                         viewModel.deleteItems(list)
                     }
                     .setNegativeButton(R.string.no
-                    ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
+                    ) { dialog12: DialogInterface, _: Int ->
+                        dao.cleanup()
+                        dialog12.dismiss()
+                    }
                     .create()
                     .show()
         }

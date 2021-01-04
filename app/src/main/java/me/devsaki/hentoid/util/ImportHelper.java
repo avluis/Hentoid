@@ -208,7 +208,7 @@ public class ImportHelper {
         }
         // Check if the folder is not the device's Download folder
         List<String> pathSegments = treeUri.getPathSegments();
-        if (pathSegments.size() > 1 && (pathSegments.get(1).equalsIgnoreCase("download") || pathSegments.get(1).equalsIgnoreCase("primary:download"))) {
+        if (pathSegments.size() > 1 && (pathSegments.get(1).equalsIgnoreCase("download") || pathSegments.get(1).equalsIgnoreCase("primary:download") || pathSegments.get(1).equalsIgnoreCase("downloads") || pathSegments.get(1).equalsIgnoreCase("primary:downloads"))) {
             Timber.e("Device's download folder detected : %s", treeUri.toString());
             return Result.DOWNLOAD_FOLDER;
         }
