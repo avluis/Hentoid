@@ -18,6 +18,7 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.squareup.moshi.JsonDataException;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -427,8 +428,8 @@ public class ImportHelper {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
                 result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
-            } catch (IOException ioe) {
-                Timber.w(ioe);
+            } catch (IOException | JsonDataException e) {
+                Timber.w(e);
             }
         }
         if (null == result) {
@@ -485,8 +486,8 @@ public class ImportHelper {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
                 result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
-            } catch (IOException ioe) {
-                Timber.w(ioe);
+            } catch (IOException | JsonDataException e) {
+                Timber.w(e);
             }
         }
         if (null == result) {
@@ -610,8 +611,8 @@ public class ImportHelper {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
                 result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
-            } catch (IOException ioe) {
-                Timber.w(ioe);
+            } catch (IOException | JsonDataException e) {
+                Timber.w(e);
             }
         }
 
