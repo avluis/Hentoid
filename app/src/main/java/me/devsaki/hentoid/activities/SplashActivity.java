@@ -123,9 +123,13 @@ public class SplashActivity extends BaseActivity {
      */
     private boolean hasToMigrateAPI29() {
         CollectionDAO dao = new ObjectBoxDAO(this);
-        long imagesKO = dao.countOldStoredContent();
-        Timber.d("Splash / API 29 migration detector : %s books KO", imagesKO);
-        return imagesKO > 0;
+        try {
+            long imagesKO = dao.countOldStoredContent();
+            Timber.d("Splash / API 29 migration detector : %s books KO", imagesKO);
+            return imagesKO > 0;
+        } finally {
+            dao.cleanup();
+        }
     }
 
     @Override

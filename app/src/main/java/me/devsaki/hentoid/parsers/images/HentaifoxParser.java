@@ -16,6 +16,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.parsers.ParseHelper.getExtensionFromFormat;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class HentaifoxParser extends BaseParser {
@@ -69,21 +70,5 @@ public class HentaifoxParser extends BaseParser {
         }
 
         return result;
-    }
-
-    private static String getExtensionFromFormat(Map<String, String> imgFormat, int i) {
-        String format = imgFormat.get((i + 1) + "");
-        if (format != null) {
-            switch (format.charAt(0)) {
-                case 'p':
-                    return "png";
-                case 'g':
-                    return "gif";
-                case 'j':
-                default:
-                    return "jpg";
-            }
-
-        } else return "";
     }
 }

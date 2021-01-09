@@ -18,6 +18,7 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.squareup.moshi.JsonDataException;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -208,7 +209,7 @@ public class ImportHelper {
         }
         // Check if the folder is not the device's Download folder
         List<String> pathSegments = treeUri.getPathSegments();
-        if (pathSegments.size() > 1 && (pathSegments.get(1).equalsIgnoreCase("download") || pathSegments.get(1).equalsIgnoreCase("primary:download"))) {
+        if (pathSegments.size() > 1 && (pathSegments.get(1).equalsIgnoreCase("download") || pathSegments.get(1).equalsIgnoreCase("primary:download") || pathSegments.get(1).equalsIgnoreCase("downloads") || pathSegments.get(1).equalsIgnoreCase("primary:downloads"))) {
             Timber.e("Device's download folder detected : %s", treeUri.toString());
             return Result.DOWNLOAD_FOLDER;
         }
@@ -427,8 +428,8 @@ public class ImportHelper {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
                 result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
-            } catch (IOException ioe) {
-                Timber.w(ioe);
+            } catch (IOException | JsonDataException e) {
+                Timber.w(e);
             }
         }
         if (null == result) {
@@ -485,8 +486,8 @@ public class ImportHelper {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
                 result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
-            } catch (IOException ioe) {
-                Timber.w(ioe);
+            } catch (IOException | JsonDataException e) {
+                Timber.w(e);
             }
         }
         if (null == result) {
@@ -610,8 +611,8 @@ public class ImportHelper {
                 JsonContent content = JsonHelper.jsonToObject(context, jsonFile, JsonContent.class);
                 result = content.toEntity(dao);
                 result.setJsonUri(jsonFile.getUri().toString());
-            } catch (IOException ioe) {
-                Timber.w(ioe);
+            } catch (IOException | JsonDataException e) {
+                Timber.w(e);
             }
         }
 

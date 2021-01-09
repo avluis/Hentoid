@@ -24,7 +24,6 @@
         android:focusable="true"
         android:padding="8dp"
         android:src="@drawable/ic_action_delete_forever"
-        android:tooltipText="@string/external_help"
         android:visibility="gone"
         app:tint="?colorSecondary"
         tools:ignore="ContentDescription"

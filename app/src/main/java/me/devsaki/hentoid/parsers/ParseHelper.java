@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -32,6 +34,9 @@ public class ParseHelper {
         throw new IllegalStateException("Utility class");
     }
 
+    @SuppressWarnings("RegExpRedundantEscape")
+    private static final Pattern SQUARE_BRACKETS = Pattern.compile("\\[[^]]*\\]");
+
     /**
      * Remove counters from given string (e.g. "Futanari (2660)" => "Futanari")
      *
@@ -48,6 +53,21 @@ public class ParseHelper {
         }
 
         return s;
+    }
+
+    /**
+     * Remove all terms between square brackets that are used
+     * to "tag" book titles
+     * (e.g. "[Author] Title [English] [Digital]" => "Title")
+     *
+     * @param s String to clean up
+     * @return String with removed terms
+     */
+    public static String removeTextualTags(String s) {
+        if (null == s || s.isEmpty()) return "";
+
+        Matcher m = SQUARE_BRACKETS.matcher(s);
+        return m.replaceAll("").replace("  ", " ").trim();
     }
 
     /**
@@ -122,9 +142,9 @@ public class ParseHelper {
             @NonNull final String prefix) {
         String name;
         if (null == childElementClass) {
-            name = element.text();
+            name = element.ownText();
         } else {
-            name = element.selectFirst("." + childElementClass).text();
+            name = element.selectFirst("." + childElementClass).ownText();
         }
         name = Helper.removeNonPrintableChars(name);
         name = removeBrackets(name);
@@ -180,5 +200,22 @@ public class ParseHelper {
         String cookieStr = getSavedCookieStr(downloadParams);
         if (!cookieStr.isEmpty())
             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+    }
+
+    // TODO doc
+    public static String getExtensionFromFormat(Map<String, String> imgFormat, int i) {
+        String format = imgFormat.get((i + 1) + "");
+        if (format != null) {
+            switch (format.charAt(0)) {
+                case 'p':
+                    return "png";
+                case 'g':
+                    return "gif";
+                case 'j':
+                default:
+                    return "jpg";
+            }
+
+        } else return "";
     }
 }

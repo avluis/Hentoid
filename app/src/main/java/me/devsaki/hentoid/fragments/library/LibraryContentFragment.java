@@ -22,6 +22,7 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -37,6 +38,7 @@ import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+//import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
@@ -223,6 +225,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         }
 
     }).build();
+
 
     public static final DiffCallback<ContentItem> CONTENT_ITEM_DIFF_CALLBACK = new DiffCallback<ContentItem>() {
         @Override
@@ -833,6 +836,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         switch (key) {
             case Preferences.Key.ENDLESS_SCROLL:
                 setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
+                //FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
                 viewModel.updateContentOrder(); // Trigger a blank search
                 break;
             default:
@@ -920,11 +924,12 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 viewType = ContentItem.ViewType.LIBRARY;
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
+
             pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
+
             ContentItem item = new ContentItem(viewType);
             fastAdapter.registerItemFactory(item.getType(), item);
-
             itemAdapter = null;
         } else { // Paged mode or edit mode
             itemAdapter = new ItemAdapter<>();
@@ -932,7 +937,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
             pagedItemAdapter = null;
         }
-        fastAdapter.setHasStableIds(true);
+
+        if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
 
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(p, i));
@@ -1121,10 +1127,16 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         activity.get().updateTitle(result.size(), totalContentCount);
 
         // Update background text
+        @StringRes int backgroundText = -1;
         if (result.isEmpty()) {
+            if (isSearchQueryActive())
+                backgroundText = R.string.search_entry_not_found;
+            else if (0 == totalContentCount) backgroundText = R.string.downloads_empty_library;
+        }
+
+        if (backgroundText != -1) {
             emptyText.setVisibility(View.VISIBLE);
-            if (isSearchQueryActive()) emptyText.setText(R.string.search_entry_not_found);
-            else emptyText.setText(R.string.downloads_empty_library);
+            emptyText.setText(backgroundText);
         } else emptyText.setVisibility(View.GONE);
 
         // Update visibility of advanced search bar
@@ -1135,6 +1147,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
         if (newSearch && Helper.isNumeric(query)) {
             ArrayList<Integer> siteCodes = Stream.of(result)
+                    .withoutNulls()
                     .filter(content -> query.equals(content.getUniqueSiteId()))
                     .map(Content::getSite)
                     .map(Site::getCode)

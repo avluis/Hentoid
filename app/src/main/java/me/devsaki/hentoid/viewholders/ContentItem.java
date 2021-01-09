@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
@@ -58,7 +59,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
-import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LanguageHelper;
@@ -420,7 +420,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (imgs != null) {
                 readingProgress.setVisibility(View.VISIBLE);
                 readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
-                readingProgress.setTotal(content.getImageFiles().size() - 1L); // Remove the cover
+                readingProgress.setTotal(Stream.of(content.getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count());
                 readingProgress.setProgress1(content.getReadPagesCount());
             }
         }
@@ -469,8 +469,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             Context context = tvPages.getContext();
 
             String template;
-            String nbPages = content.getQtyPages() + "";
             if (viewType == ViewType.QUEUE || viewType == ViewType.ERRORS || viewType == ViewType.LIBRARY_EDIT) {
+                String nbPages = content.getQtyPages() + "";
                 if (viewType == ViewType.ERRORS) {
                     long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
                     if (nbMissingPages > 0)

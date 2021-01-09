@@ -81,6 +81,7 @@ public class SearchContentIdDialogFragment extends DialogFragment {
                 if (!foundSitesList.contains(Site.LUSCIOUS.getCode())) sites.add(Site.LUSCIOUS);
                 if (!foundSitesList.contains(Site.HBROWSE.getCode())) sites.add(Site.HBROWSE);
                 if (!foundSitesList.contains(Site.HENTAIFOX.getCode())) sites.add(Site.HENTAIFOX);
+                if (!foundSitesList.contains(Site.IMHENTAI.getCode())) sites.add(Site.IMHENTAI);
             }
             ItemAdapter<TextItem<Site>> itemAdapter = new ItemAdapter<>();
             itemAdapter.set(Stream.of(sites).map(s -> new TextItem<>(s.getDescription(), s, true)).toList());
@@ -102,6 +103,7 @@ public class SearchContentIdDialogFragment extends DialogFragment {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/g/" + id + "/";
+            case IMHENTAI:
             case HENTAIFOX:
                 return site.getUrl() + "/gallery/" + id + "/";
             case HENTAICAFE:

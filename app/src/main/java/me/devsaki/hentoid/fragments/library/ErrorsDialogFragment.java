@@ -68,8 +68,13 @@ public class ErrorsDialogFragment extends DialogFragment {
         long id = getArguments().getLong(ID, 0);
         if (0 == id) throw new IllegalArgumentException("No ID found");
 
+        Content content;
         CollectionDAO dao = new ObjectBoxDAO(getContext());
-        Content content = dao.selectContent(id);
+        try {
+            content = dao.selectContent(id);
+        } finally {
+            dao.cleanup();
+        }
         if (null == content) throw new IllegalArgumentException("Content not found for ID " + id);
 
         rootView = view;

@@ -136,7 +136,8 @@ public class HentoidApp extends Application {
         // Set Night mode
         //int darkMode = Preferences.getDarkMode();
         //AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(darkMode));
-        //FirebaseAnalytics.getInstance(this).setUserProperty("night_mode", Integer.toString(darkMode));
+
+        //FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
         // Plug the lifecycle listener to handle locking
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
 

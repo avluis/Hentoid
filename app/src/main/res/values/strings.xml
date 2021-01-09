@@ -89,6 +89,7 @@
     <string name="err_stats_help">Show detailed stats about current download errors</string>
     <string name="err_no_content">Book does not exist yet</string>
     <string name="confirm_cancel_all">You are about to cancel the whole queue. Continue ?</string>
+    <string name="confirm_cancel_all_errors">You are about to cancel all %d books with errors. Continue ?</string>
     <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
     <string name="paused_no_internet">Cannot download - No internet</string>
     <string name="paused_no_wifi">Cannot download - No WiFi</string>
@@ -240,6 +241,7 @@
     <string name="new_group_name">Name of the new group ?</string>
     <string name="group_edit_name">Edit group name</string>
     <string name="delete_progress">Deleting books</string>
+    <string name="cancel_queue_progress">Canceling queue items</string>
     <plurals name="delete_success">
         <item quantity="one">One book successfully deleted</item>
         <item quantity="other">%d books successfully deleted</item>
