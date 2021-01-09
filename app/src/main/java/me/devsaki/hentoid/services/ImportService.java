@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.squareup.moshi.JsonDataException;
+
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
@@ -308,8 +310,8 @@ public class ImportService extends IntentService {
                             dao.insertContent(existingFlaggedContent);
                             trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK (JSON regenerated) : %s", bookFolder.getUri().toString());
                             booksOK++;
-                        } catch (IOException ioe) {
-                            Timber.w(ioe);
+                        } catch (IOException | JsonDataException e) {
+                            Timber.w(e);
                             trace(Log.ERROR, STEP_2_BOOK_FOLDERS, log, "Import book ERROR while regenerating JSON : %s for Folder %s", jse.getMessage(), bookFolder.getUri().toString());
                             booksKO++;
                         }
@@ -332,8 +334,8 @@ public class ImportService extends IntentService {
                             ContentHelper.addContent(this, dao, storedContent);
                             trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK (Content regenerated) : %s", bookFolder.getUri().toString());
                             booksOK++;
-                        } catch (IOException ioe) {
-                            Timber.w(ioe);
+                        } catch (IOException | JsonDataException e) {
+                            Timber.w(e);
                             trace(Log.ERROR, STEP_2_BOOK_FOLDERS, log, "Import book ERROR while regenerating Content : %s for Folder %s", jse.getMessage(), bookFolder.getUri().toString());
                             booksKO++;
                         }
@@ -467,7 +469,7 @@ public class ImportService extends IntentService {
         JsonContentCollection result;
         try {
             result = JsonHelper.jsonToObject(this, jsonFile, JsonContentCollection.class);
-        } catch (IOException e) {
+        } catch (IOException | JsonDataException e) {
             Timber.w(e);
             return null;
         }
@@ -571,7 +573,7 @@ public class ImportService extends IntentService {
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
-        } catch (Exception e) {
+        } catch (IOException | JsonDataException e) {
             Timber.e(e, "Error reading JSON (old) file");
             throw new ParseException("Error reading JSON (old) file : " + e.getMessage());
         }
@@ -594,7 +596,7 @@ public class ImportService extends IntentService {
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
-        } catch (Exception e) {
+        } catch (IOException | JsonDataException e) {
             Timber.e(e, "Error reading JSON (v1) file");
             throw new ParseException("Error reading JSON (v1) file : " + e.getMessage());
         }
@@ -617,7 +619,7 @@ public class ImportService extends IntentService {
             }
 
             return result;
-        } catch (Exception e) {
+        } catch (IOException | JsonDataException e) {
             Timber.e(e, "Error reading JSON (v2) file");
             throw new ParseException("Error reading JSON (v2) file : " + e.getMessage(), e);
         }
