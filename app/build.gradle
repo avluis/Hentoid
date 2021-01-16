@@ -244,7 +244,7 @@ dependencies {
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
     // RAR archive management
-    implementation "com.github.junrar:junrar:7.4.0"
+//    implementation "com.github.junrar:junrar:7.4.0"
 
     /**
      * ANALYTICS

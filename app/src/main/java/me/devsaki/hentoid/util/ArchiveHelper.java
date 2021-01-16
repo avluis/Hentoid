@@ -8,12 +8,19 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Stream;
-import com.github.junrar.Archive;
-import com.github.junrar.exception.RarException;
-import com.github.junrar.rarfile.FileHeader;
+
+import net.sf.sevenzipjbinding.ArchiveFormat;
+import net.sf.sevenzipjbinding.IArchiveOpenCallback;
+import net.sf.sevenzipjbinding.IInArchive;
+import net.sf.sevenzipjbinding.IInStream;
+import net.sf.sevenzipjbinding.ISeekableStream;
+import net.sf.sevenzipjbinding.PropID;
+import net.sf.sevenzipjbinding.SevenZip;
+import net.sf.sevenzipjbinding.SevenZipException;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,8 +47,10 @@ public class ArchiveHelper {
         throw new IllegalStateException("Utility class");
     }
 
+    // TODO rework to differentiate RAR5 from RAR
     public static final String ZIP_MIME_TYPE = "application/zip";
     public static final String RAR_MIME_TYPE = "application/x-rar-compressed";
+    public static final String RAR5_MIME_TYPE = "application/x-rar-compressed";
 
     private static final FileHelper.NameFilter archiveNamesFilter = displayName -> isArchiveExtensionSupported(FileHelper.getExtension(displayName));
 
@@ -88,12 +97,14 @@ public class ArchiveHelper {
      * @return MIME-type of the given binary data; empty string if not supported
      */
     public static String getMimeTypeFromArchiveBinary(byte[] binary) {
-        if (binary.length < 4) return "";
+        if (binary.length < 8) return "";
 
         // In Java, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
         if ((byte) 0x50 == binary[0] && (byte) 0x4B == binary[1] && (byte) 0x03 == binary[2])
             return ZIP_MIME_TYPE;
+        else if ((byte) 0x52 == binary[0] && (byte) 0x61 == binary[1] && (byte) 0x72 == binary[2] && (byte) 0x21 == binary[3] && (byte) 0x1A == binary[4] && (byte) 0x07 == binary[5] && (byte) 0x01 == binary[6] && (byte) 0x00 == binary[7])
+            return RAR5_MIME_TYPE;
         else if ((byte) 0x52 == binary[0] && (byte) 0x61 == binary[1] && (byte) 0x72 == binary[2] && (byte) 0x21 == binary[3])
             return RAR_MIME_TYPE;
         else return "";
@@ -109,14 +120,15 @@ public class ArchiveHelper {
      */
     public static List<ArchiveEntry> getArchiveEntries(@NonNull final Context context, @NonNull final DocumentFile file) throws IOException {
         Helper.assertNonUiThread();
-        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
-            byte[] header = new byte[4];
+        //try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, (int)Math.min(Integer.MAX_VALUE, file.length()))) { // TODO
+            byte[] header = new byte[8];
             bis.mark(header.length);
             if (bis.read(header) < header.length) return Collections.emptyList();
             bis.reset();
             String mimeType = getMimeTypeFromArchiveBinary(header);
             if (mimeType.equals(ZIP_MIME_TYPE)) return getZipEntries(bis);
-            else if (mimeType.equals(RAR_MIME_TYPE)) return getRarEntries(bis);
+            else if (mimeType.equals(RAR_MIME_TYPE)) return getRarEntries(bis, file.length());
             else return Collections.emptyList();
         }
     }
@@ -148,18 +160,16 @@ public class ArchiveHelper {
      * @return List of the entries of the given RAR file
      * @throws IOException If something horrible happens during I/O
      */
-    private static List<ArchiveEntry> getRarEntries(@NonNull final BufferedInputStream bis) throws IOException {
+    private static List<ArchiveEntry> getRarEntries(@NonNull final BufferedInputStream bis, final long streamSize) throws IOException {
         Helper.assertNonUiThread();
+        ArchiveOpenCallback callback = new ArchiveOpenCallback();
         List<ArchiveEntry> result = new ArrayList<>();
-        try (Archive input = new Archive(bis)) {
-            if (input.isEncrypted()) {
-                Timber.w("archive is encrypted cannot extract");
-                return result;
+        try (InputStreamRandomInStream stream = new InputStreamRandomInStream(bis, streamSize); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream, callback)) {
+            int itemCount = inArchive.getNumberOfItems();
+            for (int i = 0; i < itemCount; i++) {
+                result.add(new ArchiveEntry(inArchive.getStringProperty(i, PropID.PATH), Integer.parseInt(inArchive.getStringProperty(i, PropID.SIZE))));
             }
-            for (final FileHeader fileHeader : input) {
-                result.add(ArchiveEntry.fromRarEntry(fileHeader));
-            }
-        } catch (RarException e) {
+        } catch (SevenZipException e) {
             Timber.w(e);
         }
         return result;
@@ -185,7 +195,7 @@ public class ArchiveHelper {
             @Nullable final List<String> targetNames) throws IOException {
         Helper.assertNonUiThread();
         try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
-            byte[] header = new byte[4];
+            byte[] header = new byte[8];
             bis.mark(header.length);
             if (bis.read(header) < header.length) return Observable.empty();
             bis.reset();
@@ -216,8 +226,9 @@ public class ArchiveHelper {
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames) throws IOException {
         Helper.assertNonUiThread();
-        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
-            byte[] header = new byte[4];
+        //try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, (int)Math.min(Integer.MAX_VALUE, file.length()))) { // TODO
+            byte[] header = new byte[8];
             bis.mark(header.length);
             if (bis.read(header) < header.length) return Collections.emptyList();
             bis.reset();
@@ -225,7 +236,7 @@ public class ArchiveHelper {
             if (mimeType.equals(ZIP_MIME_TYPE))
                 return extractZipEntries(bis, entriesToExtract, targetFolder, targetNames, null);
             else if (mimeType.equals(RAR_MIME_TYPE))
-                return extractRarEntries(bis, entriesToExtract, targetFolder, targetNames, null);
+                return extractRarEntries(bis, file.length(), entriesToExtract, targetFolder, targetNames, null);
             else return Collections.emptyList();
         }
     }
@@ -341,7 +352,7 @@ public class ArchiveHelper {
             @Nullable final List<String> targetNames,
             @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
-            extractRarEntries(bis, entriesToExtract, targetFolder, targetNames, emitter);
+            extractRarEntries(bis, file.length(), entriesToExtract, targetFolder, targetNames, emitter);
         }
     }
 
@@ -358,6 +369,7 @@ public class ArchiveHelper {
      */
     private static List<Uri> extractRarEntries(
             @NonNull final BufferedInputStream bis,
+            final long streamSize,
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames,
@@ -366,7 +378,8 @@ public class ArchiveHelper {
         List<Uri> result = new ArrayList<>();
         int index = 0;
 
-        try (Archive input = new Archive(bis)) {
+        try (InputStreamRandomInStream stream = new InputStreamRandomInStream(bis, streamSize); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream/*, callback*/)) {
+            /*
             byte[] buffer = new byte[BUFFER];
             for (final FileHeader fileHeader : input) {
                 if (null == entriesToExtract || Stream.of(entriesToExtract).anyMatch(e -> e.equalsIgnoreCase(fileHeader.getFileName()))) {
@@ -404,8 +417,10 @@ public class ArchiveHelper {
                         result.add(Uri.fromFile(targetFile));
                     }
                 }
+
             }
-        } catch (RarException e) {
+             */
+        } catch (SevenZipException e) {
             Timber.w(e);
         }
         if (emitter != null) emitter.onComplete();
@@ -473,8 +488,157 @@ public class ArchiveHelper {
             return new ArchiveEntry(entry.getName(), entry.getSize());
         }
 
-        public static ArchiveEntry fromRarEntry(FileHeader entry) {
-            return new ArchiveEntry(entry.getFileName(), entry.getUnpSize());
+        public static ArchiveEntry fromRarEntry(String name, long unpackedSize) {
+            return new ArchiveEntry(name, unpackedSize);
+        }
+    }
+
+    private static class ArchiveOpenCallback implements IArchiveOpenCallback {
+        @Override
+        public void setTotal(Long files, Long bytes) {
+            Timber.i("Archive open, total work: " + files + " files, " + bytes + " bytes");
+        }
+
+        @Override
+        public void setCompleted(Long files, Long bytes) {
+            Timber.i("Archive open, completed: " + files + " files, " + bytes + " bytes");
+        }
+    }
+
+    public static class InputStreamSequentialInStream implements IInStream {
+
+        private final InputStream stream;
+        private final long streamSize;
+
+        private long position;
+
+        public InputStreamSequentialInStream(@NonNull final InputStream stream, final long streamSize) {
+            this.stream = stream;
+            this.streamSize = streamSize;
+            position = 0;
+        }
+
+        @Override
+        public long seek(long offset, int seekOrigin) throws SevenZipException {
+            long seekDelta = 0;
+            if (seekOrigin == ISeekableStream.SEEK_CUR) seekDelta = offset;
+            else if (seekOrigin == ISeekableStream.SEEK_SET) seekDelta = offset - position;
+            else if (seekOrigin == ISeekableStream.SEEK_END)
+                seekDelta = streamSize + offset - position;
+
+            if (seekDelta < 0) throw new SevenZipException("Can't go back");
+
+            if (position + seekDelta > streamSize) position = streamSize;
+
+            try {
+                stream.skip(seekDelta);
+            } catch (IOException e) {
+                throw new SevenZipException(e);
+            }
+
+            position += seekDelta;
+            return position;
+        }
+
+        @Override
+        public int read(byte[] bytes) throws SevenZipException {
+//            long toRead = Math.min(bytes.length, streamSize-position);
+            try {
+                int result = stream.read(bytes);
+                position += result;
+                if (result < 0) result = 0;
+                return result;
+            } catch (IOException e) {
+                throw new SevenZipException(e);
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            stream.close();
+        }
+    }
+
+    public static class InputStreamRandomInStream implements IInStream {
+
+        private final BufferedInputStream stream;
+        private final long streamSize;
+
+        private long position;
+
+        public InputStreamRandomInStream(@NonNull final BufferedInputStream stream, final long streamSize) {
+            this.stream = stream;
+            this.streamSize = streamSize;
+            position = 0;
+            if (streamSize >= Integer.MAX_VALUE)
+                throw new IllegalArgumentException("RAR files over 2GB are not supported");
+            stream.mark((int) Math.min(streamSize, Integer.MAX_VALUE));
+        }
+
+        @Override
+        public long seek(long offset, int seekOrigin) throws SevenZipException {
+            long seekDelta = 0;
+            if (seekOrigin == ISeekableStream.SEEK_CUR) seekDelta = offset;
+            else if (seekOrigin == ISeekableStream.SEEK_SET) seekDelta = offset - position;
+            else if (seekOrigin == ISeekableStream.SEEK_END)
+                seekDelta = streamSize + offset - position;
+
+            if (position + seekDelta > streamSize) position = streamSize;
+
+            if (seekDelta != 0) {
+                try {
+                    if (seekDelta < 0) {
+                        stream.reset();
+                        skipNBytes(position + seekDelta);
+                    } else {
+                        skipNBytes(seekDelta);
+                    }
+                } catch (IOException e) {
+                    throw new SevenZipException(e);
+                }
+            }
+            position += seekDelta;
+            return position;
+        }
+
+        // Stolen from Java14's InputStream
+        // as basic skip is limited by the size of its buffer
+        private void skipNBytes(long n) throws IOException {
+            if (n > 0) {
+                long ns = stream.skip(n);
+                if (ns >= 0 && ns < n) { // skipped too few bytes
+                    // adjust number to skip
+                    n -= ns;
+                    // read until requested number skipped or EOS reached
+                    while (n > 0 && stream.read() != -1) {
+                        n--;
+                    }
+                    // if not enough skipped, then EOFE
+                    if (n != 0) {
+                        throw new EOFException();
+                    }
+                } else if (ns != n) { // skipped negative or too many bytes
+                    throw new IOException("Unable to skip exactly");
+                }
+            }
+        }
+
+        @Override
+        public int read(byte[] bytes) throws SevenZipException {
+            try {
+                int result = stream.read(bytes);
+                position += result;
+                if (result != bytes.length) Timber.w("diff");
+                if (result < 0) result = 0;
+                return result;
+            } catch (IOException e) {
+                throw new SevenZipException(e);
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            stream.close();
         }
     }
 }
