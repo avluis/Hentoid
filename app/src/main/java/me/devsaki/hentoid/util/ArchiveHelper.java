@@ -406,74 +406,15 @@ public class ArchiveHelper {
                     }
 
                     fileNames.put(index, fileName);
-
-                    /*
-                    final String fileNameFinal2 = fileName;
-                    File targetFile;
-                    File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(fileNameFinal2));
-                    if (existing != null) {
-                        if (0 == existing.length) {
-                            targetFile = new File(targetFolder.getAbsolutePath() + File.separator + fileName);
-                            if (!targetFile.createNewFile())
-                                throw new IOException("Could not create file " + targetFile.getPath());
-                        } else {
-                            targetFile = existing[0];
-                        }
-
-                        if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
-                        result.add(Uri.fromFile(targetFile));
-                    }
-                     */
                 }
             }
 
             ArchiveExtractCallback callback = new ArchiveExtractCallback(targetFolder, fileNames, emitter);
-            inArchive.extract(null, false, callback);
-            /*
-            byte[] buffer = new byte[BUFFER];
-            for (final FileHeader fileHeader : input) {
-                if (null == entriesToExtract || Stream.of(entriesToExtract).anyMatch(e -> e.equalsIgnoreCase(fileHeader.getFileName()))) {
-                    int count;
-                    // TL;DR - We don't care about folders
-                    // If we were coding an all-purpose extractor we would have to create folders
-                    // But Hentoid just wants to extract a bunch of files in one single place !
-
-                    String fileName;
-                    if (null == targetNames) {
-                        fileName = fileHeader.getFileName();
-                        int lastSeparator = fileName.lastIndexOf(File.separator);
-                        if (lastSeparator > -1) fileName = fileName.substring(lastSeparator + 1);
-                    } else {
-                        fileName = targetNames.get(index++) + "." + FileHelper.getExtension(fileHeader.getFileName());
-                    }
-                    final String fileNameFinal = fileName;
-
-                    File targetFile;
-                    File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(fileNameFinal));
-                    if (existing != null) {
-                        if (0 == existing.length) {
-                            targetFile = new File(targetFolder.getAbsolutePath() + File.separator + fileName);
-                            if (!targetFile.createNewFile())
-                                throw new IOException("Could not create file " + targetFile.getPath());
-                        } else {
-                            targetFile = existing[0];
-                        }
-
-                        try (OutputStream out = FileHelper.getOutputStream(targetFile); InputStream entryInput = input.getInputStream(fileHeader)) {
-                            while ((count = entryInput.read(buffer)) != -1)
-                                out.write(buffer, 0, count);
-                        }
-                        if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
-                        result.add(Uri.fromFile(targetFile));
-                    }
-                }
-
-            }
-             */
+            int[] indexes = Helper.getPrimitiveLongArrayFromInt(fileNames.keySet());
+            inArchive.extract(indexes, false, callback);
         } catch (SevenZipException e) {
             Timber.w(e);
         }
-//        if (emitter != null) emitter.onComplete();
         return result;
     }
 

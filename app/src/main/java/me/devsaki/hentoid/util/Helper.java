@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -164,6 +165,15 @@ public final class Helper {
     public static long[] getPrimitiveLongArrayFromList(List<Long> input) {
         long[] ret = new long[input.size()];
         Iterator<Long> iterator = input.iterator();
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = iterator.next();
+        }
+        return ret;
+    }
+
+    public static int[] getPrimitiveLongArrayFromInt(Set<Integer> input) {
+        int[] ret = new int[input.size()];
+        Iterator<Integer> iterator = input.iterator();
         for (int i = 0; i < ret.length; i++) {
             ret[i] = iterator.next();
         }

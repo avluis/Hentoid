@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
@@ -52,15 +51,13 @@ import timber.log.Timber;
  *
  * @see UpdateCheckService
  */
-public class API29MigrationService extends IntentService implements IDisposableHolder {
+public class API29MigrationService extends IntentService {
 
     private static final int NOTIFICATION_ID = 1;
 
-    private final Map<String, Map<String, DocumentFile>> bookFoldersCache = new HashMap<>();
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-
     private ServiceNotificationManager notificationManager;
     private Disposable searchDisposable = Disposables.empty();
+    private final Map<String, Map<String, DocumentFile>> bookFoldersCache = new HashMap<>();
     private CollectionDAO dao;
 
 
@@ -87,7 +84,6 @@ public class API29MigrationService extends IntentService implements IDisposableH
     public void onDestroy() {
         notificationManager.cancel();
         if (dao != null) dao.cleanup();
-        compositeDisposable.clear();
         Timber.w("Service destroyed");
 
         super.onDestroy();
@@ -284,10 +280,5 @@ public class API29MigrationService extends IntentService implements IDisposableH
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setLog(log);
         return logInfo;
-    }
-
-    @Override
-    public void HoldDisposable(Disposable disposable) {
-        compositeDisposable.add(disposable);
     }
 }

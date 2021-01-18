@@ -9,7 +9,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -51,7 +51,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
-import me.devsaki.hentoid.services.IDisposableHolder;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import timber.log.Timber;
@@ -410,17 +409,21 @@ public final class ContentHelper {
                             .observeOn(Schedulers.computation())
                             .subscribe(
                                     uri -> {
+                                        Timber.i(">> Set cover for %s", content.getTitle());
                                         content.getCover().setFileUri(uri.toString());
                                         dao.replaceImageList(newContentId, content.getImageFiles());
                                     },
                                     Timber::e
                             );
+                    /*
                     if (context instanceof LifecycleOwner) {
                         Helper.LifecycleRxCleaner cleaner = new Helper.LifecycleRxCleaner(unarchiveDisposable);
                         ((LifecycleOwner) context).getLifecycle().addObserver(cleaner);
-                    } else if (context instanceof IDisposableHolder) {
-                        ((IDisposableHolder) context).HoldDisposable(unarchiveDisposable);
                     }
+                     */
+                    // Not ideal, but better than attaching it to the calling service that has not enough longevity
+                    Helper.LifecycleRxCleaner cleaner = new Helper.LifecycleRxCleaner(unarchiveDisposable);
+                    ProcessLifecycleOwner.get().getLifecycle().addObserver(cleaner);
                 } catch (IOException e) {
                     Timber.w(e);
                 }
