@@ -60,6 +60,7 @@ public class ArchiveHelper {
     public static final String ZIP_MIME_TYPE = "application/zip";
     public static final String RAR_MIME_TYPE = "application/x-rar-compressed";
     public static final String RAR5_MIME_TYPE = "application/x-rar-compressed";
+    public static final String SEVENZIP_MIME_TYPE = "application/x-7z-compressed";
 
     private static final FileHelper.NameFilter archiveNamesFilter = displayName -> isArchiveExtensionSupported(FileHelper.getExtension(displayName));
 
@@ -77,6 +78,7 @@ public class ArchiveHelper {
                 || extension.equalsIgnoreCase("epub")
                 || extension.equalsIgnoreCase("cbz")
                 || extension.equalsIgnoreCase("cbr")
+                || extension.equalsIgnoreCase("7z")
                 || extension.equalsIgnoreCase("rar");
     }
 
@@ -100,23 +102,26 @@ public class ArchiveHelper {
     }
 
     /**
-     * Determine the MIME-type of the given binary data if it's an archive
+     * Determine the format of the given binary data if it's an archive
      *
-     * @param binary Achive binary data to determine the MIME-type for
-     * @return MIME-type of the given binary data; empty string if not supported
+     * @param binary Archive binary header data to determine the format for
+     * @return Format of the given binary data; null if not supported
      */
-    public static String getMimeTypeFromArchiveBinary(byte[] binary) {
-        if (binary.length < 8) return "";
+    @Nullable
+    private static ArchiveFormat getTypeFromArchiveHeader(byte[] binary) {
+        if (binary.length < 8) return null;
 
         // In Java, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
         if ((byte) 0x50 == binary[0] && (byte) 0x4B == binary[1] && (byte) 0x03 == binary[2])
-            return ZIP_MIME_TYPE;
+            return ArchiveFormat.ZIP;
+        else if ((byte) 0x37 == binary[0] && (byte) 0x7A == binary[1] && (byte) 0xBC == binary[2] && (byte) 0xAF == binary[3] && (byte) 0x27 == binary[4] && (byte) 0x1C == binary[5])
+            return ArchiveFormat.SEVEN_ZIP;
         else if ((byte) 0x52 == binary[0] && (byte) 0x61 == binary[1] && (byte) 0x72 == binary[2] && (byte) 0x21 == binary[3] && (byte) 0x1A == binary[4] && (byte) 0x07 == binary[5] && (byte) 0x01 == binary[6] && (byte) 0x00 == binary[7])
-            return RAR5_MIME_TYPE;
+            return ArchiveFormat.RAR5;
         else if ((byte) 0x52 == binary[0] && (byte) 0x61 == binary[1] && (byte) 0x72 == binary[2] && (byte) 0x21 == binary[3])
-            return RAR_MIME_TYPE;
-        else return "";
+            return ArchiveFormat.RAR;
+        else return null;
     }
 
     /**
@@ -129,17 +134,16 @@ public class ArchiveHelper {
      */
     public static List<ArchiveEntry> getArchiveEntries(@NonNull final Context context, @NonNull final DocumentFile file) throws IOException {
         Helper.assertNonUiThread();
-        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
-            //try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, (int) Math.min(Integer.MAX_VALUE, file.length()))) { // TODO
+
+        ArchiveFormat format;
+        try (InputStream fi = FileHelper.getInputStream(context, file)) {
             byte[] header = new byte[8];
-            bis.mark(header.length);
-            if (bis.read(header) < header.length) return Collections.emptyList();
-            bis.reset();
-            String mimeType = getMimeTypeFromArchiveBinary(header);
-            if (mimeType.equals(ZIP_MIME_TYPE)) return getZipEntries(bis);
-            else if (mimeType.equals(RAR_MIME_TYPE)) return getRarEntries(context, file.getUri());
-            else return Collections.emptyList();
+            if (fi.read(header) < header.length) return Collections.emptyList();
+            format = getTypeFromArchiveHeader(header);
         }
+        if (null == format) return Collections.emptyList();
+
+        return getArchiveEntries(context, format, file.getUri());
     }
 
     /**
@@ -165,12 +169,11 @@ public class ArchiveHelper {
     /**
      * Get the entries of the given RAR file
      */
-    private static List<ArchiveEntry> getRarEntries(@NonNull final Context context, @NonNull final Uri uri) throws IOException {
+    private static List<ArchiveEntry> getArchiveEntries(@NonNull final Context context, ArchiveFormat format, @NonNull final Uri uri) throws IOException {
         Helper.assertNonUiThread();
         ArchiveOpenCallback callback = new ArchiveOpenCallback();
         List<ArchiveEntry> result = new ArrayList<>();
-        //try (InputStreamRandomInStream stream = new InputStreamRandomInStream(bis, streamSize); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream, callback)) {
-        try (DocumentFileRandomInStream stream = new DocumentFileRandomInStream(context, uri); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream, callback)) {
+        try (DocumentFileRandomInStream stream = new DocumentFileRandomInStream(context, uri); IInArchive inArchive = SevenZip.openInArchive(format, stream, callback)) {
             int itemCount = inArchive.getNumberOfItems();
             for (int i = 0; i < itemCount; i++) {
                 result.add(new ArchiveEntry(inArchive.getStringProperty(i, PropID.PATH), Integer.parseInt(inArchive.getStringProperty(i, PropID.SIZE))));
@@ -200,18 +203,16 @@ public class ArchiveHelper {
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames) throws IOException {
         Helper.assertNonUiThread();
-        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+
+        ArchiveFormat format;
+        try (InputStream fi = FileHelper.getInputStream(context, file)) {
             byte[] header = new byte[8];
-            bis.mark(header.length);
-            if (bis.read(header) < header.length) return Observable.empty();
-            bis.reset();
-            String mimeType = getMimeTypeFromArchiveBinary(header);
-            if (mimeType.equals(ZIP_MIME_TYPE))
-                return Observable.create(emitter -> extractZipEntries(context, file, entriesToExtract, targetFolder, targetNames, emitter));
-            else if (mimeType.equals(RAR_MIME_TYPE))
-                return Observable.create(emitter -> extractRarEntries(context, file, entriesToExtract, targetFolder, targetNames, emitter));
-            else return Observable.empty();
+            if (fi.read(header) < header.length) return Observable.empty();
+            format = getTypeFromArchiveHeader(header);
         }
+        if (null == format) return Observable.empty();
+
+        return Observable.create(emitter -> extractArchiveEntries(context, file.getUri(), format, entriesToExtract, targetFolder, targetNames, emitter));
     }
 
     /**
@@ -342,27 +343,6 @@ public class ArchiveHelper {
     }
 
     /**
-     * Extract the given entries from the given RAR file
-     *
-     * @param context          Context to be used
-     * @param file             Archive file to extract from
-     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
-     * @param targetFolder     Target folder to create the archives into
-     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
-     * @param emitter          Optional emitter to be used when the method is used with RxJava
-     * @throws IOException If something horrible happens during I/O
-     */
-    private static void extractRarEntries(
-            @NonNull final Context context,
-            @NonNull final DocumentFile file,
-            @Nullable final List<String> entriesToExtract,
-            @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames,
-            @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
-        extractRarEntries(context, file.getUri(), entriesToExtract, targetFolder, targetNames, emitter);
-    }
-
-    /**
      * Extract the given entries from the given RAR file TODO update
      *
      * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
@@ -372,9 +352,10 @@ public class ArchiveHelper {
      * @return List of the Uri's of the extracted files
      * @throws IOException If something horrible happens during I/O
      */
-    private static List<Uri> extractRarEntries(
+    private static List<Uri> extractArchiveEntries(
             @NonNull final Context context,
             @NonNull final Uri uri,
+            final ArchiveFormat format,
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames,
@@ -386,9 +367,7 @@ public class ArchiveHelper {
         Map<Integer, String> fileNames = new HashMap<>();
 
         // TODO handle the case where the extracted elements would saturate disk space
-
-        //try (InputStreamRandomInStream stream = new InputStreamRandomInStream(bis, streamSize); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream/*, callback*/)) {
-        try (DocumentFileRandomInStream stream = new DocumentFileRandomInStream(context, uri); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream)) {
+        try (DocumentFileRandomInStream stream = new DocumentFileRandomInStream(context, uri); IInArchive inArchive = SevenZip.openInArchive(format, stream)) {
             int itemCount = inArchive.getNumberOfItems();
             for (int index = 0; index < itemCount; index++) {
                 String fileName = inArchive.getStringProperty(index, PropID.PATH);
@@ -464,8 +443,8 @@ public class ArchiveHelper {
     }
 
     @SuppressWarnings("squid:S1104")
-    // This is a dumb struct class, nothing more
-    // Describes an entry inside an archive
+// This is a dumb struct class, nothing more
+// Describes an entry inside an archive
     public static class ArchiveEntry {
         public String path;
         public long size;
@@ -699,7 +678,7 @@ public class ArchiveHelper {
 
         @Override
         public ISequentialOutStream getStream(int index, ExtractAskMode extractAskMode) throws SevenZipException {
-            Timber.i("Extract archive, get stream: " + index + " to: " + extractAskMode);
+            Timber.d("Extract archive, get stream: " + index + " to: " + extractAskMode);
 
             SequentialOutStream stream;
             if (!fileNames.containsKey(index)) return null;
@@ -730,12 +709,12 @@ public class ArchiveHelper {
 
         @Override
         public void prepareOperation(ExtractAskMode extractAskMode) throws SevenZipException {
-            Timber.i("Extract archive, prepare to: %s", extractAskMode);
+            Timber.d("Extract archive, prepare to: %s", extractAskMode);
         }
 
         @Override
         public void setOperationResult(ExtractOperationResult extractOperationResult) throws SevenZipException {
-            Timber.i("Extract archive, completed with: %s", extractOperationResult);
+            Timber.d("Extract archive, completed with: %s", extractOperationResult);
 
             nbProcessed++;
             if (nbProcessed == fileNames.size()) emitter.onComplete();
@@ -747,12 +726,12 @@ public class ArchiveHelper {
 
         @Override
         public void setTotal(long total) throws SevenZipException {
-            Timber.i("Extract archive, work planned: %s", total);
+            Timber.d("Extract archive, work planned: %s", total);
         }
 
         @Override
         public void setCompleted(long complete) throws SevenZipException {
-            Timber.i("Extract archive, work completed: %s", complete);
+            Timber.d("Extract archive, work completed: %s", complete);
         }
     }
 
