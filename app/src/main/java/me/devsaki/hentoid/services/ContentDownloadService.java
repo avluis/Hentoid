@@ -40,6 +40,7 @@ import javax.annotation.Nullable;
 
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.fakku.FakkuDecode;
 import me.devsaki.fakku.PageInfo;
@@ -89,7 +90,7 @@ import timber.log.Timber;
  * Book download service; 1 instance everytime a new book of the queue has to be downloaded
  * NB : As per IntentService behaviour, only one thread can be active at a time (no parallel runs of ContentDownloadService)
  */
-public class ContentDownloadService extends IntentService {
+public class ContentDownloadService extends IntentService implements IDisposableHolder {
 
     private enum QueuingResult {
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
@@ -1024,5 +1025,10 @@ public class ContentDownloadService extends IntentService {
         else Timber.w("Queue JSON saving failed");
 
         notificationManager.notify(new DownloadErrorNotification(content));
+    }
+
+    @Override
+    public void HoldDisposable(Disposable disposable) {
+        compositeDisposable.add(disposable);
     }
 }

@@ -1,7 +1,9 @@
 package me.devsaki.hentoid.util;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,10 +12,14 @@ import androidx.documentfile.provider.DocumentFile;
 import com.annimon.stream.Stream;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;
+import net.sf.sevenzipjbinding.ExtractAskMode;
+import net.sf.sevenzipjbinding.ExtractOperationResult;
+import net.sf.sevenzipjbinding.IArchiveExtractCallback;
 import net.sf.sevenzipjbinding.IArchiveOpenCallback;
 import net.sf.sevenzipjbinding.IInArchive;
 import net.sf.sevenzipjbinding.IInStream;
 import net.sf.sevenzipjbinding.ISeekableStream;
+import net.sf.sevenzipjbinding.ISequentialOutStream;
 import net.sf.sevenzipjbinding.PropID;
 import net.sf.sevenzipjbinding.SevenZip;
 import net.sf.sevenzipjbinding.SevenZipException;
@@ -22,12 +28,15 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -120,15 +129,15 @@ public class ArchiveHelper {
      */
     public static List<ArchiveEntry> getArchiveEntries(@NonNull final Context context, @NonNull final DocumentFile file) throws IOException {
         Helper.assertNonUiThread();
-        //try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
-        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, (int)Math.min(Integer.MAX_VALUE, file.length()))) { // TODO
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+            //try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, (int) Math.min(Integer.MAX_VALUE, file.length()))) { // TODO
             byte[] header = new byte[8];
             bis.mark(header.length);
             if (bis.read(header) < header.length) return Collections.emptyList();
             bis.reset();
             String mimeType = getMimeTypeFromArchiveBinary(header);
             if (mimeType.equals(ZIP_MIME_TYPE)) return getZipEntries(bis);
-            else if (mimeType.equals(RAR_MIME_TYPE)) return getRarEntries(bis, file.length());
+            else if (mimeType.equals(RAR_MIME_TYPE)) return getRarEntries(context, file.getUri());
             else return Collections.emptyList();
         }
     }
@@ -155,16 +164,13 @@ public class ArchiveHelper {
 
     /**
      * Get the entries of the given RAR file
-     *
-     * @param bis Stream to read from
-     * @return List of the entries of the given RAR file
-     * @throws IOException If something horrible happens during I/O
      */
-    private static List<ArchiveEntry> getRarEntries(@NonNull final BufferedInputStream bis, final long streamSize) throws IOException {
+    private static List<ArchiveEntry> getRarEntries(@NonNull final Context context, @NonNull final Uri uri) throws IOException {
         Helper.assertNonUiThread();
         ArchiveOpenCallback callback = new ArchiveOpenCallback();
         List<ArchiveEntry> result = new ArrayList<>();
-        try (InputStreamRandomInStream stream = new InputStreamRandomInStream(bis, streamSize); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream, callback)) {
+        //try (InputStreamRandomInStream stream = new InputStreamRandomInStream(bis, streamSize); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream, callback)) {
+        try (DocumentFileRandomInStream stream = new DocumentFileRandomInStream(context, uri); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream, callback)) {
             int itemCount = inArchive.getNumberOfItems();
             for (int i = 0; i < itemCount; i++) {
                 result.add(new ArchiveEntry(inArchive.getStringProperty(i, PropID.PATH), Integer.parseInt(inArchive.getStringProperty(i, PropID.SIZE))));
@@ -219,6 +225,7 @@ public class ArchiveHelper {
      * @return List of the Uri's of the extracted files
      * @throws IOException If something horrible happens during I/O
      */
+    /*
     public static List<Uri> extractArchiveEntries(
             @NonNull final Context context,
             @NonNull final DocumentFile file,
@@ -226,8 +233,8 @@ public class ArchiveHelper {
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames) throws IOException {
         Helper.assertNonUiThread();
-        //try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
-        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, (int)Math.min(Integer.MAX_VALUE, file.length()))) { // TODO
+        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
+            //try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, (int) Math.min(Integer.MAX_VALUE, file.length()))) { // TODO
             byte[] header = new byte[8];
             bis.mark(header.length);
             if (bis.read(header) < header.length) return Collections.emptyList();
@@ -236,10 +243,11 @@ public class ArchiveHelper {
             if (mimeType.equals(ZIP_MIME_TYPE))
                 return extractZipEntries(bis, entriesToExtract, targetFolder, targetNames, null);
             else if (mimeType.equals(RAR_MIME_TYPE))
-                return extractRarEntries(bis, file.length(), entriesToExtract, targetFolder, targetNames, null);
+                return extractRarEntries(context, file.getUri(), entriesToExtract, targetFolder, targetNames, null);
             else return Collections.emptyList();
         }
     }
+     */
 
     /**
      * Extract the given entries from the given ZIP file
@@ -351,15 +359,12 @@ public class ArchiveHelper {
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames,
             @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
-        try (InputStream fi = FileHelper.getInputStream(context, file); BufferedInputStream bis = new BufferedInputStream(fi, BUFFER)) {
-            extractRarEntries(bis, file.length(), entriesToExtract, targetFolder, targetNames, emitter);
-        }
+        extractRarEntries(context, file.getUri(), entriesToExtract, targetFolder, targetNames, emitter);
     }
 
     /**
-     * Extract the given entries from the given RAR file
+     * Extract the given entries from the given RAR file TODO update
      *
-     * @param bis              Stream to read from
      * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
      * @param targetFolder     Target folder to create the archives into
      * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
@@ -368,17 +373,62 @@ public class ArchiveHelper {
      * @throws IOException If something horrible happens during I/O
      */
     private static List<Uri> extractRarEntries(
-            @NonNull final BufferedInputStream bis,
-            final long streamSize,
+            @NonNull final Context context,
+            @NonNull final Uri uri,
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames,
             @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         Helper.assertNonUiThread();
         List<Uri> result = new ArrayList<>();
-        int index = 0;
+        int targetIndex = 0;
 
-        try (InputStreamRandomInStream stream = new InputStreamRandomInStream(bis, streamSize); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream/*, callback*/)) {
+        Map<Integer, String> fileNames = new HashMap<>();
+
+        // TODO handle the case where the extracted elements would saturate disk space
+
+        //try (InputStreamRandomInStream stream = new InputStreamRandomInStream(bis, streamSize); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream/*, callback*/)) {
+        try (DocumentFileRandomInStream stream = new DocumentFileRandomInStream(context, uri); IInArchive inArchive = SevenZip.openInArchive(ArchiveFormat.RAR, stream)) {
+            int itemCount = inArchive.getNumberOfItems();
+            for (int index = 0; index < itemCount; index++) {
+                String fileName = inArchive.getStringProperty(index, PropID.PATH);
+                final String fileNameFinal1 = fileName;
+                if (null == entriesToExtract || Stream.of(entriesToExtract).anyMatch(e -> e.equalsIgnoreCase(fileNameFinal1))) {
+                    // TL;DR - We don't care about folders
+                    // If we were coding an all-purpose extractor we would have to create folders
+                    // But Hentoid just wants to extract a bunch of files in one single place !
+
+                    if (null == targetNames) {
+                        int lastSeparator = fileName.lastIndexOf(File.separator);
+                        if (lastSeparator > -1) fileName = fileName.substring(lastSeparator + 1);
+                    } else {
+                        fileName = targetNames.get(targetIndex++) + "." + FileHelper.getExtension(fileName);
+                    }
+
+                    fileNames.put(index, fileName);
+
+                    /*
+                    final String fileNameFinal2 = fileName;
+                    File targetFile;
+                    File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(fileNameFinal2));
+                    if (existing != null) {
+                        if (0 == existing.length) {
+                            targetFile = new File(targetFolder.getAbsolutePath() + File.separator + fileName);
+                            if (!targetFile.createNewFile())
+                                throw new IOException("Could not create file " + targetFile.getPath());
+                        } else {
+                            targetFile = existing[0];
+                        }
+
+                        if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
+                        result.add(Uri.fromFile(targetFile));
+                    }
+                     */
+                }
+            }
+
+            ArchiveExtractCallback callback = new ArchiveExtractCallback(targetFolder, fileNames, emitter);
+            inArchive.extract(null, false, callback);
             /*
             byte[] buffer = new byte[BUFFER];
             for (final FileHeader fileHeader : input) {
@@ -423,7 +473,7 @@ public class ArchiveHelper {
         } catch (SevenZipException e) {
             Timber.w(e);
         }
-        if (emitter != null) emitter.onComplete();
+//        if (emitter != null) emitter.onComplete();
         return result;
     }
 
@@ -502,60 +552,6 @@ public class ArchiveHelper {
         @Override
         public void setCompleted(Long files, Long bytes) {
             Timber.i("Archive open, completed: " + files + " files, " + bytes + " bytes");
-        }
-    }
-
-    public static class InputStreamSequentialInStream implements IInStream {
-
-        private final InputStream stream;
-        private final long streamSize;
-
-        private long position;
-
-        public InputStreamSequentialInStream(@NonNull final InputStream stream, final long streamSize) {
-            this.stream = stream;
-            this.streamSize = streamSize;
-            position = 0;
-        }
-
-        @Override
-        public long seek(long offset, int seekOrigin) throws SevenZipException {
-            long seekDelta = 0;
-            if (seekOrigin == ISeekableStream.SEEK_CUR) seekDelta = offset;
-            else if (seekOrigin == ISeekableStream.SEEK_SET) seekDelta = offset - position;
-            else if (seekOrigin == ISeekableStream.SEEK_END)
-                seekDelta = streamSize + offset - position;
-
-            if (seekDelta < 0) throw new SevenZipException("Can't go back");
-
-            if (position + seekDelta > streamSize) position = streamSize;
-
-            try {
-                stream.skip(seekDelta);
-            } catch (IOException e) {
-                throw new SevenZipException(e);
-            }
-
-            position += seekDelta;
-            return position;
-        }
-
-        @Override
-        public int read(byte[] bytes) throws SevenZipException {
-//            long toRead = Math.min(bytes.length, streamSize-position);
-            try {
-                int result = stream.read(bytes);
-                position += result;
-                if (result < 0) result = 0;
-                return result;
-            } catch (IOException e) {
-                throw new SevenZipException(e);
-            }
-        }
-
-        @Override
-        public void close() throws IOException {
-            stream.close();
         }
     }
 
@@ -639,6 +635,205 @@ public class ArchiveHelper {
         @Override
         public void close() throws IOException {
             stream.close();
+        }
+    }
+
+    // https://stackoverflow.com/a/28805474/8374722; https://stackoverflow.com/questions/28897329/documentfile-randomaccessfile
+    public static class DocumentFileRandomInStream implements IInStream {
+
+        private ContentResolver contentResolver;
+        private Uri uri;
+
+        private ParcelFileDescriptor pfdInput = null;
+        private FileInputStream stream = null;
+
+        private long streamSize;
+        private long position;
+
+        public DocumentFileRandomInStream(@NonNull final Context context, @NonNull final Uri uri) {
+            try {
+                this.contentResolver = context.getContentResolver();
+                this.uri = uri;
+                openUri();
+                streamSize = stream.getChannel().size();
+            } catch (IOException e) {
+                Timber.e(e);
+            }
+        }
+
+        private void openUri() throws IOException {
+            if (stream != null) stream.close();
+            if (pfdInput != null) pfdInput.close();
+
+            pfdInput = contentResolver.openFileDescriptor(uri, "r");
+            stream = new FileInputStream(pfdInput.getFileDescriptor());
+        }
+
+        @Override
+        public long seek(long offset, int seekOrigin) throws SevenZipException {
+            long seekDelta = 0;
+            if (seekOrigin == ISeekableStream.SEEK_CUR) seekDelta = offset;
+            else if (seekOrigin == ISeekableStream.SEEK_SET) seekDelta = offset - position;
+            else if (seekOrigin == ISeekableStream.SEEK_END)
+                seekDelta = streamSize + offset - position;
+
+            if (position + seekDelta > streamSize) position = streamSize;
+
+            if (seekDelta != 0) {
+                try {
+//                    skipNBytes(seekDelta);
+                    if (seekDelta < 0) {
+                        openUri();
+                        skipNBytes(position + seekDelta);
+                    } else {
+                        skipNBytes(seekDelta);
+                    }
+                } catch (IOException e) {
+                    throw new SevenZipException(e);
+                }
+            }
+            position += seekDelta;
+            return position;
+        }
+
+        // Taken from Java14's InputStream
+        // as basic skip is limited by the size of its buffer
+        private void skipNBytes(long n) throws IOException {
+            if (n > 0) {
+                long ns = stream.skip(n);
+                if (ns >= 0 && ns < n) { // skipped too few bytes
+                    // adjust number to skip
+                    n -= ns;
+                    // read until requested number skipped or EOS reached
+                    while (n > 0 && stream.read() != -1) {
+                        n--;
+                    }
+                    // if not enough skipped, then EOFE
+                    if (n != 0) {
+                        throw new EOFException();
+                    }
+                } else if (ns != n) { // skipped negative or too many bytes
+                    throw new IOException("Unable to skip exactly");
+                }
+            }
+        }
+
+        @Override
+        public int read(byte[] bytes) throws SevenZipException {
+            try {
+                int result = stream.read(bytes);
+                position += result;
+                if (result != bytes.length)
+                    Timber.w("diff %s expected; %s read", bytes.length, result);
+                if (result < 0) result = 0;
+                return result;
+            } catch (IOException e) {
+                throw new SevenZipException(e);
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            stream.close();
+            pfdInput.close();
+        }
+    }
+
+    private static class ArchiveExtractCallback implements IArchiveExtractCallback {
+
+        private final File targetFolder;
+        private final Map<Integer, String> fileNames;
+        private final ObservableEmitter<Uri> emitter;
+        private int nbProcessed;
+
+        public ArchiveExtractCallback(
+                @NonNull final File targetFolder,
+                @NonNull final Map<Integer, String> fileNames,
+                @Nullable final ObservableEmitter<Uri> emitter) {
+            this.targetFolder = targetFolder;
+            this.fileNames = fileNames;
+            this.emitter = emitter;
+            nbProcessed = 0;
+        }
+
+        @Override
+        public ISequentialOutStream getStream(int index, ExtractAskMode extractAskMode) throws SevenZipException {
+            Timber.i("Extract archive, get stream: " + index + " to: " + extractAskMode);
+
+            SequentialOutStream stream;
+            if (!fileNames.containsKey(index)) return null;
+
+            final String targetFileName = fileNames.get(index);
+            File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
+            try {
+                if (existing != null) {
+                    File targetFile;
+                    if (0 == existing.length) {
+                        targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
+                        if (!targetFile.createNewFile())
+                            throw new IOException("Could not create file " + targetFile.getPath());
+                    } else {
+                        targetFile = existing[0];
+                    }
+                    if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
+
+                    stream = new SequentialOutStream(FileHelper.getOutputStream(targetFile));
+                    return stream;
+                } else {
+                    throw new SevenZipException("An I/O error occurred while listing files");
+                }
+            } catch (IOException e) {
+                throw new SevenZipException(e);
+            }
+        }
+
+        @Override
+        public void prepareOperation(ExtractAskMode extractAskMode) throws SevenZipException {
+            Timber.i("Extract archive, prepare to: %s", extractAskMode);
+        }
+
+        @Override
+        public void setOperationResult(ExtractOperationResult extractOperationResult) throws SevenZipException {
+            Timber.i("Extract archive, completed with: %s", extractOperationResult);
+
+            nbProcessed++;
+            if (nbProcessed == fileNames.size()) emitter.onComplete();
+
+            if (extractOperationResult != ExtractOperationResult.OK) {
+                throw new SevenZipException(extractOperationResult.toString());
+            }
+        }
+
+        @Override
+        public void setTotal(long total) throws SevenZipException {
+            Timber.i("Extract archive, work planned: %s", total);
+        }
+
+        @Override
+        public void setCompleted(long complete) throws SevenZipException {
+            Timber.i("Extract archive, work completed: %s", complete);
+        }
+    }
+
+    private static class SequentialOutStream implements ISequentialOutStream {
+
+        private final OutputStream out;
+
+        public SequentialOutStream(OutputStream stream) {
+            this.out = stream;
+        }
+
+        @Override
+        public int write(byte[] data) throws SevenZipException {
+            if (data == null || data.length == 0) {
+                throw new SevenZipException("null data");
+            }
+            try {
+                out.write(data);
+            } catch (IOException e) {
+                throw new SevenZipException(e);
+            }
+            return data.length;
         }
     }
 }

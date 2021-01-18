@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -52,12 +54,15 @@ import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
 /**
  * Service responsible for importing an external library.
  */
-public class ExternalImportService extends IntentService {
+public class ExternalImportService extends IntentService implements IDisposableHolder {
 
     private static final int NOTIFICATION_ID = 1;
     private static final Pattern ENDS_WITH_NUMBER = Pattern.compile(".*\\d+(\\.\\d+)?$");
 
     private static boolean running;
+
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
     private ServiceNotificationManager notificationManager;
 
 
@@ -89,6 +94,7 @@ public class ExternalImportService extends IntentService {
     public void onDestroy() {
         running = false;
         notificationManager.cancel();
+        compositeDisposable.clear();
         Timber.w("Service destroyed");
 
         super.onDestroy();
@@ -310,5 +316,10 @@ public class ExternalImportService extends IntentService {
         if (jsonFile != null && jsonFile.exists()) return jsonFile.getUri();
 
         return JsonHelper.jsonToFile(this, JsonContent.fromEntity(c), JsonContent.class, contentFolder, jsonName).getUri();
+    }
+
+    @Override
+    public void HoldDisposable(Disposable disposable) {
+        compositeDisposable.add(disposable);
     }
 }

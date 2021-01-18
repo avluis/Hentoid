@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
@@ -62,7 +64,7 @@ import timber.log.Timber;
  *
  * @see UpdateCheckService
  */
-public class ImportService extends IntentService {
+public class ImportService extends IntentService implements IDisposableHolder {
 
     private static final int NOTIFICATION_ID = 1;
 
@@ -74,6 +76,7 @@ public class ImportService extends IntentService {
 
     private static boolean running;
     private ServiceNotificationManager notificationManager;
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
     public ImportService() {
@@ -105,6 +108,7 @@ public class ImportService extends IntentService {
         running = false;
         if (notificationManager != null) notificationManager.cancel();
         EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.IMPORT));
+        compositeDisposable.clear();
         Timber.w("Service destroyed");
 
         super.onDestroy();
@@ -623,5 +627,10 @@ public class ImportService extends IntentService {
             Timber.e(e, "Error reading JSON (v2) file");
             throw new ParseException("Error reading JSON (v2) file : " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void HoldDisposable(Disposable disposable) {
+        compositeDisposable.add(disposable);
     }
 }

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.lifecycle.LifecycleOwner;
 
 import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -29,6 +30,8 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
@@ -48,6 +51,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
+import me.devsaki.hentoid.services.IDisposableHolder;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import timber.log.Timber;
@@ -392,19 +396,30 @@ public final class ContentHelper {
         }
 
         // Extract the cover to the app's persistent folder if the book is an archive
-        if (content.isArchive()) {
+        if (content.isArchive() && content.getImageFiles() != null) {
             DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
             if (archive != null) {
                 try {
-                    List<Uri> outputFiles = ArchiveHelper.extractArchiveEntries(
+                    Disposable unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
                             context,
                             archive,
                             Stream.of(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, "")).toList(),
                             context.getFilesDir(),
-                            Stream.of(newContentId + "").toList());
-                    if (!outputFiles.isEmpty() && content.getImageFiles() != null) {
-                        content.getCover().setFileUri(outputFiles.get(0).toString());
-                        dao.replaceImageList(newContentId, content.getImageFiles());
+                            Stream.of(newContentId + "").toList())
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.computation())
+                            .subscribe(
+                                    uri -> {
+                                        content.getCover().setFileUri(uri.toString());
+                                        dao.replaceImageList(newContentId, content.getImageFiles());
+                                    },
+                                    Timber::e
+                            );
+                    if (context instanceof LifecycleOwner) {
+                        Helper.LifecycleRxCleaner cleaner = new Helper.LifecycleRxCleaner(unarchiveDisposable);
+                        ((LifecycleOwner) context).getLifecycle().addObserver(cleaner);
+                    } else if (context instanceof IDisposableHolder) {
+                        ((IDisposableHolder) context).HoldDisposable(unarchiveDisposable);
                     }
                 } catch (IOException e) {
                     Timber.w(e);
