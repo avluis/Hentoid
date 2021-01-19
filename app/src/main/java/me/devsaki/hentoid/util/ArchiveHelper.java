@@ -179,6 +179,8 @@ public class ArchiveHelper {
             @Nullable final List<String> targetNames) throws IOException {
         Helper.assertNonUiThread();
 
+        if (entriesToExtract != null && entriesToExtract.isEmpty()) return Observable.empty();
+
         ArchiveFormat format;
         try (InputStream fi = FileHelper.getInputStream(context, file)) {
             byte[] header = new byte[8];
