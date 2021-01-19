@@ -418,6 +418,7 @@ public class ArchiveHelper {
         private final Map<Integer, String> fileNames;
         private final ObservableEmitter<Uri> emitter;
         private int nbProcessed;
+        private ExtractAskMode extractAskMode;
 
         public ArchiveExtractCallback(
                 @NonNull final File targetFolder,
@@ -434,6 +435,7 @@ public class ArchiveHelper {
             Timber.d("Extract archive, get stream: " + index + " to: " + extractAskMode);
 
             SequentialOutStream stream;
+            this.extractAskMode = extractAskMode;
             if (!fileNames.containsKey(index)) return null;
 
             final String targetFileName = fileNames.get(index);
@@ -467,10 +469,12 @@ public class ArchiveHelper {
 
         @Override
         public void setOperationResult(ExtractOperationResult extractOperationResult) throws SevenZipException {
-            Timber.d("Extract archive, completed with: %s", extractOperationResult);
+            Timber.d("Extract archive, %s completed with: %s", extractAskMode, extractOperationResult);
 
-            nbProcessed++;
-            if (nbProcessed == fileNames.size()) emitter.onComplete();
+            if (extractAskMode != null && extractAskMode.equals(ExtractAskMode.EXTRACT)) {
+                nbProcessed++;
+                if (nbProcessed == fileNames.size() && emitter != null) emitter.onComplete();
+            }
 
             if (extractOperationResult != ExtractOperationResult.OK) {
                 throw new SevenZipException(extractOperationResult.toString());
