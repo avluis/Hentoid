@@ -268,7 +268,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
                         getApplication(),
                         zipFile,
-                        Stream.of(imageFiles).filterNot(i -> i.getFileUri().contains("://")).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
+                        Stream.of(imageFiles).filter(i -> i.getFileUri().startsWith(theContent.getStorageUri())).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
                         cachePicFolder,
                         null)
                         .subscribeOn(Schedulers.io())
