@@ -2,7 +2,7 @@
   "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.13.8/hentoid1138-329.apk",
   "versionCode": "329",
   "updateURL.beta": "https://bitrise-prod-build-storage.s3.amazonaws.com/builds/6686981f66d94c2f/artifacts/60016413/app-debug-bitrise-signed.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIV2YZWMVCNWNR2HA%2F20201223%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20201223T100310Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=0abe3c76fe6c4d6a2ff5984e2a5e25b868082e18d5d134fd75845f41fcb3ab54",
-  "versionCode.beta": "2000",
+  "versionCode.beta": "1",
   "sourceAlerts":[
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"189" },
