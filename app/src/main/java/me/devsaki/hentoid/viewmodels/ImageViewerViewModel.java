@@ -330,7 +330,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             Collection<Integer> readPages = Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).map(ImageFile::getOrder).toList();
 
             // Fix pre-v1.13 books where ImageFile.read has no value
-            if (readPages.isEmpty() && theContent.getLastReadPageIndex() > 0) {
+            if (readPages.isEmpty() && theContent.getLastReadPageIndex() > 0 && theContent.getLastReadPageIndex() < imageFiles.size()) {
                 int lastReadPageNumber = imageFiles.get(theContent.getLastReadPageIndex()).getOrder();
                 readPageNumbers.addAll(IntStream.rangeClosed(1, lastReadPageNumber).boxed().toList());
             } else {
