@@ -305,12 +305,12 @@ public class ArchiveHelper {
     private static class ArchiveOpenCallback implements IArchiveOpenCallback {
         @Override
         public void setTotal(Long files, Long bytes) {
-            Timber.i("Archive open, total work: " + files + " files, " + bytes + " bytes");
+            Timber.v("Archive open, total work: " + files + " files, " + bytes + " bytes");
         }
 
         @Override
         public void setCompleted(Long files, Long bytes) {
-            Timber.i("Archive open, completed: " + files + " files, " + bytes + " bytes");
+            Timber.v("Archive open, completed: " + files + " files, " + bytes + " bytes");
         }
     }
 
@@ -419,8 +419,10 @@ public class ArchiveHelper {
         private final File targetFolder;
         private final Map<Integer, String> fileNames;
         private final ObservableEmitter<Uri> emitter;
+
         private int nbProcessed;
         private ExtractAskMode extractAskMode;
+        private SequentialOutStream stream;
 
         public ArchiveExtractCallback(
                 @NonNull final File targetFolder,
@@ -434,13 +436,12 @@ public class ArchiveHelper {
 
         @Override
         public ISequentialOutStream getStream(int index, ExtractAskMode extractAskMode) throws SevenZipException {
-            Timber.d("Extract archive, get stream: " + index + " to: " + extractAskMode);
+            Timber.v("Extract archive, get stream: " + index + " to: " + extractAskMode);
 
-            SequentialOutStream stream;
             this.extractAskMode = extractAskMode;
             if (!fileNames.containsKey(index)) return null;
 
-            final String targetFileName = fileNames.get(index);
+            final String targetFileName = index + "--" + fileNames.get(index); // Not to overwrite files with the same name if they are located in different folders
             File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
             try {
                 if (existing != null) {
@@ -466,7 +467,7 @@ public class ArchiveHelper {
 
         @Override
         public void prepareOperation(ExtractAskMode extractAskMode) {
-            Timber.d("Extract archive, prepare to: %s", extractAskMode);
+            Timber.v("Extract archive, prepare to: %s", extractAskMode);
         }
 
         @Override
@@ -478,6 +479,13 @@ public class ArchiveHelper {
                 if (nbProcessed == fileNames.size() && emitter != null) emitter.onComplete();
             }
 
+            try {
+                if (stream != null) stream.close();
+                stream = null;
+            } catch (IOException e) {
+                throw new SevenZipException(e);
+            }
+
             if (extractOperationResult != ExtractOperationResult.OK) {
                 throw new SevenZipException(extractOperationResult.toString());
             }
@@ -485,12 +493,12 @@ public class ArchiveHelper {
 
         @Override
         public void setTotal(long total) {
-            Timber.d("Extract archive, work planned: %s", total);
+            Timber.v("Extract archive, work planned: %s", total);
         }
 
         @Override
         public void setCompleted(long complete) {
-            Timber.d("Extract archive, work completed: %s", complete);
+            Timber.v("Extract archive, work completed: %s", complete);
         }
     }
 
@@ -498,7 +506,7 @@ public class ArchiveHelper {
 
         private final OutputStream out;
 
-        public SequentialOutStream(OutputStream stream) {
+        public SequentialOutStream(@NonNull final OutputStream stream) {
             this.out = stream;
         }
 
@@ -513,6 +521,10 @@ public class ArchiveHelper {
                 throw new SevenZipException(e);
             }
             return data.length;
+        }
+
+        public void close() throws IOException {
+            out.close();
         }
     }
 }

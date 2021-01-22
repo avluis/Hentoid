@@ -289,10 +289,20 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private ImageFile mapUriToImageFile(@NonNull final List<ImageFile> imageFiles, @NonNull final Uri uri) {
         // Feed the Uri's of unzipped files back into the corresponding images for viewing
         for (ImageFile img : imageFiles) {
-            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(FileHelper.getFileNameWithoutExtension(uri.getPath())))
+            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(getArchiveFileName(uri.getPath()))) {
                 return img.setFileUri(uri.toString());
+            }
         }
         return new ImageFile();
+    }
+
+    private static String getArchiveFileName(@NonNull final String path) {
+        String result = FileHelper.getFileNameWithoutExtension(path);
+
+        int folderSeparatorIndex = result.lastIndexOf("--"); // todo encapsulate that somewhere, e.g. archiveHelper
+
+        if (-1 == folderSeparatorIndex) return result;
+        else return result.substring(folderSeparatorIndex + 2);
     }
 
     private void initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
