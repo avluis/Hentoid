@@ -472,7 +472,7 @@ public class ArchiveHelper {
 
         @Override
         public void setOperationResult(ExtractOperationResult extractOperationResult) throws SevenZipException {
-            Timber.d("Extract archive, %s completed with: %s", extractAskMode, extractOperationResult);
+            Timber.v("Extract archive, %s completed with: %s", extractAskMode, extractOperationResult);
 
             if (extractAskMode != null && extractAskMode.equals(ExtractAskMode.EXTRACT)) {
                 nbProcessed++;
