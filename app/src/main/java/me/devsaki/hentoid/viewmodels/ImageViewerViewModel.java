@@ -25,6 +25,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Write cache for read indicator (no need to update DB and JSON at every page turn)
     private final Set<Integer> readPageNumbers = new HashSet<>();
+
+    //    private List<ImageFile> latestImageFeedback;
+    private final Map<Integer, String> imageLocations = new HashMap<>();
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -169,38 +173,54 @@ public class ImageViewerViewModel extends AndroidViewModel {
         startingIndex.setValue(index);
     }
 
-    private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
+    private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> newImages) {
         Observable<ImageFile> observable;
-        if (theContent.isArchive())
-            observable = Observable.create(emitter -> processArchiveImages(theContent, imgs, emitter));
-        else
-            observable = Observable.create(emitter -> processDiskImages(theContent, imgs, emitter));
 
-        AtomicInteger nbProcessed = new AtomicInteger();
-        imageLoadDisposable = observable
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .doOnComplete(
-                        // Cache JSON and record 1 more view for the new content
-                        // Called this way to properly run on io thread
-                        () -> postLoadProcessing(getApplication().getApplicationContext(), theContent)
-                )
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        imageFile -> {
-                            nbProcessed.getAndIncrement();
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbProcessed.get(), 0, imgs.size()));
-                        },
-                        t -> {
-                            Timber.e(t);
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, imgs.size()));
-                        },
-                        () -> {
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, imgs.size()));
-                            initViewer(theContent, imgs);
-                            imageLoadDisposable.dispose();
-                        }
-                );
+        // Don't reload from disk / archive again if the image list hasn't changed
+        // e.g. page favourited
+//        List<ImageFile> currentImages = images.getValue();
+        if (imageLocations.isEmpty() || newImages.size() != imageLocations.size()) {
+            if (theContent.isArchive())
+                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, emitter));
+            else
+                observable = Observable.create(emitter -> processDiskImages(theContent, newImages, emitter));
+
+            AtomicInteger nbProcessed = new AtomicInteger();
+            imageLoadDisposable = observable
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.io())
+                    .doOnComplete(
+                            // Called this way to properly run on io thread
+                            () -> postLoadProcessing(getApplication().getApplicationContext(), theContent)
+                    )
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            imageFile -> {
+                                nbProcessed.getAndIncrement();
+                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbProcessed.get(), 0, newImages.size()));
+                            },
+                            t -> {
+                                Timber.e(t);
+                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, newImages.size()));
+                            },
+                            () -> {
+                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, newImages.size()));
+                                for (ImageFile img : newImages)
+                                    imageLocations.put(img.getOrder(), img.getFileUri());
+                                initViewer(theContent, newImages);
+                                imageLoadDisposable.dispose();
+                            }
+                    );
+        } else {
+            // Copy location properties of the new list on the current list
+            for (int i = 0; i < newImages.size(); i++) {
+                ImageFile newImg = newImages.get(i);
+                String location = imageLocations.get(newImg.getOrder());
+                newImg.setFileUri(location);
+            }
+
+            initViewer(theContent, newImages);
+        }
     }
 
     private void processDiskImages(
@@ -278,6 +298,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
                 // Extract the images if they are contained within an archive
                 // Unzip the archive in the app's cache folder
+                Timber.i(">> unzipArchive");
                 DocumentFile zipFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
                 // TODO replace that with a proper on-demand loading
                 if (zipFile != null) {
@@ -293,20 +314,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                     uri -> emitter.onNext(mapUriToImageFile(newImages, uri)),
                                     Timber::e,
                                     () -> {
-                                        unarchiveDisposable.dispose();
                                         emitter.onComplete();
+                                        unarchiveDisposable.dispose();
                                     }
                             );
                 }
             }
         } else { // Refresh current book with new data
-            for (ImageFile newImg : newImageFiles) {
-                for (ImageFile currentImg : currentImages) {
-                    if (newImg.equals(currentImg)) {
-                        newImg.setFileUri(currentImg.getFileUri());
-                        break;
-                    }
-                }
+            for (int i = 0; i < newImageFiles.size(); i++) {
+                ImageFile newImg = newImageFiles.get(i);
+                String location = imageLocations.get(newImg.getOrder());
+                newImg.setFileUri(location);
             }
 
             // Replace initial images with updated images
@@ -405,7 +423,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void onLeaveBook(int readerIndex) {
         List<ImageFile> theImages = images.getValue();
-        Content theContent = content.getValue();
+        Content theContent = collectionDao.selectContent(loadedContentId);
         if (null == theImages || null == theContent) return;
 
         int readThresholdPref = Preferences.getViewerReadThreshold();
@@ -468,11 +486,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void toggleFilterFavouritePages(Consumer<Boolean> callback) {
-        Content c = content.getValue();
-        if (c != null) {
+        if (loadedContentId > -1) {
             showFavourites = !showFavourites;
             if (searchManager != null) searchManager.setFilterPageFavourites(showFavourites);
-            //processContent(c);
             applySearchParams(loadedContentId);
             callback.accept(showFavourites);
         }
@@ -638,9 +654,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void processContent(@NonNull Content theContent) {
         currentContentIndex = contentIds.indexOf(theContent.getId());
         if (-1 == currentContentIndex) currentContentIndex = 0;
+        Timber.i(">> processContent %s %s", theContent.getId(), currentImageSource);
 
         theContent.setFirst(0 == currentContentIndex);
         theContent.setLast(currentContentIndex >= contentIds.size() - 1);
+        if (loadedContentId != contentIds.get(currentContentIndex)) imageLocations.clear();
         content.postValue(theContent);
 
         // Observe the content's images
@@ -656,7 +674,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void updateContentPreferences(@NonNull final Map<String, String> newPrefs) {
-        Content theContent = content.getValue();
+        Content theContent = collectionDao.selectContent(loadedContentId);
         if (null == theContent) return;
 
         compositeDisposable.add(
