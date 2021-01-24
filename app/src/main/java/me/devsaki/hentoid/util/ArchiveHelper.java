@@ -58,6 +58,7 @@ public class ArchiveHelper {
     public static final String ZIP_MIME_TYPE = "application/zip";
 
     private static final FileHelper.NameFilter archiveNamesFilter = displayName -> isArchiveExtensionSupported(FileHelper.getExtension(displayName));
+    private static final String CACHE_SEPARATOR = "£";
 
     private static final int BUFFER = 32 * 1024;
 
@@ -142,7 +143,7 @@ public class ArchiveHelper {
     }
 
     /**
-     * Get the entries of the given RAR file
+     * Get the entries of the given archive file
      */
     private static List<ArchiveEntry> getArchiveEntries(@NonNull final Context context, ArchiveFormat format, @NonNull final Uri uri) throws IOException {
         Helper.assertNonUiThread();
@@ -193,8 +194,11 @@ public class ArchiveHelper {
     }
 
     /**
-     * Extract the given entries from the given RAR file TODO update
+     * Extract the given entries from the given archive file
      *
+     * @param context          Context to be used
+     * @param uri              Uri of the archive file to extract from
+     * @param format           Format of the archive file to extract from
      * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
      * @param targetFolder     Target folder to create the archives into
      * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
@@ -289,6 +293,21 @@ public class ArchiveHelper {
         }
     }
 
+    // TODO doc
+    // Not to overwrite files with the same name if they are located in different folders
+    static String formatCacheFileName(int index, @NonNull final String fileName) {
+        return index + CACHE_SEPARATOR + fileName;
+    }
+
+    public static String extractCacheFileName(@NonNull final String path) {
+        String result = FileHelper.getFileNameWithoutExtension(path);
+
+        int folderSeparatorIndex = result.lastIndexOf(ArchiveHelper.CACHE_SEPARATOR);
+
+        if (-1 == folderSeparatorIndex) return result;
+        else return result.substring(folderSeparatorIndex + 1);
+    }
+
     @SuppressWarnings("squid:S1104")
 // This is a dumb struct class, nothing more
 // Describes an entry inside an archive
@@ -342,7 +361,8 @@ public class ArchiveHelper {
             if (pfdInput != null) pfdInput.close();
 
             pfdInput = contentResolver.openFileDescriptor(uri, "r");
-            stream = new FileInputStream(pfdInput.getFileDescriptor());
+            if (pfdInput != null)
+                stream = new FileInputStream(pfdInput.getFileDescriptor());
         }
 
         @Override
@@ -376,7 +396,7 @@ public class ArchiveHelper {
         private void skipNBytes(long n) throws IOException {
             if (n > 0) {
                 long ns = stream.skip(n);
-                if (ns >= 0 && ns < n) { // skipped too few bytes
+                if (ns < n) { // skipped too few bytes
                     // adjust number to skip
                     n -= ns;
                     // read until requested number skipped or EOS reached
@@ -439,9 +459,10 @@ public class ArchiveHelper {
             Timber.v("Extract archive, get stream: " + index + " to: " + extractAskMode);
 
             this.extractAskMode = extractAskMode;
-            if (!fileNames.containsKey(index)) return null;
+            String fileName = fileNames.get(index);
+            if (null == fileName) return null;
 
-            final String targetFileName = index + "--" + fileNames.get(index); // Not to overwrite files with the same name if they are located in different folders
+            final String targetFileName = formatCacheFileName(index, fileName);
             File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
             try {
                 if (existing != null) {

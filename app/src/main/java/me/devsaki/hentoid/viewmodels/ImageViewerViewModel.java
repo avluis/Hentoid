@@ -86,7 +86,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Write cache for read indicator (no need to update DB and JSON at every page turn)
     private final Set<Integer> readPageNumbers = new HashSet<>();
 
-    //    private List<ImageFile> latestImageFeedback;
+    // TODO doc
     private final Map<Integer, String> imageLocations = new HashMap<>();
 
     // Technical
@@ -96,6 +96,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private Disposable imageLoadDisposable = Disposables.empty();
     private Disposable leaveDisposable = Disposables.empty();
     private Disposable emptyCacheDisposable = Disposables.empty();
+    private boolean isArchiveExtracting = false;
 
 
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -284,6 +285,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (!theContent.isArchive())
             throw new IllegalArgumentException("Content must be an archive");
 
+        if (isArchiveExtracting) return;
+
         List<ImageFile> newImageFiles = new ArrayList<>(newImages);
         List<ImageFile> currentImages = images.getValue();
         if ((!newImages.isEmpty() && loadedContentId != newImages.get(0).getContent().getTargetId()) || null == currentImages) { // Load a new book
@@ -299,12 +302,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 // Extract the images if they are contained within an archive
                 // Unzip the archive in the app's cache folder
                 Timber.i(">> unzipArchive");
-                DocumentFile zipFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
+                DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
                 // TODO replace that with a proper on-demand loading
-                if (zipFile != null) {
+                if (archiveFile != null) {
+                    isArchiveExtracting = true;
                     unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
                             getApplication(),
-                            zipFile,
+                            archiveFile,
                             Stream.of(newImageFiles).filter(i -> i.getFileUri().startsWith(theContent.getStorageUri())).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
                             cachePicFolder,
                             null)
@@ -314,6 +318,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                     uri -> emitter.onNext(mapUriToImageFile(newImages, uri)),
                                     Timber::e,
                                     () -> {
+                                        isArchiveExtracting = false;
                                         emitter.onComplete();
                                         unarchiveDisposable.dispose();
                                     }
@@ -342,20 +347,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Feed the Uri's of unzipped files back into the corresponding images for viewing
         for (ImageFile img : imageFiles) {
-            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(getArchiveFileName(path))) {
+            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(ArchiveHelper.extractCacheFileName(path))) {
                 return img.setFileUri(uri.toString());
             }
         }
         return new ImageFile();
-    }
-
-    private static String getArchiveFileName(@NonNull final String path) {
-        String result = FileHelper.getFileNameWithoutExtension(path);
-
-        int folderSeparatorIndex = result.lastIndexOf("--"); // todo encapsulate that somewhere, e.g. archiveHelper
-
-        if (-1 == folderSeparatorIndex) return result;
-        else return result.substring(folderSeparatorIndex + 2);
     }
 
     private void initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
