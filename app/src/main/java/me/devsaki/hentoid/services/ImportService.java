@@ -35,6 +35,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.ContentV1;
@@ -155,6 +156,9 @@ public class ImportService extends IntentService {
         int nbFolders = 0;                      // Number of folders found with no content but subfolders
         Content content = null;
         List<LogUtil.LogEntry> log = new ArrayList<>();
+
+        // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
 
         final FileHelper.NameFilter imageNames = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 

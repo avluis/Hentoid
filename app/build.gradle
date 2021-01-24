@@ -9,6 +9,19 @@ if (file('signing.gradle').exists()) {
     apply from: 'signing.gradle'
 }
 
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                url 'https://dl.bintray.com/omicronapps/7-Zip-JBinding-4Android'
+            }
+        }
+        filter {
+            includeGroup "net.sf.sevenzipjbinding"
+        }
+    }
+}
+
 android {
     compileSdkVersion 30
     compileOptions {
@@ -25,7 +38,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.13.8'
+        versionName '1.13.9'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -243,8 +256,8 @@ dependencies {
     // Cleaner date manipulation
     implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
 
-    // RAR archive management
-    implementation "com.github.junrar:junrar:7.4.0"
+    // Archive management
+    implementation 'net.sf.sevenzipjbinding:sevenzipjbinding:16.02-2.01'
 
     /**
      * ANALYTICS

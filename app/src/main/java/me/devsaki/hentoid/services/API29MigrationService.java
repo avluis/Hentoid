@@ -209,7 +209,6 @@ public class API29MigrationService extends IntentService {
                         if (content.getJsonUri().isEmpty() || !content.getJsonUri().startsWith("content"))
                             content.setJsonUri("");
 
-                        //dao.insertContent(content);
                         ContentHelper.addContent(this, dao, content);
 
                         List<ImageFile> contentImages;
