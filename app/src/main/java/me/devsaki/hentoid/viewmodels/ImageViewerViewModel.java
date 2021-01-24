@@ -278,7 +278,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    private void processArchiveImages(
+    private synchronized void processArchiveImages(
             @NonNull Content theContent,
             @NonNull List<ImageFile> newImages,
             @NonNull final ObservableEmitter<ImageFile> emitter) throws IOException {
@@ -316,7 +316,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             .observeOn(Schedulers.computation())
                             .subscribe(
                                     uri -> emitter.onNext(mapUriToImageFile(newImages, uri)),
-                                    Timber::e,
+                                    t -> {
+                                        Timber.e(t);
+                                        isArchiveExtracting = false;
+                                    },
                                     () -> {
                                         isArchiveExtracting = false;
                                         emitter.onComplete();
