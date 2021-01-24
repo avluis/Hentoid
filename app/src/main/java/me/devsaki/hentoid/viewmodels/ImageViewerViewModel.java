@@ -301,7 +301,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
                 // Extract the images if they are contained within an archive
                 // Unzip the archive in the app's cache folder
-                Timber.i(">> unzipArchive");
                 DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
                 // TODO replace that with a proper on-demand loading
                 if (archiveFile != null) {
@@ -656,11 +655,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void processContent(@NonNull Content theContent) {
         currentContentIndex = contentIds.indexOf(theContent.getId());
         if (-1 == currentContentIndex) currentContentIndex = 0;
-        Timber.i(">> processContent %s %s", theContent.getId(), currentImageSource);
 
         theContent.setFirst(0 == currentContentIndex);
         theContent.setLast(currentContentIndex >= contentIds.size() - 1);
-        if (loadedContentId != contentIds.get(currentContentIndex)) imageLocations.clear();
+        if (contentIds.size() > currentContentIndex && loadedContentId != contentIds.get(currentContentIndex))
+            imageLocations.clear();
         content.postValue(theContent);
 
         // Observe the content's images
