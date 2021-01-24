@@ -271,11 +271,21 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     public void onProcessEvent(ProcessEvent event) {
         if (null == binding) return;
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            adapter.submitList(Collections.emptyList()); // Empty display until loading is complete
+            // Empty display until loading is complete
+            if (adapter.getItemCount() > 0) adapter.submitList(Collections.emptyList());
+
+            // Prevent switching books when archive extraction is in progress (may trigger multiple extractions at the same time)
+            // TODO make that possible in the future when unarchival is done on demand
+            binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.INVISIBLE);
+            binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.INVISIBLE);
+
             binding.viewerLoadingTxt.setText(getResources().getString(R.string.loading_images, event.elementsKO + event.elementsOK, event.elementsTotal));
             binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType)
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             binding.viewerLoadingTxt.setVisibility(View.GONE);
+            binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.VISIBLE);
+            binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.VISIBLE);
+        }
     }
 
     private void initPager() {
