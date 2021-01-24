@@ -256,7 +256,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void emptyCacheFolder() {
         emptyCacheDisposable =
-                Completable.fromRunnable(() -> doEmptyCacheFolder())
+                Completable.fromRunnable(this::doEmptyCacheFolder)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -337,9 +337,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // TODO doc
     private ImageFile mapUriToImageFile(@NonNull final List<ImageFile> imageFiles, @NonNull final Uri uri) {
+        String path = uri.getPath();
+        if (null == path) return new ImageFile();
+
         // Feed the Uri's of unzipped files back into the corresponding images for viewing
         for (ImageFile img : imageFiles) {
-            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(getArchiveFileName(uri.getPath()))) {
+            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(getArchiveFileName(path))) {
                 return img.setFileUri(uri.toString());
             }
         }
