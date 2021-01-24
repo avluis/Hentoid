@@ -348,6 +348,7 @@ public class ImportHelper {
     }
 
 
+    // TODO doc
     @Nullable
     private static DocumentFile addHentoidFolder(@NonNull final Context context, @NonNull final DocumentFile baseFolder) {
         String folderName = baseFolder.getName();
@@ -365,6 +366,7 @@ public class ImportHelper {
         return baseFolder;
     }
 
+    // TODO doc
     // Try and detect any ".Hentoid" or "Hentoid" folder inside the selected folder
     public static DocumentFile getExistingHentoidDirFrom(@NonNull final Context context, @NonNull final DocumentFile root) {
         if (!root.exists() || !root.isDirectory() || null == root.getName()) return root;
@@ -378,6 +380,7 @@ public class ImportHelper {
         else return root;
     }
 
+    // TODO doc
     private static void runHentoidImport(
             @NonNull final Context context,
             @Nullable final ImportOptions options
@@ -398,6 +401,7 @@ public class ImportHelper {
         }
     }
 
+    // TODO doc
     private static void runExternalImport(
             @NonNull final Context context
     ) {
@@ -411,6 +415,7 @@ public class ImportHelper {
         }
     }
 
+    // TODO doc
     public static Content scanBookFolder(
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
@@ -470,6 +475,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     public static Content scanChapterFolders(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
@@ -513,6 +519,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     private static void scanImages(
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
@@ -544,14 +551,17 @@ public class ImportHelper {
         }
     }
 
+    // TODO doc
     private static List<Attribute> newExternalAttribute() {
         return Stream.of(new Attribute(AttributeType.TAG, EXTERNAL_LIB_TAG, EXTERNAL_LIB_TAG, Site.NONE)).toList();
     }
 
+    // TODO doc
     public static void removeExternalAttribute(@NonNull final Content content) {
         content.putAttributes(Stream.of(content.getAttributes()).filterNot(a -> a.getName().equalsIgnoreCase(EXTERNAL_LIB_TAG)).toList());
     }
 
+    // TODO doc
     private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames) {
         AttributeMap result = new AttributeMap();
         // Don't include the very first one, it's the name of the root folder of the library
@@ -562,6 +572,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     public static List<Content> scanForArchives(
             @NonNull final Context context,
             @NonNull final List<DocumentFile> subFolders,
@@ -596,6 +607,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     public static Content scanArchive(
             @NonNull final Context context,
             @NonNull final DocumentFile parentFolder,
@@ -623,18 +635,13 @@ public class ImportHelper {
             Timber.w(e);
         }
 
-        // Look for the folder with the most images
-        Collection<List<ArchiveHelper.ArchiveEntry>> imageEntries = Stream.of(entries)
+        List<ArchiveHelper.ArchiveEntry> imageEntries = Stream.of(entries)
                 .filter(s -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(s.path)))
-                .collect(Collectors.groupingBy(ImportHelper::getFolders))
-                .values();
+                .toList();
 
         if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
-        // Sort by number of images desc
-        List<ArchiveHelper.ArchiveEntry> entryList = Stream.of(imageEntries).sortBy(ie -> -ie.size()).toList().get(0);
-
-        List<ImageFile> images = ContentHelper.createImageListFromArchiveEntries(archive.getUri(), entryList, targetStatus, 0, "");
+        List<ImageFile> images = ContentHelper.createImageListFromArchiveEntries(archive.getUri(), imageEntries, targetStatus, 0, "");
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
 
@@ -660,6 +667,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     private static String getFolders(@NonNull final ArchiveHelper.ArchiveEntry entry) {
         String path = entry.path;
         int separatorIndex = path.lastIndexOf('/');
@@ -668,6 +676,7 @@ public class ImportHelper {
         return path.substring(0, separatorIndex);
     }
 
+    // TODO doc
     public static int importBookmarks(@NonNull final CollectionDAO dao, List<SiteBookmark> bookmarks) {
         // Don't import bookmarks that have the same URL as existing ones
         Set<SiteBookmark> existingBookmarkUrls = new HashSet<>(dao.selectAllBookmarks());
@@ -676,6 +685,7 @@ public class ImportHelper {
         return bookmarksToImport.size();
     }
 
+    // TODO doc
     @Nullable
     public static DocumentFile getFileWithName(List<DocumentFile> files, @Nullable String name) {
         if (null == name) return null;

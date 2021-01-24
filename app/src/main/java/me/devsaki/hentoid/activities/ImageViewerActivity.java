@@ -24,6 +24,7 @@ import static me.devsaki.hentoid.util.PermissionUtil.RQST_STORAGE_PERMISSION;
 public class ImageViewerActivity extends BaseActivity {
 
     private VolumeKeyListener volumeKeyListener = null;
+    private ImageViewerViewModel viewModel = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +43,7 @@ public class ImageViewerActivity extends BaseActivity {
 
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
-        ImageViewerViewModel viewModel = new ViewModelProvider(this, vmFactory).get(ImageViewerViewModel.class);
+        viewModel = new ViewModelProvider(this, vmFactory).get(ImageViewerViewModel.class);
 
         if (null == viewModel.getContent().getValue()) { // ViewModel hasn't loaded anything yet (fresh start)
             Bundle searchParams = parser.getSearchParams();
@@ -93,6 +94,7 @@ public class ImageViewerActivity extends BaseActivity {
     @Override
     protected void onStop() {
         unregisterKeyListener();
+        if (viewModel != null) viewModel.emptyCacheFolder();
         super.onStop();
     }
 

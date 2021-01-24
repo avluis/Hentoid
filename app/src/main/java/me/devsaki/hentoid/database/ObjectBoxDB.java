@@ -1009,6 +1009,14 @@ public class ObjectBoxDB {
         store.boxFor(ImageFile.class).put(imgs);
     }
 
+    void replaceImageFiles(long contentId, @NonNull final List<ImageFile> newList) {
+        store.runInTx(() -> {
+            deleteImageFiles(contentId);
+            for (ImageFile img : newList) img.setContentId(contentId);
+            insertImageFiles(newList);
+        });
+    }
+
     @Nullable
     ImageFile selectImageFile(long id) {
         if (id > 0) return store.boxFor(ImageFile.class).get(id);

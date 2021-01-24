@@ -11,10 +11,14 @@ import android.view.View;
 import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
 
 import com.annimon.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.threeten.bp.Instant;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,10 +27,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
+
+import io.reactivex.disposables.Disposable;
+import me.devsaki.hentoid.HentoidApp;
+import timber.log.Timber;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
@@ -156,6 +165,15 @@ public final class Helper {
     public static long[] getPrimitiveLongArrayFromList(List<Long> input) {
         long[] ret = new long[input.size()];
         Iterator<Long> iterator = input.iterator();
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = iterator.next();
+        }
+        return ret;
+    }
+
+    public static int[] getPrimitiveLongArrayFromInt(Set<Integer> input) {
+        int[] ret = new int[input.size()];
+        Iterator<Integer> iterator = input.iterator();
         for (int i = 0; i < ret.length; i++) {
             ret[i] = iterator.next();
         }
@@ -351,5 +369,22 @@ public final class Helper {
             return !activity.isDestroyed() && !activity.isFinishing();
         }
         return true;
+    }
+
+
+    // TODO doc
+    public static class LifecycleRxCleaner implements LifecycleObserver {
+
+        private final Disposable disposable;
+
+
+        public LifecycleRxCleaner(Disposable disposable) {
+            this.disposable = disposable;
+        }
+
+        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        private void onDestroy() {
+            disposable.dispose();
+        }
     }
 }
