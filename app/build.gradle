@@ -259,6 +259,10 @@ dependencies {
     // Archive management
     implementation 'net.sf.sevenzipjbinding:sevenzipjbinding:16.02-2.01'
 
+    // Natural strings comparator
+    implementation 'net.grey-panther:natural-comparator:1.1'
+
+
     /**
      * ANALYTICS
      */
