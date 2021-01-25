@@ -41,7 +41,7 @@ public class HitomiGalleryInfo {
     private static class HitomiPageNameComparator implements Comparator<HitomiGalleryPage> {
         @Override
         public int compare(@NonNull HitomiGalleryPage o1, @NonNull HitomiGalleryPage o2) {
-            return new NaturalOrderComparator().compare(o1.getName(), o2.getName());
+            return NaturalOrderComparator.getInstance().compare(o1.getName(), o2.getName());
         }
     }
 }

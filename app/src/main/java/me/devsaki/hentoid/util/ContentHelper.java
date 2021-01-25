@@ -858,7 +858,7 @@ public final class ContentHelper {
     private static class InnerNameNumberFileComparator implements Comparator<DocumentFile> {
         @Override
         public int compare(@NonNull DocumentFile o1, @NonNull DocumentFile o2) {
-            return new NaturalOrderComparator().compare(Helper.protect(o1.getName()), Helper.protect(o2.getName()));
+            return NaturalOrderComparator.getInstance().compare(Helper.protect(o1.getName()), Helper.protect(o2.getName()));
         }
     }
 
@@ -868,7 +868,7 @@ public final class ContentHelper {
     private static class InnerNameNumberArchiveComparator implements Comparator<ArchiveHelper.ArchiveEntry> {
         @Override
         public int compare(@NonNull ArchiveHelper.ArchiveEntry o1, @NonNull ArchiveHelper.ArchiveEntry o2) {
-            return new NaturalOrderComparator().compare(o1.path, o2.path);
+            return NaturalOrderComparator.getInstance().compare(o1.path, o2.path);
         }
     }
 }
