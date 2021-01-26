@@ -661,6 +661,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     public void onBookPreferenceChanged(@NonNull final Map<String, String> newPrefs) {
         viewModel.updateContentPreferences(newPrefs);
+        bookPreferences = newPrefs;
+        onBrowseModeChange();
     }
 
     private void onUpdatePrefsScreenOn() {
@@ -693,6 +695,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.recyclerView.swapAdapter(adapter, false);
         binding.recyclerView.setLayoutManager(llm);
         adapter.notifyDataSetChanged(); // NB : will re-run onBindViewHolder for all displayed pictures
+
+        seekToPosition(imageIndex);
     }
 
     private void onUpdatePageNumDisplay() {

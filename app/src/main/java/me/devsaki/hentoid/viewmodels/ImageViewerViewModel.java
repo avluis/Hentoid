@@ -696,8 +696,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         theContent.setBookPreferences(newPrefs);
         // Persist in DB
         collectionDao.insertContent(theContent);
-        // Repost the updated content
-        content.postValue(theContent);
 
         // Persist in JSON
         if (!theContent.getJsonUri().isEmpty())
