@@ -202,11 +202,11 @@ public class MetaExportDialogFragment extends DialogFragment {
                 }
             }
 
-            Snackbar.make(rootView, R.string.viewer_copy_success, LENGTH_LONG)
+            Snackbar.make(rootView, R.string.copy_download_folder_success, LENGTH_LONG)
                     .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                     .show();
         } catch (IOException | IllegalArgumentException e) {
-            Snackbar.make(rootView, R.string.viewer_copy_fail, LENGTH_LONG).show();
+            Snackbar.make(rootView, R.string.copy_download_folder_fail, LENGTH_LONG).show();
         }
 
         if (dao != null) dao.cleanup();

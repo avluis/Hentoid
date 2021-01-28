@@ -13,6 +13,10 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.disposables.Disposables
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
@@ -20,6 +24,7 @@ import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
+import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.services.UpdateCheckService
@@ -27,12 +32,19 @@ import me.devsaki.hentoid.services.UpdateDownloadService
 import me.devsaki.hentoid.util.*
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import org.apache.commons.io.IOUtils
+import timber.log.Timber
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+import java.util.*
 
 
 class PreferenceFragment : PreferenceFragmentCompat(),
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var viewModel: PreferencesViewModel
+    lateinit var exportDisposable: Disposable
+    lateinit var rootView: View
 
     companion object {
         private const val KEY_ROOT = "root"
@@ -60,6 +72,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        rootView = view
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[PreferencesViewModel::class.java]
     }
@@ -81,6 +94,18 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         onHentoidFolderChanged()
         onExternalFolderChanged()
         populateMemoryUsage()
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+        when (key) {
+            Preferences.Key.COLOR_THEME -> onPrefColorThemeChanged()
+            Preferences.Key.DL_THREADS_QUANTITY_LISTS,
+            Preferences.Key.APP_PREVIEW,
+            Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
+            Preferences.Key.SETTINGS_FOLDER,
+            Preferences.Key.SD_STORAGE_URI -> onHentoidFolderChanged()
+            Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
+        }
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
@@ -165,6 +190,14 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     onCheckUpdatePrefClick()
                     true
                 }
+                Preferences.Key.EXPORT_SETTINGS -> {
+                    onExportSettings()
+                    true
+                }
+                Preferences.Key.IMPORT_SETTINGS -> {
+                    MetaImportDialogFragment.invoke(parentFragmentManager)
+                    true
+                }
                 else -> super.onPreferenceTreeClick(preference)
             }
 
@@ -247,15 +280,40 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         }
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
-        when (key) {
-            Preferences.Key.COLOR_THEME -> onPrefColorThemeChanged()
-            Preferences.Key.DL_THREADS_QUANTITY_LISTS,
-            Preferences.Key.APP_PREVIEW,
-            Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
-            Preferences.Key.SETTINGS_FOLDER,
-            Preferences.Key.SD_STORAGE_URI -> onHentoidFolderChanged()
-            Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
+    private fun onExportSettings() {
+        exportDisposable = io.reactivex.Single.fromCallable { getExportedSettings() }
+                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                .observeOn(io.reactivex.schedulers.Schedulers.io())
+                .map { c: JsonSettings? -> JsonHelper.serializeToJson<JsonSettings?>(c, JsonSettings::class.java) }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        { s: String -> onJsonSerialized(s) }, { t: Throwable? -> Timber.w(t) }
+                )
+    }
+
+    private fun getExportedSettings(): JsonSettings {
+        val jsonSettings = JsonSettings()
+
+        jsonSettings.settings = Preferences.getValues()
+
+        return jsonSettings
+    }
+
+    private fun onJsonSerialized(json: String) {
+        exportDisposable.dispose()
+
+        // Use a random number to avoid erasing older exports by mistake
+        var targetFileName = Random().nextInt(9999).toString() + ".json"
+        targetFileName = "settings-$targetFileName"
+        try {
+            FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, JsonHelper.JSON_MIME_TYPE).use { newDownload -> IOUtils.toInputStream(json, StandardCharsets.UTF_8).use { input -> FileHelper.copy(input, newDownload) } }
+            Snackbar.make(rootView, R.string.copy_download_folder_success, BaseTransientBottomBar.LENGTH_LONG)
+                    .setAction("OPEN FOLDER") { FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()) }
+                    .show()
+        } catch (e: IOException) {
+            Snackbar.make(rootView, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
+        } catch (e: IllegalArgumentException) {
+            Snackbar.make(rootView, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
         }
     }
 }

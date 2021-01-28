@@ -220,4 +220,9 @@
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
+
+    <string name="pref_export_settings_title">Export settings</string>
+    <string name="pref_export_settings_summary">Export settings to a JSON file</string>
+    <string name="pref_import_settings_title">Import settings</string>
+    <string name="pref_import_settings_summary">Restore exported settings from a JSON file</string>
 </resources>

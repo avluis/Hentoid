@@ -444,8 +444,8 @@
     <string name="viewer_page_menu">Page menu</string>
     <string name="viewer_page_menu_help">Open page properties</string>
     <string name="viewer_delete_book">Delete book</string>
-    <string name="viewer_copy_success">Copied to Downloads folder</string>
-    <string name="viewer_copy_fail">Could not write to Downloads folder</string>
+    <string name="copy_download_folder_success">Copied to Downloads folder</string>
+    <string name="copy_download_folder_fail">Could not write to Downloads folder</string>
     <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
     <string name="viewer_ask_delete_page">Are you sure you wish to delete this page?</string>
     <string name="previous_book_help">Previous book</string>

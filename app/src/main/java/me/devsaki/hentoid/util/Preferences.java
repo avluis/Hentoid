@@ -143,6 +143,13 @@ public final class Preferences {
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
     }
 
+    public static Map<String, ?> getValues() {
+        return sharedPreferences.getAll();
+    }
+
+
+    // ======= PROPERTIES GETTERS / SETTERS
+
     public static boolean isFirstRunProcessComplete() {
         return sharedPreferences.getBoolean(Key.WELCOME_DONE, false);
     }
@@ -649,6 +656,8 @@ public final class Preferences {
         static final String DB_MAX_SIZE = "db_max_size";
         public static final String GROUPING_DISPLAY = "grouping_display";
         public static final String ARTIST_GROUP_VISIBILITY = "artist_group_visibility";
+        public static final String EXPORT_SETTINGS = "export_settings";
+        public static final String IMPORT_SETTINGS = "import_settings";
 
         // Deprecated values kept for housekeeping/migration
         static final String ANALYTICS_TRACKING = "pref_analytics_tracking";

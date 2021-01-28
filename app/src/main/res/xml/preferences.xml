@@ -524,4 +524,15 @@
         </PreferenceCategory>
     </PreferenceScreen>
 
+    <Preference
+        android:key="export_settings"
+        android:summary="@string/pref_export_settings_summary"
+        android:title="@string/pref_export_settings_title"
+        app:iconSpaceReserved="false" />
+    <Preference
+        android:key="import_settings"
+        android:summary="@string/pref_import_settings_summary"
+        android:title="@string/pref_import_settings_title"
+        app:iconSpaceReserved="false" />
+
 </PreferenceScreen>
