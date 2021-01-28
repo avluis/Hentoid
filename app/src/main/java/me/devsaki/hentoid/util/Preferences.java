@@ -10,6 +10,7 @@ import androidx.preference.PreferenceManager;
 import com.annimon.stream.Stream;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -143,8 +144,17 @@ public final class Preferences {
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
     }
 
-    public static Map<String, ?> getValues() {
-        return sharedPreferences.getAll();
+    public static Map<String, ?> extractPortableInformation() {
+        Map<String, ?> result = new HashMap<>(sharedPreferences.getAll());
+
+        // Remove non-exportable settings that make no sense on another instance
+        result.remove(Key.FIRST_RUN);
+        result.remove(Key.WELCOME_DONE);
+        result.remove(Key.SD_STORAGE_URI);
+        result.remove(Key.EXTERNAL_LIBRARY_URI);
+        result.remove(Key.LAST_KNOWN_APP_VERSION_CODE);
+
+        return result;
     }
 
 
