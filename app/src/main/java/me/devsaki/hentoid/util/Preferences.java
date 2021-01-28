@@ -157,6 +157,32 @@ public final class Preferences {
         return result;
     }
 
+    public static void importInformation(Map<String, ?> settings) {
+        for (Map.Entry<String, ?> entry : settings.entrySet()) {
+            if (entry.getValue() instanceof Integer) {
+                sharedPreferences.edit()
+                        .putInt(entry.getKey(), (Integer) entry.getValue())
+                        .apply();
+            } else if (entry.getValue() instanceof String) {
+                sharedPreferences.edit()
+                        .putString(entry.getKey(), (String) entry.getValue())
+                        .apply();
+            } else if (entry.getValue() instanceof Boolean) {
+                sharedPreferences.edit()
+                        .putBoolean(entry.getKey(), (Boolean) entry.getValue())
+                        .apply();
+            } else if (entry.getValue() instanceof Float) {
+                sharedPreferences.edit()
+                        .putFloat(entry.getKey(), (Float) entry.getValue())
+                        .apply();
+            } else if (entry.getValue() instanceof Long) {
+                sharedPreferences.edit()
+                        .putLong(entry.getKey(), (Long) entry.getValue())
+                        .apply();
+            }
+        }
+    }
+
 
     // ======= PROPERTIES GETTERS / SETTERS
 

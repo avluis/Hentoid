@@ -195,7 +195,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     true
                 }
                 Preferences.Key.IMPORT_SETTINGS -> {
-                    MetaImportDialogFragment.invoke(parentFragmentManager)
+                    SettingsImportDialogFragment.invoke(parentFragmentManager)
                     true
                 }
                 else -> super.onPreferenceTreeClick(preference)
@@ -294,7 +294,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     private fun getExportedSettings(): JsonSettings {
         val jsonSettings = JsonSettings()
 
-        jsonSettings.settings = Preferences.getValues()
+        jsonSettings.settings = Preferences.extractPortableInformation()
 
         return jsonSettings
     }
