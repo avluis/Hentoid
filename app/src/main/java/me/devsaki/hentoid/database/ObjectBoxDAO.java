@@ -499,6 +499,11 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.insertImageFile(img);
     }
 
+    @Override
+    public void insertImageFiles(@NonNull List<ImageFile> imgs) {
+        db.insertImageFiles(imgs);
+    }
+
     public void replaceImageList(long contentId, @NonNull final List<ImageFile> newList) {
         db.replaceImageFiles(contentId, newList);
     }

@@ -159,6 +159,8 @@ public interface CollectionDAO {
 
     void insertImageFile(@NonNull ImageFile img);
 
+    void insertImageFiles(@NonNull List<ImageFile> imgs);
+
     void replaceImageList(long contentId, @NonNull final List<ImageFile> newList);
 
     void updateImageContentStatus(long contentId, StatusContent updateFrom, @NonNull StatusContent updateTo);

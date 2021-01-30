@@ -38,6 +38,7 @@
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
     <string name="menu_fav">Toggle favourite filter</string>
+    <string name="menu_mark_fav">Toggle favourite</string>
     <string name="menu_group_new">New group</string>
     <string name="menu_edit_order">Edit order</string>
     <string name="menu_edit_name">Edit name</string>

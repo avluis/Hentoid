@@ -24,10 +24,10 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
-import com.mikepenz.fastadapter.listeners.ClickEventHook;
+import com.mikepenz.fastadapter.diff.DiffCallback;
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.select.SelectExtension;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
@@ -63,10 +64,51 @@ public class ViewerGalleryFragment extends Fragment {
 
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
-    private boolean invalidateNextBookClick = false;
+    private boolean invalidateNextItemClick = false;
     private int startIndex = 0;
     private boolean firstLoadDone = false;
-    private boolean filterFavourites = false;
+
+    private boolean filterFavouritesLaunchState = false;
+    private boolean filterFavouritesLaunchRequest = false;
+    private boolean filterFavouritesState = false;
+
+    // TODO doc
+    private int previousSelectedCount = 0;
+
+
+    public static final DiffCallback<ImageFileItem> IMAGE_DIFF_CALLBACK = new DiffCallback<ImageFileItem>() {
+        @Override
+        public boolean areItemsTheSame(ImageFileItem oldItem, ImageFileItem newItem) {
+            return oldItem.getIdentifier() == newItem.getIdentifier();
+        }
+
+        @Override
+        public boolean areContentsTheSame(ImageFileItem oldItem, ImageFileItem newItem) {
+            ImageFile oldImage = oldItem.getImage();
+            ImageFile newImage = newItem.getImage();
+
+            if (null == oldImage || null == newImage) return false;
+
+            return oldItem.isFavourite() == newItem.isFavourite();
+        }
+
+        @Override
+        public @org.jetbrains.annotations.Nullable Object getChangePayload(ImageFileItem oldImageItem, int oldPos, ImageFileItem newImageItem, int newPos) {
+            ImageFile oldImage = oldImageItem.getImage();
+            ImageFile newImage = newImageItem.getImage();
+
+            if (null == oldImage || null == newImage) return false;
+
+            ImageItemBundle.Builder diffBundleBuilder = new ImageItemBundle.Builder();
+
+            if (oldImage.isFavourite() != newImage.isFavourite()) {
+                diffBundleBuilder.setIsFavourite(newImage.isFavourite());
+            }
+
+            if (diffBundleBuilder.isEmpty()) return null;
+            else return diffBundleBuilder.getBundle();
+        }
+    };
 
 
     static ViewerGalleryFragment newInstance(boolean filterFavourites) {
@@ -83,28 +125,11 @@ public class ViewerGalleryFragment extends Fragment {
 
         Bundle arguments = getArguments();
         if (arguments != null)
-            filterFavourites = arguments.getBoolean(KEY_FILTER_FAVOURITES, false);
+            filterFavouritesLaunchRequest = arguments.getBoolean(KEY_FILTER_FAVOURITES, false);
 
         setHasOptionsMenu(true);
 
         if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
-
-        // Favourite button click listener
-        fastAdapter.addEventHook(new ClickEventHook<ImageFileItem>() {
-            @Override
-            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ImageFileItem> fastAdapter, @NotNull ImageFileItem item) {
-                onFavouriteClick(item.getImage());
-            }
-
-            @Nullable
-            @Override
-            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
-                if (viewHolder instanceof ImageFileItem.ImageViewHolder) {
-                    return ((ImageFileItem.ImageViewHolder) viewHolder).getFavouriteButton();
-                }
-                return super.onBind(viewHolder);
-            }
-        });
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
@@ -112,11 +137,12 @@ public class ViewerGalleryFragment extends Fragment {
             selectExtension.setSelectable(true);
             selectExtension.setMultiSelect(true);
             selectExtension.setSelectOnLongClick(true);
+            selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
         }
 
         // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
+        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
 
         // Filtering
         itemAdapter.getItemFilter().setFilterPredicate((imageFileItem, charSequence) -> !charSequence.equals("true") || imageFileItem.isFavourite());
@@ -130,7 +156,7 @@ public class ViewerGalleryFragment extends Fragment {
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
-                toggleFavouritesDisplay();
+                viewModel.toggleFilterFavouritePages();
             }
             return true;
         });
@@ -152,12 +178,17 @@ public class ViewerGalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        firstLoadDone = false;
+//        firstLoadDone = false;
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
+
+        if (filterFavouritesLaunchRequest && filterFavouritesLaunchRequest != filterFavouritesLaunchState)
+            viewModel.toggleFilterFavouritePages();
+
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
+        viewModel.getShowFavouritesOnly().observe(getViewLifecycleOwner(), this::onShowFavouriteChanged);
     }
 
     @Override
@@ -165,6 +196,10 @@ public class ViewerGalleryFragment extends Fragment {
         if (recyclerView != null)
             recyclerView.setAdapter(null);
         recyclerView = null;
+
+        if (filterFavouritesLaunchState != filterFavouritesState)
+            viewModel.toggleFilterFavouritePages();
+
         super.onDestroy();
     }
 
@@ -175,13 +210,21 @@ public class ViewerGalleryFragment extends Fragment {
             if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
             imgs.add(holder);
         }
-        itemAdapter.set(imgs);
-        updateListFilter();
-        updateFavouriteDisplay();
+        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs, IMAGE_DIFF_CALLBACK);
+//        updateFavouriteDisplay();
     }
 
     private void onStartingIndexChanged(Integer startingIndex) {
         startIndex = startingIndex;
+    }
+
+    private void onShowFavouriteChanged(Boolean showFavouriteOnly) {
+        if (!firstLoadDone) {
+            filterFavouritesLaunchState = showFavouriteOnly;
+            firstLoadDone = true;
+        }
+        filterFavouritesState = showFavouriteOnly;
+        updateFavouriteDisplay(filterFavouritesState);
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -200,6 +243,12 @@ public class ViewerGalleryFragment extends Fragment {
                     if (selectedContent.isPresent()) askSetSelectedCover(selectedContent.get());
                 }
                 break;
+            case R.id.action_toggle_favorite_pages:
+                if (!selectedItems.isEmpty()) {
+                    List<ImageFile> selectedContent = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
+                    viewModel.togglePageFavourite(selectedContent, this::onFavouriteSuccess);
+                }
+                break;
             default:
                 selectionToolbar.setVisibility(View.GONE);
                 toolbar.setVisibility(View.VISIBLE);
@@ -215,85 +264,58 @@ public class ViewerGalleryFragment extends Fragment {
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
     }
 
-    private boolean onItemClick(ImageFileItem item) {
-        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty()) {
-            ImageFile img = item.getImage();
-            if (!invalidateNextBookClick && img != null) {
-                viewModel.setReaderStartingIndex(img.getDisplayOrder());
-                if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
-                    getParentFragmentManager()
-                            .beginTransaction()
-                            .replace(android.R.id.content, new ViewerPagerFragment())
-                            .addToBackStack(null)
-                            .commit();
-                } else { // Pager mode (Library -> pager -> gallery -> pager)
-                    getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
-                }
+    private boolean onItemClick(int position, ImageFileItem item) {
+        ImageFile img = item.getImage();
+        if (selectExtension.getSelectedItems().isEmpty() && img != null) {
+            viewModel.setReaderStartingIndex(img.getDisplayOrder());
+            if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
+                /*
+                if (filterFavouritesLaunchState != filterFavouritesState)
+                    viewModel.toggleFilterFavouritePages();
 
-            } else invalidateNextBookClick = false;
+                 */
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .replace(android.R.id.content, new ViewerPagerFragment())
+                        .addToBackStack(null)
+                        .commit();
+            } else { // Pager mode (Library -> pager -> gallery -> pager)
+                /*
+                if (filterFavouritesLaunchState != filterFavouritesState)
+                    viewModel.toggleFilterFavouritePages();
+
+                 */
+                getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
+            }
             return true;
-        } else {
-            selectExtension.setSelectOnLongClick(false);
+        } else if (!invalidateNextItemClick) {
+            selectExtension.toggleSelection(position);
         }
         return false;
     }
 
-    private void onFavouriteClick(ImageFile img) {
-        viewModel.togglePageFavourite(img, this::onFavouriteSuccess);
-    }
-
-    private void onFavouriteSuccess(ImageFile img) {
-        if (filterFavourites) {
-            // Reset favs filter if no favourite page remains
-            if (!hasFavourite()) {
-                filterFavourites = false;
-                itemAdapter.filter("");
-                if (itemAdapter.getAdapterItemCount() > 0)
-                    recyclerView.scrollToPosition(0);
-            } else {
-                fastAdapter.notifyDataSetChanged(); // Because no easy way to spot which item has changed when the view is filtered
-            }
-        } else fastAdapter.notifyItemChanged(img.getDisplayOrder());
-
+    private void onFavouriteSuccess() {
         showFavouritePagesButton.setVisible(hasFavourite());
     }
 
-    private void toggleFavouritesDisplay() {
-        filterFavourites = !filterFavourites;
-        updateFavouriteDisplay();
-        updateListFilter();
-    }
-
-    private void updateFavouriteDisplay() {
+    private void updateFavouriteDisplay(boolean showFavouritePages) {
         showFavouritePagesButton.setVisible(hasFavourite());
-        showFavouritePagesButton.setIcon(filterFavourites ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
-    }
-
-    private void updateListFilter() {
-        if (itemAdapter.getAdapterItemCount() > 0) {
-            itemAdapter.filter(filterFavourites ? "true" : "");
-
-            if (!firstLoadDone) {
-                if (itemAdapter.getAdapterItemCount() > startIndex)
-                    recyclerView.scrollToPosition(startIndex);
-                else recyclerView.scrollToPosition(0);
-                firstLoadDone = true;
-            }
-        }
+        showFavouritePagesButton.setIcon(showFavouritePages ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
+//        outState.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
     }
-
+/*
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
         if (savedInstanceState != null)
             filterFavourites = savedInstanceState.getBoolean(KEY_FILTER_FAVOURITES, false);
     }
+*/
 
     /**
      * Returns true if the current book has at least a favourite
@@ -310,19 +332,24 @@ public class ViewerGalleryFragment extends Fragment {
      * Callback for any selection change (item added to or removed from selection)
      */
     private void onSelectionChanged() {
-        int selectedCount = selectExtension.getSelectedItems().size();
+        Set<ImageFileItem> selectedItems = selectExtension.getSelectedItems();
+        int selectedCount = selectedItems.size();
 
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
             toolbar.setVisibility(View.VISIBLE);
             selectExtension.setSelectOnLongClick(true);
-            invalidateNextBookClick = true;
-            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 200);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
             toolbar.setVisibility(View.GONE);
         }
+
+        if (1 == selectedCount && 0 == previousSelectedCount) {
+            invalidateNextItemClick = true;
+            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextItemClick = false, 450);
+        }
+        previousSelectedCount = selectedCount;
     }
 
     /**

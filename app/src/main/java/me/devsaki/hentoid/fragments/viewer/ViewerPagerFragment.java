@@ -179,7 +179,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
 
-        viewModel.onRestoreState(savedInstanceState);
+//        viewModel.onRestoreState(savedInstanceState);
 
         viewModel.getContent()
                 .observe(getViewLifecycleOwner(), this::onContentChanged);
@@ -192,6 +192,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         viewModel.getShuffled()
                 .observe(getViewLifecycleOwner(), this::onShuffleChanged);
+
+        viewModel.getShowFavouritesOnly().observe(getViewLifecycleOwner(), this::updateShowFavouriteDisplay);
     }
 
     @Override
@@ -203,7 +205,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         if (viewModel != null) {
             viewModel.setReaderStartingIndex(imageIndex); // Memorize the current page
-            viewModel.onSaveState(outState);
+//            viewModel.onSaveState(outState);
         }
     }
 
@@ -400,7 +402,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handle click on "Show favourite pages" action button
      */
     private void onShowFavouriteClick() {
-        viewModel.toggleFilterFavouritePages(this::updateShowFavouriteDisplay);
+        viewModel.toggleFilterFavouritePages();
     }
 
     /**

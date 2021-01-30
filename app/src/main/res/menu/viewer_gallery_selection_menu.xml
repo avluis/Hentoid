@@ -6,6 +6,12 @@
     tools:ignore="AlwaysShowAction"
     tools:targetApi="o">
     <item
+        android:id="@+id/action_toggle_favorite_pages"
+        android:icon="@drawable/ic_fav_toggle"
+        android:title="@string/menu_mark_fav"
+        android:tooltipText="@string/menu_mark_fav"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_set_cover"
         android:icon="@drawable/ic_action_make_cover"
         android:title="@string/viewer_make_cover"
