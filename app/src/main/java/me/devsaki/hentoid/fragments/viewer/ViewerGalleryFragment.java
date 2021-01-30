@@ -178,8 +178,6 @@ public class ViewerGalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-//        firstLoadDone = false;
-
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
 
@@ -211,7 +209,6 @@ public class ViewerGalleryFragment extends Fragment {
             imgs.add(holder);
         }
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs, IMAGE_DIFF_CALLBACK);
-//        updateFavouriteDisplay();
     }
 
     private void onStartingIndexChanged(Integer startingIndex) {
@@ -269,22 +266,12 @@ public class ViewerGalleryFragment extends Fragment {
         if (selectExtension.getSelectedItems().isEmpty() && img != null) {
             viewModel.setReaderStartingIndex(img.getDisplayOrder());
             if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
-                /*
-                if (filterFavouritesLaunchState != filterFavouritesState)
-                    viewModel.toggleFilterFavouritePages();
-
-                 */
                 getParentFragmentManager()
                         .beginTransaction()
                         .replace(android.R.id.content, new ViewerPagerFragment())
                         .addToBackStack(null)
                         .commit();
             } else { // Pager mode (Library -> pager -> gallery -> pager)
-                /*
-                if (filterFavouritesLaunchState != filterFavouritesState)
-                    viewModel.toggleFilterFavouritePages();
-
-                 */
                 getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
             }
             return true;
@@ -306,16 +293,7 @@ public class ViewerGalleryFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-//        outState.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
     }
-/*
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState != null)
-            filterFavourites = savedInstanceState.getBoolean(KEY_FILTER_FAVOURITES, false);
-    }
-*/
 
     /**
      * Returns true if the current book has at least a favourite

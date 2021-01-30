@@ -58,17 +58,9 @@ import timber.log.Timber;
 
 public class ImageViewerViewModel extends AndroidViewModel {
 
-//    private static final String KEY_IS_SHUFFLED = "is_shuffled";
-
     // Collection DAO
     private final CollectionDAO collectionDao;
     private ContentSearchManager searchManager;
-
-    // Settings
-    /*
-    private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
-    private boolean showFavourites = false;                                          // True if viewer only shows favourite images; false if shows all pages
-     */
 
     // Collection data
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
@@ -139,17 +131,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     public LiveData<Boolean> getShowFavouritesOnly() {
         return showFavouritesOnly;
     }
-
-/*
-    public void onSaveState(Bundle outState) {
-        outState.putBoolean(KEY_IS_SHUFFLED, isShuffled);
-    }
-
-    public void onRestoreState(@Nullable Bundle savedState) {
-        if (savedState == null) return;
-        isShuffled = savedState.getBoolean(KEY_IS_SHUFFLED, false);
-    }
- */
 
     public void loadFromContent(long contentId) {
         if (contentId > 0) {
@@ -527,15 +508,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         if (images.isEmpty()) return;
 
-        // TODO update a new instance of the image, not the existing instance (which is the one that's inside the ViewHolder) !
         // Toggle the value on a copy, not on the original instance that is contained inside the ViewHolder
         for (ImageFile img : images) img.setFavourite(!img.isFavourite());
 
         // Persist in DB
         collectionDao.insertImageFiles(images);
 
-        // TODO properly Persist new values in JSON
+        // Persist new values in JSON
         Content theContent = images.get(0).getContent().getTarget();
+        theContent.setImageFiles(images);
         Context context = getApplication().getApplicationContext();
         if (!theContent.getJsonUri().isEmpty())
             ContentHelper.updateContentJson(context, theContent);
