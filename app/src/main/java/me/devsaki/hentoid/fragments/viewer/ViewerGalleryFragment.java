@@ -344,8 +344,7 @@ public class ViewerGalleryFragment extends Fragment {
      * Callback for any selection change (item added to or removed from selection)
      */
     private void onSelectionChanged() {
-        Set<ImageFileItem> selectedItems = selectExtension.getSelectedItems();
-        int selectedCount = selectedItems.size();
+        int selectedCount = selectExtension.getSelections().size();
 
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
