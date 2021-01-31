@@ -73,11 +73,13 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
 
         private final TextView pageNumberTxt;
         private final ImageView image;
+        private final ImageView checkedIndicator;
 
         ImageViewHolder(View view) {
             super(view);
             pageNumberTxt = requireViewById(view, R.id.viewer_gallery_pagenumber_text);
             image = requireViewById(view, R.id.viewer_gallery_image);
+            checkedIndicator = requireViewById(view, R.id.checked_indicator);
         }
 
 
@@ -94,6 +96,10 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
             }
 
             updateText(item);
+
+            if (item.isSelected()) checkedIndicator.setVisibility(View.VISIBLE);
+            else checkedIndicator.setVisibility(View.GONE);
+
             Glide.with(image)
                     .load(Uri.parse(item.image.getFileUri()))
                     .apply(glideRequestOptions)

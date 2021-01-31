@@ -3,8 +3,6 @@ package me.devsaki.hentoid.fragments.viewer;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -64,16 +62,12 @@ public class ViewerGalleryFragment extends Fragment {
 
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
-    private boolean invalidateNextItemClick = false;
     private int startIndex = 0;
     private boolean firstLoadDone = false;
 
     private boolean filterFavouritesLaunchState = false;
     private boolean filterFavouritesLaunchRequest = false;
     private boolean filterFavouritesState = false;
-
-    // TODO doc
-    private int previousSelectedCount = 0;
 
 
     public static final DiffCallback<ImageFileItem> IMAGE_DIFF_CALLBACK = new DiffCallback<ImageFileItem>() {
@@ -141,8 +135,35 @@ public class ViewerGalleryFragment extends Fragment {
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
         }
 
-        // Item click listener
+        // Item click listeners
+        fastAdapter.setOnPreClickListener((v, a, i, p) -> {
+            Set<Integer> selectedPositions = selectExtension.getSelections();
+            if (0 == selectedPositions.size()) { // No selection -> normal click
+                return false;
+            } else { // Existing selection -> toggle selection
+                View selectIndicator = v.findViewById(R.id.checked_indicator);
+                if (selectedPositions.contains(p)) {
+                    selectIndicator.setVisibility(View.GONE);
+                    if (1 == selectedPositions.size()) selectExtension.setSelectOnLongClick(true);
+                } else {
+                    selectIndicator.setVisibility(View.VISIBLE);
+                }
+                selectExtension.toggleSelection(p);
+                return true;
+            }
+        });
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
+
+        fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
+            Set<Integer> selectedPositions = selectExtension.getSelections();
+            if (0 == selectedPositions.size()) { // No selection -> select things
+                v.findViewById(R.id.checked_indicator).setVisibility(View.VISIBLE);
+                selectExtension.toggleSelection(p);
+                selectExtension.setSelectOnLongClick(false);
+                return true;
+            }
+            return false;
+        });
 
         // Filtering
         itemAdapter.getItemFilter().setFilterPredicate((imageFileItem, charSequence) -> !charSequence.equals("true") || imageFileItem.isFavourite());
@@ -263,7 +284,7 @@ public class ViewerGalleryFragment extends Fragment {
 
     private boolean onItemClick(int position, ImageFileItem item) {
         ImageFile img = item.getImage();
-        if (selectExtension.getSelectedItems().isEmpty() && img != null) {
+        if (img != null) {
             viewModel.setReaderStartingIndex(img.getDisplayOrder());
             if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
                 getParentFragmentManager()
@@ -275,8 +296,6 @@ public class ViewerGalleryFragment extends Fragment {
                 getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
             }
             return true;
-        } else if (!invalidateNextItemClick) {
-            selectExtension.toggleSelection(position);
         }
         return false;
     }
@@ -316,18 +335,11 @@ public class ViewerGalleryFragment extends Fragment {
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
             toolbar.setVisibility(View.VISIBLE);
-            selectExtension.setSelectOnLongClick(true);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
             toolbar.setVisibility(View.GONE);
         }
-
-        if (1 == selectedCount && 0 == previousSelectedCount) {
-            invalidateNextItemClick = true;
-            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextItemClick = false, 450);
-        }
-        previousSelectedCount = selectedCount;
     }
 
     /**

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_gallery_card"
+    android:background="@color/transparent"
     android:clickable="true"
     android:focusable="true">
 
@@ -21,11 +21,25 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
+    <ImageView
+        android:id="@+id/checked_indicator"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_check_square"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/viewer_gallery_image"
+        app:layout_constraintTop_toTopOf="@id/viewer_gallery_image"
+        app:layout_constraintVertical_bias="1.0"
+        app:tint="@color/black_opacity_87"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+
     <TextView
         android:id="@+id/viewer_gallery_pagenumber_text"
         style="@style/TextShadow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@color/black_opacity_50"
         android:clickable="false"
         android:duplicateParentState="true"
         android:focusable="false"
@@ -34,7 +48,6 @@
         android:padding="8dp"
         android:textAlignment="center"
         android:textColor="@color/white_opacity_87"
-        android:background="@color/black_opacity_50"
         android:textSize="@dimen/text_body_2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/viewer_gallery_image"
