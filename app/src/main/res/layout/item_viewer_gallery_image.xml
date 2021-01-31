@@ -17,6 +17,7 @@
         android:focusable="false"
         android:maxHeight="150dp"
         android:minHeight="100dp"
+        tools:src="@tools:sample/avatars"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
