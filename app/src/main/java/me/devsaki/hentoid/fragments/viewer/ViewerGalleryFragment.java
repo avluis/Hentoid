@@ -15,6 +15,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.IntStream;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -39,6 +40,7 @@ import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.devsaki.hentoid.widget.DragSelectTouchListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
@@ -59,6 +61,8 @@ public class ViewerGalleryFragment extends Fragment {
     private final ItemAdapter<ImageFileItem> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<ImageFileItem> fastAdapter = FastAdapter.with(itemAdapter);
     private SelectExtension<ImageFileItem> selectExtension;
+
+    private DragSelectTouchListener mDragSelectTouchListener;
 
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
@@ -155,6 +159,7 @@ public class ViewerGalleryFragment extends Fragment {
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
 
         fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
+            mDragSelectTouchListener.startDragSelection(p);
             Set<Integer> selectedPositions = selectExtension.getSelections();
             if (0 == selectedPositions.size()) { // No selection -> select things
                 v.findViewById(R.id.checked_indicator).setVisibility(View.VISIBLE);
@@ -172,6 +177,16 @@ public class ViewerGalleryFragment extends Fragment {
         recyclerView.setAdapter(fastAdapter);
         new FastScrollerBuilder(recyclerView).build();
 
+        // Select on swipe
+        DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> {
+            selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
+        };
+        mDragSelectTouchListener = new DragSelectTouchListener()
+                .withSelectListener(onDragSelectionListener);
+        recyclerView.addOnItemTouchListener(mDragSelectTouchListener);
+
+
+        // Toolbar
         toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
