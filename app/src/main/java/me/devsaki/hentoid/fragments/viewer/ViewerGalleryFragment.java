@@ -145,25 +145,19 @@ public class ViewerGalleryFragment extends Fragment {
             if (0 == selectedPositions.size()) { // No selection -> normal click
                 return false;
             } else { // Existing selection -> toggle selection
-                View selectIndicator = v.findViewById(R.id.checked_indicator);
-                if (selectedPositions.contains(p)) {
-                    selectIndicator.setVisibility(View.GONE);
-                    if (1 == selectedPositions.size()) selectExtension.setSelectOnLongClick(true);
-                } else {
-                    selectIndicator.setVisibility(View.VISIBLE);
-                }
+                if (selectedPositions.contains(p) && 1 == selectedPositions.size())
+                    selectExtension.setSelectOnLongClick(true);
                 selectExtension.toggleSelection(p);
                 return true;
             }
         });
-        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
+        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
 
         fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
             mDragSelectTouchListener.startDragSelection(p);
             Set<Integer> selectedPositions = selectExtension.getSelections();
             if (0 == selectedPositions.size()) { // No selection -> select things
-                v.findViewById(R.id.checked_indicator).setVisibility(View.VISIBLE);
-                selectExtension.toggleSelection(p);
+                selectExtension.select(p);
                 selectExtension.setSelectOnLongClick(false);
                 return true;
             }
@@ -178,9 +172,7 @@ public class ViewerGalleryFragment extends Fragment {
         new FastScrollerBuilder(recyclerView).build();
 
         // Select on swipe
-        DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> {
-            selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
-        };
+        DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
         mDragSelectTouchListener = new DragSelectTouchListener()
                 .withSelectListener(onDragSelectionListener);
         recyclerView.addOnItemTouchListener(mDragSelectTouchListener);
@@ -297,7 +289,7 @@ public class ViewerGalleryFragment extends Fragment {
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
     }
 
-    private boolean onItemClick(int position, ImageFileItem item) {
+    private boolean onItemClick(ImageFileItem item) {
         ImageFile img = item.getImage();
         if (img != null) {
             viewModel.setReaderStartingIndex(img.getDisplayOrder());
