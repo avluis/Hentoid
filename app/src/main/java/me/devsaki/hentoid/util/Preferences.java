@@ -610,6 +610,26 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getViewerDeleteAskMode() {
+        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_DELETE_ASK_MODE, Integer.toString(Default.VIEWER_DELETE_ASK_MODE)) + "");
+    }
+
+    public static void setViewerDeleteAskMode(int viewerDeleteAskMode) {
+        sharedPreferences.edit()
+                .putString(Key.VIEWER_DELETE_ASK_MODE, Integer.toString(viewerDeleteAskMode))
+                .apply();
+    }
+
+    public static int getViewerDeleteTarget() {
+        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_DELETE_TARGET, Integer.toString(Default.VIEWER_DELETE_TARGET)) + "");
+    }
+
+    public static void setViewerDeleteTarget(int viewerDeleteTarget) {
+        sharedPreferences.edit()
+                .putString(Key.VIEWER_DELETE_TARGET, Integer.toString(viewerDeleteTarget))
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -694,6 +714,8 @@ public final class Preferences {
         public static final String ARTIST_GROUP_VISIBILITY = "artist_group_visibility";
         public static final String EXPORT_SETTINGS = "export_settings";
         public static final String IMPORT_SETTINGS = "import_settings";
+        public static final String VIEWER_DELETE_ASK_MODE = "viewer_delete_ask";
+        public static final String VIEWER_DELETE_TARGET = "viewer_delete_target";
 
         // Deprecated values kept for housekeeping/migration
         static final String ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -769,6 +791,8 @@ public final class Preferences {
         static final long DB_MAX_SIZE_KB = 2L * 1024 * 1024; // 2GB
         static final int GROUPING_DISPLAY = Grouping.FLAT.getId();
         static final int ARTIST_GROUP_VISIBILITY = Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
+        static final int VIEWER_DELETE_ASK_MODE = Constant.VIEWER_DELETE_ASK_AGAIN;
+        static final int VIEWER_DELETE_TARGET = Constant.VIEWER_DELETE_TARGET_PAGE;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -860,6 +884,13 @@ public final class Preferences {
         public static final int ARTIST_GROUP_VISIBILITY_ARTISTS = 0;
         public static final int ARTIST_GROUP_VISIBILITY_GROUPS = 1;
         public static final int ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS = 2;
+
+        public static final int VIEWER_DELETE_ASK_AGAIN = 0;
+        public static final int VIEWER_DELETE_ASK_BOOK = 1;
+        public static final int VIEWER_DELETE_ASK_SESSION = 2;
+
+        public static final int VIEWER_DELETE_TARGET_BOOK = 0;
+        public static final int VIEWER_DELETE_TARGET_PAGE = 1;
 
         // Deprecated values kept for housekeeping/migration
         @Deprecated

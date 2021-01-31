@@ -41,7 +41,6 @@
         android:padding="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/book_prefs_browse_txt"
-        app:spinner_arrow_drawable="@drawable/arrow_vector"
         app:spinner_arrow_gravity="end"
         app:spinner_arrow_padding="8dp"
         app:spinner_arrow_tint="@color/white_opacity_66"
@@ -49,6 +48,10 @@
         app:spinner_divider_size="0.4dp"
         app:spinner_popup_background="@color/dark_gray"
         app:spinner_popup_elevation="14dp" />
+
+    <!--
+            app:spinner_arrow_drawable="@drawable/arrow_vector"
+-->
 
     <TextView
         android:id="@+id/book_prefs_rendering_txt"
@@ -72,7 +75,6 @@
         android:padding="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_txt"
-        app:spinner_arrow_drawable="@drawable/arrow_vector"
         app:spinner_arrow_gravity="end"
         app:spinner_arrow_padding="8dp"
         app:spinner_arrow_tint="@color/white_opacity_66"

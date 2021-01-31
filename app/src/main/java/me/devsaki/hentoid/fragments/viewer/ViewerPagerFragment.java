@@ -149,7 +149,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     startSlideshow();
                     break;
                 case R.id.action_delete_book:
-                    ViewerDeleteDialogFragment.invoke(this, !isContentArchive);
+                    if (Constant.VIEWER_DELETE_ASK_AGAIN == Preferences.getViewerDeleteAskMode())
+                        ViewerDeleteDialogFragment.invoke(this, !isContentArchive);
+                    else // We already know what to delete
+                        onDeleteElement(Constant.VIEWER_DELETE_TARGET_PAGE == Preferences.getViewerDeleteTarget());
                     break;
                 default:
                     // Nothing to do here
@@ -802,6 +805,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Load next book
      */
     private void nextBook() {
+        if (Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
+            Preferences.setViewerDeleteAskMode(Constant.VIEWER_DELETE_ASK_AGAIN);
         viewModel.loadNextContent(imageIndex);
     }
 
@@ -809,6 +814,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Load previous book
      */
     private void previousBook() {
+        if (Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
+            Preferences.setViewerDeleteAskMode(Constant.VIEWER_DELETE_ASK_AGAIN);
         viewModel.loadPreviousContent(imageIndex);
     }
 
