@@ -19,13 +19,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.skydoves.powerspinner.PowerSpinnerView
+        android:id="@+id/book_prefs_delete_spin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/bg_spinner_border"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:spinner_arrow_gravity="end"
+        app:spinner_arrow_padding="8dp"
+        app:spinner_arrow_tint="@color/white_opacity_66"
+        app:spinner_divider_show="true"
+        app:spinner_divider_size="0.4dp"
+        app:spinner_popup_background="@color/dark_gray"
+        app:spinner_popup_elevation="14dp" />
+
     <RadioGroup
         android:id="@+id/delete_mode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title">
+        app:layout_constraintTop_toBottomOf="@id/book_prefs_delete_spin">
 
         <RadioButton
             android:id="@+id/delete_mode_page"
@@ -41,24 +59,6 @@
             android:text="@string/viewer_delete_book"
             android:textColor="?colorOnSurface" />
     </RadioGroup>
-
-    <com.skydoves.powerspinner.PowerSpinnerView
-        android:id="@+id/book_prefs_delete_spin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:background="@drawable/bg_spinner_border"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/delete_mode"
-        app:spinner_arrow_gravity="end"
-        app:spinner_arrow_padding="8dp"
-        app:spinner_arrow_tint="@color/white_opacity_66"
-        app:spinner_divider_show="true"
-        app:spinner_divider_size="0.4dp"
-        app:spinner_popup_background="@color/dark_gray"
-        app:spinner_popup_elevation="14dp" />
 
     <TextView
         android:id="@+id/book_delete_ok_btn"
@@ -76,6 +76,6 @@
         android:text="@string/confirm"
         android:textAllCaps="true"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_delete_spin" />
+        app:layout_constraintTop_toBottomOf="@id/delete_mode" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
