@@ -88,10 +88,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     private ItemTouchHelper touchHelper;
 
     // === VARIABLES
-    // Used to ignore native calls to onBookClick right after that book has been deselected
-    private boolean invalidateNextBookClick = false;
-    // TODO doc
-    private int previousSelectedCount = 0;
     // Used to show a given item at first display
     private long contentHashToDisplayFirst = 0;
     // Used to start processing when the recyclerView has finished updating
@@ -137,8 +133,28 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         touchHelper = new ItemTouchHelper(swipeCallback);
         touchHelper.attachToRecyclerView(recyclerView);
 
-        // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(p, i));
+        // Item click listeners
+        fastAdapter.setOnPreClickListener((v, a, i, p) -> {
+            Set<Integer> selectedPositions = selectExtension.getSelections();
+            if (0 == selectedPositions.size()) { // No selection -> normal click
+                return false;
+            } else { // Existing selection -> toggle selection
+                if (selectedPositions.contains(p) && 1 == selectedPositions.size())
+                    selectExtension.setSelectOnLongClick(true);
+                selectExtension.toggleSelection(p);
+                return true;
+            }
+        });
+        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
+        fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
+            Set<Integer> selectedPositions = selectExtension.getSelections();
+            if (0 == selectedPositions.size()) { // No selection -> select things
+                selectExtension.select(p);
+                selectExtension.setSelectOnLongClick(false);
+                return true;
+            }
+            return false;
+        });
 
         // Fast scroller
         new FastScrollerBuilder(recyclerView).build();
@@ -354,15 +370,13 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         contentHashToDisplayFirst = contentHash;
     }
 
-    private boolean onBookClick(int position, ContentItem item) {
-        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty()) {
+    private boolean onItemClick(ContentItem item) {
+        if (null == selectExtension || selectExtension.getSelections().isEmpty()) {
             Content c = item.getContent();
             if (c != null && !ContentHelper.openHentoidViewer(requireContext(), c, null))
                 ToastUtil.toast(R.string.err_no_content);
 
             return true;
-        } else if (!invalidateNextBookClick) {
-            selectExtension.toggleSelection(position);
         }
         return false;
     }
@@ -371,7 +385,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         // Deleted book is the last selected books => disable selection mode
         if (item.isSelected()) {
             selectExtension.deselect(item);
-            if (selectExtension.getSelectedItems().isEmpty())
+            if (selectExtension.getSelections().isEmpty())
                 selectionToolbar.setVisibility(View.GONE);
         }
 
@@ -395,7 +409,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     private void onDeleteComplete() {
         isDeletingAll = false;
         viewModel.refresh();
-        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
+        if (null == selectExtension || selectExtension.getSelections().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }
 
@@ -411,7 +425,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
             String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
-        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
+        if (null == selectExtension || selectExtension.getSelections().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }
 
@@ -494,20 +508,15 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
      * Callback for any selection change (item added to or removed from selection)
      */
     private void onSelectionChanged() {
-        int selectedCount = selectExtension.getSelectedItems().size();
+        int selectedCount = selectExtension.getSelections().size();
 
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
+            selectExtension.setSelectOnLongClick(true);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
         }
-
-        if (1 == selectedCount && 0 == previousSelectedCount) {
-            invalidateNextBookClick = true;
-            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 450);
-        }
-        previousSelectedCount = selectedCount;
     }
 
     private void askRedownloadSelectedScratch() {

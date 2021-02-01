@@ -685,7 +685,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private boolean onItemClick(ContentItem item) {
-        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty()) {
+        if (null == selectExtension || selectExtension.getSelections().isEmpty()) {
             Content c = item.getContent();
             // Process the click
             if (null == c) {
@@ -710,7 +710,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Deleted book is the last selected books => disable selection mode
         if (item.isSelected()) {
             selectExtension.deselect(item);
-            if (selectExtension.getSelectedItems().isEmpty())
+            if (selectExtension.getSelections().isEmpty())
                 selectionToolbar.setVisibility(View.GONE);
         }
 
@@ -734,7 +734,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void onCancelComplete() {
         isCancelingAll = false;
         viewModel.refresh();
-        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
+        if (null == selectExtension || selectExtension.getSelections().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }
 
@@ -749,7 +749,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             String message = (null == t.getMessage()) ? "Content removal failed" : t.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
-        if (null == selectExtension || selectExtension.getSelectedItems().isEmpty())
+        if (null == selectExtension || selectExtension.getSelections().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }
 
