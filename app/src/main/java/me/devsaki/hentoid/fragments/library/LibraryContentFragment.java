@@ -155,10 +155,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     // ======== VARIABLES
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
-    // Used to ignore native calls to onBookClick right after that book has been deselected
-    private boolean invalidateNextBookClick = false;
-    // TODO doc
-    private int previousSelectedCount = 0;
     // Total number of books in the whole unfiltered library
     private int totalContentCount;
     // True when a new search has been performed and its results have not been handled yet
@@ -786,7 +782,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
     private void customBackPress() {
         // If content is selected, deselect it
-        if (!selectExtension.getSelectedItems().isEmpty()) {
+        if (!selectExtension.getSelections().isEmpty()) {
             selectExtension.deselect();
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             backButtonPressed = 0;
@@ -934,8 +930,28 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
 
-        // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(p, i));
+        // Item click listeners
+        fastAdapter.setOnPreClickListener((v, a, i, p) -> {
+            Set<Integer> selectedPositions = selectExtension.getSelections();
+            if (0 == selectedPositions.size()) { // No selection -> normal click
+                return false;
+            } else { // Existing selection -> toggle selection
+                if (selectedPositions.contains(p) && 1 == selectedPositions.size())
+                    selectExtension.setSelectOnLongClick(true);
+                selectExtension.toggleSelection(p);
+                return true;
+            }
+        });
+        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
+        fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
+            Set<Integer> selectedPositions = selectExtension.getSelections();
+            if (0 == selectedPositions.size()) { // No selection -> select things
+                selectExtension.select(p);
+                selectExtension.setSelectOnLongClick(false);
+                return true;
+            }
+            return false;
+        });
 
         // Favourite button click listener
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
@@ -1193,15 +1209,13 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      *
      * @param item ContentItem that has been clicked on
      */
-    private boolean onBookClick(int position, @NonNull ContentItem item) {
-        if (selectExtension.getSelectedItems().isEmpty()) {
+    private boolean onItemClick(int position, @NonNull ContentItem item) {
+        if (selectExtension.getSelections().isEmpty()) {
             if (item.getContent() != null && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
                 ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
             }
             return true;
-        } else if (!invalidateNextBookClick) {
-            selectExtension.toggleSelection(position);
         }
         return false;
     }
@@ -1266,17 +1280,12 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         if (0 == selectedCount) {
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
+            selectExtension.setSelectOnLongClick(true);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
             activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
-
-        if (1 == selectedCount && 0 == previousSelectedCount) {
-            invalidateNextBookClick = true;
-            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 450);
-        }
-        previousSelectedCount = selectedCount;
     }
 
     /**
@@ -1384,7 +1393,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         // Deleted book is the last selected books => disable selection mode
         if (item.isSelected()) {
             selectExtension.deselect(item);
-            if (selectExtension.getSelectedItems().isEmpty())
+            if (selectExtension.getSelections().isEmpty())
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
         }
 
