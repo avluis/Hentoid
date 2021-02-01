@@ -134,10 +134,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private boolean isCancelingAll = false;
 
     // === VARIABLES
-    // Used to ignore native calls to onBookClick right after that book has been deselected
-    private boolean invalidateNextBookClick = false;
-    // TODO doc
-    private int previousSelectedCount = 0;
     // Used to show a given item at first display
     private long contentHashToDisplayFirst = 0;
 
@@ -223,8 +219,28 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         touchHelper = new ItemTouchHelper(dragSwipeCallback);
         touchHelper.attachToRecyclerView(recyclerView);
 
-        // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onBookClick(p, i));
+        // Item click listeners
+        fastAdapter.setOnPreClickListener((v, a, i, p) -> {
+            Set<Integer> selectedPositions = selectExtension.getSelections();
+            if (0 == selectedPositions.size()) { // No selection -> normal click
+                return false;
+            } else { // Existing selection -> toggle selection
+                if (selectedPositions.contains(p) && 1 == selectedPositions.size())
+                    selectExtension.setSelectOnLongClick(true);
+                selectExtension.toggleSelection(p);
+                return true;
+            }
+        });
+        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
+        fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
+            Set<Integer> selectedPositions = selectExtension.getSelections();
+            if (0 == selectedPositions.size()) { // No selection -> select things
+                selectExtension.select(p);
+                selectExtension.setSelectOnLongClick(false);
+                return true;
+            }
+            return false;
+        });
 
         initToolbar();
         initSelectionToolbar();
@@ -668,7 +684,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
     }
 
-    private boolean onBookClick(int position, ContentItem item) {
+    private boolean onItemClick(ContentItem item) {
         if (null == selectExtension || selectExtension.getSelectedItems().isEmpty()) {
             Content c = item.getContent();
             // Process the click
@@ -686,10 +702,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     ToastUtil.toast(R.string.err_no_content);
                 return true;
             } else return false;
-        } else if (!invalidateNextBookClick) {
-            selectExtension.toggleSelection(position);
         }
-
         return false;
     }
 
@@ -850,14 +863,14 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 if (!selectedContent.isEmpty()) askDeleteSelected(selectedContent);
                 break;
             case R.id.action_select_queue_top:
-                selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
+                selectedPositions = Stream.of(selectedItems).map(fastAdapter::getPosition).sorted().toList();
                 selectExtension.deselect();
                 if (!selectedPositions.isEmpty())
                     processMove(selectedPositions, viewModel::moveTop);
                 exitSelection = true;
                 break;
             case R.id.action_select_queue_bottom:
-                selectedPositions = Stream.of(selectedItems).map(i -> fastAdapter.getPosition(i)).sorted().toList();
+                selectedPositions = Stream.of(selectedItems).map(fastAdapter::getPosition).sorted().toList();
                 selectExtension.deselect();
                 if (!selectedPositions.isEmpty())
                     processMove(selectedPositions, viewModel::moveBottom);
@@ -879,20 +892,15 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      * Callback for any selection change (item added to or removed from selection)
      */
     private void onSelectionChanged() {
-        int selectedCount = selectExtension.getSelectedItems().size();
+        int selectedCount = selectExtension.getSelections().size();
 
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
+            selectExtension.setSelectOnLongClick(true);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
         }
-
-        if (1 == selectedCount && 0 == previousSelectedCount) {
-            invalidateNextBookClick = true;
-            new Handler(Looper.getMainLooper()).postDelayed(() -> invalidateNextBookClick = false, 450);
-        }
-        previousSelectedCount = selectedCount;
     }
 
     /**
