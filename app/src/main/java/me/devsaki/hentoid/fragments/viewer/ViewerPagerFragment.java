@@ -805,8 +805,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Load next book
      */
     private void nextBook() {
-        if (Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
-            Preferences.setViewerDeleteAskMode(Constant.VIEWER_DELETE_ASK_AGAIN);
         viewModel.loadNextContent(imageIndex);
     }
 
@@ -814,8 +812,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Load previous book
      */
     private void previousBook() {
-        if (Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
-            Preferences.setViewerDeleteAskMode(Constant.VIEWER_DELETE_ASK_AGAIN);
         viewModel.loadPreviousContent(imageIndex);
     }
 
