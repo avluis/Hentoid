@@ -460,8 +460,12 @@ public class ContentDownloadService extends IntentService {
             notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages, (int) sizeDownloadedMB, (int) estimateBookSizeMB, avgSpeedKbps));
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages, sizeDownloadedBytes));
 
-            // If the "skip large downloads on mobile data" is on, estimate book size and skip if needed
-            if (Preferences.isDownloadLargeOnlyWifi() && estimateBookSizeMB > Preferences.getDownloadLargeOnlyWifiThresholdMB()) {
+            // If the "skip large downloads on mobile data" is on, skip if needed
+            if (Preferences.isDownloadLargeOnlyWifi() &&
+                    (estimateBookSizeMB > Preferences.getDownloadLargeOnlyWifiThresholdMB()
+                            || totalPages > Preferences.getDownloadLargeOnlyWifiThresholdPages()
+                    )
+            ) {
                 @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(this);
                 if (NetworkHelper.Connectivity.WIFI != connectivity) {
                     // Move the book to the errors queue and signal it as skipped

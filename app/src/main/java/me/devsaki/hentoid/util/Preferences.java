@@ -512,6 +512,10 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.DL_SIZE_WIFI_THRESHOLD, Integer.toString(Default.DL_SIZE_WIFI_THRESHOLD)) + "");
     }
 
+    public static int getDownloadLargeOnlyWifiThresholdPages() {
+        return Integer.parseInt(sharedPreferences.getString(Key.DL_PAGES_WIFI_THRESHOLD, Integer.toString(Default.DL_PAGES_WIFI_THRESHOLD)) + "");
+    }
+
     public static boolean isDlRetriesActive() {
         return sharedPreferences.getBoolean(Key.DL_RETRIES_ACTIVE, Default.DL_RETRIES_ACTIVE);
     }
@@ -699,6 +703,7 @@ public final class Preferences {
         static final String QUEUE_WIFI_ONLY = "pref_queue_wifi_only";
         static final String DL_SIZE_WIFI = "pref_dl_size_wifi";
         static final String DL_SIZE_WIFI_THRESHOLD = "pref_dl_size_wifi_threshold";
+        static final String DL_PAGES_WIFI_THRESHOLD = "pref_dl_pages_wifi_threshold";
         static final String DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
@@ -777,6 +782,7 @@ public final class Preferences {
         static final boolean QUEUE_WIFI_ONLY = false;
         static final boolean DL_SIZE_WIFI = false;
         static final int DL_SIZE_WIFI_THRESHOLD = 40;
+        static final int DL_PAGES_WIFI_THRESHOLD = 999999;
         static final boolean DL_RETRIES_ACTIVE = false;
         static final int DL_RETRIES_NUMBER = 3;
         static final int DL_RETRIES_MEM_LIMIT = 100;
