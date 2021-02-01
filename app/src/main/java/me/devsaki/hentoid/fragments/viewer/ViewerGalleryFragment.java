@@ -152,7 +152,6 @@ public class ViewerGalleryFragment extends Fragment {
             }
         });
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
-
         fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
             mDragSelectTouchListener.startDragSelection(p);
             Set<Integer> selectedPositions = selectExtension.getSelections();
@@ -341,6 +340,7 @@ public class ViewerGalleryFragment extends Fragment {
         if (0 == selectedCount) {
             selectionToolbar.setVisibility(View.GONE);
             toolbar.setVisibility(View.VISIBLE);
+            selectExtension.setSelectOnLongClick(true);
         } else {
             updateSelectionToolbar(selectedCount);
             selectionToolbar.setVisibility(View.VISIBLE);
