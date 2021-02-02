@@ -45,6 +45,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -62,6 +64,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
@@ -102,6 +105,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     // COMMUNICATION
     // Viewmodel
     private QueueViewModel viewModel;
+    // Activity
+    private WeakReference<QueueActivity> activity;
 
     // UI ELEMENTS
     private View rootView;
@@ -146,6 +151,16 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private int topItemPosition = -1;
     private int offsetTop = 0;
 
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (!(requireActivity() instanceof QueueActivity))
+            throw new IllegalStateException("Parent activity has to be a LibraryActivity");
+        activity = new WeakReference<>((QueueActivity) requireActivity());
+
+        listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);
+    }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -254,8 +269,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 .map(v -> NetworkHelper.getIncomingNetworkUsage(requireContext()))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::updateNetworkUsage));
-
-        listRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::onRecyclerUpdated);
 
         return rootView;
     }
@@ -855,7 +868,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private boolean onSelectionMenuItemClicked(@NonNull MenuItem menuItem) {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         List<Integer> selectedPositions;
-        boolean exitSelection = false;
+        boolean keepToolbar = false;
 
         switch (menuItem.getItemId()) {
             case R.id.action_select_queue_cancel:
@@ -867,20 +880,22 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 selectExtension.deselect();
                 if (!selectedPositions.isEmpty())
                     processMove(selectedPositions, viewModel::moveTop);
-                exitSelection = true;
                 break;
             case R.id.action_select_queue_bottom:
                 selectedPositions = Stream.of(selectedItems).map(fastAdapter::getPosition).sorted().toList();
                 selectExtension.deselect();
                 if (!selectedPositions.isEmpty())
                     processMove(selectedPositions, viewModel::moveBottom);
-                exitSelection = true;
+                break;
+            case R.id.action_download_scratch:
+                askRedownloadSelectedScratch();
+                keepToolbar = true;
                 break;
             default:
                 // Nothing here
         }
-        if (exitSelection)
-            selectionToolbar.setVisibility(View.GONE);
+        if (!keepToolbar) selectionToolbar.setVisibility(View.GONE);
+
         return true;
     }
 
@@ -924,5 +939,48 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                         (dialog, which) -> selectExtension.deselect())
                 .setOnCancelListener(dialog -> selectExtension.deselect())
                 .create().show();
+    }
+
+    private void askRedownloadSelectedScratch() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+
+        int securedContent = 0;
+        List<Content> contents = new ArrayList<>();
+        for (ContentItem ci : selectedItems) {
+            Content c = ci.getContent();
+            if (null == c) continue;
+            if (c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)) {
+                securedContent++;
+            } else {
+                contents.add(c);
+            }
+        }
+
+        String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
+        if (securedContent > 0)
+            message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
+
+        // TODO make it work for secured sites (Fakku, ExHentai) -> open a browser to fetch the relevant cookies ?
+
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            activity.get().redownloadContent(contents, true);
+                            selectExtension.deselect();
+                            selectionToolbar.setVisibility(View.GONE);
+                        })
+                .setNegativeButton(R.string.no,
+                        (dialog12, which) -> {
+                            dialog12.dismiss();
+                            selectExtension.deselect();
+                            selectionToolbar.setVisibility(View.GONE);
+                        })
+                .create()
+                .show();
     }
 }

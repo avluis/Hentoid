@@ -34,6 +34,7 @@ import com.mikepenz.fastadapter.swipe.SimpleSwipeDrawerCallback;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -43,14 +44,11 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
 import me.devsaki.hentoid.fragments.library.ErrorsDialogFragment;
-import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -73,6 +71,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
 
     // === COMMUNICATION
     private QueueViewModel viewModel;
+    // Activity
+    private WeakReference<QueueActivity> activity;
 
     // === UI
     private LinearLayoutManager llm;
@@ -95,6 +95,16 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     // Indicate if the fragment is currently canceling all items
     private boolean isDeletingAll = false;
 
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (!(requireActivity() instanceof QueueActivity))
+            throw new IllegalStateException("Parent activity has to be a LibraryActivity");
+        activity = new WeakReference<>((QueueActivity) requireActivity());
+
+        listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -162,8 +172,6 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         initToolbar();
         initSelectionToolbar();
         attachButtons(fastAdapter);
-
-        listRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::onRecyclerUpdated);
 
         return rootView;
     }
@@ -548,15 +556,13 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            redownloadContent(contents, true);
-                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            activity.get().redownloadContent(contents, true);
                             selectExtension.deselect();
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog12, which) -> {
                             dialog12.dismiss();
-                            for (ContentItem ci : selectedItems) ci.setSelected(false);
                             selectExtension.deselect();
                             selectionToolbar.setVisibility(View.GONE);
                         })
@@ -565,33 +571,19 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     }
 
     private void redownloadSelected() {
-        redownloadContent(Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).withoutNulls().toList(), false);
+        activity.get().redownloadContent(Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).withoutNulls().toList(), false);
     }
 
     private void redownloadAll() {
         List<Content> contents = Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList();
-        if (!contents.isEmpty()) redownloadContent(contents, false);
+        if (!contents.isEmpty()) activity.get().redownloadContent(contents, false);
     }
 
     @Override
     public void redownloadContent(Content content) {
         List<Content> contentList = new ArrayList<>();
         contentList.add(content);
-        redownloadContent(contentList, false);
-    }
-
-    private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
-        StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
-        for (Content c : contentList)
-            if (c != null)
-                viewModel.addContentToQueue(c, targetImageStatus);
-
-        if (Preferences.isQueueAutostart())
-            ContentQueueManager.getInstance().resumeQueue(getContext());
-
-        String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
-        Snackbar snackbar = Snackbar.make(mEmptyText, message, BaseTransientBottomBar.LENGTH_LONG);
-        snackbar.show();
+        activity.get().redownloadContent(contentList, false);
     }
 
     @Override

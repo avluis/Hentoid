@@ -15,6 +15,8 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -25,6 +27,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.fragments.queue.ErrorsFragment;
 import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Preferences;
@@ -36,6 +39,7 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory;
  */
 public class QueueActivity extends BaseActivity {
 
+    private TabLayout tabLayout;
     private TabLayout.Tab queueTab;
     private TabLayout.Tab errorsTab;
 
@@ -45,6 +49,8 @@ public class QueueActivity extends BaseActivity {
     private MenuItem invertQueueMenu;
     private MenuItem cancelAllMenu;
     private MenuItem redownloadAllMenu;
+
+    private QueueViewModel viewModel;
 
 
     @Override
@@ -64,7 +70,7 @@ public class QueueActivity extends BaseActivity {
         redownloadAllMenu = toolbar.getMenu().findItem(R.id.action_redownload_all);
 
         // Instantiate a ViewPager and a PagerAdapter.
-        TabLayout tabLayout = findViewById(R.id.queue_tabs);
+        tabLayout = findViewById(R.id.queue_tabs);
         FragmentStateAdapter pagerAdapter = new ScreenSlidePagerAdapter(this);
         ViewPager2 viewPager = findViewById(R.id.queue_pager);
         viewPager.setUserInputEnabled(false); // Disable swipe to change tabs
@@ -89,7 +95,7 @@ public class QueueActivity extends BaseActivity {
         });
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
-        QueueViewModel viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
+        viewModel = new ViewModelProvider(this, vmFactory).get(QueueViewModel.class);
         viewModel.getQueue().observe(this, this::onQueueChanged);
         viewModel.getErrors().observe(this, this::onErrorsChanged);
 
@@ -174,6 +180,17 @@ public class QueueActivity extends BaseActivity {
         public int getItemCount() {
             return 2;
         }
+    }
+
+    public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
+        StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
+        for (Content c : contentList)
+            if (c != null)
+                viewModel.addContentToQueue(c, targetImageStatus);
+
+        String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, contentList.size(), contentList.size());
+        Snackbar snackbar = Snackbar.make(tabLayout, message, BaseTransientBottomBar.LENGTH_LONG);
+        snackbar.show();
     }
 
     // TODO deselect on back button

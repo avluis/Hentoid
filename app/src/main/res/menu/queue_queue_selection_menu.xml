@@ -16,6 +16,12 @@
         android:title="@string/move_bottom"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_download_scratch"
+        android:icon="@drawable/ic_action_download_scratch"
+        android:title="@string/menu_redownload_scratch"
+        android:tooltipText="@string/menu_redownload_scratch"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_select_queue_cancel"
         android:icon="@drawable/ic_action_delete_forever"
         android:title="@string/cancel"
