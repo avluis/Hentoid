@@ -77,7 +77,7 @@ public class IntroActivity extends AppIntro2 {
             autoEndHandler = new Handler(Looper.getMainLooper());
             autoEndHandler.postDelayed(() -> onDonePressed(newFragment), 2000);
         } else { // Stop auto-validate if user goes back
-            autoEndHandler.removeCallbacksAndMessages(null);
+            if (autoEndHandler != null) autoEndHandler.removeCallbacksAndMessages(null);
         }
     }
 
