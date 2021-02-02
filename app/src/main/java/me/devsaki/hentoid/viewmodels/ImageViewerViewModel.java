@@ -419,6 +419,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
             Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
 
+        // Don't do anything if the Content hasn't even been loaded
+        if (-1 == loadedContentId) return;
+
         List<ImageFile> theImages = images.getValue();
         Content theContent = collectionDao.selectContent(loadedContentId);
         if (null == theImages || null == theContent) return;
