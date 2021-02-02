@@ -303,6 +303,10 @@ public class ObjectBoxDB {
         return store.boxFor(QueueRecord.class).query().order(QueueRecord_.rank).build();
     }
 
+    boolean isContentInQueue(@NonNull final Content c) {
+        return store.boxFor(QueueRecord.class).query().equal(QueueRecord_.contentId, c.getId()).build().count() > 0;
+    }
+
     long selectMaxQueueOrder() {
         return store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.rank).max();
     }

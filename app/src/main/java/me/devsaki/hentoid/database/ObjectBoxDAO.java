@@ -558,11 +558,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         content.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(content);
 
-        List<QueueRecord> queue = db.selectQueue();
-        int lastIndex = 1;
-        if (!queue.isEmpty())
-            lastIndex = queue.get(queue.size() - 1).getRank() + 1;
-        db.insertQueue(content.getId(), lastIndex);
+        if (!db.isContentInQueue(content)) {
+            int maxQueueOrder = (int) db.selectMaxQueueOrder();
+            db.insertQueue(content.getId(), maxQueueOrder + 1);
+        }
     }
 
     private List<Long> contentIdSearch(
