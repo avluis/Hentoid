@@ -350,9 +350,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         if (theContent.getId() != loadedContentId) { // To be done once per book only
             int collectionStartingIndex = 0;
+
             // Auto-restart at last read position if asked to
-            if (Preferences.isViewerResumeLastLeft())
+            if (Preferences.isViewerResumeLastLeft() && theContent.getLastReadPageIndex() > -1)
                 collectionStartingIndex = theContent.getLastReadPageIndex();
+
             // Correct offset with the thumb index
             thumbIndex = -1;
             for (int i = 0; i < imageFiles.size(); i++)
@@ -362,6 +364,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 }
 
             if (thumbIndex == collectionStartingIndex) collectionStartingIndex += 1;
+
 
             setReaderStartingIndex(collectionStartingIndex - thumbIndex - 1);
 
@@ -567,7 +570,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void deletePage(int pageIndex, Consumer<Throwable> onError) {
         List<ImageFile> imageFiles = images.getValue();
-        if (imageFiles != null && imageFiles.size() > pageIndex)
+        if (imageFiles != null && imageFiles.size() > pageIndex && pageIndex > -1)
             deletePages(Stream.of(imageFiles.get(pageIndex)).toList(), onError);
     }
 
