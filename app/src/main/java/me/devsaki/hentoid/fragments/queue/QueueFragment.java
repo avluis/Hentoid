@@ -599,8 +599,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, this::onCancelSwipedBook)).withoutNulls().toList();
-//        itemAdapter.setNewList(contentItems, true);
+        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, this::onCancelSwipedBook)).withoutNulls().distinct().toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems);
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
         updateControlBar();

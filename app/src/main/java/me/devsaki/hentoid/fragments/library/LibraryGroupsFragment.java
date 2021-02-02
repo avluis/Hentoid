@@ -617,7 +617,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                                 GroupDisplayItem.ViewType.LIBRARY :
                                 GroupDisplayItem.ViewType.LIBRARY_GRID;
 
-        List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).toList();
+        List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).withoutNulls().distinct().toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK);
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
 

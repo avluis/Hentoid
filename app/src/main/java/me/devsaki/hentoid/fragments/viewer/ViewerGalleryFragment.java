@@ -235,6 +235,8 @@ public class ViewerGalleryFragment extends Fragment {
             if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
             imgs.add(holder);
         }
+        // Remove duplicates
+        imgs = Stream.of(imgs).distinct().toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs, IMAGE_DIFF_CALLBACK);
     }
 

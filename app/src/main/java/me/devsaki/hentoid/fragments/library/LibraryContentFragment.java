@@ -1091,9 +1091,9 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         else
             viewType = ContentItem.ViewType.LIBRARY_GRID; // Paged mode won't be used in edit mode
 
-        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType, this::onDeleteSwipedBook)).toList();
+        List<ContentItem> contentItems = Stream.of(iLibrary.subList(minIndex, maxIndex)).withoutNulls().map(c -> new ContentItem(c, null, viewType, this::onDeleteSwipedBook)).distinct().toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK);
-        //itemAdapter.setNewList(contentItems, true);
+
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
     }
 
@@ -1107,10 +1107,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 viewType = activity.get().isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
-            contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).toList();
+            contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).distinct().toList();
         }
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK);
-        //itemAdapter.setNewList(contentItems, true);
+
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
     }
 
