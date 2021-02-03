@@ -1,8 +1,7 @@
-package me.devsaki.hentoid.services;
+package me.devsaki.hentoid.workers;
 
 import android.annotation.SuppressLint;
-import android.app.IntentService;
-import android.content.Intent;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,6 +10,8 @@ import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
@@ -83,67 +84,65 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.InputStreamVolleyRequest;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.util.notification.NotificationManager;
-import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
-
-/**
- * Created by Robb_w on 2018/04
- * Book download service; 1 instance everytime a new book of the queue has to be downloaded
- * NB : As per IntentService behaviour, only one thread can be active at a time (no parallel runs of ContentDownloadService)
- */
-public class ContentDownloadService extends IntentService {
+public class ContentDownloadWorker extends Worker {
 
     private enum QueuingResult {
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
     }
 
-    private CollectionDAO dao;
-    private ServiceNotificationManager notificationManager;
+    private NotificationManager notificationManager;
     private NotificationManager warningNotificationManager;
+
+    // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
+    private final CollectionDAO dao;
+
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
 
-    private RequestQueueManager<Object> requestQueueManager;
+    private final RequestQueueManager<Object> requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Download speed calculator
     private final DownloadSpeedCalculator downloadSpeedCalulator = new DownloadSpeedCalculator();
 
 
-    public ContentDownloadService() {
-        super(ContentDownloadService.class.getName());
+    public ContentDownloadWorker(
+            @NonNull Context context,
+            @NonNull WorkerParameters parameters) {
+        super(context, parameters);
+
+        initNotifications(context);
+        EventBus.getDefault().register(this);
+        dao = new ObjectBoxDAO(context);
+
+        requestQueueManager = RequestQueueManager.getInstance(context);
+
+        Timber.d("Download worker created");
     }
 
-    private void notifyStart() {
-        notificationManager = new ServiceNotificationManager(this, 1);
-        notificationManager.cancel();
-        notificationManager.startForeground(new DownloadProgressNotification(this.getResources().getString(R.string.starting_download), 0, 0, 0, 0, 0));
+    @Override
+    public void onStopped() {
+        clear();
+        super.onStopped();
+    }
 
-        warningNotificationManager = new NotificationManager(this, 2);
+    private void initNotifications(Context context) {
+        notificationManager = new NotificationManager(context, 1);
+        notificationManager.cancel();
+
+        warningNotificationManager = new NotificationManager(context, 2);
         warningNotificationManager.cancel();
     }
 
-    // Only called once when processing multiple downloads; will be only called
-    // if the entire queue is paused (=service destroyed), then resumed (service re-created)
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        notifyStart();
-
-        EventBus.getDefault().register(this);
-
-        dao = new ObjectBoxDAO(this);
-
-        requestQueueManager = RequestQueueManager.getInstance(this);
-
-        Timber.d("Download service created");
+    private void ensureLongRunning() {
+        String message = getApplicationContext().getResources().getString(R.string.starting_download);
+        setForegroundAsync(notificationManager.buildForegroundInfo(new DownloadProgressNotification(message, 0, 0, 0, 0, 0)));
     }
 
-    @Override
-    public void onDestroy() {
-        // Tell everyone the service is shutting down
+    private void clear() {
+        // Tell everyone the worker is shutting down
         EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.DOWNLOAD));
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
@@ -153,15 +152,19 @@ public class ContentDownloadService extends IntentService {
         if (notificationManager != null) notificationManager.cancel();
         ContentQueueManager.getInstance().setInactive();
 
-        Timber.d("Download service destroyed");
-
-        super.onDestroy();
+        Timber.d("Download worker destroyed");
     }
 
+    @NonNull
     @Override
-    protected void onHandleIntent(Intent intent) {
-        Timber.d("New intent processed");
-        iterateQueue();
+    public Result doWork() {
+        ensureLongRunning();
+        try {
+            iterateQueue();
+        } finally {
+            clear();
+        }
+        return Result.success();
     }
 
     private void iterateQueue() {
@@ -170,8 +173,6 @@ public class ContentDownloadService extends IntentService {
             Timber.w("Queue is paused. Download aborted.");
             return;
         }
-
-        notifyStart();
 
         ImmutablePair<QueuingResult, Content> result = downloadFirstInQueue();
         while (!result.left.equals(QueuingResult.QUEUE_END)) {
@@ -194,6 +195,8 @@ public class ContentDownloadService extends IntentService {
     private ImmutablePair<QueuingResult, Content> downloadFirstInQueue() {
         final String CONTENT_PART_IMAGE_LIST = "Image list";
 
+        Context context = getApplicationContext();
+
         // Clear previously created requests
         compositeDisposable.clear();
 
@@ -203,7 +206,7 @@ public class ContentDownloadService extends IntentService {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
-        @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(this);
+        @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(context);
         // Check for network connectivity
         if (NetworkHelper.Connectivity.NO_INTERNET == connectivity) {
             Timber.w("No internet connection available. Queue paused.");
@@ -224,18 +227,18 @@ public class ContentDownloadService extends IntentService {
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) {
             Timber.w("Download folder has not been found. Please select it again."); // May happen if the folder has been moved or deleted after it has been selected
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
-        if (-2 == FileHelper.createNoMedia(this, rootFolder)) {
+        if (-2 == FileHelper.createNoMedia(context, rootFolder)) {
             Timber.w("Insufficient credentials on download folder. Please select it again.");
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
-        if (new FileHelper.MemoryUsageFigures(this, rootFolder).getfreeUsageMb() < 2) {
+        if (new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageMb() < 2) {
             Timber.w("Device very low on storage space (<2 MB). Queue paused.");
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
@@ -361,7 +364,7 @@ public class ContentDownloadService extends IntentService {
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
         // Create destination folder for images to be downloaded
-        DocumentFile dir = ContentHelper.createContentDownloadDir(this, content);
+        DocumentFile dir = ContentHelper.createContentDownloadDir(getApplicationContext(), content);
         // Folder creation failed
         if (null == dir || !dir.exists()) {
             String title = content.getTitle();
@@ -411,7 +414,8 @@ public class ContentDownloadService extends IntentService {
             }
         }
 
-        if (ContentHelper.updateQueueJson(this, dao)) Timber.i("Queue JSON successfully saved");
+        if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
+            Timber.i("Queue JSON successfully saved");
         else Timber.w("Queue JSON saving failed");
 
         return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);
@@ -451,7 +455,7 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Progress: OK:%d size:%dMB - KO:%d - Total:%d", pagesOK, (int) sizeDownloadedMB, pagesKO, totalPages);
 
             // Download speed and size estimation
-            downloadSpeedCalulator.addSampleNow(NetworkHelper.getIncomingNetworkUsage(this));
+            downloadSpeedCalulator.addSampleNow(NetworkHelper.getIncomingNetworkUsage(getApplicationContext()));
             int avgSpeedKbps = (int) downloadSpeedCalulator.getAvgSpeedKbps();
 
             double estimateBookSizeMB = -1;
@@ -469,7 +473,7 @@ public class ContentDownloadService extends IntentService {
                             || totalPages > Preferences.getDownloadLargeOnlyWifiThresholdPages()
                     )
             ) {
-                @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(this);
+                @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(getApplicationContext());
                 if (NetworkHelper.Connectivity.WIFI != connectivity) {
                     // Move the book to the errors queue and signal it as skipped
                     logErrorRecord(content.getId(), ErrorType.WIFI, content.getUrl(), "Book", "");
@@ -544,14 +548,14 @@ public class ContentDownloadService extends IntentService {
 
             if (content.getStorageUri().isEmpty()) return;
 
-            DocumentFile dir = FileHelper.getFolderFromTreeUriString(this, content.getStorageUri());
+            DocumentFile dir = FileHelper.getFolderFromTreeUriString(getApplicationContext(), content.getStorageUri());
             if (dir != null) {
                 // Auto-retry when error pages are remaining and conditions are met
                 // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
                 // TODO - test to make sure the service's thread continues to run in such a scenario
                 if (pagesKO > 0 && Preferences.isDlRetriesActive()
                         && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()) {
-                    double freeSpaceRatio = new FileHelper.MemoryUsageFigures(this, dir).getFreeUsageRatio100();
+                    double freeSpaceRatio = new FileHelper.MemoryUsageFigures(getApplicationContext(), dir).getFreeUsageRatio100();
 
                     if (freeSpaceRatio < Preferences.getDlRetriesMemLimit()) {
                         Timber.i("Initiating auto-retry #%s for content %s (%s%% free space)", content.getNumberDownloadRetries() + 1, content.getTitle(), freeSpaceRatio);
@@ -580,7 +584,7 @@ public class ContentDownloadService extends IntentService {
 
                 // Save JSON file
                 try {
-                    DocumentFile jsonFile = JsonHelper.jsonToFile(this, JsonContent.fromEntity(content), JsonContent.class, dir);
+                    DocumentFile jsonFile = JsonHelper.jsonToFile(getApplicationContext(), JsonContent.fromEntity(content), JsonContent.class, dir);
                     // Cache its URI to the newly created content
                     if (jsonFile != null) {
                         content.setJsonUri(jsonFile.getUri().toString());
@@ -590,7 +594,7 @@ public class ContentDownloadService extends IntentService {
                 } catch (IOException e) {
                     Timber.e(e, "I/O Error saving JSON: %s", title);
                 }
-                ContentHelper.addContent(this, dao, content);
+                ContentHelper.addContent(getApplicationContext(), dao, content);
 
                 Timber.i("Content download finished: %s [%s]", title, contentId);
 
@@ -617,7 +621,7 @@ public class ContentDownloadService extends IntentService {
                 Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
                 EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages, sizeDownloadedBytes));
 
-                if (ContentHelper.updateQueueJson(this, dao))
+                if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
                     Timber.i("Queue JSON successfully saved");
                 else Timber.w("Queue JSON saving failed");
 
@@ -957,10 +961,10 @@ public class ContentDownloadService extends IntentService {
             @NonNull String fileName,
             @NonNull String mimeType,
             byte[] binaryContent) throws IOException {
-        DocumentFile file = FileHelper.findOrCreateDocumentFile(this, dir, mimeType, fileName);
+        DocumentFile file = FileHelper.findOrCreateDocumentFile(getApplicationContext(), dir, mimeType, fileName);
         if (null == file)
             throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));
-        FileHelper.saveBinary(this, file.getUri(), binaryContent);
+        FileHelper.saveBinary(getApplicationContext(), file.getUri(), binaryContent);
         return file;
     }
 
@@ -1027,7 +1031,8 @@ public class ContentDownloadService extends IntentService {
         dao.deleteQueue(content);
         HentoidApp.trackDownloadEvent("Error");
 
-        if (ContentHelper.updateQueueJson(this, dao)) Timber.i("Queue JSON successfully saved");
+        if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
+            Timber.i("Queue JSON successfully saved");
         else Timber.w("Queue JSON saving failed");
 
         notificationManager.notify(new DownloadErrorNotification(content));

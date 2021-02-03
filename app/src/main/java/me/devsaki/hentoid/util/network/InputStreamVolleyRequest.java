@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.services;
+package me.devsaki.hentoid.util.network;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -20,7 +20,7 @@ import me.devsaki.hentoid.util.network.HttpHelper;
  * <p>
  * to the download callback routine
  */
-class InputStreamVolleyRequest extends Request<Object> {
+public class InputStreamVolleyRequest extends Request<Object> {
     // Callback listener
     // byte[] is the response's binary data; Map<String, String> are the response headers
     private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mParseListener;
@@ -28,7 +28,7 @@ class InputStreamVolleyRequest extends Request<Object> {
     private final boolean useHentoidAgent;
 
 
-    InputStreamVolleyRequest(
+    public InputStreamVolleyRequest(
             int method,
             String mUrl,
             Map<String, String> headers,

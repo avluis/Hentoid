@@ -130,6 +130,7 @@ dependencies {
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if this evolves, please examine FileUtil.fromTreeUriOptimized for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
+    implementation "androidx.work:work-runtime:2.5.0"
 
     // For ViewModel to work
     def android_lifecycle_version = "2.2.0"

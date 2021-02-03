@@ -1,9 +1,12 @@
-package me.devsaki.hentoid.services;
+package me.devsaki.hentoid.util.download;
 
 import android.content.Context;
-import android.content.Intent;
 
-import timber.log.Timber;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
+
+import me.devsaki.hentoid.workers.ContentDownloadWorker;
 
 /**
  * Created by Robb_w on 2018/04
@@ -39,7 +42,7 @@ public class ContentQueueManager {
 
 
     // QUEUE ACTIVITY CONTROL
-    void pauseQueue() {
+    public void pauseQueue() {
         isQueuePaused = true;
     }
 
@@ -55,23 +58,21 @@ public class ContentQueueManager {
         return isQueueActive;
     }
 
-    void setInactive() {
+    public void setInactive() {
         isQueueActive = false;
     }
 
     public void resumeQueue(Context context) {
-        Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
-        try {
-            context.startService(intent);
+        if (!isQueueActive) {
+            WorkManager workManager = WorkManager.getInstance(context);
+            workManager.enqueue(new OneTimeWorkRequest.Builder(ContentDownloadWorker.class).build());
             isQueueActive = true;
-        } catch (IllegalStateException e) { // May happen if the app is in background
-            Timber.e(e);
         }
     }
 
 
     // DOWNLOAD COUNTER MANAGEMENT
-    int getDownloadCount() {
+    public int getDownloadCount() {
         return downloadCount;
     }
 
@@ -82,7 +83,7 @@ public class ContentQueueManager {
     /**
      * Signals a new completed download
      */
-    void downloadComplete() {
+    public void downloadComplete() {
         downloadCount++;
     }
 }

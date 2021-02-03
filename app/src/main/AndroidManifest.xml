@@ -447,11 +447,6 @@
                 android:value=".activities.LibraryActivity" />
         </activity>
 
-        <service
-            android:name=".services.ContentDownloadService"
-            android:enabled="true"
-            android:exported="false" />
-
         <service android:name=".services.UpdateCheckService" />
 
         <service android:name=".services.UpdateDownloadService" />
