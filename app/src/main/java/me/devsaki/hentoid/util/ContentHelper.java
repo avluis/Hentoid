@@ -919,7 +919,6 @@ public final class ContentHelper {
         if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
 
         newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
-        newContent.setFlaggedForDeletion(false); // Cancel any on-screen animation
         return newContent;
     }
 
