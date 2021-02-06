@@ -916,9 +916,7 @@ public final class ContentHelper {
 
         // Save cookies for future calls during download
         Map<String, String> params = new HashMap<>();
-        for (Pair<String, String> p : requestHeadersList)
-            if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
-                params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
+        if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
 
         newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
         return newContent;

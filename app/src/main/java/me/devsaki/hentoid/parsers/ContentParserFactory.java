@@ -6,6 +6,8 @@ import me.devsaki.hentoid.parsers.content.ASMHentaiContent;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
+import me.devsaki.hentoid.parsers.content.EhentaiContent;
+import me.devsaki.hentoid.parsers.content.ExhentaiContent;
 import me.devsaki.hentoid.parsers.content.FakkuContent;
 import me.devsaki.hentoid.parsers.content.HbrowseContent;
 import me.devsaki.hentoid.parsers.content.Hentai2ReadContent;
@@ -93,8 +95,10 @@ public class ContentParserFactory {
                 return ManhwaContent.class;
             case IMHENTAI:
                 return ImhentaiContent.class;
-            case EHENTAI: // Uses the API of the site -> no HTML parser
-            case EXHENTAI: // Uses the API of the site -> no HTML parser
+            case EHENTAI:
+                return EhentaiContent.class;
+            case EXHENTAI:
+                return ExhentaiContent.class;
             case LUSCIOUS: // Uses the API of the site -> no HTML parser
             default:
                 return DummyContent.class;
