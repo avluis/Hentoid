@@ -303,6 +303,9 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, @NonNull final Runnable onSuccess) {
+        // Flag the content as "being deleted" (triggers blink animation)
+        for (Content c : contentList) flagContentDelete(c, true);
+
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
         compositeDisposable.add(
