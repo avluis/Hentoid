@@ -63,7 +63,7 @@ public class InputStreamVolleyRequest extends Request<Object> {
     public Map<String, String> getHeaders() {
         Map<String, String> params = new HashMap<>();
         params.put(HttpHelper.HEADER_USER_AGENT, HttpHelper.getMobileUserAgent(useHentoidAgent));
-        params.put("Accept", "*/*"); // Required to pass through cloudflare filtering on some sites
+        params.put("Accept", "image/jpeg,image/png,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*"); // Required to pass through cloudflare filtering on some sites
         params.putAll(headers);
         return params;
     }
