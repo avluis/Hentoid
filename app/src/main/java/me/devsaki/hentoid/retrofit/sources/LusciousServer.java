@@ -20,7 +20,7 @@ public class LusciousServer {
     public static final Api API = new Retrofit.Builder()
             .baseUrl(API_URL)
             .client(OkHttpClientSingleton.getInstance())
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
+//            .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
             .create(Api.class);
@@ -28,7 +28,7 @@ public class LusciousServer {
     public interface Api {
 
         @GET("graphql/nobatch/")
-        Single<LusciousBookMetadata> getBookMetadata(@QueryMap Map<String, String> options);
+        Call<LusciousBookMetadata> getBookMetadata(@QueryMap Map<String, String> options);
 
         @GET("graphql/nobatch/")
         Call<LusciousGalleryMetadata> getGalleryMetadata(@QueryMap Map<String, String> options);
