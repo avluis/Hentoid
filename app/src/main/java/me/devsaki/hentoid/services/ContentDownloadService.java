@@ -92,6 +92,7 @@ import timber.log.Timber;
  * Book download service; 1 instance everytime a new book of the queue has to be downloaded
  * NB : As per IntentService behaviour, only one thread can be active at a time (no parallel runs of ContentDownloadService)
  */
+@Deprecated
 public class ContentDownloadService extends IntentService {
 
     private enum QueuingResult {
