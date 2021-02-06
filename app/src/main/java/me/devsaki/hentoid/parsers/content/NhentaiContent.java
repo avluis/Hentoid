@@ -18,7 +18,7 @@ import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 // NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
-public class NhentaiContent implements ContentParser {
+public class NhentaiContent extends BaseContentParser {
 
     @Selector(value = "#bigcontainer #cover a", attr = "href", defValue = "")
     private String galleryUrl;

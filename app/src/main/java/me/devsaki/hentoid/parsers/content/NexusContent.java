@@ -16,7 +16,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class NexusContent implements ContentParser {
+public class NexusContent extends BaseContentParser {
     @Selector(value = "head [property=og:url]", attr = "content", defValue = "")
     private String galleryUrl;
     @Selector(value = "head [property=og:image]", attr = "content")

@@ -9,7 +9,7 @@ import me.devsaki.hentoid.util.network.HttpHelper
 import org.jsoup.nodes.Document
 import java.util.*
 
-class NexusParser2 : BaseParser() {
+class NexusParser2 : BaseImageListParser() {
     override fun parseImages(content: Content): MutableList<String> {
         val result: MutableList<String> = ArrayList()
 

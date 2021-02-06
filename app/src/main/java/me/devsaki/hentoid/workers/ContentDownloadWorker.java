@@ -400,9 +400,13 @@ public class ContentDownloadWorker extends Worker {
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED)) {
                 if (img.isCover()) {
-                    // Get the same download parameters as the rest of the content, in case the cover needs additional parameters to be downloaded
-                    Map<String, String> downloadParams = ContentHelper.parseDownloadParams(content.getDownloadParams());
-                    // Add the referer back, if unset
+                    // Enrich cover download params just in case
+                    Map<String, String> downloadParams;
+                    if (img.getDownloadParams().length() > 2)
+                        downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
+                    else
+                        downloadParams = new HashMap<>();
+                    // Add the referer, if unset
                     if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
                         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
                     // Set the 1st image of the list as a backup, if the cover URL is stale (might happen when restarting old downloads)
@@ -650,7 +654,7 @@ public class ContentDownloadWorker extends Worker {
         // If content doesn't have any download parameters, get them from the live gallery page
         String downloadParamsStr = content.getDownloadParams();
         if (null == downloadParamsStr || downloadParamsStr.isEmpty()) {
-            String cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+            String cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
             if (!cookieStr.isEmpty()) {
                 Map<String, String> downloadParams = new HashMap<>();
                 downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
@@ -661,6 +665,12 @@ public class ContentDownloadWorker extends Worker {
         // Use ImageListParser to query the source
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
+
+        // Copy the content's download params to the images
+        downloadParamsStr = content.getDownloadParams();
+        if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
+            for (ImageFile i : imgs) i.setDownloadParams(downloadParamsStr);
+        }
 
         // If no images found, or just the cover, image detection has failed
         if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
@@ -690,6 +700,7 @@ public class ContentDownloadWorker extends Worker {
 
         String backupUrl = "";
 
+        // Apply image download parameters
         Map<String, String> requestHeaders = new HashMap<>();
         Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
         if (!downloadParams.isEmpty()) {

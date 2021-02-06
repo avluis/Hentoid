@@ -23,9 +23,7 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 import timber.log.Timber;
 
-public class MusesContent implements ContentParser {
-    @Selector(value = "head [rel=canonical]", attr = "href", defValue = "")
-    private String galleryUrl;
+public class MusesContent extends BaseContentParser {
     @Selector(value = ".top-menu-breadcrumb a")
     private List<Element> breadcrumbs;
     @Selector(value = ".gallery a")
@@ -72,7 +70,7 @@ public class MusesContent implements ContentParser {
         Content result = new Content();
 
         result.setSite(Site.MUSES);
-        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
+        String theUrl = canonicalUrl.isEmpty() ? url : canonicalUrl;
         if (theUrl.isEmpty() || 0 == nbImages) return result.setStatus(StatusContent.IGNORED);
 
         result.setUrl(theUrl.replace(Site.MUSES.getUrl(), "").replace("https://comics.8muses.com",""));

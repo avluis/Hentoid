@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,6 +23,8 @@ import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,11 +56,19 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
+import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.util.network.HttpHelper;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import pl.droidsonroids.jspoon.HtmlAdapter;
+import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
+import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 
 /**
  * Utility class for Content-related operations
@@ -852,6 +863,65 @@ public final class ContentHelper {
                     }
         }
         return result;
+    }
+
+    // TODO doc
+    @Nullable
+    public static Content reparseFromScratch(@NonNull final Content content) throws IOException {
+        return reparseFromScratch(content, content.getGalleryUrl());
+    }
+
+    private static Content reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
+        Helper.assertNonUiThread();
+
+        String readerUrl = content.getReaderUrl();
+        List<Pair<String, String>> requestHeadersList = new ArrayList<>();
+        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, readerUrl));
+        String cookieStr = HttpHelper.getCookies(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent());
+        if (!cookieStr.isEmpty())
+            requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+
+        Response response = HttpHelper.getOnlineResource(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent());
+
+        // Scram if the response is a redirection or an error
+        if (response.code() >= 300) return content;
+
+        // Scram if the response is something else than html
+        Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
+        if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
+            return content;
+
+        // Scram if the response is empty
+        ResponseBody body = response.body();
+        if (null == body) return content;
+
+        InputStream parserStream = body.byteStream();
+
+        Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(content.getSite());
+        final Jspoon jspoon = Jspoon.create();
+        HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
+
+        ContentParser contentParser = htmlAdapter.fromInputStream(parserStream, new URL(url));
+        Content newContent = contentParser.toContent(url);
+
+        if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
+            String canonicalUrl = contentParser.getCanonicalUrl();
+            if (!canonicalUrl.isEmpty() && !canonicalUrl.equalsIgnoreCase(url))
+                return reparseFromScratch(content, canonicalUrl);
+            else return content;
+        }
+
+        // We're redownloading the same book, we're not creating a new one
+        newContent.setId(content.getId());
+
+        // Save cookies for future calls during download
+        Map<String, String> params = new HashMap<>();
+        for (Pair<String, String> p : requestHeadersList)
+            if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
+                params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
+
+        newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
+        return newContent;
     }
 
     /**

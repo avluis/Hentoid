@@ -555,7 +555,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            activity.get().redownloadContent(contents, true);
+                            activity.get().redownloadContent(contents, true, true);
                             selectExtension.deselect();
                             selectionToolbar.setVisibility(View.GONE);
                         })
@@ -570,19 +570,19 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     }
 
     private void redownloadSelected() {
-        activity.get().redownloadContent(Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).withoutNulls().toList(), false);
+        activity.get().redownloadContent(Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).withoutNulls().toList(), false, false);
     }
 
     private void redownloadAll() {
         List<Content> contents = Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList();
-        if (!contents.isEmpty()) activity.get().redownloadContent(contents, false);
+        if (!contents.isEmpty()) activity.get().redownloadContent(contents, false, false);
     }
 
     @Override
     public void redownloadContent(Content content) {
         List<Content> contentList = new ArrayList<>();
         contentList.add(content);
-        activity.get().redownloadContent(contentList, false);
+        activity.get().redownloadContent(contentList, false, false);
     }
 
     @Override

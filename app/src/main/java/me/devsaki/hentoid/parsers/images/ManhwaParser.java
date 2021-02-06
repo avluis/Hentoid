@@ -24,7 +24,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  * Created by robb_w on 2020/11
  * Handles parsing of content from manhwahentai.me
  */
-public class ManhwaParser extends BaseParser {
+public class ManhwaParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {

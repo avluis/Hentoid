@@ -73,10 +73,7 @@ public class LusciousActivity extends BaseWebActivity {
             compositeDisposable.add(LusciousServer.API.getBookMetadata(query)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            metadata -> {
-                                isHtmlLoaded = true;
-                                listener.onResultReady(metadata.toContent(), quickDownload);
-                            },
+                            metadata -> super.processContent(metadata.toContent(), urlStr, quickDownload),
                             throwable -> {
                                 Timber.e(throwable, "Error parsing content.");
                                 isHtmlLoaded = true;

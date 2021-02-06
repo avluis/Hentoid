@@ -8,7 +8,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class DummyContent implements ContentParser {
+public class DummyContent extends BaseContentParser {
 
     @Selector("div.info h1:first-child")
     private String title;

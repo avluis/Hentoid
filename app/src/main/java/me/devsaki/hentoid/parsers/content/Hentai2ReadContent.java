@@ -15,7 +15,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class Hentai2ReadContent implements ContentParser {
+public class Hentai2ReadContent extends BaseContentParser {
     @Selector(value = "div.img-container img[src*=cover]", attr = "src")
     private String coverUrl;
     @Selector(value = "span[property^=name]")

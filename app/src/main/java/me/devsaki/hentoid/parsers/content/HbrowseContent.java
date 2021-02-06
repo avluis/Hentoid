@@ -19,7 +19,7 @@ import me.devsaki.hentoid.parsers.images.HbrowseParser;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class HbrowseContent implements ContentParser {
+public class HbrowseContent extends BaseContentParser {
     @Selector("head script")
     private List<Element> scripts;
     @Selector("table.listTable tr")

@@ -15,9 +15,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class ASMHentaiContent implements ContentParser {
-    @Selector(value = "head [rel=canonical]", attr = "href", defValue = "")
-    private String pageUrl;
+public class ASMHentaiContent extends BaseContentParser {
     @Selector(value = "div.cover a", attr = "href", defValue = "")
     private String galleryUrl;
     @Selector(value = "div.cover a img", attr = "src")
@@ -40,7 +38,7 @@ public class ASMHentaiContent implements ContentParser {
 
     public Content toContent(@Nonnull String url) {
         Content result = new Content();
-        String theUrl = pageUrl.isEmpty() ? url : pageUrl;
+        String theUrl = canonicalUrl.isEmpty() ? url : canonicalUrl;
         if (theUrl.isEmpty())
             return result.setSite(Site.ASMHENTAI).setStatus(StatusContent.IGNORED);
 

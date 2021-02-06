@@ -27,7 +27,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.fragments.queue.ErrorsFragment;
 import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Preferences;
@@ -182,15 +181,13 @@ public class QueueActivity extends BaseActivity {
         }
     }
 
-    public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
-        StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
-        for (Content c : contentList)
-            if (c != null)
-                viewModel.addContentToQueue(c, targetImageStatus);
-
-        String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, contentList.size(), contentList.size());
-        Snackbar snackbar = Snackbar.make(tabLayout, message, BaseTransientBottomBar.LENGTH_LONG);
-        snackbar.show();
+    public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages) {
+        viewModel.redownloadContent(contentList, reparseContent, reparseImages,
+                () -> {
+                    String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, contentList.size(), contentList.size());
+                    Snackbar snackbar = Snackbar.make(tabLayout, message, BaseTransientBottomBar.LENGTH_LONG);
+                    snackbar.show();
+                });
     }
 
     // TODO deselect on back button

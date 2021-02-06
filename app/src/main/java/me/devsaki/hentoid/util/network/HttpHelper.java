@@ -413,6 +413,20 @@ public class HttpHelper {
         return result;
     }
 
+    @Nullable
+    public static String getCookies(@NonNull String url) {
+        String result = CookieManager.getInstance().getCookie(url);
+        if (result != null) return HttpHelper.stripParams(result);
+        else return null;
+    }
+
+    // TODO doc
+    public static String getCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) {
+        String result = getCookies(url);
+        if (result != null) return result;
+        else return peekCookies(url, headers, useMobileAgent, useHentoidAgent);
+    }
+
     /**
      * Get cookie headers set by the page at the given URL
      *
@@ -420,8 +434,13 @@ public class HttpHelper {
      * @return Raw cookies string
      */
     public static String peekCookies(@NonNull final String url) {
+        return peekCookies(url, null, true, false);
+    }
+
+    // TODO doc
+    public static String peekCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) {
         try {
-            Response response = getOnlineResource(url, null, true, false);
+            Response response = getOnlineResource(url, headers, useMobileAgent, useHentoidAgent);
             List<String> cookielist = response.headers().values("Set-Cookie");
             return TextUtils.join("; ", cookielist);
         } catch (IOException e) {

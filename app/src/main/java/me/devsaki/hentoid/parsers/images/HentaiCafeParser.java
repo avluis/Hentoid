@@ -29,7 +29,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  * Created by avluis on 07/26/2016.
  * Handles parsing of content from Hentai Cafe
  */
-public class HentaiCafeParser extends BaseParser {
+public class HentaiCafeParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {

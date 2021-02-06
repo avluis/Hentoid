@@ -15,7 +15,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class MrmContent implements ContentParser {
+public class MrmContent extends BaseContentParser {
     @Selector(value = "article h1", defValue = "")
     private String title;
     @Selector(".entry-header .entry-meta .entry-categories a")

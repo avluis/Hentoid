@@ -15,7 +15,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class ManhwaContent implements ContentParser {
+public class ManhwaContent extends BaseContentParser {
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
     @Selector(value = ".breadcrumb a")

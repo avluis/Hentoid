@@ -17,7 +17,7 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
 
-public class TsuminoContent implements ContentParser {
+public class TsuminoContent extends BaseContentParser {
     @Selector(value = "div.book-page-cover a", attr = "href", defValue = "")
     private String galleryUrl;
     @Selector(value = "img.book-page-image", attr = "src", defValue = "")

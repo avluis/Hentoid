@@ -18,7 +18,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class PorncomixContent implements ContentParser {
+public class PorncomixContent extends BaseContentParser {
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
     private String coverUrl;
     @Selector(value = "head [property=og:title]", attr = "content", defValue = "")

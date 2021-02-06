@@ -105,7 +105,6 @@ import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -115,6 +114,7 @@ import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import okhttp3.Response;
@@ -932,6 +932,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (additionalImages.isEmpty()) return;
 
         if (currentContent.equals(c)) { // User hasn't left the book page since
+            // Copy the content's download params to the images
+            String downloadParamsStr = c.getDownloadParams();
+            if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
+                for (ImageFile i : additionalImages) i.setDownloadParams(downloadParamsStr);
+            }
+
             // Append additional pages to the current book's list of pages
             List<ImageFile> updatedImgs = new ArrayList<>();
             if (c.getImageFiles() != null) updatedImgs.addAll(c.getImageFiles());
@@ -1372,7 +1378,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                                     .subscribeOn(Schedulers.computation())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
-                                            content -> processContent(content, requestHeadersList, quickDownload),
+                                            content -> processContent(content, urlStr, quickDownload),
                                             throwable -> {
                                                 Timber.e(throwable, "Error parsing content.");
                                                 isHtmlLoaded = true;
@@ -1392,19 +1398,16 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         /**
          * Process Content parsed from a webpage
          *
-         * @param content        Content to be processed
-         * @param requestHeaders HTTP headers of the request that has generated the Content
-         * @param quickDownload  True if the present call has been triggered by a quick download action
+         * @param content       Content to be processed
+         * @param quickDownload True if the present call has been triggered by a quick download action
          */
-        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> requestHeaders, boolean quickDownload) {
+        protected void processContent(@Nonnull Content content, @NonNull String url, boolean quickDownload) {
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
 
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
-            for (Pair<String, String> p : requestHeaders)
-                if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
-                    params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
+            params.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(url));
 
             content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
             isHtmlLoaded = true;

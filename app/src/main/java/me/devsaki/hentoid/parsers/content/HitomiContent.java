@@ -15,15 +15,13 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class HitomiContent implements ContentParser {
+public class HitomiContent extends BaseContentParser {
     @Selector(value = "h1 a[href*='/reader/']", attr = "href", defValue = "")
     private String galleryUrl;
-    @Selector(value = ".cover img", attr = "src")
+    @Selector(value = ".cover img", attr = "src", defValue = "")
     private String coverUrl;
-    @Selector(value = "h1 a[href*='/reader/']", defValue = "<no title>")
+    @Selector(value = "h1 a[href*='/reader/']", defValue = NO_TITLE)
     private String title;
-    //    @Selector(".thumbnail-container")
-//    private List<Element> pages;
     @Selector(value = "div.gallery h2 a[href^='/artist']")
     private List<Element> artists;
     @Selector(value = "div.gallery tr a[href^='/group']")
@@ -39,15 +37,16 @@ public class HitomiContent implements ContentParser {
     @Selector(value = "div.gallery tr a[href^='/type']")
     private List<Element> categories;
 
-
     public Content toContent(@Nonnull String url) {
         Content result = new Content();
 
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
         if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (coverUrl.isEmpty() && title.equals(NO_TITLE))
+            return result.setStatus(StatusContent.IGNORED);
 
         result.setSite(Site.HITOMI);
-        result.setUrl(theUrl.replace("/reader", ""));
+        result.setUrl(theUrl.replace(Site.HITOMI.getUrl(), "").replace("/reader", ""));
         result.setCoverImageUrl("https:" + coverUrl);
         result.setTitle(Helper.removeNonPrintableChars(title));
 

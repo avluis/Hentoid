@@ -82,7 +82,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
-import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
@@ -641,7 +640,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             if (null == c) continue;
             if (c.getStatus().equals(StatusContent.EXTERNAL)) {
                 externalContent++;
-            } else if (c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)) {
+            } else if (false/*c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)*/) {
                 securedContent++;
             } else {
                 contents.add(c);
@@ -1253,22 +1252,17 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * @param content Content to add back to the download queue
      */
     public void redownloadContent(@NonNull final Content content) {
-        List<Content> contentList = new ArrayList<>();
-        contentList.add(content);
-        redownloadContent(contentList, false);
+        redownloadContent(Stream.of(content).toList(), false);
     }
 
-    private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseImages) {
-        StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
-        for (Content c : contentList) viewModel.addContentToQueue(c, targetImageStatus);
-
-        if (Preferences.isQueueAutostart())
-            ContentQueueManager.getInstance().resumeQueue(getContext());
-
-        String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
-        Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
-        snackbar.setAction("VIEW QUEUE", v -> viewQueue());
-        snackbar.show();
+    private void redownloadContent(@NonNull final List<Content> contentList, boolean fromScratch) {
+        viewModel.redownloadContent(contentList, fromScratch, fromScratch,
+                () -> {
+                    String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
+                    Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
+                    snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+                    snackbar.show();
+                });
     }
 
     /**

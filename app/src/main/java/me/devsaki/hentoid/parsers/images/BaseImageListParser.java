@@ -19,7 +19,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import timber.log.Timber;
 
-public abstract class BaseParser implements ImageListParser {
+public abstract class BaseImageListParser implements ImageListParser {
 
     private final ParseProgress progress = new ParseProgress();
     protected boolean processHalted = false;
@@ -40,12 +40,6 @@ public abstract class BaseParser implements ImageListParser {
         try {
             List<String> imgUrls = parseImages(content);
             result = ParseHelper.urlsToImageFiles(imgUrls, content.getCoverImageUrl(), StatusContent.SAVED);
-
-            // Copy the content's download params to the images
-            String downloadParamsStr = content.getDownloadParams();
-            if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
-                for (ImageFile i : result) i.setDownloadParams(downloadParamsStr);
-            }
         } finally {
             EventBus.getDefault().unregister(this);
         }

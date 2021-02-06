@@ -21,7 +21,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  * Created by robb_w on 2020/10
  * Handles parsing of content from myreadingmanga.info
  */
-public class MrmParser extends BaseParser {
+public class MrmParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {

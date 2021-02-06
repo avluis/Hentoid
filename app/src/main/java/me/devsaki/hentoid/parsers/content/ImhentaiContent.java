@@ -14,7 +14,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class ImhentaiContent implements ContentParser {
+public class ImhentaiContent extends BaseContentParser {
     @Selector(value = "div.left_cover img")
     private Element cover;
     @Selector(value = "div.right_details h1", defValue = "")

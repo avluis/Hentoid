@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities.sources;
 
-import android.util.Pair;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
@@ -8,17 +7,13 @@ import android.webkit.WebSettings;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.HashMap;
 import java.util.Map;
 
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import me.devsaki.hentoid.database.domains.Content;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery;
-import me.devsaki.hentoid.retrofit.sources.EHentaiServer;
-import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.network.HttpHelper;
-import timber.log.Timber;
+import me.devsaki.hentoid.parsers.content.EhentaiContent;
 
 /**
  * Created by Robb_w on 2018/04
@@ -50,33 +45,16 @@ public class EHentaiActivity extends BaseWebActivity {
             super(filter, listener);
         }
 
-        // We keep calling the API without using BaseWebActivity.parseResponse
+        // We call the API without using BaseWebActivity.parseResponse
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-            String[] galleryUrlParts = urlStr.split("/");
-            EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
-            compositeDisposable.add(EHentaiServer.EHENTAI_API.getGalleryMetadata(query, null)
+            EhentaiContent contentParser = new EhentaiContent();
+            compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
+                    .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            metadata ->
-                            {
-                                isHtmlLoaded = true;
-                                Content content = metadata.toContent(urlStr, Site.EHENTAI);
-
-                                // Save cookies for future calls during download
-                                Map<String, String> params = new HashMap<>();
-                                for (Pair<String, String> p : HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr))
-                                    if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
-                                        params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
-                                content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
-
-                                listener.onResultReady(content, quickDownload);
-                            },
-                            throwable -> {
-                                Timber.e(throwable, "Error parsing content.");
-                                isHtmlLoaded = true;
-                                listener.onResultFailed();
-                            })
+                            content -> super.processContent(content, urlStr, quickDownload)
+                    )
             );
             return null;
         }

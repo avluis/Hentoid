@@ -18,7 +18,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class DoujinsContent implements ContentParser {
+public class DoujinsContent extends BaseContentParser {
     @Selector(value = ".folder-title a")
     private List<Element> breadcrumbs;
     @Selector("img.doujin")

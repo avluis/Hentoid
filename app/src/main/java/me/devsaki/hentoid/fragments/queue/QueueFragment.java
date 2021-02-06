@@ -70,7 +70,6 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
-import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -80,6 +79,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.NetworkHelper;
@@ -976,7 +976,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            activity.get().redownloadContent(contents, true);
+                            activity.get().redownloadContent(contents, true, true);
                             // If the 1st item is selected, visually reset its progress
                             if (selectExtension.getSelections().contains(0))
                                 updateProgress(0, 0, 1, 0, 0, true);
