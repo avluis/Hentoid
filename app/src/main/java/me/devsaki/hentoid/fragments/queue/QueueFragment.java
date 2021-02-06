@@ -955,7 +955,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
             if (null == c) continue;
-            if (c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)) {
+            if (false /*c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)*/) {
                 securedContent++;
             } else {
                 contents.add(c);

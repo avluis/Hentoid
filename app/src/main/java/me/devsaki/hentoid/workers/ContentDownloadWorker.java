@@ -652,8 +652,8 @@ public class ContentDownloadWorker extends Worker {
         List<ImageFile> imgs;
 
         // If content doesn't have any download parameters, get them from the live gallery page
-        String downloadParamsStr = content.getDownloadParams();
-        if (null == downloadParamsStr || downloadParamsStr.isEmpty()) {
+        String contentDownloadParamsStr = content.getDownloadParams();
+        if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
             String cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
             if (!cookieStr.isEmpty()) {
                 Map<String, String> downloadParams = new HashMap<>();
@@ -666,10 +666,21 @@ public class ContentDownloadWorker extends Worker {
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
 
-        // Copy the content's download params to the images
-        downloadParamsStr = content.getDownloadParams();
-        if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
-            for (ImageFile i : imgs) i.setDownloadParams(downloadParamsStr);
+        // Add the content's download params to the images if they have missing information
+        contentDownloadParamsStr = content.getDownloadParams();
+        if (contentDownloadParamsStr != null && contentDownloadParamsStr.length() > 2) {
+            Map<String, String> contentDownloadParams = ContentHelper.parseDownloadParams(contentDownloadParamsStr);
+            for (ImageFile i : imgs) {
+                if (i.getDownloadParams() != null && i.getDownloadParams().length() > 2) {
+                    Map<String, String> imageDownloadParams = ContentHelper.parseDownloadParams(i.getDownloadParams());
+                    for (Map.Entry<String, String> entry : contentDownloadParams.entrySet())
+                        if (!imageDownloadParams.containsKey(entry.getKey()))
+                            imageDownloadParams.put(entry.getKey(), entry.getValue());
+                    i.setDownloadParams(JsonHelper.serializeToJson(imageDownloadParams, JsonHelper.MAP_STRINGS));
+                } else {
+                    i.setDownloadParams(contentDownloadParamsStr);
+                }
+            }
         }
 
         // If no images found, or just the cover, image detection has failed
