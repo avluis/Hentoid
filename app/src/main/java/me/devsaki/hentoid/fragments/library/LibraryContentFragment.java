@@ -632,7 +632,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     private void askRedownloadSelectedItemsScratch() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
 
-        int securedContent = 0;
         int externalContent = 0;
         List<Content> contents = new ArrayList<>();
         for (ContentItem ci : selectedItems) {
@@ -640,20 +639,14 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             if (null == c) continue;
             if (c.getStatus().equals(StatusContent.EXTERNAL)) {
                 externalContent++;
-            } else if (false/*c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)*/) {
-                securedContent++;
             } else {
                 contents.add(c);
             }
         }
 
         String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
-        if (securedContent > 0)
-            message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
-        else if (externalContent > 0)
-            message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
-
-        // TODO make it work for secured sites (Fakku, ExHentai) -> open a browser to fetch the relevant cookies ?
+        if (externalContent > 0)
+            message = getResources().getQuantityString(R.plurals.redownload_external_content, externalContent);
 
         new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                 .setIcon(R.drawable.ic_warning)

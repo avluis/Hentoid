@@ -64,7 +64,6 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
@@ -950,23 +949,14 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void askRedownloadSelectedScratch() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
 
-        int securedContent = 0;
         List<Content> contents = new ArrayList<>();
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
             if (null == c) continue;
-            if (false /*c.getSite().equals(Site.FAKKU2) || c.getSite().equals(Site.EXHENTAI)*/) {
-                securedContent++;
-            } else {
-                contents.add(c);
-            }
+            contents.add(c);
         }
 
         String message = getResources().getQuantityString(R.plurals.redownload_confirm, contents.size());
-        if (securedContent > 0)
-            message = getResources().getQuantityString(R.plurals.redownload_secured_content, securedContent);
-
-        // TODO make it work for secured sites (Fakku, ExHentai) -> open a browser to fetch the relevant cookies ?
 
         new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                 .setIcon(R.drawable.ic_warning)
