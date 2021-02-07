@@ -108,6 +108,9 @@
             android:name=".activities.sources.ImhentaiActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.ToonilyActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -434,6 +437,17 @@
                 <data
                     android:host="imhentai.com"
                     android:pathPattern="/gallery/..*"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="toonily.com"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>

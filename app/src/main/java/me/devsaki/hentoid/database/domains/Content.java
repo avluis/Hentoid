@@ -42,6 +42,7 @@ import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
 import me.devsaki.hentoid.activities.sources.PorncomixActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
+import me.devsaki.hentoid.activities.sources.ToonilyActivity;
 import me.devsaki.hentoid.activities.sources.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
@@ -220,6 +221,7 @@ public class Content implements Serializable {
             case HENTAIFOX:
             case PORNCOMIX:
             case MANHWA:
+            case TOONILY:
             case IMHENTAI:
                 paths = url.split("/");
                 return paths[paths.length - 1];
@@ -324,6 +326,8 @@ public class Content implements Serializable {
                 return ManhwaActivity.class;
             case IMHENTAI:
                 return ImhentaiActivity.class;
+            case TOONILY:
+                return ToonilyActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -394,6 +398,7 @@ public class Content implements Serializable {
             case HENTAI2READ:
             case MRM:
             case MANHWA:
+            case TOONILY:
             default:
                 galleryConst = "";
         }
@@ -420,6 +425,7 @@ public class Content implements Serializable {
             case HENTAI2READ:
             case MRM:
             case MANHWA:
+            case TOONILY:
             case IMHENTAI:
                 return getGalleryUrl();
             case HENTAICAFE:

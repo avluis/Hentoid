@@ -673,9 +673,13 @@ public class ContentDownloadWorker extends Worker {
             for (ImageFile i : imgs) {
                 if (i.getDownloadParams() != null && i.getDownloadParams().length() > 2) {
                     Map<String, String> imageDownloadParams = ContentHelper.parseDownloadParams(i.getDownloadParams());
+                    // Content's
                     for (Map.Entry<String, String> entry : contentDownloadParams.entrySet())
                         if (!imageDownloadParams.containsKey(entry.getKey()))
                             imageDownloadParams.put(entry.getKey(), entry.getValue());
+                    // Referer, just in case
+                    if (!imageDownloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
+                        imageDownloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
                     i.setDownloadParams(JsonHelper.serializeToJson(imageDownloadParams, JsonHelper.MAP_STRINGS));
                 } else {
                     i.setDownloadParams(contentDownloadParamsStr);

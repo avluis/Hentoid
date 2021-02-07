@@ -115,6 +115,7 @@ public class IntentActivity extends AppCompatActivity {
             case HENTAI2READ:
             case MRM:
             case MANHWA:
+            case TOONILY:
                 return toParse;
             case PORNCOMIX:
                 return data.toString();

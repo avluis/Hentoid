@@ -15,7 +15,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class ManhwaContent extends BaseContentParser {
+public class ToonilyContent extends BaseContentParser {
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
     @Selector(value = ".breadcrumb a")
@@ -29,10 +29,10 @@ public class ManhwaContent extends BaseContentParser {
     public Content toContent(@Nonnull String url) {
         Content result = new Content();
 
-        result.setSite(Site.MANHWA);
+        result.setSite(Site.TOONILY);
         if (url.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(url.replace(Site.MANHWA.getUrl(), ""));
+        result.setUrl(url.replace(Site.TOONILY.getUrl(), ""));
         result.setCoverImageUrl(coverUrl);
         String title = NO_TITLE;
         if (breadcrumbs != null && !breadcrumbs.isEmpty()) {
@@ -42,8 +42,8 @@ public class ManhwaContent extends BaseContentParser {
         result.populateUniqueSiteId();
 
         AttributeMap attributes = new AttributeMap();
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.MANHWA);
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.MANHWA);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.TOONILY);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.TOONILY);
         result.addAttributes(attributes);
 
         return result;

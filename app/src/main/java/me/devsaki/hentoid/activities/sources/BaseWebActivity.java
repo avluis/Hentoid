@@ -1405,9 +1405,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
 
-            // Save cookies for future calls during download
+            // Save useful download params for future use during download
             Map<String, String> params = new HashMap<>();
             params.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(url));
+            params.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
 
             content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
             isHtmlLoaded = true;
