@@ -234,7 +234,7 @@ public class ImportService extends IntentService {
 
                         // If the very same book still exists in the DB at this point, it means it's present in the queue
                         // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
-                        Content existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
+                        Content existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), content.getCoverImageUrl());
                         if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
                             booksKO++;
                             String location = ContentHelper.isInQueue(existingDuplicate.getStatus()) ? "queue" : "collection";
@@ -422,7 +422,7 @@ public class ImportService extends IntentService {
             List<QueueRecord> lst = new ArrayList<>();
             int count = 1;
             for (Content c : queuedContent) {
-                Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
+                Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), c.getCoverImageUrl());
                 if (null == duplicate) {
                     if (c.getStatus().equals(StatusContent.ERROR)) {
                         // Add error books as library entries, not queue entries

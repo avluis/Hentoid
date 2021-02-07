@@ -354,8 +354,12 @@ public class ObjectBoxDB {
     }
 
     @Nullable
-    Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url) {
-        return store.boxFor(Content.class).query().notEqual(Content_.url, "").equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
+    Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl) {
+        // TODO combine these two queries with an OR
+        Content result = store.boxFor(Content.class).query().notEqual(Content_.url, "").equal(Content_.url, contentUrl).equal(Content_.site, site.getCode()).build().findFirst();
+        if (null == result && !coverUrl.isEmpty())
+            result = store.boxFor(Content.class).query().notEqual(Content_.coverImageUrl, "").equal(Content_.coverImageUrl, coverUrl).equal(Content_.site, site.getCode()).build().findFirst();
+        return result;
     }
 
     @Nullable

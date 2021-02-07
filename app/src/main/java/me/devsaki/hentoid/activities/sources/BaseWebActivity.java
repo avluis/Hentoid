@@ -705,7 +705,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         else if (ActionMode.DOWNLOAD_PLUS == actionButtonMode) processDownload(false, true);
         else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
         else if (ActionMode.READ == actionButtonMode && currentContent != null) {
-            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
+            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), currentContent.getCoverImageUrl());
             if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()
                     || StatusContent.MIGRATED == currentContent.getStatus()))
@@ -849,7 +849,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (content.getUrl().isEmpty()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
-        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
+        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), content.getCoverImageUrl());
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
