@@ -38,7 +38,10 @@ public class ManhwaParser extends BaseImageListParser {
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MANHWA.useHentoidAgent());
         if (doc != null) {
             List<Element> chapters = doc.select("[class^=wp-manga-chapter] a");
-            for (Element e : chapters) chapterUrls.add(e.attr("href"));
+            for (Element e : chapters) {
+                String link = e.attr("href");
+                if (!chapterUrls.contains(link)) chapterUrls.add(link); // Make sure we're not adding duplicates
+            }
         }
         Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
 
