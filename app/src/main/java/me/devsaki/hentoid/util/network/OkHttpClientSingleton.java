@@ -25,8 +25,7 @@ public class OkHttpClientSingleton {
     }
 
     public static OkHttpClient getInstance() {
-        int DEFAULT_TIMEOUT = 20 * 1000;
-        return getInstance(DEFAULT_TIMEOUT);
+        return getInstance(HttpHelper.DEFAULT_REQUEST_TIMEOUT);
     }
 
     public static OkHttpClient getInstance(int timeoutMs) {
@@ -53,6 +52,7 @@ public class OkHttpClientSingleton {
 
     private static okhttp3.Response rewriteUserAgentInterceptor(Interceptor.Chain chain) throws IOException {
         Request.Builder builder = chain.request().newBuilder();
+        // If not specified, all requests are done with the device's mobile user-agent, without the Hentoid string
         if (null == chain.request().header("User-Agent") && null == chain.request().header("user-agent"))
             builder.header(HttpHelper.HEADER_USER_AGENT, HttpHelper.getMobileUserAgent(false));
         return chain.proceed(builder.build());

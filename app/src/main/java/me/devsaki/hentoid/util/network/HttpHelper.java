@@ -38,7 +38,7 @@ import timber.log.Timber;
  */
 public class HttpHelper {
 
-    private static final int TIMEOUT = 30000; // 30 seconds
+    public static final int DEFAULT_REQUEST_TIMEOUT = 30000; // 30 seconds
 
     // Keywords of the HTTP protocol
     public static final String HEADER_ACCEPT_KEY = "accept";
@@ -109,7 +109,7 @@ public class HttpHelper {
     public static Response getOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) throws IOException {
         Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent);
         Request request = requestBuilder.get().build();
-        return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
+        return OkHttpClientSingleton.getInstance(DEFAULT_REQUEST_TIMEOUT).newCall(request).execute();
     }
 
     /**
@@ -130,7 +130,7 @@ public class HttpHelper {
             @NonNull final String mimeType) throws IOException {
         Request.Builder requestBuilder = buildRequest(url, headers, true, useHentoidAgent);
         Request request = requestBuilder.post(RequestBody.create(body, MediaType.parse(mimeType))).build();
-        return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
+        return OkHttpClientSingleton.getInstance(DEFAULT_REQUEST_TIMEOUT).newCall(request).execute();
     }
 
     /**

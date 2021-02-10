@@ -9,8 +9,6 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.devsaki.hentoid.util.network.HttpHelper;
-
 /**
  * Created by Robb_w on 2018/04
  * <p>

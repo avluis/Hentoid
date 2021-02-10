@@ -74,7 +74,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     }
 
     /**
-     * Returns the app's Volley request queue
+     * Start the app's Volley request queue
      *
      * @param ctx App context
      * @return Hentoid Volley request queue
