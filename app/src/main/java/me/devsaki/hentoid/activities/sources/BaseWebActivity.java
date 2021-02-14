@@ -251,6 +251,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         universalBlockedContent.add("ulukaris.com");
         universalBlockedContent.add("alliedthirteen.com");
         universalBlockedContent.add("acknowledgenightsabstain.com");
+        universalBlockedContent.add(".vdo.ai");
+        universalBlockedContent.add("bidgear.com");
+        universalBlockedContent.add("2mdn.net");
     }
 
     protected abstract CustomWebViewClient getWebClient();
