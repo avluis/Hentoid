@@ -93,6 +93,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.ErrorType;
@@ -171,13 +172,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // === UI
     // Associated webview
     protected NestedScrollWebView webView;
+    // Top toolbar buttons
+    private MenuItem refreshStopMenu;
+    private MenuItem bookmarkMenu;
     // Bottom toolbar
     private BottomNavigationView bottomToolbar;
     // Bottom toolbar buttons
     private MenuItem backMenu;
     private MenuItem forwardMenu;
     private MenuItem seekMenu;
-    private MenuItem refreshStopMenu;
     private MenuItem actionMenu;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
@@ -301,6 +304,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
+        bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
 
         bottomToolbar = findViewById(R.id.bottom_navigation);
         bottomToolbar.setOnNavigationItemSelectedListener(this::onMenuItemSelected);
@@ -688,6 +692,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
     public void openUrl(@NonNull final String url) {
         webView.loadUrl(url);
+    }
+
+    public void updateBookmarkButton(boolean newValue) {
+        if (newValue) bookmarkMenu.setIcon(R.drawable.ic_bookmark_full);
+        else bookmarkMenu.setIcon(R.drawable.ic_bookmark);
     }
 
     /**
@@ -1222,6 +1231,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             }
             // Display download button tooltip if a book page has been reached
             if (isGalleryPage(url)) showTooltip(R.string.help_web_download, false);
+            // Update bookmark button
+            List<SiteBookmark> bookmarks = objectBoxDAO.selectBookmarks(getStartSite());
+            Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> SiteBookmark.urlsAreSame(b.getUrl(), url)).findFirst();
+            updateBookmarkButton(currentBookmark.isPresent());
         }
 
         @Override
