@@ -19,7 +19,7 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 public class NexusContent extends BaseContentParser {
     @Selector(value = "head [property=og:url]", attr = "content", defValue = "")
     private String galleryUrl;
-    @Selector(value = "head [property=og:image]", attr = "content")
+    @Selector(value = "body img[src*='/cover']", attr = "src", defValue = "")
     private String coverUrl;
     @Selector(value = "h1.title", defValue = "<no title>")
     private String title;
