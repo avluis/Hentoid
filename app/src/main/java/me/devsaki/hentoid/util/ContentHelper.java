@@ -129,7 +129,7 @@ public final class ContentHelper {
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         if (content.getSite().equals(Site.NONE)) return;
 
-        Intent intent = new Intent(context, content.getWebActivityClass());
+        Intent intent = new Intent(context, content.getWebActivityClass(content.getSite()));
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(content.getGalleryUrl());
         intent.putExtras(builder.getBundle());

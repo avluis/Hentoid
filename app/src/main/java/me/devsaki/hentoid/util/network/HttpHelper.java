@@ -259,19 +259,8 @@ public class HttpHelper {
      * @return Extension of the file located at the given URI, without the leading '.'
      */
     public static String getExtensionFromUri(String uri) {
-        String theUri = uri.toLowerCase();
-        String uriNoParams = theUri;
-
-        int paramsIndex = theUri.lastIndexOf('?');
-        if (paramsIndex > -1) uriNoParams = theUri.substring(0, paramsIndex);
-
-        int pathIndex = uriNoParams.lastIndexOf('/');
-        int extIndex = uriNoParams.lastIndexOf('.');
-
-        // No extensions detected
-        if (extIndex < 0 || extIndex < pathIndex) return "";
-
-        return uriNoParams.substring(extIndex + 1);
+        UriParts parts = new UriParts(uri);
+        return parts.getExtension();
     }
 
     /**
@@ -517,5 +506,78 @@ public class HttpHelper {
         if (-1 == defaultChromeVersion)
             throw new RuntimeException("Call initUserAgents first to initialize them !");
         return defaultChromeVersion;
+    }
+
+    public static class UriParts {
+        private String path;
+        private String fileName;
+        private String extension;
+        private String query;
+
+        public UriParts(String uri) {
+            String theUri = uri.toLowerCase();
+            String uriNoParams = theUri;
+
+            int paramsIndex = theUri.lastIndexOf('?');
+            if (paramsIndex > -1) {
+                uriNoParams = theUri.substring(0, paramsIndex);
+                query = theUri.substring(paramsIndex + 1);
+            } else {
+                query = "";
+            }
+
+            int pathIndex = uriNoParams.lastIndexOf('/');
+            path = theUri.substring(0, pathIndex);
+            int extIndex = uriNoParams.lastIndexOf('.');
+
+            // No extensions detected
+            if (extIndex < 0 || extIndex < pathIndex) {
+                extension = "";
+                fileName = uriNoParams.substring(pathIndex + 1);
+            } else {
+                extension = uriNoParams.substring(extIndex + 1);
+                fileName = uriNoParams.substring(pathIndex + 1, extIndex);
+            }
+        }
+
+        public String toUri() {
+            StringBuilder result = new StringBuilder(path);
+            result.append("/").append(fileName);
+            if (!extension.isEmpty()) result.append(".").append(extension);
+            if (!query.isEmpty()) result.append("?").append(query);
+            return result.toString();
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public String getFileNameNoExt() {
+            return fileName;
+        }
+
+        public String getExtension() {
+            return extension;
+        }
+
+        public void setExtension(String extension) {
+            this.extension = extension;
+        }
+
+        public String getQuery() {
+            return query;
+        }
+
+        public void setQuery(String query) {
+            this.query = query;
+        }
+
+        public void setFileNameNoExt(@NonNull final String fileName) {
+            this.fileName = fileName;
+        }
     }
 }

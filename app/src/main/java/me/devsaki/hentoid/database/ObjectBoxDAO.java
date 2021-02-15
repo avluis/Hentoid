@@ -264,7 +264,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Nullable
     public Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl) {
-        return db.selectContentBySourceAndUrl(site, contentUrl, coverUrl);
+        return db.selectContentBySourceAndUrl(site, contentUrl, Content.getNeutralCoverUrlRoot(coverUrl, site));
     }
 
     @Nullable
