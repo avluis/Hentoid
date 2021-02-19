@@ -3,6 +3,8 @@ package me.devsaki.hentoid.fragments.viewer;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -68,6 +70,7 @@ public class ViewerGalleryFragment extends Fragment {
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private int startIndex = 0;
     private boolean firstLoadDone = false;
+    private boolean firstMoveDone = false;
 
     private boolean filterFavouritesLaunchState = false;
     private boolean filterFavouritesLaunchRequest = false;
@@ -238,6 +241,7 @@ public class ViewerGalleryFragment extends Fragment {
         // Remove duplicates
         imgs = Stream.of(imgs).distinct().toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs, IMAGE_DIFF_CALLBACK);
+        new Handler(Looper.getMainLooper()).postDelayed(this::moveToCurrent, 150);
     }
 
     private void onStartingIndexChanged(Integer startingIndex) {
@@ -381,6 +385,18 @@ public class ViewerGalleryFragment extends Fragment {
             ContentNotRemovedException e = (ContentNotRemovedException) t;
             String message = (null == e.getMessage()) ? "Page removal failed" : e.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Move the list to make the currently viewed image visible
+     */
+    private void moveToCurrent() {
+        if (!firstMoveDone) {
+            if (itemAdapter.getAdapterItemCount() > startIndex)
+                recyclerView.scrollToPosition(startIndex);
+            else recyclerView.scrollToPosition(0);
+            firstMoveDone = true;
         }
     }
 
