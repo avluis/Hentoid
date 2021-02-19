@@ -44,7 +44,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
 
     lateinit var viewModel: PreferencesViewModel
     lateinit var exportDisposable: Disposable
-    lateinit var rootView: View
+    private var rootView: View? = null
 
     companion object {
         private const val KEY_ROOT = "root"
@@ -87,6 +87,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         super.onDestroy()
         preferenceScreen.sharedPreferences
                 .unregisterOnSharedPreferenceChangeListener(this)
+        rootView = null // Avoid leaks
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -305,15 +306,18 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         // Use a random number to avoid erasing older exports by mistake
         var targetFileName = Random().nextInt(9999).toString() + ".json"
         targetFileName = "settings-$targetFileName"
-        try {
-            FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, JsonHelper.JSON_MIME_TYPE).use { newDownload -> IOUtils.toInputStream(json, StandardCharsets.UTF_8).use { input -> FileHelper.copy(input, newDownload) } }
-            Snackbar.make(rootView, R.string.copy_download_folder_success, BaseTransientBottomBar.LENGTH_LONG)
-                    .setAction("OPEN FOLDER") { FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()) }
-                    .show()
-        } catch (e: IOException) {
-            Snackbar.make(rootView, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
-        } catch (e: IllegalArgumentException) {
-            Snackbar.make(rootView, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
+
+        rootView?.let {
+            try {
+                FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, JsonHelper.JSON_MIME_TYPE).use { newDownload -> IOUtils.toInputStream(json, StandardCharsets.UTF_8).use { input -> FileHelper.copy(input, newDownload) } }
+                Snackbar.make(it, R.string.copy_download_folder_success, BaseTransientBottomBar.LENGTH_LONG)
+                        .setAction("OPEN FOLDER") { FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()) }
+                        .show()
+            } catch (e: IOException) {
+                Snackbar.make(it, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
+            } catch (e: IllegalArgumentException) {
+                Snackbar.make(it, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
+            }
         }
     }
 }
