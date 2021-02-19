@@ -43,6 +43,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiFunction;
+import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.skydoves.balloon.ArrowOrientation;
 
@@ -67,9 +68,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -312,7 +315,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
         forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
         seekMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_seek);
-        actionMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_download);
+        actionMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_action);
 
         // Webview
         animatedCheck = findViewById(R.id.animated_check);
@@ -385,7 +388,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             case R.id.web_menu_copy:
                 this.onCopyClick();
                 break;
-            case R.id.web_menu_download:
+            case R.id.web_menu_action:
                 this.onActionClick();
                 break;
             default:
@@ -742,6 +745,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         } else if (ActionMode.READ == mode) {
             resId = R.drawable.ic_action_play;
         }
+        BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
+        badge.setVisible(ActionMode.DOWNLOAD_PLUS == mode);
         actionButtonMode = mode;
         actionMenu.setIcon(resId);
         actionMenu.setEnabled(true);
@@ -910,56 +915,68 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         runOnUiThread(() -> ToastUtil.toast(R.string.web_unparsable));
     }
 
-    private void searchForMoreImages(@NonNull final Content c) {
-        disposable = Single.fromCallable(() -> doSearchForMoreImages(c))
+    private void searchForMoreImages(@NonNull final Content storedContent) {
+        disposable = Single.fromCallable(() -> doSearchForMoreImages(storedContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(l -> onSearchForMoreImagesSuccess(c, l), Timber::e);
+                .subscribe(l -> onSearchForMoreImagesSuccess(storedContent, l), Timber::e);
     }
 
-    private List<ImageFile> doSearchForMoreImages(@NonNull final Content c) {
+    private List<ImageFile> doSearchForMoreImages(@NonNull final Content storedContent) {
         List<ImageFile> result = Collections.emptyList();
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(c);
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(storedContent);
         try {
-            List<ImageFile> imgs = parser.parseImageList(c);
-            if (imgs.isEmpty()) return result;
+            List<ImageFile> onlineImgs = parser.parseImageList(storedContent);
+            if (onlineImgs.isEmpty()) return result;
 
-            int coverCount = (imgs.get(0).isCover()) ? 1 : 0;
+            int coverCount = (onlineImgs.get(0).isCover()) ? 1 : 0;
             Optional<Integer> maxImageOrder;
-            if (c.getImageFiles() != null)
-                maxImageOrder = Stream.of(c.getImageFiles()).filter(i -> i.getStatus().equals(StatusContent.DOWNLOADED)).map(ImageFile::getOrder).max(Integer::compareTo);
+            if (storedContent.getImageFiles() != null)
+                maxImageOrder = Stream.of(storedContent.getImageFiles()).filter(i -> i.getStatus().equals(StatusContent.DOWNLOADED)).map(ImageFile::getOrder).max(Integer::compareTo);
             else
                 maxImageOrder = Optional.of(0);
 
-            if (maxImageOrder.isPresent() && imgs.size() - coverCount > maxImageOrder.get())
-                return Stream.of(imgs).filter(i -> i.getOrder() > maxImageOrder.get()).toList();
+            // Online book has more pictures than stored book
+            if (maxImageOrder.isPresent() && onlineImgs.size() - coverCount > maxImageOrder.get()) {
+                return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxImageOrder.get()).distinct().toList();
+            }
         } catch (Exception e) {
             Timber.w(e);
         }
         return result;
     }
 
-    private void onSearchForMoreImagesSuccess(@NonNull final Content c, @NonNull final List<ImageFile> additionalImages) {
+    private void onSearchForMoreImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
         disposable.dispose();
         if (additionalImages.isEmpty()) return;
 
-        if (currentContent.equals(c)) { // User hasn't left the book page since
+        if (currentContent.equals(storedContent)) { // User hasn't left the book page since
             // Copy the content's download params to the images
-            String downloadParamsStr = c.getDownloadParams();
+            String downloadParamsStr = storedContent.getDownloadParams();
             if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
                 for (ImageFile i : additionalImages) i.setDownloadParams(downloadParamsStr);
             }
 
             // Append additional pages to the current book's list of pages
+            // and remove duplicates
             List<ImageFile> updatedImgs = new ArrayList<>();
-            if (c.getImageFiles() != null) updatedImgs.addAll(c.getImageFiles());
+            Set<String> existingUrls = new HashSet<>();
+            if (storedContent.getImageFiles() != null) {
+                existingUrls.addAll(Stream.of(storedContent.getImageFiles()).map(ImageFile::getUrl).toList());
+                updatedImgs.addAll(storedContent.getImageFiles());
+            }
+            List<ImageFile> additionalImagesFinal = Stream.of(additionalImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
+            if (!additionalImagesFinal.isEmpty()) {
+                updatedImgs.addAll(additionalImagesFinal);
+                storedContent.setImageFiles(updatedImgs);
+                // Save it
+                objectBoxDAO.insertContent(storedContent);
 
-            updatedImgs.addAll(additionalImages);
-            c.setImageFiles(updatedImgs);
-            // Save it
-            objectBoxDAO.insertContent(c);
-            // Display the "download more" button
-            changeActionMode(ActionMode.DOWNLOAD_PLUS);
+                // Display the "download more" button
+                changeActionMode(ActionMode.DOWNLOAD_PLUS);
+                BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
+                badge.setNumber(additionalImagesFinal.size());
+            }
         }
     }
 
