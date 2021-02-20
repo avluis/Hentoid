@@ -932,7 +932,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             int coverCount = (onlineImgs.get(0).isCover()) ? 1 : 0;
             Optional<Integer> maxImageOrder;
             if (storedContent.getImageFiles() != null)
-                maxImageOrder = Stream.of(storedContent.getImageFiles()).filter(i -> i.getStatus().equals(StatusContent.DOWNLOADED)).map(ImageFile::getOrder).max(Integer::compareTo);
+                maxImageOrder = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
             else
                 maxImageOrder = Optional.of(0);
 
@@ -961,21 +961,27 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             // and remove duplicates
             List<ImageFile> updatedImgs = new ArrayList<>();
             Set<String> existingUrls = new HashSet<>();
+            Set<String> storedUrls = new HashSet<>();
             if (storedContent.getImageFiles() != null) {
                 existingUrls.addAll(Stream.of(storedContent.getImageFiles()).map(ImageFile::getUrl).toList());
+                storedUrls.addAll(Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getUrl).toList());
                 updatedImgs.addAll(storedContent.getImageFiles());
             }
-            List<ImageFile> additionalImagesFinal = Stream.of(additionalImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
-            if (!additionalImagesFinal.isEmpty()) {
-                updatedImgs.addAll(additionalImagesFinal);
-                storedContent.setImageFiles(updatedImgs);
-                // Save it
-                objectBoxDAO.insertContent(storedContent);
 
-                // Display the "download more" button
+            // Save additional detected pages references to current book
+            List<ImageFile> additionalNonExistingImages = Stream.of(additionalImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
+            if (!additionalNonExistingImages.isEmpty()) {
+                updatedImgs.addAll(additionalNonExistingImages);
+                storedContent.setImageFiles(updatedImgs);
+                objectBoxDAO.insertContent(storedContent);
+            }
+
+            // Display the "download more" button
+            List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();
+            if (!additionalNonDownloadedImages.isEmpty()) {
                 changeActionMode(ActionMode.DOWNLOAD_PLUS);
                 BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
-                badge.setNumber(additionalImagesFinal.size());
+                badge.setNumber(additionalNonDownloadedImages.size());
             }
         }
     }
