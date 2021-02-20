@@ -42,9 +42,11 @@ android {
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
+        def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
 
         buildConfigField "String", "FK_TOKEN", fkToken
         buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
+        buildConfigField "boolean", "INCLUDE_LEAK_CANARY", includeLeakCanary
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
@@ -87,6 +89,7 @@ android {
 
 dependencies {
     def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
+    def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
 
     // Compile any included libraries
     implementation fileTree(include: ['*jar'], dir: 'libs')
@@ -242,7 +245,9 @@ dependencies {
     implementation 'com.annimon:stream:1.2.1'
 
     // LeakCanary: github.com/square/leakcanary
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
+    if (includeLeakCanary.toBoolean()) {
+        debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
+    }
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'

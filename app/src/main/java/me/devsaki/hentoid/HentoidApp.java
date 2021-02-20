@@ -143,15 +143,6 @@ public class HentoidApp extends Application {
         // Plug the lifecycle listener to handle locking
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
 
-        // Set up LeakCanary (custom setup without root view removal : see https://github.com/square/leakcanary/issues/2051)
-        /*
-        if (BuildConfig.DEBUG) {
-            List<InstallableWatcher> watchersToInstall = AppWatcher.INSTANCE.appDefaultWatchers(this, AppWatcher.INSTANCE.getObjectWatcher());
-            watchersToInstall = Stream.of(watchersToInstall).filterNot(s -> s instanceof RootViewWatcher).toList();
-            AppWatcher.INSTANCE.manualInstall(this, TimeUnit.SECONDS.toMillis(5), watchersToInstall);
-        }
-         */
-
         // Set RxJava's default error handler for unprocessed network and IO errors
         RxJavaPlugins.setErrorHandler(e -> {
             if (e instanceof UndeliverableException) {
