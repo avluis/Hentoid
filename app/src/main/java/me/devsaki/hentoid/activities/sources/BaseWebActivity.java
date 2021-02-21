@@ -887,6 +887,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             content.setId(contentDB.getId());
             content.setStatus(contentDB.getStatus());
         }
+        currentContent = content;
 
         if (isInCollection) {
             if (!quickDownload) changeActionMode(ActionMode.READ);
@@ -901,7 +902,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (webClient != null)
             webClient.setBlockedTags(ContentHelper.getBlockedTags(content));
 
-        currentContent = content;
         return result;
     }
 
@@ -936,7 +936,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         List<ImageFile> result = Collections.emptyList();
         logEntries.clear();
 
-        logEntries.add(new LogUtil.LogEntry("starting for " + currentContent.getTitle() + " @ " + currentContent.getGalleryUrl()));
+        logEntries.add(new LogUtil.LogEntry("starting for " + storedContent.getTitle() + " @ " + storedContent.getGalleryUrl()));
 
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(storedContent);
         try {
@@ -968,7 +968,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         disposable.dispose();
         if (additionalImages.isEmpty()) return;
 
-        if (currentContent.equals(storedContent)) { // User hasn't left the book page since
+        if (currentContent != null && currentContent.equals(storedContent)) { // User hasn't left the book page since
             // Copy the content's download params to the images
             String downloadParamsStr = storedContent.getDownloadParams();
             if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
