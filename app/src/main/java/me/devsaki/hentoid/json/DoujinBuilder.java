@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * General builder for works.
  *
- * @deprecated Replaced by {@link me.devsaki.hentoid.services.ImportService} methods; class is kept for retrocompatibilty
+ * @deprecated Replaced by {@link me.devsaki.hentoid.workers.ImportWorker} methods; class is kept for retrocompatibilty
  */
 @SuppressWarnings("DeprecatedIsStillUsed") // Shouldn't be used for new devs but still used to ensure retrocompatiblity with old files
 @Deprecated

@@ -88,7 +88,7 @@ public class Content implements Serializable {
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
     /**
-     * @deprecated Replaced by {@link me.devsaki.hentoid.services.ImportService} methods; class is kept for retrocompatibilty
+     * @deprecated Replaced by {@link me.devsaki.hentoid.workers.ImportWorker} methods; class is kept for retrocompatibilty
      */
     @Deprecated
     private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)

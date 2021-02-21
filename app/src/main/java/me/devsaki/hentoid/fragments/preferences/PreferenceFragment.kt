@@ -26,12 +26,12 @@ import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.services.ExternalImportService
-import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.services.UpdateDownloadService
 import me.devsaki.hentoid.util.*
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.workers.ImportWorker
 import org.apache.commons.io.IOUtils
 import timber.log.Timber
 import java.io.IOException
@@ -84,10 +84,10 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         preferenceScreen.sharedPreferences
                 .unregisterOnSharedPreferenceChangeListener(this)
         rootView = null // Avoid leaks
+        super.onDestroy()
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -143,7 +143,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     true
                 }
                 Preferences.Key.REFRESH_LIBRARY -> {
-                    if (ImportService.isRunning()) {
+                    if (ImportWorker.isRunning()) {
                         ToastUtil.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
@@ -168,7 +168,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     true
                 }
                 Preferences.Key.SETTINGS_FOLDER -> {
-                    if (ImportService.isRunning()) {
+                    if (ImportWorker.isRunning()) {
                         ToastUtil.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)

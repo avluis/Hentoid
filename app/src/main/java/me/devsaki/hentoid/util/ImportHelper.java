@@ -13,8 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
-import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -24,7 +25,6 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +32,6 @@ import java.util.Set;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -45,7 +44,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ExternalImportService;
-import me.devsaki.hentoid.services.ImportService;
+import me.devsaki.hentoid.workers.ImportWorker;
+import me.devsaki.hentoid.workers.data.ImportData;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.O;
@@ -386,19 +386,14 @@ public class ImportHelper {
             @Nullable final ImportOptions options
     ) {
         ImportNotificationChannel.init(context);
-        Intent intent = ImportService.makeIntent(context);
 
-        ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();
+        ImportData.Builder builder = new ImportData.Builder();
         builder.setRefreshRename(null != options && options.rename);
         builder.setRefreshCleanNoJson(null != options && options.cleanNoJson);
         builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
-        intent.putExtras(builder.getBundle());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
-        }
+        WorkManager workManager = WorkManager.getInstance(context);
+        workManager.enqueue(new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).build());
     }
 
     // TODO doc

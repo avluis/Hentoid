@@ -1,9 +1,7 @@
-package me.devsaki.hentoid.services;
+package me.devsaki.hentoid.workers;
 
-import android.app.IntentService;
 import android.content.ContentProviderClient;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
@@ -12,6 +10,8 @@ import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 import com.squareup.moshi.JsonDataException;
 
@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -43,9 +42,9 @@ import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.json.URLBuilder;
+import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
-import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -55,14 +54,15 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ParseException;
-import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
+import me.devsaki.hentoid.util.notification.NotificationManager;
+import me.devsaki.hentoid.workers.data.ImportData;
 import timber.log.Timber;
 
+
 /**
- * Service responsible for importing an existing Hentoid library.
+ * Worker responsible for importing an existing Hentoid library.
  */
-@Deprecated
-public class ImportService extends IntentService {
+public class ImportWorker extends Worker {
 
     private static final int NOTIFICATION_ID = 1;
 
@@ -73,57 +73,66 @@ public class ImportService extends IntentService {
     public static final int STEP_4_QUEUE_FINAL = 4;
 
     private static boolean running;
-    private ServiceNotificationManager notificationManager;
-
-
-    public ImportService() {
-        super(ImportService.class.getName());
-    }
-
-    public static Intent makeIntent(@NonNull Context context) {
-        return new Intent(context, ImportService.class);
-    }
+    private NotificationManager notificationManager;
 
     public static boolean isRunning() {
         return running;
     }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
+    public ImportWorker(
+            @NonNull Context context,
+            @NonNull WorkerParameters parameters) {
+        super(context, parameters);
 
+        initNotifications(context);
         running = true;
-        notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
+
+        Timber.w("Import worker created");
+    }
+
+    @Override
+    public void onStopped() {
+        clear();
+        super.onStopped();
+    }
+
+    private void initNotifications(Context context) {
+        notificationManager = new NotificationManager(context, NOTIFICATION_ID);
         notificationManager.cancel();
-        notificationManager.startForeground(new ImportStartNotification());
-
-        Timber.w("Service created");
     }
 
-    @Override
-    public void onDestroy() {
+    private void ensureLongRunning() {
+        String message = getApplicationContext().getResources().getString(R.string.starting_download);
+        setForegroundAsync(notificationManager.buildForegroundInfo(new DownloadProgressNotification(message, 0, 0, 0, 0, 0)));
+    }
+
+    private void clear() {
+        // Tell everyone the worker is shutting down
         running = false;
-        if (notificationManager != null) notificationManager.cancel();
-        EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.IMPORT));
-        Timber.w("Service destroyed");
 
-        super.onDestroy();
+        EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.IMPORT));
+        EventBus.getDefault().unregister(this);
+
+        if (notificationManager != null) notificationManager.cancel();
+
+        Timber.d("Import worker destroyed");
     }
 
+    @NonNull
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        // True if the user has asked for a cleanup when calling import from Preferences
-        boolean doRename = false;
-        boolean doCleanNoJson = false;
-        boolean doCleanNoImages = false;
+    public Result doWork() {
+        ensureLongRunning();
+        try {
+            ImportData.Parser data = new ImportData.Parser(getInputData());
+            boolean doRename = data.getRefreshRename();
+            boolean doCleanNoJson = data.getRefreshCleanNoJson();
+            boolean doCleanNoImages = data.getRefreshCleanNoImages();
 
-        if (intent != null && intent.getExtras() != null) {
-            ImportActivityBundle.Parser parser = new ImportActivityBundle.Parser(intent.getExtras());
-            doRename = parser.getRefreshRename();
-            doCleanNoJson = parser.getRefreshCleanNoJson();
-            doCleanNoImages = parser.getRefreshCleanNoImages();
+            startImport(doRename, doCleanNoJson, doCleanNoImages);
+        } finally {
+            clear();
         }
-        startImport(doRename, doCleanNoJson, doCleanNoImages);
+        return Result.success();
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -155,23 +164,24 @@ public class ImportService extends IntentService {
         int nbFolders = 0;                      // Number of folders found with no content but subfolders
         Content content = null;
         List<LogUtil.LogEntry> log = new ArrayList<>();
+        Context context = getApplicationContext();
 
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
 
         final FileHelper.NameFilter imageNames = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) {
             Timber.e("Root folder is not defined (%s)", Preferences.getStorageUri());
             return;
         }
 
-        ContentProviderClient client = this.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
+        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
         if (null == client) return;
 
         List<DocumentFile> bookFolders = new ArrayList<>();
-        CollectionDAO dao = new ObjectBoxDAO(this);
+        CollectionDAO dao = new ObjectBoxDAO(context);
 
         try {
             // 1st pass : Import groups JSON
@@ -179,23 +189,23 @@ public class ImportService extends IntentService {
             // Flag existing groups for cleanup
             dao.flagAllGroups(Grouping.CUSTOM);
 
-            DocumentFile groupsFile = FileHelper.findFile(this, rootFolder, client, Consts.GROUPS_JSON_FILE_NAME);
-            if (groupsFile != null) importGroups(groupsFile, dao, log);
+            DocumentFile groupsFile = FileHelper.findFile(context, rootFolder, client, Consts.GROUPS_JSON_FILE_NAME);
+            if (groupsFile != null) importGroups(context, groupsFile, dao, log);
             else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
 
             // 2nd pass : count subfolders of every site folder
-            List<DocumentFile> siteFolders = FileHelper.listFolders(this, rootFolder, client);
+            List<DocumentFile> siteFolders = FileHelper.listFolders(context, rootFolder, client);
             int foldersProcessed = 1;
             for (DocumentFile f : siteFolders) {
-                bookFolders.addAll(FileHelper.listFolders(this, f, client));
+                bookFolders.addAll(FileHelper.listFolders(context, f, client));
                 eventProgress(STEP_2_BOOK_FOLDERS, siteFolders.size(), foldersProcessed++, 0);
             }
             eventComplete(STEP_2_BOOK_FOLDERS, siteFolders.size(), siteFolders.size(), 0, null);
-            notificationManager.startForeground(new ImportProgressNotification(this.getResources().getString(R.string.starting_import), 0, 0));
+            notificationManager.notify(new ImportProgressNotification(context.getResources().getString(R.string.starting_import), 0, 0));
 
             // 3rd pass : scan every folder for a JSON file or subdirectories
-            String enabled = getApplication().getResources().getString(R.string.enabled);
-            String disabled = getApplication().getResources().getString(R.string.disabled);
+            String enabled = context.getResources().getString(R.string.enabled);
+            String disabled = context.getResources().getString(R.string.disabled);
             trace(Log.DEBUG, 0, log, "Import books starting - initial detected count : %s", bookFolders.size() + "");
             trace(Log.INFO, 0, log, "Rename folders %s", (rename ? enabled : disabled));
             trace(Log.INFO, 0, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
@@ -210,8 +220,8 @@ public class ImportService extends IntentService {
 
                 // Detect the presence of images if the corresponding cleanup option has been enabled
                 if (cleanNoImages) {
-                    List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, imageNames);
-                    List<DocumentFile> subfolders = FileHelper.listFolders(this, bookFolder, client);
+                    List<DocumentFile> imageFiles = FileHelper.listFiles(context, bookFolder, client, imageNames);
+                    List<DocumentFile> subfolders = FileHelper.listFolders(context, bookFolder, client);
                     if (imageFiles.isEmpty() && subfolders.isEmpty()) { // No supported images nor subfolders
                         booksKO++;
                         boolean success = bookFolder.delete();
@@ -225,7 +235,7 @@ public class ImportService extends IntentService {
 
                 // Detect JSON and try to parse it
                 try {
-                    content = importJson(bookFolder, client, dao);
+                    content = importJson(context, bookFolder, client, dao);
                     if (content != null) {
                         // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
                         if (existingFlaggedContent != null)
@@ -255,7 +265,7 @@ public class ImportService extends IntentService {
                             String bookFolderName = bookPathParts[bookPathParts.length - 1];
 
                             if (!canonicalBookFolderName.equalsIgnoreCase(bookFolderName)) {
-                                if (renameFolder(bookFolder, content, client, canonicalBookFolderName)) {
+                                if (renameFolder(context, bookFolder, content, client, canonicalBookFolderName)) {
                                     trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName);
                                 } else {
                                     trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName);
@@ -264,7 +274,7 @@ public class ImportService extends IntentService {
                         }
 
                         // Attach image file Uri's to the book's images
-                        List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, imageNames);
+                        List<DocumentFile> imageFiles = FileHelper.listFiles(context, bookFolder, client, imageNames);
                         if (!imageFiles.isEmpty()) {
                             // No images described in the JSON -> recreate them
                             if (contentImages.isEmpty()) {
@@ -281,10 +291,10 @@ public class ImportService extends IntentService {
                         ImportHelper.removeExternalAttribute(content);
 
                         content.computeSize();
-                        ContentHelper.addContent(this, dao, content);
+                        ContentHelper.addContent(context, dao, content);
                         trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK : %s", bookFolder.getUri().toString());
                     } else { // JSON not found
-                        List<DocumentFile> subfolders = FileHelper.listFolders(this, bookFolder, client);
+                        List<DocumentFile> subfolders = FileHelper.listFolders(context, bookFolder, client);
                         if (!subfolders.isEmpty()) // Folder doesn't contain books but contains subdirectories
                         {
                             bookFolders.addAll(subfolders);
@@ -307,7 +317,7 @@ public class ImportService extends IntentService {
                     // If the book is still present in the DB, regenerate the JSON and unflag the book
                     if (existingFlaggedContent != null) {
                         try {
-                            DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(existingFlaggedContent), JsonContent.class, bookFolder);
+                            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(existingFlaggedContent), JsonContent.class, bookFolder);
                             existingFlaggedContent.setJsonUri(newJson.getUri().toString());
                             existingFlaggedContent.setFlaggedForDeletion(false);
                             dao.insertContent(existingFlaggedContent);
@@ -331,10 +341,10 @@ public class ImportService extends IntentService {
                                     }
                             }
                             // Scan the folder
-                            Content storedContent = ImportHelper.scanBookFolder(this, bookFolder, client, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
-                            DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
+                            Content storedContent = ImportHelper.scanBookFolder(context, bookFolder, client, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
+                            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
                             storedContent.setJsonUri(newJson.getUri().toString());
-                            ContentHelper.addContent(this, dao, storedContent);
+                            ContentHelper.addContent(context, dao, storedContent);
                             trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK (Content regenerated) : %s", bookFolder.getUri().toString());
                             booksOK++;
                         } catch (IOException | JsonDataException e) {
@@ -358,12 +368,12 @@ public class ImportService extends IntentService {
             eventComplete(STEP_3_BOOKS, bookFolders.size(), booksOK, booksKO, null);
 
             // 4th pass : Import queue JSON
-            DocumentFile queueFile = FileHelper.findFile(this, rootFolder, client, Consts.QUEUE_JSON_FILE_NAME);
-            if (queueFile != null) importQueue(queueFile, dao, log);
+            DocumentFile queueFile = FileHelper.findFile(context, rootFolder, client, Consts.QUEUE_JSON_FILE_NAME);
+            if (queueFile != null) importQueue(context, queueFile, dao, log);
             else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
         } finally {
             // Write log in root folder
-            DocumentFile logFile = LogUtil.writeLog(this, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
+            DocumentFile logFile = LogUtil.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
 
             // ContentProviderClient.close only available on API level 24+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -378,9 +388,6 @@ public class ImportService extends IntentService {
             eventComplete(STEP_4_QUEUE_FINAL, bookFolders.size(), booksOK, booksKO, logFile);
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
         }
-
-        stopForeground(true);
-        stopSelf();
     }
 
     private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogUtil.LogEntry> log) {
@@ -392,13 +399,13 @@ public class ImportService extends IntentService {
         return logInfo;
     }
 
-    private boolean renameFolder(@NonNull DocumentFile folder, @NonNull final Content content, @NonNull ContentProviderClient client, @NonNull final String newName) {
+    private boolean renameFolder(@NonNull Context context, @NonNull DocumentFile folder, @NonNull final Content content, @NonNull ContentProviderClient client, @NonNull final String newName) {
         try {
             if (folder.renameTo(newName)) {
                 // 1- Update the book folder's URI
                 content.setStorageUri(folder.getUri().toString());
                 // 2- Update the JSON's URI
-                DocumentFile jsonFile = FileHelper.findFile(this, folder, client, Consts.JSON_FILE_NAME_V2);
+                DocumentFile jsonFile = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_V2);
                 if (jsonFile != null) content.setJsonUri(jsonFile.getUri().toString());
                 // 3- Update the image's URIs -> will be done by the next block back in startImport
                 return true;
@@ -409,10 +416,10 @@ public class ImportService extends IntentService {
         return false;
     }
 
-    private void importQueue(@NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogUtil.LogEntry> log) {
+    private void importQueue(@NonNull final Context context, @NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogUtil.LogEntry> log) {
         trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Queue JSON found");
         eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
-        JsonContentCollection contentCollection = deserialiseCollectionJson(queueFile);
+        JsonContentCollection contentCollection = deserialiseCollectionJson(context, queueFile);
         if (null != contentCollection) {
             int queueSize = (int) dao.countAllQueueBooks();
             List<Content> queuedContent = contentCollection.getQueue();
@@ -426,10 +433,10 @@ public class ImportService extends IntentService {
                     if (c.getStatus().equals(StatusContent.ERROR)) {
                         // Add error books as library entries, not queue entries
                         c.computeSize();
-                        ContentHelper.addContent(this, dao, c);
+                        ContentHelper.addContent(context, dao, c);
                     } else {
                         // Only add at the end of the queue if it isn't a duplicate
-                        long newContentId = ContentHelper.addContent(this, dao, c);
+                        long newContentId = ContentHelper.addContent(context, dao, c);
                         lst.add(new QueueRecord(newContentId, queueSize++));
                     }
                 }
@@ -442,10 +449,10 @@ public class ImportService extends IntentService {
         }
     }
 
-    private void importGroups(@NonNull DocumentFile groupsFile, @NonNull CollectionDAO dao, @NonNull List<LogUtil.LogEntry> log) {
+    private void importGroups(@NonNull final Context context, @NonNull DocumentFile groupsFile, @NonNull CollectionDAO dao, @NonNull List<LogUtil.LogEntry> log) {
         trace(Log.INFO, STEP_GROUPS, log, "Custom groups JSON found");
         eventProgress(STEP_GROUPS, -1, 0, 0);
-        JsonContentCollection contentCollection = deserialiseCollectionJson(groupsFile);
+        JsonContentCollection contentCollection = deserialiseCollectionJson(context, groupsFile);
         if (null != contentCollection) {
             List<Group> groups = contentCollection.getCustomGroups();
             eventProgress(STEP_GROUPS, groups.size(), 0, 0);
@@ -468,10 +475,10 @@ public class ImportService extends IntentService {
         }
     }
 
-    private JsonContentCollection deserialiseCollectionJson(@NonNull DocumentFile jsonFile) {
+    private JsonContentCollection deserialiseCollectionJson(@NonNull final Context context, @NonNull DocumentFile jsonFile) {
         JsonContentCollection result;
         try {
-            result = JsonHelper.jsonToObject(this, jsonFile, JsonContentCollection.class);
+            result = JsonHelper.jsonToObject(context, jsonFile, JsonContentCollection.class);
         } catch (IOException | JsonDataException e) {
             Timber.w(e);
             return null;
@@ -481,17 +488,18 @@ public class ImportService extends IntentService {
 
     @Nullable
     private Content importJson(
+            @NonNull final Context context,
             @NonNull DocumentFile folder,
             @NonNull ContentProviderClient client,
             @NonNull CollectionDAO dao) throws ParseException {
-        DocumentFile file = FileHelper.findFile(this, folder, client, Consts.JSON_FILE_NAME_V2);
-        if (file != null) return importJsonV2(file, folder, dao);
+        DocumentFile file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_V2);
+        if (file != null) return importJsonV2(context, file, folder, dao);
 
-        file = FileHelper.findFile(this, folder, client, Consts.JSON_FILE_NAME);
-        if (file != null) return importJsonV1(file, folder);
+        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME);
+        if (file != null) return importJsonV1(context, file, folder);
 
-        file = FileHelper.findFile(this, folder, client, Consts.JSON_FILE_NAME_OLD);
-        if (file != null) return importJsonLegacy(file, folder);
+        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_OLD);
+        if (file != null) return importJsonLegacy(context, file, folder);
 
         return null;
     }
@@ -534,10 +542,13 @@ public class ImportService extends IntentService {
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private Content importJsonLegacy(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
+    private Content importJsonLegacy(
+            @NonNull final Context context,
+            @NonNull final DocumentFile json,
+            @NonNull final DocumentFile parentFolder) throws ParseException {
         try {
             DoujinBuilder doujinBuilder =
-                    JsonHelper.jsonToObject(this, json, DoujinBuilder.class);
+                    JsonHelper.jsonToObject(context, json, DoujinBuilder.class);
             ContentV1 content = new ContentV1();
             content.setUrl(doujinBuilder.getId());
             content.setHtmlDescription(doujinBuilder.getDescription());
@@ -572,7 +583,7 @@ public class ImportService extends IntentService {
 
             contentV2.setStorageUri(parentFolder.getUri().toString());
 
-            DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
+            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
@@ -584,9 +595,9 @@ public class ImportService extends IntentService {
 
     @CheckResult
     @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
-    private Content importJsonV1(@NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
+    private Content importJsonV1(@NonNull final Context context, @NonNull final DocumentFile json, @NonNull final DocumentFile parentFolder) throws ParseException {
         try {
-            ContentV1 content = JsonHelper.jsonToObject(this, json, ContentV1.class);
+            ContentV1 content = JsonHelper.jsonToObject(context, json, ContentV1.class);
             if (content.getStatus() != StatusContent.DOWNLOADED
                     && content.getStatus() != StatusContent.ERROR) {
                 content.setMigratedStatus();
@@ -595,7 +606,7 @@ public class ImportService extends IntentService {
 
             contentV2.setStorageUri(parentFolder.getUri().toString());
 
-            DocumentFile newJson = JsonHelper.jsonToFile(this, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
+            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
@@ -607,11 +618,12 @@ public class ImportService extends IntentService {
 
     @CheckResult
     private Content importJsonV2(
+            @NonNull final Context context,
             @NonNull final DocumentFile json,
             @NonNull final DocumentFile parentFolder,
             @NonNull final CollectionDAO dao) throws ParseException {
         try {
-            JsonContent content = JsonHelper.jsonToObject(this, json, JsonContent.class);
+            JsonContent content = JsonHelper.jsonToObject(context, json, JsonContent.class);
             Content result = content.toEntity(dao);
             result.setJsonUri(json.getUri().toString());
             result.setStorageUri(parentFolder.getUri().toString());
