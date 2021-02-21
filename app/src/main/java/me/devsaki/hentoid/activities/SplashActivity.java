@@ -134,7 +134,7 @@ public class SplashActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        maintenanceTasks.clear();
+        if (maintenanceTasks != null) maintenanceTasks.clear();
         compositeDisposable.clear();
 
         super.onDestroy();
