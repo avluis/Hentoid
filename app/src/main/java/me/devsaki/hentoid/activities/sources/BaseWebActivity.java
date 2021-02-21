@@ -887,7 +887,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (isInCollection) {
             if (!quickDownload) changeActionMode(ActionMode.READ);
             result = ContentStatus.IN_COLLECTION;
-            searchForMoreImages(contentDB); // Async; might switch READ to DOWNLOAD_PLUS a couple seconds later
+            searchForMoreImages(contentDB); // Async; might switch from READ to DOWNLOAD_PLUS a couple seconds later
         }
         if (isInQueue) {
             if (!quickDownload) changeActionMode(ActionMode.VIEW_QUEUE);
