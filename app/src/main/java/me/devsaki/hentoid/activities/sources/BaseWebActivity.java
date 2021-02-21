@@ -114,6 +114,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -212,6 +213,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private UpdateInfo.SourceAlert alert;
     // Disposable to be used for punctual search
     private Disposable disposable;
+
+    private List<LogUtil.LogEntry> logEntries = new ArrayList<>();
+
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -919,14 +923,26 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         disposable = Single.fromCallable(() -> doSearchForMoreImages(storedContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(l -> onSearchForMoreImagesSuccess(storedContent, l), Timber::e);
+                .subscribe(
+                        l -> onSearchForMoreImagesSuccess(storedContent, l),
+                        t -> {
+                            Timber.e(t);
+                            logEntries.add(new LogUtil.LogEntry("an exception occurred (global) : " + t.getMessage()));
+                            writeLog();
+                        });
     }
 
     private List<ImageFile> doSearchForMoreImages(@NonNull final Content storedContent) {
         List<ImageFile> result = Collections.emptyList();
+        logEntries.clear();
+
+        logEntries.add(new LogUtil.LogEntry("starting for " + currentContent.getTitle() + " @ " + currentContent.getGalleryUrl()));
+
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(storedContent);
         try {
             List<ImageFile> onlineImgs = parser.parseImageList(storedContent);
+            logEntries.add(new LogUtil.LogEntry(onlineImgs.size() + " total images detected"));
+
             if (onlineImgs.isEmpty()) return result;
 
             int coverCount = (onlineImgs.get(0).isCover()) ? 1 : 0;
@@ -938,10 +954,12 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
             // Online book has more pictures than stored book
             if (maxImageOrder.isPresent() && onlineImgs.size() - coverCount > maxImageOrder.get()) {
+                logEntries.add(new LogUtil.LogEntry(onlineImgs.size() - coverCount - maxImageOrder.get() + " delta detected"));
                 return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxImageOrder.get()).distinct().toList();
             }
         } catch (Exception e) {
             Timber.w(e);
+            logEntries.add(new LogUtil.LogEntry("an exception occurred : " + e.getMessage()));
         }
         return result;
     }
@@ -970,6 +988,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
             // Save additional detected pages references to current book
             List<ImageFile> additionalNonExistingImages = Stream.of(additionalImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
+            logEntries.add(new LogUtil.LogEntry("additionalNonExistingImages " + additionalNonExistingImages.size()));
             if (!additionalNonExistingImages.isEmpty()) {
                 updatedImgs.addAll(additionalNonExistingImages);
                 storedContent.setImageFiles(updatedImgs);
@@ -978,12 +997,25 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
             // Display the "download more" button
             List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();
+            logEntries.add(new LogUtil.LogEntry("additionalNonDownloadedImages " + additionalNonDownloadedImages.size()));
             if (!additionalNonDownloadedImages.isEmpty()) {
                 changeActionMode(ActionMode.DOWNLOAD_PLUS);
                 BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
                 badge.setNumber(additionalNonDownloadedImages.size());
             }
+        } else {
+            logEntries.add(new LogUtil.LogEntry("current book has been left"));
         }
+        writeLog();
+    }
+
+    private void writeLog() {
+        LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
+        logInfo.setFileName("download_plus_" + currentContent.getUniqueSiteId());
+        logInfo.setLogName("download_plus");
+        logInfo.setLog(logEntries);
+
+        LogUtil.writeLog(this, logInfo);
     }
 
     /**
