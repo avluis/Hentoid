@@ -160,7 +160,7 @@ public class ExternalImportService extends IntentService {
 
                 // The very same book may also exist in the DB under a different folder,
                 if (null == existingDuplicate) {
-                    existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), content.getCoverImageUrl());
+                    existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), "");
                     // Ignore the duplicate if it is queued; we do prefer to import a full book
                     if (existingDuplicate != null) {
                         if (ContentHelper.isInQueue(existingDuplicate.getStatus()))

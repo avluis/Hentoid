@@ -351,7 +351,7 @@ public class MetaImportDialogFragment extends DialogFragment {
         if (null == siteFoldersCache) siteFoldersCache = getSiteFolders();
         DocumentFile siteFolder = siteFoldersCache.get(c.getSite());
         if (siteFolder != null) mapToContent(c, siteFolder);
-        Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), c.getCoverImageUrl());
+        Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), "");
         if (null == duplicate) {
             long newContentId = ContentHelper.addContent(requireContext(), dao, c);
             // Insert queued content into the queue

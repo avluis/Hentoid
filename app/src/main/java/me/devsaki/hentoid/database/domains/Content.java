@@ -433,6 +433,8 @@ public class Content implements Serializable {
      * @return Neutralized cover URL
      */
     public static String getNeutralCoverUrlRoot(@NonNull final String url, @NonNull final Site site) {
+        if (url.isEmpty()) return url;
+
         if (site == Site.MANHWA) {
             HttpHelper.UriParts parts = new HttpHelper.UriParts(url);
             // Remove the last part of the filename if it is formatted as "numberxnumber"
