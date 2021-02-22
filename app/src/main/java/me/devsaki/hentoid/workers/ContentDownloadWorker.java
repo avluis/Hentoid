@@ -98,6 +98,7 @@ public class ContentDownloadWorker extends Worker {
     // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
     private final CollectionDAO dao;
 
+    private static boolean running;
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
 
@@ -148,6 +149,7 @@ public class ContentDownloadWorker extends Worker {
         compositeDisposable.clear();
 
         if (dao != null) dao.cleanup();
+        running = false;
 
         if (notificationManager != null) notificationManager.cancel();
         ContentQueueManager.getInstance().setInactive();
@@ -158,6 +160,9 @@ public class ContentDownloadWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        if (running) return Result.failure();
+        running = true;
+
         ensureLongRunning();
         try {
             iterateQueue();

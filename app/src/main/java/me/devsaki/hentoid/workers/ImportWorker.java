@@ -85,7 +85,6 @@ public class ImportWorker extends Worker {
         super(context, parameters);
 
         initNotifications(context);
-        running = true;
 
         Timber.w("Import worker created");
     }
@@ -121,6 +120,9 @@ public class ImportWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        if (running) return Result.failure();
+        running = true;
+
         ensureLongRunning();
         try {
             ImportData.Parser data = new ImportData.Parser(getInputData());
