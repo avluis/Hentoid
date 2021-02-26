@@ -29,6 +29,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
@@ -103,6 +104,7 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.fragments.BookmarksDialogFragment;
 import me.devsaki.hentoid.json.UpdateInfo;
@@ -195,6 +197,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private TextView topAlertMessage;
     private View bottomAlertBanner;
     private TextView bottomAlertMessage;
+    // Progress bar
+    private ProgressBar progressBar;
 
     // === VARIABLES
     private CustomWebViewClient webClient;
@@ -335,6 +339,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         bottomAlertBanner = findViewById(R.id.bottom_alert);
         bottomAlertMessage = findViewById(R.id.bottom_alert_txt);
 
+        progressBar = findViewById(R.id.progress_bar);
+
         displayTopAlertBanner();
     }
 
@@ -402,6 +408,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (event.sourceAlerts.containsKey(getStartSite())) {
             alert = event.sourceAlerts.get(getStartSite());
             displayTopAlertBanner();
+        }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onDownloadPreparationEvent(DownloadPreparationEvent event) {
+        if (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.url.equalsIgnoreCase(currentContent.getUrl())) {
+            progressBar.setMax(event.total);
+            progressBar.setProgress(event.done);
+            progressBar.setVisibility(event.isCompleted() ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -1251,6 +1266,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             refreshStopMenu.setIcon(R.drawable.ic_close);
+            progressBar.setVisibility(View.GONE);
             isPageLoading = true;
             if (!isHtmlLoaded) {
                 actionMenu.setIcon(R.drawable.selector_download_action);

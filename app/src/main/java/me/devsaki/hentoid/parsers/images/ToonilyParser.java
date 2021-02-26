@@ -46,7 +46,7 @@ public class ToonilyParser extends BaseImageListParser {
         }
         Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
 
-        progressStart(chapterUrls.size());
+        progressStart(content.getUrl(), chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {

@@ -53,8 +53,8 @@ public abstract class BaseImageListParser implements ImageListParser {
         return Optional.of(new ImageFile(order, url, StatusContent.SAVED, maxPages));
     }
 
-    void progressStart(int maxSteps) {
-        progress.start(maxSteps);
+    void progressStart(@NonNull final String url, int maxSteps) {
+        progress.start(url, maxSteps);
     }
 
     void progressPlus() {

@@ -48,7 +48,7 @@ public class HentaiCafeParser extends BaseImageListParser {
         if (links.isEmpty()) throw new ParseException("No links found @ " + pageUrl);
 
         if (links.size() > 1) Timber.d("Multiple chapters found!");
-        progressStart(links.size());
+        progressStart(content.getUrl(), links.size());
 
         for (Element link : links) {
             String url = link.attr("href");

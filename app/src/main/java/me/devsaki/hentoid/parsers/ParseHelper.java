@@ -184,8 +184,8 @@ public class ParseHelper {
         return result;
     }
 
-    public static void signalProgress(int current, int max) {
-        EventBus.getDefault().post(new DownloadPreparationEvent(current, max));
+    public static void signalProgress(@NonNull final String url, int current, int max) {
+        EventBus.getDefault().post(new DownloadPreparationEvent(url, current, max));
     }
 
     public static String getSavedCookieStr(String downloadParams) {
