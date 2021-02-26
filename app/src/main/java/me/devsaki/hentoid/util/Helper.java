@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import io.reactivex.disposables.Disposable;
+import io.whitfin.siphash.SipHasher;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
@@ -47,6 +48,8 @@ public final class Helper {
     }
 
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+
+    private static final byte[] SIP_KEY = "0123456789ABCDEF".getBytes();
 
 
     /**
@@ -370,6 +373,11 @@ public final class Helper {
         return true;
     }
 
+    // TODO doc
+    public static long hash64(@NonNull final byte[] data) {
+        return SipHasher.hash(SIP_KEY, data);
+    }
+
 
     // TODO doc
     public static class LifecycleRxCleaner implements LifecycleObserver {
@@ -385,20 +393,5 @@ public final class Helper {
         private void onDestroy() {
             disposable.dispose();
         }
-    }
-
-    // adapted from String.hashCode()
-    public static long hash64(@NonNull final String string) {
-        long h = 1125899906842597L; // prime
-        int len = string.length();
-
-        for (int i = 0; i < len; i++) {
-            h = 31 * h + string.charAt(i);
-        }
-        return h;
-    }
-
-    public static long hash64(@NonNull final String string1, @NonNull final String string2) {
-        return hash64(string1) * 31 + hash64(string2);
     }
 }

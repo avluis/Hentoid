@@ -156,7 +156,7 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        if (attributes != null)
+        if (attributes.isResolved())
             for (Attribute a : attributes) result.add(a);
         return result;
     }
@@ -850,7 +850,7 @@ public class Content implements Serializable {
     }
 
     public long hash64() {
-        return id * 31 + Helper.hash64(uniqueSiteId);
+        return Helper.hash64((id + "." + uniqueSiteId).getBytes());
     }
 
     @Override

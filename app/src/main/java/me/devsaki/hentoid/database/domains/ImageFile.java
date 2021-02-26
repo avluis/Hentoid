@@ -239,7 +239,7 @@ public class ImageFile implements Cloneable {
     }
 
     public long hash64() {
-        return id * 31 + Helper.hash64(url);
+        return Helper.hash64((id + "." + url).getBytes());
     }
 
     @Override

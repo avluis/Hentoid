@@ -27,6 +27,7 @@ import io.objectbox.android.AndroidObjectBrowser;
 import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
+import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
@@ -121,7 +122,7 @@ public class ObjectBoxDB {
 
 
     long insertContent(Content content) {
-        List<Attribute> attributes = content.getAttributes();
+        ToMany<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
         Query<Attribute> attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
 
@@ -131,7 +132,7 @@ public class ObjectBoxDB {
             // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
             Attribute dbAttr;
             Attribute inputAttr;
-            if (attributes != null)
+            if (attributes.isResolved()) {
                 // This transaction may consume a lot of DB readers depending on the number of attributes involved
                 for (int i = 0; i < attributes.size(); i++) {
                     inputAttr = attributes.get(i);
@@ -146,6 +147,7 @@ public class ObjectBoxDB {
                         inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
                     }
                 }
+            }
 
             return store.boxFor(Content.class).put(content);
         });

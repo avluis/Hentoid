@@ -268,6 +268,9 @@ dependencies {
     // Natural strings comparator
     implementation 'net.grey-panther:natural-comparator:1.1'
 
+    // Efficient hashing
+    implementation 'io.whitfin:siphash:2.0.0'
+
 
     /**
      * ANALYTICS
