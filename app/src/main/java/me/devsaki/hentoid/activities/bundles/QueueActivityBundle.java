@@ -26,8 +26,8 @@ public class QueueActivityBundle {
             bundle.putBoolean(KEY_IS_ERROR, isError);
         }
 
-        public void setContentHash(int contentHash) {
-            bundle.putInt(KEY_CONTENT_HASH, contentHash);
+        public void setContentHash(long contentHash) {
+            bundle.putLong(KEY_CONTENT_HASH, contentHash);
         }
 
         public Bundle getBundle() {
@@ -47,8 +47,8 @@ public class QueueActivityBundle {
             return bundle.getBoolean(KEY_IS_ERROR, false);
         }
 
-        public int contentHash() {
-            return bundle.getInt(KEY_CONTENT_HASH, 0);
+        public long contentHash() {
+            return bundle.getLong(KEY_CONTENT_HASH, 0);
         }
     }
 }

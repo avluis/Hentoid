@@ -18,7 +18,6 @@ import androidx.lifecycle.OnLifecycleEvent;
 import com.annimon.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.threeten.bp.Instant;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,8 +33,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import io.reactivex.disposables.Disposable;
-import me.devsaki.hentoid.HentoidApp;
-import timber.log.Timber;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
@@ -356,10 +353,12 @@ public final class Helper {
         return (null == s) ? "" : s;
     }
 
+    // TODO doc
     public static boolean isValidContextForGlide(final View view) {
         return isValidContextForGlide(view.getContext());
     }
 
+    // TODO doc
     public static boolean isValidContextForGlide(final Context context) {
         if (context == null) {
             return false;
@@ -386,5 +385,20 @@ public final class Helper {
         private void onDestroy() {
             disposable.dispose();
         }
+    }
+
+    // adapted from String.hashCode()
+    public static long hash64(@NonNull final String string) {
+        long h = 1125899906842597L; // prime
+        int len = string.length();
+
+        for (int i = 0; i < len; i++) {
+            h = 31 * h + string.charAt(i);
+        }
+        return h;
+    }
+
+    public static long hash64(@NonNull final String string1, @NonNull final String string2) {
+        return hash64(string1) * 31 + hash64(string2);
     }
 }

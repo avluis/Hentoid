@@ -371,7 +371,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
     }
 
-    private void onContentHashToShowFirstChanged(Integer contentHash) {
+    private void onContentHashToShowFirstChanged(Long contentHash) {
         Timber.d(">>onContentIdToShowFirstChanged %s", contentHash);
         contentHashToDisplayFirst = contentHash;
     }

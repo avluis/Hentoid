@@ -610,7 +610,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     getViewLifecycleOwner());
     }
 
-    private void onContentHashToShowFirstChanged(Integer contentHash) {
+    private void onContentHashToShowFirstChanged(Long contentHash) {
         Timber.d(">>onContentIdToShowFirstChanged %s", contentHash);
         contentHashToDisplayFirst = contentHash;
     }

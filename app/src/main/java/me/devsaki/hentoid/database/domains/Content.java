@@ -849,12 +849,13 @@ public class Content implements Serializable {
                 Objects.equals(getUniqueSiteId(), content.getUniqueSiteId());
     }
 
-    public static int hash(long id, String uniqueSiteId) {
-        return Objects.hash(id, uniqueSiteId);
+    public long hash64() {
+        return id * 31 + Helper.hash64(uniqueSiteId);
     }
 
     @Override
     public int hashCode() {
-        return hash(getId(), getUniqueSiteId());
+        // Must be an int32, so we're bound to use Objects.hash
+        return Objects.hash(id, uniqueSiteId);
     }
 }

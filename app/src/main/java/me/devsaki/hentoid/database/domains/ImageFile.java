@@ -13,6 +13,7 @@ import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 
 /**
@@ -237,8 +238,13 @@ public class ImageFile implements Cloneable {
                 Objects.equals(getUrl(), imageFile.getUrl());
     }
 
+    public long hash64() {
+        return id * 31 + Helper.hash64(url);
+    }
+
     @Override
     public int hashCode() {
+        // Must be an int32, so we're bound to use Objects.hash
         return Objects.hash(getId(), getUrl());
     }
 }

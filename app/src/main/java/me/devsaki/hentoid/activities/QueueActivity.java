@@ -105,7 +105,7 @@ public class QueueActivity extends BaseActivity {
         Intent intent = getIntent();
         if (intent != null && intent.getExtras() != null) {
             QueueActivityBundle.Parser parser = new QueueActivityBundle.Parser(intent.getExtras());
-            int contentHash = parser.contentHash();
+            long contentHash = parser.contentHash();
             if (contentHash != 0) {
                 if (parser.isErrorsTab()) viewPager.setCurrentItem(1);
                 viewModel.setContentToShowFirst(contentHash);
