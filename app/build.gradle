@@ -153,7 +153,7 @@ dependencies {
     implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.4.2'
+    implementation 'com.github.penfeizhou.android.animation:apng:2.8.0'
 
     /**
      * UI

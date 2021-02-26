@@ -6,7 +6,6 @@ buildscript {
         mavenCentral()
         jcenter()
         maven { url "https://jcenter.bintray.com" }
-        maven { url "https://dl.bintray.com/osborn/Android" } // Glide integration for APNG library
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.2'
