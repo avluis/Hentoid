@@ -23,6 +23,7 @@ class ResizeBitmapHelper {
 
 
     static ImmutablePair<Bitmap, Float> resizeBitmap(final RenderScript rs, @NonNull final Bitmap src, float targetScale) {
+        Helper.mustNotRunOnUiThread();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || null == rs) { // Because Renderscript is super unstable on Android 5 (see https://issuetracker.google.com/issues/119582492; reported by users)
             ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
             Timber.d(">> resizing successively to scale %s", resizeParams.right);
