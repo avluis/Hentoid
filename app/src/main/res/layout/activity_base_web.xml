@@ -151,7 +151,6 @@
         android:layout_width="match_parent"
         android:layout_height="4dp"
         android:layout_gravity="top"
-        android:scaleY="1f"
         android:visibility="gone"
         app:layout_anchor="@id/bottom_navigation"
         app:layout_anchorGravity="top"
