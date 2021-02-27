@@ -543,7 +543,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             db.updateImageContentStatus(content.getId(), null, targetImageStatus);
 
         content.setStatus(StatusContent.DOWNLOADING);
-        content.setFlaggedForDeletion(false); // Remove any UI animation
+        content.setIsBeingDeleted(false); // Remove any UI animation
         db.insertContent(content);
 
         if (!db.isContentInQueue(content)) {
