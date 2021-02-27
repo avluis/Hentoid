@@ -48,7 +48,6 @@ class ResizeBitmapHelper {
      * - Second : Corresponding scale
      */
     private static ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
-        Helper.mustNotRunOnUiThread();
         float resultScale = 1f;
         int nbResize = 0;
 
