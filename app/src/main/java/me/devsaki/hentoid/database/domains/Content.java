@@ -156,7 +156,7 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        if (attributes.isResolved())
+        if (attributes != null)
             for (Attribute a : attributes) result.add(a);
         return result;
     }
