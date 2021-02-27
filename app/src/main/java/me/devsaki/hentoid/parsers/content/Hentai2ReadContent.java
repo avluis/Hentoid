@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -26,19 +28,17 @@ public class Hentai2ReadContent extends BaseContentParser {
     private String uniqueId;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.HENTAI2READ);
+        if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
-        result.setSite(Site.HENTAI2READ);
-        if (url.isEmpty()) return result.setStatus(StatusContent.IGNORED);
-
-        result.setUrl(url.replace(Site.HENTAI2READ.getUrl(), ""));
-        result.setCoverImageUrl(coverUrl);
+        content.setUrl(url.replace(Site.HENTAI2READ.getUrl(), ""));
+        content.setCoverImageUrl(coverUrl);
         if (!title.isEmpty()) {
             String titleStr = title.get(title.size() - 1).text();
-            result.setTitle(!titleStr.isEmpty() ? Helper.removeNonPrintableChars(titleStr) : "");
-        } else result.setTitle("<no title>");
-        result.setUniqueSiteId(uniqueId);
+            content.setTitle(!titleStr.isEmpty() ? Helper.removeNonPrintableChars(titleStr) : "");
+        } else content.setTitle("<no title>");
+        content.setUniqueSiteId(uniqueId);
 
         AttributeMap attributes = new AttributeMap();
         String currentProperty = "";
@@ -50,7 +50,7 @@ public class Hentai2ReadContent extends BaseContentParser {
                     switch (currentProperty) {
                         case "page":
                             String qtyPages = child.text().substring(0, child.text().indexOf(" page")).replace(",", "");
-                            result.setQtyPages(Integer.parseInt(qtyPages));
+                            content.setQtyPages(Integer.parseInt(qtyPages));
                             break;
                         case "parody":
                             ParseHelper.parseAttribute(attributes, AttributeType.SERIE, child, false, Site.HENTAI2READ);
@@ -74,8 +74,8 @@ public class Hentai2ReadContent extends BaseContentParser {
                 }
             }
         }
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

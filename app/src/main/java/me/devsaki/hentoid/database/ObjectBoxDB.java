@@ -132,7 +132,7 @@ public class ObjectBoxDB {
             // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
             Attribute dbAttr;
             Attribute inputAttr;
-            if (attributes.isResolved()) {
+            if (attributes != null) {
                 // This transaction may consume a lot of DB readers depending on the number of attributes involved
                 for (int i = 0; i < attributes.size(); i++) {
                     inputAttr = attributes.get(i);

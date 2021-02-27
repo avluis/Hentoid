@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -8,7 +10,6 @@ import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
@@ -40,28 +41,26 @@ public class TsuminoContent extends BaseContentParser {
     private List<Element> categories;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
-
-        result.setSite(Site.TSUMINO);
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(TSUMINO);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
-        result.setUrl(theUrl.replace("/Read/Index", ""));
+        content.setUrl(theUrl.replace("/Read/Index", ""));
         if (!coverUrl.startsWith("http")) coverUrl = TSUMINO.getUrl() + coverUrl;
-        result.setCoverImageUrl(coverUrl);
-        result.setTitle(Helper.removeNonPrintableChars(title));
-        result.setQtyPages((pages.length() > 0) ? Integer.parseInt(pages) : 0);
+        content.setCoverImageUrl(coverUrl);
+        content.setTitle(Helper.removeNonPrintableChars(title));
+        content.setQtyPages((pages.length() > 0) ? Integer.parseInt(pages) : 0);
 
         AttributeMap attributes = new AttributeMap();
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, false, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.TSUMINO);
-        result.addAttributes(attributes);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, false, TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, TSUMINO);
+        content.addAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

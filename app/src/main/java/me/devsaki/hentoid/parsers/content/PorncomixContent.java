@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -52,20 +54,18 @@ public class PorncomixContent extends BaseContentParser {
     private List<Element> bestPages;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
-
-        result.setSite(Site.PORNCOMIX);
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.PORNCOMIX);
 
         title = title.trim();
-        if (title.isEmpty()) return result.setStatus(StatusContent.IGNORED);
-        result.setTitle(Helper.removeNonPrintableChars(title.trim()));
+        if (title.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
+        content.setTitle(Helper.removeNonPrintableChars(title.trim()));
 
-        result.setUrl(url);
-        result.setCoverImageUrl(coverUrl);
+        content.setUrl(url);
+        content.setCoverImageUrl(coverUrl);
 
         String artist = "";
-        if (result.getUrl().contains("/manga")) {
+        if (content.getUrl().contains("/manga")) {
             String[] titleParts = title.split("-");
             artist = titleParts[0].trim();
         }
@@ -86,12 +86,12 @@ public class PorncomixContent extends BaseContentParser {
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, zoneTags, false, Site.PORNCOMIX);
         else if (bestTags != null && !bestTags.isEmpty())
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, false, Site.PORNCOMIX);
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages), result.getCoverImageUrl(), StatusContent.SAVED);
-        result.setImageFiles(images);
-        result.setQtyPages(images.size() - 1);  // Keep final result after deduplicating; don't count the cover
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages), content.getCoverImageUrl(), StatusContent.SAVED);
+        content.setImageFiles(images);
+        content.setQtyPages(images.size() - 1);  // Keep final result after deduplicating; don't count the cover
 
-        return result;
+        return content;
     }
 }

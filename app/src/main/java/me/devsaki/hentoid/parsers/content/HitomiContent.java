@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -37,18 +39,16 @@ public class HitomiContent extends BaseContentParser {
     @Selector(value = "div.gallery tr a[href^='/type']")
     private List<Element> categories;
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
-
+    public Content update(@NonNull final Content content, @Nonnull String url) {
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
         if (coverUrl.isEmpty() && title.equals(NO_TITLE))
-            return result.setStatus(StatusContent.IGNORED);
+            return new Content().setStatus(StatusContent.IGNORED);
 
-        result.setSite(Site.HITOMI);
-        result.setUrl(theUrl.replace(Site.HITOMI.getUrl(), "").replace("/reader", ""));
-        result.setCoverImageUrl("https:" + coverUrl);
-        result.setTitle(Helper.removeNonPrintableChars(title));
+        content.setSite(Site.HITOMI);
+        content.setUrl(theUrl.replace(Site.HITOMI.getUrl(), "").replace("/reader", ""));
+        content.setCoverImageUrl("https:" + coverUrl);
+        content.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.HITOMI);
@@ -59,8 +59,8 @@ public class HitomiContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.HITOMI);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.HITOMI);
 
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

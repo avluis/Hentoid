@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -16,5 +18,9 @@ public abstract class BaseContentParser implements ContentParser {
         return canonicalUrl;
     }
 
-    public abstract Content toContent(@Nonnull String url);
+    public Content toContent(@Nonnull String url) {
+        return update(new Content(), url);
+    }
+
+    public abstract Content update(@NonNull final Content content, @Nonnull String url);
 }

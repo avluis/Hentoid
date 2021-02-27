@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -36,22 +38,21 @@ public class ASMHentaiContent extends BaseContentParser {
     private List<Element> languages;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
+    public Content update(@NonNull final Content content, @Nonnull String url) {
         String theUrl = canonicalUrl.isEmpty() ? url : canonicalUrl;
         if (theUrl.isEmpty())
-            return result.setSite(Site.ASMHENTAI).setStatus(StatusContent.IGNORED);
+            return new Content().setSite(Site.ASMHENTAI).setStatus(StatusContent.IGNORED);
 
-        result.setSite(theUrl.toLowerCase().contains("comics") ? Site.ASMHENTAI_COMICS : Site.ASMHENTAI);
-        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        content.setSite(theUrl.toLowerCase().contains("comics") ? Site.ASMHENTAI_COMICS : Site.ASMHENTAI);
+        if (galleryUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
         // Remove the host from the URL
         galleryUrl = galleryUrl.substring(galleryUrl.indexOf("/gallery/") + 8, galleryUrl.length() - 2);
-        result.setUrl(galleryUrl);
-        result.setCoverImageUrl("https:" + coverUrl);
+        content.setUrl(galleryUrl);
+        content.setCoverImageUrl("https:" + coverUrl);
 
-        result.setTitle(Helper.removeNonPrintableChars(title));
-        result.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
+        content.setTitle(Helper.removeNonPrintableChars(title));
+        content.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
 
         AttributeMap attributes = new AttributeMap();
 
@@ -61,8 +62,8 @@ public class ASMHentaiContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, "badge", Site.ASMHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, "badge", Site.ASMHENTAI);
 
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

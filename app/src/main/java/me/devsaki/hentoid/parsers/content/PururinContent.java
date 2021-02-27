@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -44,16 +46,14 @@ public class PururinContent extends BaseContentParser {
         return galleryUrl.startsWith("https") ? "https" : "http";
     }
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
-
-        result.setSite(Site.PURURIN);
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.PURURIN);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
-        result.setUrl(theUrl.replace(getProtocol() + "://pururin.io/gallery", ""));
-        result.setCoverImageUrl(getProtocol() + ":" + coverUrl);
-        result.setTitle(!title.isEmpty() ? Helper.removeNonPrintableChars(title.get(0)) : "");
+        content.setUrl(theUrl.replace(getProtocol() + "://pururin.io/gallery", ""));
+        content.setCoverImageUrl(getProtocol() + ":" + coverUrl);
+        content.setTitle(!title.isEmpty() ? Helper.removeNonPrintableChars(title.get(0)) : "");
         int qtyPages = 0;
         boolean pagesFound = false;
         for (String s : pages) {
@@ -63,7 +63,7 @@ public class PururinContent extends BaseContentParser {
             }
             if (s.trim().equalsIgnoreCase("pages")) pagesFound = true;
         }
-        result.setQtyPages(qtyPages);
+        content.setQtyPages(qtyPages);
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.PURURIN);
@@ -73,8 +73,8 @@ public class PururinContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.PURURIN);
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

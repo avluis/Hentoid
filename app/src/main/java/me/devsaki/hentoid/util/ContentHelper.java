@@ -902,7 +902,7 @@ public final class ContentHelper {
         HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
         ContentParser contentParser = htmlAdapter.fromInputStream(parserStream, new URL(url));
-        Content newContent = contentParser.toContent(url);
+        Content newContent = contentParser.update(content, url);
 
         if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
             String canonicalUrl = contentParser.getCanonicalUrl();

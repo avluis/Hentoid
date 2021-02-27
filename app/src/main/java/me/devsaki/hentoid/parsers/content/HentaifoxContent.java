@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -29,19 +31,17 @@ public class HentaifoxContent extends BaseContentParser {
     private List<Element> scripts;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.HENTAIFOX);
+        if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
-        result.setSite(Site.HENTAIFOX);
-        if (url.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        content.setUrl(url.replace(Site.HENTAIFOX.getUrl(), "").replace("/gallery", ""));
 
-        result.setUrl(url.replace(Site.HENTAIFOX.getUrl(), "").replace("/gallery", ""));
+        content.populateUniqueSiteId();
+        content.setCoverImageUrl(coverUrl);
+        content.setTitle(Helper.removeNonPrintableChars(title));
 
-        result.populateUniqueSiteId();
-        result.setCoverImageUrl(coverUrl);
-        result.setTitle(Helper.removeNonPrintableChars(title));
-
-        if (null == information || information.children().isEmpty()) return result;
+        if (null == information || information.children().isEmpty()) return content;
 
         AttributeMap attributes = new AttributeMap();
 
@@ -49,7 +49,7 @@ public class HentaifoxContent extends BaseContentParser {
             // Flat info (pages, posted date)
             if (e.children().isEmpty() && e.hasText()) {
                 if (e.text().toLowerCase().startsWith("pages")) {
-                    result.setQtyPages(Integer.parseInt(e.text().toLowerCase().replace(" ", "").replace("pages:", "")));
+                    content.setQtyPages(Integer.parseInt(e.text().toLowerCase().replace(" ", "").replace("pages:", "")));
                 }
             } else if (e.children().size() > 1) { // Tags
                 String metaType = e.child(0).text().replace(":", "").trim();
@@ -71,10 +71,10 @@ public class HentaifoxContent extends BaseContentParser {
                     ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, tagLinks, true, Site.HENTAIFOX);
             }
         }
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        result.setImageFiles(ParseHelper.urlsToImageFiles(HentaifoxParser.parseImages(result, thumbs, scripts), result.getCoverImageUrl(), StatusContent.SAVED));
+        content.setImageFiles(ParseHelper.urlsToImageFiles(HentaifoxParser.parseImages(content, thumbs, scripts), content.getCoverImageUrl(), StatusContent.SAVED));
 
-        return result;
+        return content;
     }
 }

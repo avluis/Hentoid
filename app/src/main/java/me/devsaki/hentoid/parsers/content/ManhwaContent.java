@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -26,26 +28,24 @@ public class ManhwaContent extends BaseContentParser {
     private List<Element> artist;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.MANHWA);
+        if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
-        result.setSite(Site.MANHWA);
-        if (url.isEmpty()) return result.setStatus(StatusContent.IGNORED);
-
-        result.setUrl(url.replace(Site.MANHWA.getUrl(), ""));
-        result.setCoverImageUrl(coverUrl);
+        content.setUrl(url.replace(Site.MANHWA.getUrl(), ""));
+        content.setCoverImageUrl(coverUrl);
         String title = NO_TITLE;
         if (breadcrumbs != null && !breadcrumbs.isEmpty()) {
             title = Helper.removeNonPrintableChars(breadcrumbs.get(breadcrumbs.size() - 1).text());
         }
-        result.setTitle(title);
-        result.populateUniqueSiteId();
+        content.setTitle(title);
+        content.populateUniqueSiteId();
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.MANHWA);
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.MANHWA);
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

@@ -25,19 +25,16 @@ public class HbrowseContent extends BaseContentParser {
     @Selector("table.listTable tr")
     private List<Element> information;
 
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.HBROWSE);
+        if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
+        content.setUrl(url.replace(Site.HBROWSE.getUrl(), ""));
 
-        result.setSite(Site.HBROWSE);
-        if (url.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        content.populateUniqueSiteId();
+        content.setCoverImageUrl(Site.HBROWSE.getUrl() + "/thumbnails/" + content.getUniqueSiteId() + "_1.jpg");
 
-        result.setUrl(url.replace(Site.HBROWSE.getUrl(), ""));
-
-        result.populateUniqueSiteId();
-        result.setCoverImageUrl(Site.HBROWSE.getUrl() + "/thumbnails/" + result.getUniqueSiteId() + "_1.jpg");
-
-        if (null == information || information.isEmpty()) return result;
+        if (null == information || information.isEmpty()) return content;
 
         AttributeMap attributes = new AttributeMap();
 
@@ -48,7 +45,7 @@ public class HbrowseContent extends BaseContentParser {
             Element metaContent = e.select("td").last();
 
             if (metaType.equalsIgnoreCase("title"))
-                result.setTitle(metaContent.childNode(0).toString());
+                content.setTitle(metaContent.childNode(0).toString());
             if (metaType.equalsIgnoreCase("artist"))
                 addAttribute(metaContent, attributes, AttributeType.ARTIST);
 
@@ -71,13 +68,13 @@ public class HbrowseContent extends BaseContentParser {
             if (metaType.equalsIgnoreCase("position"))
                 addAttribute(metaContent, attributes, AttributeType.TAG);
         }
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(result, scripts), result.getCoverImageUrl(), StatusContent.SAVED);
-        result.setImageFiles(imgs);
-        result.setQtyPages(imgs.size() - 1);  // Don't count the cover
+        List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(content, scripts), content.getCoverImageUrl(), StatusContent.SAVED);
+        content.setImageFiles(imgs);
+        content.setQtyPages(imgs.size() - 1);  // Don't count the cover
 
-        return result;
+        return content;
     }
 
     private void addAttribute(@NonNull final Element metaContent, @NonNull AttributeMap attributes, @NonNull AttributeType type) {

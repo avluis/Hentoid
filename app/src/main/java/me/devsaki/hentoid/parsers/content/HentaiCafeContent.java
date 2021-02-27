@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -28,27 +30,25 @@ public class HentaiCafeContent extends BaseContentParser {
     private List<Element> tags;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
-
-        result.setSite(Site.HENTAICAFE);
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.HENTAICAFE);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(theUrl.replace("post-", "/?p="));
+        content.setUrl(theUrl.replace("post-", "/?p="));
 
         String coverUrl = coverImg.attr("src");
         if (coverUrl.isEmpty()) coverUrl = coverImg.attr("data-cfsrc"); // Cloudflare-served image
-        result.setCoverImageUrl(coverUrl);
+        content.setCoverImageUrl(coverUrl);
 
-        result.setTitle(Helper.removeNonPrintableChars(title));
+        content.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.HENTAICAFE);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.HENTAICAFE);
 
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

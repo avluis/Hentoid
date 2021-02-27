@@ -2,6 +2,8 @@ package me.devsaki.hentoid.parsers.content;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +26,7 @@ import static me.devsaki.hentoid.activities.sources.LusciousActivity.GALLERY_FIL
 public class LusciousContent extends BaseContentParser {
 
     @Nullable
-    public Content toContent(@Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url) {
         String bookId;
 
         if (url.contains(GALLERY_FILTER[0])) { // Triggered by a graphQL request
@@ -55,12 +57,10 @@ public class LusciousContent extends BaseContentParser {
 
         try {
             LusciousBookMetadata metadata = LusciousServer.API.getBookMetadata(query).execute().body();
-            return metadata.toContent();
+            return metadata.update(content);
         } catch (IOException e) {
             Timber.e(e, "Error parsing content.");
-            Content result = new Content();
-            result.setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED);
-            return result;
+            return new Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED);
         }
     }
 }

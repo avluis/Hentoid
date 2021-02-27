@@ -2,6 +2,8 @@ package me.devsaki.hentoid.parsers.content;
 
 import android.webkit.CookieManager;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 
 import javax.annotation.Nonnull;
@@ -18,7 +20,7 @@ import timber.log.Timber;
 public class ExhentaiContent extends BaseContentParser {
 
     @Nullable
-    public Content toContent(@Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url) {
         CookieManager mgr = CookieManager.getInstance();
         String cookiesStr = mgr.getCookie(".exhentai.org");
 
@@ -27,12 +29,10 @@ public class ExhentaiContent extends BaseContentParser {
 
         try {
             EHentaiGalleriesMetadata metadata = EHentaiServer.EXHENTAI_API.getGalleryMetadata(query, cookiesStr).execute().body();
-            return metadata.toContent(url, Site.EXHENTAI);
+            return metadata.update(content, url, Site.EXHENTAI);
         } catch (IOException e) {
             Timber.e(e, "Error parsing content.");
-            Content result = new Content();
-            result.setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED);
-            return result;
+            return new Content().setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED);
         }
     }
 }

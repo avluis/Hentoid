@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -37,16 +39,15 @@ public class NexusContent extends BaseContentParser {
     private List<Element> thumbs;
 
     @Nullable
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
-
-        result.setSite(Site.NEXUS);
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.NEXUS);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty() || null == thumbs) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty() || null == thumbs)
+            return new Content().setStatus(StatusContent.IGNORED);
 
-        result.setUrl(theUrl.replace(Site.NEXUS.getUrl() + "/view", ""));
-        result.setCoverImageUrl(coverUrl);
-        result.setTitle(Helper.removeNonPrintableChars(title));
+        content.setUrl(theUrl.replace(Site.NEXUS.getUrl() + "/view", ""));
+        content.setCoverImageUrl(coverUrl);
+        content.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
 
@@ -55,10 +56,10 @@ public class NexusContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.NEXUS);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, language, false, Site.NEXUS);
 
-        result.addAttributes(attributes);
+        content.addAttributes(attributes);
 
-        result.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
+        content.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
 
-        return result;
+        return content;
     }
 }
