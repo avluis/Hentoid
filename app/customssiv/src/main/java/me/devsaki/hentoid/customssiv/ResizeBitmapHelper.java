@@ -29,7 +29,7 @@ class ResizeBitmapHelper {
             Timber.d(">> resizing successively to scale %s", resizeParams.right);
             return new ImmutablePair<>(successiveResize(src, resizeParams.left), resizeParams.right);
         } else {
-            if (targetScale < 0.75) {
+            if (targetScale < 0.75 || (targetScale > 1.0 && targetScale < 1.55)) {
                 // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
                 return new ImmutablePair<>(resizeNice(rs, src, targetScale, targetScale), targetScale);
             } else {
