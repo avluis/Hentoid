@@ -911,9 +911,6 @@ public final class ContentHelper {
             else return content;
         }
 
-        // We're redownloading the same book, we're not creating a new one
-        newContent.setId(content.getId());
-
         // Save cookies for future calls during download
         Map<String, String> params = new HashMap<>();
         if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);

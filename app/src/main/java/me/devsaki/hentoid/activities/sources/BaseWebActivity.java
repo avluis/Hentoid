@@ -895,8 +895,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             }
             if (!quickDownload) changeActionMode(ActionMode.DOWNLOAD);
         } else {
+            /*
             content.setId(contentDB.getId());
             content.setStatus(contentDB.getStatus());
+             */
+            content = contentDB;
         }
         currentContent = content;
 
