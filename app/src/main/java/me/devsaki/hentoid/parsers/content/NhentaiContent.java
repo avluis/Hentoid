@@ -76,7 +76,7 @@ public class NhentaiContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, "name", Site.NHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, "name", Site.NHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, "name", Site.NHENTAI);
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(content, thumbs), content.getCoverImageUrl(), StatusContent.SAVED);
         content.setImageFiles(images);

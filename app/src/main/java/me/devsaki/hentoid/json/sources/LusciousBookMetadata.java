@@ -82,7 +82,7 @@ public class LusciousBookMetadata {
             Attribute attribute = new Attribute(type, name, RELATIVE_URL_PREFIX + tag.url, Site.LUSCIOUS);
             attributes.add(attribute);
         }
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

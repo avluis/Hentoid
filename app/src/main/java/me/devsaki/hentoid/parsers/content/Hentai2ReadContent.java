@@ -74,7 +74,7 @@ public class Hentai2ReadContent extends BaseContentParser {
                 }
             }
         }
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

@@ -62,7 +62,7 @@ public class ASMHentaiContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, "badge", Site.ASMHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, "badge", Site.ASMHENTAI);
 
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

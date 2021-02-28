@@ -44,7 +44,7 @@ public class ToonilyContent extends BaseContentParser {
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.TOONILY);
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.TOONILY);
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

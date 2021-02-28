@@ -147,7 +147,7 @@ public class MusesContent extends BaseContentParser {
         } catch (IOException e) {
             Timber.e(e);
         }
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
 
         return content;

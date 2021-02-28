@@ -59,7 +59,7 @@ public class HitomiContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.HITOMI);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.HITOMI);
 
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

@@ -73,7 +73,7 @@ public class PururinContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.PURURIN);
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

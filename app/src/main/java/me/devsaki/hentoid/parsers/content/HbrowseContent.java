@@ -68,7 +68,7 @@ public class HbrowseContent extends BaseContentParser {
             if (metaType.equalsIgnoreCase("position"))
                 addAttribute(metaContent, attributes, AttributeType.TAG);
         }
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(content, scripts), content.getCoverImageUrl(), StatusContent.SAVED);
         content.setImageFiles(imgs);

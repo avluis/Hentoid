@@ -44,7 +44,7 @@ public class ManhwaContent extends BaseContentParser {
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.MANHWA);
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.MANHWA);
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

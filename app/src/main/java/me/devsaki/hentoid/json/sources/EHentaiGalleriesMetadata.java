@@ -75,7 +75,7 @@ public class EHentaiGalleriesMetadata {
 
                 attributes.add(new Attribute(type, name, type.name() + "/" + name, site));
             }
-            content.addAttributes(attributes);
+            content.putAttributes(attributes);
 
             return content;
         }

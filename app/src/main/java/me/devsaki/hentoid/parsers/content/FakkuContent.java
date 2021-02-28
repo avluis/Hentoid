@@ -73,7 +73,7 @@ public class FakkuContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.FAKKU2);
         ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.FAKKU2);
 
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

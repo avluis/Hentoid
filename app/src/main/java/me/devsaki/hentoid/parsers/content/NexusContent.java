@@ -56,7 +56,7 @@ public class NexusContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.NEXUS);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, language, false, Site.NEXUS);
 
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         content.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
 

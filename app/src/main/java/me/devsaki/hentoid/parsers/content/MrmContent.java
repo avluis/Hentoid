@@ -44,7 +44,7 @@ public class MrmContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.MRM);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, genres, false, Site.MRM);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MRM);
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

@@ -47,7 +47,7 @@ public class HentaiCafeContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.HENTAICAFE);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.HENTAICAFE);
 
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

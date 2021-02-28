@@ -57,7 +57,7 @@ public class ImhentaiContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.IMHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.IMHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.IMHENTAI);
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

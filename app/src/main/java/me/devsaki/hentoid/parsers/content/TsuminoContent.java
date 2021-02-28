@@ -59,7 +59,7 @@ public class TsuminoContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, TSUMINO);
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, TSUMINO);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, TSUMINO);
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }

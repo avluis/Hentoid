@@ -161,6 +161,13 @@ public class Content implements Serializable {
         return result;
     }
 
+    public void putAttributes(@NonNull AttributeMap attrs) {
+        if (attributes != null) {
+            attributes.clear();
+            addAttributes(attrs);
+        }
+    }
+
     public Content addAttributes(@NonNull AttributeMap attrs) {
         if (attributes != null) {
             for (Map.Entry<AttributeType, List<Attribute>> entry : attrs.entrySet()) {

@@ -68,7 +68,7 @@ public class DoujinsContent extends BaseContentParser {
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.DOUJINS);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.DOUJINS);
-        content.addAttributes(attributes);
+        content.putAttributes(attributes);
 
         return content;
     }
