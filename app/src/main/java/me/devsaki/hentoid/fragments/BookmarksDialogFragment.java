@@ -331,7 +331,9 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     }
 
     private boolean onItemClick(TextItem<SiteBookmark> item) {
-        if (selectExtension != null && selectExtension.getSelectedItems().isEmpty()) {
+        if (null == selectExtension) return false;
+
+        if (selectExtension.getSelectedItems().isEmpty()) {
             if (!invalidateNextBookClick && item.getTag() != null) {
                 parent.openUrl(item.getTag().getUrl());
                 this.dismiss();
