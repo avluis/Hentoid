@@ -18,8 +18,6 @@ import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class PururinContent extends BaseContentParser {
-    @Selector(value = "head [property=og:url]", attr = "content", defValue = "")
-    private String galleryUrl;
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
     @Selector(value = "div.title", defValue = "")
@@ -42,17 +40,17 @@ public class PururinContent extends BaseContentParser {
     private List<Element> categories;
 
 
-    private String getProtocol() {
-        return galleryUrl.startsWith("https") ? "https" : "http";
+    private String getProtocol(String url) {
+        return url.startsWith("https") ? "https" : "http";
     }
 
     public Content update(@NonNull final Content content, @Nonnull String url) {
         content.setSite(Site.PURURIN);
-        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
+        if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
+        if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
 
-        content.setUrl(theUrl.replace(getProtocol() + "://pururin.io/gallery", ""));
-        content.setCoverImageUrl(getProtocol() + ":" + coverUrl);
+        content.setUrl(url.replace(getProtocol(url) + "://pururin.io/gallery", ""));
+        content.setCoverImageUrl(getProtocol(url) + ":" + coverUrl);
         content.setTitle(!title.isEmpty() ? Helper.removeNonPrintableChars(title.get(0)) : "");
         int qtyPages = 0;
         boolean pagesFound = false;
