@@ -144,6 +144,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
 
         // Item click listeners
         fastAdapter.setOnPreClickListener((v, a, i, p) -> {
+            if (null == selectExtension) return false;
             Set<Integer> selectedPositions = selectExtension.getSelections();
             if (0 == selectedPositions.size()) { // No selection -> normal click
                 return false;
