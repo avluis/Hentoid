@@ -86,6 +86,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
@@ -218,52 +219,14 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private Disposable disposable;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
-    private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
+    private static final Set<String> universalBlockedContent = new HashSet<>();         // Universal list (applied to all sites)
     private List<String> localBlockedContent;                                           // Local list (applied to current site)
     // List of "dirty" elements (CSS selector) to be cleaned before displaying the page
     private List<String> dirtyElements;
 
     static {
-        universalBlockedContent.add("exoclick.com");
-        universalBlockedContent.add("juicyadultads.com");
-        universalBlockedContent.add("juicyads.com");
-        universalBlockedContent.add("exosrv.com");
-        universalBlockedContent.add("hentaigold.net");
-        universalBlockedContent.add("ads.php");
-        universalBlockedContent.add("ads.js");
-        universalBlockedContent.add("pop.js");
-        universalBlockedContent.add("trafficsan.com");
-        universalBlockedContent.add("contentabc.com");
-        universalBlockedContent.add("bebi.com");
-        universalBlockedContent.add("aftv-serving.bid");
-        universalBlockedContent.add("smatoo.net");
-        universalBlockedContent.add("adtng.net");
-        universalBlockedContent.add("adtng.com");
-        universalBlockedContent.add("popads.net");
-        universalBlockedContent.add("adsco.re");
-        universalBlockedContent.add("s24hc8xzag.com");
-        universalBlockedContent.add("/nutaku/");
-        universalBlockedContent.add("trafficjunky");
-        universalBlockedContent.add("traffichaus");
-        universalBlockedContent.add("google-analytics.com");
-        universalBlockedContent.add("mc.yandex.ru");
-        universalBlockedContent.add("mc.webvisor.org");
-        universalBlockedContent.add("scorecardresearch.com");
-        universalBlockedContent.add("hadskiz.com");
-        universalBlockedContent.add("pushnotifications.click");
-        universalBlockedContent.add("fingahvf.top");
-        universalBlockedContent.add("displayvertising.com");
-        universalBlockedContent.add("tsyndicate.com");
-        universalBlockedContent.add("semireproji.pro");
-        universalBlockedContent.add("defutohi.pro");
-        universalBlockedContent.add("realsrv.com");
-        universalBlockedContent.add("smartclick.net");
-        universalBlockedContent.add("ulukaris.com");
-        universalBlockedContent.add("alliedthirteen.com");
-        universalBlockedContent.add("acknowledgenightsabstain.com");
-        universalBlockedContent.add(".vdo.ai");
-        universalBlockedContent.add("bidgear.com");
-        universalBlockedContent.add("2mdn.net");
+        String[] blockedDomains = HentoidApp.getInstance().getResources().getStringArray(R.array.blocked_domains);
+        universalBlockedContent.addAll(Arrays.asList(blockedDomains));
     }
 
     protected abstract CustomWebViewClient getWebClient();
