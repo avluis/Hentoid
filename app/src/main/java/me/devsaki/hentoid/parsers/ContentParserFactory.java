@@ -6,6 +6,8 @@ import me.devsaki.hentoid.parsers.content.ASMHentaiContent;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
+import me.devsaki.hentoid.parsers.content.EhentaiContent;
+import me.devsaki.hentoid.parsers.content.ExhentaiContent;
 import me.devsaki.hentoid.parsers.content.FakkuContent;
 import me.devsaki.hentoid.parsers.content.HbrowseContent;
 import me.devsaki.hentoid.parsers.content.Hentai2ReadContent;
@@ -13,6 +15,7 @@ import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
 import me.devsaki.hentoid.parsers.content.HentaifoxContent;
 import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.ImhentaiContent;
+import me.devsaki.hentoid.parsers.content.LusciousContent;
 import me.devsaki.hentoid.parsers.content.ManhwaContent;
 import me.devsaki.hentoid.parsers.content.MrmContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
@@ -20,6 +23,7 @@ import me.devsaki.hentoid.parsers.content.NexusContent;
 import me.devsaki.hentoid.parsers.content.NhentaiContent;
 import me.devsaki.hentoid.parsers.content.PorncomixContent;
 import me.devsaki.hentoid.parsers.content.PururinContent;
+import me.devsaki.hentoid.parsers.content.ToonilyContent;
 import me.devsaki.hentoid.parsers.content.TsuminoContent;
 import me.devsaki.hentoid.parsers.images.ASMHentaiParser;
 import me.devsaki.hentoid.parsers.images.DoujinsParser;
@@ -42,6 +46,7 @@ import me.devsaki.hentoid.parsers.images.NexusParser2;
 import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
+import me.devsaki.hentoid.parsers.images.ToonilyParser;
 import me.devsaki.hentoid.parsers.images.TsuminoParser;
 
 public class ContentParserFactory {
@@ -93,9 +98,14 @@ public class ContentParserFactory {
                 return ManhwaContent.class;
             case IMHENTAI:
                 return ImhentaiContent.class;
-            case EHENTAI: // Uses the API of the site -> no HTML parser
-            case EXHENTAI: // Uses the API of the site -> no HTML parser
-            case LUSCIOUS: // Uses the API of the site -> no HTML parser
+            case EHENTAI:
+                return EhentaiContent.class;
+            case EXHENTAI:
+                return ExhentaiContent.class;
+            case LUSCIOUS:
+                return LusciousContent.class;
+            case TOONILY:
+                return ToonilyContent.class;
             default:
                 return DummyContent.class;
         }
@@ -148,6 +158,8 @@ public class ContentParserFactory {
                 return new ManhwaParser();
             case IMHENTAI:
                 return new ImhentaiParser();
+            case TOONILY:
+                return new ToonilyParser();
             default:
                 return new DummyParser();
         }

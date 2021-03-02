@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -15,9 +17,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class PururinContent implements ContentParser {
-    @Selector(value = "head [property=og:url]", attr = "content", defValue = "")
-    private String galleryUrl;
+public class PururinContent extends BaseContentParser {
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
     @Selector(value = "div.title", defValue = "")
@@ -40,20 +40,18 @@ public class PururinContent implements ContentParser {
     private List<Element> categories;
 
 
-    private String getProtocol() {
-        return galleryUrl.startsWith("https") ? "https" : "http";
+    private String getProtocol(String url) {
+        return url.startsWith("https") ? "https" : "http";
     }
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.PURURIN);
+        if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
+        if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
 
-        result.setSite(Site.PURURIN);
-        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
-
-        result.setUrl(theUrl.replace(getProtocol() + "://pururin.io/gallery", ""));
-        result.setCoverImageUrl(getProtocol() + ":" + coverUrl);
-        result.setTitle(!title.isEmpty() ? Helper.removeNonPrintableChars(title.get(0)) : "");
+        content.setUrl(url.replace(getProtocol(url) + "://pururin.io/gallery", ""));
+        content.setCoverImageUrl(getProtocol(url) + ":" + coverUrl);
+        content.setTitle(!title.isEmpty() ? Helper.removeNonPrintableChars(title.get(0)) : "");
         int qtyPages = 0;
         boolean pagesFound = false;
         for (String s : pages) {
@@ -63,7 +61,7 @@ public class PururinContent implements ContentParser {
             }
             if (s.trim().equalsIgnoreCase("pages")) pagesFound = true;
         }
-        result.setQtyPages(qtyPages);
+        content.setQtyPages(qtyPages);
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.PURURIN);
@@ -73,8 +71,8 @@ public class PururinContent implements ContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.PURURIN);
-        result.addAttributes(attributes);
+        content.putAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

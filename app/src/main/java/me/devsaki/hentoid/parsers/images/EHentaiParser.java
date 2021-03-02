@@ -92,7 +92,7 @@ public class EHentaiParser implements ImageListParser {
                 Elements elements = galleryDoc.select(".gm a[href*='/mpv/']");
                 if (!elements.isEmpty()) {
                     String mpvUrl = elements.get(0).attr("href");
-                    result = loadMpv(mpvUrl, headers, useHentoidAgent);
+                    result = loadMpv(content, mpvUrl, headers, useHentoidAgent);
                 } else {
                     result = loadClassic(content, galleryDoc, headers, useHentoidAgent);
                 }
@@ -110,6 +110,7 @@ public class EHentaiParser implements ImageListParser {
     }
 
     private List<ImageFile> loadMpv(
+            @NonNull Content content,
             @NonNull final String mpvUrl,
             @NonNull final List<Pair<String, String>> headers,
             boolean useHentoidAgent) throws IOException, EmptyResultException {
@@ -121,7 +122,7 @@ public class EHentaiParser implements ImageListParser {
             throw new EmptyResultException("No exploitable data has been found on the multiple page viewer");
 
         int pageCount = Math.min(mpvInfo.pagecount, mpvInfo.images.size());
-        progress.start(pageCount);
+        progress.start(content.getUrl(), pageCount);
 
         // B.2- Call the API to get the pictures URL
         for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
@@ -168,7 +169,7 @@ public class EHentaiParser implements ImageListParser {
         int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
         int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
-        progress.start(nbGalleryPages + content.getQtyPages());
+        progress.start(content.getUrl(), nbGalleryPages + content.getQtyPages());
 
         // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
         List<String> pageUrls = new ArrayList<>();

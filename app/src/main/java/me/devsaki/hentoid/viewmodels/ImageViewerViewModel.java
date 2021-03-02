@@ -21,7 +21,6 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,15 +59,9 @@ import timber.log.Timber;
 
 public class ImageViewerViewModel extends AndroidViewModel {
 
-    private static final String KEY_IS_SHUFFLED = "is_shuffled";
-
     // Collection DAO
     private final CollectionDAO collectionDao;
     private ContentSearchManager searchManager;
-
-    // Settings
-    private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
-    private boolean showFavourites = false;                                          // True if viewer only shows favourite images; false if shows all pages
 
     // Collection data
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
@@ -81,6 +74,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();  // Currently displayed set of images
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
     private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // Shuffle state of the current book
+    private final MutableLiveData<Boolean> showFavouritesOnly = new MutableLiveData<>();// True if viewer only shows favourite images; false if shows all pages
     private int thumbIndex;                                                             // Index of the thumbnail among loaded pages
 
     // Write cache for read indicator (no need to update DB and JSON at every page turn)
@@ -102,6 +96,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
         collectionDao = collectionDAO;
+        showFavouritesOnly.postValue(false);
+        shuffled.postValue(false);
     }
 
     @Override
@@ -132,14 +128,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return shuffled;
     }
 
-
-    public void onSaveState(Bundle outState) {
-        outState.putBoolean(KEY_IS_SHUFFLED, isShuffled);
-    }
-
-    public void onRestoreState(@Nullable Bundle savedState) {
-        if (savedState == null) return;
-        isShuffled = savedState.getBoolean(KEY_IS_SHUFFLED, false);
+    @NonNull
+    public LiveData<Boolean> getShowFavouritesOnly() {
+        return showFavouritesOnly;
     }
 
     public void loadFromContent(long contentId) {
@@ -179,7 +170,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
-//        List<ImageFile> currentImages = images.getValue();
         if (imageLocations.isEmpty() || newImages.size() != imageLocations.size()) {
             if (theContent.isArchive())
                 observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, emitter));
@@ -357,13 +347,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private void initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
-        sortAndSetImages(imageFiles, isShuffled);
+        sortAndSetImages(imageFiles, shuffled.getValue());
 
         if (theContent.getId() != loadedContentId) { // To be done once per book only
             int collectionStartingIndex = 0;
+
             // Auto-restart at last read position if asked to
-            if (Preferences.isViewerResumeLastLeft())
+            if (Preferences.isViewerResumeLastLeft() && theContent.getLastReadPageIndex() > -1)
                 collectionStartingIndex = theContent.getLastReadPageIndex();
+
             // Correct offset with the thumb index
             thumbIndex = -1;
             for (int i = 0; i < imageFiles.size(); i++)
@@ -373,6 +365,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 }
 
             if (thumbIndex == collectionStartingIndex) collectionStartingIndex += 1;
+
 
             setReaderStartingIndex(collectionStartingIndex - thumbIndex - 1);
 
@@ -397,6 +390,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void onShuffleClick() {
+        boolean isShuffled = shuffled.getValue();
         isShuffled = !isShuffled;
         shuffled.postValue(isShuffled);
 
@@ -414,7 +408,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).filter(ImageFile::isReadable).toList();
         }
 
-        if (showFavourites)
+        if (showFavouritesOnly.getValue())
             imgs = Stream.of(imgs).filter(ImageFile::isFavourite).toList();
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
@@ -423,6 +417,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void onLeaveBook(int readerIndex) {
+        if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
+            Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
+
+        // Don't do anything if the Content hasn't even been loaded
+        if (-1 == loadedContentId) return;
+
         List<ImageFile> theImages = images.getValue();
         Content theContent = collectionDao.selectContent(loadedContentId);
         if (null == theImages || null == theContent) return;
@@ -486,66 +486,51 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    public void toggleFilterFavouritePages(Consumer<Boolean> callback) {
+    public void toggleFilterFavouritePages() {
         if (loadedContentId > -1) {
+            boolean showFavourites = showFavouritesOnly.getValue();
             showFavourites = !showFavourites;
+            showFavouritesOnly.postValue(showFavourites);
             if (searchManager != null) searchManager.setFilterPageFavourites(showFavourites);
             applySearchParams(loadedContentId);
-            callback.accept(showFavourites);
         }
     }
 
-    public void togglePageFavourite(ImageFile file, Consumer<ImageFile> callback) {
+    public void togglePageFavourite(List<ImageFile> images, Runnable successCallback) {
         compositeDisposable.add(
-                Single.fromCallable(() -> doTogglePageFavourite(getApplication().getApplicationContext(), file.getId()))
+                Completable.fromRunnable(() -> doTogglePageFavourite(images))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                result -> onToggleFavouriteSuccess(result, callback),
+                                successCallback::run,
                                 Timber::e
                         )
         );
     }
 
-    private void onToggleFavouriteSuccess(ImageFile result, Consumer<ImageFile> callback) {
-        List<ImageFile> imgs = getImages().getValue();
-        if (imgs != null) {
-            for (ImageFile img : imgs)
-                if (img.getId() == result.getId()) {
-                    img.setFavourite(result.isFavourite()); // Update new state in memory
-                    result.setDisplayOrder(img.getDisplayOrder()); // Set the display order of the item to
-                    callback.accept(result); // Inform the view
-                }
-        }
-        compositeDisposable.clear();
-    }
-
     /**
      * Toggles favourite flag in DB and in the content JSON
      *
-     * @param context Context to be used for this operation
-     * @param imageId ID of the image whose flag to toggle
-     * @return ImageFile with the new state
+     * @param images images whose flag to toggle
      */
-    private ImageFile doTogglePageFavourite(Context context, long imageId) {
+    private void doTogglePageFavourite(@NonNull final List<ImageFile> images) {
         Helper.assertNonUiThread();
-        ImageFile img = collectionDao.selectImageFile(imageId);
 
-        if (img != null) {
-            img.setFavourite(!img.isFavourite());
+        if (images.isEmpty()) return;
 
-            // Persist in DB
-            collectionDao.insertImageFile(img);
+        // Toggle the value on a copy, not on the original instance that is contained inside the ViewHolder
+        for (ImageFile img : images) img.setFavourite(!img.isFavourite());
 
-            // Persist in JSON
-            Content theContent = img.getContent().getTarget();
-            if (!theContent.getJsonUri().isEmpty())
-                ContentHelper.updateContentJson(context, theContent);
-            else ContentHelper.createContentJson(context, theContent);
+        // Persist in DB
+        collectionDao.insertImageFiles(images);
 
-            return img;
-        } else
-            throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));
+        // Persist new values in JSON
+        Content theContent = images.get(0).getContent().getTarget();
+        theContent.setImageFiles(images);
+        Context context = getApplication().getApplicationContext();
+        if (!theContent.getJsonUri().isEmpty())
+            ContentHelper.updateContentJson(context, theContent);
+        else ContentHelper.createContentJson(context, theContent);
     }
 
     public void deleteBook(Consumer<Throwable> onError) {
@@ -589,7 +574,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void deletePage(int pageIndex, Consumer<Throwable> onError) {
         List<ImageFile> imageFiles = images.getValue();
-        if (imageFiles != null && imageFiles.size() > pageIndex)
+        if (imageFiles != null && imageFiles.size() > pageIndex && pageIndex > -1)
             deletePages(Stream.of(imageFiles.get(pageIndex)).toList(), onError);
     }
 
@@ -675,38 +660,33 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void updateContentPreferences(@NonNull final Map<String, String> newPrefs) {
-        Content theContent = collectionDao.selectContent(loadedContentId);
-        if (null == theContent) return;
-
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doUpdateContentPreferences(getApplication().getApplicationContext(), theContent, newPrefs))
+                Single.fromCallable(() -> doUpdateContentPreferences(getApplication().getApplicationContext(), loadedContentId, newPrefs))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> { // Update is done through LiveData
-                                },
+                                content::postValue,
                                 Timber::e
                         )
         );
     }
 
-    private void doUpdateContentPreferences(@NonNull final Context context,
-                                            @NonNull final Content c, @NonNull final Map<String, String> newPrefs) {
+    private Content doUpdateContentPreferences(@NonNull final Context context, long contentId, @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
-        Content theContent = collectionDao.selectContent(c.getId());
-        if (null == theContent) return;
+        Content theContent = collectionDao.selectContent(contentId);
+        if (null == theContent) return null;
 
         theContent.setBookPreferences(newPrefs);
         // Persist in DB
         collectionDao.insertContent(theContent);
-        // Repost the updated content
-        content.postValue(theContent);
 
         // Persist in JSON
         if (!theContent.getJsonUri().isEmpty())
             ContentHelper.updateContentJson(context, theContent);
         else ContentHelper.createContentJson(context, theContent);
+
+        return theContent;
     }
 
     // Cache JSON URI in the database to speed up favouriting

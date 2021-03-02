@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.work.ForegroundInfo;
 
 public class NotificationManager {
 
@@ -19,6 +20,10 @@ public class NotificationManager {
     public void notify(@NonNull Notification notification) {
         NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
         managerCompat.notify(notificationId, notification.onCreateNotification(context));
+    }
+
+    public ForegroundInfo buildForegroundInfo(@NonNull Notification notification) {
+        return new ForegroundInfo(notificationId, notification.onCreateNotification(context));
     }
 
     public void cancel() {

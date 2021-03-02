@@ -101,6 +101,7 @@ public class ImageViewerActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         unregisterKeyListener();
+        Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
         super.onDestroy();
     }
 }

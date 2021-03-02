@@ -25,7 +25,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  * Created by robb_w on 01/2021
  * Handles parsing of content from imhentai
  */
-public class ImhentaiParser extends BaseParser {
+public class ImhentaiParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {

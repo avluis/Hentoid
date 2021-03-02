@@ -38,16 +38,33 @@
     </string-array>
 
     <string-array name="pref_dl_size_wifi_threshold_entries">
+        <item>No size limit</item>
         <item>20 MB</item>
         <item>40 MB</item>
         <item>100 MB</item>
         <item>200 MB</item>
     </string-array>
     <string-array name="pref_dl_size_wifi_threshold_values">
+        <item>999999</item>
         <item>20</item>
         <item>40</item>
         <item>100</item>
         <item>200</item>
+    </string-array>
+
+    <string-array name="pref_dl_pages_wifi_threshold_entries">
+        <item>No page limit</item>
+        <item>60 pages</item>
+        <item>120 pages</item>
+        <item>200 pages</item>
+        <item>500 pages</item>
+    </string-array>
+    <string-array name="pref_dl_pages_wifi_threshold_values">
+        <item>999999</item>
+        <item>60</item>
+        <item>120</item>
+        <item>200</item>
+        <item>500</item>
     </string-array>
 
     <string-array name="pref_dl_threads_quantity_entries">

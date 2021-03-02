@@ -108,6 +108,9 @@
             android:name=".activities.sources.ImhentaiActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.ToonilyActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -436,6 +439,17 @@
                     android:pathPattern="/gallery/..*"
                     android:scheme="https" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="toonily.com"
+                    android:pathPattern="/..*/..*"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <activity
@@ -446,11 +460,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.LibraryActivity" />
         </activity>
-
-        <service
-            android:name=".services.ContentDownloadService"
-            android:enabled="true"
-            android:exported="false" />
 
         <service android:name=".services.UpdateCheckService" />
 
@@ -476,6 +485,7 @@
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider.FileProvider"
             android:exported="false"
+            android:enabled="true"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,12 +15,16 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
+import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,11 +56,19 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
+import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.util.network.HttpHelper;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import pl.droidsonroids.jspoon.HtmlAdapter;
+import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
+import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 
 /**
  * Utility class for Content-related operations
@@ -116,7 +129,7 @@ public final class ContentHelper {
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         if (content.getSite().equals(Site.NONE)) return;
 
-        Intent intent = new Intent(context, content.getWebActivityClass());
+        Intent intent = new Intent(context, content.getWebActivityClass(content.getSite()));
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(content.getGalleryUrl());
         intent.putExtras(builder.getBundle());
@@ -852,13 +865,67 @@ public final class ContentHelper {
         return result;
     }
 
+    // TODO doc
+    @Nullable
+    public static Content reparseFromScratch(@NonNull final Content content) throws IOException {
+        return reparseFromScratch(content, content.getGalleryUrl());
+    }
+
+    private static Content reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
+        Helper.assertNonUiThread();
+
+        String readerUrl = content.getReaderUrl();
+        List<Pair<String, String>> requestHeadersList = new ArrayList<>();
+        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, readerUrl));
+        String cookieStr = HttpHelper.getCookies(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent());
+        if (!cookieStr.isEmpty())
+            requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+
+        Response response = HttpHelper.getOnlineResource(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent());
+
+        // Scram if the response is a redirection or an error
+        if (response.code() >= 300) return content;
+
+        // Scram if the response is something else than html
+        Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
+        if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
+            return content;
+
+        // Scram if the response is empty
+        ResponseBody body = response.body();
+        if (null == body) return content;
+
+        InputStream parserStream = body.byteStream();
+
+        Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(content.getSite());
+        final Jspoon jspoon = Jspoon.create();
+        HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
+
+        ContentParser contentParser = htmlAdapter.fromInputStream(parserStream, new URL(url));
+        Content newContent = contentParser.update(content, url);
+
+        if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
+            String canonicalUrl = contentParser.getCanonicalUrl();
+            if (!canonicalUrl.isEmpty() && !canonicalUrl.equalsIgnoreCase(url))
+                return reparseFromScratch(content, canonicalUrl);
+            else return content;
+        }
+
+        // Save cookies for future calls during download
+        Map<String, String> params = new HashMap<>();
+        if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+
+        newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
+        return newContent;
+    }
+
     /**
      * Comparator to be used to sort files according to their names
      */
     private static class InnerNameNumberFileComparator implements Comparator<DocumentFile> {
         @Override
         public int compare(@NonNull DocumentFile o1, @NonNull DocumentFile o2) {
-            return new NaturalOrderComparator().compare(Helper.protect(o1.getName()), Helper.protect(o2.getName()));
+            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(Helper.protect(o1.getName()), Helper.protect(o2.getName()));
         }
     }
 
@@ -868,7 +935,7 @@ public final class ContentHelper {
     private static class InnerNameNumberArchiveComparator implements Comparator<ArchiveHelper.ArchiveEntry> {
         @Override
         public int compare(@NonNull ArchiveHelper.ArchiveEntry o1, @NonNull ArchiveHelper.ArchiveEntry o2) {
-            return new NaturalOrderComparator().compare(o1.path, o2.path);
+            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(o1.path, o2.path);
         }
     }
 }

@@ -38,13 +38,15 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.13.9'
+        versionName '1.14.0'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
+        def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
 
         buildConfigField "String", "FK_TOKEN", fkToken
         buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
+        buildConfigField "boolean", "INCLUDE_LEAK_CANARY", includeLeakCanary
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
@@ -87,6 +89,7 @@ android {
 
 dependencies {
     def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
+    def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
 
     // Compile any included libraries
     implementation fileTree(include: ['*jar'], dir: 'libs')
@@ -102,7 +105,7 @@ dependencies {
     testImplementation 'androidx.test:core:1.3.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation "androidx.arch.core:core-testing:2.1.0"
-    testImplementation 'org.robolectric:robolectric:4.5-alpha-3'
+    testImplementation 'org.robolectric:robolectric:4.5.1'
     // Should actually use 4.4.1 when it's released to be able to properly init the new Firebase (see https://github.com/robolectric/robolectric/issues/5186#issuecomment-544930108_)
     testImplementation 'net.lachlanmckee:timber-junit-rule:1.0.1'
     // Auto Timber trees that redirect logs to the JUnit output
@@ -130,6 +133,7 @@ dependencies {
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if this evolves, please examine FileUtil.fromTreeUriOptimized for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
+    implementation "androidx.work:work-runtime:2.5.0"
 
     // For ViewModel to work
     def android_lifecycle_version = "2.2.0"
@@ -143,19 +147,19 @@ dependencies {
      * MEDIA
      */
     // Image loader: github.com/bumptech/glide
-    def glide_version = "4.11.0"
+    def glide_version = "4.12.0"
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt("com.github.bumptech.glide:compiler:$glide_version")
     implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.4.2'
+    implementation 'com.github.penfeizhou.android.animation:apng:2.8.0'
 
     /**
      * UI
      */
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = "5.3.2"
+    def fastadapter_version = "5.3.4"
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"
@@ -173,13 +177,13 @@ dependencies {
     implementation 'com.github.skydoves:balloon:1.2.5'
 
     // Dropdown lists
-    implementation "com.github.skydoves:powerspinner:1.1.5"
+    implementation "com.github.skydoves:powerspinner:1.1.7"
 
     // Popup menus with icons
     implementation 'com.github.skydoves:powermenu:2.1.8'
 
     // Fast scroller
-    implementation "me.zhanghai.android.fastscroll:library:1.1.4"
+    implementation "me.zhanghai.android.fastscroll:library:1.1.5"
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android:flexbox:2.0.0'
@@ -220,7 +224,7 @@ dependencies {
      * UTILS
      */
     //    https://github.com/ReactiveX/RxJava
-    implementation 'io.reactivex.rxjava2:rxjava:2.2.20'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
@@ -241,7 +245,9 @@ dependencies {
     implementation 'com.annimon:stream:1.2.1'
 
     // LeakCanary: github.com/square/leakcanary
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
+    if (includeLeakCanary.toBoolean()) {
+        debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
+    }
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'
@@ -259,14 +265,21 @@ dependencies {
     // Archive management
     implementation 'net.sf.sevenzipjbinding:sevenzipjbinding:16.02-2.01'
 
+    // Natural strings comparator
+    implementation 'net.grey-panther:natural-comparator:1.1'
+
+    // Efficient hashing
+    implementation 'io.whitfin:siphash:2.0.0'
+
+
     /**
      * ANALYTICS
      */
     // Firebase
-    implementation 'com.google.firebase:firebase-analytics:18.0.0'
+    implementation 'com.google.firebase:firebase-analytics:18.0.2'
 
     // Crashlytics
-    implementation 'com.google.firebase:firebase-crashlytics:17.3.0'
+    implementation 'com.google.firebase:firebase-crashlytics:17.3.1'
 
 
     implementation project(path: ':app:customssiv')

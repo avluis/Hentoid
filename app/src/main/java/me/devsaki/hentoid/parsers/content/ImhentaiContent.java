@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -14,7 +16,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class ImhentaiContent implements ContentParser {
+public class ImhentaiContent extends BaseContentParser {
     @Selector(value = "div.left_cover img")
     private Element cover;
     @Selector(value = "div.right_details h1", defValue = "")
@@ -33,23 +35,21 @@ public class ImhentaiContent implements ContentParser {
     private List<Element> categories;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.IMHENTAI);
 
-        result.setSite(Site.IMHENTAI);
-
-        result.setUrl(url.replace(Site.IMHENTAI.getUrl(), "").replace("/gallery", ""));
+        content.setUrl(url.replace(Site.IMHENTAI.getUrl(), "").replace("/gallery", ""));
 
         if (cover != null) {
             String coverUrl = cover.attr("src");
             if (coverUrl.isEmpty()) coverUrl = cover.attr("data-cfsrc"); // Cloudflare-served image
-            result.setCoverImageUrl(coverUrl);
+            content.setCoverImageUrl(coverUrl);
         }
         String str = !title.isEmpty() ? Helper.removeNonPrintableChars(title) : "";
         str = ParseHelper.removeTextualTags(str);
-        result.setTitle(str);
+        content.setTitle(str);
         str = pages.replace("Pages", "").replace("pages", "").replace(":", "").trim();
-        result.setQtyPages(Integer.parseInt(str));
+        content.setQtyPages(Integer.parseInt(str));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.IMHENTAI);
@@ -57,8 +57,8 @@ public class ImhentaiContent implements ContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.IMHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.IMHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.IMHENTAI);
-        result.addAttributes(attributes);
+        content.putAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

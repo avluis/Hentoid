@@ -11,7 +11,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import com.skydoves.powerspinner.PowerSpinnerView;
+
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.Preferences;
 
 public final class ViewerDeleteDialogFragment extends DialogFragment {
 
@@ -59,12 +62,17 @@ public final class ViewerDeleteDialogFragment extends DialogFragment {
 
         RadioButton pageBtn = rootView.findViewById(R.id.delete_mode_page);
         RadioButton bookBtn = rootView.findViewById(R.id.delete_mode_book);
+        PowerSpinnerView spin = rootView.findViewById(R.id.book_prefs_delete_spin);
+        spin.setItems(R.array.page_delete_choices);
+        spin.selectItemByIndex(0);
 
         if (!isDeletePageAllowed) pageBtn.setEnabled(false);
 
         View okBtn = rootView.findViewById(R.id.book_delete_ok_btn);
         okBtn.setOnClickListener(v -> {
             if (!pageBtn.isChecked() && !bookBtn.isChecked()) return;
+            Preferences.setViewerDeleteAskMode(spin.getSelectedIndex());
+            Preferences.setViewerDeleteTarget(pageBtn.isChecked() ? Preferences.Constant.VIEWER_DELETE_TARGET_PAGE : Preferences.Constant.VIEWER_DELETE_TARGET_BOOK);
             parent.onDeleteElement(pageBtn.isChecked());
             dismiss();
         });

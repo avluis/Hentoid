@@ -59,7 +59,7 @@ public class FakkuParser implements ImageListParser {
 
         String cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
         if (null == cookieStr || !cookieStr.toLowerCase().contains("fakku"))
-            throw new AccountException("Your have to be logged with a Fakku account");
+            throw new AccountException("Your have to be logged in with a Fakku account");
 
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
@@ -72,7 +72,7 @@ public class FakkuParser implements ImageListParser {
 
         String rawResource = response.string().trim();
         if (!rawResource.startsWith("{") || !rawResource.endsWith("}")) // No JSON file
-            throw new AccountException("Your have to be logged with a paid Fakku account to download non-free books");
+            throw new AccountException("Your have to be logged in with a paid Fakku account to download non-free books");
 
         // Parse the content if JSON
         FakkuGalleryMetadata info = JsonHelper.jsonToObject(rawResource, FakkuGalleryMetadata.class);
@@ -81,7 +81,7 @@ public class FakkuParser implements ImageListParser {
             return result;
         }
 
-        progress.start(info.getPages().keySet().size() + 1);
+        progress.start(content.getUrl(), info.getPages().keySet().size() + 1);
 
         // Process book info to get page detailed info
         String pid = null;

@@ -23,12 +23,13 @@ class ResizeBitmapHelper {
 
 
     static ImmutablePair<Bitmap, Float> resizeBitmap(final RenderScript rs, @NonNull final Bitmap src, float targetScale) {
+        Helper.mustNotRunOnUiThread();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || null == rs) { // Because Renderscript is super unstable on Android 5 (see https://issuetracker.google.com/issues/119582492; reported by users)
             ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
             Timber.d(">> resizing successively to scale %s", resizeParams.right);
             return new ImmutablePair<>(successiveResize(src, resizeParams.left), resizeParams.right);
         } else {
-            if (targetScale < 0.75) {
+            if (targetScale < 0.75 || (targetScale > 1.0 && targetScale < 1.55)) {
                 // Don't use resize nice above 0.75%; classic bilinear resize does the job well with more sharpness to the picture
                 return new ImmutablePair<>(resizeNice(rs, src, targetScale, targetScale), targetScale);
             } else {
@@ -48,7 +49,6 @@ class ResizeBitmapHelper {
      * - Second : Corresponding scale
      */
     private static ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
-        Helper.mustNotRunOnUiThread();
         float resultScale = 1f;
         int nbResize = 0;
 

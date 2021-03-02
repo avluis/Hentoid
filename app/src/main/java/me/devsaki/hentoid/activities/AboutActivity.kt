@@ -19,7 +19,7 @@ import org.greenrobot.eventbus.ThreadMode
 
 class AboutActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityAboutBinding
+    private var binding: ActivityAboutBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,21 +27,23 @@ class AboutActivity : BaseActivity() {
         ThemeHelper.applyTheme(this)
 
         binding = ActivityAboutBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        binding?.let {
+            setContentView(it.root)
 
-        binding.toolbar.setNavigationOnClickListener { onBackPressed() }
+            it.toolbar.setNavigationOnClickListener { onBackPressed() }
 
-        binding.appLogo.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB_WIKI) }
-        binding.githubText.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB) }
-        binding.discordText.setOnClickListener { startBrowserActivity(Consts.URL_DISCORD) }
-        binding.redditText.setOnClickListener { startBrowserActivity(Consts.URL_REDDIT) }
+            it.appLogo.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB_WIKI) }
+            it.githubText.setOnClickListener { startBrowserActivity(Consts.URL_GITHUB) }
+            it.discordText.setOnClickListener { startBrowserActivity(Consts.URL_DISCORD) }
+            it.redditText.setOnClickListener { startBrowserActivity(Consts.URL_REDDIT) }
 
-        binding.tvVersionName.text = getString(R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
-        binding.tvChromeVersionName.text = getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
+            it.tvVersionName.text = getString(R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+            it.tvChromeVersionName.text = getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
 
-        binding.changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
+            it.changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
 
-        binding.licensesButton.setOnClickListener { showFragment(LicensesFragment()) }
+            it.licensesButton.setOnClickListener { showFragment(LicensesFragment()) }
+        }
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
     }
@@ -55,11 +57,12 @@ class AboutActivity : BaseActivity() {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onUpdateEvent(event: UpdateEvent) {
-        if (event.hasNewVersion) binding.changelogButton.setText(R.string.view_changelog_flagged)
+        if (event.hasNewVersion) binding?.changelogButton?.setText(R.string.view_changelog_flagged)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
+        binding = null
     }
 }

@@ -46,7 +46,7 @@ public class QueueViewModel extends AndroidViewModel {
     private LiveData<List<Content>> currentErrorsSource;
     private final MediatorLiveData<List<Content>> errors = new MediatorLiveData<>();
 
-    private final MutableLiveData<Integer> contentHashToShowFirst = new MutableLiveData<>();     // ID of the content to show at 1st display
+    private final MutableLiveData<Long> contentHashToShowFirst = new MutableLiveData<>();     // ID of the content to show at 1st display
 
 
     public QueueViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -73,7 +73,7 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<Integer> getContentHashToShowFirst() {
+    public LiveData<Long> getContentHashToShowFirst() {
         return contentHashToShowFirst;
     }
 
@@ -234,16 +234,26 @@ public class QueueViewModel extends AndroidViewModel {
         return true;
     }
 
-    /**
-     * Add the given content to the download queue
-     *
-     * @param content Content to be added to the download queue
-     */
-    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
-        dao.addContentToQueue(content, targetImageStatus);
+    public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, @NonNull final Runnable onSuccess) {
+        StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
+
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : c)
+                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus))
+                        .doOnComplete(() -> {
+                            // TODO is there stuff to do on the IO thread ?
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> onSuccess.run(),
+                                Timber::e
+                        )
+        );
     }
 
-    public void setContentToShowFirst(int hash) {
+    public void setContentToShowFirst(long hash) {
         contentHashToShowFirst.setValue(hash);
     }
 

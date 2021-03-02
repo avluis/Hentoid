@@ -42,7 +42,6 @@
         android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/change_group_existing_radio"
-        app:spinner_arrow_drawable="@drawable/arrow_vector"
         app:spinner_arrow_gravity="end"
         app:spinner_arrow_padding="8dp"
         app:spinner_arrow_tint="@color/white_opacity_66"

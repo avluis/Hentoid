@@ -24,7 +24,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  * Created by robb_w on 2020/11
  * Handles parsing of content from manhwahentai.me
  */
-public class ManhwaParser extends BaseParser {
+public class ManhwaParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {
@@ -38,11 +38,14 @@ public class ManhwaParser extends BaseParser {
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MANHWA.useHentoidAgent());
         if (doc != null) {
             List<Element> chapters = doc.select("[class^=wp-manga-chapter] a");
-            for (Element e : chapters) chapterUrls.add(e.attr("href"));
+            for (Element e : chapters) {
+                String link = e.attr("href");
+                if (!chapterUrls.contains(link)) chapterUrls.add(link); // Make sure we're not adding duplicates
+            }
         }
         Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
 
-        progressStart(chapterUrls.size());
+        progressStart(content.getUrl(), chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {

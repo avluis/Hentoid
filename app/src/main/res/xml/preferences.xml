@@ -241,6 +241,15 @@
             android:summary="@string/pref_attributes_list_order_summary"
             android:title="@string/pref_dl_size_wifi_threshold_title"
             app:iconSpaceReserved="false" />
+        <ListPreference
+            android:defaultValue="@string/pref_dl_pages_wifi_threshold_default"
+            android:dependency="pref_dl_size_wifi"
+            android:entries="@array/pref_dl_pages_wifi_threshold_entries"
+            android:entryValues="@array/pref_dl_pages_wifi_threshold_values"
+            android:key="pref_dl_pages_wifi_threshold"
+            android:summary="@string/pref_attributes_list_order_summary"
+            android:title="@string/pref_dl_pages_wifi_threshold_title"
+            app:iconSpaceReserved="false" />
         <PreferenceCategory
             android:title="@string/tag_blocking_screen_title"
             app:iconSpaceReserved="false">
@@ -523,5 +532,16 @@
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
+
+    <Preference
+        android:key="export_settings"
+        android:summary="@string/pref_export_settings_summary"
+        android:title="@string/pref_export_settings_title"
+        app:iconSpaceReserved="false" />
+    <Preference
+        android:key="import_settings"
+        android:summary="@string/pref_import_settings_summary"
+        android:title="@string/pref_import_settings_title"
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

@@ -21,7 +21,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  * Created by robb_w on 01/31/2018.
  * Handles parsing of content from pururin.io
  */
-public class PururinParser extends BaseParser {
+public class PururinParser extends BaseImageListParser {
 
     private static final String IMAGE_PATH = "//cdn.pururin.io/assets/images/data/";
 

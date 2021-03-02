@@ -149,7 +149,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     startSlideshow();
                     break;
                 case R.id.action_delete_book:
-                    ViewerDeleteDialogFragment.invoke(this, !isContentArchive);
+                    if (Constant.VIEWER_DELETE_ASK_AGAIN == Preferences.getViewerDeleteAskMode())
+                        ViewerDeleteDialogFragment.invoke(this, !isContentArchive);
+                    else // We already know what to delete
+                        onDeleteElement(Constant.VIEWER_DELETE_TARGET_PAGE == Preferences.getViewerDeleteTarget());
                     break;
                 default:
                     // Nothing to do here
@@ -179,7 +182,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
 
-        viewModel.onRestoreState(savedInstanceState);
+//        viewModel.onRestoreState(savedInstanceState);
 
         viewModel.getContent()
                 .observe(getViewLifecycleOwner(), this::onContentChanged);
@@ -192,6 +195,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         viewModel.getShuffled()
                 .observe(getViewLifecycleOwner(), this::onShuffleChanged);
+
+        viewModel.getShowFavouritesOnly().observe(getViewLifecycleOwner(), this::updateShowFavouriteDisplay);
     }
 
     @Override
@@ -203,7 +208,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         if (viewModel != null) {
             viewModel.setReaderStartingIndex(imageIndex); // Memorize the current page
-            viewModel.onSaveState(outState);
+//            viewModel.onSaveState(outState);
         }
     }
 
@@ -400,7 +405,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handle click on "Show favourite pages" action button
      */
     private void onShowFavouriteClick() {
-        viewModel.toggleFilterFavouritePages(this::updateShowFavouriteDisplay);
+        viewModel.toggleFilterFavouritePages();
     }
 
     /**
@@ -661,6 +666,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     public void onBookPreferenceChanged(@NonNull final Map<String, String> newPrefs) {
         viewModel.updateContentPreferences(newPrefs);
+        bookPreferences = newPrefs;
+        onBrowseModeChange();
     }
 
     private void onUpdatePrefsScreenOn() {
@@ -693,6 +700,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.recyclerView.swapAdapter(adapter, false);
         binding.recyclerView.setLayoutManager(llm);
         adapter.notifyDataSetChanged(); // NB : will re-run onBindViewHolder for all displayed pictures
+
+        seekToPosition(imageIndex);
     }
 
     private void onUpdatePageNumDisplay() {

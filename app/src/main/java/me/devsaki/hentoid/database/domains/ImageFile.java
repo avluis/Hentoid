@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import androidx.annotation.NonNull;
+
 import java.util.Locale;
 import java.util.Objects;
 
@@ -11,6 +13,7 @@ import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 
 /**
@@ -18,7 +21,7 @@ import me.devsaki.hentoid.util.ImageHelper;
  * Image File builder
  */
 @Entity
-public class ImageFile {
+public class ImageFile implements Cloneable {
 
     @Id
     private long id;
@@ -60,6 +63,16 @@ public class ImageFile {
 
         this.url = url;
         this.status = status;
+    }
+
+    @NonNull
+    @Override
+    public ImageFile clone() {
+        try {
+            return (ImageFile) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
     public static ImageFile newCover(String url, StatusContent status) {
@@ -225,8 +238,13 @@ public class ImageFile {
                 Objects.equals(getUrl(), imageFile.getUrl());
     }
 
+    public long hash64() {
+        return Helper.hash64((id + "." + url).getBytes());
+    }
+
     @Override
     public int hashCode() {
+        // Must be an int32, so we're bound to use Objects.hash
         return Objects.hash(getId(), getUrl());
     }
 }

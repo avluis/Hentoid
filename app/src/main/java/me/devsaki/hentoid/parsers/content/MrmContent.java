@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -15,7 +17,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class MrmContent implements ContentParser {
+public class MrmContent extends BaseContentParser {
     @Selector(value = "article h1", defValue = "")
     private String title;
     @Selector(".entry-header .entry-meta .entry-categories a")
@@ -28,24 +30,22 @@ public class MrmContent implements ContentParser {
     private List<Element> tags;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.MRM);
+        if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
-        result.setSite(Site.MRM);
-        if (url.isEmpty()) return result.setStatus(StatusContent.IGNORED);
-
-        result.setUrl(url.replace(Site.MRM.getUrl(), "").split("/")[0]);
+        content.setUrl(url.replace(Site.MRM.getUrl(), "").split("/")[0]);
         if (!title.isEmpty()) {
-            result.setTitle(Helper.removeNonPrintableChars(title));
-        } else result.setTitle("<no title>");
+            content.setTitle(Helper.removeNonPrintableChars(title));
+        } else content.setTitle("<no title>");
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.MRM);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.MRM);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, genres, false, Site.MRM);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MRM);
-        result.addAttributes(attributes);
+        content.putAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

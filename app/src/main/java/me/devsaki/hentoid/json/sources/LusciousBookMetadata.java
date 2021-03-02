@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
+import androidx.annotation.NonNull;
+
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -47,19 +49,18 @@ public class LusciousBookMetadata {
 
     private static final String RELATIVE_URL_PREFIX = "https://luscious.net";
 
-    public Content toContent() {
-        Content result = new Content();
-        result.setSite(Site.LUSCIOUS);
+    public Content update(@NonNull Content content) {
+        content.setSite(Site.LUSCIOUS);
 
         AlbumInfo info = data.album.get;
-        if (null == info.url || null == info.title) return result.setStatus(StatusContent.IGNORED);
+        if (null == info.url || null == info.title) return content.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(info.url);
+        content.setUrl(info.url);
 
-        result.setTitle(Helper.removeNonPrintableChars(info.title));
+        content.setTitle(Helper.removeNonPrintableChars(info.title));
 
 //        result.setQtyPages(info.number_of_pictures);  <-- does not reflect the actual number of pictures reachable via the Luscious API / website
-        result.setCoverImageUrl(info.cover.url);
+        content.setCoverImageUrl(info.cover.url);
 
         AttributeMap attributes = new AttributeMap();
         if (info.language != null) {
@@ -81,8 +82,8 @@ public class LusciousBookMetadata {
             Attribute attribute = new Attribute(type, name, RELATIVE_URL_PREFIX + tag.url, Site.LUSCIOUS);
             attributes.add(attribute);
         }
-        result.addAttributes(attributes);
+        content.putAttributes(attributes);
 
-        return result;
+        return content;
     }
 }

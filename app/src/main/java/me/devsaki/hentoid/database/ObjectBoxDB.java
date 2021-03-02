@@ -27,6 +27,7 @@ import io.objectbox.android.AndroidObjectBrowser;
 import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
+import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
@@ -121,7 +122,7 @@ public class ObjectBoxDB {
 
 
     long insertContent(Content content) {
-        List<Attribute> attributes = content.getAttributes();
+        ToMany<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
         Query<Attribute> attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
 
@@ -131,7 +132,7 @@ public class ObjectBoxDB {
             // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
             Attribute dbAttr;
             Attribute inputAttr;
-            if (attributes != null)
+            if (attributes != null) {
                 // This transaction may consume a lot of DB readers depending on the number of attributes involved
                 for (int i = 0; i < attributes.size(); i++) {
                     inputAttr = attributes.get(i);
@@ -146,6 +147,7 @@ public class ObjectBoxDB {
                         inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
                     }
                 }
+            }
 
             return store.boxFor(Content.class).put(content);
         });
@@ -303,6 +305,10 @@ public class ObjectBoxDB {
         return store.boxFor(QueueRecord.class).query().order(QueueRecord_.rank).build();
     }
 
+    boolean isContentInQueue(@NonNull final Content c) {
+        return store.boxFor(QueueRecord.class).query().equal(QueueRecord_.contentId, c.getId()).build().count() > 0;
+    }
+
     long selectMaxQueueOrder() {
         return store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.rank).max();
     }
@@ -350,8 +356,12 @@ public class ObjectBoxDB {
     }
 
     @Nullable
-    Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String url) {
-        return store.boxFor(Content.class).query().notEqual(Content_.url, "").equal(Content_.url, url).equal(Content_.site, site.getCode()).build().findFirst();
+    Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrlStart) {
+        // TODO combine these two queries with an OR
+        Content result = store.boxFor(Content.class).query().notEqual(Content_.url, "").equal(Content_.url, contentUrl).equal(Content_.site, site.getCode()).build().findFirst();
+        if (null == result && !coverUrlStart.isEmpty())
+            result = store.boxFor(Content.class).query().notEqual(Content_.coverImageUrl, "").startsWith(Content_.coverImageUrl, coverUrlStart).equal(Content_.site, site.getCode()).build().findFirst();
+        return result;
     }
 
     @Nullable

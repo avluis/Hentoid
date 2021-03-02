@@ -23,7 +23,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  * Created by robb_w on 2020/05
  * Handles parsing of content from hentai2read.com
  */
-public class Hentai2ReadParser extends BaseParser {
+public class Hentai2ReadParser extends BaseImageListParser {
 
     private static final String IMAGE_PATH = "https://static.hentaicdn.com/hentai";
 
@@ -49,7 +49,7 @@ public class Hentai2ReadParser extends BaseParser {
         }
         Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
 
-        progressStart(chapterUrls.size());
+        progressStart(content.getUrl(), chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {

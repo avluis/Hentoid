@@ -18,7 +18,6 @@ import androidx.lifecycle.OnLifecycleEvent;
 import com.annimon.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.threeten.bp.Instant;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,8 +33,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import io.reactivex.disposables.Disposable;
-import me.devsaki.hentoid.HentoidApp;
-import timber.log.Timber;
+import io.whitfin.siphash.SipHasher;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
@@ -50,6 +48,8 @@ public final class Helper {
     }
 
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+
+    private static final byte[] SIP_KEY = "0123456789ABCDEF".getBytes();
 
 
     /**
@@ -356,10 +356,12 @@ public final class Helper {
         return (null == s) ? "" : s;
     }
 
+    // TODO doc
     public static boolean isValidContextForGlide(final View view) {
         return isValidContextForGlide(view.getContext());
     }
 
+    // TODO doc
     public static boolean isValidContextForGlide(final Context context) {
         if (context == null) {
             return false;
@@ -369,6 +371,11 @@ public final class Helper {
             return !activity.isDestroyed() && !activity.isFinishing();
         }
         return true;
+    }
+
+    // TODO doc
+    public static long hash64(@NonNull final byte[] data) {
+        return SipHasher.hash(SIP_KEY, data);
     }
 
 

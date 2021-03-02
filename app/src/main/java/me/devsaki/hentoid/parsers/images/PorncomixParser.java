@@ -17,7 +17,7 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-public class PorncomixParser extends BaseParser {
+public class PorncomixParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {

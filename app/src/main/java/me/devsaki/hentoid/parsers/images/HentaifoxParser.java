@@ -19,7 +19,7 @@ import timber.log.Timber;
 import static me.devsaki.hentoid.parsers.ParseHelper.getExtensionFromFormat;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-public class HentaifoxParser extends BaseParser {
+public class HentaifoxParser extends BaseImageListParser {
 
     // Hentaifox have two image servers; each hosts the exact same files
     private static final String[] HOSTS = new String[]{"i.hentaifox.com", "i2.hentaifox.com"};

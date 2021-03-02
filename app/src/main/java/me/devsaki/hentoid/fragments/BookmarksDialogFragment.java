@@ -70,6 +70,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     private Site site;
     private String title;
     private String url;
+    // Bookmark ID of the current webpage
     private long bookmarkId = -1;
 
     // Used to ignore native calls to onBookClick right after that book has been deselected
@@ -200,10 +201,12 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
             bookmarkCurrentBtn.setIcon(ContextCompat.getDrawable(context, R.drawable.ic_bookmark_full));
             bookmarkCurrentBtn.setText(R.string.unbookmark_current);
             bookmarkCurrentBtn.setOnClickListener(v -> onBookmarkBtnClickedRemove());
+            parent.updateBookmarkButton(true);
         } else {
             bookmarkCurrentBtn.setIcon(ContextCompat.getDrawable(context, R.drawable.ic_bookmark));
             bookmarkCurrentBtn.setText(R.string.bookmark_current);
             bookmarkCurrentBtn.setOnClickListener(v -> onBookmarkBtnClickedAdd());
+            parent.updateBookmarkButton(false);
         }
     }
 
@@ -328,7 +331,9 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     }
 
     private boolean onItemClick(TextItem<SiteBookmark> item) {
-        if (selectExtension != null && selectExtension.getSelectedItems().isEmpty()) {
+        if (null == selectExtension) return false;
+
+        if (selectExtension.getSelectedItems().isEmpty()) {
             if (!invalidateNextBookClick && item.getTag() != null) {
                 parent.openUrl(item.getTag().getUrl());
                 this.dismiss();
@@ -393,5 +398,6 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
 
     public interface Parent {
         void openUrl(@NonNull final String url);
+        void updateBookmarkButton(boolean newValue);
     }
 }

@@ -19,10 +19,10 @@ import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
 import me.devsaki.hentoid.databinding.IntroSlide04Binding
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.services.ImportService
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.workers.ImportWorker
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -44,7 +44,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         super.onDestroy()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = IntroSlide04Binding.inflate(inflater, container, false)
         // We need to manually bind the merged view - it won't work at runtime with the main view alone
         _mergedBinding = IncludeImportStepsBinding.bind(binding.root)
@@ -103,8 +103,8 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMigrationEvent(event: ProcessEvent) {
         val progressBar: ProgressBar = when (event.step) {
-            ImportService.STEP_2_BOOK_FOLDERS -> mergedBinding.importStep2Bar
-            ImportService.STEP_3_BOOKS -> mergedBinding.importStep3Bar
+            ImportWorker.STEP_2_BOOK_FOLDERS -> mergedBinding.importStep2Bar
+            ImportWorker.STEP_3_BOOKS -> mergedBinding.importStep3Bar
             else -> mergedBinding.importStep4Bar
         }
 
@@ -114,26 +114,26 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 progressBar.max = event.elementsTotal
                 progressBar.progress = event.elementsOK + event.elementsKO
             } else progressBar.isIndeterminate = true
-            if (ImportService.STEP_3_BOOKS == event.step) {
+            if (ImportWorker.STEP_3_BOOKS == event.step) {
                 mergedBinding.importStep2Check.visibility = View.VISIBLE
                 mergedBinding.importStep3.visibility = View.VISIBLE
                 mergedBinding.importStep3Text.text = resources.getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal)
-            } else if (ImportService.STEP_4_QUEUE_FINAL == event.step) {
+            } else if (ImportWorker.STEP_4_QUEUE_FINAL == event.step) {
                 mergedBinding.importStep3Check.visibility = View.VISIBLE
                 mergedBinding.importStep4.visibility = View.VISIBLE
             }
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             when {
-                ImportService.STEP_2_BOOK_FOLDERS == event.step -> {
+                ImportWorker.STEP_2_BOOK_FOLDERS == event.step -> {
                     mergedBinding.importStep2Check.visibility = View.VISIBLE
                     mergedBinding.importStep3.visibility = View.VISIBLE
                 }
-                ImportService.STEP_3_BOOKS == event.step -> {
+                ImportWorker.STEP_3_BOOKS == event.step -> {
                     mergedBinding.importStep3Text.text = resources.getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal)
                     mergedBinding.importStep3Check.visibility = View.VISIBLE
                     mergedBinding.importStep4.visibility = View.VISIBLE
                 }
-                ImportService.STEP_4_QUEUE_FINAL == event.step -> {
+                ImportWorker.STEP_4_QUEUE_FINAL == event.step -> {
                     mergedBinding.importStep4Check.visibility = View.VISIBLE
                     nextStep()
                 }

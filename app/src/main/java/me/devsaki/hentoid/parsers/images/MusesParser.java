@@ -14,7 +14,7 @@ import me.devsaki.hentoid.util.exception.ParseException;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-public class MusesParser extends BaseParser {
+public class MusesParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {

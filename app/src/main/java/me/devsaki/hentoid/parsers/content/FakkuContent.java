@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -16,7 +18,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class FakkuContent implements ContentParser {
+public class FakkuContent extends BaseContentParser {
     @Selector(value = "head [property=og:url]", attr = "content", defValue = "")
     private String galleryUrl;
     @Selector(value = "head [property=og:image]", attr = "content")
@@ -35,7 +37,7 @@ public class FakkuContent implements ContentParser {
     private List<Element> greenButton;
 
     @Nullable
-    public Content toContent(@Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url) {
         if (greenButton != null) {
             // Check if book is available
             for (Element e : greenButton) {
@@ -44,15 +46,13 @@ public class FakkuContent implements ContentParser {
             }
         }
 
-        Content result = new Content();
-
-        result.setSite(Site.FAKKU2);
+        content.setSite(Site.FAKKU2);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(theUrl.replace(Site.FAKKU2.getUrl() + "/hentai/", ""));
-        result.setCoverImageUrl(coverUrl);
-        result.setTitle(Helper.removeNonPrintableChars(title));
+        content.setUrl(theUrl.replace(Site.FAKKU2.getUrl() + "/hentai/", ""));
+        content.setCoverImageUrl(coverUrl);
+        content.setTitle(Helper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
         int qtyPages = 0;
@@ -67,14 +67,14 @@ public class FakkuContent implements ContentParser {
                     qtyPages = Integer.parseInt(e.child(1).text().toLowerCase().replace("pages", "").replace("page", "").trim());
                 }
             }
-        result.setQtyPages(qtyPages);
+        content.setQtyPages(qtyPages);
 
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.FAKKU2);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.FAKKU2);
         ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, Site.FAKKU2);
 
-        result.addAttributes(attributes);
+        content.putAttributes(attributes);
 
-        return result;
+        return content;
     }
 }
