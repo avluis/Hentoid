@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -660,22 +661,21 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void updateContentPreferences(@NonNull final Map<String, String> newPrefs) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doUpdateContentPreferences(getApplication().getApplicationContext(), loadedContentId, newPrefs))
+                Single.fromCallable(() -> doUpdateContentPreferences(getApplication().getApplicationContext(), loadedContentId, newPrefs))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> { // Update is done through LiveData
-                                },
+                                content::postValue,
                                 Timber::e
                         )
         );
     }
 
-    private void doUpdateContentPreferences(@NonNull final Context context, long contentId, @NonNull final Map<String, String> newPrefs) {
+    private Content doUpdateContentPreferences(@NonNull final Context context, long contentId, @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
         Content theContent = collectionDao.selectContent(contentId);
-        if (null == theContent) return;
+        if (null == theContent) return null;
 
         theContent.setBookPreferences(newPrefs);
         // Persist in DB
@@ -685,6 +685,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (!theContent.getJsonUri().isEmpty())
             ContentHelper.updateContentJson(context, theContent);
         else ContentHelper.createContentJson(context, theContent);
+
+        return theContent;
     }
 
     // Cache JSON URI in the database to speed up favouriting
