@@ -533,8 +533,12 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.countProcessedImagesById(contentId);
     }
 
-    public Map<Site, ImmutablePair<Integer, Long>> selectMemoryUsagePerSource() {
-        return db.selectMemoryUsagePerSource();
+    public Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource() {
+        return db.selectPrimaryMemoryUsagePerSource();
+    }
+
+    public Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource() {
+        return db.selectExternalMemoryUsagePerSource();
     }
 
 

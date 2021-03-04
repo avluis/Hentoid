@@ -211,9 +211,10 @@
     <string name="memory_title">Memory usage</string>
     <string name="memory_total">Total : %.2f GB</string>
     <string name="memory_free">Free : %.2f GB</string>
-    <string name="memory_hentoid">Hentoid : %.2f GB</string>
+    <string name="memory_hentoid_main">Hentoid (primary) : %.2f GB</string>
+    <string name="memory_hentoid_ext">Hentoid (external) : %.2f GB</string>
     <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
-    <string name="memory_details">View details</string>
+    <string name="memory_details">View details (primary)</string>
 
     <!-- Logs -->
     <string name="logs_title">Latest logs</string>
@@ -377,7 +378,6 @@
 
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
-    <string name="about2">In regards to Tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
     <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHentoid is a free and open-source software maintained by the Hentoid Community (join us on Discord - see link above)</string>
     <string name="personalDataStatement2">Hentoid collects the following personal data and sends them to Google for processing through the firebase library :\n  - Session ID\n  - IP address</string>
     <string name="personalDataStatement3">The abovementioned data is removed from Firebase live and backup system within 180 days (see https://firebase.google.com/support/privacy/ for more details)\n\nNo other personal data is collected nor sent to any other party.</string>

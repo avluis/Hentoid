@@ -73,30 +73,39 @@ public class MemoryUsageDialogFragment extends DialogFragment {
             deviceTotalGb = memUsage.getTotalSpaceMb() / 1024;
         }
 
-        Map<Site, ImmutablePair<Integer, Long>> memUsage;
+        Map<Site, ImmutablePair<Integer, Long>> primaryMemUsage;
+        Map<Site, ImmutablePair<Integer, Long>> externalMemUsage;
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
         try {
-            memUsage = dao.selectMemoryUsagePerSource();
+            primaryMemUsage = dao.selectPrimaryMemoryUsagePerSource();
+            externalMemUsage = dao.selectExternalMemoryUsagePerSource();
         } finally {
             dao.cleanup();
         }
-        double hentoidUsageGb = Stream.of(memUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight)) * 1.0 / (1024 * 1024 * 1024);
+        double hentoidPrimaryUsageGb = Stream.of(primaryMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight)) * 1.0 / (1024 * 1024 * 1024);
+        double hentoidExternalUsageGb = Stream.of(externalMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight)) * 1.0 / (1024 * 1024 * 1024);
 
         CircularProgressView donut = requireViewById(rootView, R.id.memory_global_graph);
         donut.setTotalColor(requireContext(), R.color.primary_light);
-        donut.setTotal(deviceTotalGb);
-        donut.setProgress1(deviceTotalGb - deviceFreeGb); // Total size taken on the device
-        donut.setProgress2(hentoidUsageGb); // Size taken by Hentoid
+        donut.setProgress1Color(getContext(), R.color.secondary_light);
+        donut.setProgress2Color(getContext(), R.color.secondary_variant_light);
+        donut.setProgress3Color(getContext(), R.color.white_opacity_25);
+        donut.setTotal(1);
+        donut.setProgress1((float) (hentoidPrimaryUsageGb / deviceTotalGb)); // Size taken by Hentoid primary library
+        donut.setProgress2((float) (hentoidExternalUsageGb / deviceTotalGb)); // Size taken by Hentoid external library
+        donut.setProgress3((float) (1 - deviceFreeGb / deviceTotalGb)); // Total size taken on the device
+
 
         ((TextView) requireViewById(rootView, R.id.memory_total)).setText(getResources().getString(R.string.memory_total, deviceTotalGb));
         ((TextView) requireViewById(rootView, R.id.memory_free)).setText(getResources().getString(R.string.memory_free, deviceFreeGb));
-        ((TextView) requireViewById(rootView, R.id.memory_hentoid)).setText(getResources().getString(R.string.memory_hentoid, hentoidUsageGb));
+        ((TextView) requireViewById(rootView, R.id.memory_hentoid_main)).setText(getResources().getString(R.string.memory_hentoid_main, hentoidPrimaryUsageGb));
+        ((TextView) requireViewById(rootView, R.id.memory_hentoid_ext)).setText(getResources().getString(R.string.memory_hentoid_ext, hentoidExternalUsageGb));
 
         table = requireViewById(rootView, R.id.memory_details_table);
         addRow(table, "Source", "Books", "Size");
 
         // Sort sources by largest size
-        List<Map.Entry<Site, ImmutablePair<Integer, Long>>> sitesBySize = Stream.of(memUsage).sortBy(entry -> -entry.getValue().right).toList();
+        List<Map.Entry<Site, ImmutablePair<Integer, Long>>> sitesBySize = Stream.of(primaryMemUsage).sortBy(entry -> -entry.getValue().right).toList();
         for (Map.Entry<Site, ImmutablePair<Integer, Long>> entry : sitesBySize) {
             addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", String.format(Locale.ENGLISH, "%.1f MB", entry.getValue().right / (1024.0 * 1024)));
         }

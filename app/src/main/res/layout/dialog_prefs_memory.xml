@@ -23,8 +23,8 @@
     <me.devsaki.hentoid.views.CircularProgressView
         android:id="@+id/memory_global_graph"
         style="?android:attr/progressBarStyle"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_marginTop="12dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/memory_title" />
@@ -38,6 +38,48 @@
         android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toEndOf="@id/memory_global_graph"
         app:layout_constraintTop_toTopOf="@id/memory_global_graph" />
+
+    <View
+        android:id="@+id/memory_hentoid_color_main"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="8dp"
+        android:background="@color/secondary_light"
+        app:layout_constraintBottom_toBottomOf="@id/memory_hentoid_main"
+        app:layout_constraintStart_toEndOf="@id/memory_global_graph"
+        app:layout_constraintTop_toTopOf="@id/memory_hentoid_main" />
+
+    <TextView
+        android:id="@+id/memory_hentoid_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/memory_hentoid_main"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintStart_toEndOf="@id/memory_hentoid_color_main"
+        app:layout_constraintTop_toBottomOf="@id/memory_total" />
+
+    <View
+        android:id="@+id/memory_hentoid_color_ext"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="8dp"
+        android:background="@color/secondary_variant_light"
+        app:layout_constraintBottom_toBottomOf="@id/memory_hentoid_ext"
+        app:layout_constraintStart_toEndOf="@id/memory_global_graph"
+        app:layout_constraintTop_toTopOf="@id/memory_hentoid_ext" />
+
+    <TextView
+        android:id="@+id/memory_hentoid_ext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/memory_hentoid_ext"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintStart_toEndOf="@id/memory_hentoid_color_ext"
+        app:layout_constraintTop_toBottomOf="@id/memory_hentoid_main" />
 
     <View
         android:id="@+id/memory_free_color"
@@ -58,28 +100,7 @@
         android:text="@string/memory_free"
         android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toEndOf="@id/memory_free_color"
-        app:layout_constraintTop_toBottomOf="@id/memory_total" />
-
-    <View
-        android:id="@+id/memory_hentoid_color"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_marginStart="8dp"
-        android:background="@color/secondary_variant_light"
-        app:layout_constraintBottom_toBottomOf="@id/memory_hentoid"
-        app:layout_constraintStart_toEndOf="@id/memory_global_graph"
-        app:layout_constraintTop_toTopOf="@id/memory_hentoid" />
-
-    <TextView
-        android:id="@+id/memory_hentoid"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/memory_hentoid"
-        android:textSize="@dimen/text_body_1"
-        app:layout_constraintStart_toEndOf="@id/memory_hentoid_color"
-        app:layout_constraintTop_toBottomOf="@id/memory_free" />
+        app:layout_constraintTop_toBottomOf="@id/memory_hentoid_ext" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/memory_details"
@@ -91,7 +112,7 @@
         android:focusable="true"
         android:padding="4dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/memory_global_graph">
+        app:layout_constraintTop_toBottomOf="@id/memory_free">
 
         <ImageView
             android:id="@+id/memory_details_icon"
