@@ -33,7 +33,7 @@
         android:tooltipText="@string/web_forward"
         app:showAsAction="always" />
     <item
-        android:id="@+id/web_menu_download"
+        android:id="@+id/web_menu_action"
         android:enabled="false"
         android:icon="@drawable/selector_download_action"
         android:title="@string/web_download"

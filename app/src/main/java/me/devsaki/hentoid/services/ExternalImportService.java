@@ -42,6 +42,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
+import me.devsaki.hentoid.workers.ImportWorker;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.ImportHelper.scanArchive;
@@ -145,7 +146,7 @@ public class ExternalImportService extends IntentService {
             List<Content> library = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
             scanFolderRecursive(rootFolder, client, new ArrayList<>(), library, dao);
-            eventComplete(ImportService.STEP_2_BOOK_FOLDERS, 0, 0, 0, null);
+            eventComplete(ImportWorker.STEP_2_BOOK_FOLDERS, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
             trace(Log.DEBUG, 0, log, "Import books starting - initial detected count : %s", library.size() + "");
@@ -159,7 +160,7 @@ public class ExternalImportService extends IntentService {
 
                 // The very same book may also exist in the DB under a different folder,
                 if (null == existingDuplicate) {
-                    existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
+                    existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), "");
                     // Ignore the duplicate if it is queued; we do prefer to import a full book
                     if (existingDuplicate != null) {
                         if (ContentHelper.isInQueue(existingDuplicate.getStatus()))
@@ -188,10 +189,10 @@ public class ExternalImportService extends IntentService {
                 trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;
                 notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, library.size()));
-                eventProgress(ImportService.STEP_3_BOOKS, library.size(), booksOK, booksKO);
+                eventProgress(ImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO);
             }
             trace(Log.INFO, 2, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", library.size() + "");
-            eventComplete(ImportService.STEP_3_BOOKS, library.size(), booksOK, booksKO, null);
+            eventComplete(ImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO, null);
 
             // Write log in root folder
             logFile = LogUtil.writeLog(this, buildLogInfo(log));
@@ -202,7 +203,7 @@ public class ExternalImportService extends IntentService {
             else
                 client.release();
 
-            eventComplete(ImportService.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
+            eventComplete(ImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
             dao.cleanup();
         }

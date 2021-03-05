@@ -57,13 +57,13 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LanguageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
@@ -133,7 +133,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
         isSwipeable = (content != null && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
-        if (content != null) setIdentifier(content.hashCode());
+        if (content != null) setIdentifier(content.hash64());
         else setIdentifier(generateIdForPlaceholder());
     }
 
@@ -145,7 +145,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
 //        setIdentifier(record.id);
-        if (content != null) setIdentifier(content.hashCode());
+        if (content != null) setIdentifier(content.hash64());
         else setIdentifier(generateIdForPlaceholder());
     }
 
@@ -405,9 +405,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         private void attachTitle(@NonNull final Content content) {
             CharSequence title;
-            Context context = tvTitle.getContext();
             if (content.getTitle() == null) {
-                title = context.getText(R.string.work_untitled);
+                title = tvTitle.getContext().getText(R.string.work_untitled);
             } else {
                 title = content.getTitle();
             }

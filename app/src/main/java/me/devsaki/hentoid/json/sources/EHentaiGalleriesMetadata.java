@@ -17,8 +17,8 @@ import me.devsaki.hentoid.util.AttributeMap;
 public class EHentaiGalleriesMetadata {
     private List<EHentaiGalleryMetadata> gmetadata;
 
-    public Content toContent(@Nonnull String url, @NonNull Site site) {
-        return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).toContent(url, site) : new Content();
+    public Content update(@NonNull Content content, @Nonnull String url, @NonNull Site site) {
+        return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).update(content, url, site) : new Content();
     }
 
 
@@ -32,12 +32,10 @@ public class EHentaiGalleriesMetadata {
         private List<String> tags;
 
 
-        public Content toContent(@Nonnull String url, @NonNull Site site) {
-            Content result = new Content();
+        public Content update(@NonNull Content content, @Nonnull String url, @NonNull Site site) {
+            content.setSite(site);
 
-            result.setSite(site);
-
-            result.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
+            content.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
                     .setCoverImageUrl(thumb)
                     .setTitle(title)
                     .setQtyPages(Integer.parseInt(filecount))
@@ -77,9 +75,9 @@ public class EHentaiGalleriesMetadata {
 
                 attributes.add(new Attribute(type, name, type.name() + "/" + name, site));
             }
-            result.addAttributes(attributes);
+            content.putAttributes(attributes);
 
-            return result;
+            return content;
         }
     }
 

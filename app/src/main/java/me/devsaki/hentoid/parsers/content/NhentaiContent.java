@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Element;
 
 import java.util.List;
@@ -18,7 +20,7 @@ import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 // NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
-public class NhentaiContent implements ContentParser {
+public class NhentaiContent extends BaseContentParser {
 
     @Selector(value = "#bigcontainer #cover a", attr = "href", defValue = "")
     private String galleryUrl;
@@ -49,23 +51,22 @@ public class NhentaiContent implements ContentParser {
     private List<Element> thumbs;
 
 
-    public Content toContent(@Nonnull String url) {
-        Content result = new Content();
-
-        result.setSite(Site.NHENTAI);
+    public Content update(@NonNull final Content content, @Nonnull String url) {
+        content.setSite(Site.NHENTAI);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
 
-        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
-        if (null == thumbs || thumbs.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
+        if (null == thumbs || thumbs.isEmpty())
+            return new Content().setStatus(StatusContent.IGNORED);
         if (theUrl.endsWith("favorite"))
-            return result.setStatus(StatusContent.IGNORED); // Fav button
+            return new Content().setStatus(StatusContent.IGNORED); // Fav button
 
-        result.setUrl(theUrl.replace("/g", "").replaceFirst("/1/$", "/"));
-        result.setCoverImageUrl(coverUrl);
+        content.setUrl(theUrl.replace("/g", "").replaceFirst("/1/$", "/"));
+        content.setCoverImageUrl(coverUrl);
 
         String titleDef = title.trim();
         if (titleDef.isEmpty()) titleDef = titleAlt.trim();
-        result.setTitle(Helper.removeNonPrintableChars(titleDef));
+        content.setTitle(Helper.removeNonPrintableChars(titleDef));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, "name", Site.NHENTAI);
@@ -75,13 +76,13 @@ public class NhentaiContent implements ContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, "name", Site.NHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, "name", Site.NHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, "name", Site.NHENTAI);
-        result.addAttributes(attributes);
+        content.putAttributes(attributes);
 
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(result, thumbs), result.getCoverImageUrl(), StatusContent.SAVED);
-        result.setImageFiles(images);
-        result.setQtyPages(images.size() - 1);  // Don't count the cover
+        List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(content, thumbs), content.getCoverImageUrl(), StatusContent.SAVED);
+        content.setImageFiles(images);
+        content.setQtyPages(images.size() - 1);  // Don't count the cover
 
-        return result;
+        return content;
     }
 
 }

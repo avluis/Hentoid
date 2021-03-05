@@ -41,6 +41,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.GroupNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
@@ -301,13 +302,30 @@ public class LibraryViewModel extends AndroidViewModel {
         throw new InvalidParameterException("Invalid ContentId : " + contentId);
     }
 
-    /**
-     * Add the given content to the download queue
-     *
-     * @param content Content to be added to the download queue
-     */
-    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
-        dao.addContentToQueue(content, targetImageStatus);
+    public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, @NonNull final Runnable onSuccess) {
+        // Flag the content as "being deleted" (triggers blink animation)
+        for (Content c : contentList) flagContentDelete(c, true);
+
+        StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
+
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : c)
+                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus))
+                        .doOnComplete(() -> {
+                            // TODO is there stuff to do on the IO thread ?
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                    if (Preferences.isQueueAutostart())
+                                        ContentQueueManager.getInstance().resumeQueue(getApplication());
+                                    onSuccess.run();
+                                },
+                                Timber::e
+                        )
+        );
     }
 
     /**

@@ -23,7 +23,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  * Created by Shiro on 1/22/2016.
  * Handles parsing of content from tsumino
  */
-public class TsuminoParser extends BaseParser {
+public class TsuminoParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {

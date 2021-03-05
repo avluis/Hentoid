@@ -1,0 +1,35 @@
+New
+
+    Support for Toonily
+    Browser : The amount of additional pages is now showing near the "download more" button when activated
+    Browser / Download plus : A progress bar indicates the app scanning currently browsed book for additional pages to download
+    Downloader : "Redownload from scratch" now rescans all book metadata (i.e. title, tags...), not just pages
+    Downloader : "Redownload from scratch" now works with ExHentai and Fakku
+    Downloader : New setting to block downloads above a given number of pages when WiFi is off
+    Image viewer : The "Delete" feature can now remember how to behave instead of asking everytime
+    Image gallery : Thumbnails now scale with screen resolution
+    Image gallery : Selection is now signaled by a checkmark, not a coloured border
+    Image gallery : You can now quickly select multiple pictures by swiping your finger on them
+    Settings can now be exported and imported
+
+Changed
+
+    Browser : Size of "book queued" confirmation checkmark has been doubled
+    Queue screen : "Redownload from scratch" is now usable from the Queue tab as well
+    Image gallery : Marking as favourite is now a selection feature, not a page-by-page icon
+
+Fixed
+
+    ExHentai : Certain images shouldn't be blocked anymore when downloading
+    Manwha Hentai : Chapters of certain books shouldn't be duplicated anymore
+    Manwha Hentai : Prevent duplicate pictures from being downloaded when updating the book ("download plus")
+    Hitomi : Pictures ordering on certain books should be correct again
+    Update auto-detection : The app should now be better at detecting books that have been updated
+    Picture viewer : Don't reset to page 1 when changing settings
+
+Technical
+
+    Downloader now runs with a different technical component, which should allow it to be more stable while the app is in the background
+    Import / refresh now runs with a different technical component, which should allow it to be more stable while the app is in the background
+
+

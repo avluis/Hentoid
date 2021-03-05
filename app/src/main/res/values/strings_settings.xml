@@ -114,8 +114,10 @@
     <string name="pref_dl_size_wifi_default" translatable="false">false</string>
     <string name="pref_dl_size_wifi_on">Large downloads will be skipped if not connected to WiFi</string>
     <string name="pref_dl_size_wifi_off">All downloads will be processed</string>
-    <string name="pref_dl_size_wifi_threshold_title">Large downloads threshold</string>
+    <string name="pref_dl_size_wifi_threshold_title">Large downloads size threshold</string>
     <string name="pref_dl_size_wifi_threshold_default" translatable="false">40</string>
+    <string name="pref_dl_pages_wifi_threshold_title">Large downloads pages threshold</string>
+    <string name="pref_dl_pages_wifi_threshold_default" translatable="false">999999</string>
     <string name="download_retries_screen_title">Automated download retries</string>
     <string name="download_retries_active_title">Retries activated</string>
     <string name="pref_dl_retries_active_default" translatable="false">false</string>
@@ -212,4 +214,9 @@
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
+
+    <string name="pref_export_settings_title">Export settings</string>
+    <string name="pref_export_settings_summary">Export settings to a JSON file</string>
+    <string name="pref_import_settings_title">Import settings</string>
+    <string name="pref_import_settings_summary">Restore exported settings from a JSON file</string>
 </resources>

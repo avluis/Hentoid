@@ -21,10 +21,10 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -59,31 +59,29 @@ import timber.log.Timber;
 
 public class ImageViewerViewModel extends AndroidViewModel {
 
-    private static final String KEY_IS_SHUFFLED = "is_shuffled";
-
     // Collection DAO
     private final CollectionDAO collectionDao;
     private ContentSearchManager searchManager;
-
-    // Settings
-    private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
-    private boolean showFavourites = false;                                          // True if viewer only shows favourite images; false if shows all pages
 
     // Collection data
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
     private List<Long> contentIds = Collections.emptyList();                         // Content Ids of the whole collection ordered according to current filter
     private int currentContentIndex = -1;                                            // Index of current content within the above list
-    private long loadedContentId = -1;                                                  // ID of currently loaded book
+    private long loadedContentId = -1;                                               // ID of currently loaded book
 
     // Pictures data
     private LiveData<List<ImageFile>> currentImageSource;
     private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();  // Currently displayed set of images
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
     private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // Shuffle state of the current book
+    private final MutableLiveData<Boolean> showFavouritesOnly = new MutableLiveData<>();// True if viewer only shows favourite images; false if shows all pages
     private int thumbIndex;                                                             // Index of the thumbnail among loaded pages
 
     // Write cache for read indicator (no need to update DB and JSON at every page turn)
     private final Set<Integer> readPageNumbers = new HashSet<>();
+
+    // TODO doc
+    private final Map<Integer, String> imageLocations = new HashMap<>();
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -91,11 +89,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private Disposable unarchiveDisposable = Disposables.empty();
     private Disposable imageLoadDisposable = Disposables.empty();
     private Disposable leaveDisposable = Disposables.empty();
+    private Disposable emptyCacheDisposable = Disposables.empty();
+    private boolean isArchiveExtracting = false;
 
 
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
         collectionDao = collectionDAO;
+        showFavouritesOnly.postValue(false);
+        shuffled.postValue(false);
     }
 
     @Override
@@ -126,14 +128,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return shuffled;
     }
 
-
-    public void onSaveState(Bundle outState) {
-        outState.putBoolean(KEY_IS_SHUFFLED, isShuffled);
-    }
-
-    public void onRestoreState(@Nullable Bundle savedState) {
-        if (savedState == null) return;
-        isShuffled = savedState.getBoolean(KEY_IS_SHUFFLED, false);
+    @NonNull
+    public LiveData<Boolean> getShowFavouritesOnly() {
+        return showFavouritesOnly;
     }
 
     public void loadFromContent(long contentId) {
@@ -168,72 +165,100 @@ public class ImageViewerViewModel extends AndroidViewModel {
         startingIndex.setValue(index);
     }
 
-    private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> imgs) {
+    private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> newImages) {
         Observable<ImageFile> observable;
-        if (theContent.isArchive())
-            observable = Observable.create(emitter -> processArchiveImages(theContent, imgs, emitter));
-        else
-            observable = Observable.create(emitter -> processDiskImages(theContent, imgs, emitter));
 
-        AtomicInteger nbProcessed = new AtomicInteger();
-        imageLoadDisposable = observable
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .doOnComplete(
-                        // Cache JSON and record 1 more view for the new content
-                        // Called this way to properly run on io thread
-                        () -> postLoadProcessing(getApplication().getApplicationContext(), theContent)
-                )
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        imageFile -> {
-                            nbProcessed.getAndIncrement();
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbProcessed.get(), 0, imgs.size()));
-                        },
-                        t -> {
-                            Timber.e(t);
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, imgs.size()));
-                        },
-                        () -> {
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, imgs.size()));
-                            initViewer(theContent, imgs);
-                            imageLoadDisposable.dispose();
-                        }
-                );
+        // Don't reload from disk / archive again if the image list hasn't changed
+        // e.g. page favourited
+        if (imageLocations.isEmpty() || newImages.size() != imageLocations.size()) {
+            if (theContent.isArchive())
+                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, emitter));
+            else
+                observable = Observable.create(emitter -> processDiskImages(theContent, newImages, emitter));
+
+            AtomicInteger nbProcessed = new AtomicInteger();
+            imageLoadDisposable = observable
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.io())
+                    .doOnComplete(
+                            // Called this way to properly run on io thread
+                            () -> postLoadProcessing(getApplication().getApplicationContext(), theContent)
+                    )
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            imageFile -> {
+                                nbProcessed.getAndIncrement();
+                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbProcessed.get(), 0, newImages.size()));
+                            },
+                            t -> {
+                                Timber.e(t);
+                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, newImages.size()));
+                            },
+                            () -> {
+                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, newImages.size()));
+                                for (ImageFile img : newImages)
+                                    imageLocations.put(img.getOrder(), img.getFileUri());
+                                initViewer(theContent, newImages);
+                                imageLoadDisposable.dispose();
+                            }
+                    );
+        } else {
+            // Copy location properties of the new list on the current list
+            for (int i = 0; i < newImages.size(); i++) {
+                ImageFile newImg = newImages.get(i);
+                String location = imageLocations.get(newImg.getOrder());
+                newImg.setFileUri(location);
+            }
+
+            initViewer(theContent, newImages);
+        }
     }
 
     private void processDiskImages(
             @NonNull Content theContent,
-            @NonNull List<ImageFile> imgs,
+            @NonNull List<ImageFile> newImages,
             @NonNull final ObservableEmitter<ImageFile> emitter) {
         if (theContent.isArchive())
             throw new IllegalArgumentException("Content must not be an archive");
-        boolean missingUris = Stream.of(imgs).filter(img -> img.getFileUri().isEmpty()).count() > 0;
-        List<ImageFile> imageFiles = new ArrayList<>(imgs);
+        boolean missingUris = Stream.of(newImages).filter(img -> img.getFileUri().isEmpty()).count() > 0;
+        List<ImageFile> newImageFiles = new ArrayList<>(newImages);
 
         // Reattach actual files to the book's pictures if they are empty or have no URI's
-        if (missingUris || imgs.isEmpty()) {
+        if (missingUris || newImages.isEmpty()) {
             List<DocumentFile> pictureFiles = ContentHelper.getPictureFilesFromContent(getApplication(), theContent);
             if (!pictureFiles.isEmpty()) {
-                if (imgs.isEmpty()) {
-                    imageFiles = ContentHelper.createImageListFromFiles(pictureFiles);
-                    theContent.setImageFiles(imageFiles);
+                if (newImages.isEmpty()) {
+                    newImageFiles = ContentHelper.createImageListFromFiles(pictureFiles);
+                    theContent.setImageFiles(newImageFiles);
                     collectionDao.insertContent(theContent);
                 } else {
                     // Match files for viewer display; no need to persist that
-                    ContentHelper.matchFilesToImageList(pictureFiles, imageFiles);
+                    ContentHelper.matchFilesToImageList(pictureFiles, newImageFiles);
                 }
             }
         }
 
         // Replace initial images with updated images
-        imgs.clear();
-        imgs.addAll(imageFiles);
+        newImages.clear();
+        newImages.addAll(newImageFiles);
 
         emitter.onComplete();
     }
 
-    private void emptyCacheFolder() {
+    public void emptyCacheFolder() {
+        emptyCacheDisposable =
+                Completable.fromRunnable(this::doEmptyCacheFolder)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> emptyCacheDisposable.dispose(),
+                                Timber::e
+                        );
+    }
+
+    private void doEmptyCacheFolder() {
+        Helper.assertNonUiThread();
+
         File cachePicFolder = getOrCreatePictureCacheFolder();
         if (cachePicFolder != null) {
             File[] files = cachePicFolder.listFiles();
@@ -243,66 +268,94 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    private void processArchiveImages(
+    private synchronized void processArchiveImages(
             @NonNull Content theContent,
-            @NonNull List<ImageFile> imgs,
+            @NonNull List<ImageFile> newImages,
             @NonNull final ObservableEmitter<ImageFile> emitter) throws IOException {
         if (!theContent.isArchive())
             throw new IllegalArgumentException("Content must be an archive");
-        List<ImageFile> imageFiles = new ArrayList<>(imgs);
 
-        // TODO create a smarter cache that works with a window of a given size
-        File cachePicFolder = getOrCreatePictureCacheFolder();
-        if (cachePicFolder != null) {
-            // Empty the cache folder where previous cached images might be
-            File[] files = cachePicFolder.listFiles();
-            if (files != null)
-                for (File f : files)
-                    if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
+        if (isArchiveExtracting) return;
 
-            // Extract the images if they are contained within an archive
-            // Unzip the archive in the app's cache folder
-            DocumentFile zipFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
-            // TODO replace that with a proper on-demand loading
-            if (zipFile != null) {
-                unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
-                        getApplication(),
-                        zipFile,
-                        Stream.of(imageFiles).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
-                        cachePicFolder,
-                        null)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.computation())
-                        .subscribe(
-                                uri -> emitter.onNext(mapUriToImageFile(imgs, uri)),
-                                Timber::e,
-                                () -> {
-                                    unarchiveDisposable.dispose();
-                                    emitter.onComplete();
-                                }
-                        );
+        List<ImageFile> newImageFiles = new ArrayList<>(newImages);
+        List<ImageFile> currentImages = images.getValue();
+        if ((!newImages.isEmpty() && loadedContentId != newImages.get(0).getContent().getTargetId()) || null == currentImages) { // Load a new book
+            // TODO create a smarter cache that works with a window of a given size
+            File cachePicFolder = getOrCreatePictureCacheFolder();
+            if (cachePicFolder != null) {
+                // Empty the cache folder where previous cached images might be
+                File[] files = cachePicFolder.listFiles();
+                if (files != null)
+                    for (File f : files)
+                        if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
+
+                // Extract the images if they are contained within an archive
+                // Unzip the archive in the app's cache folder
+                DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
+                // TODO replace that with a proper on-demand loading
+                if (archiveFile != null) {
+                    isArchiveExtracting = true;
+                    unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
+                            getApplication(),
+                            archiveFile,
+                            Stream.of(newImageFiles).filter(i -> i.getFileUri().startsWith(theContent.getStorageUri())).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
+                            cachePicFolder,
+                            null)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.computation())
+                            .subscribe(
+                                    uri -> emitter.onNext(mapUriToImageFile(newImages, uri)),
+                                    t -> {
+                                        Timber.e(t);
+                                        isArchiveExtracting = false;
+                                    },
+                                    () -> {
+                                        isArchiveExtracting = false;
+                                        emitter.onComplete();
+                                        unarchiveDisposable.dispose();
+                                    }
+                            );
+                }
             }
+        } else { // Refresh current book with new data
+            for (int i = 0; i < newImageFiles.size(); i++) {
+                ImageFile newImg = newImageFiles.get(i);
+                String location = imageLocations.get(newImg.getOrder());
+                newImg.setFileUri(location);
+            }
+
+            // Replace initial images with updated images
+            newImages.clear();
+            newImages.addAll(newImageFiles);
+
+            emitter.onComplete();
         }
     }
 
     // TODO doc
     private ImageFile mapUriToImageFile(@NonNull final List<ImageFile> imageFiles, @NonNull final Uri uri) {
+        String path = uri.getPath();
+        if (null == path) return new ImageFile();
+
         // Feed the Uri's of unzipped files back into the corresponding images for viewing
         for (ImageFile img : imageFiles) {
-            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(FileHelper.getFileNameWithoutExtension(uri.getPath())))
+            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(ArchiveHelper.extractCacheFileName(path))) {
                 return img.setFileUri(uri.toString());
+            }
         }
         return new ImageFile();
     }
 
     private void initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
-        sortAndSetImages(imageFiles, isShuffled);
+        sortAndSetImages(imageFiles, shuffled.getValue());
 
         if (theContent.getId() != loadedContentId) { // To be done once per book only
             int collectionStartingIndex = 0;
+
             // Auto-restart at last read position if asked to
-            if (Preferences.isViewerResumeLastLeft())
+            if (Preferences.isViewerResumeLastLeft() && theContent.getLastReadPageIndex() > -1)
                 collectionStartingIndex = theContent.getLastReadPageIndex();
+
             // Correct offset with the thumb index
             thumbIndex = -1;
             for (int i = 0; i < imageFiles.size(); i++)
@@ -313,6 +366,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
             if (thumbIndex == collectionStartingIndex) collectionStartingIndex += 1;
 
+
             setReaderStartingIndex(collectionStartingIndex - thumbIndex - 1);
 
             // Init the read pages write cache
@@ -320,7 +374,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             Collection<Integer> readPages = Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).map(ImageFile::getOrder).toList();
 
             // Fix pre-v1.13 books where ImageFile.read has no value
-            if (readPages.isEmpty() && theContent.getLastReadPageIndex() > 0) {
+            if (readPages.isEmpty() && theContent.getLastReadPageIndex() > 0 && theContent.getLastReadPageIndex() < imageFiles.size()) {
                 int lastReadPageNumber = imageFiles.get(theContent.getLastReadPageIndex()).getOrder();
                 readPageNumbers.addAll(IntStream.rangeClosed(1, lastReadPageNumber).boxed().toList());
             } else {
@@ -336,6 +390,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void onShuffleClick() {
+        boolean isShuffled = shuffled.getValue();
         isShuffled = !isShuffled;
         shuffled.postValue(isShuffled);
 
@@ -353,7 +408,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).filter(ImageFile::isReadable).toList();
         }
 
-        if (showFavourites)
+        if (showFavouritesOnly.getValue())
             imgs = Stream.of(imgs).filter(ImageFile::isFavourite).toList();
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
@@ -362,8 +417,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void onLeaveBook(int readerIndex) {
+        if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
+            Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
+
+        // Don't do anything if the Content hasn't even been loaded
+        if (-1 == loadedContentId) return;
+
         List<ImageFile> theImages = images.getValue();
-        Content theContent = content.getValue();
+        Content theContent = collectionDao.selectContent(loadedContentId);
         if (null == theImages || null == theContent) return;
 
         int readThresholdPref = Preferences.getViewerReadThreshold();
@@ -400,9 +461,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void doLeaveBook(final long contentId, int indexToSet, boolean updateReads) {
         Helper.assertNonUiThread();
 
-        // Empty cache
-        emptyCacheFolder();
-
         // Use a brand new DAO for that (the viewmodel's DAO may be in the process of being cleaned up)
         CollectionDAO dao = new ObjectBoxDAO(getApplication());
         try {
@@ -428,68 +486,51 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    public void toggleFilterFavouritePages(Consumer<Boolean> callback) {
-        Content c = content.getValue();
-        if (c != null) {
+    public void toggleFilterFavouritePages() {
+        if (loadedContentId > -1) {
+            boolean showFavourites = showFavouritesOnly.getValue();
             showFavourites = !showFavourites;
+            showFavouritesOnly.postValue(showFavourites);
             if (searchManager != null) searchManager.setFilterPageFavourites(showFavourites);
-            //processContent(c);
             applySearchParams(loadedContentId);
-            callback.accept(showFavourites);
         }
     }
 
-    public void togglePageFavourite(ImageFile file, Consumer<ImageFile> callback) {
+    public void togglePageFavourite(List<ImageFile> images, Runnable successCallback) {
         compositeDisposable.add(
-                Single.fromCallable(() -> doTogglePageFavourite(getApplication().getApplicationContext(), file.getId()))
+                Completable.fromRunnable(() -> doTogglePageFavourite(images))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                result -> onToggleFavouriteSuccess(result, callback),
+                                successCallback::run,
                                 Timber::e
                         )
         );
     }
 
-    private void onToggleFavouriteSuccess(ImageFile result, Consumer<ImageFile> callback) {
-        List<ImageFile> imgs = getImages().getValue();
-        if (imgs != null) {
-            for (ImageFile img : imgs)
-                if (img.getId() == result.getId()) {
-                    img.setFavourite(result.isFavourite()); // Update new state in memory
-                    result.setDisplayOrder(img.getDisplayOrder()); // Set the display order of the item to
-                    callback.accept(result); // Inform the view
-                }
-        }
-        compositeDisposable.clear();
-    }
-
     /**
      * Toggles favourite flag in DB and in the content JSON
      *
-     * @param context Context to be used for this operation
-     * @param imageId ID of the image whose flag to toggle
-     * @return ImageFile with the new state
+     * @param images images whose flag to toggle
      */
-    private ImageFile doTogglePageFavourite(Context context, long imageId) {
+    private void doTogglePageFavourite(@NonNull final List<ImageFile> images) {
         Helper.assertNonUiThread();
-        ImageFile img = collectionDao.selectImageFile(imageId);
 
-        if (img != null) {
-            img.setFavourite(!img.isFavourite());
+        if (images.isEmpty()) return;
 
-            // Persist in DB
-            collectionDao.insertImageFile(img);
+        // Toggle the value on a copy, not on the original instance that is contained inside the ViewHolder
+        for (ImageFile img : images) img.setFavourite(!img.isFavourite());
 
-            // Persist in JSON
-            Content theContent = img.getContent().getTarget();
-            if (!theContent.getJsonUri().isEmpty())
-                ContentHelper.updateContentJson(context, theContent);
-            else ContentHelper.createContentJson(context, theContent);
+        // Persist in DB
+        collectionDao.insertImageFiles(images);
 
-            return img;
-        } else
-            throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));
+        // Persist new values in JSON
+        Content theContent = images.get(0).getContent().getTarget();
+        theContent.setImageFiles(images);
+        Context context = getApplication().getApplicationContext();
+        if (!theContent.getJsonUri().isEmpty())
+            ContentHelper.updateContentJson(context, theContent);
+        else ContentHelper.createContentJson(context, theContent);
     }
 
     public void deleteBook(Consumer<Throwable> onError) {
@@ -533,7 +574,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void deletePage(int pageIndex, Consumer<Throwable> onError) {
         List<ImageFile> imageFiles = images.getValue();
-        if (imageFiles != null && imageFiles.size() > pageIndex)
+        if (imageFiles != null && imageFiles.size() > pageIndex && pageIndex > -1)
             deletePages(Stream.of(imageFiles.get(pageIndex)).toList(), onError);
     }
 
@@ -602,6 +643,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         theContent.setFirst(0 == currentContentIndex);
         theContent.setLast(currentContentIndex >= contentIds.size() - 1);
+        if (contentIds.size() > currentContentIndex && loadedContentId != contentIds.get(currentContentIndex))
+            imageLocations.clear();
         content.postValue(theContent);
 
         // Observe the content's images
@@ -617,38 +660,33 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void updateContentPreferences(@NonNull final Map<String, String> newPrefs) {
-        Content theContent = content.getValue();
-        if (null == theContent) return;
-
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doUpdateContentPreferences(getApplication().getApplicationContext(), theContent, newPrefs))
+                Single.fromCallable(() -> doUpdateContentPreferences(getApplication().getApplicationContext(), loadedContentId, newPrefs))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> { // Update is done through LiveData
-                                },
+                                content::postValue,
                                 Timber::e
                         )
         );
     }
 
-    private void doUpdateContentPreferences(@NonNull final Context context,
-                                            @NonNull final Content c, @NonNull final Map<String, String> newPrefs) {
+    private Content doUpdateContentPreferences(@NonNull final Context context, long contentId, @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
-        Content theContent = collectionDao.selectContent(c.getId());
-        if (null == theContent) return;
+        Content theContent = collectionDao.selectContent(contentId);
+        if (null == theContent) return null;
 
         theContent.setBookPreferences(newPrefs);
         // Persist in DB
         collectionDao.insertContent(theContent);
-        // Repost the updated content
-        content.postValue(theContent);
 
         // Persist in JSON
         if (!theContent.getJsonUri().isEmpty())
             ContentHelper.updateContentJson(context, theContent);
         else ContentHelper.createContentJson(context, theContent);
+
+        return theContent;
     }
 
     // Cache JSON URI in the database to speed up favouriting

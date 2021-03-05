@@ -6,11 +6,10 @@ buildscript {
         mavenCentral()
         jcenter()
         maven { url "https://jcenter.bintray.com" }
-        maven { url "https://dl.bintray.com/osborn/Android" } // Glide integration for APNG library
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.1'
-        // classpath 'com.google.gms:google-services:4.3.4'
+        classpath 'com.android.tools.build:gradle:4.1.2'
+        //classpath 'com.google.gms:google-services:4.3.5'
         classpath 'io.objectbox:objectbox-gradle-plugin:2.8.1'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.20'
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.0'

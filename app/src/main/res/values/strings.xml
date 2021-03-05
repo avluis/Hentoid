@@ -37,6 +37,7 @@
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
     <string name="menu_fav">Toggle favourite filter</string>
+    <string name="menu_mark_fav">Toggle favourite</string>
     <string name="menu_group_new">New group</string>
     <string name="menu_edit_order">Edit order</string>
     <string name="menu_edit_name">Edit name</string>
@@ -98,6 +99,10 @@
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
+    <plurals name="redownloaded_scratch">
+        <item quantity="one">Item cleared for redownloading</item>
+        <item quantity="other">%d items cleared for redownloading</item>
+    </plurals>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
@@ -175,6 +180,10 @@
     </plurals>
     <string name="export_warning">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
     <string name="export_run">RUN EXPORT</string>
+
+    <string name="import_settings_title">Import settings</string>
+    <string name="import_settings_success">Import successful</string>
+
 
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
@@ -276,10 +285,6 @@
     <plurals name="redownload_confirm">
         <item quantity="one">Redownload selected book from scratch ?</item>
         <item quantity="other">Redownload selected books from scratch ?</item>
-    </plurals>
-    <plurals name="redownload_secured_content">
-        <item quantity="one">One of the selected books has secured content and cannot be redownloaded\nThis book will be ignored.</item>
-        <item quantity="other">Some of the selected books have secured content and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
     <plurals name="redownload_external_content">
         <item quantity="one">One of the selected books is stored in the external library and cannot be redownloaded\nThis book will be ignored.</item>
@@ -432,8 +437,8 @@
     <string name="viewer_page_menu">Page menu</string>
     <string name="viewer_page_menu_help">Open page properties</string>
     <string name="viewer_delete_book">Delete book</string>
-    <string name="viewer_copy_success">Copied to Downloads folder</string>
-    <string name="viewer_copy_fail">Could not write to Downloads folder</string>
+    <string name="copy_download_folder_success">Copied to Downloads folder</string>
+    <string name="copy_download_folder_fail">Could not write to Downloads folder</string>
     <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
     <string name="viewer_ask_delete_page">Are you sure you wish to delete this page?</string>
     <string name="previous_book_help">Previous book</string>
@@ -444,6 +449,11 @@
     <string name="page_copy_help">Copy page to the Android Downloads folder</string>
     <string name="page_share_help">Share page using another app</string>
     <string name="page_delete_help">Delete page</string>
+    <string-array name="page_delete_choices">
+        <item>Ask me again next time</item>
+        <item>Don\'t ask me again for current book</item>
+        <item>Don\'t ask me again for current viewing session</item>
+    </string-array>
     <string name="viewer_ask_cover">Set this page as book cover?</string>
     <string name="image_not_found">Image not found</string>
     <string name="book_prefs">Book settings</string>

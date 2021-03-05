@@ -21,11 +21,11 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.API29MigrationService;
-import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.workers.ImportWorker;
 import timber.log.Timber;
 
 public class Api29MigrationActivity extends AppCompatActivity {
@@ -176,16 +176,16 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMigrationEvent(ProcessEvent event) {
-        ProgressBar progressBar = (ImportService.STEP_2_BOOK_FOLDERS == event.step) ? step2progress : step3progress;
+        ProgressBar progressBar = (ImportWorker.STEP_2_BOOK_FOLDERS == event.step) ? step2progress : step3progress;
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             progressBar.setMax(event.elementsTotal);
             progressBar.setProgress(event.elementsOK + event.elementsKO);
-            if (ImportService.STEP_3_BOOKS == event.step) {
+            if (ImportWorker.STEP_3_BOOKS == event.step) {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
             }
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType && ImportService.STEP_3_BOOKS == event.step) {
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType && ImportWorker.STEP_3_BOOKS == event.step) {
             step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
             step3check.setVisibility(View.VISIBLE);
             goToLibraryActivity();

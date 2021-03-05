@@ -29,6 +29,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
@@ -43,6 +44,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiFunction;
+import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.skydoves.balloon.ArrowOrientation;
 
@@ -67,9 +69,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,6 +86,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
@@ -93,19 +98,20 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.fragments.BookmarksDialogFragment;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -115,6 +121,7 @@ import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import okhttp3.Response;
@@ -171,6 +178,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // === UI
     // Associated webview
     protected NestedScrollWebView webView;
+    // Top toolbar buttons
+    private MenuItem refreshStopMenu;
+    private MenuItem bookmarkMenu;
     // Bottom toolbar
     private BottomNavigationView bottomToolbar;
     // Bottom toolbar buttons
@@ -178,7 +188,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private MenuItem forwardMenu;
     private MenuItem seekMenu;
     private MenuItem languageMenu;
-    private MenuItem refreshStopMenu;
     private MenuItem actionMenu;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
@@ -190,6 +199,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private TextView topAlertMessage;
     private View bottomAlertBanner;
     private TextView bottomAlertMessage;
+    // Progress bar
+    private ProgressBar progressBar;
 
     // === VARIABLES
     private CustomWebViewClient webClient;
@@ -209,49 +220,14 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private Disposable disposable;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
-    private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
+    private static final Set<String> universalBlockedContent = new HashSet<>();         // Universal list (applied to all sites)
     private List<String> localBlockedContent;                                           // Local list (applied to current site)
     // List of "dirty" elements (CSS selector) to be cleaned before displaying the page
     private List<String> dirtyElements;
 
     static {
-        universalBlockedContent.add("exoclick.com");
-        universalBlockedContent.add("juicyadultads.com");
-        universalBlockedContent.add("juicyads.com");
-        universalBlockedContent.add("exosrv.com");
-        universalBlockedContent.add("hentaigold.net");
-        universalBlockedContent.add("ads.php");
-        universalBlockedContent.add("ads.js");
-        universalBlockedContent.add("pop.js");
-        universalBlockedContent.add("trafficsan.com");
-        universalBlockedContent.add("contentabc.com");
-        universalBlockedContent.add("bebi.com");
-        universalBlockedContent.add("aftv-serving.bid");
-        universalBlockedContent.add("smatoo.net");
-        universalBlockedContent.add("adtng.net");
-        universalBlockedContent.add("adtng.com");
-        universalBlockedContent.add("popads.net");
-        universalBlockedContent.add("adsco.re");
-        universalBlockedContent.add("s24hc8xzag.com");
-        universalBlockedContent.add("/nutaku/");
-        universalBlockedContent.add("trafficjunky");
-        universalBlockedContent.add("traffichaus");
-        universalBlockedContent.add("google-analytics.com");
-        universalBlockedContent.add("mc.yandex.ru");
-        universalBlockedContent.add("mc.webvisor.org");
-        universalBlockedContent.add("scorecardresearch.com");
-        universalBlockedContent.add("hadskiz.com");
-        universalBlockedContent.add("pushnotifications.click");
-        universalBlockedContent.add("fingahvf.top");
-        universalBlockedContent.add("displayvertising.com");
-        universalBlockedContent.add("tsyndicate.com");
-        universalBlockedContent.add("semireproji.pro");
-        universalBlockedContent.add("defutohi.pro");
-        universalBlockedContent.add("realsrv.com");
-        universalBlockedContent.add("smartclick.net");
-        universalBlockedContent.add("ulukaris.com");
-        universalBlockedContent.add("alliedthirteen.com");
-        universalBlockedContent.add("acknowledgenightsabstain.com");
+        String[] blockedDomains = HentoidApp.getInstance().getResources().getStringArray(R.array.blocked_domains);
+        universalBlockedContent.addAll(Arrays.asList(blockedDomains));
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -300,6 +276,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
         languageMenu = toolbar.getMenu().findItem(R.id.web_menu_language);
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
+        bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
 
         bottomToolbar = findViewById(R.id.bottom_navigation);
         bottomToolbar.setOnNavigationItemSelectedListener(this::onMenuItemSelected);
@@ -307,7 +284,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
         forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
         seekMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_seek);
-        actionMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_download);
+        actionMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_action);
 
         // Webview
         animatedCheck = findViewById(R.id.animated_check);
@@ -331,6 +308,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         bottomAlertBanner = findViewById(R.id.bottom_alert);
         bottomAlertMessage = findViewById(R.id.bottom_alert_txt);
+
+        progressBar = findViewById(R.id.progress_bar);
 
         displayTopAlertBanner();
     }
@@ -388,7 +367,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             case R.id.web_open_browser:
                 this.onOpenBrowserClick();
                 break;
-            case R.id.web_menu_download:
+            case R.id.web_menu_action:
                 this.onActionClick();
                 break;
             default:
@@ -402,6 +381,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (event.sourceAlerts.containsKey(getStartSite())) {
             alert = event.sourceAlerts.get(getStartSite());
             displayTopAlertBanner();
+        }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onDownloadPreparationEvent(DownloadPreparationEvent event) {
+        if (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.url.equalsIgnoreCase(currentContent.getUrl())) {
+            progressBar.setMax(event.total);
+            progressBar.setProgress(event.done);
+            progressBar.setVisibility(event.isCompleted() ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -723,6 +711,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         webView.loadUrl(url);
     }
 
+    public void updateBookmarkButton(boolean newValue) {
+        if (newValue) bookmarkMenu.setIcon(R.drawable.ic_bookmark_full);
+        else bookmarkMenu.setIcon(R.drawable.ic_bookmark);
+    }
+
     /**
      * Handler for the phone's back button
      */
@@ -741,7 +734,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         else if (ActionMode.DOWNLOAD_PLUS == actionButtonMode) processDownload(false, true);
         else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
         else if (ActionMode.READ == actionButtonMode && currentContent != null) {
-            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl());
+            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), currentContent.getCoverImageUrl());
             if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()
                     || StatusContent.MIGRATED == currentContent.getStatus()))
@@ -767,6 +760,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         } else if (ActionMode.READ == mode) {
             resId = R.drawable.ic_action_play;
         }
+        BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
+        badge.setVisible(ActionMode.DOWNLOAD_PLUS == mode);
         actionButtonMode = mode;
         actionMenu.setIcon(resId);
         actionMenu.setEnabled(true);
@@ -842,7 +837,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         Intent intent = new Intent(this, QueueActivity.class);
 
         QueueActivityBundle.Builder builder = new QueueActivityBundle.Builder();
-        builder.setContentHash(currentContent.hashCode());
+        builder.setContentHash(currentContent.hash64());
         builder.setIsErrorsTab(currentContent.getStatus().equals(StatusContent.ERROR));
         intent.putExtras(builder.getBundle());
 
@@ -886,7 +881,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (content.getUrl().isEmpty()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
-        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
+        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), content.getCoverImageUrl());
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
@@ -900,14 +895,18 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             }
             if (!quickDownload) changeActionMode(ActionMode.DOWNLOAD);
         } else {
+            /*
             content.setId(contentDB.getId());
             content.setStatus(contentDB.getStatus());
+             */
+            content = contentDB;
         }
+        currentContent = content;
 
         if (isInCollection) {
             if (!quickDownload) changeActionMode(ActionMode.READ);
             result = ContentStatus.IN_COLLECTION;
-            searchForMoreImages(contentDB); // Async; might switch READ to DOWNLOAD_PLUS a couple seconds later
+            searchForMoreImages(contentDB); // Async; might switch from READ to DOWNLOAD_PLUS a couple seconds later
         }
         if (isInQueue) {
             if (!quickDownload) changeActionMode(ActionMode.VIEW_QUEUE);
@@ -917,7 +916,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (webClient != null)
             webClient.setBlockedTags(ContentHelper.getBlockedTags(content));
 
-        currentContent = content;
         return result;
     }
 
@@ -935,50 +933,78 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         runOnUiThread(() -> ToastUtil.toast(R.string.web_unparsable));
     }
 
-    private void searchForMoreImages(@NonNull final Content c) {
-        disposable = Single.fromCallable(() -> doSearchForMoreImages(c))
+    private void searchForMoreImages(@NonNull final Content storedContent) {
+        disposable = Single.fromCallable(() -> doSearchForMoreImages(storedContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(l -> onSearchForMoreImagesSuccess(c, l), Timber::e);
+                .subscribe(
+                        l -> onSearchForMoreImagesSuccess(storedContent, l),
+                        Timber::e
+                );
     }
 
-    private List<ImageFile> doSearchForMoreImages(@NonNull final Content c) {
+    private List<ImageFile> doSearchForMoreImages(@NonNull final Content storedContent) {
         List<ImageFile> result = Collections.emptyList();
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(c);
-        try {
-            List<ImageFile> imgs = parser.parseImageList(c);
-            if (imgs.isEmpty()) return result;
 
-            int coverCount = (imgs.get(0).isCover()) ? 1 : 0;
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(storedContent);
+        try {
+            List<ImageFile> onlineImgs = parser.parseImageList(storedContent);
+            if (onlineImgs.isEmpty()) return result;
+
+            int coverCount = (onlineImgs.get(0).isCover()) ? 1 : 0;
             Optional<Integer> maxImageOrder;
-            if (c.getImageFiles() != null)
-                maxImageOrder = Stream.of(c.getImageFiles()).filter(i -> i.getStatus().equals(StatusContent.DOWNLOADED)).map(ImageFile::getOrder).max(Integer::compareTo);
+            if (storedContent.getImageFiles() != null)
+                maxImageOrder = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
             else
                 maxImageOrder = Optional.of(0);
 
-            if (maxImageOrder.isPresent() && imgs.size() - coverCount > maxImageOrder.get())
-                return Stream.of(imgs).filter(i -> i.getOrder() > maxImageOrder.get()).toList();
+            // Online book has more pictures than stored book
+            if (maxImageOrder.isPresent() && onlineImgs.size() - coverCount > maxImageOrder.get()) {
+                return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxImageOrder.get()).distinct().toList();
+            }
         } catch (Exception e) {
             Timber.w(e);
         }
         return result;
     }
 
-    private void onSearchForMoreImagesSuccess(@NonNull final Content c, @NonNull final List<ImageFile> additionalImages) {
+    private void onSearchForMoreImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
         disposable.dispose();
         if (additionalImages.isEmpty()) return;
 
-        if (currentContent.equals(c)) { // User hasn't left the book page since
-            // Append additional pages to the current book's list of pages
-            List<ImageFile> updatedImgs = new ArrayList<>();
-            if (c.getImageFiles() != null) updatedImgs.addAll(c.getImageFiles());
+        if (currentContent != null && currentContent.equals(storedContent)) { // User hasn't left the book page since
+            // Copy the content's download params to the images
+            String downloadParamsStr = storedContent.getDownloadParams();
+            if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
+                for (ImageFile i : additionalImages) i.setDownloadParams(downloadParamsStr);
+            }
 
-            updatedImgs.addAll(additionalImages);
-            c.setImageFiles(updatedImgs);
-            // Save it
-            objectBoxDAO.insertContent(c);
+            // Append additional pages to the current book's list of pages
+            // and remove duplicates
+            List<ImageFile> updatedImgs = new ArrayList<>();
+            Set<String> existingUrls = new HashSet<>();
+            Set<String> storedUrls = new HashSet<>();
+            if (storedContent.getImageFiles() != null) {
+                existingUrls.addAll(Stream.of(storedContent.getImageFiles()).map(ImageFile::getUrl).toList());
+                storedUrls.addAll(Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getUrl).toList());
+                updatedImgs.addAll(storedContent.getImageFiles());
+            }
+
+            // Save additional detected pages references to current book
+            List<ImageFile> additionalNonExistingImages = Stream.of(additionalImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
+            if (!additionalNonExistingImages.isEmpty()) {
+                updatedImgs.addAll(additionalNonExistingImages);
+                storedContent.setImageFiles(updatedImgs);
+                objectBoxDAO.insertContent(storedContent);
+            }
+
             // Display the "download more" button
-            changeActionMode(ActionMode.DOWNLOAD_PLUS);
+            List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();
+            if (!additionalNonDownloadedImages.isEmpty()) {
+                changeActionMode(ActionMode.DOWNLOAD_PLUS);
+                BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
+                badge.setNumber(additionalNonDownloadedImages.size());
+            }
         }
     }
 
@@ -1243,7 +1269,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             refreshStopMenu.setIcon(R.drawable.ic_close);
-            //fabOpenBrowser.show();
+            progressBar.setVisibility(View.GONE);
             isPageLoading = true;
             if (!isHtmlLoaded) {
                 actionMenu.setIcon(R.drawable.selector_download_action);
@@ -1251,6 +1277,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             }
             // Display download button tooltip if a book page has been reached
             if (isGalleryPage(url)) showTooltip(R.string.help_web_download, false);
+            // Update bookmark button
+            List<SiteBookmark> bookmarks = objectBoxDAO.selectBookmarks(getStartSite());
+            Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> SiteBookmark.urlsAreSame(b.getUrl(), url)).findFirst();
+            updateBookmarkButton(currentBookmark.isPresent());
         }
 
         @Override
@@ -1410,7 +1440,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                                     .subscribeOn(Schedulers.computation())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
-                                            content -> processContent(content, requestHeadersList, quickDownload),
+                                            content -> processContent(content, urlStr, quickDownload),
                                             throwable -> {
                                                 Timber.e(throwable, "Error parsing content.");
                                                 isHtmlLoaded = true;
@@ -1430,19 +1460,17 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         /**
          * Process Content parsed from a webpage
          *
-         * @param content        Content to be processed
-         * @param requestHeaders HTTP headers of the request that has generated the Content
-         * @param quickDownload  True if the present call has been triggered by a quick download action
+         * @param content       Content to be processed
+         * @param quickDownload True if the present call has been triggered by a quick download action
          */
-        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> requestHeaders, boolean quickDownload) {
+        protected void processContent(@Nonnull Content content, @NonNull String url, boolean quickDownload) {
             if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
                 return;
 
-            // Save cookies for future calls during download
+            // Save useful download params for future use during download
             Map<String, String> params = new HashMap<>();
-            for (Pair<String, String> p : requestHeaders)
-                if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY))
-                    params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
+            params.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(url));
+            params.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
 
             content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
             isHtmlLoaded = true;

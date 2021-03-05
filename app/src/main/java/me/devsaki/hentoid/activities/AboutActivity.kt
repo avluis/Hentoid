@@ -17,7 +17,7 @@ import org.greenrobot.eventbus.ThreadMode
 
 class AboutActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityAboutBinding
+    private var binding: ActivityAboutBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,14 +25,16 @@ class AboutActivity : BaseActivity() {
         ThemeHelper.applyTheme(this)
 
         binding = ActivityAboutBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        binding?.let {
+            setContentView(it.root)
 
-        binding.toolbar.setNavigationOnClickListener { onBackPressed() }
+            it.toolbar.setNavigationOnClickListener { onBackPressed() }
 
-        binding.tvVersionName.text = getString(R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
-        binding.tvChromeVersionName.text = getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
+            it.tvVersionName.text = getString(R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
+            it.tvChromeVersionName.text = getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
 
-        binding.licensesButton.setOnClickListener { showFragment(LicensesFragment()) }
+            it.licensesButton.setOnClickListener { showFragment(LicensesFragment()) }
+        }
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
     }
@@ -52,5 +54,6 @@ class AboutActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
+        binding = null
     }
 }

@@ -35,6 +35,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.ContentV1;
@@ -59,9 +60,8 @@ import timber.log.Timber;
 
 /**
  * Service responsible for importing an existing Hentoid library.
- *
- * @see UpdateCheckService
  */
+@Deprecated
 public class ImportService extends IntentService {
 
     private static final int NOTIFICATION_ID = 1;
@@ -156,6 +156,9 @@ public class ImportService extends IntentService {
         Content content = null;
         List<LogUtil.LogEntry> log = new ArrayList<>();
 
+        // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
+
         final FileHelper.NameFilter imageNames = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
@@ -230,7 +233,7 @@ public class ImportService extends IntentService {
 
                         // If the very same book still exists in the DB at this point, it means it's present in the queue
                         // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
-                        Content existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl());
+                        Content existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), content.getCoverImageUrl());
                         if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
                             booksKO++;
                             String location = ContentHelper.isInQueue(existingDuplicate.getStatus()) ? "queue" : "collection";
@@ -418,7 +421,7 @@ public class ImportService extends IntentService {
             List<QueueRecord> lst = new ArrayList<>();
             int count = 1;
             for (Content c : queuedContent) {
-                Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl());
+                Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), c.getCoverImageUrl());
                 if (null == duplicate) {
                     if (c.getStatus().equals(StatusContent.ERROR)) {
                         // Add error books as library entries, not queue entries

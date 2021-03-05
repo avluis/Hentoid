@@ -70,6 +70,8 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.download.RequestQueueManager;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.exception.CaptchaException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
@@ -78,6 +80,7 @@ import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.InputStreamVolleyRequest;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
@@ -89,6 +92,7 @@ import timber.log.Timber;
  * Book download service; 1 instance everytime a new book of the queue has to be downloaded
  * NB : As per IntentService behaviour, only one thread can be active at a time (no parallel runs of ContentDownloadService)
  */
+@Deprecated
 public class ContentDownloadService extends IntentService {
 
     private enum QueuingResult {
@@ -460,8 +464,12 @@ public class ContentDownloadService extends IntentService {
             notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages, (int) sizeDownloadedMB, (int) estimateBookSizeMB, avgSpeedKbps));
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages, sizeDownloadedBytes));
 
-            // If the "skip large downloads on mobile data" is on, estimate book size and skip if needed
-            if (Preferences.isDownloadLargeOnlyWifi() && estimateBookSizeMB > Preferences.getDownloadLargeOnlyWifiThresholdMB()) {
+            // If the "skip large downloads on mobile data" is on, skip if needed
+            if (Preferences.isDownloadLargeOnlyWifi() &&
+                    (estimateBookSizeMB > Preferences.getDownloadLargeOnlyWifiThresholdMB()
+                            || totalPages > Preferences.getDownloadLargeOnlyWifiThresholdPages()
+                    )
+            ) {
                 @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(this);
                 if (NetworkHelper.Connectivity.WIFI != connectivity) {
                     // Move the book to the errors queue and signal it as skipped

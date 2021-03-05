@@ -21,7 +21,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
  * Created by robb_w on 2020/10
  * Handles parsing of content from myreadingmanga.info
  */
-public class MrmParser extends BaseParser {
+public class MrmParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {
@@ -40,7 +40,7 @@ public class MrmParser extends BaseParser {
             for (Element e : chapters) chapterUrls.add(e.attr("href"));
         }
         if (chapterUrls.isEmpty()) chapterUrls.add(content.getGalleryUrl()); // "one-shot" book
-        progressStart(chapterUrls.size());
+        progressStart(content.getUrl(), chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {

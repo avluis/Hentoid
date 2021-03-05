@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.services;
+package me.devsaki.hentoid.util.download;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -74,7 +74,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     }
 
     /**
-     * Returns the app's Volley request queue
+     * Start the app's Volley request queue
      *
      * @param ctx App context
      * @return Hentoid Volley request queue
@@ -104,7 +104,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
      *
      * @param request Request to addAll to the queue
      */
-    void queueRequest(Request<T> request) {
+    public void queueRequest(Request<T> request) {
         /*
         if (!allowParallelDownloads) {
             String host = Uri.parse(request.getUrl()).getHost();
@@ -160,7 +160,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     /**
      * Cancel the app's request queue : cancel all requests remaining in the queue
      */
-    void cancelQueue() {
+    public void cancelQueue() {
         RequestQueue.RequestFilter filterForAll = request -> true;
         mRequestQueue.cancelAll(filterForAll);
         Timber.d("RequestQueue ::: canceled");

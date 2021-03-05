@@ -13,8 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
-import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -24,7 +25,6 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +32,6 @@ import java.util.Set;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -45,7 +44,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ExternalImportService;
-import me.devsaki.hentoid.services.ImportService;
+import me.devsaki.hentoid.workers.ImportWorker;
+import me.devsaki.hentoid.workers.data.ImportData;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.O;
@@ -348,6 +348,7 @@ public class ImportHelper {
     }
 
 
+    // TODO doc
     @Nullable
     private static DocumentFile addHentoidFolder(@NonNull final Context context, @NonNull final DocumentFile baseFolder) {
         String folderName = baseFolder.getName();
@@ -365,6 +366,7 @@ public class ImportHelper {
         return baseFolder;
     }
 
+    // TODO doc
     // Try and detect any ".Hentoid" or "Hentoid" folder inside the selected folder
     public static DocumentFile getExistingHentoidDirFrom(@NonNull final Context context, @NonNull final DocumentFile root) {
         if (!root.exists() || !root.isDirectory() || null == root.getName()) return root;
@@ -378,26 +380,23 @@ public class ImportHelper {
         else return root;
     }
 
+    // TODO doc
     private static void runHentoidImport(
             @NonNull final Context context,
             @Nullable final ImportOptions options
     ) {
         ImportNotificationChannel.init(context);
-        Intent intent = ImportService.makeIntent(context);
 
-        ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();
+        ImportData.Builder builder = new ImportData.Builder();
         builder.setRefreshRename(null != options && options.rename);
         builder.setRefreshCleanNoJson(null != options && options.cleanNoJson);
         builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
-        intent.putExtras(builder.getBundle());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
-        }
+        WorkManager workManager = WorkManager.getInstance(context);
+        workManager.enqueue(new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).build());
     }
 
+    // TODO doc
     private static void runExternalImport(
             @NonNull final Context context
     ) {
@@ -411,6 +410,7 @@ public class ImportHelper {
         }
     }
 
+    // TODO doc
     public static Content scanBookFolder(
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
@@ -470,6 +470,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     public static Content scanChapterFolders(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
@@ -513,6 +514,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     private static void scanImages(
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
@@ -544,14 +546,17 @@ public class ImportHelper {
         }
     }
 
+    // TODO doc
     private static List<Attribute> newExternalAttribute() {
         return Stream.of(new Attribute(AttributeType.TAG, EXTERNAL_LIB_TAG, EXTERNAL_LIB_TAG, Site.NONE)).toList();
     }
 
+    // TODO doc
     public static void removeExternalAttribute(@NonNull final Content content) {
         content.putAttributes(Stream.of(content.getAttributes()).filterNot(a -> a.getName().equalsIgnoreCase(EXTERNAL_LIB_TAG)).toList());
     }
 
+    // TODO doc
     private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames) {
         AttributeMap result = new AttributeMap();
         // Don't include the very first one, it's the name of the root folder of the library
@@ -562,6 +567,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     public static List<Content> scanForArchives(
             @NonNull final Context context,
             @NonNull final List<DocumentFile> subFolders,
@@ -596,6 +602,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     public static Content scanArchive(
             @NonNull final Context context,
             @NonNull final DocumentFile parentFolder,
@@ -623,18 +630,13 @@ public class ImportHelper {
             Timber.w(e);
         }
 
-        // Look for the folder with the most images
-        Collection<List<ArchiveHelper.ArchiveEntry>> imageEntries = Stream.of(entries)
+        List<ArchiveHelper.ArchiveEntry> imageEntries = Stream.of(entries)
                 .filter(s -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(s.path)))
-                .collect(Collectors.groupingBy(ImportHelper::getFolders))
-                .values();
+                .toList();
 
         if (imageEntries.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
-        // Sort by number of images desc
-        List<ArchiveHelper.ArchiveEntry> entryList = Stream.of(imageEntries).sortBy(ie -> -ie.size()).toList().get(0);
-
-        List<ImageFile> images = ContentHelper.createImageListFromArchiveEntries(archive.getUri(), entryList, targetStatus, 0, "");
+        List<ImageFile> images = ContentHelper.createImageListFromArchiveEntries(archive.getUri(), imageEntries, targetStatus, 0, "");
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
 
@@ -660,6 +662,7 @@ public class ImportHelper {
         return result;
     }
 
+    // TODO doc
     private static String getFolders(@NonNull final ArchiveHelper.ArchiveEntry entry) {
         String path = entry.path;
         int separatorIndex = path.lastIndexOf('/');
@@ -668,6 +671,7 @@ public class ImportHelper {
         return path.substring(0, separatorIndex);
     }
 
+    // TODO doc
     public static int importBookmarks(@NonNull final CollectionDAO dao, List<SiteBookmark> bookmarks) {
         // Don't import bookmarks that have the same URL as existing ones
         Set<SiteBookmark> existingBookmarkUrls = new HashSet<>(dao.selectAllBookmarks());
@@ -676,6 +680,7 @@ public class ImportHelper {
         return bookmarksToImport.size();
     }
 
+    // TODO doc
     @Nullable
     public static DocumentFile getFileWithName(List<DocumentFile> files, @Nullable String name) {
         if (null == name) return null;

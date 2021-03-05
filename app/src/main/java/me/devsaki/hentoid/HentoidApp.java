@@ -83,6 +83,8 @@ public class HentoidApp extends Application {
         super.onCreate();
         instance = this;
 
+        Timber.i("Initializing %s", R.string.app_name);
+
         // Fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
         // see https://github.com/square/okhttp/issues/2372 for more information
         // NB : Takes ~250ms at startup

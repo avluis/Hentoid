@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import me.devsaki.hentoid.services.ContentQueueManager;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
 import timber.log.Timber;
 
 /**

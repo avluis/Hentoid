@@ -38,7 +38,7 @@ import timber.log.Timber;
  */
 public class HttpHelper {
 
-    private static final int TIMEOUT = 30000; // 30 seconds
+    public static final int DEFAULT_REQUEST_TIMEOUT = 30000; // 30 seconds
 
     // Keywords of the HTTP protocol
     public static final String HEADER_ACCEPT_KEY = "accept";
@@ -109,7 +109,7 @@ public class HttpHelper {
     public static Response getOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) throws IOException {
         Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent);
         Request request = requestBuilder.get().build();
-        return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
+        return OkHttpClientSingleton.getInstance(DEFAULT_REQUEST_TIMEOUT).newCall(request).execute();
     }
 
     /**
@@ -130,7 +130,7 @@ public class HttpHelper {
             @NonNull final String mimeType) throws IOException {
         Request.Builder requestBuilder = buildRequest(url, headers, true, useHentoidAgent);
         Request request = requestBuilder.post(RequestBody.create(body, MediaType.parse(mimeType))).build();
-        return OkHttpClientSingleton.getInstance(TIMEOUT).newCall(request).execute();
+        return OkHttpClientSingleton.getInstance(DEFAULT_REQUEST_TIMEOUT).newCall(request).execute();
     }
 
     /**
@@ -259,19 +259,8 @@ public class HttpHelper {
      * @return Extension of the file located at the given URI, without the leading '.'
      */
     public static String getExtensionFromUri(String uri) {
-        String theUri = uri.toLowerCase();
-        String uriNoParams = theUri;
-
-        int paramsIndex = theUri.lastIndexOf('?');
-        if (paramsIndex > -1) uriNoParams = theUri.substring(0, paramsIndex);
-
-        int pathIndex = uriNoParams.lastIndexOf('/');
-        int extIndex = uriNoParams.lastIndexOf('.');
-
-        // No extensions detected
-        if (extIndex < 0 || extIndex < pathIndex) return "";
-
-        return uriNoParams.substring(extIndex + 1);
+        UriParts parts = new UriParts(uri);
+        return parts.getExtension();
     }
 
     /**
@@ -413,6 +402,20 @@ public class HttpHelper {
         return result;
     }
 
+    @Nullable
+    public static String getCookies(@NonNull String url) {
+        String result = CookieManager.getInstance().getCookie(url);
+        if (result != null) return HttpHelper.stripParams(result);
+        else return null;
+    }
+
+    // TODO doc
+    public static String getCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) {
+        String result = getCookies(url);
+        if (result != null) return result;
+        else return peekCookies(url, headers, useMobileAgent, useHentoidAgent);
+    }
+
     /**
      * Get cookie headers set by the page at the given URL
      *
@@ -420,8 +423,13 @@ public class HttpHelper {
      * @return Raw cookies string
      */
     public static String peekCookies(@NonNull final String url) {
+        return peekCookies(url, null, true, false);
+    }
+
+    // TODO doc
+    public static String peekCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) {
         try {
-            Response response = getOnlineResource(url, null, true, false);
+            Response response = getOnlineResource(url, headers, useMobileAgent, useHentoidAgent);
             List<String> cookielist = response.headers().values("Set-Cookie");
             return TextUtils.join("; ", cookielist);
         } catch (IOException e) {
@@ -498,5 +506,78 @@ public class HttpHelper {
         if (-1 == defaultChromeVersion)
             throw new RuntimeException("Call initUserAgents first to initialize them !");
         return defaultChromeVersion;
+    }
+
+    public static class UriParts {
+        private String path;
+        private String fileName;
+        private String extension;
+        private String query;
+
+        public UriParts(String uri) {
+            String theUri = uri.toLowerCase();
+            String uriNoParams = theUri;
+
+            int paramsIndex = theUri.lastIndexOf('?');
+            if (paramsIndex > -1) {
+                uriNoParams = theUri.substring(0, paramsIndex);
+                query = theUri.substring(paramsIndex + 1);
+            } else {
+                query = "";
+            }
+
+            int pathIndex = uriNoParams.lastIndexOf('/');
+            path = theUri.substring(0, pathIndex);
+            int extIndex = uriNoParams.lastIndexOf('.');
+
+            // No extensions detected
+            if (extIndex < 0 || extIndex < pathIndex) {
+                extension = "";
+                fileName = uriNoParams.substring(pathIndex + 1);
+            } else {
+                extension = uriNoParams.substring(extIndex + 1);
+                fileName = uriNoParams.substring(pathIndex + 1, extIndex);
+            }
+        }
+
+        public String toUri() {
+            StringBuilder result = new StringBuilder(path);
+            result.append("/").append(fileName);
+            if (!extension.isEmpty()) result.append(".").append(extension);
+            if (!query.isEmpty()) result.append("?").append(query);
+            return result.toString();
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public String getFileNameNoExt() {
+            return fileName;
+        }
+
+        public String getExtension() {
+            return extension;
+        }
+
+        public void setExtension(String extension) {
+            this.extension = extension;
+        }
+
+        public String getQuery() {
+            return query;
+        }
+
+        public void setQuery(String query) {
+            this.query = query;
+        }
+
+        public void setFileNameNoExt(@NonNull final String fileName) {
+            this.fileName = fileName;
+        }
     }
 }

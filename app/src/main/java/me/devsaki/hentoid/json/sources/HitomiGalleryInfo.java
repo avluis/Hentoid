@@ -4,11 +4,11 @@ import androidx.annotation.NonNull;
 
 import com.annimon.stream.Stream;
 
+import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import me.devsaki.hentoid.util.NaturalOrderComparator;
 
 public class HitomiGalleryInfo {
 
@@ -41,7 +41,7 @@ public class HitomiGalleryInfo {
     private static class HitomiPageNameComparator implements Comparator<HitomiGalleryPage> {
         @Override
         public int compare(@NonNull HitomiGalleryPage o1, @NonNull HitomiGalleryPage o2) {
-            return new NaturalOrderComparator().compare(o1.getName(), o2.getName());
+            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(o1.getName(), o2.getName());
         }
     }
 }

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.services;
+package me.devsaki.hentoid.util.network;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
@@ -9,8 +9,6 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.devsaki.hentoid.util.network.HttpHelper;
-
 /**
  * Created by Robb_w on 2018/04
  * <p>
@@ -20,7 +18,7 @@ import me.devsaki.hentoid.util.network.HttpHelper;
  * <p>
  * to the download callback routine
  */
-class InputStreamVolleyRequest extends Request<Object> {
+public class InputStreamVolleyRequest extends Request<Object> {
     // Callback listener
     // byte[] is the response's binary data; Map<String, String> are the response headers
     private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mParseListener;
@@ -28,7 +26,7 @@ class InputStreamVolleyRequest extends Request<Object> {
     private final boolean useHentoidAgent;
 
 
-    InputStreamVolleyRequest(
+    public InputStreamVolleyRequest(
             int method,
             String mUrl,
             Map<String, String> headers,
@@ -63,7 +61,7 @@ class InputStreamVolleyRequest extends Request<Object> {
     public Map<String, String> getHeaders() {
         Map<String, String> params = new HashMap<>();
         params.put(HttpHelper.HEADER_USER_AGENT, HttpHelper.getMobileUserAgent(useHentoidAgent));
-        params.put("Accept", "*/*"); // Required to pass through cloudflare filtering on some sites
+        params.put("Accept", "image/jpeg,image/png,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*"); // Required to pass through cloudflare filtering on some sites
         params.putAll(headers);
         return params;
     }

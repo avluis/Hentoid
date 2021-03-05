@@ -34,6 +34,13 @@ public class LogUtil {
         private final int chapter;
         private final boolean isError;
 
+        public LogEntry(@NonNull String message) {
+            this.timestamp = Instant.now();
+            this.message = message;
+            this.chapter = 1;
+            this.isError = false;
+        }
+
         public LogEntry(@NonNull String message, int chapter, boolean isError) {
             this.timestamp = Instant.now();
             this.message = message;
@@ -60,6 +67,10 @@ public class LogUtil {
         private String header = "";
         private List<LogEntry> log = Collections.emptyList();
 
+        /**
+         * Log file name, without the extension
+         * @param fileName
+         */
         public void setFileName(@NonNull String fileName) {
             this.fileName = fileName;
         }
@@ -116,7 +127,9 @@ public class LogUtil {
     public static DocumentFile writeLog(@Nonnull Context context, @Nonnull LogInfo info) {
         try {
             // Create the log
-            String logFileName = info.fileName + ".txt";
+            String logFileName = info.fileName;
+            if (!logFileName.endsWith("_log")) logFileName += "_log";
+            logFileName += ".txt";
             String log = buildLog(info);
 
             // Save it

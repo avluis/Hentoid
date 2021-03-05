@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import androidx.annotation.NonNull;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -23,9 +25,7 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 import timber.log.Timber;
 
-public class MusesContent implements ContentParser {
-    @Selector(value = "head [rel=canonical]", attr = "href", defValue = "")
-    private String galleryUrl;
+public class MusesContent extends BaseContentParser {
     @Selector(value = ".top-menu-breadcrumb a")
     private List<Element> breadcrumbs;
     @Selector(value = ".gallery a")
@@ -48,7 +48,7 @@ public class MusesContent implements ContentParser {
     }
 
     @Nullable
-    public Content toContent(@Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url) {
         // Gallery pages are the only ones whose gallery links end with numbers
         // The others are album lists
         int nbImages = 0;
@@ -69,13 +69,11 @@ public class MusesContent implements ContentParser {
         }
         if (nbImages < thumbLinks.size() / 3) return new Content().setStatus(StatusContent.IGNORED);
 
-        Content result = new Content();
+        content.setSite(Site.MUSES);
+        String theUrl = canonicalUrl.isEmpty() ? url : canonicalUrl;
+        if (theUrl.isEmpty() || 0 == nbImages) return content.setStatus(StatusContent.IGNORED);
 
-        result.setSite(Site.MUSES);
-        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty() || 0 == nbImages) return result.setStatus(StatusContent.IGNORED);
-
-        result.setUrl(theUrl.replace(Site.MUSES.getUrl(), "").replace("https://comics.8muses.com",""));
+        content.setUrl(theUrl.replace(Site.MUSES.getUrl(), "").replace("https://comics.8muses.com",""));
 
         // == Circle (publisher), Artist and Series
         AttributeMap attributes = new AttributeMap();
@@ -115,16 +113,16 @@ public class MusesContent implements ContentParser {
                     }
                 }
             }
-            result.setTitle(Helper.removeNonPrintableChars(bookTitle));
+            content.setTitle(Helper.removeNonPrintableChars(bookTitle));
         }
-        result.setQtyPages(nbImages); // Cover is duplicated in the code below; no need to decrease nbImages here
+        content.setQtyPages(nbImages); // Cover is duplicated in the code below; no need to decrease nbImages here
 
         String[] thumbParts;
         int index = 0;
         List<ImageFile> images = new ArrayList<>();
         // Cover
         ImageFile cover = new ImageFile(index++, Site.MUSES.getUrl() + imagesUrls.get(0), StatusContent.SAVED, nbImages);
-        result.setCoverImageUrl(cover.getUrl());
+        content.setCoverImageUrl(cover.getUrl());
         cover.setIsCover(true);
         images.add(cover);
         // Images
@@ -136,7 +134,7 @@ public class MusesContent implements ContentParser {
                 images.add(new ImageFile(index++, imgUrl, StatusContent.SAVED, nbImages)); // We infer actual book page images have the same format as their thumbs
             }
         }
-        result.setImageFiles(images);
+        content.setImageFiles(images);
 
         // Tags are not shown on the album page, but on the picture page (!)
         try {
@@ -149,9 +147,9 @@ public class MusesContent implements ContentParser {
         } catch (IOException e) {
             Timber.e(e);
         }
-        result.addAttributes(attributes);
+        content.putAttributes(attributes);
 
 
-        return result;
+        return content;
     }
 }

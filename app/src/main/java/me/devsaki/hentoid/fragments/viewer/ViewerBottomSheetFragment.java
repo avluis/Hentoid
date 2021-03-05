@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.annimon.stream.Stream;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -177,19 +178,15 @@ public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Favourite" action button
      */
     private void onFavouriteClick() {
-        viewModel.togglePageFavourite(image, this::onFavouriteSuccess);
+        viewModel.togglePageFavourite(Stream.of(image).toList(), this::onToggleFavouriteSuccess);
     }
 
     /**
      * Success callback when the new favourite'd state has been successfully persisted
-     *
-     * @param img The favourite'd / unfavourite'd ImageFile in its new state
      */
-    private void onFavouriteSuccess(ImageFile img) {
-        // Check if the updated image is still the one displayed on screen
-        if (img.getId() == image.getId())
-            image.setFavourite(img.isFavourite());
-        updateFavouriteDisplay(img.isFavourite());
+    private void onToggleFavouriteSuccess() {
+        image.setFavourite(!image.isFavourite());
+        updateFavouriteDisplay(image.isFavourite());
     }
 
     /**
@@ -219,11 +216,11 @@ public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
                 }
             }
 
-            Snackbar.make(rootView, R.string.viewer_copy_success, LENGTH_LONG)
+            Snackbar.make(rootView, R.string.copy_download_folder_success, LENGTH_LONG)
                     .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                     .show();
         } catch (IOException | IllegalArgumentException e) {
-            Snackbar.make(rootView, R.string.viewer_copy_fail, LENGTH_LONG).show();
+            Snackbar.make(rootView, R.string.copy_download_folder_fail, LENGTH_LONG).show();
         }
     }
 
