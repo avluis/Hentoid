@@ -248,6 +248,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         });
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
         fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
+            if (null == selectExtension) return false;
             Set<Integer> selectedPositions = selectExtension.getSelections();
             if (0 == selectedPositions.size()) { // No selection -> select things
                 selectExtension.select(p);
