@@ -1071,7 +1071,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * @param shelfNumber Number of the shelf to display
      */
     private void populateBookshelf(@NonNull final PagedList<Content> iLibrary, int shelfNumber) {
-        if (Preferences.getEndlessScroll()) return;
+        if (Preferences.getEndlessScroll() || null == itemAdapter) return;
 
         ImmutablePair<Integer, Integer> bounds = getShelfBound(shelfNumber, iLibrary.size());
         int minIndex = bounds.getLeft();
@@ -1090,6 +1090,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     }
 
     private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
+        if (Preferences.getEndlessScroll() || null == itemAdapter) return;
+
         List<ContentItem> contentItems;
         if (iLibrary.isEmpty()) {
             contentItems = Collections.emptyList();
